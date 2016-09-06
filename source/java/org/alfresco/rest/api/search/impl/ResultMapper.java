@@ -33,8 +33,8 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.SearchContext;
-import org.alfresco.rest.framework.resource.parameters.SearchContext.FacetQueryResult;
+import org.alfresco.rest.api.search.context.SearchContext;
+import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -134,14 +134,14 @@ public class ResultMapper
     {
         SearchContext context = null;
         Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
-        List<FacetQueryResult> facetResults = null;
+        List<FacetQueryContext> facetResults = null;
 
         if(facetQueries!= null && !facetQueries.isEmpty())
         {
             facetResults = new ArrayList<>(facetQueries.size());
             for (Entry<String, Integer> fq:facetQueries.entrySet())
             {
-                facetResults.add(new FacetQueryResult(fq.getKey(), fq.getValue()));
+                facetResults.add(new FacetQueryContext(fq.getKey(), fq.getValue()));
             }
         }
         context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults);

@@ -30,6 +30,7 @@
         <result property="store.protocol" column="protocol" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="store.identifier" column="identifier" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="uuid" column="uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="shardKey" column="shard_key" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
     <!-- SELECTS -->
@@ -119,12 +120,29 @@
             node.uuid           as uuid,
             node.acl_id         as acl_id,
             store.protocol      as protocol,
-            store.identifier    as identifier
+            store.identifier    as identifier,
+            <choose>
+               <when test="shardPropertyQNameId == null">
+                  null as shard_key
+               </when>
+               <when test="shardPropertyQNameId == -1">
+                  node.audit_created as shard_key
+               </when>
+               <when test="shardPropertyQNameId == -2">
+                  node.audit_modified as shard_key
+               </when>
+               <otherwise>
+                  shardkey.string_value as shard_key
+               </otherwise>
+            </choose>
         from
             alf_transaction txn
             join alf_node node on (txn.id = node.transaction_id)
             join alf_store store on (store.id = node.store_id)
             left outer join alf_node_properties np on (np.node_id = node.id and np.qname_id = #{originalIdPropQNameId})
+            <if test="shardPropertyQNameId != null and shardPropertyQNameId >= 0" >
+                left outer join alf_node_properties shardkey on (shardkey.node_id = node.id and shardkey.qname_id = #{shardPropertyQNameId})
+            </if>
         <where>
            <choose>
 	           <when test="transactionIds != null">

@@ -133,4 +133,10 @@ class TestNode implements Node
         return null;
     }
 
+    @Override
+    public String getShardKey()
+    {
+        return null;
+    }
+
 }

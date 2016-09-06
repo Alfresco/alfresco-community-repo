@@ -55,6 +55,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
     private Long aclId;
     private TransactionEntity transaction;
     private AuditablePropertiesEntity auditableProperties;
+    private String shardKey;
     
     /**
      * Required default constructor
@@ -90,6 +91,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
         this.aclId = node.getAclId();
         this.transaction = node.getTransaction();
         this.auditableProperties = node.getAuditableProperties();
+        this.shardKey = node.getShardKey();
     }
       
     @Override
@@ -138,6 +140,7 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
           .append(", aclId=").append(aclId)
           .append(", transaction=").append(transaction)
           .append(", auditProps=").append(auditableProperties)
+          .append(", shardKey=").append(shardKey)
           .append("]");
         return sb.toString();
     }
@@ -332,4 +335,17 @@ public class NodeEntity implements Node, PermissionCheckValue, Serializable, Clo
         checkLock();
         this.auditableProperties = auditableProperties;
     }
+
+    @Override
+    public String getShardKey()
+    {
+        return this.shardKey;
+    }
+
+    public synchronized void setShardKey(String shardKey)
+    {
+        this.shardKey = shardKey;
+    }
+    
+    
 }

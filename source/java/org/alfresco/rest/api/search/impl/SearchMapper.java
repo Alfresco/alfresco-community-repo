@@ -43,6 +43,7 @@ import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.NotImplementedException;
 
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLINK;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PATH;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
@@ -63,7 +64,8 @@ public class SearchMapper
 {
     public static final List<String> PERMITTED_INCLUDES
                 = Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS,PARAM_INCLUDE_ASPECTNAMES,
-                                PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, PARAM_INCLUDE_PROPERTIES);
+                                PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, PARAM_INCLUDE_PROPERTIES,
+                                PARAM_INCLUDE_ASSOCIATION);
 
     /**
      * Turn the params into the Java SearchParameters object

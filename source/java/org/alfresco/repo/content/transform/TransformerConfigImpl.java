@@ -329,37 +329,40 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         Map<String, Set<String>> strictMimetypeExceptions = new HashMap<>();
         
         String whitelist = getProperty(STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES);
-        String[] mimetypes = whitelist.split(";");
-        
-        if (mimetypes.length % 2 != 0)
+        if (whitelist != null)
         {
-            logger.error(STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES+" should have an even number of mimetypes as a ; separated list.");
-        }
-        else
-        {
-            Set<String> detectedMimetypes = null;
-            for (String mimetype: mimetypes)
+            String[] mimetypes = whitelist.split(";");
+            
+            if (mimetypes.length % 2 != 0)
             {
-                mimetype = mimetype.trim();
-                if (mimetype.isEmpty())
+                logger.error(STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES+" should have an even number of mimetypes as a ; separated list.");
+            }
+            else
+            {
+                Set<String> detectedMimetypes = null;
+                for (String mimetype: mimetypes)
                 {
-                    logger.error(STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES+" contains a blank mimetype.");
-                    // Still okay to use it in the map though, but it will be ignored.
-                }
+                    mimetype = mimetype.trim();
+                    if (mimetype.isEmpty())
+                    {
+                        logger.error(STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES+" contains a blank mimetype.");
+                        // Still okay to use it in the map though, but it will be ignored.
+                    }
 
-                if (detectedMimetypes == null)
-                {
-                    detectedMimetypes = strictMimetypeExceptions.get(mimetype);
                     if (detectedMimetypes == null)
                     {
-                        detectedMimetypes = new HashSet<>();
-                        strictMimetypeExceptions.put(mimetype, detectedMimetypes);
+                        detectedMimetypes = strictMimetypeExceptions.get(mimetype);
+                        if (detectedMimetypes == null)
+                        {
+                            detectedMimetypes = new HashSet<>();
+                            strictMimetypeExceptions.put(mimetype, detectedMimetypes);
+                        }
                     }
-                }
-                else
-                {
-                    detectedMimetypes.add(mimetype);
-                    detectedMimetypes = null;
+                    else
+                    {
+                        detectedMimetypes.add(mimetype);
+                        detectedMimetypes = null;
+                    }
                 }
             }
         }

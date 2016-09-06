@@ -411,52 +411,52 @@ public class TransformerConfigDynamicTransformersTest
     @Test
     public void failoverPropertyFFTest()
     {
-        internalProprtyTest(false, false, false);
+        internalPropertyTest(false, false, false);
     }
 
     @Test
     public void failoverPropertyFTTest()
     {
-        internalProprtyTest(false, false, true);
+        internalPropertyTest(false, false, true);
     }
 
     @Test
     public void failoverPropertyTFTest()
     {
-        internalProprtyTest(false, true, false);
+        internalPropertyTest(false, true, false);
     }
 
     @Test
     public void failoverPropertyTTTest()
     {
-        internalProprtyTest(false, true, true);
+        internalPropertyTest(false, true, true);
     }
 
     @Test
     public void pipelinePropertyFFTest()
     {
-        internalProprtyTest(true, false, false);
+        internalPropertyTest(true, false, false);
     }
 
     @Test
     public void pipelinePropertyFTTest()
     {
-        internalProprtyTest(true, false, true);
+        internalPropertyTest(true, false, true);
     }
 
     @Test
     public void pipelinePropertyTFTest()
     {
-        internalProprtyTest(true, true, false);
+        internalPropertyTest(true, true, false);
     }
 
     @Test
     public void pipelinePropertyTTTest()
     {
-        internalProprtyTest(true, true, true);
+        internalPropertyTest(true, true, true);
     }
 
-    private void internalProprtyTest(boolean pipeline, boolean expectedRetry, boolean expectedCheck)
+    private void internalPropertyTest(boolean pipeline, boolean expectedRetry, boolean expectedCheck)
     {
         String[] transformerNamesAndValues = pipeline
             ? new String[] {"content.transformer.transformerA.pipeline", "transformer1|pdf|transformer2"}
@@ -469,7 +469,7 @@ public class TransformerConfigDynamicTransformersTest
         }
         if (expectedCheck)
         {
-            properties.setProperty("content.transformer.strict.mimetype.check", "true");
+            properties.setProperty("transformer.strict.mimetype.check", "true");
         }
         
         mockProperties(transformerProperties, transformerNamesAndValues);

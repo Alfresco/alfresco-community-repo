@@ -341,7 +341,7 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_LOCK_OWNER,
             ContentModel.PROP_WORKING_COPY_OWNER);
 
-    private final static Map<String,QName> MAP_PARAM_QNAME;
+    public final static Map<String,QName> PARAM_SYNONYMS_QNAME;
     static
     {
         Map<String,QName> aMap = new HashMap<>(9);
@@ -356,7 +356,7 @@ public class NodesImpl implements Nodes
         aMap.put(PARAM_SIZEINBYTES, GetChildrenCannedQuery.SORT_QNAME_CONTENT_SIZE);
         aMap.put(PARAM_NODETYPE, GetChildrenCannedQuery.SORT_QNAME_NODE_TYPE);
 
-        MAP_PARAM_QNAME = Collections.unmodifiableMap(aMap);
+        PARAM_SYNONYMS_QNAME = Collections.unmodifiableMap(aMap);
     }
 
     // list children filtering (via where clause)
@@ -1259,7 +1259,7 @@ public class NodesImpl implements Nodes
             sortProps = new ArrayList<>(sortCols.size());
             for (SortColumn sortCol : sortCols)
             {
-                QName propQname = MAP_PARAM_QNAME.get(sortCol.column);
+                QName propQname = PARAM_SYNONYMS_QNAME.get(sortCol.column);
                 if (propQname == null)
                 {
                     propQname = createQName(sortCol.column);

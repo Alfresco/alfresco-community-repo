@@ -194,6 +194,23 @@ public class SearchMapperTests
         });
 
         searchParameters = new SearchParameters();
+        searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", "createdAt", true)));
+        assertEquals(1 , searchParameters.getSortDefinitions().size());
+        assertEquals("{http://www.alfresco.org/model/content/1.0}created", searchParameters.getSortDefinitions().get(0).getField());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", "cm:created", true)));
+        assertEquals("cm:created", searchParameters.getSortDefinitions().get(0).getField());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", "modifiedByUser", true)));
+        assertEquals("{http://www.alfresco.org/model/content/1.0}modifier", searchParameters.getSortDefinitions().get(0).getField());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", "nodeType", true)));
+        assertEquals("{}TYPE", searchParameters.getSortDefinitions().get(0).getField());
+
+        searchParameters = new SearchParameters();
         searchParameters.setLanguage(SearchMapper.CMIS);
         try
         {

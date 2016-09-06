@@ -59,15 +59,13 @@ public class SortDef
         return type;
     }
 
-    /**
-     * You are allowed to create an instance of this class that has an invalid sortType
-     * but this method will validate the definition is correct and return it.
-     *
-     * @return SortDefinition
-     */
-    public SortDefinition toDefinition()
+    public String getField()
     {
-        return new SortDefinition(SortType.valueOf(type), field, ascending);
+        return field;
     }
 
+    public boolean isAscending()
+    {
+        return ascending;
+    }
 }

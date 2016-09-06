@@ -49,6 +49,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResource
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.content.BinaryProperty;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.SearchContext;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
@@ -59,7 +60,6 @@ import org.alfresco.rest.framework.tests.api.mocks3.Flock;
 import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
-import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
@@ -234,6 +234,21 @@ public class SerializeTests extends AbstractContextTest implements RecognizedPar
         assertNotNull(resultCollection);
         out = writeResponse(resultCollection);
         assertTrue("There must 'source' json output", StringUtils.contains(out, "\"source\":{\"name\":\"Dolly\",\"age\":3,\"sheepGuid\":\"barbie\""));
+    }
+
+
+    @Test
+    public void testIncludeContext() throws IOException
+    {
+        ExecutionResult exec1 = new ExecutionResult(new Farmer("180"),null);
+        ExecutionResult exec2 = new ExecutionResult(new Farmer("456"),getFilter("age"));
+        SearchContext searchContext = new SearchContext(23l);
+        CollectionWithPagingInfo<ExecutionResult> coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1, exec2), false, 2, null, searchContext);
+        Object resultCollection =  helper.processAdditionsToTheResponse(mock(WebScriptResponse.class), api, null,ParamsExtender.valueOf(false,null),coll);
+        assertNotNull(resultCollection);
+        String out = writeResponse(resultCollection);
+        assertTrue("There must 'context' json output", StringUtils.contains(out, "\"context\":{\"consistency\":{\"lastTxId\":23}}"));
+
     }
 
     @Test

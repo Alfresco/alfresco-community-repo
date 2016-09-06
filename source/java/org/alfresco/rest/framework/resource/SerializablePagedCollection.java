@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.framework.resource;
 
+import org.alfresco.rest.framework.resource.parameters.SearchContext;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 
 import java.util.Collection;
@@ -65,4 +66,9 @@ public interface SerializablePagedCollection<T>
      * The requested paging parameters set by the client
      */
     Paging getPaging();
+
+    /**
+     * The search context for the collection
+     */
+    SearchContext getContext();
 }

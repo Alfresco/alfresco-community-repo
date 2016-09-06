@@ -86,6 +86,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.apache.http.HttpStatus;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -113,7 +114,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
     private static final String URL_DELETED_NODES = "deleted-nodes";
     private static final String EMPTY_BODY = "{}";
-    
+
     protected PermissionService permissionService;
 
     
@@ -3579,7 +3580,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // some cleanup
         deleteNode(folderId, true, 204);
     }
-    
+
     /**
      * Tests lock of a node
      * <p>POST:</p>
@@ -3589,7 +3590,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     public void testLock() throws Exception
     {
         setRequestContext(user1);
-        
+
         // create folder
         Folder folderResp = createFolder(Nodes.PATH_MY, "folder" + RUNID);
         String folderId = folderResp.getId();
@@ -3632,14 +3633,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Lock on already locked node
         post(getNodeOperationUrl(d1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
-        
+
         // Test delete on a folder which contains a locked node - NodeLockedException
         deleteNode(folderId, true, 409);
-        
+
         // Content update on a locked node
         updateTextFile(d1Id, "Updated text", null, 409);
         unlock(d1Id);
-        
+
         // Test lock file
         // create folder
         String folderAName = "folder" + RUNID + "_A";
@@ -3649,7 +3650,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // create a file in the folderA
         Document dA1 = createTextFile(folderAId, "content" + RUNID + "_A1", "A1 content");
         String dA1Id = dA1.getId();
-        
+
         lockInfo = new LockInfo();
         lockInfo.setTimeToExpire(60);
         lockInfo.setType("ALLOW_OWNER_CHANGES");
@@ -3657,22 +3658,22 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // lock the file
         post(getNodeOperationUrl(dA1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
-       
+
         params = Collections.singletonMap("include", "aspectNames,properties,isLocked");
         response = getSingle(URL_NODES, dA1Id, params, null, 200);
         node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertTrue(node.getIsLocked());
         // note: this can be updated by the owner since the lock type is "ALLOW_OWNER_CHANGES"
         updateTextFile(node.getId(), "Updated text", null, 200);
-        
+
         // Lock body properties - boundary values
         Document dB1 = createTextFile(folderAId, "content" + RUNID + "_dB1", "dB1 content");
         String dB1Id = dB1.getId();
-        
+
         lockInfo = new LockInfo();
         lockInfo.setTimeToExpire(-100); // values lower than 0 are considered as no expiry time
         post(getNodeOperationUrl(dB1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
-        
+
         // Lock node by a different user than the owner
         setRequestContext(user1);
         Folder folder1Resp = createFolder(Nodes.PATH_SHARED, "folder1" + RUNID);
@@ -3690,7 +3691,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Missing target node
         lockInfo = new LockInfo();
         post(getNodeOperationUrl("fakeId", "lock"), toJsonAsStringNonNull(lockInfo), null, 404);
-        
+
         // Cannot lock Data Dictionary node
         params = new HashMap<>();
         params.put(Nodes.PARAM_RELATIVE_PATH, "/Data Dictionary");
@@ -3703,7 +3704,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         // Lock node already locked by another user - UnableToAquireLockException
         post(getNodeOperationUrl(dB1Id, "lock"), EMPTY_BODY, null, 422);
-        
+
         // Lock node without permission (node created by user 1 in the Home folder)
         setRequestContext(user1);
         Folder folder2Resp = createFolder(Nodes.PATH_MY, "folder2" + RUNID);
@@ -3715,10 +3716,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         setRequestContext(user2);
         post(getNodeOperationUrl(f2d1Id, "lock"), EMPTY_BODY, null, 403);
-        
+
         // Invalid lock body values
         setRequestContext(user1);
-        
+
         Folder folderC = createFolder(Nodes.PATH_MY, "folder" + RUNID + "_C");
         String folderCId = folderC.getId();
 
@@ -3732,22 +3733,22 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         body = new HashMap<>();
         body.put("type", "ALLOW_ADD_CHILDREN");
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
-        
+
         body = new HashMap<>();
         body.put("lifetime", "PERSISTENT123");
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
-        
+
         body = new HashMap<>();
         body.put("timeToExpire", "NaN");
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
-        
+
         body = new HashMap<>();
         body.put("invalid_property", "true");
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
 
         // Invalid lock of a folder
         post(getNodeOperationUrl(folderId, "lock"), toJsonAsStringNonNull(lockInfo), null, 400);
-        
+
         //cleanup
         setRequestContext(user1); // all locks were made by user1
         unlock(dB1Id);
@@ -3758,8 +3759,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         deleteNode(folder1Id);
         deleteNode(folder2Id);
     }
-   
-   
+
+
    /**
     * Tests unlock of a node
     * <p>POST:</p>
@@ -3769,16 +3770,16 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
    public void testUnlock() throws Exception
    {
        setRequestContext(user1);
-       
+
        // create folder
        Folder folderResp = createFolder(Nodes.PATH_MY, "folder" + RUNID);
        String folderId = folderResp.getId();
-       
+
        // create doc d1
        String d1Name = "content" + RUNID + "_1l";
        Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
        String d1Id = d1.getId();
-       
+
        lock(d1Id, EMPTY_BODY);
 
        HttpResponse response = post(getNodeOperationUrl(d1Id, "unlock"), null, null, 200);
@@ -3788,32 +3789,32 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
        assertEquals(d1Id, documentResp.getId());
        assertNull(documentResp.getProperties().get("cm:lockType"));
        assertNull(documentResp.getProperties().get("cm:lockOwner"));
-       
+
        lock(d1Id, EMPTY_BODY);
        // Users with admin rights can unlock nodes locked by other users.
        setRequestContext(networkAdmin);
        post(getNodeOperationUrl(d1Id, "unlock"), null, null, 200);
-       
+
        // -ve
        // Missing target node
        post(getNodeOperationUrl("fakeId", "unlock"), null, null, 404);
-       
+
        // Unlock by a user without permission
        lock(d1Id, EMPTY_BODY);
        setRequestContext(user2);
        post(getNodeOperationUrl(d1Id, "unlock"), null, null, 403);
-       
+
        setRequestContext(user1);
        //Unlock on a not locked node
        post(getNodeOperationUrl(folderId, "unlock"), null, null, 403);
-       
+
        // clean up
        setRequestContext(user1); // all locks were made by user1
-       
+
        unlock(d1Id);
        deleteNode(folderId);
    }
-  
+
    @Override
    public String getScope()
    {

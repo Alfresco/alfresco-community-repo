@@ -245,7 +245,7 @@ public interface Nodes
      * @return
      */
     List<AssocTarget> addTargets(String sourceNodeId, List<AssocTarget> entities);
-    
+
     /**
      * Lock a node
      * @param nodeId
@@ -254,7 +254,7 @@ public interface Nodes
      * @return
      */
     Node lock(String nodeId, LockInfo lockInfo, Parameters parameters);
-    
+
     /**
      * Unlock a node
      * @param nodeId

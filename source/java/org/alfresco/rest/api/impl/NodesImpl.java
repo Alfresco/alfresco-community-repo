@@ -1333,7 +1333,7 @@ public class NodesImpl implements Nodes
         Set<QName> assocTypeQNames = buildAssocTypes(assocTypeQNameParam);
 
         // call GetChildrenCannedQuery (via FileFolderService)
-        if (((filterProps == null) || (filterProps.size() == 0)) && 
+        if (((filterProps == null) || (filterProps.size() == 0)) &&
             ((assocTypeQNames == null) || (assocTypeQNames.size() == 0)) &&
             (smartStore.isVirtual(parentNodeRef)|| (smartStore.canVirtualize(parentNodeRef))))
         {
@@ -1996,11 +1996,11 @@ public class NodesImpl implements Nodes
 
         return false;
     }
-    
+
     private boolean isLocked(NodeRef nodeRef, Set<QName> aspects)
     {
         boolean locked = false;
-        if (((aspects != null) && aspects.contains(ContentModel.ASPECT_LOCKABLE)) 
+        if (((aspects != null) && aspects.contains(ContentModel.ASPECT_LOCKABLE))
            || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
             locked = lockService.isLocked(nodeRef);
@@ -2970,10 +2970,10 @@ public class NodesImpl implements Nodes
 
         lockInfo = validateLockInformation(lockInfo);
         lockService.lock(nodeRef, lockInfo.getMappedType(), lockInfo.getTimeToExpire(), lockInfo.getLifetime());
-        
+
         return getFolderOrDocument(nodeId, parameters);
     }
-    
+
     private LockInfo validateLockInformation(LockInfo lockInfo)
     {
         // Set default values for the lock details.
@@ -3001,7 +3001,7 @@ public class NodesImpl implements Nodes
         {
             throw new PermissionDeniedException("Current user doesn't have permission to unlock node " + nodeId);
         }
-        
+
         lockService.unlock(nodeRef);
         return getFolderOrDocument(nodeId, parameters);
     }

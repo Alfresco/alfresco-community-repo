@@ -853,6 +853,14 @@
         <property name="helper" ref="webscriptHelper" />
     </bean>
 
+    <bean id="webscript.org.alfresco.api.SearchApiWebscript.post"
+          class="org.alfresco.rest.api.search.SearchApiWebscript" parent="webscript">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="assistant" ref="apiAssistant" />
+        <property name="helper" ref="webscriptHelper" />
+        <property name="nodes" ref="Nodes" />
+    </bean>
+
     <!-- OpenCMIS -->
 
     <bean id="publicApiCMISServiceFactory" class="org.alfresco.opencmis.PublicApiAlfrescoCmisServiceFactory" init-method="init">

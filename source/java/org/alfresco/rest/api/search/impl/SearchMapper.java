@@ -74,6 +74,10 @@ public class SearchMapper
                                 PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, PARAM_INCLUDE_PROPERTIES,
                                 PARAM_INCLUDE_ASSOCIATION);
 
+    public static final String CMIS = "cmis";
+    public static final String LUCENE = "lucene";
+    public static final String AFTS = "afts";
+
     /**
      * Turn the params into the Java SearchParameters object
      * @param params
@@ -122,13 +126,13 @@ public class SearchMapper
 
         switch (q.getLanguage().toLowerCase())
         {
-            case "afts":
+            case AFTS:
                 sp.setLanguage(LANGUAGE_FTS_ALFRESCO);
                 break;
-            case "lucene":
+            case LUCENE:
                 sp.setLanguage(LANGUAGE_LUCENE);
                 break;
-            case "cmis":
+            case CMIS:
                 sp.setLanguage(LANGUAGE_CMIS_ALFRESCO);
                 break;
             default:
@@ -163,6 +167,11 @@ public class SearchMapper
     {
         if (sort != null && !sort.isEmpty())
         {
+            if (CMIS.equals(sp.getLanguage()))
+            {
+                throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                            new Object[] { ": sort {} not allowed with cmis language" });
+            }
             for (SortDef sortDef:sort)
             {
 

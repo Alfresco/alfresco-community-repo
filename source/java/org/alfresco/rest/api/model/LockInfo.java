@@ -48,9 +48,9 @@ public class LockInfo
     @SuppressWarnings("deprecation")
     public static enum LockType2
     {
-        FULL(LockType.READ_ONLY_LOCK),
-        ALLOW_ADD_CHILDREN(LockType.NODE_LOCK),
-        ALLOW_OWNER_CHANGES(LockType.WRITE_LOCK);
+        FULL(LockType.READ_ONLY_LOCK), 
+        ALLOW_OWNER_CHANGES(LockType.WRITE_LOCK); 
+        // ALLOW_ADD_CHILDREN(LockType.NODE_LOCK); // removed for now, as per REPO-1187
         
         private LockType type;
         
@@ -58,6 +58,7 @@ public class LockInfo
         {
             this.type = type;
         }
+        
         public LockType getType()
         {
             return type;

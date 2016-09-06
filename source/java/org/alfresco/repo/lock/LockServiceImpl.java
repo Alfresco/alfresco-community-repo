@@ -828,6 +828,42 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
+    public boolean isLocked(NodeRef nodeRef)
+    {
+        LockStatus lockStatus = getLockStatus(nodeRef);
+        switch (lockStatus)
+        {
+            case LOCKED:
+            case LOCK_OWNER:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
+    public boolean isLockedAndReadOnly(NodeRef nodeRef)
+    {
+        LockStatus lockStatus = getLockStatus(nodeRef);
+        switch (lockStatus)
+        {
+            case NO_LOCK:
+            case LOCK_EXPIRED:
+                return false;
+            case LOCK_OWNER:
+                return getLockType(nodeRef) != LockType.WRITE_LOCK;
+            default:
+                return true;
+        }
+    }
+
+    /**
      * @deprecated Uses search and does not report on ephemeral locks.
      */
     @Deprecated

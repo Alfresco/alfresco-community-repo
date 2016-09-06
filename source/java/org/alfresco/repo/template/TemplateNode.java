@@ -404,11 +404,7 @@ public class TemplateNode extends BasePermissionsNode implements NamespacePrefix
         
         if (getAspects().contains(ContentModel.ASPECT_LOCKABLE))
         {
-            LockStatus lockStatus = this.services.getLockService().getLockStatus(this.nodeRef);
-            if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
-            {
-                locked = true;
-            }
+            locked = this.services.getLockService().isLocked(this.nodeRef);
         }
         
         return locked;

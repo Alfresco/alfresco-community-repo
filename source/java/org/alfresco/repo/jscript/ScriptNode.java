@@ -1269,11 +1269,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         
         if (getAspectsSet().contains(ContentModel.ASPECT_LOCKABLE))
         {
-            LockStatus status = this.services.getLockService().getLockStatus(this.nodeRef);
-            if (status == LockStatus.LOCKED || status == LockStatus.LOCK_OWNER)
-            {
-                locked = true;
-            }
+            locked = this.services.getLockService().isLocked(this.nodeRef);
         }
         
         return locked;

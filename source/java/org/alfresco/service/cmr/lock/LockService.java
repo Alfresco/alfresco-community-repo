@@ -345,6 +345,24 @@ public interface LockService
     */
    @Auditable(parameters = {"nodeRef"})
    public LockType getLockType(NodeRef nodeRef);
+
+   /**
+    * Indicates if the node is locked for the current user.
+    *
+    * @param nodeRef
+    * @return
+    */
+   @Auditable(parameters = {"nodeRef"})
+   public boolean isLocked(NodeRef nodeRef);
+
+   /**
+    * Indicates if the node is locked AND it's *not* a WRITE_LOCK for the current user.
+    * 
+    * @param nodeRef
+    * @return
+     */
+   @Auditable(parameters = {"nodeRef"})
+   public boolean isLockedAndReadOnly(NodeRef nodeRef);
    
    /**
     * Checks to see if the current user has access to the specified node.

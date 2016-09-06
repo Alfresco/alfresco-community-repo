@@ -466,7 +466,12 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
             return Collections.<Pair<String, Integer>>emptyList();
         }
     }
-    
+
+    public Map<String, List<Pair<String, Integer>>> getFieldFacets()
+    {
+        return Collections.unmodifiableMap(fieldFacets);
+    }
+
     public long getLastIndexedTxId()
     {
         return lastIndexedTxId;

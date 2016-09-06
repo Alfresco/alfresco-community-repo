@@ -91,4 +91,12 @@ public class FailedThumbnailInfo
     {
         return failedThumbnailNode;
     }
+
+	@Override
+	public String toString()
+	{
+		return "FailedThumbnailInfo [thumbnailDefinitionName=" + thumbnailDefinitionName + ", mostRecentFailure="
+				+ mostRecentFailure + ", failureCount=" + failureCount + ", failedThumbnailNode=" + failedThumbnailNode
+				+ "]";
+	}
 }

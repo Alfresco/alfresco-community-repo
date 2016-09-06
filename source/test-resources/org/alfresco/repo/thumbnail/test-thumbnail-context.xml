@@ -5,13 +5,9 @@
    <bean id="test.transformer.TransientFail"
          class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest$TransientFailTransformer"
          parent="baseContentTransformer" >
-      <property name="explicitTransformations">
-         <list>
-            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
-                <property name="sourceMimetype"><value>application/vnd.alfresco.test.transientfailure</value></property>
-                <property name="targetMimetype"><value>image/png</value></property>
-            </bean>
-         </list>
-      </property>
+   </bean>
+   <bean id="test.transformer.LongRunning"
+         class="org.alfresco.repo.thumbnail.ThumbnailServiceImplTest$LongRunningTransformer"
+         parent="baseContentTransformer" >
    </bean>
 </beans>

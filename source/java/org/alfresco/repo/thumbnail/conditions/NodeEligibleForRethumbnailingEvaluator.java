@@ -209,8 +209,10 @@ public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvalu
         if (logger.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
-            msg.append("Offset is ")
-               .append(offsetLong).append(" ms.");
+            msg.append("timeSinceFailure is ");
+            msg.append(timeSinceFailure).append(" ms.");
+            msg.append(", absOffset is ")
+               .append(absOffset).append(" ms.");
             logger.debug(msg.toString());
         }
         

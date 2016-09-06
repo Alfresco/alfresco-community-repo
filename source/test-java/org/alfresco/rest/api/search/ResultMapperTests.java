@@ -79,6 +79,7 @@ public class ResultMapperTests
     public static final String JSON_REPONSE = "{\"responseHeader\":{\"status\":0,\"QTime\":9},\"_original_parameters_\":\"org.apache.solr.common.params.DefaultSolrParams:{params(df=TEXT&alternativeDic=DEFAULT_DICTIONARY&fl=DBID,score&start=0&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=1000&locale=en_US&wt=json),defaults(carrot.url=id&spellcheck.collateExtendedResults=true&carrot.produceSummary=true&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.alternativeTermCount=2&spellcheck.extendedResults=false&defType=afts&spellcheck.maxResultsForSuggest=5&spellcheck=false&carrot.outputSubClusters=false&spellcheck.count=5&carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&spellcheck.collate=true)}\",\"_field_mappings_\":{},\"_date_mappings_\":{},\"_range_mappings_\":{},\"_pivot_mappings_\":{},\"_interval_mappings_\":{},\"_stats_field_mappings_\":{},\"_stats_facet_mappings_\":{},\"_facet_function_mappings_\":{},\"response\":{\"numFound\":6,\"start\":0,\"maxScore\":0.7849362,\"docs\":[{\"DBID\":565,\"score\":0.7849362},{\"DBID\":566,\"score\":0.7849362},{\"DBID\":521,\"score\":0.3540957},{\"DBID\":514,\"score\":0.33025497},{\"DBID\":420,\"score\":0.32440513},{\"DBID\":415,\"score\":0.2780319}]},"
                 + "\"facet_counts\":{\"facet_queries\":{\"{!afts}creator:admin\":1},\n"
                 + "\"facet_fields\":{},\"facet_dates\":{},\"facet_ranges\":{},\"facet_intervals\":{}\n" + "    },"
+                + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
                 + "\"processedDenies\":true, \"lastIndexedTx\":34}";
 
     @BeforeClass
@@ -139,6 +140,9 @@ public class ResultMapperTests
         assertEquals(1, searchContext.getFacetQueries().size());
         assertEquals("{!afts}creator:admin",searchContext.getFacetQueries().get(0).getLabel());
         assertEquals(1,searchContext.getFacetQueries().get(0).getCount());
+        assertEquals("searchInsteadFor",searchContext.getSpellCheck().getType());
+        assertEquals(1,searchContext.getSpellCheck().getSuggestions().size());
+        assertEquals("alfresco",searchContext.getSpellCheck().getSuggestions().get(0));
     }
 
     private ResultSet mockResultset(List<Long> archivedNodes) throws JSONException

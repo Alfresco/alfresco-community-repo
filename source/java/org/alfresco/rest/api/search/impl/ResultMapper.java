@@ -30,12 +30,14 @@ import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -135,6 +137,7 @@ public class ResultMapper
         SearchContext context = null;
         Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
         List<FacetQueryContext> facetResults = null;
+        SpellCheckContext spellCheckContext = null;
 
         if(facetQueries!= null && !facetQueries.isEmpty())
         {
@@ -144,7 +147,13 @@ public class ResultMapper
                 facetResults.add(new FacetQueryContext(fq.getKey(), fq.getValue()));
             }
         }
-        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults);
+
+        SpellCheckResult spell = solrResultSet.getSpellCheckResult();
+        if (spell != null && spell.getResultName() != null && !spell.getResults().isEmpty())
+        {
+            spellCheckContext = new SpellCheckContext(spell.getResultName(),spell.getResults());
+        }
+        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, spellCheckContext);
         return isNullContext(context)?null:context;
     }
 
@@ -155,7 +164,7 @@ public class ResultMapper
      */
     protected boolean isNullContext(SearchContext context)
     {
-        return (context.getFacetQueries() == null && context.getConsistency() == null);
+        return (context.getFacetQueries() == null && context.getConsistency() == null && context.getSpellCheck() == null);
     }
 
     /**

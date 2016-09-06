@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.search.model;
 
 import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.apache.solr.common.params.SpellingParams;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -47,8 +48,9 @@ public class SearchQuery
     private final Default defaults;
     private final List<FilterQuery> filterQueries;
     private final List<FacetQuery> facetQueries;
+    private final Spelling spellcheck;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -58,7 +60,8 @@ public class SearchQuery
                 @JsonProperty("templates") List<Template> templates,
                 @JsonProperty("defaults") Default defaults,
                 @JsonProperty("filterQueries")  List<FilterQuery> filterQueries,
-                @JsonProperty("facetQueries")  List<FacetQuery> facetQueries)
+                @JsonProperty("facetQueries")  List<FacetQuery> facetQueries,
+                @JsonProperty("spellcheck") Spelling spellcheck)
     {
         this.query = query;
         this.paging = paging;
@@ -68,6 +71,7 @@ public class SearchQuery
         this.defaults = defaults;
         this.filterQueries = filterQueries;
         this.facetQueries = facetQueries;
+        this.spellcheck = spellcheck;
     }
 
     public Query getQuery()
@@ -106,5 +110,10 @@ public class SearchQuery
     public List<FacetQuery> getFacetQueries()
     {
         return facetQueries;
+    }
+
+    public Spelling getSpellcheck()
+    {
+        return spellcheck;
     }
 }

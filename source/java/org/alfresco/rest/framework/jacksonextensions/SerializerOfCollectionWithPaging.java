@@ -61,7 +61,8 @@ public class SerializerOfCollectionWithPaging extends SerializerBase<Serializabl
             jgen.writeFieldName("list");
                 jgen.writeStartObject();
                 serializePagination(pagedCol, jgen);
-    			jgen.writeObjectField("entries", pagedCol.getCollection());
+                serializeContext(pagedCol, jgen);
+                jgen.writeObjectField("entries", pagedCol.getCollection());
                 serializeIncludedSource(pagedCol, jgen);
                 jgen.writeEndObject(); 
             jgen.writeEndObject();  
@@ -74,6 +75,15 @@ public class SerializerOfCollectionWithPaging extends SerializerBase<Serializabl
         if (pagedCol.getSourceEntity() != null)
         {
             jgen.writeObjectField("source",pagedCol.getSourceEntity());
+        }
+    }
+
+    private void serializeContext(SerializablePagedCollection pagedCol, JsonGenerator jgen) throws IOException,
+                JsonProcessingException
+    {
+        if (pagedCol.getContext() != null)
+        {
+            jgen.writeObjectField("context",pagedCol.getContext());
         }
     }
 

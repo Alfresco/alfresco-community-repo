@@ -174,7 +174,8 @@ public class ResourceWebScriptHelper
                     resultCollection.add(processAdditionsToTheResponse(res, api,entityCollectionName,params,obj));
                 }
             }
-            return CollectionWithPagingInfo.asPaged(collectionToWrap.getPaging(), resultCollection, collectionToWrap.hasMoreItems(), collectionToWrap.getTotalItems(), sourceEntity);
+            return CollectionWithPagingInfo.asPaged(collectionToWrap.getPaging(), resultCollection, collectionToWrap.hasMoreItems(),
+                                                    collectionToWrap.getTotalItems(), sourceEntity, collectionToWrap.getContext());
         }
         else
         {           

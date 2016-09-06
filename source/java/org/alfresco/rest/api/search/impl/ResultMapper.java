@@ -26,29 +26,21 @@
 
 package org.alfresco.rest.api.search.impl;
 
-import org.alfresco.model.ContentModel;
+import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
+import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.parameters.SearchContext;
 import org.alfresco.rest.framework.resource.parameters.Params;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang.NotImplementedException;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
-import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
-import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
 
 /**
  * Maps from a Solr ResultSet to a json public api representation.
@@ -75,6 +67,7 @@ public class ResultMapper
     public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, ResultSet results)
     {
         SearchQuery searchQuery = (SearchQuery) params.getPassedIn();
+        SearchContext context = null;
         Long totalItems = results.getNumberFound();
         List<Node> noderesults = new ArrayList();
 
@@ -89,7 +82,35 @@ public class ResultMapper
 
         Integer total = Integer.valueOf(totalItems.intValue());
         int skip = searchQuery.getPaging()==null?0:searchQuery.getPaging().getSkipCount();
-        return CollectionWithPagingInfo.asPaged(searchQuery.getPaging(), noderesults, noderesults.size() + skip < total, total);
+
+        SolrJSONResultSet jsonResultSet = findJsonResults(results);
+
+        if (jsonResultSet != null)
+        {
+            context = new SearchContext(jsonResultSet.getLastIndexedTxId());
+        }
+
+        return CollectionWithPagingInfo.asPaged(searchQuery.getPaging(), noderesults, noderesults.size() + skip < total, total, null, context);
     }
 
+    /**
+     * Gets SolrJSONResultSet class if there is one.
+     * @param results
+     * @return
+     */
+    protected SolrJSONResultSet findJsonResults(ResultSet results)
+    {
+        //This may get more complicated if the results are wrapped in another ResultSet class
+        if (results instanceof SolrJSONResultSet)
+        {
+            return (SolrJSONResultSet) results;
+        }
+/**
+        if (results instanceof PagingLuceneResultSet)
+        {
+            return findJsonResults(((PagingLuceneResultSet) results).getWrapped());
+        }
+**/
+        return null;
+    }
 }

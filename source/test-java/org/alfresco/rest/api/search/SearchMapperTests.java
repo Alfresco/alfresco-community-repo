@@ -55,16 +55,13 @@ public class SearchMapperTests
     @Test(expected = IllegalArgumentException.class)
     public void testMandatory() throws Exception
     {
-        Params params = Params.valueOf(null, null, new SearchQuery(), null);
-        SearchParameters searchParameters = searchMapper.toSearchParameters(params);
+        SearchParameters searchParameters = searchMapper.toSearchParameters(new SearchQuery());
     }
 
     @Test
     public void toSearchParameters() throws Exception
     {
-
-        Params params = Params.valueOf(null, null, minimalQuery(), null);
-        SearchParameters searchParameters = searchMapper.toSearchParameters(params);
+        SearchParameters searchParameters = searchMapper.toSearchParameters(minimalQuery());
         assertNotNull(searchParameters);
 
         //Test defaults

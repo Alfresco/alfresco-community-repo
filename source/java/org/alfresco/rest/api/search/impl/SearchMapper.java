@@ -32,6 +32,7 @@ import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.FacetFields;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
+import org.alfresco.rest.api.search.model.Limits;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.Scope;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -112,6 +113,7 @@ public class SearchMapper
         fromFacetFields(sp, searchQuery.getFacetFields());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromScope(sp, searchQuery.getScope());
+        fromLimits(sp, searchQuery.getLimits());
 
         return sp;
     }
@@ -426,6 +428,31 @@ public class SearchMapper
                                     new Object[] { aStore });
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * SearchParameters from the Limits object
+     * @param sp SearchParameters
+     * @param paging Paging
+     */
+    public void fromLimits(SearchParameters sp, Limits limits)
+    {
+        if (limits != null)
+        {
+            if (limits.getPermissionEvaluationCount() != null)
+            {
+                sp.setMaxItems(-1);
+                sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
+                sp.setMaxPermissionChecks(limits.getPermissionEvaluationCount());
+            }
+
+            if (limits.getPermissionEvaluationTime() != null)
+            {
+                sp.setMaxItems(-1);
+                sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
+                sp.setMaxPermissionCheckTimeMillis(limits.getPermissionEvaluationTime());
             }
         }
     }

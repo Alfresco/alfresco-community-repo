@@ -51,8 +51,9 @@ public class SearchQuery
     private final FacetFields facetFields;
     private final Spelling spellcheck;
     private final Scope scope;
+    private final Limits limits;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null,null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -65,7 +66,8 @@ public class SearchQuery
                 @JsonProperty("facetFields") FacetFields facetFields,
                 @JsonProperty("facetQueries")  List<FacetQuery> facetQueries,
                 @JsonProperty("spellcheck") Spelling spellcheck,
-                @JsonProperty("scope") Scope scope)
+                @JsonProperty("scope") Scope scope,
+                @JsonProperty("limits")Limits limits)
     {
         this.query = query;
         this.paging = paging;
@@ -78,6 +80,7 @@ public class SearchQuery
         this.spellcheck = spellcheck;
         this.scope = scope;
         this.facetFields = facetFields;
+        this.limits = limits;
     }
 
     public Query getQuery()
@@ -131,5 +134,10 @@ public class SearchQuery
     public FacetFields getFacetFields()
     {
         return facetFields;
+    }
+
+    public Limits getLimits()
+    {
+        return limits;
     }
 }

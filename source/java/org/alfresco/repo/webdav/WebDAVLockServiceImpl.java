@@ -373,7 +373,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
      */
     public boolean isLockedAndReadOnly(NodeRef nodeRef)
     {
-        return LockUtils.isLockedAndReadOnly(nodeRef, this.lockService);
+        return this.lockService.isLockedAndReadOnly(nodeRef);
     }
 
     /**

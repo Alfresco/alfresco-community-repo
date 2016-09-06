@@ -1987,11 +1987,7 @@ public class NodesImpl implements Nodes
         if (((aspects != null) && aspects.contains(ContentModel.ASPECT_LOCKABLE)) 
            || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
-            LockStatus status = lockService.getLockStatus(nodeRef);
-            if (status == LockStatus.LOCKED || status == LockStatus.LOCK_OWNER)
-            {
-                locked = true;
-            }
+            locked = lockService.isLocked(nodeRef);
         }
 
         return locked;

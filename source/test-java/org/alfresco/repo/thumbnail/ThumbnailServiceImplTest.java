@@ -620,78 +620,89 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
     private static class ExpectedAssoc
     {
-    	private QNamePattern assocTypeQName;
-    	private String assocName;
-    	private int count;
+        private QNamePattern assocTypeQName;
+        private String assocName;
+        private int count;
 
-		public ExpectedAssoc(QNamePattern assocTypeQName, String assocName, int count)
-		{
-			super();
-			this.assocTypeQName = assocTypeQName;
-			this.assocName = assocName;
-			this.count = count;
-		}
+        public ExpectedAssoc(QNamePattern assocTypeQName, String assocName, int count)
+        {
+            super();
+            this.assocTypeQName = assocTypeQName;
+            this.assocName = assocName;
+            this.count = count;
+        }
 
-		public QNamePattern getAssocTypeQName()
-		{
-			return assocTypeQName;
-		}
+        public QNamePattern getAssocTypeQName()
+        {
+            return assocTypeQName;
+        }
 
-		public String getAssocName()
-		{
-			return assocName;
-		}
+        public String getAssocName()
+        {
+            return assocName;
+        }
 
-		public int getCount()
-		{
-			return count;
-		}
+        public int getCount()
+        {
+            return count;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "ExpectedAssoc [assocTypeQName=" + assocTypeQName + ", assocName=" + assocName + ", count=" + count
+                    + "]";
+        }
     }
 
     private static class ExpectedThumbnail
     {
-    	private String thumbnailName;
+        private String thumbnailName;
 
-    	public static ExpectedThumbnail ignoredName()
-    	{
-    		return new ExpectedThumbnail();
-    	}
+        public static ExpectedThumbnail ignoredName()
+        {
+            return new ExpectedThumbnail();
+        }
 
-    	public static ExpectedThumbnail withName(String thumbnailName)
-    	{
-    		return new ExpectedThumbnail(thumbnailName);
-    	}
+        public static ExpectedThumbnail withName(String thumbnailName)
+        {
+            return new ExpectedThumbnail(thumbnailName);
+        }
 
-		public ExpectedThumbnail()
-		{
-			super();
-		}
+        public ExpectedThumbnail()
+        {
+            super();
+        }
 
-		public ExpectedThumbnail(String thumbnailName)
-		{
-			super();
-			this.thumbnailName = thumbnailName;
-		}
+        public ExpectedThumbnail(String thumbnailName)
+        {
+            super();
+            this.thumbnailName = thumbnailName;
+        }
 
-		public String getThumbnailName()
-		{
-			return thumbnailName;
-		}
+        public String getThumbnailName()
+        {
+            return thumbnailName;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "ExpectedThumbnail [thumbnailName=" + thumbnailName + "]";
+        }
     }
 
-    private void checkRenditioned(NodeRef contentNodeRef, List<ExpectedAssoc> expectedAssocs)
-    {
-        assertTrue("Renditioned aspect should have been applied", this.secureNodeService.hasAspect(contentNodeRef,
-                RenditionModel.ASPECT_RENDITIONED));
+    private void checkRenditioned(NodeRef contentNodeRef, List<ExpectedAssoc> expectedAssocs) {
+        assertTrue("Renditioned aspect should have been applied",
+                this.secureNodeService.hasAspect(contentNodeRef, RenditionModel.ASPECT_RENDITIONED));
 
-        for(ExpectedAssoc expectedAssoc : expectedAssocs)
-        {
-        	QNamePattern qNamePattern = expectedAssoc.getAssocName() != null ?
-        			QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, expectedAssoc.getAssocName()) : null;
+        for (ExpectedAssoc expectedAssoc : expectedAssocs) {
+            QNamePattern qNamePattern = expectedAssoc.getAssocName() != null
+                    ? QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, expectedAssoc.getAssocName()) : null;
             List<ChildAssociationRef> assocs = this.secureNodeService.getChildAssocs(contentNodeRef,
-            		expectedAssoc.getAssocTypeQName(), qNamePattern);
+                    expectedAssoc.getAssocTypeQName(), qNamePattern);
             assertNotNull(assocs);
-            assertEquals(expectedAssoc.getCount(), assocs.size());
+            assertEquals(expectedAssoc + " association count mismatch", expectedAssoc.getCount(), assocs.size());
         }
     }
 
@@ -995,118 +1006,110 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     protected void performLongRunningThumbnailTest(final List<ExpectedThumbnail> expectedThumbnails,
-    		final List<ExpectedAssoc> expectedAssocs, final  LongRunningConcurrentWork concurrentWork, final Integer retryPeriod,
-    		final Integer quietPeriod) throws Exception
+            final List<ExpectedAssoc> expectedAssocs, final LongRunningConcurrentWork concurrentWork,
+            final Integer retryPeriod, final Integer quietPeriod) throws Exception
     {
         long saveRetryPeriod = failureHandlingOptions.getRetryPeriod();
         long saveQuietPeriod = failureHandlingOptions.getQuietPeriod();
 
         try
         {
-	        // Reset our transformer count for each test
-	        LongRunningTransformer transformer = (LongRunningTransformer) contentService.getTransformer(
-	                TEST_LONG_RUNNING_MIME_TYPE, MimetypeMap.MIMETYPE_IMAGE_JPEG);
-	        transformer.setTransformCount(0);
-	
-	        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-	        props.put(ContentModel.PROP_NAME, "original.test");
-	        final NodeRef source = secureNodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
-	                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "original.test"),
-	                ContentModel.TYPE_CONTENT, props).getChildRef();
-	        ContentWriter writer = contentService.getWriter(source, ContentModel.PROP_CONTENT, true);
-	        writer.setMimetype(TEST_LONG_RUNNING_MIME_TYPE);
-	        writer.setEncoding("UTF-8");
-	        writer.putContent("OrigContent");
-	        logger.debug("Created source content: " + source);
-	
-	        long startTime = (new Date()).getTime();
+            // Reset our transformer count for each test
+            LongRunningTransformer transformer = (LongRunningTransformer) contentService
+                    .getTransformer(TEST_LONG_RUNNING_MIME_TYPE, MimetypeMap.MIMETYPE_IMAGE_JPEG);
+            transformer.setTransformCount(0);
 
-	        if(retryPeriod != null)
-	        {
-	        	failureHandlingOptions.setRetryPeriod(retryPeriod);
-	        }
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+            props.put(ContentModel.PROP_NAME, "original.test");
+            final NodeRef source = secureNodeService.createNode(folder, ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "original.test"),
+                    ContentModel.TYPE_CONTENT, props).getChildRef();
+            ContentWriter writer = contentService.getWriter(source, ContentModel.PROP_CONTENT, true);
+            writer.setMimetype(TEST_LONG_RUNNING_MIME_TYPE);
+            writer.setEncoding("UTF-8");
+            writer.putContent("OrigContent");
+            logger.debug("Created source content: " + source);
 
-	        if(quietPeriod != null)
-	        {
-	        	failureHandlingOptions.setQuietPeriod(quietPeriod);
-	        }
+            long startTime = (new Date()).getTime();
 
-	        // Create our thumbnail(s)
-	        for (ExpectedThumbnail expectedThumbnail : expectedThumbnails)
-	        {
-	            ThumbnailDefinition thumbnailDef =
-	                    thumbnailService.getThumbnailRegistry().getThumbnailDefinition(expectedThumbnail.getThumbnailName());
+            if (retryPeriod != null) {
+                failureHandlingOptions.setRetryPeriod(retryPeriod);
+            }
 
-	            Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
-	
-	            logger.debug("Creating thumbnail " + expectedThumbnail.getThumbnailName() + " for " + source);
-	            actionService.executeAction(createThumbnailAction, source, true, true);
-	        }
-	
-	        setComplete();
-	        endTransaction();
-	
-	        // Thumbnailing process(es) are running in other threads, do the concurrent work here
-	        if (concurrentWork != null)
-	        {
-	            logger.debug("Starting concurrent work for " + source);
-	            concurrentWork.run(source);
-	        }
-	        
-	        // Verify our concurrent work ran successfully
-	        if (concurrentWork != null)
-	        {
-	            logger.debug("Verifying concurrent work for " + source);
-	            concurrentWork.verify(source);
-	        }
-	
-	        final int numIterations = 20;
-	
-	        // Wait for thumbnail(s) to finish
-	        long endTime = (new Date()).getTime();
-	        for (final ExpectedThumbnail expectedThumbnail : expectedThumbnails)
-	        {
-	            NodeRef thumbnail = null;
-	            while ((endTime - startTime) < (TEST_LONG_RUNNING_TRANSFORM_TIME*numIterations))
-	            {
-	                thumbnail = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-	                {
-	                    public NodeRef execute() throws Throwable
-	                    {
-	                        return thumbnailService.getThumbnailByName(source, ContentModel.PROP_CONTENT, expectedThumbnail.getThumbnailName());
-	                    }
-	                }, false, true);
-	                if (thumbnail == null)
-	                {
-	                    Thread.sleep(200);
-	                    logger.debug("Elapsed " + (endTime - startTime) + " ms of " + TEST_LONG_RUNNING_TRANSFORM_TIME*numIterations
-	                    		+ " ms waiting for " + expectedThumbnail.getThumbnailName());
-	                    endTime = (new Date()).getTime();
-	                }
-	                else
-	                {
-	                    break;
-	                }
-	            }
-	            assertNotNull("The thumbnail " + expectedThumbnail.getThumbnailName() + " was not generated in time.", thumbnail);
-	        }
-	
-	        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-	        {
-	            public Void execute() throws Throwable
-	            {
-			        // Verify that the thumbnail(s) was/were created
-			        for(final ExpectedThumbnail expectedThumbnail: expectedThumbnails)
-			        {
-	                	String thumbnailName = expectedThumbnail.getThumbnailName();
-	                    NodeRef thumbnailNodeRef = thumbnailService.getThumbnailByName(source, ContentModel.PROP_CONTENT, thumbnailName);
-	                    checkRendition(thumbnailName, thumbnailNodeRef);
-	                }
-	
-	                // verify associations
-	                checkRenditioned(source, expectedAssocs);
-	
-	                return null;
+            if (quietPeriod != null) {
+                failureHandlingOptions.setQuietPeriod(quietPeriod);
+            }
+
+            // Create our thumbnail(s)
+            for (ExpectedThumbnail expectedThumbnail : expectedThumbnails) {
+                ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry()
+                        .getThumbnailDefinition(expectedThumbnail.getThumbnailName());
+
+                Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
+
+                logger.debug("Creating thumbnail " + expectedThumbnail.getThumbnailName() + " for " + source);
+                actionService.executeAction(createThumbnailAction, source, true, true);
+            }
+
+            setComplete();
+            endTransaction();
+
+            // Thumbnailing process(es) are running in other threads, do the
+            // concurrent work here
+            if (concurrentWork != null) {
+                logger.debug("Starting concurrent work for " + source);
+                concurrentWork.run(source);
+            }
+
+            // Verify our concurrent work ran successfully
+            if (concurrentWork != null) {
+                logger.debug("Verifying concurrent work for " + source);
+                concurrentWork.verify(source);
+            }
+
+            final int numIterations = 20;
+
+            // Wait for thumbnail(s) to finish
+            long endTime = (new Date()).getTime();
+            for (final ExpectedThumbnail expectedThumbnail : expectedThumbnails) {
+                NodeRef thumbnail = null;
+                while ((endTime - startTime) < (TEST_LONG_RUNNING_TRANSFORM_TIME * numIterations)) {
+                    thumbnail = transactionService.getRetryingTransactionHelper()
+                            .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>() {
+                                public NodeRef execute() throws Throwable {
+                                    return thumbnailService.getThumbnailByName(source, ContentModel.PROP_CONTENT,
+                                            expectedThumbnail.getThumbnailName());
+                                }
+                            }, false, true);
+                    if (thumbnail == null) {
+                        Thread.sleep(200);
+                        logger.debug("Elapsed " + (endTime - startTime) + " ms of "
+                                + TEST_LONG_RUNNING_TRANSFORM_TIME * numIterations + " ms waiting for "
+                                + expectedThumbnail.getThumbnailName());
+                        endTime = (new Date()).getTime();
+                    } else {
+                        break;
+                    }
+                }
+                assertNotNull("The thumbnail " + expectedThumbnail.getThumbnailName() + " was not generated in time.",
+                        thumbnail);
+            }
+
+            transactionService.getRetryingTransactionHelper()
+                    .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+                        public Void execute() throws Throwable {
+                            // Verify that the thumbnail(s) was/were created
+                            for (final ExpectedThumbnail expectedThumbnail : expectedThumbnails) {
+                                String thumbnailName = expectedThumbnail.getThumbnailName();
+                                NodeRef thumbnailNodeRef = thumbnailService.getThumbnailByName(source,
+                                        ContentModel.PROP_CONTENT, thumbnailName);
+                                checkRendition(thumbnailName, thumbnailNodeRef);
+                            }
+
+                            // verify associations
+                            checkRenditioned(source, expectedAssocs);
+
+                            return null;
 	            };
 	        });
         }

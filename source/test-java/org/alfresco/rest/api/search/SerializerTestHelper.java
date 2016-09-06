@@ -29,12 +29,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
+import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.jacksonextensions.RestJsonModule;
 import org.alfresco.rest.framework.tools.RequestReader;
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.BeforeClass;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -54,6 +60,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"templates\": [{\"name\": \"mytemp\",\"template\": \"ATEMP\"}, {\"name\": \"yourtemp\",\"template\": \"%cm:content\"}],"
                 + "\"defaults\": {\"namespace\": \"namesp\",\"defaultFieldName\": \"myfield\",\"defaultFTSOperator\": \"AND\", \"textAttributes\": [\"roy\", \"king\"]},"
                 + "\"filterQueries\": [{\"query\": \"myquery\",\"tags\": [\"tag1\", \"tag2\"]},{\"query\": \"myquery2\"}],"
+                + "\"facetQueries\": [{\"query\": \"facquery\",\"label\": \"facnoused\"}],"
                 + "\"include\": [\"aspectNames\", \"properties\"]}";
 
     public SerializerTestHelper()
@@ -83,5 +90,21 @@ public class SerializerTestHelper implements RequestReader
     public SearchQuery searchQueryFromJson() throws IOException
     {
         return extractFromJson(JSON);
+    }
+
+    public String writeResponse(final Object respons) throws IOException
+    {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        jsonHelper.withWriter(out, new Writer()
+        {
+            @Override
+            public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
+                        throws JsonGenerationException, JsonMappingException, IOException
+            {
+                objectMapper.writeValue(generator, respons);
+            }
+        });
+        System.out.println(out.toString());
+        return out.toString();
     }
 }

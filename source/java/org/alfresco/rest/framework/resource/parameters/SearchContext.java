@@ -25,16 +25,28 @@
  */
 package org.alfresco.rest.framework.resource.parameters;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * The contextual results of a Search
  */
 public class SearchContext
 {
-    Consistency consistency;
+    private final Consistency consistency;
+    private final List<FacetQueryResult> facetQueries;
 
-    public SearchContext(long lastTxId)
+    public SearchContext(long lastTxId, List<FacetQueryResult> facetQueries)
     {
-        consistency = new Consistency(lastTxId);
+        if (lastTxId > 0)
+        {
+            consistency = new Consistency(lastTxId);
+        }
+        else
+        {
+            consistency = null;
+        }
+        this.facetQueries = facetQueries;
     }
 
     public Consistency getConsistency()
@@ -42,9 +54,36 @@ public class SearchContext
         return consistency;
     }
 
+    public List<FacetQueryResult> getFacetQueries()
+    {
+        return facetQueries;
+    }
+
+    public static class FacetQueryResult
+    {
+        private final String label;
+        private final int count;
+
+        public FacetQueryResult(String label, int count)
+        {
+            this.label = label;
+            this.count = count;
+        }
+
+        public String getLabel()
+        {
+            return label;
+        }
+
+        public int getCount()
+        {
+            return count;
+        }
+    }
+
     public class Consistency
     {
-        private long lastTxId;
+        private final long lastTxId;
 
         public Consistency(long lastTxId)
         {

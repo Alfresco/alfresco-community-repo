@@ -34,6 +34,7 @@ import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.SearchContext;
+import org.alfresco.rest.framework.resource.parameters.SearchContext.FacetQueryResult;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Maps from a ResultSet to a json public api representation.
@@ -94,7 +96,7 @@ public class ResultMapper
         if (solrResultSet != null)
         {
             //We used Solr for this query
-            context = setSearchContext(solrResultSet);
+            context = toSearchContext(solrResultSet);
             total = setTotal(solrResultSet);
         }
         else
@@ -128,15 +130,32 @@ public class ResultMapper
      * @param SolrJSONResultSet
      * @return SearchContext
      */
-    protected SearchContext setSearchContext(SolrJSONResultSet solrResultSet)
+    public SearchContext toSearchContext(SolrJSONResultSet solrResultSet)
     {
         SearchContext context = null;
+        Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
+        List<FacetQueryResult> facetResults = null;
 
-        if (solrResultSet.getLastIndexedTxId() > 0)
+        if(facetQueries!= null && !facetQueries.isEmpty())
         {
-            context = new SearchContext(solrResultSet.getLastIndexedTxId());
+            facetResults = new ArrayList<>(facetQueries.size());
+            for (Entry<String, Integer> fq:facetQueries.entrySet())
+            {
+                facetResults.add(new FacetQueryResult(fq.getKey(), fq.getValue()));
+            }
         }
-        return context;
+        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults);
+        return isNullContext(context)?null:context;
+    }
+
+    /**
+     * Is the context null?
+     * @param context
+     * @return true if its null
+     */
+    protected boolean isNullContext(SearchContext context)
+    {
+        return (context.getFacetQueries() == null && context.getConsistency() == null);
     }
 
     /**

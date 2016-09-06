@@ -164,8 +164,8 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
-        searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", "my", true), new SortDef("SCORE", null, false)));
-        assertEquals(2 , searchParameters.getSortDefinitions().size());
+        searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", "my", true), new SortDef("SCORE", null, false), new SortDef("DOCUMENT", null, true)));
+        assertEquals(3 , searchParameters.getSortDefinitions().size());
         searchParameters.getSortDefinitions().forEach(sortDefinition ->
         {
             switch (sortDefinition.getSortType())
@@ -177,6 +177,10 @@ public class SearchMapperTests
                 case SCORE:
                     assertNull(sortDefinition.getField());
                     assertEquals(false, sortDefinition.isAscending());
+                    break;
+                case DOCUMENT:
+                    assertNull(sortDefinition.getField());
+                    assertEquals(true, sortDefinition.isAscending());
                     break;
                 default:
                     fail("Invalid sortDefinition");

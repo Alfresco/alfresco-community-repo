@@ -34,8 +34,6 @@ import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionServiceImplTest.CancellableSleepAction;
 import org.alfresco.repo.action.ActionServiceImplTest.SleepActionExecuter;
@@ -69,6 +67,8 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import junit.framework.TestCase;
 
 /**
  * Action tracking service tests. These mostly need
@@ -459,9 +459,27 @@ public class ActionTrackingServiceImplTest extends TestCase
            assertEquals(actionId, d.getActionId());
            assertEquals(1, d.getExecutionInstance());
            assertEquals(null, d.getPersistedActionRef());
-           assertNotNull(null, d.getStartedAt());
 
-           
+           // let's be more resilient and try a number of times with a delay
+           long start = System.currentTimeMillis();
+           int sleepTime = 1000; // 1s
+           for(int i = 0; i < 10; i++)
+           {
+               if(d.getStartedAt() == null)
+               {
+                   Thread.sleep(sleepTime);
+                   sleepTime += 100; // increase by 100ms
+                   continue;
+               }
+               else
+               {
+                   break;
+               }
+           }
+           long end = System.currentTimeMillis();
+           assertNotNull("Started at time is null, the action has not yet started after " + (end - start) + "ms",
+                   d.getStartedAt());
+
            // Tell it to stop sleeping
            // Then wait for it to finish and go bang
            // (Need to do it by hand, as it won't fire the complete policy

@@ -34,6 +34,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.rest.api.model.Node;
@@ -64,7 +65,7 @@ public class SearchMapper
         ParameterCheck.mandatory("query", searchQuery.getQuery());
 
         SearchParameters sp = new SearchParameters();
-        fromQuery(sp, searchQuery.getQuery());
+        fromQuery(sp,  searchQuery.getQuery());
         fromPaging(sp, searchQuery.getPaging());
 
         //Hardcode workspace store
@@ -106,6 +107,7 @@ public class SearchMapper
     {
         if (paging != null)
         {
+            sp.setLimitBy(LimitBy.FINAL_SIZE);
             sp.setMaxItems(paging.getMaxItems());
             sp.setSkipCount(paging.getSkipCount());
         }

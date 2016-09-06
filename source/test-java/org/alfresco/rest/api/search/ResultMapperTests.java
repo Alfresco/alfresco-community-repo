@@ -98,7 +98,7 @@ public class ResultMapperTests
         ServiceRegistry sr = mock(ServiceRegistry.class);
         nodes.setServiceRegistry(sr);
 
-        when(nodes.getFolderOrDocument(notNull(NodeRef.class), any(), any(), notNull(List.class), any())).thenAnswer(new Answer<Node>() {
+        when(nodes.getFolderOrDocument(notNull(NodeRef.class), any(), any(), any(), any())).thenAnswer(new Answer<Node>() {
             @Override
             public Node answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
@@ -111,7 +111,7 @@ public class ResultMapperTests
     @Test
     public void testNoResults() throws Exception
     {
-        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(mockParams(SearchQuery.EMPTY),new EmptyResultSet());
+        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(SearchQuery.EMPTY,new EmptyResultSet());
         assertNotNull(collection);
         assertFalse(collection.hasMoreItems());
         assertTrue(collection.getTotalItems() < 1);
@@ -121,7 +121,7 @@ public class ResultMapperTests
     public void testToCollectionWithPagingInfo() throws Exception
     {
         ResultSet results = mockResultset();
-        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(mockParams(SearchQuery.EMPTY),results);
+        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(SearchQuery.EMPTY,results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
@@ -142,7 +142,7 @@ public class ResultMapperTests
         ResultSet results = new SolrJSONResultSet(json,sp,nodeService, null, LimitBy.FINAL_SIZE, 10);
         return results;
     }
-
+/**
     private Params mockParams(SearchQuery searchQuery)
     {
         Params params = mock(Params.class);
@@ -150,5 +150,5 @@ public class ResultMapperTests
         when(params.getPassedIn()).thenReturn(searchQuery);
         return params;
     }
-
+**/
 }

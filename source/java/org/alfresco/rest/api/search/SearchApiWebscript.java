@@ -90,14 +90,14 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             //Parse the parameters
             Params params = getParams(webScriptRequest, searchQuery);
 
-            //Turn the params into the Java SearchParameters object
+            //Turn the SearchQuery json into the Java SearchParameters object
             SearchParameters searchParams = searchMapper.toSearchParameters(searchQuery);
 
             //Call searchService
             ResultSet results = searchService.query(searchParams);
 
             //Turn solr results into JSON
-            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, results);
+            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(searchQuery, results);
             //Post-process the request and pass in params, eg. params.getFilter()
             Object toRender = helper.processAdditionsToTheResponse(null, null, null, params, resultJson);
 
@@ -111,7 +111,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
     }
 
     /**
-     * Gets the Params object, parameters come from the SearchQuery json not the requerst
+     * Gets the Params object, parameters come from the SearchQuery json not the request
      * @param webScriptRequest
      * @param searchQuery
      * @return Params

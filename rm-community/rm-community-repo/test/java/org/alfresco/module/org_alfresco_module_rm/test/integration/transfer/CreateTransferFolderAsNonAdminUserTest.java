@@ -133,6 +133,7 @@ public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
                 }, getAdminUserName());
 
                 // FIXME: This step should be executed in "when()".
+                // See RM-3931
                 transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
             }
 
@@ -142,7 +143,7 @@ public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
             @Override
             public void when()
             {
-                // FIXME: If the transfer step is executed here the test fails?!?
+                // FIXME: If the transfer step is executed here the test fails?!? See RM-3931
                 //transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
             }
 

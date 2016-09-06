@@ -324,6 +324,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                     for (ChildAssociationRef parent : parentAssocs)
                     {
                         // FIXME: What if there is more than a secondary parent?
+                        // RM-3930
                         if (!parent.isPrimary())
                         {
                             originatingLocation = parent.getParentRef();
@@ -334,6 +335,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                             {
                                 // assume we have found the correct in-place location
                                 // FIXME when we support multiple in-place locations
+                                // See RM-3929
                                 break;
                             }
                         }

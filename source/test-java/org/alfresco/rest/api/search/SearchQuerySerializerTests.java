@@ -63,12 +63,15 @@ public class SearchQuerySerializerTests implements RequestReader
     @Test
     public void testDeserializeQuery() throws IOException
     {
-        String json = "{ \"query\": {\"query\": \"g*\",\"userQuery\": \"great\",\"language\": \"bob\"}}";
+        String json = "{ \"query\": {\"query\": \"g*\",\"userQuery\": \"great\",\"language\": \"bob\"}, "
+                        + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"}}";
         SearchQuery searchQuery = extractFromJson(json);
         assertEquals(SearchQuery.class, searchQuery.getClass());
         assertEquals("bob", searchQuery.getQuery().getLanguage());
         assertEquals("g*", searchQuery.getQuery().getQuery());
         assertEquals("great", searchQuery.getQuery().getUserQuery());
+        assertEquals(99, searchQuery.getPaging().getMaxItems());
+        assertEquals(4, searchQuery.getPaging().getSkipCount());
     }
 
     private SearchQuery extractFromJson(String json) throws IOException

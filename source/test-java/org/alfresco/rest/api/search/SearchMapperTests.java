@@ -36,6 +36,7 @@ import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -125,6 +126,18 @@ public class SearchMapperTests
         q.setUserQuery("Heload");
         searchMapper.fromQuery(searchParameters, q);
         assertEquals("Heload", searchParameters.getSearchTerm());
+    }
+
+    @Test
+    public void fromPaging() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromPaging(searchParameters, null);
+        Paging paging = Paging.DEFAULT;
+        searchMapper.fromPaging(searchParameters, paging);
+        assertEquals(searchParameters.getMaxItems(),paging.getMaxItems());
+        assertEquals(searchParameters.getSkipCount(),paging.getSkipCount());
     }
 
     private SearchQuery minimalQuery()

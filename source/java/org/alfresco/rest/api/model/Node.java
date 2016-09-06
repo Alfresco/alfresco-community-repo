@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -160,6 +161,11 @@ public class Node implements Comparable<Node>
                 }
                 catch (NoSuchPersonException nspe)
                 {
+                    // drop-through
+                }
+                catch (AccessDeniedException ade)
+                {
+                    // SFS-610
                     // drop-through
                 }
 

@@ -37,6 +37,7 @@ import org.alfresco.repo.webdav.LockInfoImplTest;
 import org.alfresco.repo.webdav.RenameShuffleDetectionTest;
 import org.alfresco.repo.webdav.WebDAVHelperTest;
 import org.alfresco.repo.webdav.WebDAVLockServiceImplTest;
+import org.alfresco.rest.api.search.AllSearchApiTests;
 import org.alfresco.rest.api.tests.ModulePackageTest;
 import org.alfresco.rest.framework.tests.core.AllRestFrameworkTest;
 import org.alfresco.rest.framework.tests.metadata.WriterTests;
@@ -66,6 +67,7 @@ public class AllUnitTestsSuite extends TestSuite
     static void publicApiTests(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(AllRestFrameworkTest.class));
+        suite.addTest(new JUnit4TestAdapter(AllSearchApiTests.class));
         suite.addTest(new JUnit4TestAdapter(WriterTests.class));
         suite.addTest(new JUnit4TestAdapter(ModulePackageTest.class));
     }

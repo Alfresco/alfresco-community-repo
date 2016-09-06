@@ -787,6 +787,18 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         }
         return ResourceUtils.getFile(url);
     }
+    
+    protected Document lock(String nodeId, String body) throws Exception
+    {
+        HttpResponse response = post("nodes/" + nodeId + "/lock", body, null, 200);
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+    }
+    
+    protected Document unlock(String nodeId, String body) throws Exception
+    {
+        HttpResponse response = post("nodes/" + nodeId + "/unlock", body, null, 200);
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+    }
 
     protected static final long PAUSE_TIME = 5000; //millisecond
     protected static final int MAX_RETRY = 20;

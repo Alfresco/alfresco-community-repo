@@ -87,6 +87,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
+import org.alfresco.rest.api.model.UnlockInfo;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.nodes.NodeAssocService;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
@@ -2968,6 +2969,40 @@ public class NodesImpl implements Nodes
             lockInfo.setTimeToExpire(0);
         }
         return lockInfo;
+    }
+
+    @Override
+    public Node unlock(String nodeId, UnlockInfo unlockInfo, Parameters parameters)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+
+        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
+        {
+            throw new PermissionDeniedException("Current user doesn't have permission to unlock node " + nodeId);
+        }
+
+        if (unlockInfo.getIncludeChildren() == null)
+        {
+            unlockInfo.setIncludeChildren(false);
+        }
+        if (unlockInfo.getAllowCheckedOut() == null)
+        {
+            unlockInfo.setAllowCheckedOut(false);
+        }
+        
+        // If there is no lock placed on the node skip the operation.
+        if (lockService.getLockStatus(nodeRef) != LockStatus.NO_LOCK)
+        {
+            if (permissionService.hasPermission(nodeRef, PermissionService.UNLOCK).equals(AccessStatus.ALLOWED))
+            {
+                lockService.unlock(nodeRef, unlockInfo.getIncludeChildren(), unlockInfo.getAllowCheckedOut());
+            }
+            else
+            {
+                throw new PermissionDeniedException("Current user doesn't have permission to unlock node " + nodeId);
+            }
+        }
+        return getFolderOrDocument(nodeId, parameters);
     }
 
     /**

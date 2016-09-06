@@ -745,7 +745,10 @@ public class LockServiceImpl implements LockService,
      */
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        checkForLock(nodeRef);
+        if (! nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
+        {
+            checkForLock(nodeRef);
+        }
     }
 
     /**

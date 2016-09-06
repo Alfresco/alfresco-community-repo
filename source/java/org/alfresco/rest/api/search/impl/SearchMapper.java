@@ -32,6 +32,7 @@ import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
+import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -82,7 +83,7 @@ public class SearchMapper
     public static final String AFTS = "afts";
 
     /**
-     * Turn the params into the Java SearchParameters object
+     * Turn the SearchQuery params serialized by Jackson into the Java SearchParameters object
      * @param params
      * @return SearchParameters
      */
@@ -101,6 +102,7 @@ public class SearchMapper
         fromDefault(sp, searchQuery.getDefaults());
         fromFilterQuery(sp, searchQuery.getFilterQueries());
         fromFacetQuery(sp, searchQuery.getFacetQueries());
+        fromSpellCheck(sp, searchQuery.getSpellcheck());
 
         return sp;
     }
@@ -304,4 +306,29 @@ public class SearchMapper
         }
     }
 
+    /**
+     * SearchParameters from SpellCheck object
+     * @param sp SearchParameters
+     * @param defaults SpellCheck
+     */
+    public void fromSpellCheck(SearchParameters sp, Spelling spelling)
+    {
+        if (spelling != null)
+        {
+            if (spelling.getQuery() != null && !spelling.getQuery().isEmpty())
+            {
+                sp.setSearchTerm(spelling.getQuery());
+            }
+            else
+            {
+                if (sp.getSearchTerm() == null || sp.getSearchTerm().isEmpty())
+                {
+                    //We don't have a valid search term to use with the spelling
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                new Object[] { ": userQuery or spelling.query required." });
+                }
+            }
+            sp.setSpellCheck(true);
+        }
+    }
 }

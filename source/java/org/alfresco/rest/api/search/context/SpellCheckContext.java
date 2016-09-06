@@ -28,55 +28,26 @@ package org.alfresco.rest.api.search.context;
 import java.util.List;
 
 /**
- * The contextual results of a Search
+ * The results of a SpellCheck
  */
-public class SearchContext
+public class SpellCheckContext
 {
-    private final Consistency consistency;
-    private final List<FacetQueryContext> facetQueries;
-    private final SpellCheckContext spellCheck;
+    private final String type;
+    private final List<String> suggestions;
 
-    public SearchContext(long lastTxId, List<FacetQueryContext> facetQueries, SpellCheckContext spellCheck)
+    public SpellCheckContext(String type, List<String> suggestions)
     {
-        this.spellCheck = spellCheck;
-        if (lastTxId > 0)
-        {
-            consistency = new Consistency(lastTxId);
-        }
-        else
-        {
-            consistency = null;
-        }
-        this.facetQueries = facetQueries;
+        this.type = type;
+        this.suggestions = suggestions;
     }
 
-    public Consistency getConsistency()
+    public String getType()
     {
-        return consistency;
+        return type;
     }
 
-    public List<FacetQueryContext> getFacetQueries()
+    public List<String> getSuggestions()
     {
-        return facetQueries;
-    }
-
-    public SpellCheckContext getSpellCheck()
-    {
-        return spellCheck;
-    }
-
-    public class Consistency
-    {
-        private final long lastTxId;
-
-        public Consistency(long lastTxId)
-        {
-            this.lastTxId = lastTxId;
-        }
-
-        public long getlastTxId()
-        {
-            return lastTxId;
-        }
+        return suggestions;
     }
 }

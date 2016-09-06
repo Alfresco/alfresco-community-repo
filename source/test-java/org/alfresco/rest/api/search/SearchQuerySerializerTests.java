@@ -28,6 +28,7 @@ package org.alfresco.rest.api.search;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
@@ -93,15 +94,18 @@ public class SearchQuerySerializerTests
     public void testSerializeContext() throws IOException
     {
         ExecutionResult exec1 = new ExecutionResult(new Farmer("180"),null);
-        SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryContext("f1", 15), new FacetQueryContext("f2", 20)));
+
+        SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryContext("f1", 15), new FacetQueryContext("f2", 20)),
+                    new SpellCheckContext("aFlag", Arrays.asList("bish", "bash")));
         CollectionWithPagingInfo<ExecutionResult> coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         String out = helper.writeResponse(coll);
         assertTrue("There must 'context' json output", out.contains("\"context\":{\"consistency\":{\"lastTxId\":23}"));
         assertTrue("There must 'facetQueries' json output", out.contains("\"facetQueries\":"));
         assertTrue("There must 'facetQueries f1' json output", out.contains("{\"label\":\"f1\",\"count\":15}"));
         assertTrue("There must 'facetQueries f2' json output", out.contains("{\"label\":\"f2\",\"count\":20}"));
+        assertTrue("There must 'spellCheck' json output", out.contains("\"spellCheck\":{\"type\":\"aFlag\",\"suggestions\":[\"bish\",\"bash\"]}"));
 
-        searchContext = new SearchContext(-1, null);
+        searchContext = new SearchContext(-1, null, null);
         coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         out = helper.writeResponse(coll);
         assertTrue("There must NOT BE a 'context' json output", out.contains("\"context\":{}"));

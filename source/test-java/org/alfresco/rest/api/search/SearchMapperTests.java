@@ -32,6 +32,7 @@ import static junit.framework.TestCase.fail;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Default;
@@ -40,6 +41,7 @@ import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
+import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -329,11 +331,40 @@ public class SearchMapperTests
         }
     }
 
+    @Test
+    public void fromSpelling() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromSpellCheck(searchParameters, null);
+        assertFalse(searchParameters.isSpellCheck());
+
+        try
+        {
+            searchMapper.fromSpellCheck(searchParameters, new Spelling(null));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Can't be null
+            assertNotNull(iae);
+        }
+
+        //Now set search term first
+        searchParameters.setSearchTerm("fred");
+        searchMapper.fromSpellCheck(searchParameters, new Spelling(null));
+        assertEquals("fred",searchParameters.getSearchTerm());
+
+        //Now query replaces userQuery (search term)
+        searchMapper.fromSpellCheck(searchParameters, new Spelling("favourit"));
+        assertEquals("favourit",searchParameters.getSearchTerm());
+        assertTrue(searchParameters.isSpellCheck());
+    }
 
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null);
         return sq;
     }
 }

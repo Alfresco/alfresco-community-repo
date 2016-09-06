@@ -86,7 +86,7 @@ public class ResultMapper
         );
 
         Integer total = Integer.valueOf(totalItems.intValue());
-        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, noderesults.size() < total, total);
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, noderesults.size() + params.getPaging().getSkipCount() < total, total);
     }
 
 }

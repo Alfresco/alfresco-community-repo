@@ -77,13 +77,23 @@ public class SearchMapper
         ParameterCheck.mandatory("query", searchQuery.getQuery());
 
         SearchParameters sp = new SearchParameters();
+        setDefaults(sp);
+
         fromQuery(sp,  searchQuery.getQuery());
         fromPaging(sp, searchQuery.getPaging());
         validateInclude(searchQuery.getInclude());
 
+        return sp;
+    }
+
+    /**
+     * Sets the API defaults
+     * @param sp
+     */
+    protected void setDefaults(SearchParameters sp)
+    {
         //Hardcode workspace store
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        return sp;
     }
 
     /**
@@ -134,8 +144,7 @@ public class SearchMapper
             {
                 if (!PERMITTED_INCLUDES.contains(inc))
                 {
-                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
-                                new Object[] { inc });
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new Object[] { inc });
                 }
             }
 

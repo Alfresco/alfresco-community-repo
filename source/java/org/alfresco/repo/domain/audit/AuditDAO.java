@@ -203,7 +203,8 @@ public interface AuditDAO
      * 
      * @param callback          the data callback per entry
      * @param parameters        the parameters for the query (may not be <tt>null</tt>)
-     * @param maxResults        the maximum number of results to retrieve
+     * @param maxResults        the maximum number of results to retrieve. Must be greater than 0.
+     * @throws IllegalArgumentException if maxResults < 1.
      */
     void findAuditEntries(
             AuditQueryCallback callback,

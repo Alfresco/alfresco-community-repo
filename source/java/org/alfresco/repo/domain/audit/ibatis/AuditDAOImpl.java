@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.ibatis.RollupResultHandler;
 import org.alfresco.repo.domain.audit.AbstractAuditDAOImpl;
 import org.alfresco.repo.domain.audit.AuditApplicationEntity;
 import org.alfresco.repo.domain.audit.AuditDeleteParameters;
@@ -41,9 +40,6 @@ import org.alfresco.repo.domain.audit.AuditQueryParameters;
 import org.alfresco.repo.domain.audit.AuditQueryResult;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
 import org.alfresco.util.Pair;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.ResultContext;
-import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -317,25 +313,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         }
         else
         {
-            // RowHandlers in RowHandlers: See 'groupBy' issue for iBatis 2.x https://issues.apache.org/jira/browse/IBATIS-503
-            ResultHandler queryResultHandler = new ResultHandler()
-            {
-                public void handleResult(ResultContext context)
-                {
-                    rowHandler.processResult((AuditQueryResult)context.getResultObject());
-                }
-            };
-            Configuration configuration = template.getConfiguration();
-            RollupResultHandler rollupResultHandler = new RollupResultHandler(
-                    configuration,
-                    new String[] {"auditEntryId"},
-                    "auditValueRows",
-                    queryResultHandler,
-                    maxResults);
-            
-            template.select(rowHandler.valuesRequired() ? SELECT_ENTRIES_WITH_VALUES
-                    : SELECT_ENTRIES_WITHOUT_VALUES, params, rollupResultHandler);
-            rollupResultHandler.processLastResults();
+            throw new IllegalArgumentException("maxResults must be greater than 0");
         }
     }
 }

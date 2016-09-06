@@ -176,7 +176,7 @@ public class AuditMethodInterceptorTest extends TestCase
             params.setApplicationName(APPLICATION_NAME);
 
             rowCount.setValue(0);
-            auditComponent.auditQuery(callback, params, -1);
+            auditComponent.auditQuery(callback, params, Integer.MAX_VALUE);
 
             assertEquals("There should be one audit entry.", 1, rowCount.intValue());
             assertTrue("The requested nodeRef should be in the audit entry.",

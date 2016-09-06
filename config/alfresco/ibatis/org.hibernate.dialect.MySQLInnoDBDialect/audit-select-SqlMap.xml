@@ -9,6 +9,7 @@
 <mapper namespace="alfresco.audit">
 
     <!-- Get audit entries -->
+
     <select id="select_AuditEntriesWithoutValues" fetchSize="-2147483648" parameterType="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
         <include refid="select_AuditEntriesWithoutValuesCommon"/>
     </select>

@@ -53,6 +53,7 @@
          "txnId": ${node.txnId?c},
          "status": "<#if node.deleted>d<#else>u</#if>",
          <#if node.aclId??>"aclId": ${node.aclId?c},</#if>
+         <#if node.shardPropertyValue??>"shardPropertyValue": "${node.shardPropertyValue?string}",</#if>
          "tenant": "${node.tenant}"
       }
 </#macro>

@@ -312,13 +312,21 @@ public class SearchMapperTests
         //Doesn't error
         searchMapper.fromFacetQuery(searchParameters, null);
 
-        searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null), new FacetQuery("pong", "table"), new FacetQuery("pang", "tennis")));
-        assertEquals(3 ,searchParameters.getFacetQueries().size());
-        assertEquals("ping" ,searchParameters.getFacetQueries().get(0));
-        assertEquals("pong" ,searchParameters.getFacetQueries().get(1));
-        assertEquals("pang" ,searchParameters.getFacetQueries().get(2));
+        searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null), new FacetQuery("pong", "table")));
+        assertEquals(2 ,searchParameters.getFacetQueries().size());
+        assertEquals("{!afts key='ping'}ping" ,searchParameters.getFacetQueries().get(0));
+        assertEquals("{!afts key='table'}pong" ,searchParameters.getFacetQueries().get(1));
 
-        //label isn't used at the moment
+        try
+        {
+            searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null),new FacetQuery("{!afts}pang", "tennis")));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Cannot start with afts
+            assertNotNull(iae);
+        }
     }
 
 

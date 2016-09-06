@@ -203,6 +203,8 @@ public class SearchMapper
         {
             for (Template aTemplate:templates)
             {
+                ParameterCheck.mandatoryString("template name", aTemplate.getName());
+                ParameterCheck.mandatoryString("template template", aTemplate.getTemplate());
                 sp.addQueryTemplate(aTemplate.getName(), aTemplate.getTemplate());
             }
         }
@@ -270,6 +272,7 @@ public class SearchMapper
         {
             for (FilterQuery fq:filterQueries)
             {
+                ParameterCheck.mandatoryString("filterQueries query", fq.getQuery());
                 sp.addFilterQuery(fq.getQuery());
             }
         }
@@ -286,7 +289,17 @@ public class SearchMapper
         {
             for (FacetQuery fq:facetQueries)
             {
-                sp.addFacetQuery(fq.getQuery());
+                ParameterCheck.mandatoryString("facetQuery query", fq.getQuery());
+                String query = fq.getQuery();
+                String label = fq.getLabel()!=null?fq.getLabel():query;
+
+                if (query.startsWith("{!afts"))
+                {
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                new Object[] { ": Facet queries should not start with !afts" });
+                }
+                query = "{!afts key='"+label+"'}"+query;
+                sp.addFacetQuery(query);
             }
         }
     }

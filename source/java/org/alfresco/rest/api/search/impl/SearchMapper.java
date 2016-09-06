@@ -28,6 +28,7 @@ package org.alfresco.rest.api.search.impl;
 
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -38,6 +39,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.NotImplementedException;
@@ -81,6 +83,7 @@ public class SearchMapper
 
         fromQuery(sp,  searchQuery.getQuery());
         fromPaging(sp, searchQuery.getPaging());
+        fromSort(sp, searchQuery.getSort());
         validateInclude(searchQuery.getInclude());
 
         return sp;
@@ -123,7 +126,6 @@ public class SearchMapper
         }
         sp.setQuery(q.getQuery());
         sp.setSearchTerm(q.getUserQuery());
-
     }
 
     public void fromPaging(SearchParameters sp, Paging paging)
@@ -133,6 +135,25 @@ public class SearchMapper
             sp.setLimitBy(LimitBy.FINAL_SIZE);
             sp.setMaxItems(paging.getMaxItems());
             sp.setSkipCount(paging.getSkipCount());
+        }
+    }
+
+    public void fromSort(SearchParameters sp, List<SortDef> sort)
+    {
+        if (sort != null && !sort.isEmpty())
+        {
+            for (SortDef sortDef:sort)
+            {
+
+                try
+                {
+                    sp.addSort(sortDef.toDefinition());
+                }
+                catch (IllegalArgumentException e)
+                {
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new Object[] { sortDef.getType() });
+                }
+            }
         }
     }
 

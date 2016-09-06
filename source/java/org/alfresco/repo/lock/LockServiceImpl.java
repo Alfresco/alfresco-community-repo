@@ -465,7 +465,7 @@ public class LockServiceImpl implements LockService,
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
             throws UnableToAquireLockException
     {
-        lock(nodeRef, lockType, timeToExpire, lockChildren);
+        lock(nodeRef, lockType, timeToExpire, Lifetime.PERSISTENT, lockChildren);
     }
 
     /**

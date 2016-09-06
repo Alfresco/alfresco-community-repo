@@ -55,7 +55,7 @@ public class SearchMapperTests
     @Test(expected = IllegalArgumentException.class)
     public void testMandatory() throws Exception
     {
-        SearchParameters searchParameters = searchMapper.toSearchParameters(new SearchQuery());
+        SearchParameters searchParameters = searchMapper.toSearchParameters(SearchQuery.EMPTY);
     }
 
     @Test
@@ -75,15 +75,14 @@ public class SearchMapperTests
         SearchParameters searchParameters = new SearchParameters();
         try
         {
-            searchMapper.fromQuery(searchParameters, new Query());
+            searchMapper.fromQuery(searchParameters, new Query(null,null, null));
             fail();
         } catch (IllegalArgumentException iae)
         {
             assertTrue(iae.getLocalizedMessage().contains("query is a mandatory parameter"));
         }
 
-        Query q = new Query();
-        q.setQuery("hello");
+        Query q = new Query(null,"hello", null);
 
         try
         {
@@ -94,7 +93,7 @@ public class SearchMapperTests
             assertTrue(iae.getLocalizedMessage().contains("language is a mandatory parameter"));
         }
 
-        q.setLanguage("world");
+        q = new Query("world", "hello", null);
 
         try
         {
@@ -106,21 +105,21 @@ public class SearchMapperTests
             //world is not a valid language type
         }
 
-        q.setLanguage("afts");
+        q = new Query("afts", "hello", null);
         searchMapper.fromQuery(searchParameters, q);
         assertEquals(LANGUAGE_FTS_ALFRESCO, searchParameters.getLanguage());
 
-        q.setLanguage("cMiS");
+        q = new Query("cMiS", "hello", null);
         searchMapper.fromQuery(searchParameters, q);
         assertEquals(LANGUAGE_CMIS_ALFRESCO, searchParameters.getLanguage());
 
-        q.setLanguage("LuCENE");
+        q = new Query("LuCENE", "hello", null);
         searchMapper.fromQuery(searchParameters, q);
         assertEquals(LANGUAGE_LUCENE, searchParameters.getLanguage());
 
         assertEquals("hello", searchParameters.getQuery());
 
-        q.setUserQuery("Heload");
+        q = new Query("LuCENE", "hello", "Heload");
         searchMapper.fromQuery(searchParameters, q);
         assertEquals("Heload", searchParameters.getSearchTerm());
     }
@@ -139,11 +138,8 @@ public class SearchMapperTests
 
     private SearchQuery minimalQuery()
     {
-        SearchQuery sq = new SearchQuery();
-        Query query = new Query();
-        sq.setQuery(query);
-        query.setQuery("foo");
-        query.setLanguage("cmis");
+        Query query = new Query("cmis", "foo", "");
+        SearchQuery sq = new SearchQuery(query,null);
         return sq;
     }
 }

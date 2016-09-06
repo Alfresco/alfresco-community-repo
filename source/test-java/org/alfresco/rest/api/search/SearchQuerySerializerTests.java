@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.alfresco.rest.api.model.Comment;
@@ -64,7 +65,7 @@ public class SearchQuerySerializerTests implements RequestReader
     public void testDeserializeQuery() throws IOException
     {
         String json = "{ \"query\": {\"query\": \"g*\",\"userQuery\": \"great\",\"language\": \"bob\"}, "
-                        + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"}}";
+                        + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"}, \"include\": [\"bob\", \"hope\"]}";
         SearchQuery searchQuery = extractFromJson(json);
         assertEquals(SearchQuery.class, searchQuery.getClass());
         assertEquals("bob", searchQuery.getQuery().getLanguage());
@@ -72,6 +73,9 @@ public class SearchQuerySerializerTests implements RequestReader
         assertEquals("great", searchQuery.getQuery().getUserQuery());
         assertEquals(99, searchQuery.getPaging().getMaxItems());
         assertEquals(4, searchQuery.getPaging().getSkipCount());
+        assertEquals(2, searchQuery.getInclude().size());
+        assertTrue(searchQuery.getInclude().contains("bob"));
+        assertTrue(searchQuery.getInclude().contains("hope"));
     }
 
     private SearchQuery extractFromJson(String json) throws IOException

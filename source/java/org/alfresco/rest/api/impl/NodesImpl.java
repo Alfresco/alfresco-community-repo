@@ -25,6 +25,28 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
@@ -34,6 +56,7 @@ import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.node.getchildren.FilterProp;
@@ -59,6 +82,7 @@ import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
+import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
@@ -97,6 +121,7 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -136,28 +161,6 @@ import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.nio.charset.Charset;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Centralises access to file/folder/node services and maps between representations.
  *
@@ -184,8 +187,6 @@ public class NodesImpl implements Nodes
         DOCUMENT, FOLDER
     }
 
-    private static final String DEFAULT_MIMETYPE = MimetypeMap.MIMETYPE_BINARY;
-
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private FileFolderService fileFolderService;
@@ -203,6 +204,7 @@ public class NodesImpl implements Nodes
     private ActivityPoster poster;
     private RetryingTransactionHelper retryingTransactionHelper;
     private NodeAssocService nodeAssocService;
+    private LockService lockService;
 
     private enum Activity_Type
     {
@@ -253,6 +255,7 @@ public class NodesImpl implements Nodes
         this.thumbnailService = sr.getThumbnailService();
         this.siteService =  sr.getSiteService();
         this.retryingTransactionHelper = sr.getRetryingTransactionHelper();
+        this.lockService = sr.getLockService();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -908,7 +911,7 @@ public class NodesImpl implements Nodes
                     // special case: do not return "create" (as an allowable op) for file/content types - note: 'type' can be null
                     continue;
                 }
-                else if (perm.equals(PermissionService.DELETE) && (isSpecialNodeDoNotDelete(nodeRef, nodeTypeQName)))
+                else if (perm.equals(PermissionService.DELETE) && (isSpecialNode(nodeRef, nodeTypeQName)))
                 {
                     // special case: do not return "delete" (as an allowable op) for specific system nodes
                     continue;
@@ -1503,7 +1506,7 @@ public class NodesImpl implements Nodes
     {
         NodeRef nodeRef = validateOrLookupNode(nodeId, null);
 
-        if (isSpecialNodeDoNotDelete(nodeRef, getNodeType(nodeRef)))
+        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
         {
             throw new PermissionDeniedException("Cannot delete: " + nodeId);
         }
@@ -1927,9 +1930,9 @@ public class NodesImpl implements Nodes
         }
     }
 
-    // special case: additional delete validation (pending common lower-level service support)
-    // for blacklist of system nodes that should not be deleted, eg. Company Home, Sites, Data Dictionary
-    private boolean isSpecialNodeDoNotDelete(NodeRef nodeRef, QName type)
+    // special case: additional node validation (pending common lower-level service support)
+    // for blacklist of system nodes that should not be deleted or locked, eg. Company Home, Sites, Data Dictionary
+    private boolean isSpecialNode(NodeRef nodeRef, QName type)
     {
         // Check for Company Home, Sites and Data Dictionary (note: must be tenant-aware)
 
@@ -2180,7 +2183,7 @@ public class NodesImpl implements Nodes
             else
             {
                 // move
-                if ((! nodeRef.equals(parentNodeRef)) && isSpecialNodeDoNotDelete(nodeRef, getNodeType(nodeRef)))
+                if ((! nodeRef.equals(parentNodeRef)) && isSpecialNode(nodeRef, getNodeType(nodeRef)))
                 {
                     throw new PermissionDeniedException("Cannot move: "+nodeRef.getId());
                 }
@@ -2902,6 +2905,44 @@ public class NodesImpl implements Nodes
             }
         }
         return result;
+    }
+
+    @Override
+    public Node lock(String nodeId, LockInfo lockInfo, Parameters parameters)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+
+        if (isSpecialNode(nodeRef, getNodeType(nodeRef)))
+        {
+            throw new PermissionDeniedException("Current user doesn't have permission to lock node " + nodeId);
+        }
+
+        lockInfo = validateLockInformation(lockInfo);
+        lockService.lock(nodeRef, lockInfo.getType(), lockInfo.getTimeToExpire(), lockInfo.getLifetime(), lockInfo.getIncludeChildren());
+        
+        return getFolderOrDocument(nodeId, parameters);
+    }
+    
+    private LockInfo validateLockInformation(LockInfo lockInfo)
+    {
+        // Set default values for the lock details.
+        if (lockInfo.getType() == null)
+        {
+            lockInfo.setType(LockInfo.LockType2.ALLOW_OWNER_CHANGES.name());
+        }
+        if (lockInfo.getLifetime() == null)
+        {
+            lockInfo.setLifetime(Lifetime.PERSISTENT.name());
+        }
+        if (lockInfo.getIncludeChildren() == null)
+        {
+            lockInfo.setIncludeChildren(false);
+        }
+        if (lockInfo.getTimeToExpire() == null)
+        {
+            lockInfo.setTimeToExpire(0);
+        }
+        return lockInfo;
     }
 
     /**

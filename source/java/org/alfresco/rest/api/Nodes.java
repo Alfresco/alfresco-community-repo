@@ -34,6 +34,7 @@ import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
+import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -244,6 +245,15 @@ public interface Nodes
      * @return
      */
     List<AssocTarget> addTargets(String sourceNodeId, List<AssocTarget> entities);
+    
+    /**
+     * Lock a node
+     * @param nodeId
+     * @param lockInfo
+     * @param parameters
+     * @return
+     */
+    Node lock(String nodeId, LockInfo lockInfo, Parameters parameters);
 
     /**
      * API Constants - query parameters, etc

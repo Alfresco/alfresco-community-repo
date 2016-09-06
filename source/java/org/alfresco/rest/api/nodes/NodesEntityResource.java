@@ -170,7 +170,7 @@ public class NodesEntityResource implements
     {
         return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, false);
     }
-    
+
     @Operation("lock")
     @WebApiDescription(title = "Lock Node",
             description="Places a lock on a node.",
@@ -179,7 +179,7 @@ public class NodesEntityResource implements
     {
         return nodes.lock(nodeId, lockInfo, parameters);
     }
-    
+
     @Operation("unlock")
     @WebApiDescription(title = "Unlock Node",
             description="Removes a lock on a node.",

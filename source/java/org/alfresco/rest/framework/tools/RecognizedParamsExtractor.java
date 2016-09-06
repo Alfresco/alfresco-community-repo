@@ -356,11 +356,20 @@ public interface RecognizedParamsExtractor
         }
         catch (NumberFormatException error)
         {
+            String errorMsg = "Invalid paging parameters skipCount: " + skip + ", maxItems:" + maxItems;
             if (rpeLogger().isDebugEnabled())
             {
-                rpeLogger().debug("Invalid paging params skip: " + skip + ",maxItems:" + maxItems);
+                rpeLogger().debug(errorMsg);
             }
-            throw new InvalidArgumentException();
+            if (skip == null)
+            {
+                errorMsg = "Invalid paging parameter maxItems:" + maxItems;
+            }
+            if (maxItems == null)
+            {
+                errorMsg = "Invalid paging parameter skipCount:" + skip;
+            }
+            throw new InvalidArgumentException(errorMsg);
         }
 
         return Paging.valueOf(skipped, max);

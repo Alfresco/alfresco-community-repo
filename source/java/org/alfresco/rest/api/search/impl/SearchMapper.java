@@ -170,7 +170,7 @@ public class SearchMapper
     {
         if (sort != null && !sort.isEmpty())
         {
-            if (CMIS.equals(sp.getLanguage()))
+            if (LANGUAGE_CMIS_ALFRESCO.equals(sp.getLanguage()))
             {
                 throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
                             new Object[] { ": sort {} not allowed with cmis language" });

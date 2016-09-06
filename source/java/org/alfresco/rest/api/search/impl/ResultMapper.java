@@ -30,6 +30,8 @@ import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.search.context.FacetFieldContext;
+import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -38,6 +40,7 @@ import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SpellCheckResult;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -138,7 +141,9 @@ public class ResultMapper
         Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
         List<FacetQueryContext> facetResults = null;
         SpellCheckContext spellCheckContext = null;
+        FacetFieldContext ffc = null;
 
+        //Facet queries
         if(facetQueries!= null && !facetQueries.isEmpty())
         {
             facetResults = new ArrayList<>(facetQueries.size());
@@ -148,12 +153,33 @@ public class ResultMapper
             }
         }
 
+        //Field Facets
+        Map<String, List<Pair<String, Integer>>> facetFields = solrResultSet.getFieldFacets();
+        if (facetFields != null && !facetFields.isEmpty())
+        {
+            for (Entry<String, List<Pair<String, Integer>>> facet:facetFields.entrySet())
+            {
+                if (facet.getValue() != null && !facet.getValue().isEmpty())
+                {
+                    List<Bucket> buckets = new ArrayList<>(facet.getValue().size());
+                    for (Pair<String, Integer> buck:facet.getValue())
+                    {
+                        buckets.add(new Bucket(buck.getFirst(), buck.getSecond()));
+                    }
+                    ffc = new FacetFieldContext(facet.getKey(), buckets);
+                }
+            }
+        }
+
+        //Spelling
         SpellCheckResult spell = solrResultSet.getSpellCheckResult();
         if (spell != null && spell.getResultName() != null && !spell.getResults().isEmpty())
         {
             spellCheckContext = new SpellCheckContext(spell.getResultName(),spell.getResults());
         }
-        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, spellCheckContext);
+
+        //Put it all together
+        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, ffc, spellCheckContext);
         return isNullContext(context)?null:context;
     }
 
@@ -162,9 +188,12 @@ public class ResultMapper
      * @param context
      * @return true if its null
      */
-    protected boolean isNullContext(SearchContext context)
+    public boolean isNullContext(SearchContext context)
     {
-        return (context.getFacetQueries() == null && context.getConsistency() == null && context.getSpellCheck() == null);
+        return (context.getFacetQueries() == null
+                    && context.getConsistency() == null
+                    && context.getSpellCheck() == null
+                    && context.getFacetsFields() == null);
     }
 
     /**

@@ -28,6 +28,8 @@ package org.alfresco.rest.api.search;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import org.alfresco.rest.api.search.context.FacetFieldContext;
+import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.FacetField;
@@ -90,15 +92,15 @@ public class SearchQuerySerializerTests
         assertEquals("facnoused",searchQuery.getFacetQueries().get(0).getLabel());
         assertEquals("alfrezco", searchQuery.getSpellcheck().getQuery());
         assertEquals(1, searchQuery.getScope().getStores().size());
-        assertEquals("test://SpacesStore", searchQuery.getScope().getStores().get(0));
+        assertEquals("workspace://SpacesStore", searchQuery.getScope().getStores().get(0));
         assertEquals(2, searchQuery.getFacetFields().getFacets().size());
         FacetField ff = searchQuery.getFacetFields().getFacets().get(0);
-        assertEquals("aField", ff.getField());
+        assertEquals("cm:creator", ff.getField());
         assertEquals("myquery2", ff.getPrefix());
         assertEquals("COUNT", ff.getSort());
         assertEquals(false, ff.getMissing());
         ff = searchQuery.getFacetFields().getFacets().get(1);
-        assertEquals("anotherField", ff.getField());
+        assertEquals("modifier", ff.getField());
         assertEquals("mylabel", ff.getLabel());
         assertEquals("FC", ff.getMethod());
         assertEquals(Integer.valueOf(5), ff.getMincount());
@@ -110,7 +112,9 @@ public class SearchQuerySerializerTests
     {
         ExecutionResult exec1 = new ExecutionResult(new Farmer("180"),null);
 
+        FacetFieldContext ffc = new FacetFieldContext("theLabel", Arrays.asList(new Bucket("b1", 23), new Bucket("b2", 34)));
         SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryContext("f1", 15), new FacetQueryContext("f2", 20)),
+                    ffc,
                     new SpellCheckContext("aFlag", Arrays.asList("bish", "bash")));
         CollectionWithPagingInfo<ExecutionResult> coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         String out = helper.writeResponse(coll);
@@ -119,11 +123,15 @@ public class SearchQuerySerializerTests
         assertTrue("There must 'facetQueries f1' json output", out.contains("{\"label\":\"f1\",\"count\":15}"));
         assertTrue("There must 'facetQueries f2' json output", out.contains("{\"label\":\"f2\",\"count\":20}"));
         assertTrue("There must 'spellCheck' json output", out.contains("\"spellCheck\":{\"type\":\"aFlag\",\"suggestions\":[\"bish\",\"bash\"]}"));
+        assertTrue("There must 'facetsFields' json output", out.contains("\"facetsFields\":{\"label\":\"theLabel\",\"buckets\""));
+        assertTrue("There must 'bucket1' json output", out.contains("{\"label\":\"b1\",\"count\":23}"));
+        assertTrue("There must 'bucket2' json output", out.contains("{\"label\":\"b2\",\"count\":34}"));
 
-        searchContext = new SearchContext(-1, null, null);
+        searchContext = new SearchContext(-1, null, null, null);
         coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         out = helper.writeResponse(coll);
         assertTrue("There must NOT BE a 'context' json output", out.contains("\"context\":{}"));
+        assertFalse("There must NOT BE a 'facetsFields' json output", out.contains("\"facetsFields\":{}"));
 
     }
 

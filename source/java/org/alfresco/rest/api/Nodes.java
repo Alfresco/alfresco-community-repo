@@ -254,7 +254,7 @@ public interface Nodes
      * @return
      */
     Node lock(String nodeId, LockInfo lockInfo, Parameters parameters);
-    
+
     /**
      * Unlock a node
      * @param nodeId

@@ -427,11 +427,7 @@ public class Node implements Serializable, NamespacePrefixResolverProvider
          
          if (hasAspect(ContentModel.ASPECT_LOCKABLE))
          {
-            LockStatus lockStatus = getServiceRegistry().getLockService().getLockStatus(getNodeRef());
-            if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
-            {
-               locked = Boolean.TRUE;
-            }
+            locked = getServiceRegistry().getLockService().isLocked(getNodeRef());
          }
       }
       

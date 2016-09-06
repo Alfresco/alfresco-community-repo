@@ -27,12 +27,14 @@ package org.alfresco.rest.api.model;
 
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.service.cmr.lock.LockType;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  * Representation of a lock info
  *
  * @author Ancuta Morarasu
  */
+@JsonIgnoreProperties({"mappedType"})
 public class LockInfo
 {
     private Integer timeToExpire;
@@ -85,9 +87,14 @@ public class LockInfo
         return includeChildren;
     }
     
-    public LockType getType()
+    public LockType getMappedType()
     {
         return type != null ? type.getType() : null;
+    }
+    
+    public LockType2 getType()
+    {
+        return type;
     }
 
     public void setType(String type)
@@ -110,9 +117,9 @@ public class LockInfo
     {
         final StringBuilder sb = new StringBuilder("LockInfo{");
         sb.append("includeChildren='").append(includeChildren).append('\'');
-        sb.append(", timeToExpire=").append(timeToExpire).append('\'');
-        sb.append(", type=").append(type).append('\'');
-        sb.append(", lifetime=").append(lifetime).append('\'');
+        sb.append(", timeToExpire='").append(timeToExpire).append('\'');
+        sb.append(", type='").append(type).append('\'');
+        sb.append(", lifetime='").append(lifetime).append('\'');
         sb.append('}');
         return sb.toString();
     }

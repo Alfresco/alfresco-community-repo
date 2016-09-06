@@ -333,8 +333,8 @@ public class SearchMapper
                 {
                     ParameterCheck.mandatoryString("facetFields facet field", facet.getField());
                     String field = facet.getField();
-                    String label = facet.getLabel()!=null?facet.getLabel():field;
-                    field = "{key='"+label+"'}"+field;
+                    //String label = facet.getLabel()!=null?facet.getLabel():field;
+                    //field = "{key='"+label+"'}"+field;
 
                     FieldFacet ff = new FieldFacet(field);
 

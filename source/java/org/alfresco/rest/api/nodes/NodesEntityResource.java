@@ -33,7 +33,6 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
-import org.alfresco.rest.api.model.UnlockInfo;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -185,9 +184,9 @@ public class NodesEntityResource implements
     @WebApiDescription(title = "Unlock Node",
             description="Removes a lock on a node.",
             successStatus = HttpServletResponse.SC_OK)
-    public Node unlock(String nodeId, UnlockInfo unlockInfo, Parameters parameters, WithResponse withResponse)
+    public Node unlock(String nodeId, Void ignore, Parameters parameters, WithResponse withResponse)
     {
-        return nodes.unlock(nodeId, unlockInfo, parameters);
+        return nodes.unlock(nodeId, parameters);
     }
 
 }

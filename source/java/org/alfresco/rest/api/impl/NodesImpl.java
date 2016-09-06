@@ -87,7 +87,6 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
-import org.alfresco.rest.api.model.UnlockInfo;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.nodes.NodeAssocService;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
@@ -123,7 +122,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -2958,7 +2956,7 @@ public class NodesImpl implements Nodes
         }
 
         lockInfo = validateLockInformation(lockInfo);
-        lockService.lock(nodeRef, lockInfo.getMappedType(), lockInfo.getTimeToExpire(), lockInfo.getLifetime(), lockInfo.getIncludeChildren());
+        lockService.lock(nodeRef, lockInfo.getMappedType(), lockInfo.getTimeToExpire(), lockInfo.getLifetime());
         
         return getFolderOrDocument(nodeId, parameters);
     }
@@ -2974,10 +2972,6 @@ public class NodesImpl implements Nodes
         {
             lockInfo.setLifetime(Lifetime.PERSISTENT.name());
         }
-        if (lockInfo.getIncludeChildren() == null)
-        {
-            lockInfo.setIncludeChildren(false);
-        }
         if (lockInfo.getTimeToExpire() == null)
         {
             lockInfo.setTimeToExpire(0);
@@ -2986,7 +2980,7 @@ public class NodesImpl implements Nodes
     }
 
     @Override
-    public Node unlock(String nodeId, UnlockInfo unlockInfo, Parameters parameters)
+    public Node unlock(String nodeId, Parameters parameters)
     {
         NodeRef nodeRef = validateOrLookupNode(nodeId, null);
 
@@ -2994,12 +2988,8 @@ public class NodesImpl implements Nodes
         {
             throw new PermissionDeniedException("Current user doesn't have permission to unlock node " + nodeId);
         }
-
-        if (unlockInfo.getIncludeChildren() == null)
-        {
-            unlockInfo.setIncludeChildren(false);
-        }
-        lockService.unlock(nodeRef, unlockInfo.getIncludeChildren());
+        
+        lockService.unlock(nodeRef);
         return getFolderOrDocument(nodeId, parameters);
     }
 

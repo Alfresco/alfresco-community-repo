@@ -36,7 +36,6 @@ import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.UnlockInfo;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
@@ -259,11 +258,10 @@ public interface Nodes
     /**
      * Unlock a node
      * @param nodeId
-     * @param unlockInfo
      * @param parameters
      * @return
      */
-    Node unlock(String nodeId, UnlockInfo unlockInfo, Parameters parameters);
+    Node unlock(String nodeId, Parameters parameters);
 
     /**
      * API Constants - query parameters, etc

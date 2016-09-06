@@ -533,14 +533,22 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 }
                 for(String facetQuery : searchParameters.getFacetQueries())
                 {
-                    url.append("&facet.query=").append(encoder.encode("{!afts}"+facetQuery, "UTF-8"));
+                    if (!facetQuery.startsWith("{!afts"))
+                    {
+                        facetQuery = "{!afts}"+facetQuery;
+                    }
+                    url.append("&facet.query=").append(encoder.encode(facetQuery, "UTF-8"));
                 }                
             }
+
             // filter queries
-            
             for(String filterQuery : searchParameters.getFilterQueries())
             {
-                url.append("&fq=").append(encoder.encode("{!afts}"+filterQuery, "UTF-8"));
+                if (!filterQuery.startsWith("{!afts"))
+                {
+                    filterQuery = "{!afts}"+filterQuery;
+                }
+                url.append("&fq=").append(encoder.encode(filterQuery, "UTF-8"));
             }   
             
             // end of field facets

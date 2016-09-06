@@ -26,18 +26,27 @@
 
 package org.alfresco.rest.api.search.model;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * POJO class representing the query element of the JSON body
  **/
 public class Query
 {
 
-    String language;
-    String query;
-    String userQuery;
+    private final String language;
+    private final String query;
+    private final String userQuery;
 
-    public Query()
+    @JsonCreator
+    public Query(@JsonProperty("language")  String language,
+                 @JsonProperty("query")     String query,
+                 @JsonProperty("userQuery") String userQuery)
     {
+        this.language = language;
+        this.query = query;
+        this.userQuery = userQuery;
     }
 
     public String getLanguage()
@@ -45,19 +54,9 @@ public class Query
         return language;
     }
 
-    public void setLanguage(String language)
-    {
-        this.language = language;
-    }
-
     public String getQuery()
     {
         return query;
-    }
-
-    public void setQuery(String query)
-    {
-        this.query = query;
     }
 
     public String getUserQuery()
@@ -65,8 +64,4 @@ public class Query
         return userQuery;
     }
 
-    public void setUserQuery(String userQuery)
-    {
-        this.userQuery = userQuery;
-    }
 }

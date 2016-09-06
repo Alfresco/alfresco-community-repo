@@ -27,6 +27,8 @@
 package org.alfresco.rest.api.search.model;
 
 import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * POJO class representing the JSON body for a search request
@@ -35,11 +37,17 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
  */
 public class SearchQuery
 {
-    Query query;
-    Paging paging;
+    private final Query query;
+    private final Paging paging;
 
-    public SearchQuery()
+    public static final SearchQuery EMPTY = new SearchQuery(null, null);
+
+    @JsonCreator
+    public SearchQuery(@JsonProperty("query") Query query,
+                       @JsonProperty("paging") Paging paging)
     {
+        this.query = query;
+        this.paging = paging;
     }
 
     public Query getQuery()
@@ -47,18 +55,8 @@ public class SearchQuery
         return query;
     }
 
-    public void setQuery(Query query)
-    {
-        this.query = query;
-    }
-
     public Paging getPaging()
     {
         return paging;
-    }
-
-    public void setPaging(Paging paging)
-    {
-        this.paging = paging;
     }
 }

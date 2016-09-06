@@ -401,7 +401,11 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             url.append(httpClientAndBaseUrl.getSecond());
          
             String languageUrlFragment = extractLanguageFragment(language);
-            url.append("/").append(languageUrlFragment);
+            if(!url.toString().endsWith("/"))
+            {
+                url.append("/");
+            }
+            url.append(languageUrlFragment);
 
             // Send the query in JSON only
             // url.append("?q=");

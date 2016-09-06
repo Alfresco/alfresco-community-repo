@@ -182,8 +182,7 @@ public class SearchMapper
                 {
                     SortType sortType = SortType.valueOf(sortDef.getType());
                     String field = sortDef.getField();
-                    QName propQname = PARAM_SYNONYMS_QNAME.get(field);
-                    sp.addSort(new SortDefinition(sortType, propQname==null?field:propQname.toString(), sortDef.isAscending()));
+                    sp.addSort(new SortDefinition(sortType, field, sortDef.isAscending()));
                 }
                 catch (IllegalArgumentException e)
                 {

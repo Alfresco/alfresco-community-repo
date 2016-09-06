@@ -1328,8 +1328,16 @@ public class NodesImpl implements Nodes
         Set<QName> assocTypeQNames = buildAssocTypes(assocTypeQNameParam);
 
         // call GetChildrenCannedQuery (via FileFolderService)
-        pagingResults = fileFolderService.list(parentNodeRef, assocTypeQNames, searchTypeQNames, ignoreAspectQNames, sortProps, filterProps, pagingRequest);
-
+        if (((filterProps == null) || (filterProps.size() == 0)) && 
+            ((assocTypeQNames == null) || (assocTypeQNames.size() == 0)))
+        {
+            pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
+        }
+        else
+        {
+            // TODO smart folders (see REPO-1173)
+            pagingResults = fileFolderService.list(parentNodeRef, assocTypeQNames, searchTypeQNames, ignoreAspectQNames, sortProps, filterProps, pagingRequest);
+        }
 
         final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
 

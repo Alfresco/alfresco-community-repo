@@ -48,10 +48,11 @@ public class SearchQuery
     private final Default defaults;
     private final List<FilterQuery> filterQueries;
     private final List<FacetQuery> facetQueries;
+    private final FacetFields facetFields;
     private final Spelling spellcheck;
     private final Scope scope;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -61,6 +62,7 @@ public class SearchQuery
                 @JsonProperty("templates") List<Template> templates,
                 @JsonProperty("defaults") Default defaults,
                 @JsonProperty("filterQueries")  List<FilterQuery> filterQueries,
+                @JsonProperty("facetFields") FacetFields facetFields,
                 @JsonProperty("facetQueries")  List<FacetQuery> facetQueries,
                 @JsonProperty("spellcheck") Spelling spellcheck,
                 @JsonProperty("scope") Scope scope)
@@ -75,6 +77,7 @@ public class SearchQuery
         this.facetQueries = facetQueries;
         this.spellcheck = spellcheck;
         this.scope = scope;
+        this.facetFields = facetFields;
     }
 
     public Query getQuery()
@@ -123,5 +126,10 @@ public class SearchQuery
     public Scope getScope()
     {
         return scope;
+    }
+
+    public FacetFields getFacetFields()
+    {
+        return facetFields;
     }
 }

@@ -28,6 +28,8 @@ package org.alfresco.rest.api.search.impl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.search.model.Default;
+import org.alfresco.rest.api.search.model.FacetField;
+import org.alfresco.rest.api.search.model.FacetFields;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
@@ -46,6 +48,9 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.Operator;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
@@ -104,6 +109,7 @@ public class SearchMapper
         fromDefault(sp, searchQuery.getDefaults());
         fromFilterQuery(sp, searchQuery.getFilterQueries());
         fromFacetQuery(sp, searchQuery.getFacetQueries());
+        fromFacetFields(sp, searchQuery.getFacetFields());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromScope(sp, searchQuery.getScope());
 
@@ -309,6 +315,65 @@ public class SearchMapper
         }
     }
 
+
+    /**
+     * SearchParameters from FacetFields object
+     * @param sp SearchParameters
+     * @param FacetFields facetFields
+     */
+    public void fromFacetFields(SearchParameters sp, FacetFields facetFields)
+    {
+        if (facetFields != null)
+        {
+            ParameterCheck.mandatory("facetFields facets", facetFields.getFacets());
+
+            if (facetFields.getFacets() != null && !facetFields.getFacets().isEmpty())
+            {
+                for (FacetField facet : facetFields.getFacets())
+                {
+                    ParameterCheck.mandatoryString("facetFields facet field", facet.getField());
+                    String field = facet.getField();
+                    String label = facet.getLabel()!=null?facet.getLabel():field;
+                    field = "{key='"+label+"'}"+field;
+
+                    FieldFacet ff = new FieldFacet(field);
+
+                    if (facet.getSort() != null && !facet.getSort().isEmpty())
+                    {
+                        try
+                        {
+                            ff.setSort(FieldFacetSort.valueOf(facet.getSort()));
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new Object[] { facet.getSort() });
+                        }
+                    }
+                    if (facet.getMethod() != null && !facet.getMethod().isEmpty())
+                    {
+                        try
+                        {
+                            ff.setMethod(FieldFacetMethod.valueOf(facet.getMethod()));
+                        }
+                        catch (IllegalArgumentException e)
+                        {
+                            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new Object[] { facet.getMethod() });
+                        }
+
+                    }
+
+                    ff.setPrefix(facet.getPrefix());
+                    ff.setCountDocsMissingFacetField(facet.getMissing());
+                    ff.setLimitOrNull(facet.getLimit());
+                    ff.setOffset(facet.getOffset());
+                    ff.setMinCount(facet.getMincount());
+                    ff.setEnumMethodCacheMinDF(facet.getFacetEnumCacheMinDf());
+
+                    sp.addFieldFacet(ff);
+                }
+            }
+        }
+    }
     /**
      * SearchParameters from SpellCheck object
      * @param sp SearchParameters

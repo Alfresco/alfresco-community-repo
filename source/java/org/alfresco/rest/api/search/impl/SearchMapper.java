@@ -106,6 +106,8 @@ public class SearchMapper
     {
         //Hardcode workspace store
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        sp.setLimitBy(LimitBy.FINAL_SIZE);
+        sp.setMaxItems(100);
     }
 
     /**

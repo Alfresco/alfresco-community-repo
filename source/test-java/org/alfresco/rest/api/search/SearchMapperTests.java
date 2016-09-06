@@ -44,6 +44,7 @@ import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.junit.Test;
 
@@ -75,6 +76,8 @@ public class SearchMapperTests
         //Test defaults
         assertEquals("There should be only 1 default store", 1,searchParameters.getStores().size());
         assertEquals("workspaces store is the default", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
+        assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
+        assertEquals(100, searchParameters.getMaxItems());
 
         searchParameters = searchMapper.toSearchParameters(helper.searchQueryFromJson());
         assertNotNull(searchParameters);
@@ -141,6 +144,7 @@ public class SearchMapperTests
         SearchParameters searchParameters = new SearchParameters();
         //Doesn't error
         searchMapper.fromPaging(searchParameters, null);
+
         Paging paging = Paging.DEFAULT;
         searchMapper.fromPaging(searchParameters, paging);
         assertEquals(searchParameters.getMaxItems(),paging.getMaxItems());

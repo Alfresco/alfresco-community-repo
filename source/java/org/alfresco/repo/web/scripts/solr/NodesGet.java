@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
@@ -166,6 +167,8 @@ public class NodesGet extends DeclarativeWebScript
                 }
             }
             
+            String shardProperty = o.has("shardProperty") ? o.getString("shardProperty") : null;
+            
             NodeParameters nodeParameters = new NodeParameters();
             nodeParameters.setTransactionIds(txnIds);
             nodeParameters.setFromTxnId(fromTxnId);
@@ -176,6 +179,7 @@ public class NodesGet extends DeclarativeWebScript
             nodeParameters.setIncludeAspects(includeAspects);
             nodeParameters.setExcludeNodeTypes(excludeNodeTypes);
             nodeParameters.setIncludeNodeTypes(includeNodeTypes);
+            nodeParameters.setShardProperty(shardProperty);
             
             StoreRef storeRef = null;
             
@@ -226,6 +230,7 @@ public class NodesGet extends DeclarativeWebScript
         private final String nodeRef;
         private final String tenant;
         private final Long aclId; 
+        private final String shardPropertyValue;
 
         public NodeRecord(Node node, QNameDAO qnameDAO, TenantService tenantService)
         {
@@ -235,6 +240,7 @@ public class NodesGet extends DeclarativeWebScript
             this.nodeRef = node.getNodeRef().toString();
             this.tenant = tenantService.getDomain(node.getNodeRef().getStoreRef().getIdentifier());
             this.aclId = node.getAclId();
+            this.shardPropertyValue = node.getShardKey();
         }
 
         public Long getId()
@@ -266,8 +272,11 @@ public class NodesGet extends DeclarativeWebScript
         {
             return aclId;
         }
-        
-        
+
+        public String getShardPropertyValue()
+        {
+            return this.shardPropertyValue;
+        }
     }
 
     /**

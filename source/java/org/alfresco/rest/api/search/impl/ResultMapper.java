@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -78,8 +79,8 @@ public class ResultMapper
         results.forEach(row ->
         {
             Node aNode = nodes.getFolderOrDocument(row.getNodeRef(), null, null, params.getInclude(), null);
-            //float f = row.getScore();
-            //Long dbId = (Long) row.getValue(ContentModel.PROP_NODE_DBID);
+            float f = row.getScore();
+            aNode.setSearch(new SearchEntry(f));
             noderesults.add(aNode);
         }
         );

@@ -121,10 +121,12 @@ public class ResultMapperTests
     public void testToCollectionWithPagingInfo() throws Exception
     {
         ResultSet results = mockResultset();
-        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(mockParams(),results);
-        assertNotNull(collection);
+        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(mockParams(),results);
+        assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
-        assertEquals(found.intValue(), collection.getTotalItems().intValue());
+        assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
+        Node firstNode = collectionWithPage.getCollection().stream().findFirst().get();
+        assertNotNull(firstNode.getSearch().getScore());
     }
 
     private ResultSet mockResultset() throws JSONException

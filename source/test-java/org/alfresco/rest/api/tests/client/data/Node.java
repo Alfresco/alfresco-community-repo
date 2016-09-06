@@ -83,6 +83,8 @@ public class Node
     protected List<AssocChild> secondaryChildren;
     protected List<AssocTarget> targets;
 
+    protected SearchResultEntry search;
+
     public Node()
     {
     }
@@ -322,6 +324,16 @@ public class Node
         this.association = association;
     }
 
+    public SearchResultEntry getSearch()
+    {
+        return search;
+    }
+
+    public void setSearch(SearchResultEntry search)
+    {
+        this.search = search;
+    }
+
     public void expected(Object o)
     {
         Node other = (Node) o;
@@ -425,6 +437,15 @@ public class Node
         else
         {
             assertNull(other.getContent());
+        }
+
+        if (search != null)
+        {
+            search.expected(other.getSearch());
+        }
+        else
+        {
+            assertNull(other.getSearch());
         }
 
         if (allowableOperations != null)

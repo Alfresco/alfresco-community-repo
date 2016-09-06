@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.search.impl;
 
+import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
@@ -40,6 +41,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.service.cmr.search.SearchParameters.Operator;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ParameterCheck;
@@ -73,7 +75,7 @@ public class SearchMapper
     /**
      * Turn the params into the Java SearchParameters object
      * @param params
-     * @return
+     * @return SearchParameters
      */
     public SearchParameters toSearchParameters(SearchQuery searchQuery)
     {
@@ -87,6 +89,7 @@ public class SearchMapper
         fromSort(sp, searchQuery.getSort());
         fromTemplate(sp, searchQuery.getTemplates());
         validateInclude(searchQuery.getInclude());
+        fromDefault(sp, searchQuery.getDefaults());
 
         return sp;
     }
@@ -102,9 +105,9 @@ public class SearchMapper
     }
 
     /**
-     *
-     * @param sp
-     * @param q
+     * SearchParameters from the Query object
+     * @param sp SearchParameters
+     * @param q Query
      */
     public void fromQuery(SearchParameters sp, Query q)
     {
@@ -130,6 +133,11 @@ public class SearchMapper
         sp.setSearchTerm(q.getUserQuery());
     }
 
+    /**
+     * SearchParameters from the Paging object
+     * @param sp SearchParameters
+     * @param paging Paging
+     */
     public void fromPaging(SearchParameters sp, Paging paging)
     {
         if (paging != null)
@@ -140,6 +148,11 @@ public class SearchMapper
         }
     }
 
+    /**
+     * SearchParameters from List<SortDef>
+     * @param sp SearchParameters
+     * @param sort List<SortDef>
+     */
     public void fromSort(SearchParameters sp, List<SortDef> sort)
     {
         if (sort != null && !sort.isEmpty())
@@ -159,6 +172,11 @@ public class SearchMapper
         }
     }
 
+    /**
+     * SearchParameters from List<Template>
+     * @param sp SearchParameters
+     * @param templates List<Template>
+     */
     public void fromTemplate(SearchParameters sp, List<Template> templates)
     {
         if (templates != null && !templates.isEmpty())
@@ -170,6 +188,42 @@ public class SearchMapper
         }
     }
 
+    /**
+     * SearchParameters from Default object
+     * @param sp SearchParameters
+     * @param defaults Default
+     */
+    public void fromDefault(SearchParameters sp, Default defaults)
+    {
+        if (defaults != null)
+        {
+            List<String> txtAttribs = defaults.getTextAttributes();
+            if (txtAttribs!= null && !txtAttribs.isEmpty())
+            {
+                for (String attrib:txtAttribs)
+                {
+                    sp.addTextAttribute(attrib);
+                }
+            }
+
+            if (defaults.getDefaultFTSOperator() != null)
+            {
+                sp.setDefaultFTSOperator(Operator.valueOf(defaults.getDefaultFTSOperator().toUpperCase()));
+            }
+            if (defaults.getDefaultFTSFieldOperator() != null)
+            {
+                sp.setDefaultFTSFieldConnective(Operator.valueOf(defaults.getDefaultFTSFieldOperator().toUpperCase()));
+            }
+
+            sp.setNamespace(defaults.getNamespace());
+            sp.setDefaultFieldName(defaults.getDefaultFieldName());
+        }
+    }
+
+    /**
+     * Validates the List<String> includes
+     * @param includes List<String>
+     */
     public void validateInclude(List<String> includes)
     {
         if (includes != null && !includes.isEmpty())

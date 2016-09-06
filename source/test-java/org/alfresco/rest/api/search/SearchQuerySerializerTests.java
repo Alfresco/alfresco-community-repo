@@ -30,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.alfresco.rest.api.model.Comment;
+import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.jacksonextensions.RestJsonModule;
@@ -74,6 +75,13 @@ public class SearchQuerySerializerTests
         assertTrue(searchQuery.getInclude().contains("properties"));
         assertEquals(1, searchQuery.getSort().size());
         assertEquals(2, searchQuery.getTemplates().size());
+        Default defaults = searchQuery.getDefaults();
+        assertEquals("namesp",  defaults.getNamespace());
+        assertEquals("myfield", defaults.getDefaultFieldName());
+        assertEquals("AND",     defaults.getDefaultFTSOperator());
+        assertEquals(2, defaults.getTextAttributes().size());
+        assertTrue(defaults.getTextAttributes().contains("roy"));
+        assertTrue(defaults.getTextAttributes().contains("king"));
     }
 
 }

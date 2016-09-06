@@ -30,7 +30,7 @@ package org.alfresco.rest.api.search.model;
  **/
 public class SearchEntry
 {
-    Float score;
+    private final Float score;
 
     public SearchEntry(Float score)
     {

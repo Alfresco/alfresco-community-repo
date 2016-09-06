@@ -26,21 +26,23 @@
 
 package org.alfresco.rest.api.search.impl;
 
-import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
-import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.SearchContext;
-import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Maps from a Solr ResultSet to a json public api representation.
@@ -51,6 +53,7 @@ public class ResultMapper
 {
 
     private Nodes nodes;
+    private static Log logger = LogFactory.getLog(ResultMapper.class);
 
     public ResultMapper(Nodes nodes)
     {
@@ -64,21 +67,28 @@ public class ResultMapper
      * @param results
      * @return
      */
-    public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, ResultSet results)
+    public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(SearchQuery searchQuery, ResultSet results)
     {
-        SearchQuery searchQuery = (SearchQuery) params.getPassedIn();
         SearchContext context = null;
         Long totalItems = results.getNumberFound();
         List<Node> noderesults = new ArrayList();
+        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
 
         results.forEach(row ->
         {
-            Node aNode = nodes.getFolderOrDocument(row.getNodeRef(), null, null, params.getInclude(), null);
-            float f = row.getScore();
-            aNode.setSearch(new SearchEntry(f));
-            noderesults.add(aNode);
-        }
-        );
+            Node aNode = nodes.getFolderOrDocument(row.getNodeRef(), null, null, searchQuery.getInclude(), mapUserInfo);
+            if (aNode != null)
+            {
+                float f = row.getScore();
+                aNode.setSearch(new SearchEntry(f));
+                noderesults.add(aNode);
+            }
+            else
+            {
+                //What do I do?
+                logger.warn("Unknown noderef returned from search results "+row.getNodeRef());
+            }
+        });
 
         Integer total = Integer.valueOf(totalItems.intValue());
         int skip = searchQuery.getPaging()==null?0:searchQuery.getPaging().getSkipCount();

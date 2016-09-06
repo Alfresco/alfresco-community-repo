@@ -351,7 +351,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         String origFileName = getOriginalFileName(options);
         if (origFileName == null)
         {
-           origFileName = "TemporaryFile-" + GUID.generate(); 
+           origFileName = "TemporaryFile-" + GUID.generate() + "." + sourceExtension; 
         }
         // Create a temp folder and put source and target files into it. (i.e. tempFromFile and tempToFile will be placed
         // into such folder)

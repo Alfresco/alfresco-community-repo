@@ -88,6 +88,8 @@ public interface ResponseWriter
         }
     });
 
+    final WithResponse DEFAULT_SUCCESS = new WithResponse(Status.STATUS_OK, DEFAULT_JSON_CONTENT, CACHE_NEVER);
+
     default Log resWriterLogger() {
         return LogFactory.getLog(this.getClass());
     }

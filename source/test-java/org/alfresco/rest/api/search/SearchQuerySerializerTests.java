@@ -27,22 +27,18 @@ package org.alfresco.rest.api.search;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.rest.framework.jacksonextensions.RestJsonModule;
-import org.alfresco.rest.framework.tools.ApiAssistant;
-import org.alfresco.rest.framework.tools.RequestReader;
+import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.SearchContext;
+import org.alfresco.rest.framework.resource.parameters.SearchContext.FacetQueryResult;
+import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.extensions.surf.util.Content;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import java.io.IOException;
-import java.io.StringReader;
+import java.util.Arrays;
 
 /**
  * Tests json -> SearchQuery deserialization
@@ -86,6 +82,25 @@ public class SearchQuerySerializerTests
         assertEquals("myquery",searchQuery.getFilterQueries().get(0).getQuery());
         assertEquals(2, searchQuery.getFilterQueries().get(0).getTags().size());
         assertEquals("myquery2",searchQuery.getFilterQueries().get(1).getQuery());
+        assertEquals(1, searchQuery.getFacetQueries().size());
+        assertEquals("facquery",searchQuery.getFacetQueries().get(0).getQuery());
+        assertEquals("facnoused",searchQuery.getFacetQueries().get(0).getLabel());
     }
+
+
+    @Test
+    public void testSerializeContext() throws IOException
+    {
+        ExecutionResult exec1 = new ExecutionResult(new Farmer("180"),null);
+        SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryResult("f1", 15), new FacetQueryResult("f2", 20)));
+        CollectionWithPagingInfo<ExecutionResult> coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
+        String out = helper.writeResponse(coll);
+        assertTrue("There must 'context' json output", out.contains("\"context\":{\"consistency\":{\"lastTxId\":23}"));
+        assertTrue("There must 'facetQueries' json output", out.contains("\"facetQueries\":"));
+        assertTrue("There must 'facetQueries f1' json output", out.contains("{\"label\":\"f1\",\"count\":15}"));
+        assertTrue("There must 'facetQueries f2' json output", out.contains("{\"label\":\"f2\",\"count\":20}"));
+
+    }
+
 
 }

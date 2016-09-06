@@ -43,6 +43,7 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.SearchContext;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -62,6 +63,7 @@ import org.mockito.stubbing.Answer;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,7 +125,15 @@ public class ResultMapperTests
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
         Node firstNode = collectionWithPage.getCollection().stream().findFirst().get();
         assertNotNull(firstNode.getSearch().getScore());
-        assertEquals(34l, collectionWithPage.getContext().getConsistency().getlastTxId());
+    }
+
+    @Test
+    public void testToSearchContext() throws Exception
+    {
+        ResultSet results = mockResultset(Collections.emptyList());
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results);
+        assertEquals(34l, searchContext.getConsistency().getlastTxId());
+        assertNotNull(searchContext.getFacetQueries());
     }
 
     private ResultSet mockResultset(List<Long> archivedNodes) throws JSONException

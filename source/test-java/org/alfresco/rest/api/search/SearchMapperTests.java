@@ -35,6 +35,7 @@ import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.junit.Assert.assertNull;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Default;
+import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -286,10 +287,27 @@ public class SearchMapperTests
         //tags aren't used at the moment
     }
 
+    @Test
+    public void fromFacetQuery() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromFacetQuery(searchParameters, null);
+
+        searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null), new FacetQuery("pong", "table"), new FacetQuery("pang", "tennis")));
+        assertEquals(3 ,searchParameters.getFacetQueries().size());
+        assertEquals("ping" ,searchParameters.getFacetQueries().get(0));
+        assertEquals("pong" ,searchParameters.getFacetQueries().get(1));
+        assertEquals("pang" ,searchParameters.getFacetQueries().get(2));
+
+        //label isn't used at the moment
+    }
+
+
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null);
         return sq;
     }
 }

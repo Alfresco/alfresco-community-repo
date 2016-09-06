@@ -799,13 +799,13 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         }
         return ResourceUtils.getFile(url);
     }
-    
+
     protected Document lock(String nodeId, String body) throws Exception
     {
         HttpResponse response = post(getNodeOperationUrl(nodeId, "lock"), body, null, 200);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
-    
+
     protected Document unlock(String nodeId) throws Exception
     {
         HttpResponse response = post(getNodeOperationUrl(nodeId, "unlock"), null, null, 200);
@@ -884,7 +884,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     {
         return URL_NODES + "/" + nodeId + "/" + URL_CONTENT;
     }
-    
+
     protected String getNodeOperationUrl(String nodeId, String operation)
     {
         return URL_NODES + "/" + nodeId + "/" + operation;

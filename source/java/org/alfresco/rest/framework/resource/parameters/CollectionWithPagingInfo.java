@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.framework.resource.parameters;
 
+import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 
 import java.util.Arrays;

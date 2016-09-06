@@ -23,10 +23,9 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.framework.resource.parameters;
+package org.alfresco.rest.api.search.context;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * The contextual results of a Search
@@ -34,9 +33,9 @@ import java.util.Map;
 public class SearchContext
 {
     private final Consistency consistency;
-    private final List<FacetQueryResult> facetQueries;
+    private final List<FacetQueryContext> facetQueries;
 
-    public SearchContext(long lastTxId, List<FacetQueryResult> facetQueries)
+    public SearchContext(long lastTxId, List<FacetQueryContext> facetQueries)
     {
         if (lastTxId > 0)
         {
@@ -54,31 +53,9 @@ public class SearchContext
         return consistency;
     }
 
-    public List<FacetQueryResult> getFacetQueries()
+    public List<FacetQueryContext> getFacetQueries()
     {
         return facetQueries;
-    }
-
-    public static class FacetQueryResult
-    {
-        private final String label;
-        private final int count;
-
-        public FacetQueryResult(String label, int count)
-        {
-            this.label = label;
-            this.count = count;
-        }
-
-        public String getLabel()
-        {
-            return label;
-        }
-
-        public int getCount()
-        {
-            return count;
-        }
     }
 
     public class Consistency

@@ -26,7 +26,7 @@
 
 package org.alfresco.rest.framework.resource;
 
-import org.alfresco.rest.framework.resource.parameters.SearchContext;
+import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 
 import java.util.Collection;

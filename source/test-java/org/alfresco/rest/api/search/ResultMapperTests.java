@@ -43,7 +43,7 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.SearchContext;
+import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;

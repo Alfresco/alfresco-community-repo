@@ -31,8 +31,8 @@ import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.SearchContext;
-import org.alfresco.rest.framework.resource.parameters.SearchContext.FacetQueryResult;
+import org.alfresco.rest.api.search.context.SearchContext;
+import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -92,7 +92,7 @@ public class SearchQuerySerializerTests
     public void testSerializeContext() throws IOException
     {
         ExecutionResult exec1 = new ExecutionResult(new Farmer("180"),null);
-        SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryResult("f1", 15), new FacetQueryResult("f2", 20)));
+        SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryContext("f1", 15), new FacetQueryContext("f2", 20)));
         CollectionWithPagingInfo<ExecutionResult> coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         String out = helper.writeResponse(coll);
         assertTrue("There must 'context' json output", out.contains("\"context\":{\"consistency\":{\"lastTxId\":23}"));

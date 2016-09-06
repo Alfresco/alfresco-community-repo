@@ -320,6 +320,25 @@ public class LockServiceImpl implements LockService,
     }
     
     /**
+     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int, Lifetime, boolean)
+     */
+    @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
+    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime, boolean lockChildren)
+    {
+        lock(nodeRef, lockType, timeToExpire, lifetime);
+
+        if (lockChildren)
+        {
+            Collection<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(nodeRef);
+            for (ChildAssociationRef childAssocRef : childAssocRefs)
+            {
+                lock(childAssocRef.getChildRef(), lockType, timeToExpire, lifetime, lockChildren);
+            }
+        }
+    }
+    
+    /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int, Lifetime, String)
      */
     @Override

@@ -564,13 +564,13 @@ public class AuditDAOTest extends TestCase
                 createItem(info1, 14);
                 
                 
-                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), -1);
+                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals(5, preDeleteCallback.numEntries(app1));
                 assertEquals(2, preDeleteCallback.numEntries(app2));
                 
                 auditDAO.deleteAuditEntries(app1Id, t1, t2);
                 
-                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), -1);
+                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals("Two entries should have been deleted from app1", 3, resultsCallback.numEntries(app1));
                 assertEquals("No entries should have been deleted from app2", 2, resultsCallback.numEntries(app2));
                 return null;

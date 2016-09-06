@@ -35,6 +35,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
+ *
+ * 1. If the actual query contains one or more misspelled terms which leads to no hits, and if a suggestion is available, the spellcheck manager, auto-executes the suggested term in the background and returns: Searched for London instead of Lndon.
+ * 2. If the actual query contains a rare term resulting in a few hits and suggestions are available and have more hits, the manager returns “didYouMean”…
+ * 3. If the actual query contains a correctly spelled term, but also suggestions are available and they have a fewer or equal hits as the actual query term. In this case, the manager just returns the Solr response.
+ *
  * @author Jamal Kaabi-Mofrad
  * @since 5.0
  */

@@ -29,10 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -324,5 +321,96 @@ public class TestUserPreferences extends EnterpriseTestApi
         {
         	assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
         }
+
+		{
+			// REPO-1061, REPO-890
+			try
+			{
+				String skipCount = "a";
+				String maxItems = "hi";
+				HashMap<String, String> params = new HashMap<String, String>();
+				params.put("skipCount", skipCount);
+				params.put("maxItems", maxItems);
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1.getId()));
+				peopleProxy.getPreferences(person1.getId(), params);
+				fail();
+			}
+			catch (PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+			}
+
+			try
+			{
+				String skipCount = "a";
+				String maxItems = "null";
+				HashMap<String, String> params = new HashMap<String, String>();
+				params.put("skipCount", skipCount);
+				params.put("maxItems", maxItems);
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1.getId()));
+				peopleProxy.getPreferences(person1.getId(), params);
+				fail();
+			}
+			catch (PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+			}
+
+			try
+			{
+				String maxItems = "Red";
+				HashMap<String, String> params = new HashMap<String, String>();
+				params.put("maxItems", maxItems);
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1.getId()));
+                peopleProxy.getPreferences(person1.getId(), params);
+				fail();
+			}
+			catch (PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+			}
+
+			try
+			{
+				String skipCount = "yuck";
+				HashMap<String, String> params = new HashMap<String, String>();
+				params.put("skipCount", skipCount);
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1.getId()));
+				peopleProxy.getPreferences(person1.getId(), params);
+				fail();
+			}
+			catch (PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+			}
+
+			try
+			{
+				String skipCount = "-1";
+				HashMap<String, String> params = new HashMap<String, String>();
+				params.put("skipCount", skipCount);
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1.getId()));
+				peopleProxy.getPreferences(person1.getId(), params);
+				fail();
+			}
+			catch (PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+			}
+
+			try
+			{
+				String maxItems = "0";
+				HashMap<String, String> params = new HashMap<String, String>();
+				params.put("maxItems", maxItems);
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1.getId()));
+				peopleProxy.getPreferences(person1.getId(), params);
+				fail();
+			}
+			catch (PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+			}
+		}
 	}
 }

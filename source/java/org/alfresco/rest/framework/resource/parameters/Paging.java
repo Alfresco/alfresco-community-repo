@@ -26,6 +26,8 @@
 package org.alfresco.rest.framework.resource.parameters;
 
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Represents paging of collections of resources. Set by the client request.<br/>
@@ -77,7 +79,8 @@ public class Paging
         return this.maxItems;
     }
 
-    public static Paging valueOf(int skipCount, int maxItems)
+    @JsonCreator
+    public static Paging valueOf(@JsonProperty("skipCount") int skipCount, @JsonProperty("maxItems") int maxItems)
     {
         return new Paging(skipCount,maxItems);
     }

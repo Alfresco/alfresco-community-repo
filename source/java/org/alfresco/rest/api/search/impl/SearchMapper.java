@@ -31,6 +31,7 @@ import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -64,6 +65,7 @@ public class SearchMapper
 
         SearchParameters sp = new SearchParameters();
         fromQuery(sp, searchQuery.getQuery());
+        fromPaging(sp, searchQuery.getPaging());
 
         //Hardcode workspace store
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -98,5 +100,14 @@ public class SearchMapper
         sp.setQuery(q.getQuery());
         sp.setSearchTerm(q.getUserQuery());
 
+    }
+
+    public void fromPaging(SearchParameters sp, Paging paging)
+    {
+        if (paging != null)
+        {
+            sp.setMaxItems(paging.getMaxItems());
+            sp.setSkipCount(paging.getSkipCount());
+        }
     }
 }

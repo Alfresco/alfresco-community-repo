@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.search.model;
 
+import org.alfresco.rest.framework.resource.parameters.Paging;
+
 /**
  * POJO class representing the JSON body for a search request
  *
@@ -34,6 +36,7 @@ package org.alfresco.rest.api.search.model;
 public class SearchQuery
 {
     Query query;
+    Paging paging;
 
     public SearchQuery()
     {
@@ -47,5 +50,15 @@ public class SearchQuery
     public void setQuery(Query query)
     {
         this.query = query;
+    }
+
+    public Paging getPaging()
+    {
+        return paging;
+    }
+
+    public void setPaging(Paging paging)
+    {
+        this.paging = paging;
     }
 }

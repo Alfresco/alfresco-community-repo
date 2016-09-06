@@ -88,7 +88,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             SearchQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchQuery.class);
 
             //Parse the parameter
-            Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, null, null, null, null, null, null, null, false);
+            Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, searchQuery.getPaging(), null, null, null, null, null, null, false);
             Params params = Params.valueOf(null, recognizedParams, searchQuery, webScriptRequest);
 
             //Turn the params into the Java SearchParameters object

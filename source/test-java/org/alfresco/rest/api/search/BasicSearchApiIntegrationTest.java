@@ -56,6 +56,7 @@ public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
     private static final String SEARCH_API_NAME = "search";
     private static final String  json = "{ \"query\": {\"query\": \"cm:name:king\",\"userQuery\": \"great\",\"language\": \"afts\"}}";
     private static final String  bad_json = "{ \"query\": {\"qu\": \"cm:some nonsense \",\"userQuery\": \"great\",\"language\": \"afts\"}}";
+
     /**
      * Tests basic api for search
      */
@@ -82,6 +83,9 @@ public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
             assertFalse(paging.getHasMoreItems());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
+
+            //Just happy if it doesn't error
+            response = post(URL_SEARCH, SerializerTestHelper.JSON, null, null, SEARCH_API_NAME, 200);
 
         }
         finally

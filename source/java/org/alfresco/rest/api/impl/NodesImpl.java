@@ -74,6 +74,7 @@ import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.virtual.store.VirtualStore;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
@@ -207,6 +208,7 @@ public class NodesImpl implements Nodes
     private RetryingTransactionHelper retryingTransactionHelper;
     private NodeAssocService nodeAssocService;
     private LockService lockService;
+    private VirtualStore smartStore; // note: remove as part of REPO-1173
 
     private enum Activity_Type
     {
@@ -303,6 +305,11 @@ public class NodesImpl implements Nodes
     public void setNodeAssocService(NodeAssocService nodeAssocService)
     {
         this.nodeAssocService = nodeAssocService;
+    }
+
+    public void setSmartStore(VirtualStore smartStore)
+    {
+        this.smartStore = smartStore;
     }
 
 
@@ -1327,7 +1334,8 @@ public class NodesImpl implements Nodes
 
         // call GetChildrenCannedQuery (via FileFolderService)
         if (((filterProps == null) || (filterProps.size() == 0)) && 
-            ((assocTypeQNames == null) || (assocTypeQNames.size() == 0)))
+            ((assocTypeQNames == null) || (assocTypeQNames.size() == 0)) &&
+            (smartStore.isVirtual(parentNodeRef)|| (smartStore.canVirtualize(parentNodeRef))))
         {
             pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
         }

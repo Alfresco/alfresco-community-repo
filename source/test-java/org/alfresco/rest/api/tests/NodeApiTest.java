@@ -87,7 +87,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.apache.http.HttpStatus;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -3786,7 +3785,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
        UnlockInfo unlockInfo = new UnlockInfo();
        unlockInfo.setIncludeChildren(true);
-       unlockInfo.setAllowCheckedOut(true);
 
        HttpResponse response = post(getNodeOperationUrl(d1Id, "unlock"), toJsonAsStringNonNull(unlockInfo), null, 200);
        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -3910,7 +3908,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
        // Unlock folder and children
        UnlockInfo unlockInfo = new UnlockInfo();
        unlockInfo.setIncludeChildren(true);
-       unlockInfo.setAllowCheckedOut(true);
        post(getNodeOperationUrl(folderAId, "unlock"), toJsonAsStringNonNull(unlockInfo), null, 200);
 
        params = Collections.singletonMap("include", "aspectNames,properties,isLocked");

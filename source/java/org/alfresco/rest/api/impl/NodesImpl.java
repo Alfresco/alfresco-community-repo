@@ -2991,12 +2991,7 @@ public class NodesImpl implements Nodes
         {
             unlockInfo.setIncludeChildren(false);
         }
-        if (unlockInfo.getAllowCheckedOut() == null)
-        {
-            unlockInfo.setAllowCheckedOut(false);
-        }
-        
-        lockService.unlock(nodeRef, unlockInfo.getIncludeChildren(), unlockInfo.getAllowCheckedOut());
+        lockService.unlock(nodeRef, unlockInfo.getIncludeChildren());
         return getFolderOrDocument(nodeId, parameters);
     }
 

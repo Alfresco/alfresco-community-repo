@@ -29,23 +29,20 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
-import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Params;
-import org.alfresco.rest.framework.tests.core.JsonJacksonTests;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -62,17 +59,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.extensions.surf.util.Content;
-import org.springframework.extensions.webscripts.Match;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.http.HttpMethod;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,7 +91,13 @@ public class ResultMapperTests
             @Override
             public Node answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                return new Node((NodeRef)args[0], (NodeRef)args[1], nodeProps, mapUserInfo, sr);
+                NodeRef aNode = (NodeRef)args[0];
+                if (StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.equals(aNode.getStoreRef()))
+                {
+                    //Return NULL if its from the archive store.
+                    return null;
+                }
+                return new Node(aNode, (NodeRef)args[1], nodeProps, mapUserInfo, sr);
             }
         });
         mapper = new ResultMapper(nodes);
@@ -115,12 +110,13 @@ public class ResultMapperTests
         assertNotNull(collection);
         assertFalse(collection.hasMoreItems());
         assertTrue(collection.getTotalItems() < 1);
+        assertNull(collection.getContext());
     }
 
     @Test
     public void testToCollectionWithPagingInfo() throws Exception
     {
-        ResultSet results = mockResultset();
+        ResultSet results = mockResultset(Arrays.asList(514l));
         CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(SearchQuery.EMPTY,results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
@@ -130,11 +126,19 @@ public class ResultMapperTests
         assertEquals(34l, collectionWithPage.getContext().getConsistency().getlastTxId());
     }
 
-    private ResultSet mockResultset() throws JSONException
+    private ResultSet mockResultset(List<Long> archivedNodes) throws JSONException
     {
 
         NodeService nodeService = mock(NodeService.class);
-        when(nodeService.getNodeRef(any())).thenReturn(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate()));
+        when(nodeService.getNodeRef(any())).thenAnswer(new Answer<NodeRef>() {
+            @Override
+            public NodeRef answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                //If the DBID is in the list archivedNodes, instead of returning a noderef return achivestore noderef
+                if (archivedNodes.contains(args[0])) return new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, GUID.generate());;
+                return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+            }
+        });
 
         SearchParameters sp = new SearchParameters();
         sp.setBulkFetchEnabled(false);

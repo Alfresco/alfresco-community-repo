@@ -25,18 +25,13 @@
  */
 package org.alfresco.rest.api.search;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.jacksonextensions.RestJsonModule;
-import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.tools.RequestReader;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
@@ -44,34 +39,46 @@ import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * Tests json -> SearchQuery deserialization
+ * Sets up an parses a valid JSON request.
  *
  * @author Gethin James
  */
-public class SearchQuerySerializerTests
+public class SerializerTestHelper implements RequestReader
 {
 
-    private static SerializerTestHelper helper;
+    JacksonHelper jsonHelper = null;
 
-    @BeforeClass
-    public static void setupTests() throws Exception
+    public static final String JSON = "{ \"query\": {\"query\": \"g*\",\"userQuery\": \"great\",\"language\": \"afts\"}, "
+                + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"},"
+                + "\"sort\": {\"type\": \"FIELD\",\"field\": \"king\",\"ascending\": \"true\"},"
+                + "\"include\": [\"aspectNames\", \"properties\"]}";
+
+    public SerializerTestHelper()
     {
-        helper = new SerializerTestHelper();
+        this.jsonHelper = new JacksonHelper();
+        RestJsonModule module = new RestJsonModule();
+        jsonHelper.setModule(module);
+        try
+        {
+            jsonHelper.afterPropertiesSet();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
-    @Test
-    public void testDeserializeQuery() throws IOException
+    private SearchQuery extractFromJson(String json) throws IOException
     {
-        SearchQuery searchQuery = helper.searchQueryFromJson();
-        assertEquals(SearchQuery.class, searchQuery.getClass());
-        assertEquals("afts", searchQuery.getQuery().getLanguage());
-        assertEquals("g*", searchQuery.getQuery().getQuery());
-        assertEquals("great", searchQuery.getQuery().getUserQuery());
-        assertEquals(99, searchQuery.getPaging().getMaxItems());
-        assertEquals(4, searchQuery.getPaging().getSkipCount());
-        assertEquals(2, searchQuery.getInclude().size());
-        assertTrue(searchQuery.getInclude().contains("aspectNames"));
-        assertTrue(searchQuery.getInclude().contains("properties"));
+        Content content = mock(Content.class);
+        when(content.getReader()).thenReturn(new StringReader(json));
+        WebScriptRequest request = mock(WebScriptRequest.class);
+        when(request.getContent()).thenReturn(content);
+        return extractJsonContent(request, jsonHelper, SearchQuery.class);
     }
 
+    public SearchQuery searchQueryFromJson() throws IOException
+    {
+        return extractFromJson(JSON);
+    }
 }

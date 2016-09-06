@@ -32,9 +32,11 @@ import static junit.framework.TestCase.fail;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
+import static org.junit.Assert.assertNull;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -52,6 +54,7 @@ public class SearchMapperTests
 {
 
     static SearchMapper searchMapper = new SearchMapper();
+    static SerializerTestHelper helper = new SerializerTestHelper();
 
     @Test(expected = IllegalArgumentException.class)
     public void testMandatory() throws Exception
@@ -68,6 +71,9 @@ public class SearchMapperTests
         //Test defaults
         assertEquals("There should be only 1 default store", 1,searchParameters.getStores().size());
         assertEquals("workspaces store is the default", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
+
+        searchParameters = searchMapper.toSearchParameters(helper.searchQueryFromJson());
+        assertNotNull(searchParameters);
     }
 
     @Test
@@ -137,6 +143,45 @@ public class SearchMapperTests
         assertEquals(searchParameters.getSkipCount(),paging.getSkipCount());
     }
 
+
+    @Test
+    public void fromSort() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromSort(searchParameters, null);
+
+        try
+        {
+            searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("wrongenum", null, false)));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //wrongenum is illegal
+            assertNotNull(iae);
+        }
+
+        searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", "my", true), new SortDef("SCORE", null, false)));
+        assertEquals(2 , searchParameters.getSortDefinitions().size());
+        searchParameters.getSortDefinitions().forEach(sortDefinition ->
+        {
+            switch (sortDefinition.getSortType())
+            {
+                case FIELD:
+                    assertEquals("my", sortDefinition.getField());
+                    assertEquals(true, sortDefinition.isAscending());
+                    break;
+                case SCORE:
+                    assertNull(sortDefinition.getField());
+                    assertEquals(false, sortDefinition.isAscending());
+                    break;
+                default:
+                    fail("Invalid sortDefinition");
+            }
+        });
+    }
+
     @Test
     public void validateInclude() throws Exception
     {
@@ -171,7 +216,7 @@ public class SearchMapperTests
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null);
         return sq;
     }
 }

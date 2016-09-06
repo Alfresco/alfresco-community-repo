@@ -23,57 +23,51 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.rest.api.search.model;
 
-import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
+import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-import java.util.List;
-
 /**
- * POJO class representing the JSON body for a search request
+ * This is a copy of the SortDefinition class found in data-model.  Due to the use of a very old version
+ * of Jackson it is necessary to duplicate this class rather than reuse it.
  *
  * @author Gethin James
  */
-public class SearchQuery
+public class SortDef
 {
-    private final Query query;
-    private final Paging paging;
-    private final List<String> include;
-    private final List<SortDef> sort;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null);
+    String type;
+    String field;
+    boolean ascending;
 
     @JsonCreator
-    public SearchQuery(@JsonProperty("query") Query query,
-                       @JsonProperty("paging") Paging paging,
-                       @JsonProperty("include") List<String> include,
-                       @JsonProperty("sort") List<SortDef> sort)
+    public SortDef(@JsonProperty("type") String type,
+                   @JsonProperty("field")  String field,
+                   @JsonProperty("ascending") boolean ascending)
     {
-        this.query = query;
-        this.paging = paging;
-        this.include = include;
-        this.sort = sort;
+        this.type = type;
+        this.field = field;
+        this.ascending = ascending;
     }
 
-    public Query getQuery()
+    public String getType()
     {
-        return query;
+        return type;
     }
 
-    public Paging getPaging()
+    /**
+     * You are allowed to create an instance of this class that has an invalid sortType
+     * but this method will validate the definition is correct and return it.
+     *
+     * @return SortDefinition
+     */
+    public SortDefinition toDefinition()
     {
-        return paging;
+        return new SortDefinition(SortType.valueOf(type), field, ascending);
     }
 
-    public List<String> getInclude()
-    {
-        return include;
-    }
-    public List<SortDef> getSort()
-    {
-        return sort;
-    }
 }

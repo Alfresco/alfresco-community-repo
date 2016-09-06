@@ -35,10 +35,10 @@ import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.ref.Protocols;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.repo.virtual.ref.VanillaProtocol;
-import org.alfresco.repo.virtual.ref.VirtualProtocol;
 import org.alfresco.repo.virtual.template.ApplyTemplateMethodTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.logging.Log;
@@ -150,6 +150,18 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         boolean canVirtualize = smartStore.canVirtualize(solrFacetsNodeRef);
         assertEquals(false,
                      canVirtualize);
+    }
+
+    @Test
+    public void testCanCreateFolderNamedV() throws Exception
+    {
+        // note: see Reference.VIRTUAL_TOKEN
+        String v = "v";
+
+        assertFalse(Reference.isReference(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, v)));
+        
+        ChildAssociationRef folderChild = createFolder(companyHomeNodeRef, v);
+        assertNotNull(folderChild);
     }
 
     private String asTypedPermission(String perm)

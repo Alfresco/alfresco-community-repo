@@ -74,7 +74,7 @@ public class Reference
         if (nodeRef != null)
         {
             String id = nodeRef.getId();
-            if (id != null)
+            if ((id != null) && (id.length() > 1))
             {
                 char zeroChar = id.charAt(0);
                 return VIRTUAL_TOKEN.equals(zeroChar);
@@ -117,7 +117,8 @@ public class Reference
                 ReferenceEncodingException
     {
         String id = nodeRef.getId();
-        if (id.startsWith("" + VIRTUAL_TOKEN))
+        if (id.startsWith("" + VIRTUAL_TOKEN)
+            && (id.length() > 1)) // belts-and-braces
         {
             char token = id.charAt(1);
             Encoding encoding = Encodings.fromToken(token);

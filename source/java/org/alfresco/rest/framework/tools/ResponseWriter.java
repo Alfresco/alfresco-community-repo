@@ -23,6 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rest.framework.tools;
 
 import org.alfresco.rest.framework.Api;
@@ -66,7 +67,7 @@ public interface ResponseWriter
 {
 
     String UTF8 = "UTF-8";
-    ContentInfo DEFAULT_JSON_CONTENT = new ContentInfoImpl(Format.JSON.mimetype(),UTF8, 0, null);
+    ContentInfo DEFAULT_JSON_CONTENT = new ContentInfoImpl(Format.JSON.mimetype(), UTF8, 0, null);
     Cache CACHE_NEVER = new Cache(new Description.RequiredCache()
     {
         @Override
@@ -90,13 +91,15 @@ public interface ResponseWriter
 
     final WithResponse DEFAULT_SUCCESS = new WithResponse(Status.STATUS_OK, DEFAULT_JSON_CONTENT, CACHE_NEVER);
 
-    default Log resWriterLogger() {
+    default Log resWriterLogger()
+    {
         return LogFactory.getLog(this.getClass());
     }
 
     /**
      * Sets the response headers with any information we know about the content
-     * @param res WebScriptResponse
+     *
+     * @param res         WebScriptResponse
      * @param contentInfo Content Information
      */
     default void setContentInfoOnResponse(WebScriptResponse res, ContentInfo contentInfo)
@@ -134,7 +137,6 @@ public interface ResponseWriter
     /**
      * The response status must be set before the response is written by Jackson (which will by default close and commit the response).
      * In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
-     *
      * If you set content information via the contentInfo object and ALSO the headers then "headers" will win because they are
      * set last.
      *
@@ -144,17 +146,18 @@ public interface ResponseWriter
      * @param contentInfo
      * @param headers
      */
-    default void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo,  Map<String, List<String>> headers)
+    default void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo, Map<String, List<String>> headers)
     {
         res.setStatus(status);
         if (cache != null) res.setCache(cache);
         setContentInfoOnResponse(res,contentInfo);
         if (headers != null && !headers.isEmpty())
         {
-            for (Map.Entry<String, List<String>> header:headers.entrySet())
+            for (Map.Entry<String, List<String>> header : headers.entrySet())
             {
-                for (int i=0; i < header.getValue().size(); i++) {
-                    if (i==0)
+                for (int i = 0; i < header.getValue().size(); i++)
+                {
+                    if (i == 0)
                     {
                         //If its the first one then set the header overwriting.
                         res.setHeader(header.getKey(), header.getValue().get(i));
@@ -171,6 +174,7 @@ public interface ResponseWriter
 
     /**
      * Sets the response using the WithResponse object
+     *
      * @param res
      * @param withResponse
      */
@@ -181,29 +185,27 @@ public interface ResponseWriter
 
     /**
      * Renders a JSON error response
+     *
      * @param errorResponse The error
-     * @param res web script response
+     * @param res           web script response
      * @throws IOException
      */
-    default void renderErrorResponse(final ErrorResponse errorResponse, final WebScriptResponse res, final JacksonHelper jsonHelper) throws IOException {
+    default void renderErrorResponse(final ErrorResponse errorResponse, final WebScriptResponse res, final JacksonHelper jsonHelper)
+                throws IOException
+    {
 
         String logId = "";
 
         if (Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode() || resWriterLogger().isDebugEnabled())
         {
             logId = org.alfresco.util.GUID.generate();
-            resWriterLogger().error(logId+" : "+errorResponse.getStackTrace());
+            resWriterLogger().error(logId + " : " + errorResponse.getStackTrace());
         }
 
         String stackMessage = I18NUtil.getMessage(DefaultExceptionResolver.STACK_MESSAGE_ID);
 
-        final ErrorResponse errorToWrite = new ErrorResponse(errorResponse.getErrorKey(),
-                errorResponse.getStatusCode(),
-                errorResponse.getBriefSummary(),
-                stackMessage,
-                logId,
-                errorResponse.getAdditionalState(),
-                DefaultExceptionResolver.ERROR_URL);
+        final ErrorResponse errorToWrite = new ErrorResponse(errorResponse.getErrorKey(), errorResponse.getStatusCode(),
+                    errorResponse.getBriefSummary(), stackMessage, logId, errorResponse.getAdditionalState(), DefaultExceptionResolver.ERROR_URL);
 
         setContentInfoOnResponse(res, DEFAULT_JSON_CONTENT);
 
@@ -216,7 +218,7 @@ public interface ResponseWriter
             @SuppressWarnings("unchecked")
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                    throws JsonGenerationException, JsonMappingException, IOException
+                        throws JsonGenerationException, JsonMappingException, IOException
             {
                 JSONObject obj = new JSONObject();
                 obj.put("error", errorToWrite);
@@ -225,32 +227,32 @@ public interface ResponseWriter
         });
     }
 
-
     /**
      * Renders an exception to the output stream as Json.
+     *
      * @param exception
      * @param response
      * @throws IOException
      */
-    default void renderException(final Exception exception, final WebScriptResponse response, final ApiAssistant assistant) throws IOException {
+    default void renderException(final Exception exception, final WebScriptResponse response, final ApiAssistant assistant) throws IOException
+    {
         renderErrorResponse(assistant.resolveException(exception), response, assistant.getJsonHelper());
     }
 
     /**
      * Renders the result of an execution.
      *
-     * @param res WebScriptResponse
+     * @param res         WebScriptResponse
      * @param toSerialize result of an execution
      * @throws IOException
      */
-    default void renderJsonResponse(final WebScriptResponse res, final Object toSerialize, final JacksonHelper jsonHelper)
-            throws IOException
+    default void renderJsonResponse(final WebScriptResponse res, final Object toSerialize, final JacksonHelper jsonHelper) throws IOException
     {
         jsonHelper.withWriter(res.getOutputStream(), new JacksonHelper.Writer()
         {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                    throws JsonGenerationException, JsonMappingException, IOException
+                        throws JsonGenerationException, JsonMappingException, IOException
             {
                 objectMapper.writeValue(generator, toSerialize);
             }

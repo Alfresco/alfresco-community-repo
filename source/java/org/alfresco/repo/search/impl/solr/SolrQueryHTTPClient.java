@@ -482,7 +482,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 url.append("&fq=").append(encoder.encode("{!afts}TENANT_FILTER_FROM_JSON", "UTF-8"));
             }
 
-            if(searchParameters.getFieldFacets().size() > 0)
+            if(searchParameters.getFieldFacets().size() > 0 || searchParameters.getFacetQueries().size() > 0)
             {
                 url.append("&facet=").append(encoder.encode("true", "UTF-8"));
                 for(FieldFacet facet : searchParameters.getFieldFacets())

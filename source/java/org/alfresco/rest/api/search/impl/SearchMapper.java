@@ -57,11 +57,8 @@ public class SearchMapper
      * @param params
      * @return
      */
-    public SearchParameters toSearchParameters(Params params)
+    public SearchParameters toSearchParameters(SearchQuery searchQuery)
     {
-        BasicContentInfo info = params.getContentInfo();
-        SearchQuery searchQuery = (SearchQuery) params.getPassedIn();
-
         ParameterCheck.mandatory("query", searchQuery.getQuery());
 
         SearchParameters sp = new SearchParameters();

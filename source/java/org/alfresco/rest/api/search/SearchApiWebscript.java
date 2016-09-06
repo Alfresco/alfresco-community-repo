@@ -87,12 +87,11 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             //Turn JSON into a Java object respresentation
             SearchQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchQuery.class);
 
-            //Parse the parameter
-            Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, null, null, null, null, null, null, null, false);
-            Params params = Params.valueOf(null, recognizedParams, searchQuery, webScriptRequest);
+            //Parse the parameters
+            Params params = getParams(webScriptRequest, searchQuery);
 
             //Turn the params into the Java SearchParameters object
-            SearchParameters searchParams = searchMapper.toSearchParameters(params);
+            SearchParameters searchParams = searchMapper.toSearchParameters(searchQuery);
 
             //Call searchService
             ResultSet results = searchService.query(searchParams);
@@ -109,6 +108,18 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         } catch (Exception exception) {
             renderException(exception,webScriptResponse,assistant);
         }
+    }
+
+    /**
+     * Gets the Params object, parameters come from the SearchQuery json not the requerst
+     * @param webScriptRequest
+     * @param searchQuery
+     * @return Params
+     */
+    protected Params getParams(WebScriptRequest webScriptRequest, SearchQuery searchQuery)
+    {
+        Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, null, null, null, null, null, null, null, false);
+        return Params.valueOf(null, recognizedParams, searchQuery, webScriptRequest);
     }
 
     public void setNodes(Nodes nodes) {

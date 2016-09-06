@@ -31,6 +31,7 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.model.SearchEntry;
+import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -73,6 +74,7 @@ public class ResultMapper
      */
     public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, ResultSet results)
     {
+        SearchQuery searchQuery = (SearchQuery) params.getPassedIn();
         Long totalItems = results.getNumberFound();
         List<Node> noderesults = new ArrayList();
 
@@ -86,7 +88,8 @@ public class ResultMapper
         );
 
         Integer total = Integer.valueOf(totalItems.intValue());
-        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, noderesults.size() + params.getPaging().getSkipCount() < total, total);
+        int skip = searchQuery.getPaging()==null?0:searchQuery.getPaging().getSkipCount();
+        return CollectionWithPagingInfo.asPaged(searchQuery.getPaging(), noderesults, noderesults.size() + skip < total, total);
     }
 
 }

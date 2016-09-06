@@ -111,7 +111,7 @@ public class ResultMapperTests
     @Test
     public void testNoResults() throws Exception
     {
-        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(mockParams(),new EmptyResultSet());
+        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(mockParams(new SearchQuery()),new EmptyResultSet());
         assertNotNull(collection);
         assertFalse(collection.hasMoreItems());
         assertTrue(collection.getTotalItems() < 1);
@@ -121,7 +121,7 @@ public class ResultMapperTests
     public void testToCollectionWithPagingInfo() throws Exception
     {
         ResultSet results = mockResultset();
-        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(mockParams(),results);
+        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(mockParams(new SearchQuery()),results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
@@ -142,10 +142,11 @@ public class ResultMapperTests
         return results;
     }
 
-    private Params mockParams()
+    private Params mockParams(SearchQuery searchQuery)
     {
         Params params = mock(Params.class);
         when(params.getInclude()).thenReturn(new ArrayList<String>());
+        when(params.getPassedIn()).thenReturn(searchQuery);
         return params;
     }
 

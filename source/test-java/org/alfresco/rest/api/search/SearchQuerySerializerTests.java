@@ -104,8 +104,9 @@ public class SearchQuerySerializerTests
         assertEquals("mylabel", ff.getLabel());
         assertEquals("FC", ff.getMethod());
         assertEquals(Integer.valueOf(5), ff.getMincount());
+        assertEquals(2000, searchQuery.getLimits().getPermissionEvaluationCount().intValue());
+        assertEquals(5000, searchQuery.getLimits().getPermissionEvaluationTime().intValue());
     }
-
 
     @Test
     public void testSerializeContext() throws IOException

@@ -42,6 +42,7 @@ import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.FacetFields;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
+import org.alfresco.rest.api.search.model.Limits;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.Scope;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -474,10 +475,40 @@ public class SearchMapperTests
         assertEquals("ENUM" ,ff.getMethod().toString());
     }
 
+    @Test
+    public void fromLimits() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchMapper.setDefaults(searchParameters);
+
+        //Doesn't error
+        searchMapper.fromLimits(searchParameters, null);
+        assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
+        assertEquals(100, searchParameters.getMaxItems());
+
+        searchMapper.fromLimits(searchParameters, new Limits(null, null));
+        assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
+        assertEquals(100, searchParameters.getMaxItems());
+
+        searchMapper.fromLimits(searchParameters, new Limits(null, 34));
+        assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());
+        assertEquals(34, searchParameters.getMaxPermissionChecks());
+        assertEquals(-1, searchParameters.getMaxItems());
+        assertEquals(-1, searchParameters.getMaxPermissionCheckTimeMillis());
+
+        searchParameters = new SearchParameters();
+        searchMapper.setDefaults(searchParameters);
+        searchMapper.fromLimits(searchParameters, new Limits(1000, null));
+        assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());
+        assertEquals(1000, searchParameters.getMaxPermissionCheckTimeMillis());
+        assertEquals(-1, searchParameters.getMaxItems());
+        assertEquals(-1, searchParameters.getMaxPermissionChecks());
+    }
+
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null, null, null);
         return sq;
     }
 }

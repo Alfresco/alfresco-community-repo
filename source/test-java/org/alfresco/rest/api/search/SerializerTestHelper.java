@@ -63,6 +63,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"facetFields\": {\"facets\": [{\"field\": \"cm:creator\",\"prefix\": \"myquery2\",\"sort\": \"COUNT\",\"missing\": \"false\"}, {\"field\": \"modifier\",\"label\": \"mylabel\",\"method\": \"FC\",\"mincount\": \"5\"}]},"
                 + "\"facetQueries\": [{\"query\": \"facquery\",\"label\": \"facnoused\"}],"
                 + "\"spellcheck\": {\"query\": \"alfrezco\"},"
+                + "\"limits\": {\"permissionEvaluationCount\": \"2000\",\"permissionEvaluationTime\": \"5000\"},"
                 + "\"scope\": { \"stores\": [\"workspace://SpacesStore\"]},"
                 + "\"include\": [\"aspectNames\", \"properties\"]}";
 

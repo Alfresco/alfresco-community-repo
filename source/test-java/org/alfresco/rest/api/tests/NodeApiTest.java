@@ -3593,19 +3593,33 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
         String d1Id = d1.getId();
 
+        HttpResponse response = getSingle(URL_NODES, d1Id, null, null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(node.getProperties().get("cm:lockType"));
+        assertNull(node.getProperties().get("cm:lockOwner"));
+        assertNull(node.getIsLocked());
+
+        Map<String, String> params = Collections.singletonMap("include", "isLocked");
+        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(node.getProperties().get("cm:lockType"));
+        assertNull(node.getProperties().get("cm:lockOwner"));
+        assertFalse(node.getIsLocked());
+
         Map<String, String> body = new HashMap<>();
         body.put("includeChildren", "true");
         body.put("timeToExpire", "60");
         body.put("type", "FULL");
         body.put("lifetime", "PERSISTENT");
 
-        HttpResponse response = post(URL_NODES, d1Id, "lock", toJsonAsStringNonNull(body).getBytes(), null, null, 200);
+        response = post(URL_NODES, d1Id, "lock", toJsonAsStringNonNull(body).getBytes(), null, null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
         assertEquals(d1Id, documentResp.getId());
         assertEquals("READ_ONLY_LOCK", documentResp.getProperties().get("cm:lockType"));
         assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
+        assertNull(documentResp.getIsLocked());
         
         // Empty lock body, the default values are used
         post("nodes/"+folderId+"/lock", "{}", null, 200);
@@ -3627,6 +3641,23 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Document dA2 = createTextFile(folderId, dA2Name, "A2 content");
         String dA2Id = dA2.getId();
 
+        params = Collections.singletonMap("include", "isLocked");
+        response = getSingle(URL_NODES, folderAId, params, null, 200);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(node.getProperties());
+        assertFalse(node.getIsLocked());
+
+        params = Collections.singletonMap("include", "aspectNames,properties,isLocked");
+        response = getAll(getNodeChildrenUrl(folderAId), null, params, 200);
+        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        // Check children nodes are not locked.
+        for (Node child : nodes)
+        {
+            assertNull(child.getProperties().get("cm:lockType"));
+            assertNull(child.getProperties().get("cm:lockOwner"));
+            assertFalse(child.getIsLocked());
+        }
+
         body = new HashMap<>();
         body.put("includeChildren", "true");
         body.put("timeToExpire", "60");
@@ -3641,15 +3672,17 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(folderAId, documentResp.getId());
         assertNotNull(documentResp.getProperties().get("cm:lockType"));
         assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
+        assertNull(documentResp.getIsLocked());
         
-        Map<String, String> params = Collections.singletonMap("include", "aspectNames,properties");
+        params = Collections.singletonMap("include", "aspectNames,properties,isLocked");
         response = getAll(getNodeChildrenUrl(folderAId), null, params, 200);
-        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         // Test if children nodes are locked as well.
         for (Node child : nodes)
         {
             assertNotNull(child.getProperties().get("cm:lockType"));
             assertNotNull(child.getProperties().get("cm:lockOwner"));
+            assertTrue(child.getIsLocked());
         }
         
         Folder folderB = createFolder(Nodes.PATH_MY, "folderB");

@@ -73,6 +73,7 @@ public class Node implements Comparable<Node>
     protected Boolean isFolder;
     protected Boolean isFile;
     protected Boolean isLink;
+    protected Boolean isLocked;
 
     protected NodeRef parentNodeRef;
     protected PathInfo pathInfo;
@@ -303,6 +304,16 @@ public class Node implements Comparable<Node>
     public void setIsLink(Boolean isLink)
     {
         this.isLink = isLink;
+    }
+
+    public Boolean getIsLocked()
+    {
+        return isLocked;
+    }
+
+    public void setIsLocked(Boolean isLocked)
+    {
+        this.isLocked = isLocked;
     }
 
     public List<String> getAllowableOperations()

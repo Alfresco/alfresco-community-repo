@@ -45,7 +45,9 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.service.cmr.search.SearchParameters.Operator;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
+import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.NotImplementedException;
 
@@ -55,6 +57,7 @@ import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLINK;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PATH;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
+import static org.alfresco.rest.api.impl.NodesImpl.PARAM_SYNONYMS_QNAME;
 import static org.alfresco.service.cmr.search.SearchService.*;
 
 import java.util.ArrayList;
@@ -177,7 +180,10 @@ public class SearchMapper
 
                 try
                 {
-                    sp.addSort(sortDef.toDefinition());
+                    SortType sortType = SortType.valueOf(sortDef.getType());
+                    String field = sortDef.getField();
+                    QName propQname = PARAM_SYNONYMS_QNAME.get(field);
+                    sp.addSort(new SortDefinition(sortType, propQname==null?field:propQname.toString(), sortDef.isAscending()));
                 }
                 catch (IllegalArgumentException e)
                 {

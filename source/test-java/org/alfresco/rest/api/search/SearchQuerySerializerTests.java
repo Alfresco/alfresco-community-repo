@@ -82,6 +82,10 @@ public class SearchQuerySerializerTests
         assertEquals(2, defaults.getTextAttributes().size());
         assertTrue(defaults.getTextAttributes().contains("roy"));
         assertTrue(defaults.getTextAttributes().contains("king"));
+        assertEquals(2, searchQuery.getFilterQueries().size());
+        assertEquals("myquery",searchQuery.getFilterQueries().get(0).getQuery());
+        assertEquals(2, searchQuery.getFilterQueries().get(0).getTags().size());
+        assertEquals("myquery2",searchQuery.getFilterQueries().get(1).getQuery());
     }
 
 }

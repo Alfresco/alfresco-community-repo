@@ -35,6 +35,7 @@ import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.junit.Assert.assertNull;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Default;
+import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
@@ -270,10 +271,25 @@ public class SearchMapperTests
         searchMapper.validateInclude(Arrays.asList("properties", "aspectNames"));
     }
 
+    @Test
+    public void fromFilterQuery() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromFilterQuery(searchParameters, null);
+
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null), new FilterQuery("king", Arrays.asList("not", "used"))));
+        assertEquals(2 ,searchParameters.getFilterQueries().size());
+        assertEquals("hedgehog" ,searchParameters.getFilterQueries().get(0));
+        assertEquals("king" ,searchParameters.getFilterQueries().get(1));
+
+        //tags aren't used at the moment
+    }
+
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null);
         return sq;
     }
 }

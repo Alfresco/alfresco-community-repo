@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.search.impl;
 
 import org.alfresco.rest.api.search.model.Default;
+import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
@@ -90,6 +91,7 @@ public class SearchMapper
         fromTemplate(sp, searchQuery.getTemplates());
         validateInclude(searchQuery.getInclude());
         fromDefault(sp, searchQuery.getDefaults());
+        fromFilterQuery(sp, searchQuery.getFilterQueries());
 
         return sp;
     }
@@ -238,4 +240,21 @@ public class SearchMapper
 
         }
     }
+
+    /**
+     ** SearchParameters from List<FilterQuery>
+     * @param sp
+     * @param filterQueries
+     */
+    public void fromFilterQuery(SearchParameters sp, List<FilterQuery> filterQueries)
+    {
+        if (filterQueries != null && !filterQueries.isEmpty())
+        {
+            for (FilterQuery fq:filterQueries)
+            {
+                sp.addFilterQuery(fq.getQuery());
+            }
+        }
+    }
+
 }

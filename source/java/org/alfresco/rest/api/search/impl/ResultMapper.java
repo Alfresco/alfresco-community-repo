@@ -85,8 +85,7 @@ public class ResultMapper
             }
             else
             {
-                //What do I do?
-                logger.warn("Unknown noderef returned from search results "+row.getNodeRef());
+                logger.debug("Unknown noderef returned from search results "+row.getNodeRef());
             }
         });
 

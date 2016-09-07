@@ -3806,7 +3806,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
        setRequestContext(user1);
        //Unlock on a not locked node
-       post(getNodeOperationUrl(folderId, "unlock"), null, null, 403);
+       post(getNodeOperationUrl(folderId, "unlock"), null, null, 422);
 
        // clean up
        setRequestContext(user1); // all locks were made by user1

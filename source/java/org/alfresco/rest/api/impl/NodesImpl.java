@@ -62,6 +62,7 @@ import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.FilterPropBoolean;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -2966,7 +2967,7 @@ public class NodesImpl implements Nodes
 
         if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
-            throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
+            throw new InvalidArgumentException("Node of type cm:content  or a subtype is expected: " + nodeId);
         }
 
         lockInfo = validateLockInformation(lockInfo);
@@ -3002,7 +3003,11 @@ public class NodesImpl implements Nodes
         {
             throw new PermissionDeniedException("Current user doesn't have permission to unlock node " + nodeId);
         }
-
+        if (!lockService.isLocked(nodeRef))
+        {
+            throw new IntegrityException("Can't unlock node " + nodeId + " because it isn't locked", null);
+        }
+        
         lockService.unlock(nodeRef);
         return getFolderOrDocument(nodeId, parameters);
     }

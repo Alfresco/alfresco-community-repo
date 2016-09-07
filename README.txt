@@ -20,7 +20,7 @@ Configuring and starting Alfresco/Share:
 Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
 --------------------------------------------------------------------
 
-- Create a file called "local.properties" under src/main/resources in alfresco-rm-enterprise-repo
+- Create a file called "local.properties" under src/main/resources in rm-community-repo (you may need to create the directory)
 
 - Add the following properties in this new file
   my.db.name -> The name of the database schema

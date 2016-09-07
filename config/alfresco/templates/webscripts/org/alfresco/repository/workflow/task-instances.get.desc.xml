@@ -4,7 +4,7 @@
       Lists all Workflow Task Instances associated with an authority and of a given State.
       The list of returned tasks also includes pooled tasks which the specified authority is eligible to claim.
    </description>
-   <url>/api/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;pooledTasks={pooledTasks?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;properties={properties?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
+   <url>/api/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;pooledTasks={pooledTasks?}&amp;dueBefore={dueBefore?}&amp;dueAfter={dueAfter?}&amp;properties={properties?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}&amp;property={propQName/propValue?}</url>
    <url>/api/workflow-instances/{workflow_instance_id}/task-instances?authority={authority?}&amp;state={state?}&amp;priority={priority?}&amp;dueBefore={isoDate?}&amp;dueAfter={isoDate?}&amp;properties={prop1, prop2, prop3...?}&amp;maxItems={maxItems?}&amp;skipCount={skipCount?}&amp;exclude={exclude?}</url>
    <format default="json"/>
    <authentication>user</authentication>
@@ -55,6 +55,10 @@
          <shortname>workflow_instance_id</shortname>
          <description>Restricts the returned tasks to those that belong to the given workflow process instance id.</description>
       </arg>
+       <arg>
+           <shortname>property</shortname>
+           <description>Restricts the returned tasks to only those that match the given property. The property name should be a valid QName format followed by '/' then the property value. E.g. bpm:description/myDescription</description>
+       </arg>
    </args>
    <responses>
       <response>

@@ -201,16 +201,20 @@ public class MetadataExtracterRegistry
         return liveExtractor;
     }
     
-    @SuppressWarnings("deprecation")
     private String getName(MetadataExtracter extractor)
     {
-        return extractor == null
-               ? null
-               : extractor instanceof AbstractMetadataExtracter
-               ? ((AbstractMetadataExtracter)extractor).getBeanName()
-               : extractor instanceof AbstractMappingMetadataExtracter
-               ? ((AbstractMappingMetadataExtracter)extractor).getBeanName()
-               : extractor.getClass().getSimpleName();
+        if (extractor == null)
+        {
+            return null;
+        }
+        else if (extractor instanceof AbstractMappingMetadataExtracter)
+        {
+            return ((AbstractMappingMetadataExtracter)extractor).getBeanName();
+        }
+        else
+        {
+            return extractor.getClass().getSimpleName();
+        }
     }
 
     /**
@@ -219,7 +223,10 @@ public class MetadataExtracterRegistry
      */
     private List<MetadataExtracter> findBestExtracters(String sourceMimetype)
     {
-        logger.debug("Finding extractors for " + sourceMimetype);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Finding extractors for " + sourceMimetype);
+        }
 
         List<MetadataExtracter> extractors = new ArrayList<MetadataExtracter>(1);
 
@@ -228,13 +235,22 @@ public class MetadataExtracterRegistry
             if (!extractor.isSupported(sourceMimetype))
             {
                 // extraction not achievable
-                logger.debug("Find unsupported: "+getName(extractor));
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Find unsupported: "+getName(extractor));
+                }
                 continue;
             }
-            logger.debug("Find supported:   "+getName(extractor));
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Find supported:   "+getName(extractor));
+            }
             extractors.add(extractor);
         }
-        logger.debug("Find returning:   "+extractors);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Find returning:   "+extractors);
+        }
         return extractors;
     }
     

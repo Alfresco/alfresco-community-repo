@@ -49,7 +49,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.StreamAwareContentReaderProxy;
@@ -67,7 +67,6 @@ import org.alfresco.service.namespace.InvalidQNameException;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.xmlbeans.impl.xb.xsdschema.All;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -255,6 +254,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * 
      * @see #setSupportedMimetypes(Collection)
      */
+    @Override
     public boolean isSupported(String sourceMimetype)
     {
         return supportedMimetypes.contains(sourceMimetype) && isEnabled(sourceMimetype);
@@ -265,6 +265,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      *
      * @see #setSupportedEmbedMimetypes(Collection)
      */
+    @Override
     public boolean isEmbeddingSupported(String sourceMimetype)
     {
         if (supportedEmbedMimetypes == null)
@@ -293,17 +294,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             }
         }
         return value;
-    }
-
-    /**
-     * TODO - This doesn't appear to be used, so should be removed / deprecated / replaced
-     * @return      Returns <code>1.0</code> if the mimetype is supported, otherwise <tt>0.0</tt>
-     * 
-     * @see #isSupported(String)
-     */
-    public double getReliability(String mimetype)
-    {
-        return isSupported(mimetype) ? 1.0D : 0.0D;
     }
 
     /**
@@ -1115,12 +1105,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         initialized = true;
     }
 
-    /** {@inheritDoc} */
-    public long getExtractionTime()
-    {
-        return 1000L;
-    }
-
     /**
      * Checks if the mimetype is supported.
      * 
@@ -1162,6 +1146,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * {@inheritDoc}
      */
+    @Override
     public final Map<QName, Serializable> extract(ContentReader reader, Map<QName, Serializable> destination)
     {
         return extract(reader, this.overwritePolicy, destination, this.mapping);
@@ -1170,6 +1155,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * {@inheritDoc}
      */
+    @Override
     public final Map<QName, Serializable> extract(
             ContentReader reader,
             OverwritePolicy overwritePolicy,
@@ -1181,6 +1167,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * {@inheritDoc}
      */
+    @Override
     public Map<QName, Serializable> extract(
             ContentReader reader,
             OverwritePolicy overwritePolicy,
@@ -1304,6 +1291,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * {@inheritDoc}
      */
+    @Override
     public final void embed(
             Map<QName, Serializable> properties,
             ContentReader reader,

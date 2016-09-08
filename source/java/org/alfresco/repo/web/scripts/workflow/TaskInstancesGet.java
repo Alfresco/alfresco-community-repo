@@ -42,9 +42,10 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery.OrderBy;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ModelUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -59,6 +60,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class TaskInstancesGet extends AbstractWorkflowWebscript
 {
+    private static final Log LOGGER = LogFactory.getLog(TaskInstancesGet.class);
+
     public static final String PARAM_AUTHORITY = "authority";
     public static final String PARAM_STATE = "state";
     public static final String PARAM_PRIORITY = "priority";
@@ -346,22 +349,44 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                 }
                 else if(key.equals(PARAM_PROPERTY))
                 {
-                    String[] propertyValuePair = filterValue.toString().split("/");
-                    if (propertyValuePair.length != 2)
+                    int propQNameEnd = filterValue.toString().indexOf('/');
+                    if (propQNameEnd < 1)
                     {
+                        if (LOGGER.isDebugEnabled())
+                        {
+                            LOGGER.debug("Ignoring invalid property filter:" + filterValue.toString());
+                        }
                         break;
                     }
+                    String propValue = filterValue.toString().substring(propQNameEnd + 1);
+                    if (propValue.isEmpty())
+                    {
+                        if (LOGGER.isDebugEnabled())
+                        {
+                            LOGGER.debug("Ignoring empty property value filter [" + propValue + "]");
+                        }
+                        break;
+                    }
+                    String propQNameStr = filterValue.toString().substring(0, propQNameEnd);
                     QName propertyQName;
                     try
                     {
-                        propertyQName = QName.createQName(propertyValuePair[0], namespaceService);
+                        propertyQName = QName.createQName(propQNameStr, namespaceService);
                     }
-                    catch (NamespaceException ne)
+                    catch (Exception ex)
                     {
+                        if (LOGGER.isDebugEnabled())
+                        {
+                            LOGGER.debug("Ignoring invalid QName property filter [" + propQNameStr + "]");
+                        }
                         break;
                     }
+                    if (LOGGER.isDebugEnabled())
+                    {
+                        LOGGER.debug("Filtering with property [" + propertyQName.toPrefixString(namespaceService) + "=" + propValue + "]");
+                    }
                     Serializable value = task.getProperties().get(propertyQName);
-                    if (value != null && !value.equals(propertyValuePair[1]))
+                    if (value != null && !value.equals(propValue))
                     {
                         result = false;
                         break;

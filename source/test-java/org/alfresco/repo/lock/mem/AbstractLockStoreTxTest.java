@@ -25,10 +25,6 @@
  */
 package org.alfresco.repo.lock.mem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 import java.util.Date;
 
 import javax.transaction.NotSupportedException;
@@ -37,7 +33,6 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.lock.LockType;
-import org.alfresco.service.cmr.lock.UnableToAquireLockException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -46,6 +41,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Integration tests that check transaction related functionality of {@link LockStore} implementations.
@@ -59,6 +58,7 @@ public abstract class AbstractLockStoreTxTest<T extends LockStore>
     protected T lockStore;
     
     protected static ApplicationContext ctx;
+    protected static TransactionService transactionService;
     
     /**
      * Concrete subclasses must implement this method to provide the tests with a LockStore instance.
@@ -71,12 +71,28 @@ public abstract class AbstractLockStoreTxTest<T extends LockStore>
     public static void setUpSpringContext()
     {
         ctx = ApplicationContextHelper.getApplicationContext();
+        transactionService = (TransactionService) ctx.getBean("TransactionService");
     }
     
     @Before
     public void setUpLockStore()
     {
         lockStore = createLockStore();
+    }
+    
+    /**
+     * <ul>
+     *   <li>Start outer txn</li>
+     *   <li>Modify lock in outer txn</li>
+     *   <li>Start inner txn</li>
+     *   <li>Modify lock in inner txn</li>
+     * </ul>
+     * Inner transaction should fail while outer succeeds
+     */
+    @Test
+    public void testRepeatableRead_01() throws Exception
+    {
+        
     }
     
     @Test
@@ -206,111 +222,6 @@ public abstract class AbstractLockStoreTxTest<T extends LockStore>
         }
     }
     
-//  - only run by HazelcastLockStoreTxTest - fails a lot in HazelcastLockStoreTxTest
-//    @Test
-//    public void testReadsWhenNoTransaction() throws NotSupportedException, SystemException
-//    {
-//        final NodeRef nodeRef = new NodeRef("workspace://SpacesStore/UUID-1");
-//        final NodeRef nodeRef2 = new NodeRef("workspace://SpacesStore/UUID-2");
-//        Date now = new Date();
-//        Date expires = new Date(now.getTime() + 180000);
-//        final LockState lockState1 = LockState.createLock(nodeRef, LockType.WRITE_LOCK,
-//                    "jbloggs", expires, Lifetime.EPHEMERAL, null);
-//        
-//
-//        assertFalse("Transaction present, but should not be. Leak?",
-//                    TransactionSynchronizationManager.isSynchronizationActive());
-//        
-//        Thread thread2 = new Thread("Thread2")
-//        {
-//            @Override
-//            public void run()
-//            {
-//                assertFalse("Transaction present, but should not be. Leak?",
-//                            TransactionSynchronizationManager.isSynchronizationActive());
-//                
-//                Object main = AbstractLockStoreTxTest.this;
-//                try
-//                {
-//                    // Thread2 read lock state
-//                    LockState lockState = lockStore.get(nodeRef);
-//                    assertEquals("jbloggs", lockState.getOwner());
-//                    assertEquals(Lifetime.EPHEMERAL, lockState.getLifetime());
-//                    
-//                    // Wait, while Thread1 changes the lock state
-//                    passControl(this, main);
-//                    
-//                    // assert Thread2 sees the updated state
-//                    lockState = lockStore.get(nodeRef);
-//                    assertEquals("another", lockState.getOwner());
-//                    
-//                    // Thread2 sets lock state B
-//                    AuthenticationUtil.setFullyAuthenticatedUser("another"); // Current lock owner
-//                    lockStore.set(nodeRef, LockState.createUnlocked(nodeRef));
-//                    
-//                    // Check it is still visible for this thread
-//                    lockState = lockStore.get(nodeRef);
-//                    assertFalse(lockState.isLockInfo());
-//                    assertNull(lockState.getOwner());
-//                    
-//                    // Wait, while Thread1 checks initial LockState value for nodeRef2 (null)
-//                    passControl(this, main);
-//                    
-//                    // Thread2 sets a value, already seen as null by Thread1 - the update will be seen by Thread1
-//                    lockStore.set(nodeRef2, LockState.createLock(nodeRef2, LockType.WRITE_LOCK,
-//                                "not-null-lockstate", null, Lifetime.EPHEMERAL, null));
-//                }
-//                finally
-//                {
-//                    // Stop 'main' from waiting
-//                    synchronized(main)
-//                    {
-//                        main.notifyAll();
-//                    }
-//                }
-//            }
-//        };
-//        
-//        
-//        // Thread1 set lock state 1
-//        lockStore.set(nodeRef, lockState1);
-//        
-//        // Wait while Thread2 reads and checks the LockState
-//        thread2.setDaemon(true);
-//        thread2.start();
-//        passControl(this, thread2);
-//        
-//        // Thread1 sets different lock state
-//        AuthenticationUtil.setFullyAuthenticatedUser("jbloggs"); // Current lock owner needed to change lock
-//        final LockState lockState2 = LockState.createWithOwner(lockState1, "another");
-//        lockStore.set(nodeRef, lockState2);
-//        
-//        // Wait while Thread2 reads the LockState again for nodeRef
-//        passControl(this, thread2);
-//        
-//        // Thread2 has unlocked the node, we should see the result
-//        assertFalse("Node still locked, but shouldn't be", lockStore.get(nodeRef).isLockInfo());
-//        assertNull(lockStore.get(nodeRef).getOwner());
-//        assertNull(lockStore.get(nodeRef).getExpires());
-//        
-//        // Another update
-//        AuthenticationUtil.setFullyAuthenticatedUser("jbloggs"); // Current lock owner
-//        final LockState lockState3 = LockState.createWithOwner(lockState2, "bsmith");
-//        lockStore.set(nodeRef, lockState3);
-//        // Check we can see the update.
-//        assertEquals("bsmith", lockStore.get(nodeRef).getOwner());
-//        
-//        // Perform a read, that we know will retrieve a null value
-//        assertNull("Lock state should be null.", lockStore.get(nodeRef2));
-//        
-//        // Wait while Thread2 populates the store with a value for nodeRef2
-//        passControl(this, thread2);
-//        
-//        // Perform the read again - we should see Thread2's update
-//        assertNotNull("Lock state should NOT be null.", lockStore.get(nodeRef2));
-//        assertEquals("not-null-lockstate", lockStore.get(nodeRef2).getOwner());
-//    }
-//    
     @Test
     public void testCannotSetLockWhenChangedByAnotherTx() throws NotSupportedException, SystemException
     {

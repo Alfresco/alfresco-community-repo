@@ -1,23 +1,26 @@
 Configuring and starting Alfresco/Share:
 ----------------------------------------
 
-- Clone the project (e.g. git clone git@gitlab.alfresco.com:records-management/records-management.git)
+- Clone the project from git
 
 - Import the project as a maven project
 
 - Start the Alfresco/Share instances with the following commands:
 
+  To start the repo:
+  cd rm-community/rm-community-repo
   mvn clean install -Pstart-repo
+  
+  To start Share:
+  cd rm-community/rm-community-share
   mvn clean install -Pstart-share
 
-  (these commands work best if run from the specific directories, e.g. start share from
-  rm-enterprise/rm-enterprise-share/ or rm-community/rm-community-share/ )
-
+  NOTE: If you have the enterprise code, see rm-enterprise/README.txt for instructions on how to build/start the enterprise code.
 
 Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
 --------------------------------------------------------------------
 
-- Create a file called "local.properties" under src/main/resources in alfresco-rm-enterprise-repo
+- Create a file called "local.properties" under src/main/resources in rm-community-repo (you may need to create the directory)
 
 - Add the following properties in this new file
   my.db.name -> The name of the database schema

@@ -1,0 +1,29 @@
+# Automatically detect if no other rule applies.
+* text=auto
+
+# Extensions known to be text files.
+*.css text
+*.editorConfig text
+*.ftl text
+*.gitattributes text
+*.gitignore text
+*.html text
+*.importorder text
+*.java text
+*.js text
+*.jshintrc text
+*.json text
+*.properties text
+*.txt text
+*.xml text
+
+# Alfresco content package.
+*.acp binary
+
+# Image files.
+*.gif binary
+*.jpg binary
+*.png binary
+
+# IntelliJ has a jar file as part of its config directory.
+*.jar binary

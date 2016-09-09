@@ -2229,6 +2229,82 @@ public class TestCMIS extends EnterpriseTestApi
 		}
 		assertTrue("The aspects should have P:cm:generalclassifiable", mandatoryAspects.contains("P:cm:generalclassifiable"));
     }
+    
+    // TODO comment-in once we have fixed MNT-16449 - CMIS delete version fails on versions other than latest (most recent) version
+    /*
+    @Test
+    public void testMNT_16449() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null,
+                null, null, null, null, null);
+        TestPerson person = network1.createUser(personInfo);
+        String personId = person.getId();
+
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11,
+                "org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl");
+
+        Folder homeFolder = (Folder)cmisSession.getObjectByPath("/User Homes/" + personId);
+        assertNotNull(homeFolder.getId());
+
+        // create a doc
+        String name = String.format(TEST_DOCUMENT_NAME_PATTERN, GUID.generate());
+
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
+        properties.put(PropertyIds.NAME, name);
+
+        ContentStreamImpl fileContent = new ContentStreamImpl();
+        ByteArrayInputStream stream = new ByteArrayInputStream(GUID.generate().getBytes());
+        fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        fileContent.setStream(stream);
+
+        Document doc = homeFolder.createDocument(properties, fileContent, VersioningState.MAJOR);
+        
+        String versionLabel = doc.getVersionLabel();
+        assertEquals("1.0", versionLabel);
+
+        Document docVersionToDelete = null;
+        Document latestDoc = doc;
+                
+        int cnt = 4;
+        for (int i = 1; i <= cnt; i++)
+        {
+            // update content to create new versions (1.1, 1.2, 1.3, 1.4)
+            fileContent = new ContentStreamImpl();
+            {
+                ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+                writer.putContent("Ipsum and so on and so on "+i);
+                ContentReader reader = writer.getReader();
+                fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                fileContent.setStream(reader.getContentInputStream());
+            }
+
+            latestDoc.setContentStream(fileContent, true);
+
+            latestDoc = latestDoc.getObjectOfLatestVersion(false);
+            versionLabel = latestDoc.getVersionLabel();
+            assertEquals("1."+i, versionLabel);
+
+            assertEquals(1+i, cmisSession.getAllVersions(latestDoc.getId()).size());
+            
+            if (i == 2)
+            {
+                docVersionToDelete = latestDoc; // ie. 1.2
+            }
+        }
+
+        /// TODO this fails unless we fix MNT-16449 (note: deleting the latest version 1.4 works ok)
+        // delete 1.2
+        docVersionToDelete.delete(false);
+        
+        // eg. 1.0, 1.2, 1.3, 1.4 (not 1.1)
+        assertEquals(cnt, cmisSession.getAllVersions(doc.getId()).size());
+    }
+    */
 
     @Test
     public void testMnt11631() throws Exception

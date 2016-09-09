@@ -98,8 +98,13 @@ public class TransformerPropertyNameExtractorTest
         final Set<String> propertyNames = new TreeSet<String>();
         for (int i=0; i < namesAndValues.length; i+=2)
         {
-            propertyNames.add(namesAndValues[i]);
-            when(transformerProperties.getProperty(namesAndValues[i])).thenReturn(namesAndValues[i+1]);
+            String name = namesAndValues[i];
+            String value = namesAndValues[i+1];
+            if (name.startsWith(TransformerConfig.PREFIX))
+            {
+                propertyNames.add(name);
+            }
+            when(transformerProperties.getProperty(name)).thenReturn(value);
         }
         when(transformerProperties.getPropertyNames()).thenReturn(propertyNames);
     }

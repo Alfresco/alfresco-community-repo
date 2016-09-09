@@ -134,6 +134,36 @@ public class TransformerPropertyGetterTest
     }
 
     @Test
+    public void miscTest()
+    {
+        Properties defaultProperties = new Properties();
+        defaultProperties.setProperty("transformer.another", "aValue");
+        defaultProperties.setProperty("transformer.yet.another",   "77");
+        defaultProperties.setProperty("transformer.strict.mimetype.check.whitelist.mimetypes", "application/eps;application/postscript;application/illustrator;application/pdf");
+        when(transformerProperties.getDefaultProperties()).thenReturn(defaultProperties);
+
+        mockProperties(transformerProperties,
+            "transformer.strict.mimetype.check.whitelist.mimetypes", "application/eps;application/postscript;application/illustrator;application/pdf", // same value
+            "transformer.another", "aNewValue"); // changed value
+
+        String actual = new TransformerPropertyGetter(false, transformerProperties,
+                mimetypeService, transformerRegistry, transformerLog, transformerDebugLog).toString();
+        
+        assertEquals("# LOG and DEBUG history sizes\n" +
+                "# ===========================\n" +
+                "# Use small values as these logs are held in memory. 0 to disable.\n" +
+                "# transformer.log.entries=0\n" +
+                "# transformer.debug.entries=0\n" +
+                "\n" +
+                "# Miscellaneous settings\n" +
+                "# ======================\n" +
+                "transformer.another=aNewValue  # default=aValue\n" +
+                "# transformer.strict.mimetype.check.whitelist.mimetypes=application/eps;application/postscript;application/illustrator;application/pdf\n" +
+                "# transformer.yet.another=77\n",
+                actual);
+    }
+
+    @Test
     public void defaultTest()
     {
         mockProperties(transformerProperties,

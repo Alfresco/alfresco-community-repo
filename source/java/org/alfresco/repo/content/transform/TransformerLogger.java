@@ -198,20 +198,7 @@ abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
         defaultValue = defaultValue == null ? "0" : defaultValue;
         
         StringBuilder sb = new StringBuilder();
-        boolean isDefaultValue = value.equals(defaultValue);
-        if (isDefaultValue)
-        {
-            sb.append("# ");
-        }
-        sb.append(propertyName);
-        sb.append('=');
-        sb.append(value);
-        if (!isDefaultValue)
-        {
-            sb.append("  # default=");
-            sb.append(defaultValue);
-        }
-        
+        TransformerPropertyGetter.appendProperty(sb, propertyName, value, defaultValue);
         return sb.toString();
     }
 

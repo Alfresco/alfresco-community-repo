@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +41,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.descriptor.DescriptorService;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -329,7 +327,8 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         Map<String, Set<String>> strictMimetypeExceptions = new HashMap<>();
         
         String whitelist = getProperty(STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES);
-        if (whitelist != null)
+        whitelist = whitelist == null ? "" : whitelist.trim();
+        if (whitelist.length() > 0)
         {
             String[] mimetypes = whitelist.split(";");
             

@@ -162,6 +162,46 @@ public class TransformerPropertySetterTest
                 "transformer.log.entries", "12"));
     }
 
+    @Test
+    public void mimetypeListTest()
+    {
+        setter.setProperties(
+                "transformer.strict.mimetype.check.whitelist.mimetypes=image/png;application/pdf");
+        
+        verify(transformerProperties).setProperties(expectedProperties(
+                "transformer.strict.mimetype.check.whitelist.mimetypes", "image/png;application/pdf"));
+    }
+
+    public void mimetypeListBlankTest()
+    {
+        setter.setProperties(
+                "transformer.strict.mimetype.check.whitelist.mimetypes=");
+        
+        verify(transformerProperties).setProperties(expectedProperties(
+                "transformer.strict.mimetype.check.whitelist.mimetypes", ""));
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void mimetypeListUnevenTest()
+    {
+        setter.setProperties(
+                "transformer.strict.mimetype.check.whitelist.mimetypes=image/png");
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void mimetypeListBadDeclaredTypeTest()
+    {
+        setter.setProperties(
+                "transformer.strict.mimetype.check.whitelist.mimetypes=BAD;image/png");
+    }
+
+    public void mimetypeListBadDetectedTypeTest()
+    {
+        // Tika may detect a mimetype we have not registered, so let it through
+        setter.setProperties(
+                "transformer.strict.mimetype.check.whitelist.mimetypes=image/png;BAD");
+    }
+
     @Test(expected=IllegalArgumentException.class)
     public void badPropertyNameTest()
     {

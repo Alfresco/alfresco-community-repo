@@ -168,7 +168,12 @@ public class TransformerConfigImplTest
                 "# ===========================\n" +
                 "# Use small values as these logs are held in memory. 0 to disable.\n" +
                 "transformer.log.entries=0  # default=50\n" +
-                "# transformer.debug.entries=0\n", actual);
+                "# transformer.debug.entries=0\n" +
+                "\n" +
+                "# Miscellaneous settings\n" +
+                "# ======================\n" +
+                "# transformer.strict.mimetype.check.whitelist.mimetypes=application/eps;application/postscript;application/illustrator;application/pdf;application/x-tar;application/x-gtar;application/acp;application/zip;application/vnd.stardivision.math;application/x-tika-msoffice\n",
+                actual);
     }
     
     @Test

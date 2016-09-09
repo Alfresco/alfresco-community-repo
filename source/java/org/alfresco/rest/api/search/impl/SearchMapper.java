@@ -127,7 +127,7 @@ public class SearchMapper
         //Hardcode workspace store
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setMaxItems(100);
+        sp.setLimit(100);
     }
 
     /**
@@ -169,7 +169,7 @@ public class SearchMapper
         if (paging != null)
         {
             sp.setLimitBy(LimitBy.FINAL_SIZE);
-            sp.setMaxItems(paging.getMaxItems());
+            sp.setLimit(paging.getMaxItems());
             sp.setSkipCount(paging.getSkipCount());
         }
     }
@@ -443,14 +443,14 @@ public class SearchMapper
         {
             if (limits.getPermissionEvaluationCount() != null)
             {
-                sp.setMaxItems(-1);
+                sp.setLimit(-1);
                 sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
                 sp.setMaxPermissionChecks(limits.getPermissionEvaluationCount());
             }
 
             if (limits.getPermissionEvaluationTime() != null)
             {
-                sp.setMaxItems(-1);
+                sp.setLimit(-1);
                 sp.setLimitBy(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS);
                 sp.setMaxPermissionCheckTimeMillis(limits.getPermissionEvaluationTime());
             }

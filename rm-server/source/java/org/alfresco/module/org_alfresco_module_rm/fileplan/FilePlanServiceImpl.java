@@ -33,11 +33,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -347,23 +346,12 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         containerType,
                         properties).getChildRef();
 
-   //     if (!inheritPermissions)
-   //     {
-            // set inheritance to false
-            getPermissionService().setInheritParentPermissions(container, false);
-            getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-            getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-            getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
-
-            // TODO set the admin users to have filing permissions on the unfiled container!!!
-            // TODO we will need to be able to get a list of the admin roles from the service
-  //      }
-   //     else
-   //     {
-            // just inherit eveything
-            // TODO will change this when we are able to set permissions on holds and transfers!
-   //         getPermissionService().setInheritParentPermissions(container, true);
-   //     }
+        // set inheritance to false
+        getPermissionService().setInheritParentPermissions(container, false);
+        getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
+        
+        // prevent inheritance of rules
+        nodeService.addAspect(container, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
 
         return container;
     }

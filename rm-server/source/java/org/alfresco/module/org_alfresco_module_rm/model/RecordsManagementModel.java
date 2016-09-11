@@ -242,9 +242,10 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_LOADED_DATA_SET_IDS = QName.createQName(RM_URI, "loadedDataSetIds");
 
     // Extended security aspect
-    QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
-    QName PROP_READERS = QName.createQName(RM_URI, "readers");
-    QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
+    // @deprecated as of 2.5, because of performance issues
+    @Deprecated QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
+    @Deprecated QName PROP_READERS = QName.createQName(RM_URI, "readers");
+    @Deprecated QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
 
     // Originating details of a record
     QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName(RM_URI, "recordOriginatingDetails");

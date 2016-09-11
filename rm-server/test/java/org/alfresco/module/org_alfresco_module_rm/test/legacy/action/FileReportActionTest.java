@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang.StringUtils;
@@ -53,6 +54,8 @@ public class FileReportActionTest extends BaseRMTestCase
 
     private void fileReport(final String mimeType)
     {
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        
         // create record folder
         final NodeRef recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
         

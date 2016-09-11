@@ -22,7 +22,6 @@
       <property name="cmObjectType" ref="cm.object" />
       <property name="extendedPermissionService" ref="ExtendedPermissionService" />
       <property name="extendedSecurityService" ref="ExtendedSecurityService" />
-      <property name="ownableService" ref="OwnableService" />
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionService" />

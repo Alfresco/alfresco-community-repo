@@ -139,7 +139,7 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         assertEquals("age", theSort.get(1).column);
         assertTrue(!theSort.get(1).asc);  //desc
 
-        theSort  = getSort("age Desc, name Asc");
+        theSort  = getSort("age DeSc, name AsC");
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 2);
@@ -147,15 +147,18 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         assertTrue(!theSort.get(0).asc);  //desc
         assertEquals("name", theSort.get(1).column);
         assertTrue(theSort.get(1).asc);
+        
+        try
+        {
+            getSort("age asc, name des");  // nvalid, should be desc
+            fail("Should throw an InvalidSelectException");
+        }
+        catch (InvalidArgumentException error)
+        {
+            // this is correct
+        }
 
-        theSort  = getSort("name des");  //invalid, should be desc
-        assertNotNull(theSort);
-        assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
-        assertTrue(theSort.size() == 1);
-        assertEquals("name", theSort.get(0).column);
-        assertTrue(theSort.get(0).asc);  //Defaults to ascending because the sort order was invalid
-
-        theSort  = getSort("name asc,");  //invalid, should be desc
+        theSort  = getSort("name asc,");  // trailing comma is ignored
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 1);

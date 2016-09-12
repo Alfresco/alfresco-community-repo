@@ -172,7 +172,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}-${installer.version.name}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
             <!-- Build EAR -->
             <plugin>

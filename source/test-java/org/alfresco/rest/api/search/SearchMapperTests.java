@@ -56,7 +56,6 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.codehaus.jackson.annotate.JsonProperty;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -109,14 +108,9 @@ public class SearchMapperTests
 
         Query q = new Query(null,"hello", null);
 
-        try
-        {
-            searchMapper.fromQuery(searchParameters, q);
-            fail();
-        } catch (IllegalArgumentException iae)
-        {
-            assertTrue(iae.getLocalizedMessage().contains("language is a mandatory parameter"));
-        }
+        searchMapper.fromQuery(searchParameters, q);
+        //Default
+        assertEquals(LANGUAGE_FTS_ALFRESCO, searchParameters.getLanguage());
 
         q = new Query("world", "hello", null);
 

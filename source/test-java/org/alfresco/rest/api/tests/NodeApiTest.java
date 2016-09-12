@@ -3594,13 +3594,20 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // create folder
         Folder folderResp = createFolder(Nodes.PATH_MY, "folder" + RUNID);
         String folderId = folderResp.getId();
-
+        
+        // try to lock the folder and check that is not allowed
+        LockInfo lockInfo = new LockInfo();
+        lockInfo.setTimeToExpire(60);
+        lockInfo.setType("FULL");
+        lockInfo.setLifetime("PERSISTENT");
+        HttpResponse response = post(getNodeOperationUrl(folderId, "lock"), toJsonAsStringNonNull(lockInfo), null, 400);
+        
         // create doc d1
         String d1Name = "content" + RUNID + "_1l";
         Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
         String d1Id = d1.getId();
 
-        HttpResponse response = getSingle(URL_NODES, d1Id, null, null, 200);
+        response = getSingle(URL_NODES, d1Id, null, null, 200);
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNull(node.getProperties().get("cm:lockType"));
         assertNull(node.getProperties().get("cm:lockOwner"));
@@ -3613,7 +3620,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNull(node.getProperties().get("cm:lockOwner"));
         assertFalse(node.getIsLocked());
 
-        LockInfo lockInfo = new LockInfo();
+        lockInfo = new LockInfo();
         lockInfo.setTimeToExpire(60);
         lockInfo.setType("FULL");
         lockInfo.setLifetime("PERSISTENT");
@@ -3774,7 +3781,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
        // create folder
        Folder folderResp = createFolder(Nodes.PATH_MY, "folder" + RUNID);
        String folderId = folderResp.getId();
-
+       
        // create doc d1
        String d1Name = "content" + RUNID + "_1l";
        Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");

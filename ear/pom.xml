@@ -275,7 +275,7 @@
                             <descriptors>
                                 <descriptor>src/assembly/myfaces-websphere.xml</descriptor>
                             </descriptors>
-                            <finalName>myfaces1_1-websphere-shared-lib-${installer.version.name}</finalName>
+                            <finalName>myfaces1_1-websphere-shared-lib-${project.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>

@@ -26,11 +26,11 @@
 
     <files>
         <file>
-            <source>${project.build.directory}/myfaces1_1-websphere-shared-lib-${installer.version.name}.zip</source>
+            <source>${project.build.directory}/myfaces1_1-websphere-shared-lib-${project.version}.zip</source>
         </file>
         <file>
-            <source>${project.build.directory}/alfresco-ear-distribution-${installer.version.name}.ear</source>
-            <destName>alfresco-one-${installer.version.name}.ear</destName>
+            <source>${project.build.directory}/alfresco-ear-distribution-${project.version}.ear</source>
+            <destName>alfresco-one-${project.version}.ear</destName>
         </file>
     </files>
 </assembly>

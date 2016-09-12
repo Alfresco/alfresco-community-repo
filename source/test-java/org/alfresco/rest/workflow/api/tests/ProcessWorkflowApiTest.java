@@ -1062,16 +1062,19 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             {
                 assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
             }
-            
-            // sort on non existing sort order (default ASC is taken)
-            paramMap.put("orderBy", "businessKey ASC2");
-            processList = processesClient.getProcesses(paramMap);
-            assertNotNull(processList);
-            assertEquals(3, processList.getList().size());
-            
-            assertEquals(process3.getId(), processList.getList().get(0).getId());
-            assertEquals(process1.getId(), processList.getList().get(1).getId());
-            assertEquals(process2.getId(), processList.getList().get(2).getId());
+
+            // sort on non existing sort order
+            try
+            {
+                
+                paramMap.put("orderBy", "businessKey ASC2");
+                processList = processesClient.getProcesses(paramMap);
+                fail("forbidden expected");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
         }
         finally
         {

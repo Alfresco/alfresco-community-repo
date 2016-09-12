@@ -37,16 +37,24 @@ import org.alfresco.repo.workflow.activiti.ActivitiConstants;
  */
 public class SendModeratedInviteDelegate extends AbstractInvitationDelegate
 {
-    public static final String EMAIL_TEMPLATE_XPATH =
-            "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email-moderated.html.ftl";
+    
+    private String emailTemplatePath;
+    public static final String ENTERPRISE_EMAIL_TEMPLATE_PATH = "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email-moderated.html.ftl";
+   
     public static final String EMAIL_SUBJECT_KEY =
             "invitation.moderated.email.subject";
+    
+
+    public void setEmailTemplatePath(String emailTemplatePath)
+    {
+        this.emailTemplatePath = emailTemplatePath;
+    }
 
     @Override
     public void execute(DelegateExecution execution) throws Exception
     {
         String invitationId = ActivitiConstants.ENGINE_ID + "$" + execution.getProcessInstanceId();
         Map<String, Object> variables = execution.getVariables();
-        invitationService.sendModeratedInvitation(invitationId, EMAIL_TEMPLATE_XPATH, EMAIL_SUBJECT_KEY, variables);
+        invitationService.sendModeratedInvitation(invitationId, emailTemplatePath, EMAIL_SUBJECT_KEY, variables);
     }
 }

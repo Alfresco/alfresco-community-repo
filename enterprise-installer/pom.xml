@@ -33,6 +33,12 @@
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
         <alfresco.package.name>alfresco-one</alfresco.package.name>
         <alfresco.distribution.name>alfresco-one-distribution</alfresco.distribution.name>
+
+        <!-- 
+        Override alfresco.installer.name for the Enterprise installer that is still using 
+        that weird common Platform/Share versioning scheme
+        -->
+        <installer.version.name>${project.version}</installer.version.name>
     </properties>
 
     <dependencies>

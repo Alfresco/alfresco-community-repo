@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-<beans>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd">
+
      
      <!--  Invitation Service Configuration File --> 
      <bean id="invitationService" class="org.alfresco.repo.invitation.InvitationServiceImpl" init-method="init">
@@ -110,6 +115,9 @@
          class="org.alfresco.repo.invitation.activiti.SendNominatedInviteAddDirectDelegate" />
          
     <bean id="SendModeratedInviteDelegate" parent="baseInvitationDelegate" 
-         class="org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate" />
-    
+         class="org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate">
+         <property name="emailTemplatePath">
+                 <util:constant static-field="org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate.ENTERPRISE_EMAIL_TEMPLATE_PATH"/>
+         </property>
+    </bean>    
 </beans>

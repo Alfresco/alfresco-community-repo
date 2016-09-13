@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -103,14 +104,11 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
         String totalToBeProcessedRecordsStr = req.getParameter(TOTAL_NUMBER_TO_PROCESS);
 
         Long size = 0L;
-        if (batchSizeStr == null || batchSizeStr.length() == 0)
+        if (StringUtils.isBlank(batchSizeStr))
         {
             model.put(MODEL_STATUS, FAILED_STATUS);
             model.put(MODEL_MESSAGE, MESSAGE_BATCHSIZE_IS_MANDATORY);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(MESSAGE_BATCHSIZE_IS_MANDATORY);
-            }
+            logger.info(MESSAGE_BATCHSIZE_IS_MANDATORY);
             return model;
         }
         try
@@ -121,10 +119,7 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
         {
             model.put(MODEL_STATUS, FAILED_STATUS);
             model.put(MODEL_MESSAGE, MESSAGE_BATCHSIZE_IS_INVALID);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(MESSAGE_BATCHSIZE_IS_INVALID);
-            }
+            logger.info(MESSAGE_BATCHSIZE_IS_INVALID);
             return model;
         }
         final Long batchSize = size;
@@ -135,15 +130,12 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
         {
             model.put(MODEL_STATUS, SUCCESS_STATUS);
             model.put(MODEL_MESSAGE, MESSAGE_NO_RECORDS_TO_PROCESS);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(MESSAGE_NO_RECORDS_TO_PROCESS);
-            }
+            logger.info(MESSAGE_NO_RECORDS_TO_PROCESS);
             return model;
         }
 
         Long totalNumberOfRecordsToProcess = 0L;
-        if (totalToBeProcessedRecordsStr != null && totalToBeProcessedRecordsStr.length() != 0)
+        if (StringUtils.isNotBlank(totalToBeProcessedRecordsStr))
         {
             try
             {
@@ -157,10 +149,7 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
 
         final Long maxRecordsToProcess = totalNumberOfRecordsToProcess;
         final List<NodeRef> processedNodes = new ArrayList<NodeRef>();
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(MESSAGE_PROCESSING_BEGIN);
-        }
+        logger.info(MESSAGE_PROCESSING_BEGIN);
         // by batch size
         for (Long i = 0L; i < maxNodeId; i+=batchSize)
         {
@@ -185,15 +174,10 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
                             break;
                         }
                         NodeRef record = nodeDAO.getNodePair(nodeId).getSecond();
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug(MessageFormat.format(MESSAGE_PROCESSING_RECORD_BEGIN_TEMPLATE, (String) nodeService.getProperty(record, ContentModel.PROP_NAME)));
-                        }
+                        String recordName = (String) nodeService.getProperty(record, ContentModel.PROP_NAME);
+                        logger.info(MessageFormat.format(MESSAGE_PROCESSING_RECORD_BEGIN_TEMPLATE, recordName));
                         processNode(record);
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug(MessageFormat.format(MESSAGE_PROCESSING_RECORD_END_TEMPLATE, (String) nodeService.getProperty(record, ContentModel.PROP_NAME)));
-                        }
+                        logger.info(MessageFormat.format(MESSAGE_PROCESSING_RECORD_END_TEMPLATE, recordName));
                         processedNodes.add(record);
                     }
 
@@ -203,10 +187,7 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
             false,  // read only
             true); // requires new
         }
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(MESSAGE_PROCESSING_END);
-        }
+        logger.info(MESSAGE_PROCESSING_END);
         int processedNodesSize = processedNodes.size();
         String message = "";
         if(totalNumberOfRecordsToProcess == 0 || (totalNumberOfRecordsToProcess > 0 && processedNodesSize < totalNumberOfRecordsToProcess))
@@ -219,10 +200,7 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
         }
         model.put(MODEL_STATUS, SUCCESS_STATUS);
         model.put(MODEL_MESSAGE, message);
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(message);
-        }
+        logger.info(message);
         return model;
     }
 

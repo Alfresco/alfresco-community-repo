@@ -356,8 +356,9 @@ public class AuditMethodInterceptor implements MethodInterceptor
         }
         else
         {
-            if(value instanceof List)
+            if (value instanceof List)
             {
+                @SuppressWarnings("rawtypes")
                 List valueList = (List) value;
                 List<Serializable> recordableList = new ArrayList<Serializable>();
                 for (Object valueListItem : valueList)
@@ -504,27 +505,27 @@ public class AuditMethodInterceptor implements MethodInterceptor
 
         if (thrown != null)
         {
-        	// ALF-3055: an exception has occurred - make sure the audit occurs in a new thread
-        	//     rather than a nested transaction to avoid contention for the same audit table
+            // ALF-3055: an exception has occurred - make sure the audit occurs in a new thread
+            //     rather than a nested transaction to avoid contention for the same audit table
             // ALF-12638: ensure that the new thread context matches the current thread context
             final Authentication authContext = AuthenticationUtil.getFullAuthentication();
             threadPoolExecutor.execute(new Runnable()
             {
-				public void run()
-				{
-			        Map<String, Serializable> auditedData;
+                public void run()
+                {
+                    Map<String, Serializable> auditedData;
 
-		            StringBuilder sb = new StringBuilder(1024);
-		            StackTraceUtil.buildStackTrace(
-		                    thrown.getMessage(), thrown.getStackTrace(), sb, Integer.MAX_VALUE);
-		            auditData.put(AUDIT_SNIPPET_ERROR, SchemaBootstrap.trimStringForTextFields(sb.toString()));
+                    StringBuilder sb = new StringBuilder(1024);
+                    StackTraceUtil.buildStackTrace(
+                            thrown.getMessage(), thrown.getStackTrace(), sb, Integer.MAX_VALUE);
+                    auditData.put(AUDIT_SNIPPET_ERROR, SchemaBootstrap.trimStringForTextFields(sb.toString()));
 
-		            // Ensure we have a transaction
-		            RetryingTransactionCallback<Map<String, Serializable>> auditCallback =
-		                    new RetryingTransactionCallback<Map<String, Serializable>>()
-		            {
-		                public Map<String, Serializable> execute() throws Throwable
-		                {
+                    // Ensure we have a transaction
+                    RetryingTransactionCallback<Map<String, Serializable>> auditCallback =
+                            new RetryingTransactionCallback<Map<String, Serializable>>()
+                    {
+                        public Map<String, Serializable> execute() throws Throwable
+                        {
                             // Record thrown exceptions regardless of userFilter in case of failed authentication
                             // see MNT-11760
                             if (thrown instanceof AuthenticationException)
@@ -536,27 +537,27 @@ public class AuditMethodInterceptor implements MethodInterceptor
                                   return auditComponent.recordAuditValues(rootPath, auditData);
                             }
 
-		                }
-		            };
-		            try
-		            {
+                        }
+                    };
+                    try
+                    {
                         AuthenticationUtil.setFullAuthentication(authContext);
-		                auditedData = transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback, false, true);
-		            }
-		            finally
-		            {
-		                AuthenticationUtil.clearCurrentSecurityContext();
-		            }
-		            
-			        // Done
-			        if (logger.isDebugEnabled() && auditedData.size() > 0)
-			        {
-			            logger.debug(
-			                    "Audited after invocation: \n" +
-			                    (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
-			                    "   Values: " + auditedData);
-			        }
-				}
+                        auditedData = transactionService.getRetryingTransactionHelper().doInTransaction(auditCallback, false, true);
+                    }
+                    finally
+                    {
+                        AuthenticationUtil.clearCurrentSecurityContext();
+                    }
+                    
+                    // Done
+                    if (logger.isDebugEnabled() && auditedData.size() > 0)
+                    {
+                        logger.debug(
+                                "Audited after invocation: \n" +
+                                (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
+                                "   Values: " + auditedData);
+                    }
+                }
             });
         }
         else
@@ -567,14 +568,14 @@ public class AuditMethodInterceptor implements MethodInterceptor
             // The current transaction will be fine
             auditedData = auditComponent.recordAuditValues(rootPath, auditData);
 
-	        // Done
-	        if (logger.isDebugEnabled() && auditedData.size() > 0)
-	        {
-	            logger.debug(
-	                    "Audited after invocation: \n" +
-	                    (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
-	                    "   Values: " + auditedData);
-	        }
+            // Done
+            if (logger.isDebugEnabled() && auditedData.size() > 0)
+            {
+                logger.debug(
+                        "Audited after invocation: \n" +
+                        (thrown == null ? "" : "   Exception: " + thrown.getMessage() + "\n") +
+                        "   Values: " + auditedData);
+            }
         }
     }
 }

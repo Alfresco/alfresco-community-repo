@@ -313,12 +313,17 @@ public interface RecognizedParamsExtractor
                         }
                         else
                         {
-                            rpeLogger().debug("Invalid sort order definition (" + sortDef + ").  Valid values are " + SortColumn.ASCENDING + " or "
+                            rpeLogger().debug("Invalid sort order direction (" + sortDef + ").  Valid values are " + SortColumn.ASCENDING + " or "
                                         + SortColumn.DESCENDING + ".");
-                            throw new InvalidArgumentException("Unknown sort order direction: "+sortDef+" expected: asc or desc");
+                            throw new InvalidArgumentException("Unknown sort order direction '"+sortDef+"', expected asc or desc");
                         }
                     }
                     sortedColumns.add(new SortColumn(columnName, SortColumn.ASCENDING.equals(sortOrder)));
+                }
+                else
+                {
+                    rpeLogger().debug("Invalid sort order definition (" + token + ")");
+                    throw new InvalidArgumentException("Unknown sort order definition '" + token + "', expected 'field1,field2' or 'field1 asc,field2 desc' or similar");
                 }
                 // filteredProperties.add();
             }

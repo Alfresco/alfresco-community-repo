@@ -1,8 +1,8 @@
 <webscript>
   <shortname>Get webscript for removing dynamic authorities from RM</shortname>
   <description>Gets the result after removing dynamic authorities from RM.</description>
-  <url>/api/rm/rm-dynamicauthorities?batchsize={batchsize}</url>
+  <url>/api/rm/rm-dynamicauthorities?batchsize={batchsize}&amp;maxProcessedRecords={maxProcessedRecords?}</url>
   <format default="json">argument</format>
-  <authentication>user</authentication>
+  <authentication>admin</authentication>
   <transaction allow="readonly">required</transaction>
 </webscript>

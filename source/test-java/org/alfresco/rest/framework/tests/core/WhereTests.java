@@ -485,7 +485,7 @@ public class WhereTests implements RecognizedParamsExtractor
 		assertEquals(WhereClauseParser.PROPERTYVALUE, tree.getChild(1).getType());
 		QueryHelper.walk(theQuery, new WalkerCallbackAdapter(){
 			@Override
-			public void comparison(int comparisonType, String propertyName, String propertyValue) {
+			public void comparison(int comparisonType, String propertyName, String propertyValue, boolean negated) {
 				assertTrue("Property name should be "+propName,propName.equals(propertyName));
 				assertTrue(comparisonOperator == comparisonType);
 				assertTrue("Property value should be "+propVal,propVal.equals(propertyValue));

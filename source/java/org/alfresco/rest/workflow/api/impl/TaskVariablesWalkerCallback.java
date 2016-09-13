@@ -37,7 +37,7 @@ public class TaskVariablesWalkerCallback extends WalkerCallbackAdapter
     private VariableScope scope = VariableScope.ANY;
     
    @Override
-    public void comparison(int type, String propertyName, String propertyValue)
+    public void comparison(int type, String propertyName, String propertyValue, boolean negated)
     {
        if (PROPERTY_SCOPE.equals(propertyName)) 
        {

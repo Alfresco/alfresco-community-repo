@@ -27,7 +27,6 @@ package org.alfresco.rest.framework.resource.parameters.where;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -67,7 +66,7 @@ public abstract class QueryHelper
 		/**
 		 * One of EQUALS LESSTHAN GREATERTHAN LESSTHANOREQUALS GREATERTHANOREQUALS;
 		 */
-		void comparison(int type, String propertyName, String propertyValue);
+		void comparison(int type, String propertyName, String propertyValue, boolean negated);
 		
 		/**
 		 * Called any time an IN clause is encountered.
@@ -110,7 +109,7 @@ public abstract class QueryHelper
     	@Override
 		public void between(String propertyName, String firstValue, String secondValue, boolean negated) { throw UNSUPPORTED;}
     	@Override
-		public void comparison(int type, String propertyName, String propertyValue) { throw UNSUPPORTED;}
+    	public void comparison(int type, String propertyName, String propertyValue, boolean negated) { throw UNSUPPORTED;}
     	@Override
 		public void in(String propertyName, boolean negated, String... propertyValues) { throw UNSUPPORTED;}
     	@Override
@@ -191,7 +190,7 @@ public abstract class QueryHelper
 				if (WhereClauseParser.PROPERTYNAME == tree.getChild(0).getType() &&
 					WhereClauseParser.PROPERTYVALUE == tree.getChild(1).getType())
 				{
-					callback.comparison(tree.getType(), tree.getChild(0).getText(), stripQuotes(tree.getChild(1).getText()));
+					callback.comparison(tree.getType(), tree.getChild(0).getText(), stripQuotes(tree.getChild(1).getText()), negated);
 					return;
 				}
 				break;

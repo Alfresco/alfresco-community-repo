@@ -3779,6 +3779,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
 
         body = new HashMap<>();
+        body.put("includeChildren", "true");
+        post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
+        
+        body = new HashMap<>();
         body.put("timeToExpire", "NaN");
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
 
@@ -3845,6 +3849,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
        post(getNodeOperationUrl(d1Id, "unlock"), null, null, 403);
 
        setRequestContext(user1);
+       
        //Unlock on a not locked node
        post(getNodeOperationUrl(folderId, "unlock"), null, null, 422);
 

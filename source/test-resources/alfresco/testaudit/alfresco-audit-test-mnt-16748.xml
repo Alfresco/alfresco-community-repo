@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Audit xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd">
+
+    <DataExtractors>
+        <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue" />
+        <DataExtractor name="nullValue" registeredName="auditModel.extractor.nullValue" />
+    </DataExtractors>
+
+    <PathMappings>
+        <PathMap source="/alfresco-mnt-16748" target="/alfresco-mnt-16748" />
+        <PathMap source="/alfresco-api/pre/SearchService/query/args/language"
+                 target="/alfresco-mnt-16748/language" />
+    </PathMappings>
+
+    <Application name="alfresco-mnt-16748" key="alfresco-mnt-16748">
+
+        <AuditPath key="language">
+            <RecordValue key="language" dataExtractor="simpleValue"
+                         dataSource="/alfresco-mnt-16748/language" dataTrigger="/alfresco-mnt-16748/language" />
+        </AuditPath>
+
+    </Application>
+
+</Audit>

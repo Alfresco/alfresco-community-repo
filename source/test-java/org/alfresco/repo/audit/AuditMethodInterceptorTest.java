@@ -44,6 +44,8 @@ import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -68,6 +70,7 @@ public class AuditMethodInterceptorTest extends TestCase
     private AuditModelRegistryImpl auditModelRegistry;
     private TransactionServiceImpl transactionServiceImpl;
     private NodeService nodeService;
+    private SearchService searchService;
     private ServiceRegistry serviceRegistry;
     private AuditComponent auditComponent;
     private AuditService auditService;
@@ -75,9 +78,11 @@ public class AuditMethodInterceptorTest extends TestCase
 
     private NodeRef nodeRef;
 
-    private static String APPLICATION_NAME = "alfresco-mnt-11072";
+    private static String APPLICATION_NAME_MNT_11072 = "alfresco-mnt-11072";
+    private static String APPLICATION_NAME_MNT_16748 = "alfresco-mnt-16748";
     private static final Log logger = LogFactory.getLog(AuditMethodInterceptorTest.class);
 
+    @SuppressWarnings("deprecation")
     @Override
     public void setUp() throws Exception
     {
@@ -88,20 +93,24 @@ public class AuditMethodInterceptorTest extends TestCase
         transactionService = serviceRegistry.getTransactionService();
         transactionServiceImpl = (TransactionServiceImpl) ctx.getBean("transactionService");
         nodeService = serviceRegistry.getNodeService();
+        searchService = serviceRegistry.getSearchService();
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         nodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
-        // Register the model
-        URL modelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-mnt-11072.xml");
-        auditModelRegistry.registerModel(modelUrl);
+        // Register the models
+        URL modelUrlMnt11072 = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-mnt-11072.xml");
+        URL modelUrlMnt16748 = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-mnt-16748.xml");
+        auditModelRegistry.registerModel(modelUrlMnt11072);
+        auditModelRegistry.registerModel(modelUrlMnt16748);
         auditModelRegistry.loadAuditModels();
     }
 
     @Override
     public void tearDown()
     {
-        auditService.clearAudit(APPLICATION_NAME, null, null);
+        auditService.clearAudit(APPLICATION_NAME_MNT_11072, null, null);
+        auditService.clearAudit(APPLICATION_NAME_MNT_16748, null, null);
         auditModelRegistry.destroy();
         AuthenticationUtil.clearCurrentSecurityContext();
     }
@@ -109,10 +118,8 @@ public class AuditMethodInterceptorTest extends TestCase
     /**
      * Test for <a href="https://issues.alfresco.com/jira/browse/MNT-11072">MNT-11072</a> <br>
      * Use NodeService, as it is wrapped by the AuditMethodInterceptor, to get node props in read-only server mode.
-     * 
-     * @throws Exception
      */
-    public void testAuditInReadOnly() throws Exception
+    public void testAuditInReadOnly_MNT11072() throws Exception
     {
         // Run as admin
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
@@ -173,7 +180,7 @@ public class AuditMethodInterceptorTest extends TestCase
             AuditQueryParameters params = new AuditQueryParameters();
             params.setForward(true);
             params.setUser(AuthenticationUtil.getAdminUserName());
-            params.setApplicationName(APPLICATION_NAME);
+            params.setApplicationName(APPLICATION_NAME_MNT_11072);
 
             rowCount.setValue(0);
             auditComponent.auditQuery(callback, params, Integer.MAX_VALUE);
@@ -189,6 +196,78 @@ public class AuditMethodInterceptorTest extends TestCase
         finally
         {
             transactionServiceImpl.setAllowWrite(true, veto);
+        }
+    }
+
+    /**
+     * Test for <a href="https://issues.alfresco.com/jira/browse/MNT-16748">MNT-16748</a> <br>
+     * Use {@link SearchService} to perform a query.
+     */
+    public void testAuditSearchService_MNT16748() throws Exception
+    {
+        // Run as admin
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+            // Perform a search
+        @SuppressWarnings("unused")
+        ResultSet rs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<ResultSet>()
+        {
+            @Override
+            public ResultSet execute() throws Throwable
+            {
+                return searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, "/");
+            }
+
+        }, true, false);
+
+        // Search for audit
+        final StringBuilder sb = new StringBuilder();
+        final MutableInt rowCount = new MutableInt();
+        AuditQueryCallback callback = new AuditQueryCallback()
+        {
+            @Override
+            public boolean valuesRequired()
+            {
+                return true;
+            }
+
+            @Override
+            public boolean handleAuditEntry(Long entryId, String applicationName,
+                    String user, long time, Map<String, Serializable> values)
+            {
+                assertNotNull(applicationName);
+                assertNotNull(user);
+
+                sb.append("Row: ").append(entryId).append(" | ")
+                        .append(applicationName).append(" | ")
+                        .append(user).append(" | ")
+                        .append(new Date(time)).append(" | ")
+                        .append(values).append(" | ").append("\n");
+                rowCount.setValue(rowCount.intValue() + 1);
+                return true;
+            }
+
+            @Override
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException(errorMsg, error);
+            }
+        };
+
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setForward(true);
+        params.setUser(AuthenticationUtil.getAdminUserName());
+        params.setApplicationName(APPLICATION_NAME_MNT_16748);
+
+        rowCount.setValue(0);
+        auditComponent.auditQuery(callback, params, Integer.MAX_VALUE);
+
+        assertEquals("There should be one audit entry.", 1, rowCount.intValue());
+        assertTrue("The requested language should be in the audit entry.",
+                sb.toString().contains(SearchService.LANGUAGE_XPATH));
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(sb.toString());
         }
     }
 }

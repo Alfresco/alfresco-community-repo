@@ -262,7 +262,7 @@ public class AuditMethodInterceptorTest extends TestCase
         rowCount.setValue(0);
         auditComponent.auditQuery(callback, params, Integer.MAX_VALUE);
 
-        assertEquals("Incorrect number of audit entries", 2, rowCount.intValue());
+        assertEquals("Incorrect number of audit entries", 1, rowCount.intValue());
         assertTrue(
                 "The requested language should be in the audit entry.",
                 sb.toString().contains(SearchService.LANGUAGE_XPATH));

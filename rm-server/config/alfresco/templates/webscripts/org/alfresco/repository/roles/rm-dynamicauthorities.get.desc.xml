@@ -1,6 +1,11 @@
 <webscript>
-  <shortname>Get webscript for removing dynamic authorities from RM</shortname>
-  <description>Gets the result after removing dynamic authorities from RM.</description>
+  <shortname>Removes dynamic authorities</shortname>
+  <description><![CDATA[
+  Removes dynamic authorities from in place records created in previous verssions.<br/>
+  URL parameter batchsize is mandatory, and represents the number of records that are processed in one transaction.<br/>
+  URL parameter maxProcessedRecords is optional, and represents the maximum number of records that will be processed in one request.<br/>
+  ]]>
+  </description>
   <url>/api/rm/rm-dynamicauthorities?batchsize={batchsize}&amp;maxProcessedRecords={maxProcessedRecords?}</url>
   <format default="json">argument</format>
   <authentication>admin</authentication>

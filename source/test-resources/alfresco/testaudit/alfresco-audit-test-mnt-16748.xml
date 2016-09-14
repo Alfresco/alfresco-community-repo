@@ -9,22 +9,17 @@
     </DataExtractors>
 
     <PathMappings>
-        <PathMap source="/alfresco-mnt-16748" target="/alfresco-mnt-16748" />
-        <PathMap source="/alfresco-api/pre/SearchService/query/args/language"
-                 target="/alfresco-mnt-16748/language" />
-        <PathMap source="/alfresco-api/post/SearchService/query/args/query"
-                 target="/alfresco-mnt-16748/query" />
+        <PathMap source="/alfresco-api/post/SearchService/query/args"
+                 target="/alfresco-mnt-16748/search" />
     </PathMappings>
 
     <Application name="alfresco-mnt-16748" key="alfresco-mnt-16748">
 
-        <AuditPath key="language">
+        <AuditPath key="search">
             <RecordValue key="language" dataExtractor="simpleValue"
-                         dataSource="/alfresco-mnt-16748/language" dataTrigger="/alfresco-mnt-16748/language" />
-        </AuditPath>
-        <AuditPath key="query">
+                         dataSource="/alfresco-mnt-16748/search/language" dataTrigger="/alfresco-mnt-16748/search/language" />
             <RecordValue key="query" dataExtractor="simpleValue"
-                         dataSource="/alfresco-mnt-16748/query" dataTrigger="/alfresco-mnt-16748/query" />
+                         dataSource="/alfresco-mnt-16748/search/query" dataTrigger="/alfresco-mnt-16748/search/query" />
         </AuditPath>
 
     </Application>

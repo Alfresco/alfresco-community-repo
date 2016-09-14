@@ -134,7 +134,8 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
             return model;
         }
 
-        Long totalNumberOfRecordsToProcess = 0L;
+        //default total number of records to be processed to batch size value
+        Long totalNumberOfRecordsToProcess = batchSize;
         if (StringUtils.isNotBlank(totalToBeProcessedRecordsStr))
         {
             try

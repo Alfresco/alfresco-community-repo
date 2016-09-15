@@ -122,6 +122,15 @@
       <property name="contentService">
          <ref bean="ContentService" />
       </property>
+      <property name="versionService">
+         <ref bean="versionService" />
+      </property>
+      <property name="attributeService">
+         <ref bean="AttributeService" />
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
       <property name="applicableTypes">
          <list>
             <value>{http://www.alfresco.org/model/content/1.0}content</value>

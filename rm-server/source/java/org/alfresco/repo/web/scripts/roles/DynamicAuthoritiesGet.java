@@ -56,7 +56,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 @SuppressWarnings("deprecation")
 public class DynamicAuthoritiesGet extends DeclarativeWebScript implements RecordsManagementModel
 {
-
+    private static final String MESSAGE_PARAMETER_BATCHSIZE_GREATER_THAN_ZERO = "Parameter batchsize should be a number greater than 0.";
     private static final String MESSAGE_PROCESSING_BEGIN = "Processing - BEGIN";
     private static final String MESSAGE_PROCESSING_END = "Processing - END";
     private static final String MESSAGE_PROCESSING_RECORD_END_TEMPLATE = "Processing record {0} - END";
@@ -114,6 +114,13 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
         try
         {
             size = Long.parseLong(batchSizeStr);
+            if(size <= 0)
+            {
+                model.put(MODEL_STATUS, FAILED_STATUS);
+                model.put(MODEL_MESSAGE, MESSAGE_PARAMETER_BATCHSIZE_GREATER_THAN_ZERO);
+                logger.info(MESSAGE_PARAMETER_BATCHSIZE_GREATER_THAN_ZERO);
+                return model;
+            }
         }
         catch(NumberFormatException ex)
         {

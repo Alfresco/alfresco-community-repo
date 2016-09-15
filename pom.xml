@@ -23,7 +23,7 @@
         <dependency>
             <groupId>org.apache.ws.security</groupId>
             <artifactId>wss4j</artifactId>
-            <version>1.5.12</version>
+            <version>1.6.19</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.apache.ws.commons.schema</groupId>
             <artifactId>XmlSchema</artifactId>
-            <version>1.4.5</version>
+            <version>1.4.7</version>
         </dependency>
         <dependency>
             <groupId>javax.xml</groupId>

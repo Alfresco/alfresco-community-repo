@@ -1,0 +1,182 @@
+<binding name="default">
+
+   <namespace uri="http://www.alfresco.org/model/dictionary/1.0" default="elements"/>
+   
+   <format type="java.util.Date" serializer="org.alfresco.repo.dictionary.M2XML.serialiseDate" deserializer="org.alfresco.repo.dictionary.M2XML.deserialiseDate"/>
+   <format type="java.lang.Boolean" serializer="org.alfresco.repo.dictionary.M2XML.serialiseBoolean" deserializer="org.alfresco.repo.dictionary.M2XML.deserialiseBoolean"/>
+         
+   <mapping name="model" class="org.alfresco.repo.dictionary.M2Model">
+      <value style="attribute" name="name" field="name"/>
+      <value name="description" field="description" usage="optional"/>
+      <value name="author" field="author" usage="optional"/>
+      <value name="published" field="published" usage="optional"/>
+      <value name="version" field="version" usage="optional"/>
+      <value name="analyserResourceBundleName" field="analyserResourceBundleName" usage="optional"/>
+      
+      <structure name="imports" usage="optional">
+         <collection field="imports" factory="org.alfresco.repo.dictionary.M2Model.createList">
+            <structure name="import" type="org.alfresco.repo.dictionary.M2Namespace" usage="optional">
+               <value style="attribute" name="uri" field="uri"/>
+               <value style="attribute" name="prefix" field="prefix"/>
+            </structure>
+         </collection>
+      </structure>
+
+      <structure name="namespaces" usage="optional">
+         <collection field="namespaces" factory="org.alfresco.repo.dictionary.M2Model.createList">
+            <structure name="namespace" type="org.alfresco.repo.dictionary.M2Namespace" usage="optional">
+               <value style="attribute" name="uri" field="uri"/>
+               <value style="attribute" name="prefix" field="prefix"/>
+            </structure>
+         </collection>
+      </structure>
+      
+      <structure name="data-types" usage="optional">
+         <collection field="dataTypes" factory="org.alfresco.repo.dictionary.M2Model.createList">
+            <structure name="data-type" type="org.alfresco.repo.dictionary.M2DataType" usage="optional">
+               <value style="attribute" name="name" field="name"/>
+               <value name="title" field="title" usage="optional"/>
+               <value name="description" field="description" usage="optional"/>
+               <value name="default-analyser-class" field="defaultAnalyserClassName"/>
+               <value name="analyserResourceBundleName" field="analyserResourceBundleName" usage="optional"/>
+               <value name="java-class" field="javaClassName"/>
+            </structure>
+         </collection>
+      </structure>
+
+      <structure name="constraints" usage="optional">
+         <collection field="constraints" item-type="org.alfresco.repo.dictionary.M2Constraint" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+      </structure>
+      
+      <structure name="types" usage="optional">
+         <collection field="types" item-type="org.alfresco.repo.dictionary.M2Type" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+      </structure>
+      
+      <structure name="aspects" usage="optional">
+         <collection field="aspects" item-type="org.alfresco.repo.dictionary.M2Aspect" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+      </structure>
+   </mapping>
+
+
+   <mapping class="org.alfresco.repo.dictionary.M2Class" abstract="true">
+      <value style="attribute" name="name" field="name"/>
+      <value name="title" field="title" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <value name="parent" field="parentName" usage="optional"/>
+      <value name="archive" field="archive" usage="optional"/>
+      <value name="includedInSuperTypeQuery" field="includedInSuperTypeQuery" usage="optional"/>
+      <value name="analyserResourceBundleName" field="analyserResourceBundleName" usage="optional"/>
+   	  <structure name="properties" usage="optional">
+         <collection field="properties" item-type="org.alfresco.repo.dictionary.M2Property" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+      </structure>
+      <structure name="associations" usage="optional">
+         <collection field="associations" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+      </structure>
+      <structure name="overrides" usage="optional">
+         <collection field="propertyOverrides" item-type="org.alfresco.repo.dictionary.M2PropertyOverride" factory="org.alfresco.repo.dictionary.M2Model.createList">
+            <structure name="property" type="org.alfresco.repo.dictionary.M2PropertyOverride" usage="optional">
+               <value style="attribute" name="name" field="name"/>
+               <structure name="mandatory" usage="optional">
+                  <value style="attribute" name="enforced" field="isMandatoryEnforced" usage="optional" />
+                  <value style="text" field="isMandatory" usage="optional"/>
+               </structure>
+               <value name="default" field="defaultValue" usage="optional"/>
+               <structure name="constraints" usage="optional">
+                  <collection field="constraints" item-type="org.alfresco.repo.dictionary.M2Constraint" usage="optional" factory="org.alfresco.repo.dictionary.M2Model.createList"/>
+               </structure>
+            </structure>
+         </collection>
+      </structure>
+      <structure name="mandatory-aspects" usage="optional">
+         <collection field="mandatoryAspects" factory="org.alfresco.repo.dictionary.M2Model.createList">
+            <value name="aspect" type="java.lang.String"/>
+         </collection>
+      </structure>
+   </mapping>
+
+   <mapping name="type" class="org.alfresco.repo.dictionary.M2Type" extends="org.alfresco.repo.dictionary.M2Class">
+      <structure map-as="org.alfresco.repo.dictionary.M2Class"/>      
+   </mapping>
+      
+   <mapping name="aspect" class="org.alfresco.repo.dictionary.M2Aspect" extends="org.alfresco.repo.dictionary.M2Class">
+      <structure map-as="org.alfresco.repo.dictionary.M2Class"/>
+   </mapping>
+
+   <mapping name="property" class="org.alfresco.repo.dictionary.M2Property">
+      <value style="attribute" name="name" field="name"/>
+      <value name="title" field="title" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <value name="type" field="propertyType"/>
+      <value name="protected" field="isProtected" usage="optional"/>
+      <structure name="mandatory" usage="optional">
+         <value style="attribute" name="enforced" field="isMandatoryEnforced" usage="optional"/>
+         <value style="text" field="isMandatory" />
+      </structure>
+      <value name="multiple" field="isMultiValued" usage="optional"/>
+      <value name="default" field="defaultValue" usage="optional"/>
+      <structure name="index" usage="optional">
+         <value style="attribute" name="enabled" field="isIndexed"/>
+         <value name="atomic" field="isIndexedAtomically" usage="optional"/>
+         <value name="stored" field="isStoredInIndex" usage="optional"/>
+         <value name="tokenised" field="indexTokenisationMode" usage="optional" serializer="org.alfresco.repo.dictionary.IndexTokenisationMode.serializer" deserializer="org.alfresco.repo.dictionary.IndexTokenisationMode.deserializer"/>
+         <value name="facetable" field="isFacetable" usage="optional"/>
+         <value name="analyserResourceBundleName" field="analyserResourceBundleName" usage="optional"/>
+      </structure>
+      <structure name="constraints" test-method="hasConstraints" usage="optional">
+         <collection field="constraints" item-type="org.alfresco.repo.dictionary.M2Constraint" factory="org.alfresco.repo.dictionary.M2Model.createList" usage="optional"/>
+      </structure>
+   </mapping>
+
+   <mapping abstract="true" class="org.alfresco.repo.dictionary.M2NamedValue">
+      <value style="attribute" name="name" field="name" />
+      <value name="value" field="simpleValue" test-method="hasSimpleValue" usage="optional"/>
+      <structure name="list" test-method="hasListValue" usage="optional">
+          <collection field="listValue" factory="org.alfresco.repo.dictionary.M2Model.createList" usage="optional">
+             <value name="value" style="element" usage="optional" type="java.lang.String"/>
+          </collection>
+      </structure>
+   </mapping>
+
+   <mapping name="constraint" class="org.alfresco.repo.dictionary.M2Constraint">
+      <value style="attribute" name="name" field="name" usage="optional"/>
+      <value style="attribute" name="type" field="type" usage="optional"/>
+      <value style="attribute" name="ref" field="ref" usage="optional"/>
+      <value name="title" field="title" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <collection field="parameters" factory="org.alfresco.repo.dictionary.M2Model.createList" usage="optional">
+         <structure name="parameter" type="org.alfresco.repo.dictionary.M2NamedValue" />
+      </collection>
+   </mapping>
+
+   <mapping class="org.alfresco.repo.dictionary.M2ClassAssociation" abstract="true">
+      <value style="attribute" name="name" field="name"/>
+      <value name="title" field="title" usage="optional"/>
+      <value name="description" field="description" usage="optional"/>
+      <structure name="source" usage="optional">
+         <value name="role" field="sourceRoleName" usage="optional"/>
+         <value name="mandatory" field="isSourceMandatory" usage="optional"/>
+         <value name="many" field="isSourceMany" usage="optional"/>
+      </structure>         
+      <structure name="target">
+         <value name="class" field="targetClassName"/>
+         <value name="role" field="targetRoleName" usage="optional"/>
+         <structure name="mandatory" usage="optional">
+           <value style="attribute" name="enforced" field="isTargetMandatoryEnforced" get-method="getTargetMandatoryEnforced" usage="optional"/>
+           <value style="text" field="isTargetMandatory" get-method="getTargetMandatory"/>
+         </structure>
+         <value name="many" field="isTargetMany" usage="optional"/>
+      </structure>         
+   </mapping>
+
+   <mapping name="association" class="org.alfresco.repo.dictionary.M2Association" extends="org.alfresco.repo.dictionary.M2ClassAssociation">
+      <structure map-as="org.alfresco.repo.dictionary.M2ClassAssociation"/>
+   </mapping>
+   
+   <mapping name="child-association" class="org.alfresco.repo.dictionary.M2ChildAssociation" extends="org.alfresco.repo.dictionary.M2ClassAssociation">
+      <structure map-as="org.alfresco.repo.dictionary.M2ClassAssociation"/>
+      <value name="child-name" field="requiredChildName" usage="optional"/>
+      <value name="duplicate" field="allowDuplicateChildName" usage="optional"/>
+      <value name="propagateTimestamps" field="propagateTimestamps" usage="optional"/>
+   </mapping>
+
+</binding>

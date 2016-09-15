@@ -1,0 +1,132 @@
+<model name="d:dictionary" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Dictionary Model</description>
+   <author>Alfresco</author>
+   <published>2005-09-29</published>
+   <version>1.0</version>
+   <analyserResourceBundleName>alfresco/model/dataTypeAnalyzers</analyserResourceBundleName>
+   
+   <namespaces>
+      <!-- Default Namespace -->
+      <namespace uri="" prefix=""/>
+      <!-- Default Alfresco Namespace -->
+      <namespace uri="http://www.alfresco.org" prefix="alf"/>
+      <!-- Dictionary Namespace -->
+      <namespace uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- View Namespace -->
+      <namespace uri="http://www.alfresco.org/view/repository/1.0" prefix="view"/>
+   </namespaces>
+
+   <data-types>
+
+      <data-type name="d:any">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>java.lang.Object</java-class>
+      </data-type>
+
+      <data-type name="d:encrypted">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.EmptyAnalyser</default-analyser-class>
+         <java-class>javax.crypto.SealedObject</java-class>
+      </data-type>
+
+      <data-type name="d:text">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>java.lang.String</java-class>
+      </data-type>
+
+      <data-type name="d:mltext">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.MLText</java-class>
+      </data-type>
+
+      <data-type name="d:content">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.ContentData</java-class>
+      </data-type>
+
+      <data-type name="d:int">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.IntegerAnalyser</default-analyser-class>
+         <java-class>java.lang.Integer</java-class>
+      </data-type>
+
+      <data-type name="d:long">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.LongAnalyser</default-analyser-class>
+         <java-class>java.lang.Long</java-class>
+      </data-type>
+
+      <data-type name="d:float">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.FloatAnalyser</default-analyser-class>
+         <java-class>java.lang.Float</java-class>
+      </data-type>
+
+      <data-type name="d:double">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.DoubleAnalyser</default-analyser-class>
+         <java-class>java.lang.Double</java-class>
+      </data-type>
+
+      <data-type name="d:date">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.DateAnalyser</default-analyser-class>
+         <java-class>java.util.Date</java-class>
+      </data-type>
+
+      <data-type name="d:datetime">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser</default-analyser-class>
+         <java-class>java.util.Date</java-class>
+      </data-type>
+
+      <data-type name="d:boolean">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>java.lang.Boolean</java-class>
+      </data-type>
+      
+      <data-type name="d:qname">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.namespace.QName</java-class>
+      </data-type>
+
+      <data-type name="d:noderef">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.NodeRef</java-class>
+      </data-type>
+
+      <data-type name="d:childassocref">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.ChildAssociationRef</java-class>
+      </data-type>
+
+      <data-type name="d:assocref">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.AssociationRef</java-class>
+      </data-type>
+
+      <data-type name="d:path">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.Path</java-class>
+      </data-type>
+
+      <data-type name="d:category">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.NodeRef</java-class>
+      </data-type>
+
+      <data-type name="d:locale">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser</default-analyser-class>
+         <java-class>java.util.Locale</java-class>
+      </data-type>
+
+      <data-type name="d:version">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser</default-analyser-class>
+         <java-class>org.alfresco.util.VersionNumber</java-class>
+      </data-type>
+	   
+	  <data-type name="d:period">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser</default-analyser-class>
+         <java-class>org.alfresco.service.cmr.repository.Period</java-class>
+      </data-type>
+
+   </data-types>
+
+
+   <!-- TODO: Define dictionary meta model -->
+   
+</model>

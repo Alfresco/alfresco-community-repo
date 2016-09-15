@@ -1,0 +1,19 @@
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="my:myModel">
+
+    <namespaces>
+        <namespace uri="my.model" prefix="my"/>
+    </namespaces>
+
+    <types>
+        <type name="my:mytypeA">
+            <parent>my:mytypeC</parent>
+        </type>
+        <type name="my:mytypeB">
+            <parent>my:mytypeA</parent>
+        </type>
+        <type name="my:mytypeC">
+            <parent>my:mytypeA</parent>
+        </type>
+    </types>
+
+</model>

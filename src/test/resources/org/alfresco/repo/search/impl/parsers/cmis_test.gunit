@@ -1,0 +1,556 @@
+/** CMIS */
+
+gunit CMIS;
+
+@header{package org.alfresco.repo.search.impl.parsers;}
+
+/** Parser */
+
+query:
+"SELECT * FROM cmis:document" OK
+"SELECT * FROM cmis:document, cmis:folder" FAIL
+"SELECT SCORE() FROM cmis:document" OK
+"SELECT from FROM cmis:document" FAIL
+"SELECT DOCUMENT.Name FROM cmis:document" OK
+"SELECT cmis:name, cmis:typeId FROM cmis:document" OK
+"SELECT document.* FROM cmis:document" OK
+"SELECT cmis:name,, cmis:typeId FROM cmis:document" FAIL
+"SELECT * FROM *" FAIL
+
+"SELECT * from FOLDER JOIN RELATIONSHIP ON FOLDER.ID = RELATIONSHIP.ID" OK
+"SELECT * from FOLDER F JOIN RELATIONSHIP RL ON F.ID = RL.ID" OK
+"SELECT * from DOCUMENT D JOIN DOCUMENT DD ON (D.ID = DD.ID)" FAIL
+"SELECT * from FOLDER F JOIN RELATIONSHIP RL ON F.ID = RL.ID" OK
+"SELECT * from (FOLDER F JOIN RELATIONSHIP RL ON F.ID = RL.ID)" OK
+"SELECT * from ((FOLDER F JOIN RELATIONSHIP RL ON F.ID = RL.ID))" OK   
+"SELECT * from (FOLDER)" FAIL   
+"SELECT * from cmis:folder F INNER JOIN cmis:relationship RL ON F.ID = RL.ID" OK
+"SELECT * from cmis:folder F LEFT JOIN cmis:relationship RL ON F.ID = RL.ID" OK
+"SELECT * from FOLDER F LEFT OUTER JOIN RELATIONSHIP RL ON F.ID = RL.ID" OK
+"SELECT * from FOLDER F LEFT INNER JOIN RELATIONSHIP RL ON F.ID = RL.ID" FAIL
+
+"SELECT * FROM cmis:document WHERE cmis:name='Test'" OK
+"SELECT * FROM FOLDER WHERE COUNTER=7" OK
+"SELECT * FROM FOLDER WHERE 7=COUNTER" FAIL
+"SELECT * FROM FOLDER WHERE COUNTER IS NULL" OK
+"SELECT * FROM FOLDER WHERE COUNTER IS NOT NULL" OK
+"SELECT * FROM FOLDER WHERE COUNTER IS 5" FAIL
+"SELECT * FROM FOLDER WHERE NAME LIKE '%te_t'" OK
+"SELECT * FROM FOLDER WHERE COUNTER LIKE 5" FAIL
+"SELECT * FROM FOLDER WHERE ANY NAME IN ('test', 'mail', 2)" OK
+"SELECT * FROM FOLDER WHERE CONTAINS ('test -mail')" OK
+"SELECT * FROM FOLDER WHERE IN_FOLDER('folderId')" OK
+"SELECT * FROM FOLDER WHERE IN_TREE('folderId')" OK
+"SELECT cmis:objectId FROM test:document where cmis:name='Test' AND counter>=22" OK
+"SELECT cmis:objectId FROM test:document where (cmis:name='Test' AND counter<>22) OR CONTAINS('test')" OK
+"SELECT cmis:objectId FROM test:document where ((cmis:name='Test' AND counter<=22) OR (CONTAINS('test') AND cmis:createdBy NOT LIKE 'J%')) AND (bill IS NULL)" OK
+
+"SELECT * FROM cmis:document WHERE cmis:name='Test' ORDER BY cmis:name" OK
+"SELECT * FROM cmis:document WHERE cmis:name='Test' ORDER BY cmis:name ASC, cmis:type DESC" OK
+"SELECT * FROM cmis:document WHERE cmis:name='Test' ORDER BY first lines" FAIL
+
+"SELECT Y.*, X.PROPERTY_ADDRESS FROM POLICY AS X JOIN CLAIMS AS Y ON X.POLICY_NUM = Y.POLICY_NUM WHERE ( ( Y.DAMAGE_ESTIMATES = 10000 OR cmis:createdBy NOT LIKE 'J%') AND (X.MAIN IS NULL) ) ORDER BY cmis:name ASC, cmis:type DESC" OK 
+"SELECT Name, Make FROM POLICY WHERE (MAKE = 'buick' ) OR ( ANY FEATURES IN ('NAVIGATION SYSTEM', 'SATELLITE RADIO', 'MP3') ) OR IN_FOLDER('folderId')" OK
+"SELECT DOC.NAME, DOC.TYPE, P.Info, SCORE() FROM cmis:document AS DOC LEFT OUTER JOIN POLICY P ON P.DOC_ID = DOC.ID WHERE (DOC.NAME LIKE 'Test%' AND P.INFO <> 'dual' AND DOC.NUM >=44) OR CONTAINS('test') OR DOC.NAME IS NOT NULL ORDER BY cmis:name ASC" OK
+"SELECT Name, SCORE() FROM POLICY JOIN DOCUMENT WHERE (MAKE = 'buick' ) OR (FEATURES IS ('NAVIGATION SYSTEM', 'MP3') )" FAIL
+
+
+selectList:
+"*" OK
+//"column1" OK
+//"column1, column2" OK
+"column1, *" FAIL
+"column1,, column2" FAIL
+"X.column1, Y.column2" OK
+"X.*" OK
+"X.1, X.Y.Z" FAIL
+
+"*" -> "ALL_COLUMNS"
+"X.*" -> "(COLUMNS (ALL_COLUMNS X))"
+//"column1, column2" -> "(COLUMNS (COLUMN (COLUMN_REF column1)) (COLUMN (COLUMN_REF column2)))" 
+"X.column1, Y.column2" -> "(COLUMNS (COLUMN (COLUMN_REF column1 X)) (COLUMN (COLUMN_REF column2 Y)))"
+"SCORE()" -> (COLUMNS (COLUMN (FUNCTION SCORE ( ))))
+
+//selectSubList:
+//"column1" OK
+
+//valueExpression:
+//"column1" OK
+
+columnReference:
+"column1" OK
+
+fromClause:
+"FROM table1" OK
+"FROM table1 T" OK
+"FROM table1 AS T" OK
+"FROM table1 JOIN table2 ON column1 = column2" OK
+"FROM table1 JOIN table2" FAIL
+"FROM table1 T1 JOIN table2 T2 ON T1.column1 = T2.column2" OK
+"FROM table1 T1 LEFT JOIN table2 T2 ON T1.column1 = T2.column2" OK
+"FROM table1 T1 LEFT INNER JOIN table2 T2 ON T1.column1 = T2.column2" FAIL
+"FROM table1 T1 LEFT OUTER JOIN table2 T2 ON T1.column1 = T2.column2" OK
+"FROM table1 T1 INNER JOIN table2 T2 ON T1.column1 = T2.column2" OK
+"FROM table1 T1 LEFT OUTER JOIN table2 T2 ON T1.column1 = T2.column2 INNER JOIN table3 ON T2.column2 = table3.column2" OK
+"FROM table1 T1 JOIN table2 T2 ON T1.column1 = T2.column1 JOIN table3 ON T2.column2 = table3.column2" OK
+"FROM ((table1 T1 JOIN table2 T2 ON T1.column1 = T2.column1) LEFT JOIN table3 T3 ON T2.column1 = T3.column1)" OK
+
+"FROM table1" -> "(SOURCE (TABLE_REF table1))"
+"FROM table1 AS T" -> "(SOURCE (TABLE_REF table1 T))"
+"FROM table1 JOIN table2 ON column1 = column2" -> "(SOURCE (TABLE_REF table1) (JOIN (SOURCE (TABLE_REF table2)) (ON (COLUMN_REF column1) = (COLUMN_REF column2))))"
+"FROM table1 LEFT OUTER JOIN table2 ON column1 = column2" -> "(SOURCE (TABLE_REF table1) (JOIN (SOURCE (TABLE_REF table2)) LEFT (ON (COLUMN_REF column1) = (COLUMN_REF column2))))"
+
+whereClause:
+"WHERE column1 = 'value1'" OK
+"WHERE 3.32 = ANY column1" OK
+"WHERE column1 = value1" FAIL
+"WHERE T.column1 = 'value1'" OK
+"WHERE T.T.column1 = 'value1'" FAIL
+"WHERE column1 = true" OK
+"WHERE column1 = 3.32" OK
+"WHERE column1 > 3.32" OK
+"WHERE column1 >= 3.32" OK
+"WHERE column1 => 3.32" FAIL
+"WHERE column1 < 3.32" OK
+"WHERE column1 <= 3.32" OK
+"WHERE column1 =< 3.32" FAIL
+"WHERE column1 <> 3.32" OK
+"WHERE column1 >< 3.32" FAIL
+"WHERE 2.22 < column1 < 3.32" FAIL
+
+"WHERE CONTAINS('test string')" OK
+"WHERE CONTAINS(22)" FAIL
+"WHERE IN_FOLDER('folderId')" OK
+"WHERE IN_TREE('folderId')" OK
+"WHERE column1 IS NULL" OK
+"WHERE column1 IS NOT NULL" OK
+"WHERE column1 NOT IS NULL" FAIL
+"WHERE column1 LIKE 'T%'" OK
+"WHERE column1 NOT LIKE 'T%'" OK
+"WHERE column1 LIKE 2%" FAIL
+"WHERE column1 IN (1, 2, 3)" OK
+"WHERE ANY column1 IN (1, 2, 3)" OK
+"WHERE column1 NOT IN (1, 2, 3)" OK
+"WHERE column1 IN ('A', 'B')" OK
+"WHERE column1 IN (A, B)" FAIL
+"WHERE column1 IN (True)" OK
+
+"WHERE col1=1 AND col2=2" OK
+"WHERE col1=1 OR col2=2" OK
+"WHERE (col1=1 AND col2=2)" OK
+"WHERE NOT (col1=1 AND col2=2)" OK
+"WHERE ((col1=1 OR col2=2))" OK
+"WHERE ((col1=1 OR col2=2)" FAIL
+"WHERE (col1=1 AND col2=2) OR col2=3" OK
+"WHERE col1=1 AND ((col2=2) OR col2=3)" OK
+"WHERE (col1=1 AND (col2=2 OR col2=3)" FAIL
+"WHERE NOT(col2=2) OR NOT(col2=3)" OK
+"WHERE NOT(col2=2 OR col2=3)" OK
+"WHERE NOT(col2=2 AND NOT(col3=3)) OR NOT(col1=1)" OK
+"WHERE col4=4 AND NOT(col2=2 AND NOT(col3=3)) OR NOT(col1=1)" OK
+"WHERE col4=4 AND (col2=2 NOT(col3=3)) OR NOT(col1=1)" FAIL
+
+"WHERE (NOT(col2 < 2.25) OR NOT CONTAINS('text')) AND col3 LIKE 'T__T'" OK
+"WHERE 2 = ANY col1 OR col2 IN (2.25, 3.25) OR ((col2 IS NOT NULL OR col3 LIKE 'T%') AND IN_TREE('folder_id'))" OK
+"WHERE ((NOT (col2 IS NOT NULL) OR col3 LIKE 'T%') AND CONTAINS ('TEXT')) OR (col1 >='A' AND col2 IN (2.25, 3.25))" OK
+
+"WHERE column1 = 'value1'" -> "(DISJUNCTION (CONJUNCTION (PRED_COMPARISON SINGLE_VALUED_PROPERTY (COLUMN_REF column1) = (STRING_LITERAL 'value1'))))"
+"WHERE 'value1'= ANY column1" -> "(DISJUNCTION (CONJUNCTION (PRED_COMPARISON ANY (STRING_LITERAL 'value1') = (COLUMN_REF column1))))"
+"WHERE column1 > 3.32" -> "(DISJUNCTION (CONJUNCTION (PRED_COMPARISON SINGLE_VALUED_PROPERTY (COLUMN_REF column1) > (NUMERIC_LITERAL 3.32))))"
+"WHERE CONTAINS('test string')" -> "(DISJUNCTION (CONJUNCTION (PRED_FTS 'test string')))"
+"WHERE IN_FOLDER('folderId')" -> "(DISJUNCTION (CONJUNCTION (PRED_CHILD (STRING_LITERAL 'folderId'))))"
+"WHERE IN_TREE('folderId')" -> "(DISJUNCTION (CONJUNCTION (PRED_DESCENDANT (STRING_LITERAL 'folderId'))))"
+"WHERE column1 IS NULL" -> "(DISJUNCTION (CONJUNCTION (PRED_EXISTS (COLUMN_REF column1) NOT)))"
+"WHERE column1 LIKE 'T%'" -> "(DISJUNCTION (CONJUNCTION (PRED_LIKE (COLUMN_REF column1) (STRING_LITERAL 'T%'))))"
+"WHERE column1 IN (1, 2)" -> "(DISJUNCTION (CONJUNCTION (PRED_IN SINGLE_VALUED_PROPERTY (COLUMN_REF column1) (LIST (NUMERIC_LITERAL 1) (NUMERIC_LITERAL 2)))))"
+"WHERE NOT(col1=1)" -> "(DISJUNCTION (CONJUNCTION (NEGATION (DISJUNCTION (CONJUNCTION (PRED_COMPARISON SINGLE_VALUED_PROPERTY (COLUMN_REF col1) = (NUMERIC_LITERAL 1)))))))"
+"WHERE col1=1 AND col2=2" -> "(DISJUNCTION (CONJUNCTION (PRED_COMPARISON SINGLE_VALUED_PROPERTY (COLUMN_REF col1) = (NUMERIC_LITERAL 1)) (PRED_COMPARISON SINGLE_VALUED_PROPERTY (COLUMN_REF col2) = (NUMERIC_LITERAL 2))))"
+"WHERE col1=1 OR col2=2" -> "(DISJUNCTION (CONJUNCTION (PRED_COMPARISON SINGLE_VALUED_PROPERTY (COLUMN_REF col1) = (NUMERIC_LITERAL 1))) (CONJUNCTION (PRED_COMPARISON SINGLE_VALUED_PROPERTY (COLUMN_REF col2) = (NUMERIC_LITERAL 2))))"
+
+orderByClause:
+"ORDER BY column1" OK
+"ORDER BY ASC" FAIL
+"ORDER BY column1 ASC" OK
+"ORDER BY column1 DESC" OK
+"ORDER BY column1 value" FAIL
+"ORDER BY column1, column2" OK
+"ORDER BY column1, column2 ASC" OK
+"ORDER BY column1 ASC, column2 DESC" OK
+
+"ORDER BY column1" -> "(ORDER (SORT_SPECIFICATION (COLUMN_REF column1) ASC))"
+"ORDER BY column1 ASC, column2 DESC" -> "(ORDER (SORT_SPECIFICATION (COLUMN_REF column1) ASC) (SORT_SPECIFICATION (COLUMN_REF column2) DESC))"
+
+datetimeLiteral:
+"TIMESTAMP '2009-12-09T13:22:15.250'" OK
+"TIMESTAMP '2009-12-09T13:22:15.250Z'" OK
+"TIMESTAMP '2009-12-09T13:22:15.250+02:30'" OK
+"TIMESTAMP '2009-12-09T13:22:15.250-02:30'" OK
+/* Should fail as " are not valid quotes in CMIS or SQL */
+"TIMESTAMP \"2009-12-09T13:22:15.250-02:30\"" FAIL
+/* Not checked at parse time */
+"TIMESTAMP '2009-12-9T13:22:15.250+2:30'" OK
+/* The date format is checked during query processing and not parsing */
+"TIMESTAMP 'Thu Dec 10 16:19:53 EET 2009'" OK
+
+textSearchExpression:
+"'word1'" OK
+"'word1 -word2'" OK
+"'word1 -word2 word3'" OK
+"'word1 -word2 OR word3'" OK
+/** OR is not treated as a special keyword */
+"'word1-word2 OR OR word3'" OK
+/** Spec spcifies minimum */
+"'word1-word2 \"word1 OR word3\"'" OK
+"'word1 \"phrase_word1 phrase_word2\"'" OK
+/** "'word1 'phrase_word1 phrase_word2''" FAIL this failsas invalid */
+
+
+/** Lexer */
+
+QUOTED_STRING:
+"'test string'" OK 
+"test string" FAIL
+"'string\\''" OK 
+"''test string'" FAIL
+"'cmis:name:\\'Folder 9\\\\\\'\\''" OK
+    
+SELECT:
+"SELECT"     OK
+"sElECt"     OK
+"SeLECT"     OK
+"seLEct"     OK
+"SELect"     OK
+"SElECt"     OK
+"seLect"     OK
+"sElEcT"     OK
+"select"     OK
+
+AS:
+"AS"         OK
+"aS"         OK
+"As"         OK
+"as"         OK
+
+FROM:
+"FROM"       OK
+"fRom"       OK
+"FROM"       OK
+"FroM"       OK
+"fROM"       OK
+"FRoM"       OK
+"from"       OK
+
+JOIN:
+"JOIN"       OK
+"JOiN"       OK
+"join"       OK
+"JoIN"       OK
+"jOiN"       OK
+"Join"       OK
+"join"       OK
+
+INNER:
+"INNER"      OK
+"innEr"      OK
+"iNNer"      OK
+"INnER"      OK
+"iNnEr"      OK
+"InNer"      OK
+"InneR"      OK
+"inner"      OK
+
+LEFT:
+"LEFT"       OK
+"leFt"       OK
+"lEfT"       OK
+"LEft"       OK
+"lefT"       OK
+"Left"       OK
+"left"       OK
+
+OUTER:
+"OUTER"      OK
+"oUtEr"      OK
+"OUTEr"      OK
+"outER"      OK
+"OUtEr"      OK
+"OutEr"      OK
+"oUTer"      OK
+"outer"      OK
+
+ON:
+"ON"         OK
+"oN"         OK
+"On"         OK
+"on"         OK
+
+WHERE:
+"WHERE"      OK
+"wheRe"      OK
+"WHere"      OK
+"WhERE"      OK
+"WHERe"      OK
+"WHErE"      OK
+"whEre"      OK
+"where"      OK
+
+OR:
+"OR"         OK
+"oR"         OK
+"Or"         OK
+"or"         OK
+
+AND:
+"AND"        OK
+"ANd"        OK
+"AnD"        OK
+"aNd"        OK
+"And"        OK
+"and"        OK
+
+NOT:
+"NOT"        OK
+"NoT"        OK
+"nOT"        OK
+"Not"        OK
+"noT"        OK
+"not"        OK
+
+IN:
+"IN"         OK
+"iN"         OK
+"In"         OK
+"in"         OK
+
+LIKE:
+"LIKE"       OK
+"LIkE"       OK
+"lIke"       OK
+"lIKe"       OK
+"liKE"       OK
+"lIkE"       OK
+"like"       OK
+
+IS:
+"IS"         OK
+"iS"         OK
+"Is"         OK
+"is"         OK
+
+NULL:
+"NULL"       OK
+"nulL"       OK
+"NUll"       OK
+"NuLl"       OK
+"nULL"       OK
+"NULL"       OK
+"null"       OK
+
+ANY:
+"ANY"        OK
+"aNy"        OK
+"AnY"        OK
+"aNY"        OK
+"Any"        OK
+"any"        OK
+
+CONTAINS:
+"CONTAINS"   OK
+"ContAINS"   OK
+"coNtainS"   OK
+"coNTainS"   OK
+"cONTAiNS"   OK
+"ContAIns"   OK
+"ConTains"   OK
+"CONTaiNS"   OK
+"CONtaiNs"   OK
+"COnTAiNS"   OK
+"contains"   OK
+
+IN_FOLDER:
+"IN_FOLDER"  OK
+"In_FoldeR"  OK
+"In_FoldEr"  OK
+"IN_fOlDeR"  OK
+"in_FOLdeR"  OK
+"iN_fOLder"  OK
+"IN_FOlder"  OK
+"iN_FOLdER"  OK
+"in_fOLdEr"  OK
+"iN_FOLDer"  OK
+"in_FOLdER"  OK
+"in_folder"  OK
+
+IN_TREE:
+"IN_TREE"    OK
+"IN_TRee"    OK
+"In_tREE"    OK
+"IN_tRee"    OK
+"in_trEe"    OK
+"In_TReE"    OK
+"IN_TRee"    OK
+"In_tRee"    OK
+"iN_treE"    OK
+"in_tree"    OK
+
+ORDER:
+"ORDER"      OK
+"Order"      OK
+"ORDeR"      OK
+"OrdeR"      OK
+"orDER"      OK
+"oRdEr"      OK
+"ORder"      OK
+"order"      OK
+
+BY:
+"BY"         OK
+"bY"         OK
+"By"         OK
+"by"         OK
+
+ASC:
+"ASC"        OK
+"asC"        OK
+"Asc"        OK
+"ASc"        OK
+"aSC"        OK
+"asc"        OK
+
+DESC:
+"DESC"       OK
+"deSC"       OK
+"DEsC"       OK
+"dESc"       OK
+"DeSC"       OK
+"dESC"       OK
+"desc"       OK
+
+TIMESTAMP:
+"TIMESTAMP"  OK
+"tiMEsTaMP"  OK
+"TImESTaMp"  OK
+"tImesTAMP"  OK
+"TImEstaMp"  OK
+"timesTAMp"  OK
+"TIMEsTaMP"  OK
+"tiMESTAMP"  OK
+"timeSTamp"  OK
+"tIMESTamp"  OK
+"tImEsTAmp"  OK
+"timestamp"  OK
+
+TRUE:
+"TRUE"       OK
+"tRUE"       OK
+"True"       OK
+"TRUE"       OK
+"truE"       OK
+"tRUe"       OK
+"true"       OK
+
+FALSE:
+"FALSE"      OK
+"fALsE"      OK
+"FAlSE"      OK
+"fAlSe"      OK
+"FalSe"      OK
+"fALSE"      OK
+"fALsE"      OK
+"false"      OK
+
+SCORE:
+"SCORE"      OK
+"SCore"      OK
+"score"      OK
+"ScOrE"      OK
+"scOrE"      OK
+"sCore"      OK
+"SCoRe"      OK
+"score"      OK
+
+LPAREN:   
+"("          OK
+
+RPAREN:   
+")"          OK
+
+STAR:
+"*"          OK
+
+COMMA:
+","          OK
+
+DOTSTAR:
+".*"         OK
+
+DOT:
+"."          OK
+
+DOTDOT:
+".."         OK
+
+EQUALS:
+"="          OK
+
+TILDA:
+"~"          OK
+
+NOTEQUALS:
+"<>"         OK
+
+GREATERTHAN:
+">"          OK
+
+LESSTHAN:
+"<"          OK
+
+GREATERTHANOREQUALS:
+">="         OK
+
+LESSTHANOREQUALS:
+"<="         OK
+
+COLON:
+":"          OK
+
+DOUBLE_QUOTE:   
+"\""         OK
+
+ID:
+"test_id"   OK
+""         FAIL
+"a"        OK
+"_"        OK
+"$"        FAIL 
+"_$"       OK
+"#"        FAIL
+"_#"       OK
+"1"        FAIL
+"A1"       OK
+"abcABC_abcABC0123_:$#" OK
+
+DECIMAL_INTEGER_LITERAL:
+"0" OK
+"-1" OK
+"1" OK
+"01" FAIL
+"10" OK
+"-10" OK
+"+150" OK
+ 
+FLOATING_POINT_LITERAL:
+"0" FAIL
+"1.." FAIL
+"1." OK
+"-1.0" OK
+"1..0" FAIL
+"1...." FAIL
+"1.0.." FAIL
+"-1.02" OK
+"1e10" OK
+"1.2e-12" OK
+"0.9E-9" OK
+"+123.123456" OK
+
+ 

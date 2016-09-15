@@ -1,0 +1,366 @@
+<model name="test:dictionarydaotest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Content Model</description>
+   <author>Alfresco</author>
+   <published>2005-05-30</published>
+   <version>1.0</version>
+   
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/dictionarydaotest/1.0" prefix="test"/>
+      <namespace uri="http://www.alfresco.org/test/dictionarydaotest2/1.0" prefix="test2"/>
+   </namespaces>
+
+   <data-types>
+
+      <data-type name="test:datatype">
+         <default-analyser-class>org.alfresco.repo.search.impl.lucene.analysis.AlfrescoStandardAnalyser</default-analyser-class>
+          <analyserResourceBundleName>alfresco/model/dataTypeAnalyzers</analyserResourceBundleName>
+         <java-class>java.lang.Object</java-class>
+      </data-type>
+
+   </data-types>
+   
+   <constraints>
+      <constraint name="test:registered1" type="REGISTERED">
+         <parameter name="registeredName"><value>cm:reg1</value></parameter>
+      </constraint>
+      <constraint name="test:registered2" type="REGISTERED">
+         <parameter name="registeredName"><value>cm:reg2</value></parameter>
+      </constraint>
+      <constraint name="test:regex1" type="REGEX">
+         <title>Regex1 title</title>
+         <description>Regex1 description</description>
+         <parameter name="expression"><value>[A-Z]*</value></parameter>
+         <parameter name="requiresMatch"><value>false</value></parameter>
+      </constraint>
+      <constraint name="test:regex2" type="REGEX">
+         <parameter name="expression"><value>[a-z]*</value></parameter>
+         <parameter name="requiresMatch"><value>false</value></parameter>
+      </constraint>
+      <constraint name="test:stringLength1" type="LENGTH">
+         <parameter name="minLength"><value>0</value></parameter>
+         <parameter name="maxLength"><value>256</value></parameter>
+      </constraint>
+      <constraint name="test:stringLength2" type="LENGTH">
+         <parameter name="minLength"><value>0</value></parameter>
+         <parameter name="maxLength"><value>128</value></parameter>
+      </constraint>
+      <constraint name="test:minMax1" type="MINMAX">
+         <parameter name="minValue"><value>0</value></parameter>
+         <parameter name="maxValue"><value>256</value></parameter>
+      </constraint>
+      <constraint name="test:list1" type="LIST">
+         <title>List1 title</title>
+         <description>List1 description</description>
+         <parameter name="allowedValues">
+             <list>
+                 <value>ABC</value>
+                 <value>DEF</value>
+                 <value>VALUE WITH SPACES</value>
+                 <value>VALUE WITH TRAILING SPACE </value>
+             </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
+      </constraint>
+      <constraint name="test:list2" type="LIST">
+         <parameter name="allowedValues">
+             <list>
+                 <value>HIJ</value>
+             </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
+      </constraint>
+      <constraint name="test2:list3" type="LIST">
+         <parameter name="allowedValues">
+             <list>
+                 <value>XYZ</value>
+             </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
+      </constraint>
+   </constraints>
+
+   <types>
+      
+      <type name="test:base">
+         <title>Base</title>
+         <description>The Base Type</description>
+         <parent></parent>
+         
+         <properties>
+            <property name="test:prop1">
+               <type>d:text</type>
+               <protected>true</protected>
+               <default></default>
+               <constraints>
+                  <constraint ref="test:regex1"/>
+                  <constraint ref="test:stringLength1">
+                      <title>Prop1 Strlen1 title</title>
+                      <description>Prop1 Strlen1 description</description>
+                  </constraint>
+                  <constraint ref="test:registered1"/>
+               </constraints>
+            </property>
+         </properties>
+         
+         <associations>
+            <association name="test:assoc1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>false</many>
+               </source>
+               <target>
+                  <class>test:base</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+            <association name="test:assoc2">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:referenceable</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+            <child-association name="test:childassoc1">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:referenceable</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+               <child-name>fred</child-name>
+               <duplicate>true</duplicate>
+            </child-association>
+            <child-association name="test:childassocPropagate">
+               <source>
+                  <mandatory>true</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>test:referenceable</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+               <child-name>fred</child-name>
+               <duplicate>true</duplicate>
+               <propagateTimestamps>true</propagateTimestamps>
+            </child-association>
+         </associations>
+         
+         <mandatory-aspects>
+            <aspect>test:referenceable</aspect>
+         </mandatory-aspects>
+      </type>
+   
+      <type name="test:file">
+         <parent>test:base</parent>
+         <archive>true</archive>
+         
+         <properties>
+            <property name="test:fileprop">
+               <type>d:text</type>
+               <protected>true</protected>
+               <default></default>
+            </property>
+
+         </properties>
+
+         <associations>
+            <child-association name="test:childassoc2">
+               <target>
+                  <class>test:referenceable</class>
+               </target>
+               <child-name>fred</child-name>
+               <duplicate>true</duplicate>
+            </child-association>
+         </associations>
+
+         <overrides>
+            <property name="test:prop1">
+               <default>an overriden default value</default>
+               <constraints>
+                  <constraint ref="test:stringLength2"/>
+                  <constraint ref="test:regex2"/>
+                  <constraint ref="test:registered2"/>
+               </constraints>
+            </property>
+         </overrides>
+      </type>
+
+      <type name="test:file-derived">
+         <parent>test:file</parent>
+      </type>
+      
+      <type name="test:file-derived-no-archive">
+         <parent>test:file</parent>
+         <archive>false</archive>
+      </type>
+      
+      <type name="test:folder">
+         <parent>test:base</parent>
+         <properties>
+            <property name="test:folderprop">
+               <type>d:text</type>
+               <protected>true</protected>
+               <default></default>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="test:enforced">
+         <parent>test:base</parent>
+         <properties>
+            <property name="test:mandatory-enforced">
+               <type>d:text</type>
+               <mandatory enforced="true">true</mandatory>
+            </property>
+            <property name="test:mandatory-not-enforced">
+               <type>d:text</type>
+               <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="test:mandatory-default-enforced">
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+         </properties>
+      </type>
+      
+      <type name="test:overridetype1">
+        <properties>
+            <property name="test:propoverride">
+                <type>d:text</type>
+                <default>one</default>
+            </property>
+        </properties>
+      </type>
+      
+      <type name="test:overridetype2">
+        <parent>test:overridetype1</parent>
+        <overrides>
+            <property name="test:propoverride">
+                <default>two</default>
+            </property>
+        </overrides>
+      </type>
+      
+      <type name="test:overridetype3">
+        <parent>test:overridetype2</parent>
+        <overrides>
+            <property name="test:propoverride">
+                <default>three</default>
+            </property>
+        </overrides>
+      </type>
+      
+      <type name="test:typeWithNamedPropConstraint">
+         <title>Type with named property-defined constraint.</title>
+         <description>A type with a named constraint defined within one of its properties.</description>
+         <parent></parent>
+         
+         <properties>
+            <property name="test:constrainedProp">
+               <type>d:text</type>
+               <protected>true</protected>
+               <default></default>
+               <constraints>
+                  <constraint name="test:inlineConstraint" type="LIST">
+                     <title>Inline constraint</title>
+                     <description>An inline constraint</description>
+                        <parameter name="allowedValues">
+                           <list>
+                              <value>ALPHA</value>
+                              <value>BETA</value>
+                              <value>GAMMA, DELTA</value>
+                              <value>OMEGA</value>
+                           </list>
+                        </parameter>
+                        <parameter name="caseSensitive"><value>true</value></parameter>
+                  </constraint>
+               </constraints>
+            </property>
+         </properties>
+      </type>
+   </types>
+   
+   <aspects>
+      <aspect name="test:referenceable">
+         <title>Referenceable</title>
+         <description>The referenceable aspect</description>
+         <parent></parent>
+         
+         <properties>
+            <property name="test:id">
+               <type>d:int</type>
+               <protected>true</protected>
+               <mandatory>true</mandatory>
+               <index enabled="true">
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+               </index>
+               <constraints>
+                  <constraint ref="test:minMax1"/>
+               </constraints>
+            </property>
+         </properties>
+      </aspect>
+      <aspect name="test:aspect-base">
+         <title>Aspect Base</title>
+         <parent></parent>
+         <properties>
+            <property name="test:aspect-base-p1">
+               <type>d:text</type>
+               <constraints>
+                  <constraint ref="test:list1"/>
+               </constraints>
+            </property>
+         </properties>
+      </aspect>
+      <aspect name="test:aspect-one">
+         <title>Aspect One</title>
+         <parent>test:aspect-base</parent>
+         <overrides>
+            <property name="test:aspect-base-p1">
+               <constraints>
+                  <constraint ref="test:list2"/>
+               </constraints>
+            </property>
+         </overrides>
+      </aspect>
+      <aspect name="test:aspect-two">
+         <title>Aspect Two</title>
+         <parent>test:aspect-base</parent>
+         <overrides>
+            <property name="test:aspect-base-p1">
+               <constraints>
+                  <constraint ref="test:list1"/>
+                  <constraint ref="test:list2"/>
+               </constraints>
+            </property>
+         </overrides>
+      </aspect>
+      <aspect name="test2:aspect-three">
+         <title>Aspect derived from other namespace</title>
+         <parent>test:aspect-base</parent>
+         <overrides>
+            <property name="test:aspect-base-p1">
+               <constraints>
+                  <constraint ref="test2:list3"/>
+               </constraints>
+            </property>
+         </overrides>
+      </aspect>
+   </aspects>
+   
+</model>

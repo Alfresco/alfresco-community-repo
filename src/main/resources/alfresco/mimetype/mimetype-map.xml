@@ -1,0 +1,623 @@
+<alfresco-config area="mimetype-map">
+
+   <config evaluator="string-compare" condition="Mimetype Map">
+      <mimetypes>
+
+         <mimetype mimetype="application/json" display="JSON">
+            <extension default="true">json</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/eps" display="EPS Type PostScript">
+            <extension default="true">eps</extension>
+         </mimetype>
+
+         <mimetype mimetype="image/jp2" display="JPEG 2000 Image">
+            <extension default="true">jp2</extension>
+            <extension>jpx</extension>
+            <extension>jpm</extension>
+            <extension>jpc</extension>
+            <extension>j2k</extension>
+            <extension>jpf</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/vnd.ms-project" display="Microsoft Project">
+            <extension default="true">mpp</extension>
+         </mimetype>
+
+         <mimetype mimetype="image/vnd.adobe.photoshop" display="Adobe Photoshop">
+            <extension default="true">psd</extension>
+         </mimetype>
+         <!-- Legacy, no longer used -->
+<!--
+         <mimetype mimetype="application/photoshop" display="Adobe Photoshop">
+         </mimetype>
+-->
+
+         <mimetype mimetype="image/vnd.adobe.premiere" display="Adobe Premiere">
+            <extension default="true">ppj</extension>
+            <extension>prproj</extension>
+         </mimetype>
+
+         <mimetype mimetype="audio/vnd.adobe.soundbooth" display="Adobe SoundBooth">
+            <extension default="true">asnd</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/vnd.adobe.aftereffects.project" display="Adobe AfterEffects Project">
+            <extension default="true">aep</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.adobe.aftereffects.template" display="Adobe AfterEffects Template">
+            <extension default="true">aet</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/framemaker" display="Adobe FrameMaker">
+            <extension default="true">fm</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/pagemaker" display="Adobe PageMaker">
+            <extension default="true">pmd</extension>
+            <extension>pm6</extension>
+            <extension>p65</extension>
+            <extension>pm</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/remote-printing" display="Printer Text File">
+            <extension default="true">prn</extension>
+         </mimetype>
+
+         <mimetype mimetype="text/plain" text="true" display="Plain Text">
+            <extension display="Plain Text" default="true">txt</extension>
+            <extension display="SQL">sql</extension>
+            <extension display="Java Properties">properties</extension>
+            <extension display="FreeMarker Template">ftl</extension>
+            <extension display="Initialization Values">ini</extension>
+            <extension display="Windows Batch Script">bat</extension>
+            <extension display="Unix Shell Script">sh</extension>
+            <extension display="Log">log</extension>
+            <extension display="RTE File">rte</extension>
+         </mimetype>
+         <mimetype mimetype="text/csv" text="true" display="Comma Separated Values (CSV)">
+            <extension default="true">csv</extension>
+         </mimetype>
+         <mimetype mimetype="text/html" text="true" display="HTML">
+            <!-- first extension will be default unless otherwise specified -->
+            <extension default="true">html</extension>
+            <extension>htm</extension>
+            <extension>shtml</extension>
+            <extension>body</extension>
+            <extension display="XSD">xsd</extension>
+         </mimetype>
+         <mimetype mimetype="text/mediawiki" text="true" display="MediaWiki Markup">
+            <extension display="MediaWiki Markup" default="true">mw</extension>
+         </mimetype>         
+         <mimetype mimetype="application/xhtml+xml" text="true" display="XHTML">
+            <extension default="true">xhtml</extension>
+         </mimetype>
+         <mimetype mimetype="application/postscript" display="PostScript">
+            <!-- extension display will be same as mimetype's unless specified otherwise -->
+            <extension default="true">ps</extension>
+         </mimetype>
+         <mimetype mimetype="application/illustrator" display="Adobe Illustrator File">
+            <extension default="true">ai</extension>
+         </mimetype>
+         <mimetype mimetype="audio/x-aiff" display="AIFF Audio">
+            <extension>aiff</extension>
+            <extension>aif</extension>
+            <extension>aifc</extension>
+         </mimetype>
+         <mimetype mimetype="application/acp" display="Alfresco Content Package">
+            <extension>acp</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.visio" display="Microsoft Visio">
+            <extension>vsd</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.visio2013" display="Microsoft Visio 2013">
+            <extension>vsdx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.adobe.xdp+xml" display="Adobe Acrobat XML Data Package">
+            <extension>xdp</extension>
+         </mimetype>
+         <mimetype mimetype="audio/basic" display="Basic Audio">
+            <extension>au</extension>
+            <extension>snd</extension>
+         </mimetype>
+
+         <mimetype mimetype="video/ogg" display="Ogg Video">
+            <extension default="true">ogv</extension>
+         </mimetype>
+         <mimetype mimetype="audio/ogg" display="Ogg Audio">
+            <extension default="true">oga</extension>
+            <extension>spx</extension>
+         </mimetype>
+         <mimetype mimetype="audio/vorbis" display="Ogg Vorbis Audio">
+            <extension default="true">ogg</extension>
+         </mimetype>
+         <mimetype mimetype="application/ogg" display="Ogg Multiplex">
+            <extension default="true">ogx</extension>
+         </mimetype>
+         <mimetype mimetype="audio/x-flac" display="FLAC Audio">
+            <extension default="true">flac</extension>
+         </mimetype>
+         
+         <mimetype mimetype="video/webm" display="WebM Video">
+            <extension>webm</extension>
+         </mimetype>
+
+         <mimetype mimetype="video/x-msvideo" display="MS Video">
+            <extension>avi</extension>
+            <extension>qvi</extension>
+         </mimetype>
+         <mimetype mimetype="video/x-ms-asf" display="MS ASF Streaming Video">
+            <extension>asf</extension>
+            <extension>asx</extension>
+         </mimetype>
+         <mimetype mimetype="video/x-ms-wmv" display="MS WMV Streaming Video">
+            <extension>wmv</extension>
+         </mimetype>
+         <mimetype mimetype="audio/x-ms-wma" display="MS WMA Streaming Audio">
+            <extension>wma</extension>
+         </mimetype>
+         <mimetype mimetype="video/x-rad-screenplay" display="RAD Screen Display">
+            <extension>avx</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-bcpio" display="">
+            <extension>bcpio</extension>
+         </mimetype>
+         <mimetype mimetype="application/octet-stream" display="Binary File (Octet Stream)">
+            <extension display="Binary">bin</extension>
+            <extension display="Binary Executable">exe</extension>
+         </mimetype>
+		 <mimetype mimetype="application/x-dosexec" display="Binary File">
+            <extension display="Binary Executable">exe</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-netcdf" display="">
+            <extension>cdf</extension>
+            <extension>nc</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-x509-ca-cert" display="">
+            <extension>cer</extension>
+         </mimetype>
+         <mimetype mimetype="image/cgm" display="CGM Image">
+            <extension>cgm</extension>
+         </mimetype>
+         <mimetype mimetype="application/java" text="true" display="Java Class">
+            <extension>class</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-cpio" display="">
+            <extension>cpio</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-csh" display="">
+            <extension>csh</extension>
+         </mimetype>
+         <mimetype mimetype="text/css" text="true" display="Style Sheet">
+            <extension>css</extension>
+         </mimetype>
+         <mimetype mimetype="application/wordperfect" display="WordPerfect">
+            <extension>wpd</extension>
+         </mimetype>
+         <mimetype mimetype="text/xml" text="true" display="XML">
+            <extension default="true">xml</extension>
+            <extension display="DTD">dtd</extension>
+            <extension display="XSLT">xslt</extension>
+            <extension display="XSLT">xsl</extension>
+            <extension display="XSD">xsd</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-dvi" display="">
+            <extension>dvi</extension>
+         </mimetype>
+         <mimetype mimetype="text/x-setext" text="true" display="">
+            <extension>etx</extension>
+         </mimetype>
+         <mimetype mimetype="image/gif" display="GIF Image">
+            <extension>gif</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-gtar" display="GZIP Tarball">
+            <extension>gtar</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-gzip" display="GZIP">
+            <extension>gzip</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-hdf" display="">
+            <extension>hdf</extension>
+         </mimetype>
+         <mimetype mimetype="application/mac-binhex40" display="">
+            <extension>hqx</extension>
+         </mimetype>
+         <mimetype mimetype="text/calendar" text="true" display="iCalendar File">
+            <extension>ics</extension>
+         </mimetype>
+         <mimetype mimetype="image/ief" display="IEF Image">
+            <extension>ief</extension>
+         </mimetype>
+         <mimetype mimetype="image/bmp" display="Bitmap Image">
+            <extension>bmp</extension>
+         </mimetype>
+         <mimetype mimetype="image/jpeg" display="JPEG Image">
+            <extension default="true">jpg</extension>
+            <extension>jpeg</extension>
+            <extension>jpe</extension>
+         </mimetype>
+         <mimetype mimetype="image/svg+xml" display="Scalable Vector Graphics Image">
+            <extension>svg</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-adobe" display="Adobe Digital Negative Image">
+            <extension>dng</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-hasselblad" display="Hasselblad RAW Image">
+            <extension>3fr</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-fuji" display="Fuji RAW Image">
+            <extension>raf</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-canon" display="Canon RAW Image">
+            <extension default="true">cr2</extension>
+            <extension>crw</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-kodak" display="Kodak RAW Image">
+            <extension>k25</extension>
+            <extension>kdc</extension>
+            <extension>dcs</extension>
+            <extension>drf</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-minolta" display="Minolta RAW Image">
+            <extension>mrw</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-nikon" display="Nikon RAW Image">
+            <extension default="true">nef</extension>
+            <extension>nrw</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-olympus" display="Olympus RAW Image">
+            <extension>orf</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-pentax" display="Pentax RAW Image">
+            <extension default="true">pef</extension>
+            <extension>ptx</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-sony" display="Sony RAW Image">
+            <extension default="true">arw</extension>
+            <extension>srf</extension>
+            <extension>sr2</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-sigma" display="Sigma RAW Image">
+            <extension>x3f</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-panasonic" display="Panasonic RAW Image">
+            <extension>rw2</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-leica" display="Leica RAW Image">
+            <extension>rwl</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-raw-red" display="RED RAW Image">
+            <extension>r3d</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-javascript" text="true" display="JavaScript">
+            <extension>js</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-latex" text="true" display="LaTeX">
+            <extension>latex</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-troff-man" display="Man Page">
+            <extension>man</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-troff-me" display="">
+            <extension>me</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-troff-mes" display="">
+            <extension>ms</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-mif" display="">
+            <extension>mif</extension>
+         </mimetype>
+         <mimetype mimetype="video/mpeg" display="MPEG Video">
+            <extension default="true">mpg</extension>
+            <extension>mpeg</extension>
+            <extension>mpe</extension>
+            <extension>m1v</extension>
+            <extension>m2v</extension>
+         </mimetype>
+         <mimetype mimetype="audio/mpeg" display="MPEG Audio">
+            <extension default="true">mp3</extension>
+            <extension>mp2</extension>
+         </mimetype>
+         <mimetype mimetype="audio/mp4" display="MPEG4 Audio">
+            <extension default="true">m4a</extension>
+            <extension>m4b</extension>
+            <extension>mp4a</extension>
+         </mimetype>
+         <mimetype mimetype="video/mp4" display="MPEG4 Video">
+            <extension default="true">mp4</extension>
+            <extension>mp4v</extension>
+            <extension>mpg4</extension>
+         </mimetype>
+         <mimetype mimetype="video/x-m4v" display="MPEG4 Video (m4v)">
+            <extension>m4v</extension>
+         </mimetype>
+         <mimetype mimetype="video/mpeg2" display="MPEG2 Video">
+            <extension>mpeg2</extension>
+         </mimetype>
+         <mimetype mimetype="video/mp2t" display="MPEG Transport Stream">
+            <extension>ts</extension>
+            <extension>m2ts</extension>
+         </mimetype>
+         <mimetype mimetype="video/quicktime" display="Quicktime Video">
+            <extension>mov</extension>
+            <extension>qt</extension>
+         </mimetype>
+         <mimetype mimetype="video/3gpp" display="3G Video">
+            <extension>3gp</extension>
+         </mimetype>
+         <mimetype mimetype="video/3gpp2" display="3G2 Video">
+            <extension default="true">3g2</extension>
+            <extension>3gp2</extension>
+         </mimetype>
+         <mimetype mimetype="video/x-sgi-movie" display="SGI Video">
+            <extension>movie</extension>
+            <extension>mpv2</extension>
+            <extension>mv</extension>
+         </mimetype>
+         <mimetype mimetype="application/oda" display="">
+            <extension>oda</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-portable-bitmap" display="Portable Bitmap">
+            <extension>pbm</extension>
+         </mimetype>
+         <mimetype mimetype="application/pdf" display="Adobe PDF Document">
+            <extension>pdf</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-portable-graymap" display="Greymap Image">
+            <extension>pgm</extension>
+         </mimetype>
+         <mimetype mimetype="image/png" display="PNG Image">
+            <extension>png</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-portable-anymap" display="Anymap Image">
+            <extension>pnm</extension>
+            <extension>rpnm</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-portable-pixmap" display="Pixmap Image">
+            <extension>ppm</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-cmu-raster" display="Raster Image">
+            <extension>ras</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-rgb" display="RGB Image">
+            <extension>rgb</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-troff" display="">
+            <extension>tr</extension>
+            <extension>t</extension>
+            <extension>roff</extension>
+         </mimetype>
+         <mimetype mimetype="application/rtf" display="Rich Text Format">
+            <extension>rtf</extension>
+         </mimetype>
+         <mimetype mimetype="text/richtext" display="Rich Text">
+            <extension>rtx</extension>
+         </mimetype>
+         <mimetype mimetype="text/sgml" display="SGML (Human Readable)">
+            <extension default="true">sgml</extension>
+            <extension>sgm</extension>
+         </mimetype>
+         <mimetype mimetype="application/sgml" display="SGML (Machine Readable)">
+            <extension>gml</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-sh" text="true" display="Shell Script">
+            <extension>sh</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-shar" text="true" display="">
+            <extension>shar</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-wais-source" display="">
+            <extension>src</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-sv4cpio" display="">
+            <extension>sv4cpio</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-sv4crc" display="">
+            <extension>sv4crc</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.adobe.air-application-installer-package+zip" display="Adobe AIR">
+            <extension>air</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-shockwave-flash" display="Shockwave Flash">
+            <extension>swf</extension>
+         </mimetype>
+         <mimetype mimetype="video/x-flv" display="Flash Video">
+            <extension>flv</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-fla" display="Flash Source">
+            <extension>fla</extension>
+         </mimetype>
+         <mimetype mimetype="application/dita+xml" display="DITA">
+            <extension display="DITA Topic" default="true">dita</extension>
+            <extension display="DITA Conditional Processing Profile">ditaval</extension>
+            <extension display="DITA Map">ditamap</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-tar" display="Tarball">
+            <extension>tar</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-tcl" display="">
+            <extension>tcl</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-tex" display="Tex">
+            <extension>tex</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-texinfo" display="Tex Info">
+            <extension>texinfo</extension>
+            <extension>texi</extension>
+         </mimetype>
+         <mimetype mimetype="image/tiff" display="TIFF Image">
+            <extension>tiff</extension>
+            <extension>tif</extension>
+         </mimetype>
+         <mimetype mimetype="text/tab-separated-values" text="true" display="Tab Separated Values">
+            <extension>tsv</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-ustar" display="">
+            <extension>ustar</extension>
+         </mimetype>
+         <mimetype mimetype="audio/x-wav" display="WAV Audio">
+            <extension>wav</extension>
+         </mimetype>
+         <mimetype mimetype="x-world/x-vrml" display="VRML">
+            <extension>wrl</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-xbitmap" display="XBitmap Image">
+            <extension>xbm</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-xpixmap" display="XPixmap Image">
+            <extension>xpm</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-xwindowdump" display="XWindow Dump">
+            <extension>xwd</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-compress" display="Z Compress">
+            <extension>z</extension>
+         </mimetype>
+         <mimetype mimetype="application/zip" display="ZIP">
+            <extension display="ZIP" default="true">zip</extension>
+            <extension display="WAR">war</extension>
+            <extension display="JAR">jar</extension>
+            <extension display="EAR">ear</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.android.package-archive" display="Android Package">
+            <extension>apk</extension>
+         </mimetype>
+
+         <mimetype mimetype="image/vnd.dwg" display="AutoCAD Drawing">
+            <extension>dwg</extension>
+         </mimetype>
+         <mimetype mimetype="image/x-dwt" display="AutoCAD Template">
+            <extension>dwt</extension>
+         </mimetype>
+
+         <mimetype mimetype="message/rfc822" display="EMail">
+            <extension>eml</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-outlook" display="Microsoft Outlook Message">
+            <extension>msg</extension>
+         </mimetype>
+         <mimetype mimetype="application/msword" display="Microsoft Word">
+            <extension display="Microsoft Word 97-2003 Document" default="true">doc</extension>
+            <extension display="Microsoft Word 97-2003 Template">dot</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/vnd.ms-powerpoint" display="Microsoft PowerPoint">
+            <extension display="PowerPoint Presentation">ppt</extension>
+            <extension display="PowerPoint Slide Show">pps</extension>
+            <extension display="PowerPoint Template" >pot</extension>
+            <extension display="PowerPoint Add-in">ppa</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/vnd.ms-excel" display="Microsoft Excel">
+            <extension display="Excel Spreadsheet" default="true">xls</extension>
+            <extension display="Excel Template">xlt</extension>
+            <extension display="Excel Macro">xlm</extension>
+         </mimetype>
+	 
+	 
+         <!--  Microsoft Office 2007 / 2010 -->
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document" display="Microsoft Word 2007">
+            <extension>docx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-word.document.macroenabled.12" display="Microsoft Word 2007 macro-enabled document">
+            <extension>docm</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.template" display="Microsoft Word 2007 template">
+            <extension>dotx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-word.template.macroenabled.12" display="Microsoft Word 2007 macro-enabled document template">
+            <extension>dotm</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation" display="Microsoft PowerPoint 2007">
+            <extension>pptx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-powerpoint.presentation.macroenabled.12" display="Microsoft PowerPoint 2007 macro-enabled presentation">
+            <extension>pptm</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.presentationml.slideshow" display="Microsoft PowerPoint 2007 slide show">
+            <extension>ppsx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-powerpoint.slideshow.macroenabled.12" display="Microsoft PowerPoint 2007 macro-enabled slide show">
+            <extension>ppsm</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.presentationml.template" display="Microsoft PowerPoint 2007 template">
+            <extension>potx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-powerpoint.template.macroenabled.12" display="Microsoft PowerPoint 2007 macro-enabled presentation template">
+            <extension>potm</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-powerpoint.addin.macroenabled.12" display="Microsoft PowerPoint 2007 add-in">
+            <extension>ppam</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.presentationml.slide" display="Microsoft PowerPoint 2007 slide">
+            <extension>sldx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-powerpoint.slide.macroenabled.12" display="Microsoft PowerPoint 2007 macro-enabled slide">
+            <extension>sldm</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" display="Microsoft Excel 2007">
+            <extension>xlsx</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.template" display="Microsoft Excel template 2007">
+            <extension>xltx</extension>
+         </mimetype>         
+         <mimetype mimetype="application/vnd.ms-excel.sheet.macroenabled.12" display="Microsoft Excel 2007 macro-enabled workbook">
+            <extension>xlsm</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-excel.template.macroenabled.12" display="Microsoft Excel 2007 macro-enabled workbook template">
+            <extension>xltm</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-excel.addin.macroenabled.12" display="Microsoft Excel 2007 add-in">
+            <extension>xlam</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.ms-excel.sheet.binary.macroenabled.12" display="Microsoft Excel 2007 binary workbook">
+            <extension>xlsb</extension>
+         </mimetype>
+
+         <mimetype mimetype="application/x-zip" display="Adobe Flex Project File">
+            <extension default="true">fxp</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-indesign" display="Adobe InDesign Document">
+            <extension default="true">indd</extension>
+            <extension>ind</extension>
+         </mimetype>
+         <!-- iWorks -->
+         <mimetype mimetype="application/vnd.apple.keynote" display="Apple iWork Keynote">
+            <extension>key</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.apple.pages" display="Apple iWork Pages">
+            <extension>pages</extension>
+         </mimetype>
+         <mimetype mimetype="application/vnd.apple.numbers" display="Apple iWork Numbers">
+            <extension>numbers</extension>
+         </mimetype>
+
+         <!-- Markdown  -->
+         <mimetype mimetype="text/x-markdown" display="Markdown">
+            <extension default="true">md</extension>
+         </mimetype>
+         
+         <!-- RSS  -->
+         <mimetype mimetype="application/rss+xml" text="true" display="RSS">
+            <extension>rss</extension>
+         </mimetype>
+         
+         <mimetype mimetype="text/x-java-source" text="true" display="Java Source File">
+            <extension default="true">java</extension>
+         </mimetype>
+         <mimetype mimetype="text/x-jsp" text="true" display="Java Server Page">
+            <extension default="true">jsp</extension>
+         </mimetype>
+         <mimetype mimetype="application/java-archive" display="Java Archive">
+            <extension default="true">jar</extension>
+         </mimetype>
+         <mimetype mimetype="application/x-rar-compressed" display="RAR Archive">
+            <extension default="true">rar</extension>
+         </mimetype>
+
+      </mimetypes>
+   </config>
+   
+</alfresco-config>

@@ -1,0 +1,496 @@
+/** FTS */
+
+gunit FTS;
+
+@header{package org.alfresco.repo.search.impl.parsers;}
+
+/** Parser */
+
+ftsQuery:
+"\"zebra\""  -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"zebra\"))))"
+"one and cm:name:two and cm_name:three and {http://www.alfresco.org/model/content/1.0}name:\"four\" seven * eight \"nine * ten\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM one)) (DEFAULT (TERM two (FIELD_REF name (PREFIX cm)))) (DEFAULT (TERM three (FIELD_REF cm_name))) (DEFAULT (PHRASE \"four\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))) (DEFAULT (PROXIMITY seven PROXIMITY eight)) (DEFAULT (PHRASE \"nine * ten\"))))"
+"1..2" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1 2 INCLUSIVE))))"
+"test:flag:true AND %test:field" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF field (PREFIX test))))))"
+"test:flag:true AND %NEST" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST)))))"
+"test:flag:true AND %(NEST, test:field, test_field1, {http://www.alfresco.org/model/content/1.0}name)" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM true (FIELD_REF flag (PREFIX test)))) (DEFAULT (TEMPLATE (FIELD_REF NEST) (FIELD_REF field (PREFIX test)) (FIELD_REF test_field1) (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0}))))))" 
+"+PATH:\"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" +(ASPECT:\"{http://www.alfresco.org/model/recordsmanagement/1.0}record\") -TYPE:\"{http://www.alfresco.org/model/content/1.0}thumbnail\"" -> "(DISJUNCTION (CONJUNCTION (MANDATORY (PHRASE \"/app:company_home/st:sites/cm:rmtestnew1/cm:documentLibrary//*\" (FIELD_REF PATH))) (MANDATORY (DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"{http://www.alfresco.org/model/recordsmanagement/1.0}record\" (FIELD_REF ASPECT)))))) (EXCLUDE (PHRASE \"{http://www.alfresco.org/model/content/1.0}thumbnail\" (FIELD_REF TYPE)))))"
+"TEXT:(\"lazy\")" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (FIELD_GROUP (FIELD_REF TEXT) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_PHRASE \"lazy\"))))))))"
+"test.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test . txt))))"
+"=test.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (EXACT_TERM test . txt))))"
+"test.txt.woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test . txt . woof))))"
+"test_txt_woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test_txt_woof))))"
+"test,txt,woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test , txt , woof))))"
+"test\:txt\:woof" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test\\:txt\\:woof))))"
+"+\++" -> "(DISJUNCTION (CONJUNCTION (MANDATORY (TERM \\++))))"
+".txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM . txt))))"
+"*.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM * . txt))))"
+".txt.doc.banana" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM . txt . doc . banana))))"
+"quick * fox" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PROXIMITY quick PROXIMITY fox))))"
+"*.txt" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM * . txt))))"
+"doc.*" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM doc . *))))"
+"{http://www.alfresco.org/test/lucenetest}float\\-ista:3..3.40" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 3 3.40 INCLUSIVE (FIELD_REF float\\-ista (NAME_SPACE {http://www.alfresco.org/test/lucenetest}))))))"
+".10." -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM . 10 .))))"
+".1.2.3.4" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM . 1 . 2 . 3 . 4))))"
+".1.2.3.4." -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM . 1 . 2 . 3 . 4.))))"
+"1.2.3.4" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1 . 2 . 3.4))))"
+"1.2.3.4." -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1 . 2 . 3 . 4 .))))"
+".ab." -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM . ab .))))"
+"a.b.c" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM a . b . c))))"
+"0" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 0))))"
+"1.." FAIL
+"1." -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1.))))"
+"1.2..1.3"-> "(DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1.2 1.3 INCLUSIVE))))"
+"1.0" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1.0))))"
+"1..0" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1 0 INCLUSIVE))))"
+"1..." FAIL
+"1...2." FAIL
+"1...2" FAIL
+"1...." FAIL
+"1.0.." FAIL
+"-1.02" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM -1.02))))"
+"1e10" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1e10))))"
+"1.2e-12" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1.2e-12))))"
+"0.9E-9" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 0.9E-9))))"
+".." FAIL
+"." FAIL
+"0" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 0))))"
+"-1" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM -1))))"
+"1" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 1))))"
+"01" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 01))))"
+"10" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 10))))"
+"-10" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM -10))))"
+"cm_content.mimetype:\"text/plain\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"text/plain\" (FIELD_REF cm_content.mimetype)))))"
+"10.10.pdf" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 10 . 10 . pdf))))"
+"TYPE:cm:content" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM content (FIELD_REF cm (PREFIX TYPE))))))"
+"TYPE:content" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM content (FIELD_REF TYPE)))))"
+"TYPE:\"cm:content\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"cm:content\" (FIELD_REF TYPE)))))"
+"TYPE:\"content\"" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE \"content\" (FIELD_REF TYPE)))))"
+"created:[* TO *]" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE * * INCLUSIVE (FIELD_REF created)))))"
+"TYPE:{http://www.alfresco.org/model/content/1.0}folder" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM {http://www.alfresco.org/model/content/1.0} folder (FIELD_REF TYPE)))))"
+
+
+ftsDisjunction:
+"red" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))))
+"red or blue" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue))))
+"red or blue OR pink" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue))) (CONJUNCTION (DEFAULT (TERM pink))))
+
+
+ftsExplicitDisjunction:
+"red" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))))
+"red or blue" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue))))
+"red or blue OR pink" -> (DISJUNCTION (CONJUNCTION (DEFAULT (TERM red))) (CONJUNCTION (DEFAULT (TERM blue))) (CONJUNCTION (DEFAULT (TERM pink))))
+
+
+ftsExplicitConjunction:
+"red" -> (CONJUNCTION (DEFAULT (TERM red)))
+"red and blue" -> (CONJUNCTION (DEFAULT (TERM red)) (DEFAULT (TERM blue)))
+"red and blue AND pink" -> (CONJUNCTION (DEFAULT (TERM red)) (DEFAULT (TERM blue)) (DEFAULT (TERM pink)))
+
+ftsPrefixed:
+"not zebra" -> (NEGATION (TERM zebra))
+"zebra" -> (DEFAULT (TERM zebra))
+"+zebra" -> (MANDATORY (TERM zebra))
+"|zebra" -> (OPTIONAL (TERM zebra))
+"-zebra" -> (EXCLUDE (TERM zebra))
+
+
+ftsTest:
+"zebra"     -> (TERM zebra)
+"\"zebra\"" -> (PHRASE "zebra")
+"or"        FAIL
+"\\+"        -> (TERM \+)
+"+"         FAIL
+"name:woof" -> "(TERM woof (FIELD_REF name))"
+"cm_name:woof" -> "(TERM woof (FIELD_REF cm_name))"
+"cm:name:woof" -> "(TERM woof (FIELD_REF name (PREFIX cm)))"
+"{http://www.alfresco.org/model/content/1.0}name:woof"  -> "(TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"name:\"woof\"" -> "(PHRASE \"woof\" (FIELD_REF name))"
+"cm_name:\"woof\"" -> "(PHRASE \"woof\" (FIELD_REF cm_name))"
+"cm:name:\"woof\"" -> "(PHRASE \"woof\" (FIELD_REF name (PREFIX cm)))"
+"{http://www.alfresco.org/model/content/1.0}name:\"woof\""  -> "(PHRASE \"woof\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"=name:woof" -> "(EXACT_TERM woof (FIELD_REF name))"
+"=cm_name:woof" -> "(EXACT_TERM woof (FIELD_REF cm_name))"
+"=cm:name:woof" -> "(EXACT_TERM woof (FIELD_REF name (PREFIX cm)))"
+"={http://www.alfresco.org/model/content/1.0}name:woof"  -> "(EXACT_TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"~name:woof" -> "(TERM woof (FIELD_REF name))"
+"~cm_name:woof" -> "(TERM woof (FIELD_REF cm_name))"
+"~cm:name:woof" -> "(TERM woof (FIELD_REF name (PREFIX cm)))"
+"~{http://www.alfresco.org/model/content/1.0}name:woof"  -> "(TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"apple..pear" -> "(RANGE INCLUSIVE apple pear INCLUSIVE)"
+"1..2" -> "(RANGE INCLUSIVE 1 2 INCLUSIVE)"
+"1\.2..2\.5" -> "(RANGE INCLUSIVE 1\\.2 2\\.5 INCLUSIVE)"
+"\"apple\"..\"pear\"" -> "(RANGE INCLUSIVE \"apple\" \"pear\" INCLUSIVE)"
+"\"1.2\"..\"2.5\"" -> "(RANGE INCLUSIVE \"1.2\" \"2.5\" INCLUSIVE)"
+"name:apple..pear" -> "(RANGE INCLUSIVE apple pear INCLUSIVE (FIELD_REF name))"
+"name:1..2" -> "(RANGE INCLUSIVE 1 2 INCLUSIVE (FIELD_REF name))"
+"name:1\.2..2\.5" -> "(RANGE INCLUSIVE 1\\.2 2\\.5 INCLUSIVE (FIELD_REF name))"
+"name:\"apple\"..\"pear\"" -> "(RANGE INCLUSIVE \"apple\" \"pear\" INCLUSIVE (FIELD_REF name))"
+"name:\"1.2\"..\"2.5\"" -> "(RANGE INCLUSIVE \"1.2\" \"2.5\" INCLUSIVE (FIELD_REF name))"
+"cm_name:apple..pear" -> "(RANGE INCLUSIVE apple pear INCLUSIVE (FIELD_REF cm_name))"
+"cm_name:1..2" -> "(RANGE INCLUSIVE 1 2 INCLUSIVE (FIELD_REF cm_name))"
+"cm_name:1\.2..2\.5" -> "(RANGE INCLUSIVE 1\\.2 2\\.5 INCLUSIVE (FIELD_REF cm_name))"
+"cm_name:\"apple\"..\"pear\"" -> "(RANGE INCLUSIVE \"apple\" \"pear\" INCLUSIVE (FIELD_REF cm_name))"
+"cm_name:\"1.2\"..\"2.5\"" -> "(RANGE INCLUSIVE \"1.2\" \"2.5\" INCLUSIVE (FIELD_REF cm_name))"
+"cm:name:apple..pear" -> "(RANGE INCLUSIVE apple pear INCLUSIVE (FIELD_REF name (PREFIX cm)))"
+"cm:name:1..2" -> "(RANGE INCLUSIVE 1 2 INCLUSIVE (FIELD_REF name (PREFIX cm)))"
+"cm:name:1\.2..2\.5" -> "(RANGE INCLUSIVE 1\\.2 2\\.5 INCLUSIVE (FIELD_REF name (PREFIX cm)))"
+"cm:name:\"apple\"..\"pear\"" -> "(RANGE INCLUSIVE \"apple\" \"pear\" INCLUSIVE (FIELD_REF name (PREFIX cm)))"
+"cm:name:\"1.2\"..\"2.5\"" -> "(RANGE INCLUSIVE \"1.2\" \"2.5\" INCLUSIVE (FIELD_REF name (PREFIX cm)))"
+"{http://www.alfresco.org/model/content/1.0}name:apple..pear" -> "(RANGE INCLUSIVE apple pear INCLUSIVE (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"{http://www.alfresco.org/model/content/1.0}name:1..2" -> "(RANGE INCLUSIVE 1 2 INCLUSIVE (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"{http://www.alfresco.org/model/content/1.0}name:1\.2..2\.5" -> "(RANGE INCLUSIVE 1\\.2 2\\.5 INCLUSIVE (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"{http://www.alfresco.org/model/content/1.0}name:\"apple\"..\"pear\"" -> "(RANGE INCLUSIVE \"apple\" \"pear\" INCLUSIVE (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"{http://www.alfresco.org/model/content/1.0}name:\"1.2\"..\"2.5\"" -> "(RANGE INCLUSIVE \"1.2\" \"2.5\" INCLUSIVE (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"cm:name:(woof)" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM woof)))))"
+"cm:name:(\"woof\")" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_PHRASE \"woof\")))))"
+"cm:name:(woof ~banana)" -> "(FIELD_GROUP (FIELD_REF name (PREFIX cm)) (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM woof)) (FIELD_DEFAULT (FG_SYNONYM banana)))))"
+"big * apple" -> "(PROXIMITY big PROXIMITY apple)" 
+"big *() apple" -> "(PROXIMITY big PROXIMITY apple)" 
+"big *(7) apple" -> "(PROXIMITY big (PROXIMITY 7) apple)" 
+"1.5" -> "(TERM 1.5)"
+"cm:name:1.5" -> "(TERM 1.5 (FIELD_REF name (PREFIX cm)))"
+"cm:name:12" -> "(TERM 12 (FIELD_REF name (PREFIX cm)))"
+"zebr*" -> "(TERM zebr*)"
+"zebra~2" -> "(TERM zebra (FUZZY 2))"
+"cm:name:zebra~2.4" -> "(TERM zebra (FIELD_REF name (PREFIX cm)) (FUZZY 2.4))"
+"\"zebra\"~2" -> "(PHRASE \"zebra\" (FUZZY 2))"
+"{http://www.alfresco.org/model/content/1.0}name:\"zebra\"~3" -> "(PHRASE \"zebra\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})) (FUZZY 3))"
+"=zebra~2" -> "(EXACT_TERM zebra (FUZZY 2))"
+"=cm_name:zebra~2.4" -> "(EXACT_TERM zebra (FIELD_REF cm_name) (FUZZY 2.4))"
+"~zebra~2" -> "(TERM zebra (FUZZY 2))"
+"~cm_name:zebra~2.4" -> "(TERM zebra (FIELD_REF cm_name) (FUZZY 2.4))"
+"aardvark..zebra" -> "(RANGE INCLUSIVE aardvark zebra INCLUSIVE)"
+"cm_name:[1.2 TO 3.4]" -> "(RANGE INCLUSIVE 1.2 3.4 INCLUSIVE (FIELD_REF cm_name))"
+"(zebra~2 AND (cm_name:[1.2 TO 3.4] OR cm_name:zebra~2.4))" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM zebra (FUZZY 2))) (DEFAULT (DISJUNCTION (CONJUNCTION (DEFAULT (RANGE INCLUSIVE 1.2 3.4 INCLUSIVE (FIELD_REF cm_name)))) (CONJUNCTION (DEFAULT (TERM zebra (FIELD_REF cm_name) (FUZZY 2.4))))))))"
+"ID * OR" FAIL
+"*" -> "(TERM *)"
+"name:*" -> "(TERM * (FIELD_REF name))"
+"cm:name:*" -> "(TERM * (FIELD_REF name (PREFIX cm)))"
+"?" -> "(TERM ?)"
+"name:?" -> "(TERM ? (FIELD_REF name))"
+"cm:name:?" -> "(TERM ? (FIELD_REF name (PREFIX cm)))"
+"*woof" -> "(TERM *woof)"
+"name:*woof" -> "(TERM *woof (FIELD_REF name))"
+"cm:name:*woof" -> "(TERM *woof (FIELD_REF name (PREFIX cm)))"
+"?woof" -> "(TERM ?woof)"
+"name:?woof" -> "(TERM ?woof (FIELD_REF name))"
+"cm:name:?woof" -> "(TERM ?woof (FIELD_REF name (PREFIX cm)))"
+"woof*woof" ->"(TERM woof*woof)"
+"woof * woof" ->"(PROXIMITY woof PROXIMITY woof)"
+"*woof*woof*" ->"(TERM *woof*woof*)"
+"cm:content.mimetype:*" -> "(TERM * (FIELD_REF content.mimetype (PREFIX cm)))"
+
+ftsTermOrPhrase:
+"name:woof" -> "(TERM woof (FIELD_REF name))"
+"cm_name:woof" -> "(TERM woof (FIELD_REF cm_name))"
+"cm:name:woof" -> "(TERM woof (FIELD_REF name (PREFIX cm)))"
+"{http://www.alfresco.org/model/content/1.0}name:woof"  -> "(TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+"\"zebra\"" -> "(PHRASE \"zebra\")"
+"'zebra'" -> "(PHRASE 'zebra')"
+"name:\"zebra\"" -> "(PHRASE \"zebra\" (FIELD_REF name))"
+"cm_name:\"zebra\"" -> "(PHRASE \"zebra\" (FIELD_REF cm_name))"
+"cm:name:\"zebra\"" -> "(PHRASE \"zebra\" (FIELD_REF name (PREFIX cm)))"
+"{http://www.alfresco.org/model/content/1.0}name:\"zebra\""  -> "(PHRASE \"zebra\" (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+
+
+
+ftsExactTermOrPhrase:
+"=name:woof" -> "(EXACT_TERM woof (FIELD_REF name))"
+"=cm_name:woof" -> "(EXACT_TERM woof (FIELD_REF cm_name))"
+"=cm:name:woof" -> "(EXACT_TERM woof (FIELD_REF name (PREFIX cm)))"
+"={http://www.alfresco.org/model/content/1.0}name:woof"  -> "(EXACT_TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+
+
+
+ftsTokenisedTermOrPhrase:
+"~woof" -> "(TERM woof)"
+"~name:woof" -> "(TERM woof (FIELD_REF name))"
+"~cm_name:woof" -> "(TERM woof (FIELD_REF cm_name))"
+"~cm:name:woof" -> "(TERM woof (FIELD_REF name (PREFIX cm)))"
+"~{http://www.alfresco.org/model/content/1.0}name:woof"  -> "(TERM woof (FIELD_REF name (NAME_SPACE {http://www.alfresco.org/model/content/1.0})))"
+
+
+// groups ...
+
+// Term and phrase can not be tested in isolation as they have context
+ftsFieldGroupTest:
+//"woof" -> "(FG_TERM woof)"
+//"=woof" -> "(FG_EXACT_TERM woof)"
+//"\"woof\"" -> "(FG_PHRASE \"woof\")"
+//"~woof" -> "(FG_SYNONYM woof)"
+"apple * pear" -> "(FG_PROXIMITY apple PROXIMITY pear)"
+"12 .. 14" -> "(FG_RANGE INCLUSIVE 12 14 INCLUSIVE)"
+"[12 TO 14]" -> "(FG_RANGE INCLUSIVE 12 14 INCLUSIVE)"
+"<12 TO 14>" -> "(FG_RANGE EXCLUSIVE 12 14 EXCLUSIVE)"
+"(apple cheese and (pear or banana or not orange))" -> "(FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM apple)) (FIELD_DEFAULT (FG_TERM cheese)) (FIELD_DEFAULT (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM pear))) (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM banana))) (FIELD_CONJUNCTION (FIELD_NEGATION (FG_TERM orange)))))))"
+
+ftsFieldGroupTerm:
+"woof" -> "woof"
+
+ftsFieldGroupExactTerm:
+"=woof" -> "woof"
+
+ftsFieldGroupPhrase:
+"\"zebra\"" -> "\"zebra\""
+
+ftsFieldGroupSynonym:
+"~woof" -> "woof"
+
+// ??
+ftsFieldGroupProximity:
+"big * panda" -> "big PROXIMITY panda"
+
+ftsFieldGroupRange:
+"apple..pear" -> "INCLUSIVE apple pear INCLUSIVE"
+"1..2" -> "INCLUSIVE 1 2 INCLUSIVE"
+"1\.2..2\.5" -> "INCLUSIVE 1\.2 2\.5 INCLUSIVE"
+"\"apple\"..\"pear\"" -> "INCLUSIVE \"apple\" \"pear\" INCLUSIVE"
+"\"1.2\"..\"2.5\"" -> "INCLUSIVE \"1.2\" \"2.5\" INCLUSIVE"
+"[apple TO pear]" -> "INCLUSIVE apple pear INCLUSIVE"
+"[apple TO pear>" -> "INCLUSIVE apple pear EXCLUSIVE"
+"<apple TO pear]" -> "EXCLUSIVE apple pear INCLUSIVE"
+"<apple TO pear>" -> "EXCLUSIVE apple pear EXCLUSIVE"
+"1....2" FAIL
+"1.0..0.2" -> "INCLUSIVE 1.0 0.2 INCLUSIVE"
+"1.2..2.5" -> "INCLUSIVE 1.2 2.5 INCLUSIVE"
+"[1.2 TO 2.5]" -> "INCLUSIVE 1.2 2.5 INCLUSIVE"
+
+range_left:
+"[" -> "INCLUSIVE"
+"<" -> "EXCLUSIVE"
+
+range_right:
+"]" -> "INCLUSIVE"
+">" -> "EXCLUSIVE"
+
+fieldReference:
+//"name" OK
+//"cm_name" OK
+// Fails do to context sensitive colon check; tested above
+//"cm:name" OK  
+"{http://www.alfresco.org/model/content/1.0}name" OK
+
+
+uri:
+"{http://www.alfresco.org/model/dictionary/1.0}" OK
+
+identifier:
+"banana"   OK
+"name"   OK
+"content.mimetype" OK
+
+ftsWord:
+"OR"       FAIL
+"and"      FAIL
+"nOT"      -> "nOT"
+"TO"       -> "TO"
+"banana"   -> "banana"
+"1234"     -> "1234"
+
+ftsRangeWord:
+"banana"     -> "banana"
+"1234"       -> "1234"
+"\"phrase\"" -> "\"phrase\""
+"1\.5" ->"1\.5"
+
+or:
+"OR"       OK
+"or"       OK
+"||"       OK
+"|"        FAIL
+
+and:
+"AND"      OK
+"and"      OK
+"&&"       OK
+"&"        FAIL
+
+
+not:
+"NOT"      OK
+"not"      OK
+"!"        OK
+
+/** Lexer */
+
+FTSPHRASE:
+"nope"     FAIL
+"\"\""     OK
+"\"\\\""   FAIL
+"\"\"\""   FAIL
+"\"\\u\""     OK
+"\"\phrase\""     OK
+
+URI:
+"{http://www.ics.uci.edu/pub/ietf/uri/#Related}" OK
+"{http://www.alfresco.org}"  OK
+"{http://www.alfresco.org/model/dictionary/1.0}" OK
+"{http://www.alfresco.org/view/repository/1.0}" OK
+
+
+OR:
+"OR"       OK
+"Or"       OK
+"oR"       OK
+"or"       OK
+
+AND:
+"AND"      OK
+"ANd"      OK
+"AnD"      OK
+"And"      OK
+"aND"      OK
+"aNd"      OK
+"anD"      OK
+"and"      OK
+
+NOT:
+"NOT"      OK
+"NOt"      OK
+"NoT"      OK
+"Not"      OK
+"nOT"      OK
+"nOt"      OK
+"noT"      OK
+"not"      OK
+
+
+TILDA:
+"~"        OK
+
+LPAREN:
+"("        OK
+
+RPAREN:
+")"        OK
+
+PLUS:
+"+"        OK
+
+MINUS:   
+"-"        OK
+
+COLON:
+":"        OK
+
+STAR:
+"*"        OK
+
+AMP:
+"&"        OK
+
+EXCLAMATION:
+"!"        OK
+
+BAR:
+"|"        OK
+
+EQUALS:
+"="        OK
+
+QUESTION_MARK:
+"?"        OK
+
+LCURL:
+"{"        OK
+
+RCURL:
+"}"        OK
+
+LSQUARE:
+"["        OK
+
+RSQUARE:
+"]"        OK
+
+TO:
+"TO"       OK
+"To"       OK
+"tO"       OK
+"to"       OK
+
+
+COMMA:
+","        OK
+
+CARAT:
+"^"        OK
+
+DOLLAR:
+"$"        OK
+
+ID :
+"banana"   OK
+""         FAIL
+"a"        OK
+"_"        OK
+"$"        FAIL 
+"_$"       OK
+"#"        FAIL
+"_#"       OK
+"1"        FAIL
+"A1"       OK
+"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"  OK
+"cm:name" FAIL
+
+
+FTSWORD:
+"word"    OK
+"\\u0"     FAIL
+"\\u00"    FAIL
+"\\u000"   FAIL
+"\\u0000"  OK
+"\\u1234"  OK
+"\\u5678"  OK
+"\\u90AB"  OK
+"\\uCDEF"  OK
+"\\u90ab"  OK
+"\\ucdef"  OK
+"\\u3005"  OK
+"\\u000h"  FAIL
+"\\u000H"  FAIL
+"\\u"      OK
+"\\~"      OK
+"\\("      OK
+"\\)"      OK
+"\\+"      OK
+"\\-"      OK
+"\\:"      OK
+"\\*"      OK
+"\\."      OK
+"\\&"      OK
+"\\!"      OK
+"\\|"      OK
+"\\="      OK
+"\\?"      OK
+"\\{"      OK
+"\\}"      OK
+"\\["      OK
+"\\]"      OK
+"\\,"      OK
+"\\^"      OK
+"\\$"      OK
+"\\\\"     OK
+"@"   FAIL  // 40 invalid
+"A"   OK
+"Z"   OK
+"["   FAIL
+"`"   FAIL
+"a"   OK
+"z"   OK
+"{"   FAIL
+//"×"   FAIL
+//"Ø"   OK
+//"÷"   FAIL
+//"ə"   OK
+"("   FAIL
+")"   FAIL
+" "   FAIL
+"\u3000"   OK
+"\\u3000"  OK
+" 　" FAIL
+//"㐀" OK
+
+
+
+

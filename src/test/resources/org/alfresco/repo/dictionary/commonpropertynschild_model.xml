@@ -1,0 +1,31 @@
+﻿<model name="childcomns:commonpropertynschild" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>'child' data model which defines specific aspects whose properties use that common namespace</description>
+   <author>Alfresco</author>
+   <published>2013-10-21</published>
+   <version>1.0</version>
+
+   <imports>
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <import uri="http://www.alfresco.org/test/commonpropertynsparent/1.0" prefix="parentcomns"/>
+   </imports>
+   
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/test/commonpropertynschild/1.0" prefix="childcomns"/>
+   </namespaces>
+
+   <aspects>
+      <aspect name="childcomns:testaspect">
+         <title>TestAspect</title>
+         <description>Specific aspect whose properties use that common namespace</description>
+         <parent></parent>
+
+         <properties>
+            <property name="parentcomns:id">
+               <type>d:int</type>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+
+</model>

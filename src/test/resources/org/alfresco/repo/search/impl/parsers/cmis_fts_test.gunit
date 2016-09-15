@@ -1,0 +1,83 @@
+/** CMIS FTS */
+
+gunit CMIS_FTS;
+
+@header{package org.alfresco.repo.search.impl.parsers;}
+
+/** Parser */
+
+ftsCmisDisjunction:
+"term1 term2 OR term3 term4" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM term1)) (DEFAULT (TERM term2))) (CONJUNCTION (DEFAULT (TERM term3)) (DEFAULT (TERM term4))))" 
+"'phrase one' 'phrase two' OR 'phrase three'" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE 'phrase one')) (DEFAULT (PHRASE 'phrase two'))) (CONJUNCTION (DEFAULT (PHRASE 'phrase three'))))"
+"-term OR -'phrase one' term2 OR -term3 'phrase two' OR 'phrase three'" -> "(DISJUNCTION (CONJUNCTION (EXCLUDE (TERM term))) (CONJUNCTION (EXCLUDE (PHRASE 'phrase one')) (DEFAULT (TERM term2))) (CONJUNCTION (EXCLUDE (TERM term3)) (DEFAULT (PHRASE 'phrase two'))) (CONJUNCTION (DEFAULT (PHRASE 'phrase three'))))" 
+"-term-one" -> "(DISJUNCTION (CONJUNCTION (EXCLUDE (TERM term-one))))"
+"'it\\'s'" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (PHRASE 'it\\'s'))))"
+// Invalid phrases end up as terms
+"'it\'s'" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM 'it's'))))"
+"test" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test))))"
+"!test" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM !test))))"
+"te!st" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM te!st))))"
+"test!" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test!))))"
+"?test" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM ?test))))"
+"te?st" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM te?st))))"
+"test?" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test?))))"
+"*test" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM *test))))"
+"te*st" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM te*st))))"
+"test*" -> "(DISJUNCTION (CONJUNCTION (DEFAULT (TERM test*))))"
+
+
+ftsCmisConjunction:
+"term1 term2" -> "(CONJUNCTION (DEFAULT (TERM term1)) (DEFAULT (TERM term2)))" 
+"'phrase one' 'phrase two'" -> "(CONJUNCTION (DEFAULT (PHRASE 'phrase one')) (DEFAULT (PHRASE 'phrase two')))"
+"-term -'phrase one' term2 -term3 'phrase two'" -> "(CONJUNCTION (EXCLUDE (TERM term)) (EXCLUDE (PHRASE 'phrase one')) (DEFAULT (TERM term2)) (EXCLUDE (TERM term3)) (DEFAULT (PHRASE 'phrase two')))"
+
+ftsCmisPrefixed:
+"term" -> "(DEFAULT (TERM term))" 
+"'phrase one'" -> "(DEFAULT (PHRASE 'phrase one'))"
+"-term" -> "(EXCLUDE (TERM term))" 
+"-'phrase one'" -> "(EXCLUDE (PHRASE 'phrase one'))"
+
+
+cmisTest:
+"term" -> "(TERM term)" 
+"'phrase one'" -> "(PHRASE 'phrase one')"
+
+cmisTerm:
+"term" -> "term"
+
+cmisPhrase:
+"'phrase one'" -> "'phrase one'"
+
+or:
+"OR" -> "OR"
+
+/** Lexer */
+
+FTSPHRASE:
+"''" OK
+"'meep'" OK
+"'it\\'s'" OK
+"'it\\'" FAIL
+"'it\\\\'" OK
+"'OR'" OK
+
+OR:
+"OR" OK
+"or" OK
+"Or" OK
+"oR" OK
+
+MINUS:
+"-" OK
+
+WS:
+" " OK
+"\t" OK
+"\r" OK
+"\n" OK
+
+FTSWORD:
+"word" OK
+"wo-rd" OK
+
+

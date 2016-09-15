@@ -1113,30 +1113,6 @@
                     <target>1.7</target>
                 </configuration>
            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                 <executions>
-                    <!-- ACE-4563 Attach h2 dialect file to project -->
-                    <execution>
-                        <id>attach-h2scripts</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attach-artifact</goal>
-                        </goals>
-                        <configuration>
-                            <artifacts>
-                                <artifact>
-                                    <file>${project.build.directory}/h2scripts.jar</file>
-                                    <type>jar</type>
-                                    <classifier>h2scripts</classifier>
-                                </artifact>
-                            </artifacts>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
 
         <pluginManagement>

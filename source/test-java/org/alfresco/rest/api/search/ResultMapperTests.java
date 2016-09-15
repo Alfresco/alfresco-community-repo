@@ -146,8 +146,9 @@ public class ResultMapperTests
         assertEquals("searchInsteadFor",searchContext.getSpellCheck().getType());
         assertEquals(1,searchContext.getSpellCheck().getSuggestions().size());
         assertEquals("alfresco",searchContext.getSpellCheck().getSuggestions().get(0));
-        assertEquals("content.size",searchContext.getFacetsFields().getLabel());
-        assertEquals(5,searchContext.getFacetsFields().getBuckets().size());
+        assertEquals(1, searchContext.getFacetsFields().size());
+        assertEquals("content.size",searchContext.getFacetsFields().get(0).getLabel());
+        assertEquals(5,searchContext.getFacetsFields().get(0).getBuckets().size());
     }
 
     @Test
@@ -157,7 +158,7 @@ public class ResultMapperTests
         assertFalse(mapper.isNullContext(new SearchContext(1l,null,null,null)));
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,new SpellCheckContext(null, null))));
         assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new FacetQueryContext(null, 0)),null,null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,null,new FacetFieldContext(null, null),null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,null,Arrays.asList(new FacetFieldContext(null, null)),null)));
     }
 
     private ResultSet mockResultset(List<Long> archivedNodes) throws JSONException

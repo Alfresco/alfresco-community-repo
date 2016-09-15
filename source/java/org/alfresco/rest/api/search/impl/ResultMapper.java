@@ -141,7 +141,7 @@ public class ResultMapper
         Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
         List<FacetQueryContext> facetResults = null;
         SpellCheckContext spellCheckContext = null;
-        FacetFieldContext ffc = null;
+        List<FacetFieldContext> ffcs = null;
 
         //Facet queries
         if(facetQueries!= null && !facetQueries.isEmpty())
@@ -157,6 +157,7 @@ public class ResultMapper
         Map<String, List<Pair<String, Integer>>> facetFields = solrResultSet.getFieldFacets();
         if (facetFields != null && !facetFields.isEmpty())
         {
+            ffcs = new ArrayList<>(facetFields.size());
             for (Entry<String, List<Pair<String, Integer>>> facet:facetFields.entrySet())
             {
                 if (facet.getValue() != null && !facet.getValue().isEmpty())
@@ -166,7 +167,7 @@ public class ResultMapper
                     {
                         buckets.add(new Bucket(buck.getFirst(), buck.getSecond()));
                     }
-                    ffc = new FacetFieldContext(facet.getKey(), buckets);
+                    ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
                 }
             }
         }
@@ -179,7 +180,7 @@ public class ResultMapper
         }
 
         //Put it all together
-        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, ffc, spellCheckContext);
+        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, ffcs, spellCheckContext);
         return isNullContext(context)?null:context;
     }
 

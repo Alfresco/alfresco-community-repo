@@ -77,13 +77,13 @@ public class TestPersonSites extends EnterpriseTestApi
     private TestSite site1;
     private TestSite site2;
     private TestSite site3;
-    private String site1_name = "a_" + GUID.generate();
+    private String site1_id = "a_" + GUID.generate();
     private String site1_title = "c_" + GUID.generate();
     private SiteRole site1_role = SiteRole.SiteContributor;
-    private String site2_name = "b_" + GUID.generate();
+    private String site2_id = "b_" + GUID.generate();
     private String site2_title = "a_" + GUID.generate();
     private SiteRole site2_role = SiteRole.SiteManager;
-    private String site3_name = "c_" + GUID.generate();
+    private String site3_id = "c_" + GUID.generate();
     private String site3_title = "b_" + GUID.generate();
     private SiteRole site3_role = SiteRole.SiteConsumer;
 
@@ -172,7 +172,8 @@ public class TestPersonSites extends EnterpriseTestApi
         }, person12.getId(), network1.getId());
     }
 
-    public void initializeSites() throws Exception
+    // TODO switch to use V1 createSite (instead of RepoService) 
+    private void initializeSites() throws Exception
     {
         /*
          * Create data for testing the site sorting. We create the sites as
@@ -195,7 +196,7 @@ public class TestPersonSites extends EnterpriseTestApi
             @Override
             public TestSite doWork() throws Exception
             {
-                SiteInformation siteInfo = new SiteInformation(site1_name, site1_title, site1_title, SiteVisibility.PRIVATE);
+                SiteInformation siteInfo = new SiteInformation(site1_id, site1_title, site1_title, SiteVisibility.PRIVATE);
                 TestSite site = network1.createSite(siteInfo);
                 site.inviteToSite(person32.getId(), site1_role);
                 return site;
@@ -207,7 +208,7 @@ public class TestPersonSites extends EnterpriseTestApi
             @Override
             public TestSite doWork() throws Exception
             {
-                SiteInformation siteInfo = new SiteInformation(site2_name, site2_title, site2_title, SiteVisibility.PRIVATE);
+                SiteInformation siteInfo = new SiteInformation(site2_id, site2_title, site2_title, SiteVisibility.PRIVATE);
                 TestSite site = network1.createSite(siteInfo);
                 site.inviteToSite(person32.getId(), site2_role);
                 return site;
@@ -219,7 +220,7 @@ public class TestPersonSites extends EnterpriseTestApi
             @Override
             public TestSite doWork() throws Exception
             {
-                SiteInformation siteInfo = new SiteInformation(site3_name, site3_title, site3_title, SiteVisibility.PRIVATE);
+                SiteInformation siteInfo = new SiteInformation(site3_id, site3_title, site3_title, SiteVisibility.PRIVATE);
                 TestSite site = network1.createSite(siteInfo);
                 site.inviteToSite(person32.getId(), site3_role);
                 return site;
@@ -627,7 +628,7 @@ public class TestPersonSites extends EnterpriseTestApi
      *
      * @throws Exception
      */
-    public void testSortingAndPagingBySiteNameAsc() throws Exception
+    public void testSortingAndPagingBySiteIdAsc() throws Exception
     {
         // paging
         int skipCount = 1;
@@ -652,7 +653,7 @@ public class TestPersonSites extends EnterpriseTestApi
      *
      * @throws Exception
      */
-    public void testSortingAndPagingBySiteNameDesc() throws Exception
+    public void testSortingAndPagingBySiteIdDesc() throws Exception
     {
         // paging
         int skipCount = 1;
@@ -673,7 +674,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
     /**
      * Tests the capability to sort and paginate the site memberships associated
-     * default sorting, all results
+     * default sorting (title asc), all results
      *
      * @throws Exception
      */
@@ -696,6 +697,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
     }
 
+    // see also TestSites.testSortingAndPaging
     @Test
     public void testSortingAndPaging() throws Exception
     {
@@ -705,8 +707,8 @@ public class TestPersonSites extends EnterpriseTestApi
         testSortingAndPagingByTitleDesc();
         testSortingAndPagingByRoleAsc();
         testSortingAndPagingByRoleDesc();
-        testSortingAndPagingBySiteNameAsc();
-        testSortingAndPagingBySiteNameDesc();
+        testSortingAndPagingBySiteIdAsc();
+        testSortingAndPagingBySiteIdDesc();
         testSortingAndPagingDefault();
     }
 

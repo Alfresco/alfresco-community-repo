@@ -30,8 +30,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -65,9 +68,28 @@ public class TestSites extends EnterpriseTestApi
 	private String person1Id;
 	private String person2Id;
 
+    private String person3Id;
+
     private Site site1;
     private Site site2;
     private Site site3;
+
+    // network with sites to test sorting and paging
+    private TestNetwork network2; 
+
+    private SiteImpl site4;
+    private SiteImpl site5;
+    private SiteImpl site6;
+
+    private String site4_id = "a_" + GUID.generate();
+    private String site4_title = "c_" + GUID.generate();
+    private String site4_description = "b_" + GUID.generate();
+    private String site5_id = "b_" + GUID.generate();
+    private String site5_title = "a_" + GUID.generate();
+    private String site5_description = "c_" + GUID.generate();
+    private String site6_id = "c_" + GUID.generate();
+    private String site6_title = "b_" + GUID.generate();
+    private String site6_description = "a_" + GUID.generate();
 
     @Override
 	@Before
@@ -386,4 +408,261 @@ public class TestSites extends EnterpriseTestApi
 		// user invited to network and user invited to site
 		// user invited to network and user not invited to site
 	}
+
+    /**
+     * Tests the capability to sort and paginate the sites list
+     * orderBy = title ASC skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    public void testSortingAndPagingByTitleAsc() throws Exception
+    {
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 3;
+        Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSites(paging, "title", true);
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add(site6);
+        expectedList.add(site4);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+
+    }
+
+    /**
+     * Tests the capability to sort and paginate the sites list
+     * orderBy = title DESC skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    public void testSortingAndPagingByTitleDesc() throws Exception
+    {
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 3;
+        Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSites(paging, "title", false);
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add(site6);
+        expectedList.add(site5);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    /**
+     * Tests the capability to sort and paginate the sites list
+     * orderBy = description ASC skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    public void testSortingAndPagingByDescriptionAsc() throws Exception
+    {
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 3;
+        Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSites(paging, "description", true);
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add(site4);
+        expectedList.add(site5);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    /**
+     * Tests the capability to sort and paginate the sites list
+     * orderBy = description DESC skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    public void testSortingAndPagingByDescriptionDesc() throws Exception
+    {
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 3;
+        Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSites(paging, "description", false);
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add(site4);
+        expectedList.add(site6);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    /**
+     * Tests the capability to sort and paginate the sites list
+     * orderBy = id ASC skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    public void testSortingAndPagingBySiteIdAsc() throws Exception
+    {
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 3;
+        Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSites(paging, "id", true);
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add(site5);
+        expectedList.add(site6);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    /**
+     * Tests the capability to sort and paginate the sites list
+     * orderBy = id DESC skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    public void testSortingAndPagingBySiteIdDesc() throws Exception
+    {
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 3;
+        Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSites(paging, "id", false);
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add(site5);
+        expectedList.add(site4);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    /**
+     * Tests the capability to sort and paginate the sites list
+     * default sorting (id asc), all results
+     *
+     * @throws Exception
+     */
+    public void testSortingAndPagingDefault() throws Exception
+    {
+        // paging
+        int totalResults = 3;
+        Paging paging = getPaging(null, null, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSites(null, null, false);
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add(site4);
+        expectedList.add(site5);
+        expectedList.add(site6);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+
+    }
+
+    // based on TestPersonSites.testSortingAndPaging
+    @Test
+    public void testSortingAndPaging() throws Exception
+    {
+        initializeSites();
+        
+        publicApiClient.setRequestContext(new RequestContext(network2.getId(), person3Id));
+
+        testSortingAndPagingByTitleAsc();
+        testSortingAndPagingByTitleDesc();
+        testSortingAndPagingByDescriptionAsc();
+        testSortingAndPagingByDescriptionDesc();
+        testSortingAndPagingBySiteIdAsc();
+        testSortingAndPagingBySiteIdDesc();
+        testSortingAndPagingDefault();
+    }
+
+    private ListResponse<Site> listSites(final Paging paging, String sortColumn, boolean asc) throws Exception
+    {
+        final Sites sitesProxy = publicApiClient.sites();
+        
+        // sort params
+        final Map<String, String> params = new HashMap<String, String>();
+        if (sortColumn != null)
+        {
+            params.put("orderBy", sortColumn + " " + (asc ? "ASC" : "DESC"));
+        }
+
+       return sitesProxy.getSites(createParams(paging, params));
+    }
+
+    // TODO switch to use V1 createSite (instead of RepoService) 
+    private void initializeSites() throws Exception
+    {
+        network2 = getRepoService().createNetwork(this.getClass().getName().toLowerCase(), true);
+        network2.create();
+        
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                person3Id = network2.createUser().getId();
+                return null;
+            }
+        }, network2.getId());
+
+        this.site4 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                RepoService.SiteInformation siteInfo = new RepoService.SiteInformation(site4_id, site4_title, site4_description, SiteVisibility.PRIVATE);
+                TestSite site = network2.createSite(siteInfo);
+                return site;
+            }
+        }, person3Id, network2.getId());
+
+        this.site5 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                RepoService.SiteInformation siteInfo = new RepoService.SiteInformation(site5_id, site5_title, site5_description, SiteVisibility.PRIVATE);
+                TestSite site = network2.createSite(siteInfo);
+                return site;
+            }
+        }, person3Id, network2.getId());
+
+        this.site6 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                RepoService.SiteInformation siteInfo = new RepoService.SiteInformation(site6_id, site6_title, site6_description, SiteVisibility.PRIVATE);
+                TestSite site = network2.createSite(siteInfo);
+                return site;
+            }
+        }, person3Id, network2.getId());
+    }
 }

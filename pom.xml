@@ -10,13 +10,13 @@
     <artifactId>alfresco-data-model</artifactId>
     <name>Alfresco Data Model</name>
     <description>Alfresco Data Model classes</description>
-    <version>6.0</version>
+    <version>6.0-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://gitlab.alfresco.com/platform/alfresco-data-model.git</connection>
         <developerConnection>scm:git:https://gitlab.alfresco.com/platform/alfresco-data-model.git</developerConnection>
         <url>https://gitlab.alfresco.com/platform/alfresco-data-model</url>
-        <tag>6.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
@@ -78,7 +78,7 @@
                     <target>
                         <copy todir="${project.build.outputDirectory}">
                             <fileset dir="${basedir}/src/main/resources" includes="alfresco/messages/**/*.properties" />
-                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties" />
+                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
                         </copy>
                     </target>
                 </configuration>

@@ -522,7 +522,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
     /**
      * Tests the capability to sort and paginate the site memberships associated
-     * to a user order = Title ASC skip = 1, count = 2
+     * to a user orderBy = title ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -535,7 +535,7 @@ public class TestPersonSites extends EnterpriseTestApi
         Paging paging = getPaging(skipCount, maxItems, totalResults, null);
 
         // get memberships
-        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "SiteTitle", true);
+        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "title", true);
 
         // check results
         List<MemberOfSite> expectedList = new LinkedList<>();
@@ -548,7 +548,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
     /**
      * Tests the capability to sort and paginate the site memberships associated
-     * to a user order = Title DESC skip = 1, count = 2
+     * to a user orderBy = title DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -561,7 +561,7 @@ public class TestPersonSites extends EnterpriseTestApi
         Paging paging = getPaging(skipCount, maxItems, totalResults, null);
 
         // get memberships
-        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "SiteTitle", false);
+        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "title", false);
 
         // check results
         List<MemberOfSite> expectedList = new LinkedList<>();
@@ -573,7 +573,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
     /**
      * Tests the capability to sort and paginate the site memberships associated
-     * to a user order = Role ASC skip = 1, count = 2
+     * to a user orderBy = role ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -586,7 +586,7 @@ public class TestPersonSites extends EnterpriseTestApi
         Paging paging = getPaging(skipCount, maxItems, totalResults, null);
 
         // get memberships
-        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "Role", true);
+        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "role", true);
 
         // check results
         List<MemberOfSite> expectedList = new LinkedList<>();
@@ -598,7 +598,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
     /**
      * Tests the capability to sort and paginate the site memberships associated
-     * to a user order = Role DESC skip = 1, count = 2
+     * to a user orderBy = role DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -611,7 +611,7 @@ public class TestPersonSites extends EnterpriseTestApi
         Paging paging = getPaging(skipCount, maxItems, totalResults, null);
 
         // get memberships
-        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "Role", false);
+        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "role", false);
 
         // check results
         List<MemberOfSite> expectedList = new LinkedList<>();
@@ -623,7 +623,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
     /**
      * Tests the capability to sort and paginate the site memberships associated
-     * to a user order = Site Name ASC skip = 1, count = 2
+     * to a user orderBy = id ASC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -636,7 +636,7 @@ public class TestPersonSites extends EnterpriseTestApi
         Paging paging = getPaging(skipCount, maxItems, totalResults, null);
 
         // get memberships
-        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "SiteShortName", true);
+        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "id", true);
 
         // check results
         List<MemberOfSite> expectedList = new LinkedList<>();
@@ -648,7 +648,7 @@ public class TestPersonSites extends EnterpriseTestApi
 
     /**
      * Tests the capability to sort and paginate the site memberships associated
-     * to a user order = Site Name DESC skip = 1, count = 2
+     * to a user orderBy = id DESC skip = 1, count = 2
      *
      * @throws Exception
      */
@@ -661,7 +661,7 @@ public class TestPersonSites extends EnterpriseTestApi
         Paging paging = getPaging(skipCount, maxItems, totalResults, null);
 
         // get memberships
-        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "SiteShortName", false);
+        ListResponse<MemberOfSite> resp = getSiteMembershipsForPerson32(paging, "id", false);
 
         // check results
         List<MemberOfSite> expectedList = new LinkedList<>();

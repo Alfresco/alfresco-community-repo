@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,12 +46,12 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.version.ReservedVersionNameException;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.StringUtils;
@@ -120,9 +119,6 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     
     /** extended security service */
     private ExtendedSecurityService extendedSecurityService;
-    
-    /** ownable service */
-    private OwnableService ownableService;
 
     /**
      * @param filePlanService   file plan service
@@ -186,14 +182,6 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
     {
         this.extendedSecurityService = extendedSecurityService;
-    }
-    
-    /**
-     * @param ownableService    ownable service
-     */
-    public void setOwnableService(OwnableService ownableService)
-    {
-        this.ownableService = ownableService;
     }
 
     /**
@@ -688,13 +676,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                 {
                     public NodeRef doWork() throws Exception
                     {
-                        // get the documents readers
-                        Long aclId = nodeService.getNodeAclId(nodeRef);
-                        Set<String> readers = extendedPermissionService.getReaders(aclId);
-                        Set<String> writers = extendedPermissionService.getWriters(aclId);
-
-                        // add the current owner to the list of extended writers
-                        String owner = ownableService.getOwner(nodeRef);
+                        // get the documents readers and writers
+                        Pair<Set<String>, Set<String>> readersAndWriters = extendedPermissionService.getReadersAndWriters(nodeRef);
                         
                         // grab the frozen state
                         NodeRef currentFrozenState = currentVersion.getFrozenStateNodeRef();
@@ -734,13 +717,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         linkToPreviousVersionRecord(nodeRef, record);
                         
                         // set the extended security
-                        Set<String> combinedWriters = new HashSet<String>(writers);
-                        if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
-                        {
-                            combinedWriters.add(owner);
-                        }
-                        combinedWriters.add(authenticationUtil.getFullyAuthenticatedUser());
-                        extendedSecurityService.addExtendedSecurity(record, readers, combinedWriters);
+                        extendedSecurityService.set(record, readersAndWriters);
                         
                         return record;
                     }

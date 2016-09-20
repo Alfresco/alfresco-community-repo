@@ -138,23 +138,23 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             NodeRef recordFolder = (NodeRef)action.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
             if (recordFolder == null)
             {
-            	final boolean finaltargetIsUnfiledRecords = targetIsUnfiledRecords;
-            	recordFolder = retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-				{
-                	public NodeRef execute() throws Throwable
+                final boolean finaltargetIsUnfiledRecords = targetIsUnfiledRecords;
+                recordFolder = retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+                {
+                    public NodeRef execute() throws Throwable
                     {
-                		NodeRef result = null;
-                		try
-                		{
-                		    // get the reference to the record folder based on the relative path
-                			result = createOrResolvePath(action, actionedUponNodeRef, finaltargetIsUnfiledRecords);
-                		}
-                		catch (DuplicateChildNodeNameException ex)
-                		{
-                			throw new ConcurrencyFailureException("Cannot create or resolve path.", ex);
-                		}
+                        NodeRef result = null;
+                        try
+                        {
+                            // get the reference to the record folder based on the relative path
+                            result = createOrResolvePath(action, actionedUponNodeRef, finaltargetIsUnfiledRecords);
+                        }
+                        catch (DuplicateChildNodeNameException ex)
+                        {
+                            throw new ConcurrencyFailureException("Cannot create or resolve path.", ex);
+                        }
 
-                		return result;
+                        return result;
                     }
                 }, false, true);
             }
@@ -170,32 +170,30 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
                 {
                     try
                     {
-        				synchronized (this)
-        				{
-	                        if(getMode() == CopyMoveLinkFileToActionMode.MOVE)
-	                        {
-	                            fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
-	                        }
-	                        else if(getMode() == CopyMoveLinkFileToActionMode.COPY)
-	                        {
-	                            fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
-	                        }
-	                        else if(getMode() == CopyMoveLinkFileToActionMode.LINK)
-	                        {
-	                            getRecordService().link(actionedUponNodeRef, finalRecordFolder);
-	                        }
-        				}
+                        synchronized (this)
+                        {
+                            if (getMode() == CopyMoveLinkFileToActionMode.MOVE)
+                            {
+                                fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
+                            }
+                            else if (getMode() == CopyMoveLinkFileToActionMode.COPY)
+                            {
+                                fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
+                            }
+                            else if (getMode() == CopyMoveLinkFileToActionMode.LINK)
+                            {
+                                getRecordService().link(actionedUponNodeRef, finalRecordFolder);
+                            }
+                        }
                     }
                     catch (FileNotFoundException fileNotFound)
                     {
-                        throw new AlfrescoRuntimeException(
-                                "Unable to execute file to action, because the " + (mode == CopyMoveLinkFileToActionMode.MOVE ? "move" : "copy") + " operation failed.",
-                                fileNotFound
-                                );
+                        throw new AlfrescoRuntimeException("Unable to execute file to action, because the " + (mode == CopyMoveLinkFileToActionMode.MOVE ? "move" : "copy") + " operation failed.", fileNotFound);
                     }
-
+            
                     return null;
                 }
+
             });
         }
     }
@@ -366,7 +364,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      */
     private NodeRef getChild(NodeRef parent, String childName)
     {
-    	return getNodeService().getChildByName(parent, ContentModel.ASSOC_CONTAINS, childName);
+        return getNodeService().getChildByName(parent, ContentModel.ASSOC_CONTAINS, childName);
     }
 
     /**

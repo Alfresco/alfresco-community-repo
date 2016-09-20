@@ -30,6 +30,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -56,7 +57,8 @@ public class RecordAspect extends    AbstractDisposableItem
                           implements NodeServicePolicies.OnCreateChildAssociationPolicy,
                                      RecordsManagementPolicies.OnCreateReference,
                                      RecordsManagementPolicies.OnRemoveReference,
-                                     NodeServicePolicies.OnMoveNodePolicy
+                                     NodeServicePolicies.OnMoveNodePolicy,
+                                     CopyServicePolicies.OnCopyCompletePolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -123,11 +125,11 @@ public class RecordAspect extends    AbstractDisposableItem
 
                     // manage any extended readers
                     NodeRef parent = childAssocRef.getParentRef();
-                    Set<String> readers = extendedSecurityService.getExtendedReaders(parent);
-                    Set<String> writers = extendedSecurityService.getExtendedWriters(parent);
+                    Set<String> readers = extendedSecurityService.getReaders(parent);
+                    Set<String> writers = extendedSecurityService.getWriters(parent);
                     if (readers != null && readers.size() != 0)
                     {
-                        extendedSecurityService.addExtendedSecurity(thumbnail, readers, writers, false);
+                        extendedSecurityService.set(thumbnail, readers, writers);
                     }
                 }
 
@@ -286,5 +288,34 @@ public class RecordAspect extends    AbstractDisposableItem
 
             scriptService.executeScript(scriptNodeRef, null, objectModel);
         }
+    }
+
+    /**
+     * On copy complete behaviour for record aspect.
+     * 
+     * @param classRef
+     * @param sourceNodeRef
+     * @param targetNodeRef
+     * @param copyToNewNode
+     * @param copyMap
+     */
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS
+    )
+    public void onCopyComplete(QName classRef, 
+                               NodeRef sourceNodeRef, 
+                               NodeRef targetNodeRef, 
+                               boolean copyToNewNode,
+                               Map<NodeRef, NodeRef> copyMap)
+    {
+        // given the node exists and is a record
+        if (nodeService.exists(targetNodeRef) &&
+            nodeService.hasAspect(targetNodeRef, ASPECT_RECORD))
+        {
+            // then remove any extended security from the newly copied record
+            extendedSecurityService.remove(targetNodeRef);
+        }        
     }
 }

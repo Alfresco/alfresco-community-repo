@@ -24,8 +24,6 @@ import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -1232,10 +1230,6 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
             accessPermissions.put(permission.getAuthority(),  permission.getPermission());
         }
 
-        assertTrue(accessPermissions.containsKey(ExtendedReaderDynamicAuthority.EXTENDED_READER));
-        assertEquals(RMPermissionModel.READ_RECORDS, accessPermissions.get(ExtendedReaderDynamicAuthority.EXTENDED_READER));
-        assertTrue(accessPermissions.containsKey(ExtendedWriterDynamicAuthority.EXTENDED_WRITER));
-        assertEquals(RMPermissionModel.FILING, accessPermissions.get(ExtendedWriterDynamicAuthority.EXTENDED_WRITER));
         String adminRole = authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
         assertTrue(accessPermissions.containsKey(adminRole));
         assertEquals(RMPermissionModel.FILING, accessPermissions.get(adminRole));

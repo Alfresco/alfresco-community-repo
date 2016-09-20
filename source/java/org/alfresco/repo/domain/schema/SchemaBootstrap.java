@@ -1492,9 +1492,9 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         {
                             // note: enable bootstrap on MySQL Cluster NDB
                             /*
-                        	 * WARNING: Experimental/unsupported - see AlfrescoMySQLClusterNDBDialect !
-                    		 */
-                        	sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
+                             * WARNING: Experimental/unsupported - see AlfrescoMySQLClusterNDBDialect !
+                             */
+                            sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
                             sql = sql.replaceAll("(?i)ENGINE=InnoDB", "ENGINE=NDB");
                             
                             sql = sql.replaceAll("(?i) BIT ", " BOOLEAN ");

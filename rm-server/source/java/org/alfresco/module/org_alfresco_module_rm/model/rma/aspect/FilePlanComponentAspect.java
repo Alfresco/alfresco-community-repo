@@ -37,6 +37,7 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -73,6 +74,9 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     /** file plan service */
     private FilePlanService filePlanService;
 
+    /** rendition service */
+    private RenditionService renditionService;
+
     /**
      * @param scriptService set script service
      */
@@ -95,6 +99,14 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
+    }
+
+    /**
+     * @param renditionService   rendition service
+     */
+    public void setRenditionService(RenditionService service)
+    {
+        this.renditionService = service;
     }
 
     /**
@@ -210,6 +222,19 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
                     if (root != null)
                     {
                         nodeService.setProperty(nodeRef, PROP_ROOT_NODEREF, root);
+                    }
+
+                    // If the node has any renditions, they inherit the file plan from their source node.
+                    List<ChildAssociationRef> renditions = renditionService.getRenditions(nodeRef);
+                    NodeRef rendition;
+                    for (ChildAssociationRef chAssRef : renditions)
+                    {
+                        rendition = chAssRef.getChildRef();
+                        if (nodeService.exists(rendition)) 
+                        {
+                            // Apply file plan component aspect to node's renditions
+                            nodeService.addAspect(rendition, ASPECT_FILE_PLAN_COMPONENT, null);
+                        }
                     }
                 }
 

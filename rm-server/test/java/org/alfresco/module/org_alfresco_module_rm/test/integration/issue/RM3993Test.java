@@ -31,6 +31,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -187,8 +189,22 @@ public class RM3993Test extends BaseRMTestCase
             throw exception;
         }
 
-        List<NodeRef> allContained = filePlanService.getAllContained(nodeRefCategory1, true);
-        assertTrue(allContained.size() == 2002);
+        Integer numberOfRecords = AuthenticationUtil.runAsSystem(new RunAsWork<Integer>()
+        {
+
+            @Override
+            public Integer doWork() throws Exception
+            {
+                List<NodeRef> containedRecordFolders = filePlanService.getContainedRecordFolders(nodeRefCategory1);
+                int numberOfRecords = 0;
+                for(NodeRef recordFolder : containedRecordFolders)
+                {
+                    numberOfRecords = numberOfRecords + fileFolderService.list(recordFolder).size();
+                }
+                return numberOfRecords;
+            }
+        });
+        assertTrue(numberOfRecords == NUMBER_OF_BATCHES * NUMBER_IN_BATCH);
     }
 
     private NodeRef createFile(NodeRef parentNodeRef, String name, String descrption, QName typeQName)

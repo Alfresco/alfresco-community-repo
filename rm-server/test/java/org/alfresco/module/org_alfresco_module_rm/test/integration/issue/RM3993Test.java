@@ -204,7 +204,7 @@ public class RM3993Test extends BaseRMTestCase
                 return numberOfRecords;
             }
         });
-        assertTrue(numberOfRecords == 2000);
+        assertTrue(numberOfRecords == NUMBER_OF_BATCHES * NUMBER_IN_BATCH);
     }
 
     private NodeRef createFile(NodeRef parentNodeRef, String name, String descrption, QName typeQName)

@@ -23,6 +23,7 @@
    </modules>
 
    <properties>
-      <alfresco.version>5.1.e</alfresco.version>
+      <alfresco.version>5.1.g</alfresco.version>
+      <share.version>${alfresco.version}</share.version>
    </properties>
 </project>

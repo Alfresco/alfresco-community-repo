@@ -54,26 +54,48 @@ import java.util.Map;
  */
 public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
 {
-
-
     @Test
     public void getFilterTest()
     {
         BeanPropertiesFilter theFilter  = getFilter(null);
         assertNotNull(theFilter);
         assertTrue("Null passed in so must return the default BeanPropertiesFilter.ALLOW_ALL class", BeanPropertiesFilter.AllProperties.class.equals(theFilter.getClass()));
-
+        assertTrue(theFilter.isAllowed("bob"));
+        assertTrue(theFilter.isAllowed("fred"));
+        assertTrue(theFilter.isAllowed("50"));
+        assertTrue(theFilter.isAllowed("b.z"));
+        
         theFilter  = getFilter("bob");
         assertNotNull(theFilter);
         assertTrue("Must return the BeanPropertiesFilter class", theFilter instanceof BeanPropertiesFilter);
+        assertTrue(theFilter.isAllowed("bob"));
+        assertFalse(theFilter.isAllowed("fred"));
+        assertFalse(theFilter.isAllowed("50"));
+        assertFalse(theFilter.isAllowed("b.z"));
 
         theFilter  = getFilter("50,fred,b.z");
         assertNotNull(theFilter);
         assertTrue("Must return the BeanPropertiesFilter class", theFilter instanceof BeanPropertiesFilter);
-
+        assertFalse(theFilter.isAllowed("bob"));
+        assertTrue(theFilter.isAllowed("fred"));
+        assertTrue(theFilter.isAllowed("50"));
+        assertTrue(theFilter.isAllowed("b.z"));
+        
         theFilter  = getFilter("50,fred,");
         assertNotNull(theFilter);
         assertTrue("Must return the BeanPropertiesFilter class", theFilter instanceof BeanPropertiesFilter);
+        assertFalse(theFilter.isAllowed("bob"));
+        assertTrue(theFilter.isAllowed("fred"));
+        assertTrue(theFilter.isAllowed("50"));
+        assertFalse(theFilter.isAllowed("b.z"));
+
+        theFilter  = getFilter("50, bob, fred ,");
+        assertNotNull(theFilter);
+        assertTrue("Must return the BeanPropertiesFilter class", theFilter instanceof BeanPropertiesFilter);
+        assertTrue(theFilter.isAllowed("bob"));
+        assertTrue(theFilter.isAllowed("fred"));
+        assertTrue(theFilter.isAllowed("50"));
+        assertFalse(theFilter.isAllowed("b.z"));
     }
 
 

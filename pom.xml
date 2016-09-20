@@ -78,6 +78,7 @@
       <!-- Maven specific build properties -->
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.7</maven.build.sourceVersion>
+      <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
    </properties>
@@ -148,6 +149,19 @@
                   <source>${maven.build.sourceVersion}</source>
                   <target>${maven.build.sourceVersion}</target>
                </configuration>
+               <executions>
+                  <execution>
+                     <id>default-testCompile</id>
+                     <phase>process-test-sources</phase>
+                     <goals>
+                        <goal>testCompile</goal>
+                     </goals>
+                     <configuration>
+                        <source>${maven.build.testSourceVersion}</source>
+                        <target>${maven.build.testSourceVersion}</target>
+                     </configuration>
+                  </execution>
+               </executions>
             </plugin>
             <plugin>
                <artifactId>maven-deploy-plugin</artifactId>

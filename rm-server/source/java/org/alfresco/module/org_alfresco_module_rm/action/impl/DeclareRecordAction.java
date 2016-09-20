@@ -48,6 +48,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class DeclareRecordAction extends RMActionExecuterAbstractBase
 {
+	/** action name */
+	public static final String NAME = "declareRecord";
+	
     /** I18N */
     private static final String MSG_UNDECLARED_ONLY_RECORDS = "rm.action.undeclared-only-records";
     private static final String MSG_NO_DECLARE_MAND_PROP = "rm.action.no-declare-mand-prop";

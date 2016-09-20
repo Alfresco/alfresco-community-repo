@@ -729,6 +729,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         versionRecordProps.put(PROP_VERSIONED_NODEREF, nodeRef);
                         versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, currentVersion.getVersionLabel());
                         versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, currentVersion.getDescription());
+                        versionRecordProps.put(ContentModel.PROP_VERSION_TYPE, currentVersion.getVersionType());
                         nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
 
                         // wire record up to previous record

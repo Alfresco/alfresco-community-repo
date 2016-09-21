@@ -41,6 +41,7 @@ import org.junit.runner.RunWith;
     "!.*DataLoadSystemTest",
     "!.*RM2072Test",
     "!.*RM2190Test",
+    "!.*RM3993Test",
     "!.*RM981SystemTest",
     "!.*RecordsManagementEventServiceImplTest",
     "!.*RmRestApiTest",

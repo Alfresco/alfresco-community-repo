@@ -69,6 +69,9 @@ public class MoveInplaceRecordTest extends BaseRMTestCase
             // Extended Readers/Writers
             private Set<String> extendedReadersBeforeMove;
             private Set<String> extendedWritersBeforeMove;
+            
+            // primary parent of record
+            private NodeRef primaryParentBeforeMove;
 
             public void given()
             {
@@ -93,8 +96,14 @@ public class MoveInplaceRecordTest extends BaseRMTestCase
                 // Check that the document is a record now
                 assertTrue(recordService.isRecord(dmDocument));
 
-                extendedReadersBeforeMove = extendedSecurityService.getExtendedReaders(dmDocument);
-                extendedWritersBeforeMove = extendedSecurityService.getExtendedWriters(dmDocument);
+                extendedReadersBeforeMove = extendedSecurityService.getReaders(dmDocument);
+                extendedWritersBeforeMove = extendedSecurityService.getWriters(dmDocument);
+                
+                // get the primary parent and assert that it's a record management artifact
+                primaryParentBeforeMove = nodeService.getPrimaryParent(dmDocument).getParentRef();
+                assertTrue("Primary parent of newly created should be a records management artifact.",
+                            filePlanService.isFilePlanComponent(primaryParentBeforeMove));
+                
             }
 
             public void when()
@@ -114,15 +123,27 @@ public class MoveInplaceRecordTest extends BaseRMTestCase
 
             public void then()
             {
+                // assert that the document is still a record
+                assertTrue("After move the document should still be a record.", 
+                           recordService.isRecord(dmDocument));
+                
                 // Check that the source folder is empty now and the destination folder has the document
                 assertEquals(0, nodeService.getChildAssocs(dmFolder).size());
                 List<ChildAssociationRef> destinationFolderChildAssocs = nodeService.getChildAssocs(destinationDmFolder);
                 assertEquals(1, destinationFolderChildAssocs.size());
                 assertEquals(dmDocument, destinationFolderChildAssocs.get(0).getChildRef());
-
+                
+                // Check that the primary parent of the record has remained unchanged
+                NodeRef primaryParentAfterMove = nodeService.getPrimaryParent(dmDocument).getParentRef();
+                assertTrue("Primary parent of record after inplace move should be a records management artifact.",
+                            filePlanService.isFilePlanComponent(primaryParentAfterMove));
+                assertEquals("Primary parent of record after inplace move should remain the same.",
+                             primaryParentBeforeMove,
+                             primaryParentAfterMove);                
+                
                 // Check extended readers/writers
-                Set<String> extendedReadersAfterMove = extendedSecurityService.getExtendedReaders(dmDocument);
-                Set<String> extendedWritersAfterMove = extendedSecurityService.getExtendedWriters(dmDocument);
+                Set<String> extendedReadersAfterMove = extendedSecurityService.getReaders(dmDocument);
+                Set<String> extendedWritersAfterMove = extendedSecurityService.getWriters(dmDocument);
 
                 assertEquals(extendedReadersBeforeMove.size(), extendedReadersAfterMove.size());
                 assertEquals(extendedWritersBeforeMove.size(), extendedWritersAfterMove.size());

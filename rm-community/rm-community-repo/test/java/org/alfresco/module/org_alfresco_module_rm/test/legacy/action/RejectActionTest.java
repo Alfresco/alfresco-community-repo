@@ -113,7 +113,8 @@ public class RejectActionTest extends BaseRMTestCase
                 assertTrue(nodeService.getParentAssocs(dmDocument).size() == 1);
 
                 // The extended reader information should be removed
-                assertNull(extendedSecurityService.getExtendedReaders(dmDocument));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
+                assertTrue(extendedSecurityService.getReaders(dmDocument).isEmpty());
 
                 return null;
             }

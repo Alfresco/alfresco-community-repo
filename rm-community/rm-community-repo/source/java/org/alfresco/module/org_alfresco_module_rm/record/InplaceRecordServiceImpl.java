@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import static org.alfresco.model.ContentModel.ASPECT_PENDING_DELETE;
 
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -104,21 +103,25 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
             {
                 // remove the child association
                 NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
-                List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
-                for (ChildAssociationRef childAssociationRef : parentAssocs)
+                
+                if (originatingLocation != null)
                 {
-                    if (!childAssociationRef.isPrimary() &&
-                            childAssociationRef.getParentRef().equals(originatingLocation) &&
-                            !nodeService.hasAspect(childAssociationRef.getChildRef(), ASPECT_PENDING_DELETE))
+                    List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                    for (ChildAssociationRef childAssociationRef : parentAssocs)
                     {
-                        nodeService.removeChildAssociation(childAssociationRef);
-                        break;
+                        if (!childAssociationRef.isPrimary() &&
+                                childAssociationRef.getParentRef().equals(originatingLocation) &&
+                                !nodeService.hasAspect(childAssociationRef.getChildRef(), ASPECT_PENDING_DELETE))
+                        {
+                            nodeService.removeChildAssociation(childAssociationRef);
+                            break;
+                        }
                     }
+    
+                    // remove the extended security from the node
+                    // this prevents the users from continuing to see the record in searchs and other linked locations
+                    extendedSecurityService.remove(nodeRef);
                 }
-
-                // remove the extended security from the node
-                // this prevents the users from continuing to see the record in searchs and other linked locations
-                extendedSecurityService.removeAllExtendedSecurity(nodeRef);
 
                 return null;
             }
@@ -173,18 +176,11 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
             {
                 try
                 {
-                    // Get the extended readers/writers
-                    Set<String> extendedReaders = extendedSecurityService.getExtendedReaders(nodeRef);
-                    Set<String> extendedWriters = extendedSecurityService.getExtendedWriters(nodeRef);
-
                     // Move the record
                     fileFolderService.moveFrom(nodeRef, source, targetNodeRef, null);
 
                     // Update the originating location property
                     nodeService.setProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION, targetNodeRef);
-
-                    // Set the extended readers/writers
-                    extendedSecurityService.addExtendedSecurity(nodeRef, extendedReaders, extendedWriters);
                 }
                 catch (FileExistsException | FileNotFoundException ex)
                 {

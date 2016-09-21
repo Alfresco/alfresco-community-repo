@@ -45,8 +45,6 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
@@ -195,8 +193,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     // Set the permissions
                     permissionService.setInheritParentPermissions(filePlan, false);
                     permissionService.setPermission(filePlan, allRoles, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
 
                     // Create the transfer and hold containers
                     systemContainers.add(filePlanService.createHoldContainer(filePlan));

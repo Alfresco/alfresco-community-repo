@@ -26,12 +26,10 @@
 package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -64,30 +62,32 @@ import org.junit.Test;
  */
 public class TestSites extends EnterpriseTestApi
 {
+    private static final String RUNID = System.currentTimeMillis()+"";
+    
+    // test network 1
 	private TestNetwork network1;
 	private String person1Id;
 	private String person2Id;
-
-    private String person3Id;
 
     private Site site1;
     private Site site2;
     private Site site3;
 
-    // network with sites to test sorting and paging
-    private TestNetwork network2; 
+    // test network 2
+    private TestNetwork network2;
+    private String person3Id;
 
-    private SiteImpl site4;
-    private SiteImpl site5;
-    private SiteImpl site6;
+    private Site site4;
+    private Site site5;
+    private Site site6;
 
-    private String site4_id = "a_" + GUID.generate();
+    private String site4_id = "a-" + GUID.generate();
     private String site4_title = "c_" + GUID.generate();
     private String site4_description = "b_" + GUID.generate();
-    private String site5_id = "b_" + GUID.generate();
+    private String site5_id = "b-" + GUID.generate();
     private String site5_title = "a_" + GUID.generate();
     private String site5_description = "c_" + GUID.generate();
-    private String site6_id = "c_" + GUID.generate();
+    private String site6_id = "c-" + GUID.generate();
     private String site6_title = "b_" + GUID.generate();
     private String site6_description = "a_" + GUID.generate();
 
@@ -96,20 +96,60 @@ public class TestSites extends EnterpriseTestApi
 	public void 
     setup() throws Exception
 	{
-        // init networks
-        super.setup();
-        
-		// Test: user is member of an account
-		this.network1 = getTestFixture().getRandomNetwork();
-
-		Iterator<String> personIt = network1.getPersonIds().iterator();
-
-    	this.person1Id = personIt.next();
-    	assertNotNull(person1Id);
-
-    	this.person2Id = personIt.next();
-    	assertNotNull(person2Id);
+        initializeNetwork1();
 	}
+
+    private void initializeNetwork1() throws Exception
+    {
+        if (network1 == null)
+        {
+            network1 = getRepoService().createNetwork(this.getClass().getName().toLowerCase()+"-1-"+RUNID, true);
+            network1.create();
+
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    person1Id = network1.createUser().getId();
+                    person2Id = network1.createUser().getId();
+                    return null;
+                }
+            }, network1.getId());
+        }
+    }
+    
+    private void initializeNetwork2WithSites() throws Exception
+    {
+        if (network2 == null)
+        {
+            network2 = getRepoService().createNetwork(this.getClass().getName().toLowerCase()+"-2-"+RUNID, true);
+            network2.create();
+
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    person3Id = network2.createUser().getId();
+                    return null;
+                }
+            }, network2.getId());
+            
+            publicApiClient.setRequestContext(new RequestContext(network2.getId(), person3Id));
+
+            Sites sitesProxy = publicApiClient.sites();
+            
+            Site site = new SiteImpl(site4_id, site4_title, site4_description, SiteVisibility.PRIVATE.toString());
+            site4 = sitesProxy.createSite(site);
+
+            site = new SiteImpl(site5_id, site5_title, site5_description, SiteVisibility.PRIVATE.toString());
+            site5 = sitesProxy.createSite(site);
+
+            site = new SiteImpl(site6_id, site6_title, site6_description, SiteVisibility.PRIVATE.toString());
+            site6 = sitesProxy.createSite(site);
+        }
+    }
 
 	@Test
 	public void testGetSiteAndListSites() throws Exception
@@ -428,8 +468,8 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add(site6);
-        expectedList.add(site4);
+        expectedList.add((SiteImpl)site6);
+        expectedList.add((SiteImpl)site4);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
 
@@ -454,8 +494,8 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add(site6);
-        expectedList.add(site5);
+        expectedList.add((SiteImpl)site6);
+        expectedList.add((SiteImpl)site5);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -479,8 +519,8 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add(site4);
-        expectedList.add(site5);
+        expectedList.add((SiteImpl)site4);
+        expectedList.add((SiteImpl)site5);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -504,8 +544,8 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add(site4);
-        expectedList.add(site6);
+        expectedList.add((SiteImpl)site4);
+        expectedList.add((SiteImpl)site6);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -529,8 +569,8 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add(site5);
-        expectedList.add(site6);
+        expectedList.add((SiteImpl)site5);
+        expectedList.add((SiteImpl)site6);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -554,8 +594,8 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add(site5);
-        expectedList.add(site4);
+        expectedList.add((SiteImpl)site5);
+        expectedList.add((SiteImpl)site4);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
     }
@@ -577,9 +617,9 @@ public class TestSites extends EnterpriseTestApi
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
-        expectedList.add(site4);
-        expectedList.add(site5);
-        expectedList.add(site6);
+        expectedList.add((SiteImpl)site5);
+        expectedList.add((SiteImpl)site6);
+        expectedList.add((SiteImpl)site4);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
 
@@ -589,7 +629,7 @@ public class TestSites extends EnterpriseTestApi
     @Test
     public void testSortingAndPaging() throws Exception
     {
-        initializeSites();
+        initializeNetwork2WithSites();
         
         publicApiClient.setRequestContext(new RequestContext(network2.getId(), person3Id));
 
@@ -614,55 +654,5 @@ public class TestSites extends EnterpriseTestApi
         }
 
        return sitesProxy.getSites(createParams(paging, params));
-    }
-
-    // TODO switch to use V1 createSite (instead of RepoService) 
-    private void initializeSites() throws Exception
-    {
-        network2 = getRepoService().createNetwork(this.getClass().getName().toLowerCase(), true);
-        network2.create();
-        
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                person3Id = network2.createUser().getId();
-                return null;
-            }
-        }, network2.getId());
-
-        this.site4 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
-            @Override
-            public TestSite doWork() throws Exception
-            {
-                RepoService.SiteInformation siteInfo = new RepoService.SiteInformation(site4_id, site4_title, site4_description, SiteVisibility.PRIVATE);
-                TestSite site = network2.createSite(siteInfo);
-                return site;
-            }
-        }, person3Id, network2.getId());
-
-        this.site5 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
-            @Override
-            public TestSite doWork() throws Exception
-            {
-                RepoService.SiteInformation siteInfo = new RepoService.SiteInformation(site5_id, site5_title, site5_description, SiteVisibility.PRIVATE);
-                TestSite site = network2.createSite(siteInfo);
-                return site;
-            }
-        }, person3Id, network2.getId());
-
-        this.site6 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
-            @Override
-            public TestSite doWork() throws Exception
-            {
-                RepoService.SiteInformation siteInfo = new RepoService.SiteInformation(site6_id, site6_title, site6_description, SiteVisibility.PRIVATE);
-                TestSite site = network2.createSite(siteInfo);
-                return site;
-            }
-        }, person3Id, network2.getId());
     }
 }

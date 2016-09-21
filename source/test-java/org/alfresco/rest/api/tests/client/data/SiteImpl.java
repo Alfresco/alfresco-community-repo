@@ -101,6 +101,15 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
     	this.guid = siteInfo.getNodeRef().getId();
     }
 
+	public SiteImpl(String siteId, String title, String description, String visibility)
+	{
+		super();
+		this.siteId = siteId;
+		this.title = title;
+		this.description = description;
+		this.visibility = visibility;
+	}
+
 	public SiteImpl(String networkId, String siteId, String guid, String title, String description,
 			String visibility, String type, SiteRole siteRole)
 	{

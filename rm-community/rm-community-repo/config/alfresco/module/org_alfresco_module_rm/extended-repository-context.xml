@@ -60,6 +60,7 @@
                 org.alfresco.service.cmr.security.PermissionService.hasPermission=ACL_ALLOW
                 org.alfresco.service.cmr.security.PermissionService.getReaders=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.repo.security.permissions.impl.ExtendedPermissionService.getWriters=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.repo.security.permissions.impl.ExtendedPermissionService.getReadersAndWriters=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.PermissionService.deletePermissions=ACL_NODE.0.sys:base.ChangePermissions
                 org.alfresco.service.cmr.security.PermissionService.deletePermission=ACL_NODE.0.sys:base.ChangePermissions
                 org.alfresco.service.cmr.security.PermissionService.setPermission=ACL_NODE.0.sys:base.ChangePermissions

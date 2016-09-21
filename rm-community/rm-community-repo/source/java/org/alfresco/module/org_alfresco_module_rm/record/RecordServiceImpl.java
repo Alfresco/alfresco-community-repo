@@ -107,6 +107,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.ArrayUtils;
@@ -252,10 +253,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private JavaBehaviour onCreateChildAssociation = new JavaBehaviour(
                                                             this,
                                                             "onCreateChildAssociation",
-                                                            NotificationFrequency.FIRST_EVENT);
-    private JavaBehaviour onDeleteDeclaredRecordLink = new JavaBehaviour(
-                                                            this,
-                                                            "onDeleteDeclaredRecordLink",
                                                             NotificationFrequency.FIRST_EVENT);
 
     /**
@@ -417,11 +414,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 TYPE_RECORD_FOLDER,
                 ContentModel.ASSOC_CONTAINS,
                 onCreateChildAssociation);
-        policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
-                ContentModel.TYPE_FOLDER,
-                ContentModel.ASSOC_CONTAINS,
-                onDeleteDeclaredRecordLink);
     }
 
     /**
@@ -590,27 +582,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * Looking specifically at linked content that was declared a record from a non-rm site.
-     * When the site or the folder that the link was declared in is deleted we need to remove
-     * the extended security property accounts in the tree
-     *
-     * @param childAssocRef
-     */
-    public void onDeleteDeclaredRecordLink(ChildAssociationRef childAssocRef)
-    {
-        // Is the deleted child association not a primary association?
-        // Does the deleted child association have the rma:recordOriginatingDetails aspect?
-        // Is the parent of the deleted child association a folder (cm:folder)?
-        if (!childAssocRef.isPrimary() &&
-            nodeService.hasAspect(childAssocRef.getChildRef(), ASPECT_RECORD_ORIGINATING_DETAILS) &&
-            nodeService.getType(childAssocRef.getParentRef()).equals(ContentModel.TYPE_FOLDER))
-        {
-            // ..then remove the extended readers and writers up the tree for this remaining node
-            extendedSecurityService.removeExtendedSecurity(childAssocRef.getChildRef(), extendedSecurityService.getExtendedReaders(childAssocRef.getChildRef()), extendedSecurityService.getExtendedWriters(childAssocRef.getChildRef()), true);
-        }
     }
 
     /**
@@ -914,12 +885,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
                         }
 
-                        // get the documents readers
-                        Long aclId = nodeService.getNodeAclId(nodeRef);
-                        Set<String> readers = extendedPermissionService.getReaders(aclId);
-                        Set<String> writers = extendedPermissionService.getWriters(aclId);
+                        // get the documents readers and writers
+                        Pair<Set<String>, Set<String>> readersAndWriters = extendedPermissionService.getReadersAndWriters(nodeRef);
 
-                        // add the current owner to the list of extended writers
+                        // get the current owner
                         String owner = ownableService.getOwner(nodeRef);
 
                         // get the documents primary parent assoc
@@ -971,13 +940,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                 nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
 
                                 // set the extended security
-                                Set<String> combinedWriters = new HashSet<String>(writers);
-                                if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
-                                {
-                                    combinedWriters.add(owner);
-                                }
-                                combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
-                                extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
+                                extendedSecurityService.set(nodeRef, readersAndWriters);
                             }
                             finally
                             {
@@ -1009,24 +972,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // get the unfiled record folder
                 final NodeRef unfiledRecordFolder = filePlanService.getUnfiledContainer(filePlan);
 
-                // get the documents readers
-                Long aclId = nodeService.getNodeAclId(nodeRef);
-                Set<String> readers = extendedPermissionService.getReaders(aclId);
-                Set<String> writers = extendedPermissionService.getWriters(aclId);
-
-                // add the current owner to the list of extended writers
-                Set<String> modifiedWrtiers = new HashSet<String>(writers);
-                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
-                {
-                    String owner = ownableService.getOwner(nodeRef);
-                    if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
-                    {
-                        modifiedWrtiers.add(owner);
-                    }
-                }
-
-                // add the current user as extended writer
-                modifiedWrtiers.add(authenticationUtil.getFullyAuthenticatedUser());
+                // get the documents readers and writers
+                Pair<Set<String>, Set<String>> readersAndWriters = extendedPermissionService.getReadersAndWriters(nodeRef);
 
                 // copy version state and create record
                 NodeRef record = null;
@@ -1095,7 +1042,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
 
                 // set extended security on record
-                extendedSecurityService.addExtendedSecurity(record, readers, writers);
+                extendedSecurityService.set(record, readersAndWriters);
 
                 return record;
             }

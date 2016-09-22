@@ -43,6 +43,7 @@ import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.SiteMembershipRequests;
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.SiteMembershipRequest;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -349,6 +350,12 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 			}
 		});
 		
+		if(siteInfo == null)
+		{
+			// site does not exist
+			throw new RelationshipResourceNotFoundException(inviteeId, siteId);
+		}
+		
 		if(siteInfo.getVisibility().equals(SiteVisibility.MODERATED))
 		{
 			// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
@@ -396,6 +403,12 @@ public class SiteMembershipRequestsImpl implements SiteMembershipRequests
 					return siteInfo;
 				}
 			});
+
+			if(siteInfo == null)
+			{
+				// site does not exist
+				throw new EntityNotFoundException(siteId);
+			}
 
 			if(siteInfo.getVisibility().equals(SiteVisibility.MODERATED))
 			{

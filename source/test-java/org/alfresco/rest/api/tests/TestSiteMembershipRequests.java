@@ -350,6 +350,21 @@ public class TestSiteMembershipRequests extends EnterpriseTestApi
 			{
 				assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());				
 			}
+
+			// ACE-2409 / ACE-5442
+			// get site membership request for unknown site
+			try
+			{
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11Id));
+				
+				siteMembershipRequestsProxy.getSiteMembershipRequest(person11Id, GUID.generate());
+
+				fail("");
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+			}
 			
 			// DELETEs
 			{

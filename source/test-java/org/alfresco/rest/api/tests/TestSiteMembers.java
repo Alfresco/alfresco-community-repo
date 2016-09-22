@@ -61,6 +61,7 @@ import org.junit.Test;
 public class TestSiteMembers extends EnterpriseTestApi
 {
 	// TODO set create member for a user who is a member of the site (not the creator)
+	// TODO split into more manageable test methods
 	@Test
 	public void testSiteMembers() throws Exception
 	{
@@ -381,6 +382,30 @@ public class TestSiteMembers extends EnterpriseTestApi
 			catch(PublicApiException e)
 			{
 				assertEquals(e.getMessage(), HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+			}
+            
+			// missing person id
+			try
+			{
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));
+				sitesProxy.createSiteMember(site.getSiteId(), new SiteMember(null, SiteRole.SiteContributor.toString()));
+				fail("");
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+			}
+
+			// missing role
+			try
+			{
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));
+				sitesProxy.createSiteMember(site.getSiteId(), new SiteMember(person1.getId(), null));
+				fail("");
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 			}
 	
 			// check site membership in GET

@@ -913,7 +913,7 @@ public class PublicApiClient
 
 		public SiteMember createSiteMember(String siteId, SiteMember siteMember) throws PublicApiException
 		{
-			HttpResponse response = create("sites", siteId, "members", null, siteMember.postJSON().toString(), "Failed to create site member");
+			HttpResponse response = create("sites", siteId, "members", null, siteMember.toJSON().toString(), "Failed to create site member");
 			SiteMember retSiteMember = SiteMember.parseSiteMember(siteMember.getSiteId(), (JSONObject)response.getJsonResponse().get("entry"));
 			return retSiteMember;
 		}

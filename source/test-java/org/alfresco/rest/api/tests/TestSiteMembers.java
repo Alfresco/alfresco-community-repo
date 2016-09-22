@@ -573,6 +573,18 @@ public class TestSiteMembers extends EnterpriseTestApi
 				{
 					assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 				}
+
+				// cannot update last member of site to be a non-manager
+				try
+				{
+					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));
+					sitesProxy.updateSiteMember(site.getSiteId(), new SiteMember(person2.getId(), SiteRole.SiteContributor.toString()));
+					fail();
+				}
+				catch(PublicApiException e)
+				{
+					assertEquals(HttpStatus.SC_UNPROCESSABLE_ENTITY, e.getHttpResponse().getStatusCode());
+				}
 		
 				// successful update
 				{

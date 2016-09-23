@@ -106,9 +106,14 @@ public class InviteModeratedSender extends InviteSender
         PersonInfo inviteePerson = personService.getPerson(invitee);
         model.put("inviteeName", StringUtils.join(new String[] { inviteePerson.getFirstName(), inviteePerson.getLastName() }, " "));
         model.put("siteName", getSiteName(properties));
-        model.put("sharePendingInvitesLink", MessageFormat.format(SHARE_PENDING_INVITES_LINK, TenantUtil.getCurrentDomain(),
-                                                                                              properties.get(WorkflowModelModeratedInvitation.wfVarResourceName)));
+        model.put("sharePendingInvitesLink", StringUtils.stripStart(getPendingInvitesLink(properties), "/"));
         return model;
+    }
+
+    protected String getPendingInvitesLink(Map<String, String> properties)
+    {
+        return MessageFormat.format(SHARE_PENDING_INVITES_LINK, TenantUtil.getCurrentDomain(),
+                                    properties.get(WorkflowModelModeratedInvitation.wfVarResourceName));
     }
 
     @Override

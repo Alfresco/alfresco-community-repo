@@ -64,6 +64,7 @@ import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.apache.commons.lang.StringUtils;
 import org.mockito.ArgumentCaptor;
 
 
@@ -90,7 +91,6 @@ public class InviteModeratedSenderTest extends TestCase
     private static final String shortSiteName = "site-name";
 
     private static final String packageId = testStore + "/Package";
-    private static final String pendingInvitesLink = MessageFormat.format("/page/site/{0}/pending-invites", shortSiteName);
     
     private final MessageService messageService = mock(MessageService.class);
 
@@ -116,6 +116,8 @@ public class InviteModeratedSenderTest extends TestCase
 
         ArgumentCaptor<Map> modelC = ArgumentCaptor.forClass(Map.class);
         verify(mailAction).setParameterValue(eq(MailActionExecuter.PARAM_TEMPLATE_MODEL), (Serializable)modelC.capture());
+
+        String pendingInvitesLink = StringUtils.stripStart(MessageFormat.format(InviteModeratedSender.SHARE_PENDING_INVITES_LINK, StringUtils.EMPTY, shortSiteName), "/");
         
         // Check the model
         Map model = modelC.getValue();

@@ -441,13 +441,16 @@ public class TestSiteMembers extends EnterpriseTestApi
 					people.add(person);
 					person = network1.createUser();
 					people.add(person);
-	
+					person = network1.createUser();
+					people.add(person);
+					
 					return null;
 				}
 			}, network1.getId());
 			
 			TestPerson person1 = people.get(0);
 			TestPerson person2 = people.get(1);
+			TestPerson person3 = people.get(2);
 	
 			// Create site
 			TestSite site = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
@@ -481,6 +484,14 @@ public class TestSiteMembers extends EnterpriseTestApi
 				SiteMember siteMember = sitesProxy.createSiteMember(site.getSiteId(), new SiteMember(person1.getId(), SiteRole.SiteContributor.toString()));
 				assertEquals(person1.getId(), siteMember.getMemberId());
 				assertEquals(SiteRole.SiteContributor.toString(), siteMember.getRole());
+				siteMember.setSiteId(site.getSiteId()); // note: needed for contains check below, ugh
+
+				// create another site member
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));
+				SiteMember siteMemberAno = sitesProxy.createSiteMember(site.getSiteId(), new SiteMember(person3.getId(), SiteRole.SiteCollaborator.toString()));
+				assertEquals(person3.getId(), siteMemberAno.getMemberId());
+				assertEquals(SiteRole.SiteCollaborator.toString(), siteMemberAno.getRole());
+				siteMemberAno.setSiteId(site.getSiteId()); // note: needed for contains check below, ugh
 	
 				// unknown site
 				try
@@ -505,7 +516,35 @@ public class TestSiteMembers extends EnterpriseTestApi
 				{
 					assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
 				}
-		
+
+				// ACE-5444
+				// cannot update site member (without appropriate site "permission" - see SiteService)
+				try
+				{
+					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1.getId()));
+					sitesProxy.updateSiteMember(site.getSiteId(), new SiteMember(person1.getId(), SiteRole.SiteCollaborator.toString()));
+					fail();
+				}
+				catch(PublicApiException e)
+				{
+					assertEquals(HttpStatus.SC_UNPROCESSABLE_ENTITY, e.getHttpResponse().getStatusCode());
+				}
+
+				// ACE-5444
+				// cannot remove another site member (without appropriate site "permission" - see SiteService)
+				try
+				{
+					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1.getId()));
+					sitesProxy.removeSiteMember(site.getSiteId(), new SiteMember(person3.getId()));
+					fail();
+				}
+				catch(PublicApiException e)
+				{
+					assertEquals(HttpStatus.SC_UNPROCESSABLE_ENTITY, e.getHttpResponse().getStatusCode());
+				}
+
+
+				// remove site member
 				{
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));
 					sitesProxy.removeSiteMember(site.getSiteId(), siteMember);
@@ -514,6 +553,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 				// check site membership in GET
 				List<SiteMember> expectedSiteMembers = site.getMembers();
 				assertFalse(expectedSiteMembers.contains(siteMember));
+				assertTrue(expectedSiteMembers.contains(siteMemberAno));
 		
 				{
 			    	int skipCount = 0;
@@ -585,7 +625,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 				{
 					assertEquals(HttpStatus.SC_UNPROCESSABLE_ENTITY, e.getHttpResponse().getStatusCode());
 				}
-		
+				
 				// successful update
 				{
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));

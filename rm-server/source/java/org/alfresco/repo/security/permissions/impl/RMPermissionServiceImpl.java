@@ -93,8 +93,9 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         {
             return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
         }
+        // Added ADD_CHILDREN check in for MNT-16852.
         else if (AccessStatus.DENIED.equals(acs) &&
-                 PermissionService.WRITE.equals(perm) &&
+                (PermissionService.WRITE.equals(perm) || PermissionService.ADD_CHILDREN.equals(perm)) &&
                  nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
             return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);

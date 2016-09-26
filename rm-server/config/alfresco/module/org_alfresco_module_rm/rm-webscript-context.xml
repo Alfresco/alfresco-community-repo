@@ -596,6 +596,7 @@
       <property name="permissionService" ref="permissionService"/>
       <property name="extendedSecurityService" ref="extendedSecurityService"/>
       <property name="transactionService" ref="transactionService"/>
+      <property name="contentStreamer" ref="webscript.content.streamer" />
    </bean>
 
    <!-- REST impl for GET Holds -->

@@ -37,7 +37,7 @@
             source/java/org/alfresco/repo/search/impl/parsers/FTSParser.java,
             source/java/org/alfresco/repo/search/impl/parsers/FTSLexer.java
         </sonar.exclusions>
-        
+
     </properties>
 
     <build>
@@ -147,19 +147,19 @@
             <artifactId>alfresco-core</artifactId>
             <version>6.5</version>
         </dependency>
-        <!--  
+        <!--
             | provided dependencies (are not transitive and not included in webapps)
             | see http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Scope
-            --> 
+            -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
-        <!--  
+        <!--
             | compile dependencies
-            --> 
+            -->
         <dependency>
             <groupId>jaxen</groupId>
             <artifactId>jaxen</artifactId>
@@ -198,7 +198,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.xml.messaging.saaj</groupId>
-                    <artifactId>saaj-impl</artifactId>                
+                    <artifactId>saaj-impl</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.jvnet.staxex</groupId>
@@ -240,7 +240,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-xmlfactory</artifactId>
-            <version>1.0.3</version>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>

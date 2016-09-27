@@ -34,6 +34,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -45,6 +46,7 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
@@ -66,6 +68,7 @@ import org.alfresco.util.Pair;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -74,6 +77,8 @@ import org.mockito.stubbing.Answer;
 import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * DynamicAuthoritiesGet Unit Test
@@ -160,6 +165,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
 
     /**
      * Given that there are no nodes with the extended security aspect When the action is executed Nothing happens
+     *
      * @throws Exception
      */
     @SuppressWarnings({ "unchecked" })
@@ -180,7 +186,6 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         String expectedJSONString = "{\"responsestatus\":\"success\",\"message\":\"Processed 0 records.\"}";
         assertEquals(mapper.readTree(expectedJSONString), mapper.readTree(actualJSONString));
 
-
         verify(mockedNodeService, never()).getProperty(any(NodeRef.class), eq(PROP_READERS));
         verify(mockedNodeService, never()).getProperty(any(NodeRef.class), eq(PROP_WRITERS));
         verify(mockedNodeService, never()).removeAspect(any(NodeRef.class), eq(ASPECT_EXTENDED_SECURITY));
@@ -194,6 +199,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     /**
      * Given that there are records with the extended security aspect When the action is executed Then the aspect is
      * removed And the dynamic authorities permissions are cleared And extended security is set via the updated API
+     *
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
@@ -202,8 +208,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         List<Long> ids = Stream.of(1l, 2l, 3l).collect(Collectors.toList());
 
-        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong()))
-                    .thenReturn(ids)
+        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
                     .thenReturn(Collections.emptyList());
 
         ids.stream().forEach((i) -> {
@@ -226,7 +231,6 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         String expectedJSONString = "{\"responsestatus\":\"success\",\"message\":\"Processed 3 records.\"}";
         assertEquals(mapper.readTree(expectedJSONString), mapper.readTree(actualJSONString));
 
-
         verify(mockedNodeService, times(3)).getProperty(any(NodeRef.class), eq(PROP_READERS));
         verify(mockedNodeService, times(3)).getProperty(any(NodeRef.class), eq(PROP_WRITERS));
         verify(mockedNodeService, times(3)).removeAspect(any(NodeRef.class), eq(ASPECT_EXTENDED_SECURITY));
@@ -239,8 +243,9 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     }
 
     /**
-     * Given that there are non-records with the extended security aspect When the web script is executed Then the aspect is
-     * removed And the dynamic authorities permissions are cleared
+     * Given that there are non-records with the extended security aspect When the web script is executed Then the
+     * aspect is removed And the dynamic authorities permissions are cleared
+     *
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
@@ -249,9 +254,8 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         List<Long> ids = Stream.of(1l, 2l, 3l).collect(Collectors.toList());
 
-        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong()))
-                           .thenReturn(ids)
-                           .thenReturn(Collections.emptyList());
+        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
+                    .thenReturn(Collections.emptyList());
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
@@ -272,7 +276,6 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         ObjectMapper mapper = new ObjectMapper();
         String expectedJSONString = "{\"responsestatus\":\"success\",\"message\":\"Processed 3 records.\"}";
         assertEquals(mapper.readTree(expectedJSONString), mapper.readTree(actualJSONString));
-
 
         verify(mockedNodeService, times(3)).getProperty(any(NodeRef.class), eq(PROP_READERS));
         verify(mockedNodeService, times(3)).getProperty(any(NodeRef.class), eq(PROP_WRITERS));
@@ -304,8 +307,8 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         try
         {
-        // Set up parameters.
-        Map<String, String> parameters = ImmutableMap.of("batchsize", "dd");
+            // Set up parameters.
+            Map<String, String> parameters = ImmutableMap.of("batchsize", "dd");
             executeJSONWebScript(parameters);
             fail("Expected exception as parameter batchsize is invalid.");
         }
@@ -321,8 +324,8 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         try
         {
-        // Set up parameters.
-        Map<String, String> parameters = ImmutableMap.of("batchsize", "0");
+            // Set up parameters.
+            Map<String, String> parameters = ImmutableMap.of("batchsize", "0");
             executeJSONWebScript(parameters);
             fail("Expected exception as parameter batchsize is not a number greater than 0.");
         }
@@ -350,11 +353,10 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     @Test
     public void processAllRecordsWhenMaxProcessedRecordsIsZero() throws Exception
     {
-        List<Long> ids = Stream.of(1l, 2l, 3l,4l).collect(Collectors.toList());
+        List<Long> ids = Stream.of(1l, 2l, 3l, 4l).collect(Collectors.toList());
 
-        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong()))
-                           .thenReturn(ids)
-                           .thenReturn(Collections.emptyList());
+        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
+                    .thenReturn(Collections.emptyList());
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
@@ -382,9 +384,8 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         List<Long> ids = Stream.of(1l, 2l, 3l, 4l, 5l).collect(Collectors.toList());
 
-        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong()))
-                           .thenReturn(ids)
-                           .thenReturn(Collections.emptyList());
+        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
+                    .thenReturn(Collections.emptyList());
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
@@ -413,18 +414,15 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         List<Long> ids = Stream.of(1l, 2l, 3l).collect(Collectors.toList());
 
-        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong()))
-                    .thenReturn(ids)
+        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
                     .thenReturn(Collections.emptyList());
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
             when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
             when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
-            when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
-                        .thenReturn(null);
-            when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS))
-                        .thenReturn(null);
+            when(mockedNodeService.getProperty(nodeRef, PROP_READERS)).thenReturn(null);
+            when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS)).thenReturn(null);
 
         });
 
@@ -437,7 +435,6 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         String expectedJSONString = "{\"responsestatus\":\"success\",\"message\":\"Processed 3 records.\"}";
         assertEquals(mapper.readTree(expectedJSONString), mapper.readTree(actualJSONString));
 
-
         verify(mockedNodeService, times(3)).getProperty(any(NodeRef.class), eq(PROP_READERS));
         verify(mockedNodeService, times(3)).getProperty(any(NodeRef.class), eq(PROP_WRITERS));
         verify(mockedNodeService, times(3)).removeAspect(any(NodeRef.class), eq(ASPECT_EXTENDED_SECURITY));
@@ -446,5 +443,83 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         verify(mockedPermissionService, times(3)).clearPermission(any(NodeRef.class),
                     eq(ExtendedWriterDynamicAuthority.EXTENDED_WRITER));
         verify(mockedExtendedSecurityService, never()).set(any(NodeRef.class), any(Set.class), any(Set.class));
+    }
+
+    /**
+     * Given I have records that require migration
+     * And I am interested in knowning which records are migrated
+     * When I run the migration tool
+     * Then I will be returned a CSV file containing the name and node reference of the record migrated
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void processWithCSVFile() throws Exception
+    {
+        List<Long> ids = Stream.of(1l, 2l, 3l).collect(Collectors.toList());
+        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
+                    .thenReturn(Collections.emptyList());
+
+        ids.stream().forEach((i) -> {
+            NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
+            when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
+                        .thenReturn((Serializable) Collections.emptyMap());
+            when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS))
+                        .thenReturn((Serializable) Collections.emptyMap());
+            String name = "name" + i;
+            when(mockedNodeService.getProperty(nodeRef, ContentModel.PROP_NAME)).thenReturn((Serializable) name);
+        });
+
+        ArgumentCaptor<File> csvFileCaptor = ArgumentCaptor.forClass(File.class);
+        // Set up parameters.
+        Map<String, String> parameters = ImmutableMap.of("batchsize", "10", "maxProcessedRecords", "4", "export",
+                    "true");
+        executeWebScript(parameters);
+
+        verify(contentStreamer, times(1)).streamContent(any(WebScriptRequest.class), any(WebScriptResponse.class),
+                    csvFileCaptor.capture(), any(Long.class), any(Boolean.class), any(String.class), any(Map.class));
+
+        File fileForDownload = csvFileCaptor.getValue();
+        assertNotNull(fileForDownload);
+    }
+
+    /**
+     * Given that I have record that require migration
+     * And I'm not interested in knowing which records were migrated
+     * When I run the migration tool
+     * And I will not be returned a CSV file of details.
+     * @throws Exception
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void processedWithouthCSVFile() throws Exception
+    {
+        List<Long> ids = Stream.of(1l, 2l, 3l).collect(Collectors.toList());
+        when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
+                    .thenReturn(Collections.emptyList());
+
+        ids.stream().forEach((i) -> {
+            NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
+            when(mockedNodeDAO.getNodePair(i)).thenReturn(new Pair<Long, NodeRef>(i, nodeRef));
+            when(mockedNodeService.hasAspect(nodeRef, ASPECT_RECORD)).thenReturn(true);
+            when(mockedNodeService.getProperty(nodeRef, PROP_READERS))
+                        .thenReturn((Serializable) Collections.emptyMap());
+            when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS))
+                        .thenReturn((Serializable) Collections.emptyMap());
+        });
+
+        Map<String, String> parameters = ImmutableMap.of("batchsize", "10", "maxProcessedRecords", "4", "export",
+                    "false");
+        JSONObject json = executeJSONWebScript(parameters);
+        assertNotNull(json);
+        String actualJSONString = json.toString();
+        ObjectMapper mapper = new ObjectMapper();
+        String expectedJSONString = "{\"responsestatus\":\"success\",\"message\":\"Processed 3 records.\"}";
+        assertEquals(mapper.readTree(expectedJSONString), mapper.readTree(actualJSONString));
+
+        verify(contentStreamer, never()).streamContent(any(WebScriptRequest.class), any(WebScriptResponse.class),
+                    any(File.class), any(Long.class), any(Boolean.class), any(String.class), any(Map.class));
     }
 }

@@ -464,7 +464,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
      * @param nodeRef
      */
     @SuppressWarnings({ "unchecked"})
-    private void processNode(NodeRef nodeRef)
+    protected void processNode(NodeRef nodeRef)
     {
         // get the reader/writer data
         Map<String, Integer> readers = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);

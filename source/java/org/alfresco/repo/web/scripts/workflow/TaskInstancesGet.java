@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +42,8 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery.OrderBy;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
+import org.alfresco.service.namespace.NamespaceException;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ModelUtil;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -63,6 +66,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     public static final String PARAM_DUE_AFTER = "dueAfter";
     public static final String PARAM_PROPERTIES = "properties";
     public static final String PARAM_POOLED_TASKS = "pooledTasks";
+    public static final String PARAM_PROPERTY = "property";
     public static final String VAR_WORKFLOW_INSTANCE_ID = "workflow_instance_id";
 
     private WorkflowTaskDueAscComparator taskComparator = new WorkflowTaskDueAscComparator();
@@ -96,6 +100,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         
         // get filter param values
         filters.put(PARAM_PRIORITY, req.getParameter(PARAM_PRIORITY));
+        filters.put(PARAM_PROPERTY, req.getParameter(PARAM_PROPERTY));
         processDateFilter(req, PARAM_DUE_BEFORE, filters);
         processDateFilter(req, PARAM_DUE_AFTER, filters);
         
@@ -104,7 +109,7 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         {
             filters.put(PARAM_EXCLUDE, new ExcludeFilter(excludeParam));
         }
-        
+
         List<WorkflowTask> allTasks;
 
         if (workflowInstanceId != null)
@@ -179,20 +184,18 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
         ArrayList<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
         
         // Filter results
-        WorkflowTask task = null;
-        for(int i=0; i<allTasks.size(); i++)
+        for (WorkflowTask task : allTasks)
         {
-        	task = allTasks.get(i);
-        	if (matches(task, filters))
+            if (matches(task, filters))
             {
-        		// Total-count needs to be based on matching tasks only, so we can't just use allTasks.size() for this
-            	totalCount++;
-            	if(totalCount > skipCount && (maxItems < 0 || maxItems > results.size()))
-            	{
-            		// Only build the actual detail if it's in the range of items we need. This will
-            		// drastically improve performance over paging after building the model
-            		results.add(modelBuilder.buildSimple(task, properties));
-            	}
+                // Total-count needs to be based on matching tasks only, so we can't just use allTasks.size() for this
+                totalCount++;
+                if(totalCount > skipCount && (maxItems < 0 || maxItems > results.size()))
+                {
+                    // Only build the actual detail if it's in the range of items we need. This will
+                    // drastically improve performance over paging after building the model
+                    results.add(modelBuilder.buildSimple(task, properties));
+                }
             }
         }
         
@@ -341,12 +344,35 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
                         break;
                     }
                 }
+                else if(key.equals(PARAM_PROPERTY))
+                {
+                    String[] propertyValuePair = filterValue.toString().split("/");
+                    if (propertyValuePair.length != 2)
+                    {
+                        break;
+                    }
+                    QName propertyQName;
+                    try
+                    {
+                        propertyQName = QName.createQName(propertyValuePair[0], namespaceService);
+                    }
+                    catch (NamespaceException ne)
+                    {
+                        break;
+                    }
+                    Serializable value = task.getProperties().get(propertyQName);
+                    if (value != null && !value.equals(propertyValuePair[1]))
+                    {
+                        result = false;
+                        break;
+                    }
+                }
             }
         }
 
         return result;
     }
-    
+
     /**
      * Comparator to sort workflow tasks by due date in ascending order.
      */

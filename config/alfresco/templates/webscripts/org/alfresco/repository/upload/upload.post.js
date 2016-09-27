@@ -16,6 +16,7 @@ function exitUpload(statusCode, statusMsg)
    status.message = statusMsg;
    status.redirect = true;
 }
+
 /**
  * Creates an new filename by adding a suffix to existing one in order to avoid duplicates in folder
  * The check that folder already contains the filename should be done before calling this function
@@ -69,6 +70,7 @@ function main()
 
       // Upload specific
       var uploadDirectory = null,
+         createDirectory = false,
          contentType = null,
          aspects = [],
          overwrite = true; // If a filename clashes for a versionable file
@@ -173,10 +175,14 @@ function main()
             case "updatenameandmimetype":
                updateNameAndMimetype = field.value == "true";
                break;
+            
+            case "createdirectory":
+               createDirectory = field.value == "true";
+               break;
          }
       }
 
-      //MNT-7213 When alf_data runs out of disk space, Share uploads result in a success message, but the files do not appear
+      // MNT-7213 When alf_data runs out of disk space, Share uploads result in a success message, but the files do not appear
       if (formdata.fields.length == 0)
       {
          exitUpload(404, " No disk space available");
@@ -336,8 +342,15 @@ function main()
             var child = destNode.childByNamePath(uploadDirectory);
             if (child === null)
             {
-               exitUpload(404, "Cannot upload file since upload directory '" + uploadDirectory + "' does not exist.");
-               return;
+               if (createDirectory)
+               {
+                  child = destNode.createFolderPath(uploadDirectory);
+               }
+               else
+               {
+                  exitUpload(404, "Cannot upload file since upload directory '" + uploadDirectory + "' does not exist.");
+                  return;
+               }
             }
 
             // MNT-12565

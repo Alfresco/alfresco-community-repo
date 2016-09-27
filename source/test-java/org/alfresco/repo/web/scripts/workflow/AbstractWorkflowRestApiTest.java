@@ -332,7 +332,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         wfDefinition = workflowService.getDefinitionByName(getReviewPooledWorkflowDefinitionName());
         params.put(WorkflowModel.ASSOC_GROUP_ASSIGNEE, groupManager.get(GROUP));
         params.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
-        params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "descTest2");
+        params.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "descTest2/withSlash");
 
         wfPath = workflowService.startWorkflow(wfDefinition.getId(), params);
         workflowId = wfPath.getInstance().getId();
@@ -356,13 +356,13 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertEquals("descTest1", properties.getString("bpm_description"));
 
         //Check USER2's tasks With filtering where property bpm:description should match "descTest2"
-        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2) + "&property=bpm:description/descTest2"), 200);
+        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2) + "&property=bpm:description/descTest2/withSlash"), 200);
         results = getJsonArray(response, 1);
         result = results.getJSONObject(0);
         assertNotNull(result);
         properties = result.getJSONObject("properties");
         assertNotNull(properties);
-        assertEquals("descTest2", properties.getString("bpm_description"));
+        assertEquals("descTest2/withSlash", properties.getString("bpm_description"));
 
         /*
          * -ve tests
@@ -381,6 +381,14 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
 
         // Not well-formed parameter
         response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2) + "&property=bpm:description/"), 200);
+        getJsonArray(response, 2);
+
+        // Not well-formed parameter
+        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2) + "&property=descTest1"), 200);
+        getJsonArray(response, 2);
+
+        // Not well-formed parameter
+        response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER2) + "&property=/descTest1"), 200);
         getJsonArray(response, 2);
 
         // Check USER3's tasks without filtering. It should return 0 task as USER3 is not a member of the GROUP

@@ -82,7 +82,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -1868,6 +1867,64 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         reset();
         
         return newInstance(fileInfo.getNodeRef(), this.services, this.scope);
+    }
+    
+    /**
+     * Create a path of folder (cm:folder) nodes as a child of this node.
+     * <p>
+     * This method operates like a unix 'mkdir -p' no error if existing, make parent directories as needed.
+     * <p>
+     * Beware: Any unsaved property changes will be lost when this is called.  To preserve property changes call {@link #save()} first.
+     *    
+     * @param path Folder path to create - of the form "One/Two/Three". Leading and trailing slashes are not expected
+     * to be present in the supplied path.
+     * 
+     * @return reference to the last child of the newly created folder node(s) or null if failed to create.
+     */
+    public ScriptNode createFolderPath(String path)
+    {
+        ParameterCheck.mandatoryString("Folder path", path);
+        
+        List<String> pathElements = Arrays.asList(path.split("/"));
+        
+        NodeRef currentParentRef = this.nodeRef;
+        // just loop and create if necessary
+        for (final String element : pathElements)
+        {
+            final NodeRef contextNodeRef = currentParentRef;
+            // does it exist?
+            // Navigation should not check permissions
+            NodeRef nodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    return nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, element);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+
+            if (nodeRef == null)
+            {
+                // Checks for create permissions as the fileFolderService is a public service.
+                FileInfo createdFileInfo = services.getFileFolderService().create(
+                        currentParentRef, element, ContentModel.TYPE_FOLDER);
+                currentParentRef = createdFileInfo.getNodeRef();
+            }
+            else if (!services.getDictionaryService().isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_FOLDER))
+            {
+                String parentName = (String) nodeService.getProperty(contextNodeRef, ContentModel.PROP_NAME);
+                throw new ScriptException("Name [" + element + "] already exists in the target parent: " + parentName);
+            }
+            else
+            {
+                // it exists
+                currentParentRef = nodeRef;
+            }
+        }
+        
+        reset();
+        
+        return newInstance(currentParentRef, this.services, this.scope);
     }
 
     /**

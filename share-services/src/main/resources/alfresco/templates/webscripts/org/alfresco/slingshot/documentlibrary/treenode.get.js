@@ -14,7 +14,7 @@ function getTreeNode()
       {
          var siteId = url.templateArgs.site;
          var site = siteService.getSite(siteId);
-         if (site && site.visibility != "PUBLIC" && !site.isMember(person.properties.userName))
+         if (site && site.visibility != "PUBLIC" && !site.isMember(person.properties.userName) && !people.isAdmin(person))
          {
             status.setCode(status.STATUS_FORBIDDEN, "User is not a member of the " + siteId + " site");
             return null;

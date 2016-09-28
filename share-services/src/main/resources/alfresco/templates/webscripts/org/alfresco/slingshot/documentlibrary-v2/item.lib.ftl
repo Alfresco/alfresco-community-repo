@@ -12,7 +12,7 @@
    {
       "isLiked": ${item.likes.isLiked?string},
       "totalLikes": ${item.likes.totalLikes?c}
-   }</#if>,
+   },</#if>
    "location":
    {
       "repositoryId": "${(node.properties["trx:repositoryId"])!(server.id)}",

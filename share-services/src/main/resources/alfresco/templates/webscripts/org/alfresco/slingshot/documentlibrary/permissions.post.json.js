@@ -82,7 +82,6 @@ function main()
          var isSpecialAuthority = false;
          switch (authority)
          {
-            case "GROUP_EVERYONE":
             case "ROLE_ADMINISTRATOR":
             case "ROLE_GUEST":
             case "ROLE_OWNER":

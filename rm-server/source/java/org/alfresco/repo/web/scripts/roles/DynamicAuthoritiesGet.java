@@ -185,7 +185,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
             {
                 processedNodes = processChildrenNodes(parentNodeRef, batchSize.intValue(), recordAspectPair,
                             totalNumberOfRecordsToProcess.intValue(), out, attach);
-        }
+            }
             else
             {
                 processedNodes = processNodes(batchSize, maxNodeId, recordAspectPair, totalNumberOfRecordsToProcess,

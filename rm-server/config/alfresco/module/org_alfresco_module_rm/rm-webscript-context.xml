@@ -597,6 +597,7 @@
       <property name="extendedSecurityService" ref="extendedSecurityService"/>
       <property name="transactionService" ref="transactionService"/>
       <property name="contentStreamer" ref="webscript.content.streamer" />
+      <property name="fileFolderService" ref="FileFolderService"/>
    </bean>
 
    <!-- REST impl for GET Holds -->

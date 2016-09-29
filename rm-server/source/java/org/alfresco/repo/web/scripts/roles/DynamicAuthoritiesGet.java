@@ -96,6 +96,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
     private static final String MESSAGE_PARTIAL_TEMPLATE = "Processed first {0} records.";
     private static final String MESSAGE_NO_RECORDS_TO_PROCESS = "There where no records to be processed.";
 
+
     /** services */
     private PatchDAO patchDAO;
     private NodeDAO nodeDAO;
@@ -161,7 +162,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
         // get the max node id and the extended security aspect
         Long maxNodeId = patchDAO.getMaxAdmNodeID();
         final Pair<Long, QName> recordAspectPair = qnameDAO.getQName(ASPECT_EXTENDED_SECURITY);
-        if (recordAspectPair == null)
+        if(recordAspectPair == null)
         {
             model.put(MODEL_STATUS, SUCCESS_STATUS);
             model.put(MODEL_MESSAGE, MESSAGE_NO_RECORDS_TO_PROCESS);
@@ -184,7 +185,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
             {
                 processedNodes = processChildrenNodes(parentNodeRef, batchSize.intValue(), recordAspectPair,
                             totalNumberOfRecordsToProcess.intValue(), out, attach);
-            }
+        }
             else
             {
                 processedNodes = processNodes(batchSize, maxNodeId, recordAspectPair, totalNumberOfRecordsToProcess,
@@ -262,8 +263,10 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
         try
         {
             String mimetype = getContainer().getFormatRegistry().getMimeType(req.getAgent(), format);
-            if (mimetype == null) { throw new WebScriptException(
-                        "Web Script format '" + format + "' is not registered"); }
+            if (mimetype == null) 
+            { 
+                throw new WebScriptException("Web Script format '" + format + "' is not registered");
+            }
 
             // construct model for script / template
             Status status = new Status();
@@ -362,7 +365,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
     protected Long getMaxToProccessParameter(WebScriptRequest req, final Long batchSize)
     {
         String totalToBeProcessedRecordsStr = req.getParameter(TOTAL_NUMBER_TO_PROCESS);
-        // default total number of records to be processed to batch size value
+        //default total number of records to be processed to batch size value
         Long totalNumberOfRecordsToProcess = batchSize;
         if (StringUtils.isNotBlank(totalToBeProcessedRecordsStr))
         {
@@ -370,9 +373,9 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
             {
                 totalNumberOfRecordsToProcess = Long.parseLong(totalToBeProcessedRecordsStr);
             }
-            catch (NumberFormatException ex)
+            catch(NumberFormatException ex)
             {
-                // do nothing here, the value will remain 0L in this case
+                //do nothing here, the value will remain 0L in this case
             }
         }
         return totalNumberOfRecordsToProcess;
@@ -450,9 +453,9 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
         final List<NodeRef> processedNodes = new ArrayList<NodeRef>();
         logger.info(MESSAGE_PROCESSING_BEGIN);
         // by batch size
-        for (Long i = 0L; i < maxNodeId; i += batchSize)
+        for (Long i = 0L; i < maxNodeId; i+=batchSize)
         {
-            if (maxRecordsToProcess != 0 && processedNodes.size() >= maxRecordsToProcess)
+            if(maxRecordsToProcess != 0 && processedNodes.size() >= maxRecordsToProcess)
             {
                 break;
             }
@@ -469,7 +472,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
                     // process each one
                     for (Long nodeId : nodeIds)
                     {
-                        if (maxRecordsToProcess != 0 && processedNodes.size() >= maxRecordsToProcess)
+                        if(maxRecordsToProcess != 0 && processedNodes.size() >= maxRecordsToProcess)
                         {
                             break;
                         }
@@ -491,7 +494,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
                     return null;
                 }
             }, false, // read only
-                        true); // requires new
+            true); // requires new
         }
         logger.info(MESSAGE_PROCESSING_END);
         return processedNodes;
@@ -557,12 +560,12 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
      *
      * @param nodeRef
      */
-    @SuppressWarnings({ "unchecked" })
+    @SuppressWarnings({ "unchecked"})
     protected void processNode(NodeRef nodeRef)
     {
         // get the reader/writer data
-        Map<String, Integer> readers = (Map<String, Integer>) nodeService.getProperty(nodeRef, PROP_READERS);
-        Map<String, Integer> writers = (Map<String, Integer>) nodeService.getProperty(nodeRef, PROP_WRITERS);
+        Map<String, Integer> readers = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
+        Map<String, Integer> writers = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
 
         // remove extended security aspect
         nodeService.removeAspect(nodeRef, ASPECT_EXTENDED_SECURITY);
@@ -576,7 +579,7 @@ public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsM
         {
             Set<String> readersKeySet = null;
             if (readers != null)
-            {
+        {
                 readersKeySet = readers.keySet();
             }
             Set<String> writersKeySet = null;

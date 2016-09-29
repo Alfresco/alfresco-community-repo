@@ -37,10 +37,15 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        
+    TestCMIS.class,
+    TestRemovePermissions.class,
+        
     TestEnterpriseAtomPubTCK.class,
     TestPublicApiAtomPub10TCK.class,
     TestPublicApiAtomPub11TCK.class,
     TestPublicApiBrowser11TCK.class
+        
 })
 public class TestCMISAPI
 {

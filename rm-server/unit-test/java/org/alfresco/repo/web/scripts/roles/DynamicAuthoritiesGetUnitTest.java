@@ -172,7 +172,8 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     }
 
     /**
-     * Given that there are no nodes with the extended security aspect When the action is executed Nothing happens
+     * Given that there are no nodes with the extended security aspect
+     * When the action is executed Nothing happens
      *
      * @throws Exception
      */
@@ -205,8 +206,11 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     }
 
     /**
-     * Given that there are records with the extended security aspect When the action is executed Then the aspect is
-     * removed And the dynamic authorities permissions are cleared And extended security is set via the updated API
+     * Given that there are records with the extended security aspect
+     * When the action is executed
+     * Then the aspect is removed
+     * And the dynamic authorities permissions are cleared
+     * And extended security is set via the updated API
      *
      * @throws Exception
      */
@@ -227,7 +231,6 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
                         .thenReturn((Serializable) Collections.emptyMap());
             when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS))
                         .thenReturn((Serializable) Collections.emptyMap());
-
         });
 
         // Set up parameters.
@@ -251,8 +254,9 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     }
 
     /**
-     * Given that there are non-records with the extended security aspect When the web script is executed Then the
-     * aspect is removed And the dynamic authorities permissions are cleared
+     * Given that there are non-records with the extended security aspect
+     * When the web script is executed
+     * Then the aspect is removed And the dynamic authorities permissions are cleared
      *
      * @throws Exception
      */
@@ -263,7 +267,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         List<Long> ids = Stream.of(1l, 2l, 3l).collect(Collectors.toList());
 
         when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
-                    .thenReturn(Collections.emptyList());
+                           .thenReturn(Collections.emptyList());
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
@@ -273,7 +277,6 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
                         .thenReturn((Serializable) Collections.emptyMap());
             when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS))
                         .thenReturn((Serializable) Collections.emptyMap());
-
         });
 
         // Set up parameters.
@@ -284,6 +287,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         ObjectMapper mapper = new ObjectMapper();
         String expectedJSONString = "{\"responsestatus\":\"success\",\"message\":\"Processed 3 records.\"}";
         assertEquals(mapper.readTree(expectedJSONString), mapper.readTree(actualJSONString));
+
 
         verify(mockedNodeService, times(3)).getProperty(any(NodeRef.class), eq(PROP_READERS));
         verify(mockedNodeService, times(3)).getProperty(any(NodeRef.class), eq(PROP_WRITERS));
@@ -315,8 +319,8 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         try
         {
-            // Set up parameters.
-            Map<String, String> parameters = ImmutableMap.of("batchsize", "dd");
+        // Set up parameters.
+        Map<String, String> parameters = ImmutableMap.of("batchsize", "dd");
             executeJSONWebScript(parameters);
             fail("Expected exception as parameter batchsize is invalid.");
         }
@@ -332,8 +336,8 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     {
         try
         {
-            // Set up parameters.
-            Map<String, String> parameters = ImmutableMap.of("batchsize", "0");
+        // Set up parameters.
+        Map<String, String> parameters = ImmutableMap.of("batchsize", "0");
             executeJSONWebScript(parameters);
             fail("Expected exception as parameter batchsize is not a number greater than 0.");
         }
@@ -361,10 +365,10 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     @Test
     public void processAllRecordsWhenMaxProcessedRecordsIsZero() throws Exception
     {
-        List<Long> ids = Stream.of(1l, 2l, 3l, 4l).collect(Collectors.toList());
+        List<Long> ids = Stream.of(1l, 2l, 3l,4l).collect(Collectors.toList());
 
         when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
-                    .thenReturn(Collections.emptyList());
+                           .thenReturn(Collections.emptyList());
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
@@ -374,7 +378,6 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
                         .thenReturn((Serializable) Collections.emptyMap());
             when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS))
                         .thenReturn((Serializable) Collections.emptyMap());
-
         });
 
         // Set up parameters.
@@ -393,7 +396,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         List<Long> ids = Stream.of(1l, 2l, 3l, 4l, 5l).collect(Collectors.toList());
 
         when(mockedPatchDAO.getNodesByAspectQNameId(eq(ASPECT_ID), anyLong(), anyLong())).thenReturn(ids)
-                    .thenReturn(Collections.emptyList());
+                           .thenReturn(Collections.emptyList());
 
         ids.stream().forEach((i) -> {
             NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
@@ -403,7 +406,6 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
                         .thenReturn((Serializable) Collections.emptyMap());
             when(mockedNodeService.getProperty(nodeRef, PROP_WRITERS))
                         .thenReturn((Serializable) Collections.emptyMap());
-
         });
 
         // Set up parameters.
@@ -518,9 +520,10 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     }
 
     /**
-     * Given I have records that require migration And I am interested in knowning which records are migrated When I run
-     * the migration tool Then I will be returned a CSV file containing the name and node reference of the record
-     * migrated
+     * Given I have records that require migration
+     * And I am interested in knowning which records are migrated
+     * When I run the migration tool
+     * Then I will be returned a CSV file containing the name and node reference of the record migrated
      *
      * @throws Exception
      */
@@ -558,8 +561,10 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
     }
 
     /**
-     * Given that I have record that require migration And I'm not interested in knowing which records were migrated
-     * When I run the migration tool And I will not be returned a CSV file of details.
+     * Given that I have record that require migration
+     * And I'm not interested in knowing which records were migrated
+     * When I run the migration tool
+     * Then I will not be returned a CSV file of details.
      *
      * @throws Exception
      */

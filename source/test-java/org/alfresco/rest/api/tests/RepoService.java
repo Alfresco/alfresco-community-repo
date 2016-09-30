@@ -209,7 +209,7 @@ public class RepoService
 	protected Activities activities;
 
 	protected PublicApiTestContext publicApiContext;
-
+	
 	protected Random random = new Random(System.currentTimeMillis());
 	
 	protected static int numNetworks = 0;
@@ -511,33 +511,21 @@ public class RepoService
 		});
 	}
 
-	public TestSite createSite(TestNetwork network, final SiteInformation site)
+	/**
+	 * @deprecated
+     */
+	public TestSite createSite(TestNetwork network, final SiteInformation siteInfoIn)
     {
-		SiteInfo siteInfo = null;
-
-		if(siteService.hasSite(site.getShortName()))
-		{
-			AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-			{
-				@Override
-				public Void doWork() throws Exception
-				{
-					siteService.deleteSite(site.getShortName());
-					return null;
-				}
-			});
-		}
-
-    	siteInfo = siteService.createSite(TEST_SITE_PRESET, site.getShortName(), site.getTitle(), site.getDescription(), site.getSiteVisibility());
-    	siteService.createContainer(site.getShortName(), "documentLibrary", ContentModel.TYPE_FOLDER, null);
-
-    	final TestSite testSite = new TestSite(network, siteInfo);
+		SiteInfo siteInfoOut = siteService.createSite(TEST_SITE_PRESET, siteInfoIn.getShortName(), siteInfoIn.getTitle(), siteInfoIn.getDescription(), siteInfoIn.getSiteVisibility());
+    	siteService.createContainer(siteInfoIn.getShortName(), "documentLibrary", ContentModel.TYPE_FOLDER, null);
+		
+    	final TestSite testSite = new TestSite(network, siteInfoOut);
 
 		log("Created site " + testSite + (network != null ? " in network " + network : ""));
 
 		return testSite;
     }
-
+	
 	public Invitation rejectSiteInvitation(String personId, String siteId)
 	{
 		Invitation ret = null;
@@ -1390,6 +1378,9 @@ public class RepoService
 			return createSite(siteInfo);
 	    }
 
+		/**
+		 * @deprecated replace with AbstractBaseApiTest.createSite (or PublicApiClient.sites.createSite)
+		 */
 		public TestSite createSite(final SiteInformation site)
 	    {
 	    	TestSite testSite = RepoService.this.createSite(this, site);

@@ -32,6 +32,7 @@ import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
@@ -92,16 +93,16 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             SearchQuery searchQuery = extractJsonContent(webScriptRequest, assistant.getJsonHelper(), SearchQuery.class);
 
             //Parse the parameters
-            Params params = getParams(webScriptRequest, searchQuery);
+            Params params = getParams(webScriptRequest, searchQuery.getFields(), searchQuery.getInclude(), searchQuery.getPaging());
 
             //Turn the SearchQuery json into the Java SearchParameters object
-            SearchParameters searchParams = searchMapper.toSearchParameters(searchQuery);
+            SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery);
 
             //Call searchService
             ResultSet results = searchService.query(searchParams);
 
             //Turn solr results into JSON
-            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(searchQuery, results);
+            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, results);
             //Post-process the request and pass in params, eg. params.getFilter()
             Object toRender = helper.processAdditionsToTheResponse(null, null, null, params, resultJson);
 
@@ -120,21 +121,28 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
      * @param searchQuery
      * @return Params
      */
-    protected Params getParams(WebScriptRequest webScriptRequest, SearchQuery searchQuery)
+    protected Params getParams(WebScriptRequest webScriptRequest, List<String> fields, List<String> include, Paging paging)
     {
-        BeanPropertiesFilter filter = null;
-        if (searchQuery.getFields()!= null && !searchQuery.getFields().isEmpty())
+        if (paging == null)
         {
-            List<String> selectList = new ArrayList<>(searchQuery.getFields().size());
-            selectList.addAll(searchQuery.getFields());
-            if (searchQuery.getInclude()!= null && !searchQuery.getInclude().isEmpty())
+            paging = Paging.DEFAULT;
+        }
+        BeanPropertiesFilter filter = null;
+        if (fields != null && !fields.isEmpty())
+        {
+            List<String> selectList = new ArrayList<>(fields.size());
+            selectList.addAll(fields);
+
+            if (include != null &&  !include.isEmpty())
             {
-                selectList.addAll(searchQuery.getInclude());
+                selectList.addAll(include);
             }
+
           filter = getFilter("", selectList);
         }
-        Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, null, filter, null, null, null, null, null, false);
-        return Params.valueOf(null, recognizedParams, searchQuery, webScriptRequest);
+
+        Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, paging, filter, null, include, null, null, null, false);
+        return Params.valueOf(null, recognizedParams, null, webScriptRequest);
     }
 
     public void setNodes(Nodes nodes) {

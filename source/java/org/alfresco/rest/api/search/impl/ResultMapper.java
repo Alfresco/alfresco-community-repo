@@ -34,10 +34,10 @@ import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.model.SearchEntry;
-import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
+import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
@@ -74,7 +74,7 @@ public class ResultMapper
      * @param results
      * @return CollectionWithPagingInfo<Node>
      */
-    public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(SearchQuery searchQuery, ResultSet results)
+    public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, ResultSet results)
     {
         SearchContext context = null;
         Integer total = null;
@@ -83,7 +83,7 @@ public class ResultMapper
 
         results.forEach(row ->
         {
-            Node aNode = nodes.getFolderOrDocument(row.getNodeRef(), null, null, searchQuery.getInclude(), mapUserInfo);
+            Node aNode = nodes.getFolderOrDocument(row.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
             if (aNode != null)
             {
                 float f = row.getScore();
@@ -115,7 +115,7 @@ public class ResultMapper
             }
         }
 
-        return CollectionWithPagingInfo.asPaged(searchQuery.getPaging(), noderesults, results.hasMore(), total, null, context);
+        return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), total, null, context);
     }
 
     /**

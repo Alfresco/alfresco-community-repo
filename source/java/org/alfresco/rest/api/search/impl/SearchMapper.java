@@ -41,6 +41,7 @@ import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -84,7 +85,7 @@ public class SearchMapper
      * @param params
      * @return SearchParameters
      */
-    public SearchParameters toSearchParameters(SearchQuery searchQuery)
+    public SearchParameters toSearchParameters(Params params, SearchQuery searchQuery)
     {
         ParameterCheck.mandatory("query", searchQuery.getQuery());
 
@@ -92,7 +93,7 @@ public class SearchMapper
         setDefaults(sp);
 
         fromQuery(sp,  searchQuery.getQuery());
-        fromPaging(sp, searchQuery.getPaging());
+        fromPaging(sp, params.getPaging());
         fromSort(sp, searchQuery.getSort());
         fromTemplate(sp, searchQuery.getTemplates());
         validateInclude(searchQuery.getInclude());
@@ -115,8 +116,6 @@ public class SearchMapper
     {
         //Hardcode workspace store
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        sp.setLimitBy(LimitBy.FINAL_SIZE);
-        sp.setLimit(100);
     }
 
     /**

@@ -51,6 +51,7 @@ import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -74,13 +75,13 @@ public class SearchMapperTests
     @Test(expected = IllegalArgumentException.class)
     public void testMandatory() throws Exception
     {
-        SearchParameters searchParameters = searchMapper.toSearchParameters(SearchQuery.EMPTY);
+        SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, SearchQuery.EMPTY);
     }
 
     @Test
     public void toSearchParameters() throws Exception
     {
-        SearchParameters searchParameters = searchMapper.toSearchParameters(minimalQuery());
+        SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, minimalQuery());
         assertNotNull(searchParameters);
 
         //Test defaults
@@ -89,7 +90,7 @@ public class SearchMapperTests
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
         assertEquals(100, searchParameters.getLimit());
 
-        searchParameters = searchMapper.toSearchParameters(helper.searchQueryFromJson());
+        searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, helper.searchQueryFromJson());
         assertNotNull(searchParameters);
     }
 
@@ -488,12 +489,12 @@ public class SearchMapperTests
 
         //Doesn't error
         searchMapper.fromLimits(searchParameters, null);
-        assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
-        assertEquals(100, searchParameters.getLimit());
+        assertEquals(500, searchParameters.getLimit());
+        assertEquals(LimitBy.UNLIMITED, searchParameters.getLimitBy());
 
         searchMapper.fromLimits(searchParameters, new Limits(null, null));
-        assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
-        assertEquals(100, searchParameters.getLimit());
+        assertEquals(LimitBy.UNLIMITED, searchParameters.getLimitBy());
+        assertEquals(500, searchParameters.getLimit());
 
         searchMapper.fromLimits(searchParameters, new Limits(null, 34));
         assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());

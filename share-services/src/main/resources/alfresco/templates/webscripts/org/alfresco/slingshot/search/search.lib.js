@@ -113,7 +113,8 @@ function getRepositoryItem(folderPath, node, populate)
          createdByUser: node.properties["cm:creator"],
          lastThumbnailModification: node.properties["cm:lastThumbnailModification"],
          mimetype: node.mimetype,
-         path: folderPath.join("/")
+         path: folderPath.join("/"),
+         nodeJSON: appUtils.toJSON(node, true)
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
       item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -167,7 +168,8 @@ function getDocumentItem(siteId, containerId, pathParts, node, populate)
          createdByUser: node.properties["cm:creator"],
          lastThumbnailModification: node.properties["cm:lastThumbnailModification"],
          mimetype: node.mimetype,
-         path: pathParts.join("/")
+         path: pathParts.join("/"),
+         nodeJSON: appUtils.toJSON(node, true)
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
       item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -239,7 +241,8 @@ function getBlogPostItem(siteId, containerId, pathParts, node, populate)
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: child.size,
-      displayName: child.properties["cm:title"]
+      displayName: child.properties["cm:title"],
+      nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -287,7 +290,8 @@ function getForumPostItem(siteId, containerId, pathParts, node, populate)
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: topicNode.size,
-      displayName: postNode.properties["cm:title"]
+      displayName: postNode.properties["cm:title"],
+      nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -326,7 +330,8 @@ function getCalendarItem(siteId, containerId, pathParts, node, populate)
       createdByUser: node.properties["cm:creator"],
       fromDate: node.properties["ia:fromDate"],
       size: -1,
-      displayName: node.properties["ia:whatEvent"]
+      displayName: node.properties["ia:whatEvent"],
+      nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -364,7 +369,8 @@ function getWikiItem(siteId, containerId, pathParts, node, populate)
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: node.size,
-      displayName: ("" + node.name).replace(/_/g, " ")
+      displayName: ("" + node.name).replace(/_/g, " "),
+      nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -402,7 +408,8 @@ function getLinkItem(siteId, containerId, pathParts, node, populate)
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: -1,
-      displayName: node.properties["lnk:title"]
+      displayName: node.properties["lnk:title"],
+      nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
    item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -439,7 +446,8 @@ function getDataItem(siteId, containerId, pathParts, node, populate)
          createdOn: node.properties["cm:created"],
          createdByUser: node.properties["cm:creator"],
          size: -1,
-         displayName: node.properties["cm:title"]
+         displayName: node.properties["cm:title"],
+         nodeJSON: appUtils.toJSON(node, true)
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
       item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -461,6 +469,7 @@ function getDataItem(siteId, containerId, pathParts, node, populate)
          createdOn: node.properties["cm:created"],
          createdByUser: node.properties["cm:creator"],
          size: -1,
+         nodeJSON: appUtils.toJSON(node, true),
          displayName: node.name     // unfortunately does not have a common display name property
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);

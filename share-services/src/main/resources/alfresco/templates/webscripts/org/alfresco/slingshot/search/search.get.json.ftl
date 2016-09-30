@@ -24,6 +24,7 @@
 	[
 		<#list data.items as item>
 		{
+         "node": <#noescape>${item.nodeJSON}</#noescape>,
 			"nodeRef": "${item.nodeRef}",
 			"type": "${item.type}",
 			"name": "${item.name!''}",

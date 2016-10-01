@@ -125,15 +125,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             NodeRef recordFolder = (NodeRef)action.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
             if (recordFolder == null)
             {
-                final boolean finaltargetIsUnfiledRecords = targetIsUnfiledRecords;
-                recordFolder = getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-                {
-                    public NodeRef execute() throws Throwable
-                    {
-                        // get the reference to the record folder based on the relative path
-                        return createOrResolvePath(action, actionedUponNodeRef, finaltargetIsUnfiledRecords);
-                    }
-                }, false, true);
+                recordFolder = createOrResolvePath(action, actionedUponNodeRef, targetIsUnfiledRecords);
             }
 
             // now we have the reference to the target folder we can do some final checks to see if the action is valid
@@ -259,23 +251,29 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      * @param targetisUnfiledRecords  true is the target is in unfiled records
      * @return
      */
-    private NodeRef createOrResolvePath(Action action, NodeRef actionedUponNodeRef, boolean targetisUnfiledRecords)
+    private NodeRef createOrResolvePath(final Action action, final NodeRef actionedUponNodeRef, final boolean targetisUnfiledRecords)
     {
         // get the starting context
-        NodeRef context = getContext(action, actionedUponNodeRef, targetisUnfiledRecords);
+        final NodeRef context = getContext(action, actionedUponNodeRef, targetisUnfiledRecords);
         NodeRef path = context;
 
         // get the path we wish to resolve
         String pathParameter = (String)action.getParameterValue(PARAM_PATH);
-        String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
+        final String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
         if((pathElementsArray != null) && (pathElementsArray.length > 0))
         {
             // get the create parameter
             Boolean createValue = (Boolean)action.getParameterValue(PARAM_CREATE_RECORD_PATH);
-            boolean create = createValue == null ? false : createValue.booleanValue();
+            final boolean create = createValue == null ? false : createValue.booleanValue();
 
             // create or resolve the specified path
-            path = createOrResolvePath(action, context, actionedUponNodeRef, Arrays.asList(pathElementsArray), targetisUnfiledRecords, create, false);
+            path = getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+            {
+                public NodeRef execute() throws Throwable
+                {
+                    return createOrResolvePath(action, context, actionedUponNodeRef, Arrays.asList(pathElementsArray), targetisUnfiledRecords, create, false);
+                }
+            }, false, true);
         }
         return path;
     }

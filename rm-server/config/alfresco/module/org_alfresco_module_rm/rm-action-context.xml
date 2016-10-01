@@ -259,6 +259,7 @@
          depends-on="rmDestroyRecordsScheduledForDestructionCapability">
       <property name="capabilityService" ref="CapabilityService" />
       <property name="eagerContentStoreCleaner" ref="eagerContentStoreCleaner"/>
+      <property name="inplaceRecordService" ref="InplaceRecordService"/>
       <property name="ghostingEnabled">
          <value>${rm.ghosting.enabled}</value>
       </property>

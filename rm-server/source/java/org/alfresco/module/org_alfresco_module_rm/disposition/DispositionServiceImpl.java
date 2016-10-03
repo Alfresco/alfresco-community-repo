@@ -217,7 +217,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 DispositionActionDefinition nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
 
                 // initialise the details of the next disposition action
-                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
+                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition, true);
             }
         }
     }
@@ -618,10 +618,11 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      * Initialises the details of the next disposition action based on the details of a disposition
      * action definition.
      *
-     *  @param  nodeRef node reference
-     *  @param  dispositionActionDefinition disposition action definition
+     *  @param nodeRef node reference
+     *  @param dispositionActionDefinition disposition action definition
+     *  @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
      */
-    private void initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition)
+    private void initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition, boolean allowContextFromAsOf)
     {
         // Create the properties
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
@@ -635,7 +636,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
             // Get the period properties value
             QName periodProperty = dispositionActionDefinition.getPeriodProperty();
-            if (periodProperty != null)
+            if (periodProperty != null && (allowContextFromAsOf
+                        || !RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty)))
             {
                 // doesn't matter if the period property isn't set ... the asOfDate will get updated later
                 // when the value of the period property is set
@@ -898,63 +900,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
                         }
 
-                        // Create the properties
-                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
-
-                        // Calculate the asOf date
-                        Date asOfDate = null;
-                        Period period = nextDispositionActionDefinition.getPeriod();
-                        if (period != null)
-                        {
-                            Date contextDate = null;
-
-                            // Get the period properties value
-                            QName periodProperty = nextDispositionActionDefinition.getPeriodProperty();
-                            if (periodProperty != null &&
-                                !RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty))
-                            {
-                                // doesn't matter if the period property isn't set ... the asOfDate will get updated later
-                                // when the value of the period property is set
-                                contextDate = (Date) nodeService.getProperty(nodeRef, periodProperty);
-                            }
-                            else
-                            {
-                                // for now use 'NOW' as the default context date
-                                // TODO set the default period property ... cut off date or last disposition date depending on context
-                                contextDate = new Date();
-                            }
-
-                            // Calculate the as of date
-                            if (contextDate != null)
-                            {
-                                asOfDate = period.getNextDate(contextDate);
-                            }
-                        }
-
-                        // Set the property values
-                        props.put(PROP_DISPOSITION_ACTION_ID, nextDispositionActionDefinition.getId());
-                        props.put(PROP_DISPOSITION_ACTION, nextDispositionActionDefinition.getName());
-                        if (asOfDate != null)
-                        {
-                            props.put(PROP_DISPOSITION_AS_OF, asOfDate);
-                        }
-
-                        // Create a new disposition action object
-                        NodeRef dispositionActionNodeRef = nodeService.createNode(
-                                nodeRef,
-                                ASSOC_NEXT_DISPOSITION_ACTION,
-                                ASSOC_NEXT_DISPOSITION_ACTION,
-                                TYPE_DISPOSITION_ACTION,
-                                props).getChildRef();
-                        DispositionAction da = new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
-
-                        // Create the events
-                        List<RecordsManagementEvent> events = nextDispositionActionDefinition.getEvents();
-                        for (RecordsManagementEvent event : events)
-                        {
-                            // For every event create an entry on the action
-                            da.addEventCompletionDetails(event);
-                        }
+                        initialiseDispositionAction(nodeRef, nextDispositionActionDefinition, false);
                     }
                 }
 
@@ -1009,7 +955,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             recordFolderService.closeRecordFolder(nodeRef);
                             return null;
                         }
-                    });                    
+                    });
                 }
             }
             else

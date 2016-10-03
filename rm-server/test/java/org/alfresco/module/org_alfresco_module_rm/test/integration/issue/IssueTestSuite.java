@@ -50,7 +50,8 @@ import org.junit.runners.Suite.SuiteClasses;
     RM1914Test.class,
     //RM2190Test.class,
     RM2192Test.class,
-    RM3314Test.class
+    RM3314Test.class,
+    RM4101Test.class
 })
 public class IssueTestSuite
 {

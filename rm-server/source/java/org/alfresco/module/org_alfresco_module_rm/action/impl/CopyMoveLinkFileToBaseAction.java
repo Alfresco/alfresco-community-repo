@@ -17,12 +17,10 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.util.StringUtils;
 
 /**
@@ -34,9 +32,6 @@ import org.springframework.util.StringUtils;
 public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstractBase
 {
     private static Log logger = LogFactory.getLog(CopyMoveLinkFileToBaseAction.class);
-
-    /** Retrying transaction helper */
-    private RetryingTransactionHelper retryingTransactionHelper;
 
     /** action parameters */
     public static final String PARAM_DESTINATION_RECORD_FOLDER = "destinationRecordFolder";
@@ -95,14 +90,6 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     }
 
     /**
-     * @param retryingTransactionHelper retrying transaction helper
-     */
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
@@ -138,25 +125,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             NodeRef recordFolder = (NodeRef)action.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
             if (recordFolder == null)
             {
-                final boolean finaltargetIsUnfiledRecords = targetIsUnfiledRecords;
-                recordFolder = retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-                {
-                    public NodeRef execute() throws Throwable
-                    {
-                        NodeRef result = null;
-                        try
-                        {
-                            // get the reference to the record folder based on the relative path
-                            result = createOrResolvePath(action, actionedUponNodeRef, finaltargetIsUnfiledRecords);
-                        }
-                        catch (DuplicateChildNodeNameException ex)
-                        {
-                            throw new ConcurrencyFailureException("Cannot create or resolve path.", ex);
-                        }
-
-                        return result;
-                    }
-                }, false, true);
+                recordFolder = createOrResolvePath(action, actionedUponNodeRef, targetIsUnfiledRecords);
             }
 
             // now we have the reference to the target folder we can do some final checks to see if the action is valid
@@ -170,30 +139,26 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
                 {
                     try
                     {
-                        synchronized (this)
+                        if (getMode() == CopyMoveLinkFileToActionMode.MOVE)
                         {
-                            if (getMode() == CopyMoveLinkFileToActionMode.MOVE)
-                            {
-                                fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
-                            }
-                            else if (getMode() == CopyMoveLinkFileToActionMode.COPY)
-                            {
-                                fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
-                            }
-                            else if (getMode() == CopyMoveLinkFileToActionMode.LINK)
-                            {
-                                getRecordService().link(actionedUponNodeRef, finalRecordFolder);
-                            }
+                            fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
+                        }
+                        else if (getMode() == CopyMoveLinkFileToActionMode.COPY)
+                        {
+                            fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
+                        }
+                        else if (getMode() == CopyMoveLinkFileToActionMode.LINK)
+                        {
+                            getRecordService().link(actionedUponNodeRef, finalRecordFolder);
                         }
                     }
                     catch (FileNotFoundException fileNotFound)
                     {
                         throw new AlfrescoRuntimeException("Unable to execute file to action, because the " + (mode == CopyMoveLinkFileToActionMode.MOVE ? "move" : "copy") + " operation failed.", fileNotFound);
                     }
-            
+
                     return null;
                 }
-
             });
         }
     }
@@ -283,23 +248,29 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      * @param targetisUnfiledRecords  true is the target is in unfiled records
      * @return
      */
-    private NodeRef createOrResolvePath(Action action, NodeRef actionedUponNodeRef, boolean targetisUnfiledRecords)
+    private NodeRef createOrResolvePath(final Action action, final NodeRef actionedUponNodeRef, final boolean targetisUnfiledRecords)
     {
         // get the starting context
-        NodeRef context = getContext(action, actionedUponNodeRef, targetisUnfiledRecords);
+        final NodeRef context = getContext(action, actionedUponNodeRef, targetisUnfiledRecords);
         NodeRef path = context;
 
         // get the path we wish to resolve
         String pathParameter = (String)action.getParameterValue(PARAM_PATH);
-        String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
+        final String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
         if((pathElementsArray != null) && (pathElementsArray.length > 0))
         {
             // get the create parameter
             Boolean createValue = (Boolean)action.getParameterValue(PARAM_CREATE_RECORD_PATH);
-            boolean create = createValue == null ? false : createValue.booleanValue();
+            final boolean create = createValue == null ? false : createValue.booleanValue();
 
             // create or resolve the specified path
-            path = createOrResolvePath(action, context, actionedUponNodeRef, Arrays.asList(pathElementsArray), targetisUnfiledRecords, create, false);
+            path = getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+            {
+                public NodeRef execute() throws Throwable
+                {
+                    return createOrResolvePath(action, context, actionedUponNodeRef, Arrays.asList(pathElementsArray), targetisUnfiledRecords, create, false);
+                }
+            }, false, true);
         }
         return path;
     }
@@ -388,7 +359,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
                 NodeRef child = getChild(parent, childName);
                 if (child == null)
                 {
-                    if(targetisUnfiledRecords)
+                    if (targetisUnfiledRecords)
                     {
                         // create unfiled folder
                         child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();

@@ -1037,7 +1037,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private NodeRef getLatestVersionRecord(NodeRef nodeRef)
     {
         NodeRef versionRecord = null;
-
+       
+ 
+        recordableVersionService.createFreezeVersion(nodeRef);
         // wire record up to previous record
         VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
         if (versionHistory != null)

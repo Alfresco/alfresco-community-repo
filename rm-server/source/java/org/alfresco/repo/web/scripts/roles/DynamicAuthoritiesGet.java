@@ -18,11 +18,21 @@
  */
 package org.alfresco.repo.web.scripts.roles;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -33,19 +43,26 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.web.scripts.content.ContentStreamer;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Format;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * Webscript used for removing dynamic authorities from the records.
@@ -54,7 +71,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @since 2.3.0.7
  */
 @SuppressWarnings("deprecation")
-public class DynamicAuthoritiesGet extends DeclarativeWebScript implements RecordsManagementModel
+public class DynamicAuthoritiesGet extends AbstractWebScript implements RecordsManagementModel
 {
     private static final String MESSAGE_PARAMETER_BATCHSIZE_GREATER_THAN_ZERO = "Parameter batchsize should be a number greater than 0.";
     private static final String MESSAGE_PROCESSING_BEGIN = "Processing - BEGIN";
@@ -63,14 +80,16 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
     private static final String MESSAGE_PROCESSING_RECORD_BEGIN_TEMPLATE = "Processing record {0} - BEGIN";
     private static final String MESSAGE_BATCHSIZE_IS_INVALID = "Parameter batchsize is invalid.";
     private static final String MESSAGE_BATCHSIZE_IS_MANDATORY = "Parameter batchsize is mandatory";
+    private static final String MESSAGE_NODE_REF_DOES_NOT_EXIST_TEMPLATE = "Parameter parentNodeRef = {0} does not exist.";
     private static final String SUCCESS_STATUS = "success";
-    private static final String FAILED_STATUS = "failed";
     /**
      * The logger
      */
     private static Log logger = LogFactory.getLog(DynamicAuthoritiesGet.class);
     private static final String BATCH_SIZE = "batchsize";
     private static final String TOTAL_NUMBER_TO_PROCESS = "maxProcessedRecords";
+    private static final String PARAM_EXPORT = "export";
+    private static final String PARAM_PARENT_NODE_REF = "parentNodeRef";
     private static final String MODEL_STATUS = "responsestatus";
     private static final String MODEL_MESSAGE = "message";
     private static final String MESSAGE_ALL_TEMPLATE = "Processed {0} records.";
@@ -86,50 +105,60 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
     private PermissionService permissionService;
     private ExtendedSecurityService extendedSecurityService;
     private TransactionService transactionService;
+    /** Content Streamer */
+    protected ContentStreamer contentStreamer;
+    private FileFolderService fileFolderService;
 
     /** service setters */
-    public void setPatchDAO(PatchDAO patchDAO) { this.patchDAO = patchDAO; }
-    public void setNodeDAO(NodeDAO nodeDAO) { this.nodeDAO = nodeDAO; }
-    public void setQnameDAO(QNameDAO qnameDAO) { this.qnameDAO = qnameDAO; }
-    public void setNodeService(NodeService nodeService) { this.nodeService = nodeService; }
-    public void setPermissionService(PermissionService permissionService) { this.permissionService = permissionService; }
-    public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService) { this.extendedSecurityService = extendedSecurityService; }
-    public void setTransactionService(TransactionService transactionService) { this.transactionService = transactionService; }
+    public void setPatchDAO(PatchDAO patchDAO)
+    {
+        this.patchDAO = patchDAO;
+    }
 
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
+    public void setQnameDAO(QNameDAO qnameDAO)
+    {
+        this.qnameDAO = qnameDAO;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
+    {
+        this.extendedSecurityService = extendedSecurityService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    public void setContentStreamer(ContentStreamer contentStreamer)
+    {
+        this.contentStreamer = contentStreamer;
+    }
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    protected Map<String, Object> buildModel(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
         Map<String, Object> model = new HashMap<String, Object>();
-        String batchSizeStr = req.getParameter(BATCH_SIZE);
-        String totalToBeProcessedRecordsStr = req.getParameter(TOTAL_NUMBER_TO_PROCESS);
-
-        Long size = 0L;
-        if (StringUtils.isBlank(batchSizeStr))
-        {
-            model.put(MODEL_STATUS, FAILED_STATUS);
-            model.put(MODEL_MESSAGE, MESSAGE_BATCHSIZE_IS_MANDATORY);
-            logger.info(MESSAGE_BATCHSIZE_IS_MANDATORY);
-            return model;
-        }
-        try
-        {
-            size = Long.parseLong(batchSizeStr);
-            if(size <= 0)
-            {
-                model.put(MODEL_STATUS, FAILED_STATUS);
-                model.put(MODEL_MESSAGE, MESSAGE_PARAMETER_BATCHSIZE_GREATER_THAN_ZERO);
-                logger.info(MESSAGE_PARAMETER_BATCHSIZE_GREATER_THAN_ZERO);
-                return model;
-            }
-        }
-        catch(NumberFormatException ex)
-        {
-            model.put(MODEL_STATUS, FAILED_STATUS);
-            model.put(MODEL_MESSAGE, MESSAGE_BATCHSIZE_IS_INVALID);
-            logger.info(MESSAGE_BATCHSIZE_IS_INVALID);
-            return model;
-        }
-        final Long batchSize = size;
+        final Long batchSize = getBatchSizeParameter(req);
         // get the max node id and the extended security aspect
         Long maxNodeId = patchDAO.getMaxAdmNodeID();
         final Pair<Long, QName> recordAspectPair = qnameDAO.getQName(ASPECT_EXTENDED_SECURITY);
@@ -141,6 +170,201 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
             return model;
         }
 
+        Long totalNumberOfRecordsToProcess = getMaxToProccessParameter(req, batchSize);
+
+        boolean attach = getExportParameter(req);
+
+        File file = TempFileProvider.createTempFile("processedNodes_", ".csv");
+        FileWriter writer = new FileWriter(file);
+        BufferedWriter out = new BufferedWriter(writer);
+        List<NodeRef> processedNodes = new ArrayList<NodeRef>();
+        try
+        {
+            NodeRef parentNodeRef = getParentNodeRefParameter(req);
+            if (parentNodeRef != null)
+            {
+                processedNodes = processChildrenNodes(parentNodeRef, batchSize.intValue(), recordAspectPair,
+                            totalNumberOfRecordsToProcess.intValue(), out, attach);
+            }
+            else
+            {
+                processedNodes = processNodes(batchSize, maxNodeId, recordAspectPair, totalNumberOfRecordsToProcess,
+                            out, attach);
+            }
+        }
+        finally
+        {
+            out.close();
+        }
+
+        int processedNodesSize = processedNodes.size();
+
+        String message = "";
+        if (totalNumberOfRecordsToProcess == 0
+                    || (totalNumberOfRecordsToProcess > 0 && processedNodesSize < totalNumberOfRecordsToProcess))
+        {
+            message = MessageFormat.format(MESSAGE_ALL_TEMPLATE, processedNodesSize);
+        }
+        if (totalNumberOfRecordsToProcess > 0 && totalNumberOfRecordsToProcess == processedNodesSize)
+        {
+            message = MessageFormat.format(MESSAGE_PARTIAL_TEMPLATE, totalNumberOfRecordsToProcess);
+        }
+        model.put(MODEL_STATUS, SUCCESS_STATUS);
+        model.put(MODEL_MESSAGE, message);
+        logger.info(message);
+
+        if (attach)
+        {
+            try
+            {
+                String fileName = file.getName();
+                contentStreamer.streamContent(req, res, file, null, attach, fileName, model);
+                model = null;
+            }
+            finally
+            {
+                if (file != null)
+                {
+                    file.delete();
+                }
+            }
+        }
+        return model;
+    }
+
+    /**
+     * Get export parameter from the request
+     *
+     * @param req
+     * @return
+     */
+    protected boolean getExportParameter(WebScriptRequest req)
+    {
+        boolean attach = false;
+        String export = req.getParameter(PARAM_EXPORT);
+        if (export != null && Boolean.parseBoolean(export))
+        {
+            attach = true;
+        }
+        return attach;
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see org.alfresco.repo.web.scripts.content.StreamContent#execute(org.springframework.extensions.webscripts.
+     * WebScriptRequest, org.springframework.extensions.webscripts.WebScriptResponse)
+     */
+    @Override
+    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
+    {
+        // retrieve requested format
+        String format = req.getFormat();
+
+        try
+        {
+            String mimetype = getContainer().getFormatRegistry().getMimeType(req.getAgent(), format);
+            if (mimetype == null) 
+            { 
+                throw new WebScriptException("Web Script format '" + format + "' is not registered");
+            }
+
+            // construct model for script / template
+            Status status = new Status();
+            Cache cache = new Cache(getDescription().getRequiredCache());
+            Map<String, Object> model = buildModel(req, res);
+            if (model == null) { return; }
+            model.put("status", status);
+            model.put("cache", cache);
+
+            Map<String, Object> templateModel = createTemplateParameters(req, res, model);
+
+            // render output
+            int statusCode = status.getCode();
+            if (statusCode != HttpServletResponse.SC_OK && !req.forceSuccessStatus())
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Force success status header in response: " + req.forceSuccessStatus());
+                    logger.debug("Setting status " + statusCode);
+                }
+                res.setStatus(statusCode);
+            }
+
+            // apply location
+            String location = status.getLocation();
+            if (location != null && location.length() > 0)
+            {
+                if (logger.isDebugEnabled()) logger.debug("Setting location to " + location);
+                res.setHeader(WebScriptResponse.HEADER_LOCATION, location);
+            }
+
+            // apply cache
+            res.setCache(cache);
+
+            String callback = null;
+            if (getContainer().allowCallbacks())
+            {
+                callback = req.getJSONCallback();
+            }
+            if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null)
+            {
+                if (logger.isDebugEnabled()) logger.debug("Rendering JSON callback response: content type="
+                            + Format.JAVASCRIPT.mimetype() + ", status=" + statusCode + ", callback=" + callback);
+
+                // NOTE: special case for wrapping JSON results in a javascript function callback
+                res.setContentType(Format.JAVASCRIPT.mimetype() + ";charset=UTF-8");
+                res.getWriter().write((callback + "("));
+            }
+            else
+            {
+                if (logger.isDebugEnabled())
+                    logger.debug("Rendering response: content type=" + mimetype + ", status=" + statusCode);
+
+                res.setContentType(mimetype + ";charset=UTF-8");
+            }
+
+            // render response according to requested format
+            renderFormatTemplate(format, templateModel, res.getWriter());
+
+            if (format.equals(WebScriptResponse.JSON_FORMAT) && callback != null)
+            {
+                // NOTE: special case for wrapping JSON results in a javascript function callback
+                res.getWriter().write(")");
+            }
+        }
+        catch (Throwable e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                StringWriter stack = new StringWriter();
+                e.printStackTrace(new PrintWriter(stack));
+                logger.debug("Caught exception; decorating with appropriate status template : " + stack.toString());
+            }
+
+            throw createStatusException(e, req, res);
+        }
+    }
+
+    protected void renderFormatTemplate(String format, Map<String, Object> model, Writer writer)
+    {
+        format = (format == null) ? "" : format;
+
+        String templatePath = getDescription().getId() + "." + format;
+
+        if (logger.isDebugEnabled()) logger.debug("Rendering template '" + templatePath + "'");
+
+        renderTemplate(templatePath, model, writer);
+    }
+
+    /**
+     * Obtain maximum of the records to be processed from the request if it is specified or bachsize value otherwise
+     *
+     * @param req
+     * @return maximum of the records to be processed from the request if it is specified or bachsize value otherwise
+     */
+    protected Long getMaxToProccessParameter(WebScriptRequest req, final Long batchSize)
+    {
+        String totalToBeProcessedRecordsStr = req.getParameter(TOTAL_NUMBER_TO_PROCESS);
         //default total number of records to be processed to batch size value
         Long totalNumberOfRecordsToProcess = batchSize;
         if (StringUtils.isNotBlank(totalToBeProcessedRecordsStr))
@@ -154,7 +378,77 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
                 //do nothing here, the value will remain 0L in this case
             }
         }
+        return totalNumberOfRecordsToProcess;
+    }
 
+    /**
+     * Obtain batchsize parameter from the request.
+     *
+     * @param req
+     * @return batchsize parameter from the request
+     */
+    protected Long getBatchSizeParameter(WebScriptRequest req)
+    {
+        String batchSizeStr = req.getParameter(BATCH_SIZE);
+        Long size = 0L;
+        if (StringUtils.isBlank(batchSizeStr))
+        {
+            logger.info(MESSAGE_BATCHSIZE_IS_MANDATORY);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, MESSAGE_BATCHSIZE_IS_MANDATORY);
+        }
+        try
+        {
+            size = Long.parseLong(batchSizeStr);
+            if (size <= 0)
+            {
+                logger.info(MESSAGE_PARAMETER_BATCHSIZE_GREATER_THAN_ZERO);
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, MESSAGE_PARAMETER_BATCHSIZE_GREATER_THAN_ZERO);
+            }
+        }
+        catch (NumberFormatException ex)
+        {
+            logger.info(MESSAGE_BATCHSIZE_IS_INVALID);
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, MESSAGE_BATCHSIZE_IS_INVALID);
+        }
+        return size;
+    }
+
+    /**
+     * Get parentNodeRef parameter from the request
+     *
+     * @param req
+     * @return
+     */
+    protected NodeRef getParentNodeRefParameter(WebScriptRequest req)
+    {
+        String parentNodeRefStr = req.getParameter(PARAM_PARENT_NODE_REF);
+        NodeRef parentNodeRef = null;
+        if (StringUtils.isNotBlank(parentNodeRefStr))
+        {
+            parentNodeRef = new NodeRef(parentNodeRefStr);
+            if(!nodeService.exists(parentNodeRef))
+            {
+                String message = MessageFormat.format(MESSAGE_NODE_REF_DOES_NOT_EXIST_TEMPLATE, parentNodeRef.toString());
+                logger.info(message);
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, message);
+            }
+        }
+        return parentNodeRef;
+    }
+
+    /**
+     * Process nodes all nodes or the maximum number of nodes specified by batchsize or totalNumberOfRecordsToProcess
+     * parameters
+     *
+     * @param batchSize
+     * @param maxNodeId
+     * @param recordAspectPair
+     * @param totalNumberOfRecordsToProcess
+     * @return the list of processed nodes
+     */
+    protected List<NodeRef> processNodes(final Long batchSize, Long maxNodeId, final Pair<Long, QName> recordAspectPair,
+                Long totalNumberOfRecordsToProcess, final BufferedWriter out, final boolean attach)
+    {
         final Long maxRecordsToProcess = totalNumberOfRecordsToProcess;
         final List<NodeRef> processedNodes = new ArrayList<NodeRef>();
         logger.info(MESSAGE_PROCESSING_BEGIN);
@@ -172,7 +466,8 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
                 public Void execute() throws Throwable
                 {
                     // get the nodes with the extended security aspect applied
-                    List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(recordAspectPair.getFirst(), currentIndex, currentIndex + batchSize);
+                    List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(recordAspectPair.getFirst(), currentIndex,
+                                currentIndex + batchSize);
 
                     // process each one
                     for (Long nodeId : nodeIds)
@@ -187,29 +482,77 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
                         processNode(record);
                         logger.info(MessageFormat.format(MESSAGE_PROCESSING_RECORD_END_TEMPLATE, recordName));
                         processedNodes.add(record);
+                        if (attach)
+                        {
+                            out.write(recordName);
+                            out.write(",");
+                            out.write(record.toString());
+                            out.write("\n");
+                        }
                     }
 
                     return null;
                 }
-            },
-            false,  // read only
+            }, false, // read only
             true); // requires new
         }
         logger.info(MESSAGE_PROCESSING_END);
-        int processedNodesSize = processedNodes.size();
-        String message = "";
-        if(totalNumberOfRecordsToProcess == 0 || (totalNumberOfRecordsToProcess > 0 && processedNodesSize < totalNumberOfRecordsToProcess))
+        return processedNodes;
+    }
+
+    protected List<NodeRef> processChildrenNodes(NodeRef parentNodeRef, final int batchSize,
+                final Pair<Long, QName> recordAspectPair, final int maxRecordsToProcess, final BufferedWriter out,
+                final boolean attach)
+    {
+        final List<NodeRef> processedNodes = new ArrayList<NodeRef>();
+        final List<FileInfo> children = fileFolderService.search(parentNodeRef, "*", /*filesSearch*/true, /*folderSearch*/true, /*includeSubfolders*/true);
+        logger.info(MESSAGE_PROCESSING_BEGIN);
+        // by batch size
+        for (int i = 0; i < children.size(); i += batchSize)
         {
-            message = MessageFormat.format(MESSAGE_ALL_TEMPLATE, processedNodesSize);
+            if (maxRecordsToProcess != 0 && processedNodes.size() >= maxRecordsToProcess)
+            {
+                break;
+            }
+            final int currentIndex = i;
+
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    List<FileInfo> nodes = children.subList(currentIndex, Math.min(currentIndex + batchSize, children.size()));
+                    // process each one
+                    for (FileInfo node : nodes)
+                    {
+                        if (maxRecordsToProcess != 0 && processedNodes.size() >= maxRecordsToProcess)
+                        {
+                            break;
+                        }
+                        NodeRef record = node.getNodeRef();
+                        if (nodeService.hasAspect(record, recordAspectPair.getSecond()))
+                        {
+                            String recordName = (String) nodeService.getProperty(record, ContentModel.PROP_NAME);
+                            logger.info(MessageFormat.format(MESSAGE_PROCESSING_RECORD_BEGIN_TEMPLATE, recordName));
+                            processNode(record);
+                            logger.info(MessageFormat.format(MESSAGE_PROCESSING_RECORD_END_TEMPLATE, recordName));
+                            processedNodes.add(record);
+                            if (attach)
+                            {
+                                out.write(recordName);
+                                out.write(",");
+                                out.write(record.toString());
+                                out.write("\n");
+                            }
+                        }
+                    }
+
+                    return null;
+                }
+            }, false, // read only
+                        true); // requires new
         }
-        if (totalNumberOfRecordsToProcess > 0 && totalNumberOfRecordsToProcess == processedNodesSize)
-        {
-            message = MessageFormat.format(MESSAGE_PARTIAL_TEMPLATE, totalNumberOfRecordsToProcess);
-        }
-        model.put(MODEL_STATUS, SUCCESS_STATUS);
-        model.put(MODEL_MESSAGE, message);
-        logger.info(message);
-        return model;
+        logger.info(MESSAGE_PROCESSING_END);
+        return processedNodes;
     }
 
     /**
@@ -218,7 +561,7 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
      * @param nodeRef
      */
     @SuppressWarnings({ "unchecked"})
-    private void processNode(NodeRef nodeRef)
+    protected void processNode(NodeRef nodeRef)
     {
         // get the reader/writer data
         Map<String, Integer> readers = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
@@ -234,8 +577,18 @@ public class DynamicAuthoritiesGet extends DeclarativeWebScript implements Recor
         // if record then ...
         if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
         {
+            Set<String> readersKeySet = null;
+            if (readers != null)
+        {
+                readersKeySet = readers.keySet();
+            }
+            Set<String> writersKeySet = null;
+            if (writers != null)
+            {
+                writersKeySet = writers.keySet();
+            }
             // re-set extended security via API
-            extendedSecurityService.set(nodeRef, readers.keySet(), writers.keySet());
+            extendedSecurityService.set(nodeRef, readersKeySet, writersKeySet);
         }
     }
 }

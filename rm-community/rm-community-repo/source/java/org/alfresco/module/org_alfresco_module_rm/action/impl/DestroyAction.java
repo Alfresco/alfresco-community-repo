@@ -36,6 +36,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.content.ContentDestructionComponent;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -59,9 +60,12 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     
     /** Capability service */
     private CapabilityService capabilityService;
-    
+
     /** Recordable version service */
     private RecordableVersionService recordableVersionService;
+
+    /** Inplace record service */
+    private InplaceRecordService inplaceRecordService;
 
     /** Indicates if ghosting is enabled or not */
     private boolean ghostingEnabled = true;
@@ -81,13 +85,21 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param recordableVersionService  recordable version service
      */
     public void setRecordableVersionService(RecordableVersionService recordableVersionService)
     {
         this.recordableVersionService = recordableVersionService;
+    }
+
+    /**
+     * @param inplaceRecordService  inplace record service
+     */
+    public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
+    {
+        this.inplaceRecordService = inplaceRecordService;
     }
 
     /**
@@ -168,7 +180,10 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
             {
                 recordableVersionService.destroyRecordedVersion(version);
             }
-            
+
+            // Hide from inplace users to give the impression of destruction
+            inplaceRecordService.hideRecord(record);
+
             // Add the ghosted aspect
             getNodeService().addAspect(record, ASPECT_GHOSTED, null);
             

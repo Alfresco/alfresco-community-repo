@@ -21,6 +21,7 @@
    <!-- extended version service bean definition -->
    <bean id="rm.versionService" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl">
       <property name="filePlanService" ref="FilePlanService" />
+      <property name="enableAutoVersionOnRecordCreation" value="${rm.enableAutoVersionOnRecordCreation}" /> 
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
       <property name="relationshipService" ref="RelationshipService" />
       <property name="recordService" ref="RecordService" />
@@ -28,6 +29,7 @@
       <property name="cmObjectType" ref="cm.object" />
       <property name="extendedPermissionService" ref="ExtendedPermissionService" />
       <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+      
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionService" />
@@ -77,6 +79,7 @@
          <value>
             <![CDATA[
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isCurrentVersionRecorded=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isEnableAutoVersionOnRecordCreation=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isRecordedVersion=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.getVersionRecord=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.getRecordedVersion=RM_ALLOW

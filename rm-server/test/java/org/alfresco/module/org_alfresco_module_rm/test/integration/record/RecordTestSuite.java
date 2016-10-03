@@ -37,7 +37,9 @@ import org.junit.runners.Suite.SuiteClasses;
     HideInplaceRecordTest.class,
     MoveInplaceRecordTest.class,
     ViewRecordTest.class,
-    LinkRecordTest.class
+    LinkRecordTest.class,
+    CreateInplaceRecordTest.class,
+    InplaceRecordPermissionTest.class
 })
 public class RecordTestSuite
 {

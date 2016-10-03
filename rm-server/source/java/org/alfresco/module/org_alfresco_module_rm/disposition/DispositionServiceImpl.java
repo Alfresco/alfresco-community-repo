@@ -53,8 +53,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Disposition service implementation.
@@ -68,7 +68,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                                                RecordsManagementPolicies.OnFileRecord
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(DispositionServiceImpl.class);
+    Logger LOGGER = LoggerFactory.getLogger(DispositionServiceImpl.class);
 
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
@@ -387,12 +387,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     // TODO in the future we should be able to support disposition schedule reuse, but for now just warn that
                     //      only the first disposition schedule will be considered
-                    if (logger.isWarnEnabled())
-                    {
-                        logger.warn("Disposition schedule has more than one associated records management container.  " +
-                        		    "This is not currently supported so only the first container will be considered. " +
-                        		    "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
-                    }
+                    LOGGER.warn("Disposition schedule has more than one associated records management container.  "
+                                + "This is not currently supported so only the first container will be considered. "
+                                + "(dispositionScheduleNodeRef={})",
+                                dispositionSchedule.getNodeRef().toString());
                 }
 
                 // Get the container reference

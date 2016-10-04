@@ -55,8 +55,9 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given versionable content with a non-recorded latest version When I declare a version record Then the latest
-     * version is recorded and a record is created
+     * Given versionable content with a non-recorded latest version 
+     * When I declare a version record 
+     * Then the latest version is recorded and a record is created
      */
     public void testDeclareLatestVersionAsRecord()
     {
@@ -101,8 +102,9 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given versionable content with a recorded latest version When I declare a version record Then nothing happens
-     * since the latest version is already recorded And a warning is logged
+     * Given versionable content with a recorded latest version 
+     * When I declare a version record 
+     * Then nothing happens since the latest version is already recorded And a warning is logged
      */
     public void testDeclareLatestVersionAsRecordButAlreadyRecorded()
     {
@@ -148,8 +150,9 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given that a document is a specialized type When version is declared as a record Then the record is the same type
-     * as the source document
+     * Given that a document is a specialized type 
+     * When version is declared as a record 
+     * Then the record is the same type as the source document
      * 
      * @see https://issues.alfresco.com/jira/browse/RM-2194
      */
@@ -205,6 +208,11 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
+     * 
+     * Given versionable content with a recorded latest version with auto-version set on true
+     * When I declare this version record 
+     * Then a new minor version is created for document 
+     *
      * @see https://issues.alfresco.com/jira/browse/RM-2368
      */
     public void testCreateRecordFromLatestVersion()
@@ -261,8 +269,6 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
 
             public void when()
             {
-                // check1
-                assertTrue("Frozen modification date is the same with initial document ", modificationDate.getTime() == frozenModifDate.getTime());
                 // current node is not dirty
                 assertFalse(isCurrentVersionDirty(myDocument));
 
@@ -280,8 +286,6 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 {
                     assertFalse(isCurrentVersionDirty(myDocument));
                 }
-
-                assertFalse(recordableVersionService.isCurrentVersionRecorded(myDocument));
                 // test RM-2368
                 versionedRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, myDocument);
 

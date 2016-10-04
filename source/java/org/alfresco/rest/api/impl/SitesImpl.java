@@ -29,9 +29,11 @@ import java.io.Serializable;
 import java.text.Collator;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,9 @@ import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.query.PageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.node.getchildren.FilterPropBoolean;
+import org.alfresco.repo.node.getchildren.FilterPropString;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -53,6 +58,7 @@ import org.alfresco.repo.site.SiteMembershipComparator;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.repo.site.SiteServiceImpl;
+import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
@@ -72,6 +78,9 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
+import org.alfresco.rest.framework.resource.parameters.where.Query;
+import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
+import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -138,6 +147,8 @@ public class SitesImpl implements Sites
         SORT_SITE_MEMBERSHIP = Collections.unmodifiableMap(aMap);
     }
 
+    // list children filtering (via where clause)
+    private final static Set<String> LIST_SITES_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_VISIBILITY }));
 
     protected Nodes nodes;
     protected People people;
@@ -548,14 +559,22 @@ public class SitesImpl implements Sites
 
         PageDetails pageDetails = PageDetails.getPageDetails(pagingRequest, totalSize);
         List<MemberOfSite> ret = new ArrayList<>(totalSize);
-        
+
+        List<FilterProp> filterProps = getFilterPropListOfSites(parameters);
+
         Iterator<SiteMembership> it = sortedSiteMembers.iterator();
-        for(int counter = 0; counter < pageDetails.getEnd() && it.hasNext(); counter++)
+        for(int counter = 0; counter < pageDetails.getEnd() && it.hasNext();)
         {
             SiteMembership siteMember = it.next();
 
+            if (filterProps != null && !includeFilter(siteMember, filterProps))
+            {
+                continue;
+            }
+
             if(counter < pageDetails.getSkipCount())
             {
+                counter++;
                 continue;
             }
             
@@ -567,6 +586,8 @@ public class SitesImpl implements Sites
             SiteInfo siteInfo = siteMember.getSiteInfo();
             MemberOfSite memberOfSite = new MemberOfSite(siteInfo.getShortName(), siteInfo.getNodeRef(), siteMember.getRole());
             ret.add(memberOfSite);
+
+            counter++;
         }
         return CollectionWithPagingInfo.asPaged(paging, ret, pageDetails.hasMoreItems(), null);
 
@@ -685,8 +706,10 @@ public class SitesImpl implements Sites
             // default sort order
             sortProps.add(new Pair<>(ContentModel.PROP_TITLE, Boolean.TRUE));
         }
-        
-        final PagingResults<SiteInfo> pagingResult = siteService.listSites(null, sortProps, pagingRequest);
+
+        List<FilterProp> filterProps = getFilterPropListOfSites(parameters);
+
+        final PagingResults<SiteInfo> pagingResult = siteService.listSites(filterProps, sortProps, pagingRequest);
         final List<SiteInfo> sites = pagingResult.getPage();
         int totalItems = pagingResult.getTotalResultCount().getFirst();
         final String personId = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -713,6 +736,132 @@ public class SitesImpl implements Sites
         };
 
         return CollectionWithPagingInfo.asPaged(paging, page, pagingResult.hasMoreItems(), totalItems);
+    }
+
+    private SiteVisibility getSiteVisibilityFromParam(String siteVisibilityStr)
+    {
+        SiteVisibility visibility;
+        try
+        {
+            // Create the enum value from the string
+            visibility = SiteVisibility.valueOf(siteVisibilityStr);
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new InvalidArgumentException("Site visibility is invalid (expected eg. PUBLIC, PRIVATE, MODERATED)");
+        }
+
+        return visibility;
+    }
+
+    private List<FilterProp> getFilterPropListOfSites(final Parameters parameters)
+    {
+        List<FilterProp> filterProps = null;
+        Query q = parameters.getQuery();
+        if (q != null)
+        {
+            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(LIST_SITES_EQUALS_QUERY_PROPERTIES, null);
+            QueryHelper.walk(q, propertyWalker);
+
+            String siteVisibilityStr = propertyWalker.getProperty(PARAM_VISIBILITY, WhereClauseParser.EQUALS, String.class);
+            if (siteVisibilityStr != null && !siteVisibilityStr.isEmpty())
+            {
+                SiteVisibility siteVisibility = getSiteVisibilityFromParam(siteVisibilityStr);
+
+                filterProps = new ArrayList<FilterProp>();
+                filterProps.add(new FilterPropString(SiteModel.PROP_SITE_VISIBILITY, siteVisibility.name(), FilterPropString.FilterTypeString.EQUALS));
+            }
+        }
+
+        return filterProps;
+    }
+
+    private boolean includeFilter(SiteMembership siteMembership, List<FilterProp> filterProps)
+    {
+        Map<QName, Serializable> propVals = new HashMap<>();
+        propVals.put(SiteModel.PROP_SITE_VISIBILITY, siteMembership.getSiteInfo().getVisibility().name());
+
+        return includeFilter(propVals, filterProps);
+    }
+
+    // note: currently inclusive and OR-based
+    private boolean includeFilter(Map<QName, Serializable> propVals, List<FilterProp> filterProps)
+    {
+        for (FilterProp filterProp : filterProps)
+        {
+            Serializable propVal = propVals.get(filterProp.getPropName());
+            if (propVal != null)
+            {
+                if ((filterProp instanceof FilterPropString) && (propVal instanceof String))
+                {
+                    String val = (String)propVal;
+                    String filter = (String)filterProp.getPropVal();
+
+                    switch ((FilterPropString.FilterTypeString)filterProp.getFilterType())
+                    {
+                    case STARTSWITH:
+                        if (val.startsWith(filter))
+                        {
+                            return true;
+                        }
+                        break;
+                    case STARTSWITH_IGNORECASE:
+                        if (val.toLowerCase().startsWith(filter.toLowerCase()))
+                        {
+                            return true;
+                        }
+                        break;
+                    case EQUALS:
+                        if (val.equals(filter))
+                        {
+                            return true;
+                        }
+                        break;
+                    case EQUALS_IGNORECASE:
+                        if (val.equalsIgnoreCase(filter))
+                        {
+                            return true;
+                        }
+                        break;
+                    case ENDSWITH:
+                        if (val.endsWith(filter))
+                        {
+                            return true;
+                        }
+                        break;
+                    case ENDSWITH_IGNORECASE:
+                        if (val.toLowerCase().endsWith(filter.toLowerCase()))
+                        {
+                            return true;
+                        }
+                        break;
+                    case MATCHES:
+                        if (val.matches(filter))
+                        {
+                            return true;
+                        }
+                        break;
+                    case MATCHES_IGNORECASE:
+                        if (val.toLowerCase().matches(filter.toLowerCase()))
+                        {
+                            return true;
+                        }
+                        break;
+                    default:
+                    }
+                }
+            }
+
+            if ((filterProp instanceof FilterPropBoolean) && (propVal instanceof Boolean))
+            {
+                Boolean val = (Boolean)propVal;
+                Boolean filter = (Boolean)filterProp.getPropVal();
+
+                return (val == filter);
+            }
+        }
+
+        return false;
     }
 
     public FavouriteSite getFavouriteSite(String personId, String siteId)

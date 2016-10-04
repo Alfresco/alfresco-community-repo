@@ -41,10 +41,18 @@
        </property>
     </bean>
 
-    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.RMNodesEntityResource">
-     </bean>
+    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.RMFileplanComponentsEntityResource">
+       <property name="nodes" ref="rm.Nodes" />
+    </bean>
 
-     <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.CategoryChildrenRelation">
-        <property name="nodes" ref="rm.Nodes" />
-     </bean>
+    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.FileplanChildrenRelation">
+       <property name="nodes" ref="rm.Nodes" />
+    </bean>
+
+    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.CategoryEntityResource"/>
+
+    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.CategoryChildrenRelation">
+       <property name="nodes" ref="rm.Nodes" />
+    </bean>
+
 </beans>

@@ -25,26 +25,12 @@
  * #L%
  */
 
-package org.alfresco.module.org_alfresco_module_rm.rest.api.impl;
+package org.alfresco.module.org_alfresco_module_rm.rest.api;
 
-import java.util.List;
-import java.util.Map;
+import org.alfresco.rest.framework.resource.EntityResource;
 
-import org.alfresco.module.org_alfresco_module_rm.rest.api.model.RMNode;
-import org.alfresco.rest.api.impl.NodesImpl;
-import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.UserInfo;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-
-public class RMNodesImpl extends NodesImpl
+@EntityResource(name="categories", title = "Categories")
+public class CategoryEntityResource
 {
-    @Override
-    public Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
-    {
-        Node node = super.getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, includeParam, mapUserInfo);
-        Node node2 = new RMNode(node);
-        
-        return node2;
-    }
+
 }

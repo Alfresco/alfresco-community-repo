@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.disposition;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -232,4 +233,14 @@ public interface DispositionService
      * @param nodeRef   node reference
      */
     void refreshDispositionAction(NodeRef nodeRef);
+    
+    /**
+     * Gets date of the disposition action for the given 
+     * disposition schedule with the given action name
+     * 
+     * @param dispositionSchedule nodeRef
+     * @param dispositionActionName
+     * @return date
+     */
+    Date getDispositionActionDate(NodeRef dispositionSchedule, String dispositionActionName);
 }

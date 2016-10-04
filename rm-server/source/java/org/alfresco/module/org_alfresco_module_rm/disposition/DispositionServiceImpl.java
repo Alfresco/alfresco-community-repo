@@ -625,6 +625,46 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Create the properties
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
 
+        Date asOfDate = calculateAsOfDate(nodeRef, dispositionActionDefinition, allowContextFromAsOf);
+
+        // Set the property values
+        props.put(PROP_DISPOSITION_ACTION_ID, dispositionActionDefinition.getId());
+        props.put(PROP_DISPOSITION_ACTION, dispositionActionDefinition.getName());
+        if (asOfDate != null)
+        {
+            props.put(PROP_DISPOSITION_AS_OF, asOfDate);
+        }
+
+        // Create a new disposition action object
+        NodeRef dispositionActionNodeRef = this.nodeService.createNode(
+                nodeRef,
+                ASSOC_NEXT_DISPOSITION_ACTION,
+                ASSOC_NEXT_DISPOSITION_ACTION,
+                TYPE_DISPOSITION_ACTION,
+                props).getChildRef();
+        DispositionAction da = new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
+
+        // Create the events
+        List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
+        for (RecordsManagementEvent event : events)
+        {
+            // For every event create an entry on the action
+            da.addEventCompletionDetails(event);
+        }
+    }
+
+    /**
+     * Compute the "disposition as of" date (if necessary) for a disposition action and a node.
+     *
+     * @param nodeRef The node which the schedule applies to.
+     * @param dispositionActionDefinition The definition of the disposition action.
+     * @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
+     * @return The new "disposition as of" date.
+     */
+    @Override
+    public Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition,
+                boolean allowContextFromAsOf)
+    {
         // Calculate the asOf date
         Date asOfDate = null;
         Period period = dispositionActionDefinition.getPeriod();
@@ -654,31 +694,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 asOfDate = period.getNextDate(contextDate);
             }
         }
-
-        // Set the property values
-        props.put(PROP_DISPOSITION_ACTION_ID, dispositionActionDefinition.getId());
-        props.put(PROP_DISPOSITION_ACTION, dispositionActionDefinition.getName());
-        if (asOfDate != null)
-        {
-            props.put(PROP_DISPOSITION_AS_OF, asOfDate);
-        }
-
-        // Create a new disposition action object
-        NodeRef dispositionActionNodeRef = this.nodeService.createNode(
-                nodeRef,
-                ASSOC_NEXT_DISPOSITION_ACTION,
-                ASSOC_NEXT_DISPOSITION_ACTION,
-                TYPE_DISPOSITION_ACTION,
-                props).getChildRef();
-        DispositionAction da = new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
-
-        // Create the events
-        List<RecordsManagementEvent> events = dispositionActionDefinition.getEvents();
-        for (RecordsManagementEvent event : events)
-        {
-            // For every event create an entry on the action
-            da.addEventCompletionDetails(event);
-        }
+        return asOfDate;
     }
 
     /**

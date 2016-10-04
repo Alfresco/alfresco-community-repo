@@ -26,6 +26,7 @@
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
       <maven.alfresco.rm.api.explorer.version>1.0-SNAPSHOT</maven.alfresco.rm.api.explorer.version>
+      <alfresco.rm.community.rest.api.version>1.0-SNAPSHOT</alfresco.rm.community.rest.api.version>
    </properties>
 
    <build>
@@ -339,6 +340,11 @@
           <groupId>org.reflections</groupId>
           <artifactId>reflections</artifactId>
           <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>alfresco-rm-community-rest-api</artifactId>
+         <version>${alfresco.rm.community.rest.api.version}</version>
       </dependency>
    </dependencies>
 

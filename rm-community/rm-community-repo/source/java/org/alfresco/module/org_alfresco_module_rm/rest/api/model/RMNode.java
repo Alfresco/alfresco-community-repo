@@ -27,7 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.rest.api.model;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.rest.api.model.AssocChild;
+import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.PathInfo;
+import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 public class RMNode extends Node
 {
@@ -41,5 +50,30 @@ public class RMNode extends Node
     public void setHasRetentionSchedule(boolean hasRetentionSchedule)
     {
         this.hasRetentionSchedule = hasRetentionSchedule;
+    }
+
+    public RMNode(Node node)
+    {
+        this.nodeRef = node.getNodeRef();
+        this.name = node.getName();
+        this.createdAt = node.getCreatedAt();
+        this.modifiedAt = node.getModifiedAt();
+        this.createdByUser = node.getCreatedByUser();
+        this.modifiedByUser = node.getModifiedByUser();
+        this.archivedAt = node.getArchivedAt();
+        this.archivedByUser = node.getArchivedByUser();
+        this.isFolder = node.getIsFolder();
+        this.isFile = node.getIsFile();
+        this.isLink = node.getIsLink();
+        this.parentNodeRef = node.getParentId();
+        this.pathInfo = node.getPath();
+        this.relativePath = node.getRelativePath();
+        this.secondaryChildren = node.getSecondaryChildren();
+        this.targets = node.getTargets();
+        this.aspectNames = node.getAspectNames();
+        this.properties = node.getProperties();
+        this.allowableOperations = node.getAllowableOperations();
+
+        this.hasRetentionSchedule = true;
     }
 }

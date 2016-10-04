@@ -27,30 +27,27 @@
 
 package org.alfresco.module.org_alfresco_module_rm.rest.api;
 
-import org.alfresco.module.org_alfresco_module_rm.rest.api.model.RMNode;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.resource.EntityResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-@EntityResource(name="nodes", title = "Nodes")
-public class RMNodesEntityResource implements 
-        EntityResourceAction.ReadById<String>, 
-        EntityResourceAction.Update<RMNode>
+@RelationshipResource(name="children", entityResource = RMFileplanComponentsEntityResource.class, title = "Children of fileplan component")
+public class FileplanChildrenRelation implements RelationshipResourceAction.Read<Node>
 {
+    private Nodes nodes;
 
-    @Override
-    public String readById(String arg0, Parameters arg1) throws EntityNotFoundException
+    public void setNodes(Nodes nodes)
     {
-        return null;
+        this.nodes = nodes;
     }
 
     @Override
-    public RMNode update(String arg0, RMNode arg1, Parameters arg2)
+    public CollectionWithPagingInfo<Node> readAll(String parentFolderNodeId, Parameters parameters)
     {
-        // TODO Auto-generated method stub
-        return null;
+        return nodes.listChildren(parentFolderNodeId, parameters);
     }
-
 
 }

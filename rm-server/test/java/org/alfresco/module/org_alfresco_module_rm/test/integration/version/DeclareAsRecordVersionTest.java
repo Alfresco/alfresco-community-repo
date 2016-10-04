@@ -320,7 +320,6 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                     assertTrue("Name is not modified: ", record_name.contains("initial_name"));
                     checkRecordedVersion(myDocument, DESCRIPTION, "1.0");
                 }
-
             }
 
             public boolean isCurrentVersionDirty(NodeRef nodeRef)

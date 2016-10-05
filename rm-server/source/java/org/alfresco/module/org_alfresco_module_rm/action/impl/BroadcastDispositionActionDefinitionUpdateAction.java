@@ -237,7 +237,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
      * @param dispositionActionDef The disposition action definition node
      * @param nextAction The next disposition action
      */
-    private void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
+    protected void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
     {
         NodeRef dispositionedNode = getNodeService().getPrimaryParent(nextAction.getNodeRef()).getParentRef();
         DispositionActionDefinition definition = nextAction.getDispositionActionDefinition();

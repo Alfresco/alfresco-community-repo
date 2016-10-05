@@ -106,6 +106,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         return new String[]
         {
             "classpath:alfresco/application-context.xml",
+            "classpath:alfresco/web-scripts-application-context.xml",
             "classpath:test-context.xml"
         };
     }
@@ -424,7 +425,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             public Object execute() throws Throwable
             {
                 // Do the tear down
-                AuthenticationUtil.runAsSystem(() -> 
+                AuthenticationUtil.runAsSystem(() ->
                 {
                     tearDownImpl();
                     return null;
@@ -603,20 +604,20 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
     protected void setupTestUsers(final NodeRef filePlan)
     {
-        AuthenticationUtil.runAs(() -> 
+        AuthenticationUtil.runAs(() ->
         {
             retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
             {
                 @Override
                 public Object execute() throws Throwable
-                {                    
+                {
                     setupTestUsersImpl(filePlan);
-                    return null;                    
+                    return null;
                 }
             });
-            
+
             return null;
-        }, 
+        },
         AuthenticationUtil.getAdminUserName());
     }
 
@@ -703,7 +704,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 {
                     // Do setup
                     setupMultiHierarchyTestDataImpl();
-                    
+
                     return null;
                 });
             }
@@ -781,7 +782,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         dmConsumer = GUID.generate();
         dmConsumerNodeRef = createPerson(dmConsumer);
         siteService.setMembership(collabSiteId, dmConsumer, SiteModel.SITE_CONSUMER);
-        
+
         dmContributor = GUID.generate();
         dmContributorNodeRef = createPerson(dmContributor);
         siteService.setMembership(collabSiteId, dmContributor, SiteModel.SITE_CONTRIBUTOR);

@@ -63,7 +63,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
 
     /** Recordable version service */
     private RecordableVersionService recordableVersionService;
-    
+
     /** Inplace record service */
     private InplaceRecordService inplaceRecordService;
 
@@ -93,7 +93,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         this.recordableVersionService = recordableVersionService;
     }
-    
+
     /**
      * @param inplaceRecordService  inplace record service
      */
@@ -183,7 +183,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
 
             // Add the ghosted aspect
             getNodeService().addAspect(record, ASPECT_GHOSTED, null);
-            
+
             // Hide from inplace users to give the impression of destruction
             inplaceRecordService.hideRecord(record);
 

@@ -7,7 +7,7 @@
        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd ">
-
+       
    <!-- Module compatibility component -->
    <bean name="rm.moduleCompatibilityComponent" class="org.alfresco.module.org_alfresco_module_rm.bootstrap.ModuleCompatibilityComponent">
       <property name="descriptorService" ref="descriptorComponent"/>
@@ -257,5 +257,8 @@
 
    <!-- Import the Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/content-context.xml"/>
+
+   <!-- Import the RM public api -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-public-rest-context.xml"/>
 
 </beans>

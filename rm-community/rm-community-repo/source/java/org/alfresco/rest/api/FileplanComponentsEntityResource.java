@@ -43,9 +43,10 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  */
 @EntityResource(name="fileplan-components", title = "Fileplan Components")
 public class FileplanComponentsEntityResource implements 
-        EntityResourceAction.ReadById<Node>
+        EntityResourceAction.ReadById<Node>,
+        EntityResourceAction.Delete,
+        EntityResourceAction.Update<Node>
 {
-
     private Nodes nodes;
 
     public void setNodes(Nodes nodes)
@@ -58,6 +59,18 @@ public class FileplanComponentsEntityResource implements
     public Node readById(String nodeId, Parameters parameters)
     {
         return nodes.getFolderOrDocument(nodeId, parameters);
+    }
+
+    @Override
+    public Node update(String nodeId, Node nodeInfo, Parameters parameters)
+    {
+        return nodes.updateNode(nodeId, nodeInfo, parameters);
+    }
+
+    @Override
+    public void delete(String nodeId, Parameters parameters)
+    {
+        nodes.deleteNode(nodeId, parameters);
     }
 
 }

@@ -51,7 +51,7 @@ import java.util.List;
 @EntityResource(name="sites", title = "Sites")
 public class SiteEntityResource implements EntityResourceAction.Read<Site>,
         EntityResourceAction.ReadById<Site>, EntityResourceAction.Delete,
-        EntityResourceAction.Create<Site>, InitializingBean
+        EntityResourceAction.Create<Site>, EntityResourceAction.Update<Site>, InitializingBean
 {
     private Sites sites;
 
@@ -116,5 +116,21 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
         List<Site> result = new ArrayList<>(1);
         result.add(sites.createSite(entity.get(0), parameters));
         return result;
+    }
+
+    /**
+     * Update the given site. Not all fields are used,
+     * only those as defined in the Open API spec.
+     *
+     * @param siteId       The site ID (aka short name)
+     * @param site         Details to use for the update
+     * @param parameters
+     * @return Updated Site
+     */
+    @Override
+    @WebApiDescription(title="Update site", description="Update the Share site")
+    public Site update(String siteId, Site site, Parameters parameters)
+    {
+        return sites.updateSite(siteId, site, parameters);
     }
 }

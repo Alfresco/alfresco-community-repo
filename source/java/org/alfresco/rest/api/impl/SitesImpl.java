@@ -1137,6 +1137,41 @@ public class SitesImpl implements Sites
         return getSite(siteInfo, true);
     }
 
+    @Override
+    public Site updateSite(String siteId, Site update, Parameters parameters)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Updating site, ID: "+siteId+", site data: "+update+", parameters: "+parameters);
+        }
+
+        SiteInfo siteInfo = validateSite(siteId);
+        if (siteInfo == null)
+        {
+            // site does not exist
+            throw new EntityNotFoundException(siteId);
+        }
+
+        // Although this method will not update the site ID even if it is provided, we sanity
+        // check that no attempt is being made to alter it.
+        if (update.getId() != null && (!update.getId().equals(siteId)))
+        {
+            throw new InvalidArgumentException("Site updates cannot change the site ID");
+        }
+
+        siteInfo.setTitle(update.getTitle());
+        siteInfo.setDescription(update.getDescription());
+        siteInfo.setVisibility(update.getVisibility());
+
+        // Validate the new details
+        validateSite(new Site(siteInfo, null));
+
+        // Perform the actual update.
+        siteService.updateSite(siteInfo);
+
+        return getSite(siteId);
+    }
+
     private Site validateSite(Site site)
     {
         // site title - mandatory

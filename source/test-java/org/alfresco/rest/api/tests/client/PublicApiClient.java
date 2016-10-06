@@ -859,6 +859,12 @@ public class PublicApiClient
             remove("sites", siteId, null, null, params, "Failed to remove site", expectedStatus);
         }
 
+		public Site updateSite(String siteId, Site update) throws PublicApiException
+		{
+			HttpResponse response = update("sites", siteId, null, null, update.toJSON().toString(), "Failed to update site " + update.getTitle());
+			return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
+		}
+
 		public ListResponse<SiteContainer> getSiteContainers(String siteId, Map<String, String> params) throws PublicApiException
 		{
 			HttpResponse response = getAll("sites", siteId, "containers", null, params, "Failed to get site containers");

@@ -25,12 +25,6 @@
  */
 package org.alfresco.repo.content;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,10 +35,8 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Date;
 import java.util.Locale;
 
-import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -53,6 +45,12 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Abstract base class that provides a set of tests for implementations
@@ -64,7 +62,6 @@ import org.junit.Test;
  * 
  * @author Derek Hulley
  */
-@SuppressWarnings("deprecation")
 public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyContentStoreTest
 {
     protected static Log logger = LogFactory.getLog(AbstractWritableContentStoreTest.class);
@@ -380,26 +377,6 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertTrue("After-content reader should be closed after reading", readerAfterWrite.isClosed());
     }
     
-    /**
-     * Helper method to check if a store contains a particular URL using the getUrl method
-     */
-    private boolean searchForUrl(ContentStore store, final String contentUrl, Date from, Date to)
-    {
-        final boolean[] found = new boolean[] {false};
-        ContentUrlHandler handler = new ContentUrlHandler()
-        {
-            public void handle(String checkContentUrl)
-            {
-                if (contentUrl.equals(checkContentUrl))
-                {
-                    found[0] = true;
-                }
-            }
-        };
-        getStore().getUrls(from, to, handler);
-        return found[0];
-    }
-
     @Test
     public void testDeleteSimple() throws Exception
     {
@@ -652,46 +629,6 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         String check = new String(buffer, 0, count);
         
         assertEquals("Write out of and read into files failed", content, check);
-    }
-    
-    /**
-     * Tests retrieval of all content URLs
-     * <p>
-     * Only applies when {@link #getStore()} returns a value.
-     */
-    @Test
-    public void testListUrls() throws Exception
-    {
-        ContentStore store = getStore();
-        // Ensure that this test can be done
-        try
-        {
-            searchForUrl(store, "abc", null, null);
-        }
-        catch (UnsupportedOperationException e)
-        {
-            logger.warn("Store test testListUrls not possible on " + store.getClass().getName());
-            return;
-        }
-        // Proceed with the test
-        ContentWriter writer = getWriter();
-        String contentUrl = writer.getContentUrl();
-
-        boolean inStore = searchForUrl(store, contentUrl, null, null);
-        assertTrue("Writer URL not listed by store", inStore);
-
-        Date yesterday = new Date(System.currentTimeMillis() - 3600L * 1000L * 24L);
-        
-        // write some data
-        writer.putContent("The quick brown fox...");
-
-        // check again
-        inStore = searchForUrl(store, contentUrl, null, null);
-        assertTrue("Writer URL not listed by store", inStore);
-        
-        // check that the query for content created before this time yesterday doesn't return the URL
-        inStore = searchForUrl(store, contentUrl, null, yesterday);
-        assertFalse("URL was younger than required, but still shows up", inStore);
     }
     
     /**

@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -47,9 +49,14 @@ import org.springframework.context.ApplicationContext;
  * 
  * @since 2.1
  * @author Derek Hulley
+ * 
+ * @deprecated Removed in 5.2
  */
+@Deprecated
 public class HttpAlfrescoStore extends AbstractContentStore
 {
+    private static final Log logger = LogFactory.getLog(HttpAlfrescoStore.class);
+    
     private TransactionService transactionService;
     private AuthenticationService authenticationService;
     private String baseHttpUrl;
@@ -59,6 +66,7 @@ public class HttpAlfrescoStore extends AbstractContentStore
      */
     public HttpAlfrescoStore()
     {
+        logger.warn("HttpAlfrescoStore has been deprecated since Alfresco 5.2.");
     }
 
     /**

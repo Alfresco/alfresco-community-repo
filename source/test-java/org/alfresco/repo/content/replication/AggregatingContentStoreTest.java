@@ -25,25 +25,14 @@
  */
 package org.alfresco.repo.content.replication;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -51,6 +40,9 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests read and write functionality for the aggregating store.
@@ -140,20 +132,8 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
      */
     private void checkForUrl(String contentUrl, boolean mustExist)
     {
-        // check that the URL is present for each of the stores
-        for (ContentStore store : secondaryStores)
-        {
-            final Set<String> urls = new HashSet<String>(1027);
-            ContentUrlHandler handler = new ContentUrlHandler()
-            {
-                public void handle(String contentUrl)
-                {
-                    urls.add(contentUrl);
-                }
-            };
-            store.getUrls(handler);
-            assertTrue("URL of new content not present in store", urls.contains(contentUrl) == mustExist);
-        }
+        ContentReader reader = getReader(contentUrl);
+        assertEquals("Reader state differs from expected: " + reader, mustExist, reader.exists());
     }
     
     public void testDelete() throws Exception

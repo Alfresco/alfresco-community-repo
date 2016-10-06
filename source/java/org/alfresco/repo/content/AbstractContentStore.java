@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.content;
 
-import java.util.Date;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -160,29 +158,6 @@ public abstract class AbstractContentStore implements ContentStore
      */
     @Override
     public boolean delete(String contentUrl)
-    {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @see #getUrls(Date, Date, ContentUrlHandler)
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public final void getUrls(ContentUrlHandler handler) throws ContentIOException
-    {
-        getUrls(null, null, handler);
-    }
-
-    /**
-     * Override to provide an implementation.  If no implementation is supplied, then the store will not support
-     * cleaning of orphaned content binaries.
-     * 
-     * @throws UnsupportedOperationException always
-     */
-    @SuppressWarnings("deprecation")
-    @Override
-    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
     {
         throw new UnsupportedOperationException();
     }

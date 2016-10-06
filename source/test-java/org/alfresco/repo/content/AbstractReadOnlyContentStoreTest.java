@@ -28,12 +28,9 @@ package org.alfresco.repo.content;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -132,49 +129,6 @@ public abstract class AbstractReadOnlyContentStoreTest
         return getStore().getReader(contentUrl);
     }
     
-    /**
-     * Fetch a valid URL from the store.  The default implementation will attempt to get
-     * all the available URLs from the store and pick the first one.  Writable store tests
-     * can create some content to be sure of its existence.
-     * 
-     * @return
-     *      Return any valid URL for the store, or <tt>null</tt> if the store is empty.
-     */
-    @SuppressWarnings("deprecation")
-    protected String getExistingContentUrl()
-    {
-        ContentStore store = getStore();
-        try
-        {
-            final Set<String> contentUrls = new HashSet<String>(5);
-            ContentUrlHandler handler = new ContentUrlHandler()
-            {
-                public void handle(String contentUrl)
-                {
-                    if (contentUrls.size() < 50)
-                    {
-                        contentUrls.add(contentUrl);
-                    }
-                }
-            };
-            store.getUrls(handler);
-            if (contentUrls.size() > 0)
-            {
-                return (String) contentUrls.toArray()[0];
-            }
-            else
-            {
-                // We can't do anything with this
-                return null;
-            }
-        }
-        catch (UnsupportedOperationException e)
-        {
-            // The store doesn't support this
-            return null;
-        }
-    }
-    
     @Test
     public void testSetUp() throws Exception
     {
@@ -210,6 +164,11 @@ public abstract class AbstractReadOnlyContentStoreTest
             // Expected
         }
     }
+    
+    /**
+     * Tests to implement this method in order to provide some content to play with
+     */
+    protected abstract String getExistingContentUrl();
     
     /**
      * Checks that the error handling for <i>inappropriate</i> content URLs

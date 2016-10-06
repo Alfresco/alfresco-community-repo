@@ -24,18 +24,26 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.rest.api;
 
-package org.alfresco.module.org_alfresco_module_rm.rest.api;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-@RelationshipResource(name="children", entityResource = RMFileplanComponentsEntityResource.class, title = "Children of fileplan component")
-public class FileplanChildrenRelation implements RelationshipResourceAction.Read<Node>
+/**
+ * An implementation of an Entity Resource for a fileplan component
+ *
+ * @author Ana Bozianu
+ * @since 2.6
+ */
+@RelationshipResource(name="children", entityResource = FileplanComponentsEntityResource.class, title = "Children of fileplan component")
+public class FileplanComponentChildrenRelation implements RelationshipResourceAction.Read<Node>, 
+                                                 RelationshipResourceAction.Create<Node>
 {
     private Nodes nodes;
 
@@ -50,4 +58,16 @@ public class FileplanChildrenRelation implements RelationshipResourceAction.Read
         return nodes.listChildren(parentFolderNodeId, parameters);
     }
 
+    @Override
+    public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
+    {
+        List<Node> result = new ArrayList<>(nodeInfos.size());
+
+        for (Node nodeInfo : nodeInfos)
+        {
+            result.add(nodes.createNode(parentFolderNodeId, nodeInfo, parameters));
+        }
+
+        return result;
+    }
 }

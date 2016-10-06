@@ -41,7 +41,7 @@ import com.sun.tools.xjc.outline.Aspect;
  * This interface represents the Repository Data Dictionary.  The
  * dictionary provides access to content meta-data such as Type
  * and Aspect descriptions.
- *
+ * <p>
  * Content meta-data is organised into models where each model is
  * given a qualified name.  This means that it is safe to develop
  * independent models and bring them together into the same
@@ -62,7 +62,8 @@ public interface DictionaryService extends MessageLookup
 
     /**
      * @param model the model name to retrieve
-     * @return the specified model (or null, if it doesn't exist)
+     * @return the specified model (never null)
+     * @throws DictionaryException if the model could not be found
      */
     @NotAuditable
     public ModelDefinition getModel(QName model);
@@ -315,13 +316,9 @@ public interface DictionaryService extends MessageLookup
      */
     Collection<ConstraintDefinition> getConstraints(QName model, boolean referenceableDefsOnly);
     
-
     /**
      * @param uri the namespace uri for search for
      * @return the named model definition
      */
     ModelDefinition getModelByNamespaceUri(String uri);
-
-    // TODO: Behaviour definitions
-    
 }

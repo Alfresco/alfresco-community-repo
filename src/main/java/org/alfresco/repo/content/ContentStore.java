@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.content;
 
-import java.util.Date;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -215,41 +213,6 @@ public interface ContentStore
     public ContentWriter getWriter(ContentContext context);
     
     /**
-     * Get all URLs for the store, regardless of creation time.
-     * @throws ContentIOException
-     *      if an IO error occurs
-     * @throws UnsupportedOperationException
-     *      if the store is unable to provide the information
-     * 
-     * @see #getUrls(Date, Date, ContentUrlHandler)
-     * 
-     * @deprecated              in 5.0.  The API is no longer used by Alfresco;
-     *                          efficient APIs can be provided by the implementations, if required
-     */
-    @Deprecated
-    public void getUrls(ContentUrlHandler handler) throws ContentIOException;
-
-    /**
-     * Get a set of all content URLs in the store.  This indicates all content available for reads.
-     * 
-     * @param createdAfter
-     *      all URLs returned must have been created after this date.  May be null.
-     * @param createdBefore
-     *      all URLs returned must have been created before this date.  May be null.
-     * @param handler
-     *      the callback that will passed each URL
-     * @throws ContentIOException
-     *      if an error occurs
-     * @throws UnsupportedOperationException
-     *      if the store is unable to provide the information
-     * 
-     * @deprecated              in 5.0.  The API is no longer used by Alfresco;
-     *                          efficient APIs can be provided by the implementations, if required
-     */
-    @Deprecated
-    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException;
-    
-    /**
      * Deletes the content at the given URL.
      * <p>
      * A delete cannot be forced since it is much better to have the
@@ -268,17 +231,4 @@ public interface ContentStore
      *      if an IO error occurs
      */
     public boolean delete(String contentUrl);
-    
-    /**
-     * Iterface for to use during iteration over content URLs.
-     * 
-     * @author Derek Hulley
-     * @since 2.0
-     * @deprecated              in 5.0
-     */
-    @Deprecated
-    public interface ContentUrlHandler
-    {
-        void handle(String contentUrl);
-    }
 }

@@ -104,7 +104,8 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     /**
      * Given versionable content with a recorded latest version When I declare a version record Then nothing happens
      * When I declare a version record
-     * since the latest version is already recorded And a warning is logged
+     * since the latest version is already recorded 
+     * And a warning is logged
      */
     public void testDeclareLatestVersionAsRecordButAlreadyRecorded()
     {

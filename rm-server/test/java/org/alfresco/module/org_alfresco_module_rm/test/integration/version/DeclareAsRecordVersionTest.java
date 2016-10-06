@@ -102,9 +102,9 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given versionable content with a recorded latest version When I declare a version record Then nothing happens
+     * Given versionable content with a recorded latest version
      * When I declare a version record
-     * since the latest version is already recorded 
+     * Then nothing happens since the latest version is already recorded
      * And a warning is logged
      */
     public void testDeclareLatestVersionAsRecordButAlreadyRecorded()
@@ -209,11 +209,12 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
+     * Given versionable content with a recorded latest version and autoversion is true
+     * When I declare this version record and contains local modifications 
+     * Then a new minor version is created for document 
      * 
-     *
      * @see https://issues.alfresco.com/jira/browse/RM-2368
      */
-    
     public void testCreateRecordFromLatestVersionAutoTrue()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
@@ -299,9 +300,9 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     
     /**
      * 
-     * Given versionable content with a recorded latest version
-     * When I declare this version record 
-     * Then a new minor version is created for document 
+     * Given versionable content with a recorded latest version and autoversion is false
+     * When I declare this version record and contains local modifications 
+     * Then a record is created from latest version
      *
      * @see https://issues.alfresco.com/jira/browse/RM-2368
      */

@@ -1039,7 +1039,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         NodeRef versionRecord = null;
        
  
-        recordableVersionService.createFreezeVersion(nodeRef);
+        recordableVersionService.createSnapshotVersion(nodeRef);
         // wire record up to previous record
         VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
         if (versionHistory != null)

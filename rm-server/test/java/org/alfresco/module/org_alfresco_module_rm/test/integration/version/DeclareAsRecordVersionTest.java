@@ -102,9 +102,10 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     }
 
     /**
-     * Given versionable content with a recorded latest version 
-     * When I declare a version record 
-     * Then nothing happens since the latest version is already recorded And a warning is logged
+     * Given versionable content with a recorded latest version
+     * When I declare a version record
+     * Then nothing happens since the latest version is already recorded
+     * And a warning is logged
      */
     public void testDeclareLatestVersionAsRecordButAlreadyRecorded()
     {
@@ -215,6 +216,98 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
      *
      * @see https://issues.alfresco.com/jira/browse/RM-2368
      */
+    
+    public void testCreateRecordFromLatestVersionAutoTrue()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
+        {
+            private NodeRef myDocument;
+            private NodeRef versionedRecord;
+            private Map<String, Serializable> versionProperties;
+            private Date createdDate;
+            private Date modificationDate;
+            private String record_name = "initial_name";
+            private String AUTO_VERSION_DESCRIPTION = "Auto Version on Record Creation";
+            private boolean autoVersion = true;
+
+            public void given() throws Exception
+            {
+                // create a document
+                myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                createdDate = (Date) nodeService.getProperty(myDocument, ContentModel.PROP_CREATED);
+                modificationDate = (Date) nodeService.getProperty(myDocument, ContentModel.PROP_MODIFIED);
+                assertTrue("Modified date must be after or on creation date", createdDate.getTime() == modificationDate.getTime());
+
+                // Set initial set of properties
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>(3);
+                // Ensure default behaviour autoversion on change properties is set to false
+                properties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+                // Set initial name
+                properties.put(ContentModel.PROP_NAME, "initial_name");
+                nodeService.setProperties(myDocument, properties);
+                nodeService.setProperty(myDocument, ContentModel.PROP_DESCRIPTION, DESCRIPTION);
+                nodeService.addAspect(myDocument, ContentModel.ASPECT_OWNABLE, null);
+                // make sure document is versionable
+                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, null);
+                // Change Type to a custom document
+                nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
+
+                // setup version properties
+                versionProperties = new HashMap<String, Serializable>(2);
+                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+
+                // create initial version
+                versionService.createVersion(myDocument, versionProperties);
+            }
+
+            public void when()
+            {
+                // Apply a custom aspect
+                nodeService.addAspect(myDocument, ContentModel.ASPECT_TITLED, null);
+                // Update properties
+                nodeService.setProperty(myDocument, ContentModel.PROP_NAME, "updated_name");
+                nodeService.setProperty(myDocument, ContentModel.PROP_DESCRIPTION, DESCRIPTION);
+                // test RM-2368
+                versionedRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, myDocument, autoVersion);
+            }
+
+            public void then()
+            {
+                // Properties updated / flag as modified
+                // check the created record
+                assertNotNull(versionedRecord);
+                assertTrue(recordService.isRecord(versionedRecord));
+
+                // check the record type is correct
+                assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(versionedRecord));
+
+                // assert the current version is recorded
+                assertTrue(recordableVersionService.isCurrentVersionRecorded(myDocument));
+
+                // get name of record
+                record_name = (String) nodeService.getProperty(versionedRecord, ContentModel.PROP_NAME);
+
+                // new version is create, current node was modified
+                assertTrue("Name was updated:", record_name.contains("updated_name"));
+                // check record
+                checkRecordedVersion(myDocument, AUTO_VERSION_DESCRIPTION, "1.1");
+
+            }
+
+        });
+
+    }
+    
+    
+    /**
+     * 
+     * Given versionable content with a recorded latest version
+     * When I declare this version record 
+     * Then a new minor version is created for document 
+     *
+     * @see https://issues.alfresco.com/jira/browse/RM-2368
+     */
     public void testCreateRecordFromLatestVersion()
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
@@ -223,10 +316,8 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
             private NodeRef versionedRecord;
             private Map<String, Serializable> versionProperties;
             private Date createdDate;
-            private Date frozenModifDate;
             private Date modificationDate;
             private String record_name = "initial_name";
-            private String AUTO_VERSION_DESCRIPTION = "Auto Version on Record Creation";
             private boolean autoVersion = false;
 
             public void given() throws Exception
@@ -251,8 +342,6 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 // Change Type to a custom document
                 nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
 
-                Date modificationDate1 = (Date) nodeService.getProperty(myDocument, ContentModel.PROP_MODIFIED);
-                assertTrue("Frozen modification date", modificationDate.getTime() == modificationDate1.getTime());
                 // setup version properties
                 versionProperties = new HashMap<String, Serializable>(2);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
@@ -260,35 +349,17 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
 
                 // create initial version
                 versionService.createVersion(myDocument, versionProperties);
-                Version version = versionService.getCurrentVersion(myDocument);
-                frozenModifDate = version.getFrozenModifiedDate();
-
-                // get autoversion flag from cofiguratie
-                autoVersion = recordableVersionService.isEnableAutoVersionOnRecordCreation();
             }
 
             public void when()
             {
-                // current node is not dirty
-                assertFalse(isCurrentVersionDirty(myDocument));
-
-                if (autoVersion)
-                {
-                    // Apply a custom aspect
-                    nodeService.addAspect(myDocument, ContentModel.ASPECT_TITLED, null);
-                    // Update properties
-                    nodeService.setProperty(myDocument, ContentModel.PROP_NAME, "updated_name");
-                    nodeService.setProperty(myDocument, ContentModel.PROP_DESCRIPTION, DESCRIPTION);
-                    // node should be modified
-                    assertTrue(isCurrentVersionDirty(myDocument));
-                }
-                else
-                {
-                    assertFalse(isCurrentVersionDirty(myDocument));
-                }
+                // Apply a custom aspect
+                nodeService.addAspect(myDocument, ContentModel.ASPECT_TITLED, null);
+                // Update properties
+                nodeService.setProperty(myDocument, ContentModel.PROP_NAME, "initial_name");
+                nodeService.setProperty(myDocument, ContentModel.PROP_DESCRIPTION, DESCRIPTION);
                 // test RM-2368
-                versionedRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, myDocument);
-
+                versionedRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, myDocument, autoVersion);
             }
 
             public void then()
@@ -307,45 +378,16 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
                 // get name of record
                 record_name = (String) nodeService.getProperty(versionedRecord, ContentModel.PROP_NAME);
 
-                if (autoVersion)
-                {
-                    // new version is create, current node was modified
-                    assertTrue("Name was updated:", record_name.contains("updated_name"));
-                    // check record
-                    checkRecordedVersion(myDocument, AUTO_VERSION_DESCRIPTION, "1.1");
-                }
-                else
-                {
-                    // record is created based on existing frozen, which does not contain any modification of node
-                    assertTrue("Name is not modified: ", record_name.contains("initial_name"));
-                    checkRecordedVersion(myDocument, DESCRIPTION, "1.0");
-                }
+                // record is created based on existing frozen, which does not contain any modification of node
+                assertTrue("Name is not modified: ", record_name.contains("initial_name"));
+                checkRecordedVersion(myDocument, DESCRIPTION, "1.0");
+ 
             }
-
-            public boolean isCurrentVersionDirty(NodeRef nodeRef)
-            {
-                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
-                {
-                    // get the latest version
-                    Version currentVersion = versionService.getCurrentVersion(nodeRef);
-                    Date modificationDate = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-                    if (currentVersion != null)
-                    {
-                        // grab the frozen state
-                        NodeRef currentFrozenState = currentVersion.getFrozenStateNodeRef();
-                        Date frozenModificationDate = (Date) nodeService.getProperty(currentFrozenState, ContentModel.PROP_MODIFIED);
-                        if (modificationDate.getTime() > frozenModificationDate.getTime()) { return true; }
-                    }
-                    else
-                    {
-                        return true;
-                    }
-                }
-                return false;
-            }
+ 
 
         });
 
     }
+
 
 }

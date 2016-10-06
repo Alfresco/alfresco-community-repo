@@ -23,8 +23,9 @@
         </property>
     </bean>
 
-    <bean id="rm.nodes" class="org.alfresco.module.org_alfresco_module_rm.rest.api.impl.RMNodesImpl" parent="nodes">
+    <bean id="rm.nodes" class="org.alfresco.rest.api.impl.RMNodesImpl" parent="nodes" init-method="init">
         <property name="quickShareLinks" ref="rm.QuickShareLinks"/>
+        <property name="filePlanService" ref="FilePlanService"/>
     </bean>
 
     <bean id="rm.Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -41,18 +42,11 @@
        </property>
     </bean>
 
-    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.RMFileplanComponentsEntityResource">
+    <bean class="org.alfresco.rest.api.FileplanComponentsEntityResource">
        <property name="nodes" ref="rm.Nodes" />
     </bean>
 
-    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.FileplanChildrenRelation">
+    <bean class="org.alfresco.rest.api.FileplanComponentChildrenRelation">
        <property name="nodes" ref="rm.Nodes" />
     </bean>
-
-    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.CategoryEntityResource"/>
-
-    <bean class="org.alfresco.module.org_alfresco_module_rm.rest.api.CategoryChildrenRelation">
-       <property name="nodes" ref="rm.Nodes" />
-    </bean>
-
 </beans>

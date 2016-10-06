@@ -25,23 +25,27 @@
  * #L%
  */
 
-package org.alfresco.module.org_alfresco_module_rm.rest.api;
+package org.alfresco.rest.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.resource.EntityResource;
-import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-@RelationshipResource(name="category-children", entityResource = CategoryEntityResource.class, title = "Children of Category type")
-public class CategoryChildrenRelation implements 
-    RelationshipResourceAction.Create<Node>
+/**
+ * Fileplan component children
+ * 
+ * @author Ana Bozianu
+ * @since 2.6
+ */
+@EntityResource(name="fileplan-components", title = "Fileplan Components")
+public class FileplanComponentsEntityResource implements 
+        EntityResourceAction.ReadById<Node>
 {
+
     private Nodes nodes;
 
     public void setNodes(Nodes nodes)
@@ -49,18 +53,11 @@ public class CategoryChildrenRelation implements
         this.nodes = nodes;
     }
 
-    @Override
-    public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
+    @WebApiDescription(title = "Get Node Information", description = "Get information for the fileplan component with id 'nodeId'")
+    @WebApiParam(name = "nodeId", title = "The node id")
+    public Node readById(String nodeId, Parameters parameters)
     {
-        List<Node> result = new ArrayList<>(nodeInfos.size());
-
-        for (Node nodeInfo : nodeInfos)
-        {
-            nodeInfo.setNodeType(RecordsManagementModel.RM_PREFIX + ":" + RecordsManagementModel.TYPE_RECORD_CATEGORY.getPrefixString());
-            result.add(nodes.createNode(parentFolderNodeId, nodeInfo, parameters));
-        }
-
-        return result;
+        return nodes.getFolderOrDocument(nodeId, parameters);
     }
 
 }

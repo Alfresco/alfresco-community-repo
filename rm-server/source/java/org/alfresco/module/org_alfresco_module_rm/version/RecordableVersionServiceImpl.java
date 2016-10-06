@@ -673,6 +673,17 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         return new NodeRef(convertStoreRef(nodeRef.getStoreRef()), nodeRef.getId());
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#createRecordFromLatestVersion(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, autoVersion)
+     */
+    @Override
+    public NodeRef createRecordFromLatestVersion(final NodeRef filePlan, final NodeRef nodeRef, final boolean isEnableAutoVersionOnRecordCreation)
+    {
+        setEnableAutoVersionOnRecordCreation(isEnableAutoVersionOnRecordCreation);
+        
+        return createRecordFromLatestVersion(filePlan, nodeRef);
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#createRecordFromLatestVersion(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
@@ -688,7 +699,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         // check for versionable aspect
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
         {
-            createFreezeVersion(nodeRef);
+            createSnapshotVersion(nodeRef);
             // get the latest version
             final Version currentVersion = getCurrentVersion(nodeRef);
 
@@ -902,37 +913,27 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
      */
     public boolean isCurrentVersionDirty(NodeRef nodeRef)
     {
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE)) { return false; }
 
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true)
-        {
-            // get the latest version
-            Version currentVersion = getCurrentVersion(nodeRef);
-            Date modificationDate = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-            if (currentVersion != null)
-            {
-                // grab the frozen state
-                NodeRef currentFrozenState = currentVersion.getFrozenStateNodeRef();
-                Date frozenModificationDate = (Date) nodeService.getProperty(currentFrozenState, ContentModel.PROP_MODIFIED);
-                if (frozenModificationDate != null)
-                {
-                    if (modificationDate.getTime() > frozenModificationDate.getTime()) { return true; }
-                }
-            }
-            else
-            {
-                return true;
-            }
+        // get the latest version
+        Version currentVersion = getCurrentVersion(nodeRef);
+        Date modificationDate = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
 
-        }
-        return false;
+        if (currentVersion == null) { return true; }
+
+        // grab the frozen state
+        NodeRef currentFrozenState = currentVersion.getFrozenStateNodeRef();
+        Date frozenModificationDate = (Date) nodeService.getProperty(currentFrozenState, ContentModel.PROP_MODIFIED);
+
+        boolean versionStoreOutdated = ((frozenModificationDate != null) && (modificationDate.getTime() > frozenModificationDate.getTime()));
+        return versionStoreOutdated;
     }
 
     /**
-     * @see RecordableVersionService#createFreezeVersion(NodeRef)
+     * @see RecordableVersionService#createSnapshotVersion(NodeRef)
      */
-    public Version createFreezeVersion(NodeRef nodeRef)
+    public void createSnapshotVersion(NodeRef nodeRef)
     {
-        Version newVersion = null;
         boolean autoVersion = isEnableAutoVersionOnRecordCreation();
         // if the flag autoversion on record creation set, create new version on dirty nodes
         if (autoVersion && isCurrentVersionDirty(nodeRef))
@@ -940,8 +941,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             Map<String, Serializable> autoVersionProperties = new HashMap<String, Serializable>(2);
             autoVersionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
             autoVersionProperties.put(VersionModel.PROP_DESCRIPTION, I18NUtil.getMessage(AUTO_VERSION_ON_RECORD_CREATION));
-            newVersion = createVersion(nodeRef, autoVersionProperties);
+            createVersion(nodeRef, autoVersionProperties);
         }
-        return newVersion;
+
     }
 }

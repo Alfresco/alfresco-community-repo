@@ -100,6 +100,13 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         {
             return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
         }
+        // Add WRITE_PROPERTIES check in for MNT-16852.
+        else if (AccessStatus.DENIED.equals(acs) &&
+                PermissionService.WRITE_PROPERTIES.equals(perm) &&
+                nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+        {
+            return super.hasPermission(nodeRef, RMPermissionModel.EDIT_RECORD_METADATA);
+        }
 
         return acs;
     }

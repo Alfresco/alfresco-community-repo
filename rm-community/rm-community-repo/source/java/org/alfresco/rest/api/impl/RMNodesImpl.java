@@ -30,6 +30,7 @@ package org.alfresco.rest.api.impl;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Centralizes access to the repository. 
@@ -243,5 +245,20 @@ public class RMNodesImpl extends NodesImpl
         }
 
         return null; // unknown
+    }
+    
+    @Override
+    protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(QName nodeTypeQName, boolean includeSubTypes, Set<QName> ignoreQNameTypes, Boolean includeFiles, Boolean includeFolders)
+    {
+        Pair<Set<QName>, Set<QName>> searchTypesAndIgnoreAspects = super.buildSearchTypesAndIgnoreAspects(nodeTypeQName, includeSubTypes, ignoreQNameTypes, includeFiles, includeFolders);
+        Set<QName> searchTypeQNames = searchTypesAndIgnoreAspects.getFirst();
+        Set<QName> ignoreAspectQNames = searchTypesAndIgnoreAspects.getSecond();
+
+        searchTypeQNames.remove(RecordsManagementModel.TYPE_HOLD_CONTAINER);
+        searchTypeQNames.remove(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
+        searchTypeQNames.remove(RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
+        searchTypeQNames.remove(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE);
+
+        return new Pair<>(searchTypeQNames, ignoreAspectQNames);
     }
 }

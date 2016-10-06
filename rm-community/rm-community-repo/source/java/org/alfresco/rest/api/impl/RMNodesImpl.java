@@ -28,6 +28,7 @@
 package org.alfresco.rest.api.impl;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,6 +121,10 @@ public class RMNodesImpl extends NodesImpl
 
         RMNodeType type = getType(nodeTypeQName, nodeRef);
         RMNode node;
+        if (mapUserInfo == null)
+        {
+            mapUserInfo = new HashMap<>(2);
+        }
         node = new RMNode(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
 
         if (type == RMNodeType.CATEGORY)

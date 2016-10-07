@@ -181,11 +181,11 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
                 recordableVersionService.destroyRecordedVersion(version);
             }
 
-            // Add the ghosted aspect
-            getNodeService().addAspect(record, ASPECT_GHOSTED, null);
-
             // Hide from inplace users to give the impression of destruction
             inplaceRecordService.hideRecord(record);
+
+            // Add the ghosted aspect
+            getNodeService().addAspect(record, ASPECT_GHOSTED, null);
 
             // destroy content
             contentDestructionComponent.destroyContent(record);

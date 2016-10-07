@@ -68,7 +68,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                                                RecordsManagementPolicies.OnFileRecord
 {
     /** Logger */
-    Logger LOGGER = LoggerFactory.getLogger(DispositionServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DispositionServiceImpl.class);
 
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;

@@ -31,7 +31,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    CutOffTest.class
+    CutOffTest.class,
+    UpdateDispositionScheduleTest.class
 })
 public class DispositionTestSuite
 {

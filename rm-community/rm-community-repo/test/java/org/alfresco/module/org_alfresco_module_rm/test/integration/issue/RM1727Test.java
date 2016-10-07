@@ -90,7 +90,7 @@ public class RM1727Test extends BaseRMTestCase
                 return null;
             }
         });
-        
+
         doTestInTransaction(new Test<Void>()
         {
             @Override

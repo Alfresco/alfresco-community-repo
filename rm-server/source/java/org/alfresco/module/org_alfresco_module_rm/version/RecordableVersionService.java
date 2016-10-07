@@ -27,70 +27,93 @@ import org.alfresco.service.cmr.version.Version;
  * @author Roy Wetherall
  * @since 2.3
  */
-public interface RecordableVersionService 
+public interface RecordableVersionService
 {
     /**
      * Indicates whether the current version of a node is recorded or not.
      * <p>
      * Returns false if not versionable or no version.
      * 
-     * @param nodeRef   node reference
-     * @return boolean  true if latest version recorded, false otherwise
+     * @param nodeRef node reference
+     * @return boolean true if latest version recorded, false otherwise
      */
     boolean isCurrentVersionRecorded(NodeRef nodeRef);
-    
+
     /**
      * Indicates whether a version is recorded or not.
      * 
-     * @param version   version
-     * @return boolean  true if recorded version, false otherwise
+     * @param version version
+     * @return boolean true if recorded version, false otherwise
      */
     boolean isRecordedVersion(Version version);
-    
+
     /**
-     * If the version is a recorded version, gets the related version 
-     * record.
+     * If the version is a recorded version, gets the related version record.
      * 
-     * @param  version   version
-     * @return NodeRef   node reference of version record
+     * @param version version
+     * @return NodeRef node reference of version record
      */
     NodeRef getVersionRecord(Version version);
-    
+
     /**
      * Gets the version that relates to the version record
      * 
      * @param versionRecord version record node reference
-     * @return Version  version or null if not found
+     * @return Version version or null if not found
      */
     Version getRecordedVersion(NodeRef record);
-    
+
+    /**
+     * Creates a record from the latest frozen version, marking it as recorded.
+     * <p>
+     * Does not create a record if the node is not versionable or the latest version is already recorded.
+     * 
+     * @param nodeRef node reference
+     * @return NodeRef node reference to the created record.
+     */
+    NodeRef createRecordFromLatestVersion(NodeRef filePlan, NodeRef nodeRef);
+   
     /**
      * Creates a record from the latest version, marking it as recorded.
      * <p>
-     * Does not create a record if the node is not versionable or the latest
-     * version is already recorded.
+     * Does not create a record if the node is not versionable or the latest version is already recorded.
      * 
-     * @param nodeRef   node reference
-     * @return NodeRef  node reference to the created record.
+     * @param nodeRef parent node reference
+     * @param nodeRef node reference
+     * @param autoVersion true, create new record version from latest version, false creates a record from the latest frozen version
+     * @return NodeRef node reference to the created record.
+     * 
      */
-    NodeRef createRecordFromLatestVersion(NodeRef filePlan, NodeRef nodeRef);
-    
+    NodeRef createRecordFromLatestVersion(NodeRef filePlan, NodeRef nodeRef, boolean autoVersion);
+
     /**
      * Indicates whether a record version is destroyed or not.
      * 
-     * @param version   version
-     * @return boolean  true if destroyed, false otherwise
+     * @param version version
+     * @return boolean true if destroyed, false otherwise
      */
     boolean isRecordedVersionDestroyed(Version version);
-    
+
     /**
      * Marks a recorded version as destroyed.
      * <p>
-     * Note this method does not destroy the associated record, instead it marks the 
-     * version as destroyed.
+     * Note this method does not destroy the associated record, instead it marks the version as destroyed.
      * 
-     * @param version   version
+     * @param version version
      */
     void destroyRecordedVersion(Version version);
 
+    /**
+     * Flag that indicate to create new version on record creation if current node is modified
+     * 
+     * @return boolean true to auto-version on record creation, false to use latest versioned version
+     */
+    boolean isEnableAutoVersionOnRecordCreation();
+
+    /**
+     * Create a snapshot version of current node
+     * 
+     * @param nodeRef node reference
+     */
+    void createSnapshotVersion(NodeRef nodeRef);
 }

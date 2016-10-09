@@ -39,12 +39,6 @@
 
     <bean id="RecordsManagementServiceRegistry" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistryImpl" />
 
-    <!-- Disposition selection strategy -->
-    <bean id="org_alfresco_module_rm_dispositionSelectionStrategy"
-          class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSelectionStrategy" >
-        <property name="dispositionService" ref="dispositionService"/>
-    </bean>
-
     <!--  Vital Record Service -->
 
     <bean id="vitalRecordService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl">
@@ -96,9 +90,6 @@
         <property name="recordFolderService" ref="RecordFolderService"/>
         <property name="recordService" ref="RecordService"/>
         <property name="freezeService" ref="FreezeService"/>
-        <property name="dispositionSelectionStrategy">
-           <ref local="org_alfresco_module_rm_dispositionSelectionStrategy" />
-        </property>
     </bean>
 
     <bean id="DispositionService" class="org.springframework.aop.framework.ProxyFactoryBean">

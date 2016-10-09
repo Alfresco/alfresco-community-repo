@@ -46,8 +46,8 @@ import org.json.JSONObject;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.extensions.surf.util.Content;
+import org.springframework.extensions.webscripts.AbstractWebScript;
 import org.springframework.extensions.webscripts.Container;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Description;
 import org.springframework.extensions.webscripts.Description.RequiredCache;
 import org.springframework.extensions.webscripts.DescriptionExtension;
@@ -83,7 +83,7 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
     /**
      * @return  declarative webscript
      */
-    protected abstract DeclarativeWebScript getWebScript();
+    protected abstract AbstractWebScript getWebScript();
     
     /**
      * @return  classpath location of webscript template
@@ -151,7 +151,7 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
      */
     protected String executeWebScript(Map<String, String> parameters, String content) throws Exception
     {
-        DeclarativeWebScript webScript = getWebScript();
+        AbstractWebScript webScript = getWebScript();
         String template = getWebScriptTemplate();
         
         // initialise webscript
@@ -173,7 +173,7 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
      * @return {@link WebScriptRequest} mocked web script request
      */
     @SuppressWarnings("rawtypes")
-    protected WebScriptRequest getMockedWebScriptRequest(DeclarativeWebScript webScript, final Map<String, String> parameters, String content) throws Exception
+    protected WebScriptRequest getMockedWebScriptRequest(AbstractWebScript webScript, final Map<String, String> parameters, String content) throws Exception
     {
         Match match = new Match(null, parameters, null, webScript);
         org.springframework.extensions.webscripts.Runtime mockedRuntime = mock(org.springframework.extensions.webscripts.Runtime.class);        

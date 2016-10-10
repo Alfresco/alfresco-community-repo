@@ -70,7 +70,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 {
     /** Logger */
     private static final Logger LOGGER = LoggerFactory.getLogger(DispositionServiceImpl.class);
-    
+
     /** Transaction mode for setting next action */
     public enum WriteMode {READ_ONLY, DATE_ONLY, DATE_AND_NAME};
 
@@ -265,28 +265,28 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (isRecord(nodeRef))
         {
             final NextActionFromDisposition dsNextAction = getDispositionActionByNameForRecord(nodeRef);
-            
+
             if (dsNextAction != null && !dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
             {
                 final NodeRef action = dsNextAction.getNextActionNodeRef();
                 final String dispositionActionName = dsNextAction.getNextActionName();
                 final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
-                
-                    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork()
                     {
-                        @Override
-                        public Void doWork()
+                        nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                        if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
                         {
-                            nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                            if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
-                            {
-                                nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
-                            }
-                            return null;
+                            nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
                         }
-                    });
+                        return null;
+                    }
+                });
+                dsNodeRef = dsNextAction.getDispositionNodeRef();
             }
-            dsNodeRef = dsNextAction.getDispositionNodeRef();
         }
         else
         {
@@ -298,12 +298,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dsNodeRef);
         }
-        
+
         return ds;
     }
 
-    
-    
+
+
 
     /**
      * This method returns a NodeRef
@@ -909,7 +909,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         // Get the current action
                         String currentADId = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION_ID);
                         currentDispositionActionDefinition = di.getDispositionActionDefinition(currentADId);
-                        
+
                         // When the record has multiple disposition schedules the current disposition action may not be found by id
                         // In this case it will be searched by name
                         if(currentDispositionActionDefinition == null)
@@ -1076,21 +1076,21 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             }
         });
     }
-    
-    
-    
+
+
+
    /**
     * Calculate next disposition action for a record
-    * 
+    *
     * @param record
     * @return next disposition action (name, date) and the disposition associated
     */
-    
-    protected NextActionFromDisposition getDispositionActionByNameForRecord(NodeRef record) 
+
+    protected NextActionFromDisposition getDispositionActionByNameForRecord(NodeRef record)
     {
         List<NodeRef> recordFolders = recordFolderService.getRecordFolders(record);
         DispositionAction nextDispositionAction = getNextDispositionAction(record);
-        
+
         if (nextDispositionAction == null)
         {
             return getFirstDispositionAction(recordFolders);
@@ -1113,7 +1113,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         Date recordNextDispositionActionDate = nextDispositionAction.getAsOfDate();
         Date nextDispositionActionDate = null;
         NodeRef dispositionNodeRef = null;
-        
+
         for (NodeRef folder : recordFolders)
         {
             NodeRef dsNodeRef = getDispositionScheduleImpl(folder);
@@ -1132,7 +1132,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
            return null;
         }
         WriteMode mode = null;
-        if (!nextDispositionActionDate.equals(recordNextDispositionActionDate) 
+        if (!nextDispositionActionDate.equals(recordNextDispositionActionDate)
                 && recordNextDispositionActionDate.before(nextDispositionActionDate))
         {
             mode = WriteMode.DATE_ONLY;
@@ -1141,7 +1141,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             mode = WriteMode.READ_ONLY;
         }
-        return new NextActionFromDisposition(dispositionNodeRef, nextDispositionAction.getNodeRef(), 
+        return new NextActionFromDisposition(dispositionNodeRef, nextDispositionAction.getNodeRef(),
                 recordNextDispositionActionName, nextDispositionActionDate, mode);
     }
 
@@ -1156,7 +1156,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         String newDispositionActionName = null;
         Date newDispositionActionDateAsOf = null;
         NodeRef dispositionNodeRef = null;
-        for (NodeRef folder : recordFolders) 
+        for (NodeRef folder : recordFolders)
         {
             NodeRef folderDS = getDispositionScheduleImpl(folder);
             if (folderDS != null)
@@ -1166,13 +1166,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     NodeRef firstAction = assocs.get(0).getChildRef();
                     DispositionAction firstDispositionAction = new DispositionActionImpl(serviceRegistry, firstAction);
-                    
+
                     if (newAction == null)
                     {
                         newAction = firstAction;
                         newDispositionActionName = (String)nodeService.getProperty(newAction, PROP_DISPOSITION_ACTION_NAME);
                         newDispositionActionDateAsOf = getDispositionActionDate(folderDS, newDispositionActionName);
-                    } 
+                    }
                     else if (firstDispositionAction.getAsOfDate() != null && newDispositionActionDateAsOf.before(firstDispositionAction.getAsOfDate()))
                     {
                         newDispositionActionName = (String)nodeService.getProperty(firstAction, PROP_DISPOSITION_ACTION_NAME);
@@ -1182,12 +1182,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                  }
               }
            }
-        if (newDispositionActionName == null || newDispositionActionDateAsOf == null 
+        if (newDispositionActionName == null || newDispositionActionDateAsOf == null
                 || dispositionNodeRef == null || newAction == null)
         {
             return null;
         }
-        return new NextActionFromDisposition(dispositionNodeRef, newAction, 
+        return new NextActionFromDisposition(dispositionNodeRef, newAction,
                 newDispositionActionName, newDispositionActionDateAsOf, WriteMode.DATE_AND_NAME);
     }
 }

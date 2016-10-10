@@ -260,6 +260,7 @@
       <property name="capabilityService" ref="CapabilityService" />
       <property name="recordableVersionService" ref="RecordableVersionService" />
       <property name="eagerContentStoreCleaner" ref="eagerContentStoreCleaner"/>
+      <property name="inplaceRecordService" ref="InplaceRecordService"/>
       <property name="ghostingEnabled">
          <value>${rm.ghosting.enabled}</value>
       </property>
@@ -761,7 +762,6 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
-      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Copy To -->

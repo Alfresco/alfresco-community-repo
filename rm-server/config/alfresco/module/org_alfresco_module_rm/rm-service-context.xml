@@ -145,6 +145,7 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isDisposableItemCutoff=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.cutoffDisposableItem=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.calculateAsOfDate=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.*=RM_DENY
                 ]]>
             </value>

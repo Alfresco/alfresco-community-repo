@@ -287,7 +287,7 @@ public class WorkflowApiClient extends PublicApiClient
             Map<String, String> params = new HashMap<String, String>();
             params.put("select", selectedFieldsValue);
             
-            HttpResponse response = update("tasks", taskId, null, null, task.toJSONString(), "Failed to update task", params);
+            HttpResponse response = update("tasks", taskId, null, null, task.toJSONString(), params, "Failed to update task", 200);
             
             JSONObject entry = (JSONObject) response.getJsonResponse().get("entry");
             return entry;

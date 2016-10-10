@@ -27,17 +27,6 @@
         </property>
     </bean>
 
-    <bean id="schema.create.jbpm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
-        <property name="schemaBootstrap" ref="schemaBootstrap" />
-        <property name="postCreateScriptUrls">
-            <list>
-                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-Extra.sql</value>
-                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-FK-indexes.sql</value>
-                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-varinst-indexes.sql</value>
-            </list>
-        </property>
-    </bean>
-
     <bean id="schema.upgrade.core" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
         <property name="schemaBootstrap" ref="schemaBootstrap" />
         <property name="preUpdateScriptPatches">
@@ -63,6 +52,7 @@
                 <ref bean="patch.db-V4.1-AuthorizationTables" />
                 <ref bean="patch.db-V5.0-ContentUrlEncryptionTables" />
                 <ref bean="patch.db-V5.1-metadata-query-indexes" />
+                <ref bean="patch.db-V5.2-remove-jbpm-tables-from-db" />
             </list>
         </property>
     </bean>
@@ -91,17 +81,6 @@
                 <ref bean="patch.db-V5.0-update-activiti-default-timestamp-column" />
                 <ref bean="patch.db-V5.0-activiti-correct-tenant-id-MSSQL" />
                 <ref bean="patch.db-V5.1-upgrade-to-activiti-5.19.0" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="schema.upgrade.jbpm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
-        <property name="schemaBootstrap" ref="schemaBootstrap" />
-        <property name="postUpdateScriptPatches">
-            <list>
-                <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
-                <ref bean="patch.db-V3.4-JBPM-varinst-indexes" />
-                <ref bean="patch.db-V3.4-remove-redundant-jbpm-indexes" />
             </list>
         </property>
     </bean>

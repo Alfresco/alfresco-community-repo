@@ -1484,7 +1484,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         
                         if (this.dialect != null && this.dialect instanceof MySQLInnoDBDialect)
                         {
-                            // note: enable bootstrap on MySQL 5.5 (eg. for auto-generated SQL, such as JBPM)
+                            // note: enable bootstrap on MySQL 5.5 (eg. for auto-generated SQL)
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
                         }
                         

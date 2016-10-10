@@ -62,14 +62,14 @@ public class ActivitiScriptNode extends ScriptNode
     @Override
     protected NodeValueConverter createValueConverter()
     {
-        return new JBPMNodeConverter();
+        return new ActivitiNodeConverter();
     }
 
     /**
      * Value converter for beanshell. Dates should be handled differenty since
      * default conversion uses top-level scope which is sometimes missing.
      */
-    private class JBPMNodeConverter extends NodeValueConverter
+    private class ActivitiNodeConverter extends NodeValueConverter
     {
         @Override
         public Serializable convertValueForRepo(Serializable value)

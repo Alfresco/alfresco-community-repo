@@ -1291,7 +1291,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
             /**
              * Get an invitation that does not exist.
              */
-            invitationService.getInvitation("jbpm$99999999");
+            invitationService.getInvitation("activiti$99999999");
             fail("should have thrown an exception");
         }
         catch (Exception e)

@@ -1640,7 +1640,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
             data.addFieldData("assoc_bpm_assignee_added", 
                         this.personManager.get(USER_ONE).toString());
             data.addFieldData("assoc_packageItems_added", this.document.toString());
-            this.formService.saveForm(new Item(WORKFLOW_FORM_ITEM_KIND, "jbpm$wf_adhoc"), data);
+            this.formService.saveForm(new Item(WORKFLOW_FORM_ITEM_KIND, "activiti$activiti_Adhoc"), data); // correct name would be "activiti$activitiAdhoc"
             fail("Expecting saveForm for a 'workflow' item kind containing an underscore to fail");
         }
         catch (Exception e)

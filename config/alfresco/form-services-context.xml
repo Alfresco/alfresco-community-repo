@@ -114,6 +114,9 @@
         parent="baseFormFilter">
 	   <property name="filterRegistry" ref="taskFilterRegistry" />
 	   <property name="maxLengthBpmCommentProperty">
+            <value>${system.workflow.comment.property.max.length}</value>
+       </property>
+	   <property name="maxLengthBpmCommentProperty_oldPropertyName">
             <value>${system.workflow.jbpm.comment.property.max.length}</value>
        </property>
     </bean>
@@ -122,6 +125,9 @@
         parent="baseFormFilter">
        <property name="filterRegistry" ref="workflowFilterRegistry" />
 	   <property name="maxLengthBpmCommentProperty">
+            <value>${system.workflow.comment.property.max.length}</value>
+       </property>
+	   <property name="maxLengthBpmCommentProperty_oldPropertyName">
             <value>${system.workflow.jbpm.comment.property.max.length}</value>
        </property>
     </bean>

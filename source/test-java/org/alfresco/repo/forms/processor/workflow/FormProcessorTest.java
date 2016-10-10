@@ -124,7 +124,7 @@ public abstract class FormProcessorTest extends TestCase
         wikiHamlet.append("Hamlet is one of the hardest parts for an actor to perform. It is one of the largest roles written by Shakespeare.");
         wikiHamlet.append("Many people disagree about what Hamlet is really thinking. For many actors, playing Hamlet is one of the most important parts of their career.");
 
-        // Get max length of jbpm_comment property from repository.properties
+        // Get max length of workflow comment property from repository.properties
         String maxLength = "4000";
 
         String dir = System.getProperty("user.dir");
@@ -139,7 +139,7 @@ public abstract class FormProcessorTest extends TestCase
                 Properties properties = new Properties();
                 properties.load(propStream);
 
-                maxLength = properties.getProperty("system.workflow.jbpm.comment.property.max.length");
+                maxLength = properties.getProperty("system.workflow.comment.property.max.length");
             }
             finally
             {

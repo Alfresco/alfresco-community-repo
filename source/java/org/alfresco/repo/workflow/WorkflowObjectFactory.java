@@ -469,10 +469,10 @@ public class WorkflowObjectFactory
     }
     
         /**
-     * Map QName to jBPM variable name
+     * Map QName to workflow variable name
      * 
      * @param name  QName
-     * @return  jBPM variable name
+     * @return  workflow variable name
      */
     public String mapQNameToName(QName name)
     {
@@ -480,10 +480,10 @@ public class WorkflowObjectFactory
     }
     
     /**
-     * Map QName to jBPM variable name
+     * Map QName to workflow variable name
      * 
      * @param name  QName
-     * @return  jBPM variable name
+     * @return  workflow variable name
      */
     public QName mapNameToQName(String name)
     {

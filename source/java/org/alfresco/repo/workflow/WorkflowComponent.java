@@ -122,7 +122,7 @@ public interface WorkflowComponent
     /**
      * Gets a Workflow Definition by unique name
      * 
-     * @param workflowName  workflow name e.g. jbpm$wf:review
+     * @param workflowName  workflow name e.g. activiti$activitiReview
      * @return  the deployed workflow definition
      */
     public WorkflowDefinition getDefinitionByName(String workflowName);
@@ -130,7 +130,7 @@ public interface WorkflowComponent
     /**
      * Gets all (including previous) Workflow Definitions for the given unique name
      * 
-     * @param workflowName  workflow name e.g. jbpm$wf:review
+     * @param workflowName  workflow name e.g. activiti$activitiReview
      * @return  the deployed workflow definition (or null if not found)
      */
     @Auditable(parameters = {"workflowName"})

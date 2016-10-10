@@ -42,21 +42,6 @@
          </mandatory-aspects>
       </type>
 
-    <type name="inwf:invitePendingTask">
-        <parent>bpm:workflowTask</parent>
-        <overrides>
-            <property name="bpm:hiddenTransitions">
-                <default>cancel</default>
-            </property>
-            <property name="bpm:reassignable">
-                <default>false</default>
-            </property>
-        </overrides>
-        <mandatory-aspects>
-            <aspect>inwf:nominatedInvitationStats</aspect>
-        </mandatory-aspects>
-    </type>
-
     <type name="inwf:activitiInvitePendingTask">
         <parent>bpm:activitiOutcomeTask</parent>
         <properties>

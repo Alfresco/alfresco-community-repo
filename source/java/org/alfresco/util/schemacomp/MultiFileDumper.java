@@ -35,7 +35,7 @@ import org.alfresco.util.TempFileProvider;
 import org.springframework.context.ApplicationContext;
 
 /**
- * Given a set of database object prefixes (e.g. "alf_", "jbpm_") and
+ * Given a set of database object prefixes (e.g. "alf_", "act_") and
  * a file name template (e.g. "AlfrescoSchema-MySQL-{0}-") will produce a set of files,
  * one per database object prefix of the form:
  * <pre>
@@ -53,7 +53,7 @@ public class MultiFileDumper
     private final String fileNameTemplate;
     private final DbToXMLFactory dbToXMLFactory;
     private final static String fileNameSuffix = ".xml";
-    public final static String[] DEFAULT_PREFIXES = new String[] { "alf_", "jbpm_", "act_" };
+    public final static String[] DEFAULT_PREFIXES = new String[] { "alf_", "act_" };
     private String defaultSchemaName;
     
     

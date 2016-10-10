@@ -195,7 +195,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
     
     private boolean fromSameParallelReviewWorkflow(WorkflowTask wt, String userName)
     {
-        // check whether this is parallel review workflow, "parallel" will match all jbpm and activity parallel workflows
+        // check whether this is parallel review workflow, "parallel" will match all parallel workflows (any engine)
         if (wt.getPath().getInstance().getDefinition().getName().toLowerCase().contains("parallel"))
         {
             WorkflowTaskQuery tasksQuery = new WorkflowTaskQuery();

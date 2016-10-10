@@ -285,8 +285,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             return null;
                         }
                     });
+                 dsNodeRef = dsNextAction.getDispositionNodeRef();    
             }
-            dsNodeRef = dsNextAction.getDispositionNodeRef();
         }
         else
         {

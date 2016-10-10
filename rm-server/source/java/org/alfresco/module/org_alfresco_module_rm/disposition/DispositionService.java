@@ -243,4 +243,15 @@ public interface DispositionService
      * @return date
      */
     Date getDispositionActionDate(NodeRef dispositionSchedule, String dispositionActionName);
+
+    /**
+     * Compute the "disposition as of" date (if necessary) for a disposition action and a node.
+     *
+     * @param nodeRef The node which the schedule applies to.
+     * @param dispositionActionDefinition The definition of the disposition action.
+     * @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
+     * @return The new "disposition as of" date.
+     */
+    Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition,
+                boolean allowContextFromAsOf);
 }

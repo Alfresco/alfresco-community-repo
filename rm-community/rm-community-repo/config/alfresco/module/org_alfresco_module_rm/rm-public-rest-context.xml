@@ -26,6 +26,7 @@
     <bean id="rm.nodes" class="org.alfresco.rest.api.impl.RMNodesImpl" parent="nodes" init-method="init">
         <property name="quickShareLinks" ref="rm.QuickShareLinks"/>
         <property name="filePlanService" ref="FilePlanService"/>
+        <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
     </bean>
 
     <bean id="rm.Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -1257,6 +1257,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(this.excludeTenantFilter).append(", isBulkFetchEnabled=").append(this.isBulkFetchEnabled)
                     .append(", queryConsistency=").append(this.queryConsistency).append(", sinceTxId=")
                     .append(this.sinceTxId).append(", searchTerm=").append(this.searchTerm)
+                    .append(", highlight=").append(this.hightlight)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();
     }

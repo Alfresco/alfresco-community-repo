@@ -2,11 +2,13 @@
   <shortname>Removes dynamic authorities</shortname>
   <description><![CDATA[
   Removes dynamic authorities from in place records created in previous verssions.<br/>
-  URL parameter batchsize is mandatory, and represents the number of records that are processed in one transaction.<br/>
+  URL parameter batchsize is mandatory, and represents the maximum number of records that can be processed in one transaction.<br/>
   URL parameter maxProcessedRecords is optional, and represents the maximum number of records that will be processed in one request.<br/>
+  URL parameter export is optional, and if the it's value is true, will export the processed records into a csv file.<br/>
+  URL parameter parentNodeRef is optional, and represents the nodeRef of the folder that contains the records to be processed.<br/>
   ]]>
   </description>
-  <url>/api/rm/rm-dynamicauthorities?batchsize={batchsize}&amp;maxProcessedRecords={maxProcessedRecords?}</url>
+  <url>/api/rm/rm-dynamicauthorities?batchsize={batchsize}&amp;maxProcessedRecords={maxProcessedRecords?}&amp;export={export?}&amp;parentNodeRef={parentNodeRef?}</url>
   <format default="json">argument</format>
   <authentication>admin</authentication>
   <transaction allow="readonly">required</transaction>

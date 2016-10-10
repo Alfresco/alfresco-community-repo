@@ -56,7 +56,7 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * Common RM test utility methods.
- * 
+ *
  * @author Roy Wetherall
  */
 public class CommonRMTestUtils implements RecordsManagementModel
@@ -77,10 +77,12 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String PERIOD_NONE = "none|0";
     public static final String PERIOD_IMMEDIATELY = "immediately|0";
     public static final String PERIOD_ONE_WEEK = "week|1";
+    public static final String PERIOD_ONE_YEAR = "year|1";
+    public static final String PERIOD_THREE_YEARS = "year|3";
 
     /**
      * Constructor
-     * 
+     *
      * @param applicationContext    application context
      */
     public CommonRMTestUtils(ApplicationContext applicationContext)
@@ -96,7 +98,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
     /**
      * Create a disposition schedule
-     * 
+     *
      * @param container record category
      * @return {@link DispositionSchedule}  created disposition schedule node reference
      */
@@ -130,15 +132,15 @@ public class CommonRMTestUtils implements RecordsManagementModel
                                     boolean extendedDispositionSchedule)
     {
         return createDispositionSchedule(
-                container, 
-                dispositionInstructions, 
-                dispositionAuthority, 
-                isRecordLevel, 
-                defaultDispositionActions, 
-                extendedDispositionSchedule, 
+                container,
+                dispositionInstructions,
+                dispositionAuthority,
+                isRecordLevel,
+                defaultDispositionActions,
+                extendedDispositionSchedule,
                 DEFAULT_EVENT_NAME);
     }
-    
+
     /**
      * Create test disposition schedule
      */
@@ -242,8 +244,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 modelSecurityService.setEnabled(false);
                 try
                 {
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());                    
-                    nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");                    
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
+                    nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");
                     actionService.executeRecordsManagementAction(record, "declareRecord");
                 }
                 finally
@@ -256,7 +258,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         }, AuthenticationUtil.getAdminUserName());
 
-	}
+    }
 
     public void closeFolder(final NodeRef recordFolder)
     {
@@ -294,10 +296,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         return filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
     }
-    
+
     /**
      * Helper method to complete event on disposable item
-     * 
+     *
      * @param disposableItem    disposable item (record or record folder)
      * @param eventName         event name
      */
@@ -306,8 +308,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
         // build action properties
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(CompleteEventAction.PARAM_EVENT_NAME, eventName);
-        
+
         // complete event
-        actionService.executeRecordsManagementAction(disposableItem, CompleteEventAction.NAME, params); 
+        actionService.executeRecordsManagementAction(disposableItem, CompleteEventAction.NAME, params);
     }
 }

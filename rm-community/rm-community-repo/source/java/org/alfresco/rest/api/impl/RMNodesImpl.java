@@ -27,28 +27,30 @@
 
 package org.alfresco.rest.api.impl;
 
-import java.io.Serializable;
+import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.rest.api.model.CategoryNode;
+import org.alfresco.rest.api.model.FileplanComponentNode;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.PathInfo;
-import org.alfresco.rest.api.model.RMNode;
+import org.alfresco.rest.api.model.RecordFolderNode;
+import org.alfresco.rest.api.model.RecordNode;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -58,7 +60,7 @@ import org.alfresco.util.Pair;
  * @author Ana Bozianu
  * @since 2.6
  */
-public class RMNodesImpl extends NodesImpl
+public class RMNodesImpl extends NodesImpl implements RMNodes
 {
     String FILE_PLAN = "-filePlan-";
     String TRANSFERS = "-transfers-";
@@ -73,23 +75,22 @@ public class RMNodesImpl extends NodesImpl
     
     private FilePlanService filePlanService;
     private NodeService nodeService;
-    private ServiceRegistry sr;
+    private RecordsManagementServiceRegistry serviceRegistry;
     private Repository repositoryHelper;
     private DictionaryService dictionaryService;
-    private NamespaceService namespaceService;
+    private DispositionService dispositionService;
 
     public void init()
     {
         super.init();
-        this.nodeService = sr.getNodeService();
-        this.dictionaryService = sr.getDictionaryService();
-        this.namespaceService = sr.getNamespaceService();
+        this.nodeService = serviceRegistry.getNodeService();
+        this.dictionaryService = serviceRegistry.getDictionaryService();
+        this.dispositionService = serviceRegistry.getDispositionService();
     }
 
-    public void setServiceRegistry(ServiceRegistry sr)
+    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry serviceRegistry)
     {
-        super.setServiceRegistry(sr);
-        this.sr = sr;
+        this.serviceRegistry = serviceRegistry;
     }
 
     public void setRepositoryHelper(Repository repositoryHelper)
@@ -106,58 +107,61 @@ public class RMNodesImpl extends NodesImpl
     @Override
     public Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
     {
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        Node originalNode = super.getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, includeParam, mapUserInfo);
 
-        // Get general information
-        if (nodeTypeQName == null)
+        if(nodeTypeQName == null)
         {
             nodeTypeQName = nodeService.getType(nodeRef);
         }
 
-        if (parentNodeRef == null)
-        {
-            parentNodeRef = getParentNodeRef(nodeRef);
-        }
-
         RMNodeType type = getType(nodeTypeQName, nodeRef);
-        RMNode node;
+        FileplanComponentNode node = null;
         if (mapUserInfo == null)
         {
             mapUserInfo = new HashMap<>(2);
         }
-        node = new RMNode(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
 
-        if (type == RMNodeType.CATEGORY)
+        if(type == null)
         {
-            node.setIsCategory(true);
+            if(filePlanService.isFilePlanComponent(nodeRef))
+            {
+                node = new FileplanComponentNode(originalNode);
+            }
+            else
+            {
+                throw new InvalidParameterException("The provided node is not a fileplan component");
+            }
         }
-        else if (type == RMNodeType.RECORD_FOLDER)
+        else
         {
-            node.setIsRecordFolder(true);
-        }
-        else if (type == RMNodeType.FILE)
-        {
-            node.setIsFile(true);
-        }
-
-        PathInfo pathInfo = null;
-        if (includeParam.contains(PARAM_INCLUDE_PATH))
-        {
-            ChildAssociationRef archivedParentAssoc = (ChildAssociationRef) properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
-            pathInfo = lookupPathInfo(nodeRef, archivedParentAssoc);
-        }
-        node.setPath(pathInfo);
-        node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
-
-        // Get optional fields
-        if (includeParam.size() > 0)
-        {
-            node.setProperties(mapFromNodeProperties(properties, includeParam, mapUserInfo));
-        }
-
-        if (includeParam.contains(PARAM_INCLUDE_ASPECTNAMES))
-        {
-            node.setAspectNames(mapFromNodeAspects(nodeService.getAspects(nodeRef)));
+            switch(type)
+            {
+                case CATEGORY:
+                    CategoryNode categoryNode = new CategoryNode(originalNode);
+                    if (includeParam.contains(PARAM_INCLUDE_HAS_RETENTION_SCHEDULE))
+                    {
+                        DispositionSchedule ds = dispositionService.getDispositionSchedule(nodeRef);
+                        categoryNode.setHasRetentionSchedule(ds!=null?true:false);
+                    }
+                    node = categoryNode;
+                    break;
+                case RECORD_FOLDER:
+                    RecordFolderNode rfNode = new RecordFolderNode(originalNode);
+                    if (includeParam.contains(PARAM_INCLUDE_IS_CLOSED))
+                    {
+                        rfNode.setIsClosed((Boolean) nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_IS_CLOSED));
+                    }
+                    node = rfNode;
+                    break;
+                case FILE:
+                    RecordNode rNode = new RecordNode(originalNode);
+                    if (includeParam.contains(PARAM_INCLUDE_IS_COMPLETED))
+                    {
+                        rNode.setIsCompleted(nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_DECLARED_RECORD));
+                    }
+                    node = rNode;
+                    break;
+            }
         }
 
         return node;
@@ -223,16 +227,6 @@ public class RMNodesImpl extends NodesImpl
         return super.validateOrLookupNode(nodeId, path);
     }
 
-    private NodeRef getParentNodeRef(NodeRef nodeRef)
-    {
-        if (repositoryHelper.getCompanyHome().equals(nodeRef))
-        {
-            return null; // note: does not make sense to return parent above C/H
-        }
-
-        return nodeService.getPrimaryParent(nodeRef).getParentRef();
-    }
-    
     private RMNodeType getType(QName typeQName, NodeRef nodeRef)
     {
         // quick check for common types
@@ -244,12 +238,22 @@ public class RMNodesImpl extends NodesImpl
         {
             return RMNodeType.CATEGORY;
         }
-        else if (typeQName.equals(ContentModel.TYPE_CONTENT) || dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+        if (typeQName.equals(ContentModel.TYPE_CONTENT))
         {
             return RMNodeType.FILE;
         }
 
-        return null; // unknown
+        // check subclasses
+        if(dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+        {
+            return RMNodeType.FILE;
+        }
+        if(dictionaryService.isSubClass(typeQName, RecordsManagementModel.TYPE_RECORD_FOLDER))
+        {
+            return RMNodeType.RECORD_FOLDER;
+        }
+
+        return null;
     }
     
     @Override
@@ -262,7 +266,10 @@ public class RMNodesImpl extends NodesImpl
         searchTypeQNames.remove(RecordsManagementModel.TYPE_HOLD_CONTAINER);
         searchTypeQNames.remove(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
         searchTypeQNames.remove(RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
+
         searchTypeQNames.remove(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE);
+        searchTypeQNames.remove(RecordsManagementModel.TYPE_DISPOSITION_ACTION);
+        searchTypeQNames.remove(RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION);
 
         return new Pair<>(searchTypeQNames, ignoreAspectQNames);
     }

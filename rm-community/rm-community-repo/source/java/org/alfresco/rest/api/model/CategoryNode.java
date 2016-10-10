@@ -24,7 +24,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.rest.api.model;
 
 import java.io.Serializable;
@@ -35,49 +34,36 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Concrete class carrying general information for an RM node
+ * Concrete class carrying specific information for a category
  * 
  * @author Ana Bozianu
  * @since 2.6
  */
-public class RMNode extends Node
+public class CategoryNode extends FileplanComponentNode
 {
-    protected Boolean isCategory;
-    protected Boolean isRecordFolder;
     protected Boolean hasRetentionSchedule;
 
-    public RMNode(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
+    public CategoryNode(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         super(nodeRef, parentNodeRef, nodeProps, mapUserInfo, sr);
-
-        isCategory = false;
-        isRecordFolder = false;
-        isFile = false;
     }
 
-    public Boolean getIsCategory()
+    public CategoryNode(Node node)
     {
-        return isCategory;
+        super(node);
     }
 
-    public Boolean getIsRecordFolder()
+    @Override
+    protected void defineType()
     {
-        return isRecordFolder;
+        setIsCategory(true);
+        setIsRecordFolder(false);
+        setIsFile(false);
     }
 
     public Boolean getHasRetentionSchedule()
     {
         return hasRetentionSchedule;
-    }
-
-    public void setIsCategory(Boolean isCategory)
-    {
-        this.isCategory = isCategory;
-    }
-
-    public void setIsRecordFolder(Boolean isRecordFolder)
-    {
-        this.isRecordFolder = isRecordFolder;
     }
 
     public void setHasRetentionSchedule(Boolean hasRetentionSchedule)

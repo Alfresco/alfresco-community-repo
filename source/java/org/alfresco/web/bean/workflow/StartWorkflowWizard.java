@@ -47,7 +47,6 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.publishing.PublishingEventHelper;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
-import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -820,7 +819,6 @@ public class StartWorkflowWizard extends BaseWizardBean
       {
          publishingWorkflows = new ArrayList<String>(2);
          
-         publishingWorkflows.add(JBPMEngine.ENGINE_ID + "$" + PublishingEventHelper.WORKFLOW_DEFINITION_NAME);
          publishingWorkflows.add(ActivitiConstants.ENGINE_ID + "$" + PublishingEventHelper.WORKFLOW_DEFINITION_NAME);
       }
       

@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * This servlet filter is used to restrict direct URL access to administration
- * resource in the web client, for example the admin and jBPM consoles.
+ * resource in the web client, for example the admin console.
  * 
  * @author gavinc
  * @deprecated 5.0 not exposed in web-client web.xml

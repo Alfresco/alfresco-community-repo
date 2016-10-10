@@ -178,15 +178,6 @@ public class InviteServiceTest extends BaseWebScriptTest
                 {
                     public Object doWork() throws Exception
                     {
-//                        // redeploy invite process definition in case it has been modified
-//                        WorkflowDefinition inviteWfDefinition = workflowService.getDefinitionByName(
-//                                "jbpm$" + WorkflowModelNominatedInvitation.WF_PROCESS_INVITE.toPrefixString(namespaceService));
-//                        workflowService.undeployDefinition(inviteWfDefinition.id);
-//                        ClassPathResource inviteWfResource = new ClassPathResource(
-//                                "alfresco/workflow/invitation-nominated_processdefinition.xml");
-//                        workflowService.deployDefinition(
-//                                JBPMEngine.ENGINE_ID, inviteWfResource.getInputStream(), MimetypeMap.MIMETYPE_XML);
-
                         // Create new invitee email address list
                         inviteeEmailAddrs = new ArrayList<String>();
 

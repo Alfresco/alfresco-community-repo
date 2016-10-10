@@ -2,7 +2,7 @@
    <shortname>IMAP Workflow Handler</shortname>
    <description>
       This webscript starts a different workflow. It is used in the IMAP email body links. The workflowType should be a fully-qualified worklfow-definition name, with 
-      engine-name included. eg: activiti$activitiAdhoc. If engine-name is left out, JBPM is used as engine-name for the process.
+      engine-name included. eg: activiti$activitiAdhoc. If engine-name is left out, Activiti is used as engine-name for the process.
       (The optional feature is the reply email with a report.)
    </description>
    <url>/imap/start-workflow?alfTicket={ticket}&amp;nodeRefId={id}&amp;workflowType={wt}&amp;assignTo={at}&amp;workflowDueDateDay={ddd}&amp;workflowDueDateMonth={ddm}&amp;workflowDueDateYear={ddy}&amp;description={desc}&amp;workflowPriority={wp?}</url>

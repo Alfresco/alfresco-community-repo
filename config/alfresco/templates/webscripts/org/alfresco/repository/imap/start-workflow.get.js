@@ -13,7 +13,7 @@ function main()
     // ALF-13898: accept FULL workflow-definition name if provided, otherwise revert to prefixing behavior
     var workflowType = args.workflowType;
     if(workflowType.indexOf('$') < 0) {
-       workflowType = "jbpm$wf:" + workflowType;
+       workflowType = "activiti$" + workflowType;
     }
     
     var assignTo = people.getPerson(args.assignTo);

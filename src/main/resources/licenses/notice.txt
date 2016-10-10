@@ -225,7 +225,6 @@ libwmf  http://wvware.sourceforge.net/libwmf.html
 
 === LGPL 2.1 ===
 Hibernate   http://www.hibernate.org/
-JBPM    http://jbpm.org/
 jid3lib http://javamusictag.sourceforge.net/
 JMagick http://sourceforge.net/projects/jmagick/
 JODConverter    http://jodconverter.sourceforge.net/
@@ -312,7 +311,6 @@ TrueLicense     http://truelicense.java.net/
 
 === LGPL 2.1 ===
 Hibernate   http://www.hibernate.org/
-JBPM    http://jbpm.org/
 JODConverter    http://jodconverter.sourceforge.net/
 PDF Renderer    http://java.net/projects/pdf-renderer
 TinyMCE http://www.tinymce.com/

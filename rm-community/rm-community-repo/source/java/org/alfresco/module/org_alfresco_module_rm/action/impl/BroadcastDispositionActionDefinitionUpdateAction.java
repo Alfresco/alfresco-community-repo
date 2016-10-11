@@ -246,17 +246,11 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
      * @param dispositionActionDef The disposition action definition node
      * @param nextAction The next disposition action
      */
-    private void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
+    protected void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
     {
-        Date newAsOfDate = null;
-        Period dispositionPeriod = (Period) getNodeService().getProperty(dispositionActionDef, PROP_DISPOSITION_PERIOD);
-
-        if (dispositionPeriod != null)
-        {
-            // calculate the new as of date as we have been provided a new period
-            Date now = new Date();
-            newAsOfDate = dispositionPeriod.getNextDate(now);
-        }
+        NodeRef dispositionedNode = getNodeService().getPrimaryParent(nextAction.getNodeRef()).getParentRef();
+        DispositionActionDefinition definition = nextAction.getDispositionActionDefinition();
+        Date newAsOfDate = getDispositionService().calculateAsOfDate(dispositionedNode, definition, false);
 
         if (logger.isDebugEnabled())
         {

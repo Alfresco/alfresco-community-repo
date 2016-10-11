@@ -87,18 +87,20 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         AccessStatus acs = super.hasPermission(nodeRef, perm);
+
         if (AccessStatus.DENIED.equals(acs) &&
-            PermissionService.READ.equals(perm) &&
             nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
-            return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
-        }
-        // Added ADD_CHILDREN and WRITE_PROPERTIES check in for MNT-16852.
-        else if (AccessStatus.DENIED.equals(acs) &&
-                (PermissionService.WRITE.equals(perm) || PermissionService.ADD_CHILDREN.equals(perm) || PermissionService.WRITE_PROPERTIES.equals(perm)) &&
-                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-        {
-            return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
+            if (PermissionService.READ.equals(perm))
+            {
+                return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
+            }
+            else if (PermissionService.WRITE.equals(perm) ||
+                    PermissionService.ADD_CHILDREN.equals(perm) ||
+                    PermissionService.WRITE_PROPERTIES.equals(perm))
+            {
+                return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
+            }
         }
 
         return acs;

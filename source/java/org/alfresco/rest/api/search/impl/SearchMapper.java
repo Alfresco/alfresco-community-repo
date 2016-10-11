@@ -43,6 +43,7 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
@@ -102,6 +103,7 @@ public class SearchMapper
         fromFacetQuery(sp, searchQuery.getFacetQueries());
         fromFacetFields(sp, searchQuery.getFacetFields());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
+        fromHighlight(sp, searchQuery.getHighlight());
         fromScope(sp, searchQuery.getScope());
         fromLimits(sp, searchQuery.getLimits());
 
@@ -424,6 +426,16 @@ public class SearchMapper
                 }
             }
         }
+    }
+
+    /**
+     * Sets the hightlight object on search parameters
+     * @param sp SearchParameters
+     * @param hightlight GeneralHighlightParameters
+     */
+    public void fromHighlight(SearchParameters sp, GeneralHighlightParameters hightlight)
+    {
+        sp.setHightlight(hightlight);
     }
 
     /**

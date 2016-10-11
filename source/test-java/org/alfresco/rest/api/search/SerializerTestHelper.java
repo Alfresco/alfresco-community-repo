@@ -66,6 +66,12 @@ public class SerializerTestHelper implements RequestReader
                 + "\"limits\": {\"permissionEvaluationCount\": \"2000\",\"permissionEvaluationTime\": \"5000\"},"
                 + "\"scope\": { \"stores\": [\"workspace://SpacesStore\"]},"
                 + "\"fields\": [\"id\", \"name\"],"
+                + "\"highlight\": {\"prefix\": \"[\",\"postfix\": \"]\",\"snippetCount\": \"20\","
+                + "\"fragmentSize\": \"10\",\"mergeContiguous\": \"true\",\"maxAnalyzedChars\": \"40\", \"usePhraseHighlighter\": \"true\","
+                + "\"fields\": [ "
+                +" {\"field\": \"my\", \"snippetCount\": \"23\", \"fragmentSize\": \"5\", \"mergeContiguous\": \"true\", \"prefix\": \"?\", \"postfix\": \"¡\"  }, "
+                +" {\"field\": \"your\", \"snippetCount\": \"3\", \"fragmentSize\": \"15\", \"mergeContiguous\": \"false\", \"prefix\": \"(\", \"postfix\": \")\"  } "
+                + " ]" + " },"
                 + "\"include\": [\"aspectNames\", \"properties\"]}";
 
     public SerializerTestHelper()

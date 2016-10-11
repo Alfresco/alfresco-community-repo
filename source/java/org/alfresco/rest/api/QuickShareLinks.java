@@ -66,6 +66,15 @@ public interface QuickShareLinks
     BinaryResource readProperty(String sharedId, String renditionId, Parameters parameters) throws EntityNotFoundException;
 
     /**
+     * Gets information about a rendition of a shared link.
+     *
+     * @param shareId
+     * @param renditionId
+     * @return the {@link Rendition} object
+     */
+    Rendition getRendition(String shareId, String renditionId);
+
+    /**
      * List renditions info - note: only returns available (=> created) renditions.
      *
      * Note: does *not* require authenticated access for (public) shared link.

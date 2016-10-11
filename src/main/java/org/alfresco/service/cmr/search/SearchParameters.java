@@ -187,6 +187,8 @@ public class SearchParameters implements BasicSearchParameters
     
     private boolean spellCheck;
 
+    private GeneralHighlightParameters hightlight;
+
     /**
      * Default constructor
      */
@@ -231,6 +233,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.filterQueries.addAll(this.filterQueries);
         sp.searchTerm = this.searchTerm;
         sp.spellCheck = this.spellCheck;
+        sp.hightlight = this.hightlight;
         return sp;
     }
     
@@ -275,6 +278,11 @@ public class SearchParameters implements BasicSearchParameters
     public String getQuery()
     {
         return query;
+    }
+
+    public void setHightlight(GeneralHighlightParameters hightlight)
+    {
+        this.hightlight = hightlight;
     }
 
     /**
@@ -368,6 +376,24 @@ public class SearchParameters implements BasicSearchParameters
     public void addSort(SortDefinition sortDefinition)
     {
         sortDefinitions.add(sortDefinition);
+    }
+
+    /**
+     * Adds parameters used for search highlighing
+     * @param hightlight - the highlighting parameters
+     */
+    public void addHightlight(GeneralHighlightParameters hightlight)
+    {
+        this.hightlight = hightlight;
+    }
+
+    /**
+     * Gets the parameters used for search highlighing
+     * @return GeneralHighlightParameters - the highlighting parameters
+     */
+    public GeneralHighlightParameters getHightlight()
+    {
+        return hightlight;
     }
 
     /**
@@ -1231,6 +1257,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(this.excludeTenantFilter).append(", isBulkFetchEnabled=").append(this.isBulkFetchEnabled)
                     .append(", queryConsistency=").append(this.queryConsistency).append(", sinceTxId=")
                     .append(this.sinceTxId).append(", searchTerm=").append(this.searchTerm)
+                    .append(", highlight=").append(this.hightlight)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();
     }

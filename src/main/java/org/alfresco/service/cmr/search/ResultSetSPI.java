@@ -189,6 +189,12 @@ public interface ResultSetSPI<ROW extends ResultSetRow, MD extends ResultSetMeta
     public Map<String, Integer> getFacetQueries();
 
     /**
+     * Gets the highlighting results.  Returns a Map keyed by noderef.
+     * Each value is a pair of "fieldname" and a String array of highlight snippets
+     * @return the Map
+     */
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting();
+    /**
      * Gets the spell check result
      * 
      * @return SpellCheckResult

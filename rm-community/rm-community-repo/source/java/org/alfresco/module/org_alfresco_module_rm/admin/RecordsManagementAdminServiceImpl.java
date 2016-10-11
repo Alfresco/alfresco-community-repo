@@ -172,16 +172,18 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event)
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                // initialise custom properties
-                initCustomMap();
-                
-                return null;
-            }
-         });                 
+
+        if(!isCustomMapInit && getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL)) {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+                public Void execute() throws Throwable {
+
+                    // initialise custom properties
+                    initCustomMap();
+
+                    return null;
+                }
+            });
+        }
     }
     
     /**

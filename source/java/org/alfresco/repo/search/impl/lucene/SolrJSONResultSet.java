@@ -37,7 +37,6 @@ import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -82,6 +81,8 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     private HashMap<String, List<Pair<String, Integer>>> fieldFacets = new HashMap<String, List<Pair<String, Integer>>>(1);
     
     private Map<String, Integer> facetQueries = new HashMap<String, Integer>();
+
+    private Map<NodeRef, List<Pair<String, List<String>>>> highlighting = new HashMap<>();
     
     private NodeDAO nodeDao;
     
@@ -163,11 +164,13 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
             {
                 nodeDao.cacheNodesById(rawDbids);
             }
-            
+
             // filter out rubbish
             
             page = new ArrayList<Pair<Long, Float>>(numDocs);
             refs = new ArrayList<NodeRef>(numDocs);
+            Map<Long,NodeRef> dbIdNodeRefs = new HashMap<>(numDocs);
+
             for(int i = 0; i < numDocs; i++)
             {
                 Long dbid = rawDbids.get(i);
@@ -177,9 +180,46 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 {
                     page.add(new Pair<Long, Float>(dbid, rawScores.get(i)));
                     refs.add(nodeRef);
+                    dbIdNodeRefs.put(dbid, nodeRef);
                 }
             }
-            
+
+            //Process hightlight response
+            if(json.has("highlighting"))
+            {
+                JSONObject highObj = (JSONObject) json.getJSONObject("highlighting");
+                for(Iterator it = highObj.keys(); it.hasNext(); /**/)
+                {
+                    Long nodeKey = null;
+                    String aKey = (String) it.next();
+                    JSONObject high = highObj.getJSONObject(aKey);
+                    List< Pair<String, List<String>> > highFields = new ArrayList<>(high.length());
+                    for(Iterator hit = high.keys(); hit.hasNext(); /**/)
+                    {
+                        String highKey = (String) hit.next();
+                        if ("DBID".equals(highKey))
+                        {
+                            nodeKey = high.getLong("DBID");
+                        }
+                        else
+                        {
+                            JSONArray highVal = high.getJSONArray(highKey);
+                            List<String> highValues = new ArrayList<>(highVal.length());
+                            for (int i = 0, length = highVal.length(); i < length; i++)
+                            {
+                                highValues.add(highVal.getString(i));
+                            }
+                            Pair<String, List<String>> highPair = new Pair<String, List<String>>(highKey, highValues);
+                            highFields.add(highPair);
+                        }
+                    }
+                    NodeRef nodefRef = dbIdNodeRefs.get(nodeKey);
+                    if (nodefRef != null && !highFields.isEmpty())
+                    {
+                        highlighting.put(nodefRef, highFields);
+                    }
+                }
+            }
             if(json.has("facet_counts"))
             {
                 JSONObject facet_counts = json.getJSONObject("facet_counts");
@@ -483,6 +523,11 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         return Collections.unmodifiableMap(facetQueries);
     }
 
+    @Override
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
+    {
+        return Collections.unmodifiableMap(highlighting);
+    }
 
     @Override
     public SpellCheckResult getSpellCheckResult()

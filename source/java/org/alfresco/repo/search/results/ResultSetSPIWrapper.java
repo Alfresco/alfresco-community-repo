@@ -175,7 +175,13 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
     {
         return wrapped.getSpellCheckResult();
     }
-    
+
+    @Override
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
+    {
+        return wrapped.getHighlighting();
+    }
+
     private static class WrappedIterator<ROW extends ResultSetRow> implements Iterator<ResultSetRow>
     {
         private Iterator<ROW> wrapped;

@@ -266,25 +266,28 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             final NextActionFromDisposition dsNextAction = getDispositionActionByNameForRecord(nodeRef);
 
-            if (dsNextAction != null && !dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
+            if (dsNextAction != null)
             {
-                final NodeRef action = dsNextAction.getNextActionNodeRef();
-                final String dispositionActionName = dsNextAction.getNextActionName();
-                final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
-
-                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                if (!dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
                 {
-                    @Override
-                    public Void doWork()
+                    final NodeRef action = dsNextAction.getNextActionNodeRef();
+                    final String dispositionActionName = dsNextAction.getNextActionName();
+                    final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+
+                    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                     {
-                        nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                        if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
+                        @Override
+                        public Void doWork()
                         {
-                            nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
+                            nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                            if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
+                            {
+                                nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
+                            }
+                            return null;
                         }
-                        return null;
-                    }
-                });
+                    });
+                }
                 dsNodeRef = dsNextAction.getDispositionNodeRef();
             }
         }
@@ -696,9 +699,16 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             }
             else
             {
-                // for now use 'NOW' as the default context date
-                // TODO set the default period property ... cut off date or last disposition date depending on context
-                contextDate = new Date();
+                if (period.getPeriodType().equals("immediately"))
+                {
+                    contextDate = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
+                }
+                else
+                {
+                    // for now use 'NOW' as the default context date
+                    // TODO set the default period property ... cut off date or last disposition date depending on context
+                    contextDate = new Date();
+                }
             }
 
             // Calculate the as of date
@@ -1006,6 +1016,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
     public Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName)
     {
+        DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dispositionSchedule);
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(dispositionSchedule);
         if (assocs != null && assocs.size() > 0)
         {
@@ -1013,16 +1024,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             {
                 if (assoc != null && assoc.getQName().getLocalName().contains(dispositionActionName))
                 {
-                    Date newAsOfDate = null;
-                    Period dispositionPeriod = (Period) nodeService.getProperty(assoc.getChildRef(), PROP_DISPOSITION_PERIOD);
-                    Date recordCreationDate = (Date)nodeService.getProperty(record, ContentModel.PROP_CREATED);
-
-                    if (dispositionPeriod != null)
-                    {
-                        // calculate the new as of date as we have been provided a new period
-                        newAsOfDate = dispositionPeriod.getNextDate(recordCreationDate);
-                    }
-                    return newAsOfDate;
+                    DispositionActionDefinition actionDefinition = ds.getDispositionActionDefinition(assoc.getChildRef().getId());
+                    return calculateAsOfDate(record, actionDefinition, true);
                 }
             }
         }

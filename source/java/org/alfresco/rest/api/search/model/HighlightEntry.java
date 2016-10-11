@@ -28,26 +28,28 @@ package org.alfresco.rest.api.search.model;
 import java.util.List;
 
 /**
- * POJO class representing the extra information that comes back from Search.
- **/
-public class SearchEntry
+ * POJO class representing a HighlightEntry
+ *
+ * @author Gethin James
+ */
+public class HighlightEntry
 {
-    private final Float score;
-    private final List<HighlightEntry> highlight;
+    private final String field;
+    private final List<String> snippets;
 
-    public SearchEntry(Float score, List<HighlightEntry> highlight)
+    public HighlightEntry(String field, List<String> snippets)
     {
-        this.score = score;
-        this.highlight = highlight;
+        this.field = field;
+        this.snippets = snippets;
     }
 
-    public Float getScore()
+    public String getField()
     {
-        return score;
+        return field;
     }
 
-    public List<HighlightEntry> getHighlight()
+    public List<String> getSnippets()
     {
-        return highlight;
+        return snippets;
     }
 }

@@ -33,11 +33,13 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
+import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
@@ -80,6 +82,7 @@ public class ResultMapper
         Integer total = null;
         List<Node> noderesults = new ArrayList();
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
+        Map<NodeRef, List<Pair<String, List<String>>>> hightLighting = results.getHighlighting();
 
         results.forEach(row ->
         {
@@ -87,7 +90,18 @@ public class ResultMapper
             if (aNode != null)
             {
                 float f = row.getScore();
-                aNode.setSearch(new SearchEntry(f));
+                List<HighlightEntry> highlightEntries = null;
+                List<Pair<String, List<String>>> high = hightLighting.get(row.getNodeRef());
+
+                if (high != null && !high.isEmpty())
+                {
+                    highlightEntries = new ArrayList<HighlightEntry>(high.size());
+                    for (Pair<String, List<String>> highlight:high)
+                    {
+                        highlightEntries.add(new HighlightEntry(highlight.getFirst(), highlight.getSecond()));
+                    }
+                }
+                aNode.setSearch(new SearchEntry(f, highlightEntries));
                 noderesults.add(aNode);
             }
             else

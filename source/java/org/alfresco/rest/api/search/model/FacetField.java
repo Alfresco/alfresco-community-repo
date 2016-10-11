@@ -68,7 +68,7 @@ public class FacetField
         this.missing = missing == null?false:missing;
         this.limit = limit; //Can be null
         this.offset = offset == null?0:offset;
-        this.mincount = mincount == null?0:mincount;
+        this.mincount = mincount == null?1:mincount;
         this.facetEnumCacheMinDf = facetEnumCacheMinDf == null?0:facetEnumCacheMinDf;
     }
     /**

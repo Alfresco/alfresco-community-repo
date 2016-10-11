@@ -187,7 +187,7 @@ public class SearchParameters implements BasicSearchParameters
     
     private boolean spellCheck;
 
-    private GeneralHighlightParameters hightlight;
+    private GeneralHighlightParameters highlight;
 
     /**
      * Default constructor
@@ -233,7 +233,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.filterQueries.addAll(this.filterQueries);
         sp.searchTerm = this.searchTerm;
         sp.spellCheck = this.spellCheck;
-        sp.hightlight = this.hightlight;
+        sp.highlight = this.highlight;
         return sp;
     }
     
@@ -280,9 +280,13 @@ public class SearchParameters implements BasicSearchParameters
         return query;
     }
 
-    public void setHightlight(GeneralHighlightParameters hightlight)
+    /**
+      Sets parameters used for search highlighing
+     * @param highlight GeneralHighlightParameters
+     */
+    public void setHighlight(GeneralHighlightParameters highlight)
     {
-        this.hightlight = hightlight;
+        this.highlight = highlight;
     }
 
     /**
@@ -379,21 +383,12 @@ public class SearchParameters implements BasicSearchParameters
     }
 
     /**
-     * Adds parameters used for search highlighing
-     * @param hightlight - the highlighting parameters
-     */
-    public void addHightlight(GeneralHighlightParameters hightlight)
-    {
-        this.hightlight = hightlight;
-    }
-
-    /**
      * Gets the parameters used for search highlighing
      * @return GeneralHighlightParameters - the highlighting parameters
      */
-    public GeneralHighlightParameters getHightlight()
+    public GeneralHighlightParameters getHighlight()
     {
-        return hightlight;
+        return highlight;
     }
 
     /**
@@ -1257,7 +1252,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(this.excludeTenantFilter).append(", isBulkFetchEnabled=").append(this.isBulkFetchEnabled)
                     .append(", queryConsistency=").append(this.queryConsistency).append(", sinceTxId=")
                     .append(this.sinceTxId).append(", searchTerm=").append(this.searchTerm)
-                    .append(", highlight=").append(this.hightlight)
+                    .append(", highlight=").append(this.highlight)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();
     }

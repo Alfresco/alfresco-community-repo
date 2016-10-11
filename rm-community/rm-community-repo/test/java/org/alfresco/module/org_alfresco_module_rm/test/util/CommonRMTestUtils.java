@@ -66,7 +66,7 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * Common RM test utility methods.
- * 
+ *
  * @author Roy Wetherall
  */
 public class CommonRMTestUtils implements RecordsManagementModel
@@ -87,10 +87,12 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String PERIOD_NONE = "none|0";
     public static final String PERIOD_IMMEDIATELY = "immediately|0";
     public static final String PERIOD_ONE_WEEK = "week|1";
+    public static final String PERIOD_ONE_YEAR = "year|1";
+    public static final String PERIOD_THREE_YEARS = "year|3";
 
     /**
      * Constructor
-     * 
+     *
      * @param applicationContext    application context
      */
     public CommonRMTestUtils(ApplicationContext applicationContext)
@@ -106,7 +108,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
     /**
      * Create a disposition schedule
-     * 
+     *
      * @param container record category
      * @return {@link DispositionSchedule}  created disposition schedule node reference
      */
@@ -140,15 +142,15 @@ public class CommonRMTestUtils implements RecordsManagementModel
                                     boolean extendedDispositionSchedule)
     {
         return createDispositionSchedule(
-                container, 
-                dispositionInstructions, 
-                dispositionAuthority, 
-                isRecordLevel, 
-                defaultDispositionActions, 
-                extendedDispositionSchedule, 
+                container,
+                dispositionInstructions,
+                dispositionAuthority,
+                isRecordLevel,
+                defaultDispositionActions,
+                extendedDispositionSchedule,
                 DEFAULT_EVENT_NAME);
     }
-    
+
     /**
      * Create test disposition schedule
      */
@@ -203,7 +205,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
     /**
      * Helper method to create a record in a record folder.
-     * 
+     *
      * @param recordFolder      record folder
      * @param name              name of record
      * @return {@link NodeRef}  record node reference
@@ -215,7 +217,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
     /**
      * Helper method to create a record in a record folder.
-     * 
+     *
      * @param recordFolder      record folder
      * @param name              name of the record
      * @param title             title of the record
@@ -230,7 +232,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
     /**
      * Helper method to create a record in a record folder.
-     * 
+     *
      * @param recordFolder      record folder
      * @param name              name of record
      * @param properties        properties of the record
@@ -250,10 +252,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         return record;
     }
-    
+
     /**
      * Helper method to create a record in a record folder.
-     * 
+     *
      * @param recordFolder      record folder
      * @param name              name of record
      * @param properties        properties of the record
@@ -273,7 +275,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         return record;
     }
-    
+
     /**
      * Helper to consolidate creation of contentless record
      */
@@ -292,10 +294,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
                                                         ContentModel.ASSOC_CONTAINS,
                                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
                                                         ContentModel.TYPE_CONTENT,
-                                                        properties).getChildRef();        
-        return record;        
+                                                        properties).getChildRef();
+        return record;
     }
-    
+
     /**
      * Helper method to complete record.
      */
@@ -309,8 +311,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
                 modelSecurityService.setEnabled(false);
                 try
                 {
-                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());                    
-                    nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");                    
+                    nodeService.setProperty(record, RecordsManagementModel.PROP_DATE_FILED, new Date());
+                    nodeService.setProperty(record, ContentModel.PROP_TITLE, "titleValue");
                     actionService.executeRecordsManagementAction(record, "declareRecord");
                 }
                 finally
@@ -323,7 +325,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         }, AuthenticationUtil.getAdminUserName());
 
-	}
+    }
 
     public void closeFolder(final NodeRef recordFolder)
     {
@@ -361,10 +363,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
 
         return filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
     }
-    
+
     /**
      * Helper method to complete event on disposable item
-     * 
+     *
      * @param disposableItem    disposable item (record or record folder)
      * @param eventName         event name
      */
@@ -373,8 +375,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
         // build action properties
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(CompleteEventAction.PARAM_EVENT_NAME, eventName);
-        
+
         // complete event
-        actionService.executeRecordsManagementAction(disposableItem, CompleteEventAction.NAME, params); 
+        actionService.executeRecordsManagementAction(disposableItem, CompleteEventAction.NAME, params);
     }
 }

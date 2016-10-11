@@ -135,7 +135,7 @@ public class SolrQueryHTTPClientTest
 
         urlBuilder = new StringBuilder();
         GeneralHighlightParameters highlightParameters = new GeneralHighlightParameters(null, null, null, null, null, null, null, null);
-        params.addHightlight(highlightParameters);
+        params.setHighlight(highlightParameters);
         client.buildUrlParameters(params, null, encoder, urlBuilder);
         url = urlBuilder.toString();
         assertTrue(url.contains("&hl=true"));
@@ -143,7 +143,7 @@ public class SolrQueryHTTPClientTest
 
         urlBuilder = new StringBuilder();
         highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, null);
-        params.addHightlight(highlightParameters);
+        params.setHighlight(highlightParameters);
         client.buildUrlParameters(params, null, encoder, urlBuilder);
         url = urlBuilder.toString();
         assertTrue(url.contains("&hl=true"));
@@ -160,7 +160,7 @@ public class SolrQueryHTTPClientTest
         List<FieldHighlightParameters> fields = Arrays.asList(new FieldHighlightParameters(null,null,null,null,null,null));
         urlBuilder = new StringBuilder();
         highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
-        params.addHightlight(highlightParameters);
+        params.setHighlight(highlightParameters);
 
         try
         {
@@ -175,7 +175,7 @@ public class SolrQueryHTTPClientTest
         fields = Arrays.asList(new FieldHighlightParameters("desc",50,100,false,"@","#"), new FieldHighlightParameters("title",55,105,true,"*","¿"));
         urlBuilder = new StringBuilder();
         highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
-        params.addHightlight(highlightParameters);
+        params.setHighlight(highlightParameters);
         client.buildUrlParameters(params, null, encoder, urlBuilder);
         url = urlBuilder.toString();
         assertTrue(url.contains("&hl=true"));

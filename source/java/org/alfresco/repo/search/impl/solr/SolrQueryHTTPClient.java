@@ -25,20 +25,6 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
@@ -56,6 +42,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.BasicSearchParameters;
+import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -84,6 +71,7 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.solr.common.params.HighlightParams;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -94,7 +82,19 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import com.hazelcast.impl.monitor.MapOperationsCounter;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * @author Andy
@@ -388,16 +388,13 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
 	    
         try
         {
-            StoreRef store = extractStoreRef(searchParameters);            
+            StoreRef store = extractStoreRef(searchParameters);
             SolrStoreMappingWrapper mapping = extractMapping(store);
-            Locale locale = extractLocale(searchParameters);
-            
-            URLCodec encoder = new URLCodec();
-            StringBuilder url = new StringBuilder();
-         
             Pair<HttpClient, String> httpClientAndBaseUrl = mapping.getHttpClientAndBaseUrl();
             HttpClient httpClient = httpClientAndBaseUrl.getFirst();
-            
+
+            URLCodec encoder = new URLCodec();
+            StringBuilder url = new StringBuilder();
             url.append(httpClientAndBaseUrl.getSecond());
          
             String languageUrlFragment = extractLanguageFragment(language);
@@ -412,29 +409,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             // url.append(encoder.encode(searchParameters.getQuery(), "UTF-8"));
             url.append("?wt=").append(encoder.encode("json", "UTF-8"));
             url.append("&fl=").append(encoder.encode("DBID,score", "UTF-8"));
-            
-            if((searchParameters.getStores().size() > 1) || (mapping.isSharded()))
-            {
-                boolean requiresSeparator = false;
-                url.append("&shards=");
-                for(StoreRef storeRef : searchParameters.getStores())
-                {
-                    SolrStoreMappingWrapper storeMapping = extractMapping(storeRef);
 
-                    if(requiresSeparator)
-                    {
-                        url.append(',');
-                    }
-                    else
-                    {
-                        requiresSeparator = true;
-                    }
-
-                    url.append(storeMapping.getShards());
-                   
-                }
-            }
-            
             // Emulate old limiting behaviour and metadata
             final LimitBy limitBy;
             int maxResults = -1;
@@ -458,100 +433,30 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 limitBy = LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS;
             }
             url.append("&rows=").append(String.valueOf(maxResults));
-            
-            url.append("&df=").append(encoder.encode(searchParameters.getDefaultFieldName(), "UTF-8"));
-            url.append("&start=").append(encoder.encode("" + searchParameters.getSkipCount(), "UTF-8"));
 
-            url.append("&locale=");
-            url.append(encoder.encode(locale.toString(), "UTF-8"));
-            url.append("&").append(SearchParameters.ALTERNATIVE_DICTIONARY).append("=").append(alternativeDictionary);
-            for(String paramName : searchParameters.getExtraParameters().keySet())
+            if((searchParameters.getStores().size() > 1) || (mapping.isSharded()))
             {
-            	url.append("&").append(paramName).append("=").append(searchParameters.getExtraParameters().get(paramName));
-            }
-            StringBuffer sortBuffer = buildSortParameters(searchParameters, encoder);
-            url.append(sortBuffer);
-
-            if(searchParameters.getPermissionEvaluation() != PermissionEvaluationMode.NONE)
-            {
-                url.append("&fq=").append(encoder.encode("{!afts}AUTHORITY_FILTER_FROM_JSON", "UTF-8"));
-            }
-            
-            if(searchParameters.getExcludeTenantFilter() == false)
-            {
-                url.append("&fq=").append(encoder.encode("{!afts}TENANT_FILTER_FROM_JSON", "UTF-8"));
-            }
-
-            if(searchParameters.getFieldFacets().size() > 0 || searchParameters.getFacetQueries().size() > 0)
-            {
-                url.append("&facet=").append(encoder.encode("true", "UTF-8"));
-                for(FieldFacet facet : searchParameters.getFieldFacets())
+                boolean requiresSeparator = false;
+                url.append("&shards=");
+                for(StoreRef storeRef : searchParameters.getStores())
                 {
-                    url.append("&facet.field=").append(encoder.encode(facet.getField(), "UTF-8"));
-                    if(facet.getEnumMethodCacheMinDF() != 0)
+                    SolrStoreMappingWrapper storeMapping = extractMapping(storeRef);
+
+                    if(requiresSeparator)
                     {
-                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.enum.cache.minDf", "UTF-8")).append("=").append(encoder.encode(""+facet.getEnumMethodCacheMinDF(), "UTF-8"));
-                    }
-                    int facetLimit;
-                    if(facet.getLimitOrNull() == null)
-                    {
-                        if(mapping.isSharded())
-                        {
-                            facetLimit = defaultShardedFacetLimit;
-                        }
-                        else
-                        {
-                            facetLimit = defaultUnshardedFacetLimit;
-                        }
+                        url.append(',');
                     }
                     else
                     {
-                        facetLimit = facet.getLimitOrNull().intValue();
+                        requiresSeparator = true;
                     }
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.limit", "UTF-8")).append("=").append(encoder.encode(""+facetLimit, "UTF-8"));
-                    if(facet.getMethod() != null)
-                    {
-                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.method", "UTF-8")).append("=").append(encoder.encode(facet.getMethod()==FieldFacetMethod.ENUM ?  "enum" : "fc", "UTF-8"));
-                    }
-                    if(facet.getMinCount() != 0)
-                    {
-                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.mincount", "UTF-8")).append("=").append(encoder.encode(""+facet.getMinCount(), "UTF-8"));
-                    }
-                    if(facet.getOffset() != 0)
-                    {
-                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.offset", "UTF-8")).append("=").append(encoder.encode(""+facet.getOffset(), "UTF-8"));
-                    }
-                    if(facet.getPrefix() != null)
-                    {
-                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.prefix", "UTF-8")).append("=").append(encoder.encode(""+facet.getPrefix(), "UTF-8"));
-                    }
-                    if(facet.getSort() != null)
-                    {
-                        url.append("&").append(encoder.encode("f."+facet.getField()+".facet.sort", "UTF-8")).append("=").append(encoder.encode(facet.getSort() == FieldFacetSort.COUNT ? "count" : "index", "UTF-8"));
-                    }
-                    
+
+                    url.append(storeMapping.getShards());
+
                 }
-                for(String facetQuery : searchParameters.getFacetQueries())
-                {
-                    if (!facetQuery.startsWith("{!afts"))
-                    {
-                        facetQuery = "{!afts}"+facetQuery;
-                    }
-                    url.append("&facet.query=").append(encoder.encode(facetQuery, "UTF-8"));
-                }                
             }
 
-            // filter queries
-            for(String filterQuery : searchParameters.getFilterQueries())
-            {
-                if (!filterQuery.startsWith("{!afts"))
-                {
-                    filterQuery = "{!afts}"+filterQuery;
-                }
-                url.append("&fq=").append(encoder.encode(filterQuery, "UTF-8"));
-            }   
-            
-            // end of field facets
+            buildUrlParameters(searchParameters, mapping, encoder, url);
 
             final String searchTerm = searchParameters.getSearchTerm();
             String spellCheckQueryStr = null;
@@ -668,6 +573,222 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         catch (JSONException e)
         {
             throw new LuceneQueryParserException("", e);
+        }
+    }
+
+    /**
+     * Builds most of the Url parameters for a Solr Http request.
+     * @param searchParameters
+     * @param mapping
+     * @param encoder
+     * @param url
+     * @throws UnsupportedEncodingException
+     */
+    public void buildUrlParameters(SearchParameters searchParameters, SolrStoreMappingWrapper mapping, URLCodec encoder, StringBuilder url)
+                throws UnsupportedEncodingException
+    {
+        Locale locale = extractLocale(searchParameters);
+        url.append("&df=").append(encoder.encode(searchParameters.getDefaultFieldName(), "UTF-8"));
+        url.append("&start=").append(encoder.encode("" + searchParameters.getSkipCount(), "UTF-8"));
+
+        url.append("&locale=");
+        url.append(encoder.encode(locale.toString(), "UTF-8"));
+        url.append("&").append(SearchParameters.ALTERNATIVE_DICTIONARY).append("=").append(alternativeDictionary);
+        for(String paramName : searchParameters.getExtraParameters().keySet())
+        {
+            url.append("&").append(paramName).append("=").append(searchParameters.getExtraParameters().get(paramName));
+        }
+        StringBuffer sortBuffer = buildSortParameters(searchParameters, encoder);
+        url.append(sortBuffer);
+
+        if(searchParameters.getPermissionEvaluation() != PermissionEvaluationMode.NONE)
+        {
+            url.append("&fq=").append(encoder.encode("{!afts}AUTHORITY_FILTER_FROM_JSON", "UTF-8"));
+        }
+
+        if(searchParameters.getExcludeTenantFilter() == false)
+        {
+            url.append("&fq=").append(encoder.encode("{!afts}TENANT_FILTER_FROM_JSON", "UTF-8"));
+        }
+
+        if(searchParameters.getFieldFacets().size() > 0 || searchParameters.getFacetQueries().size() > 0)
+        {
+            url.append("&facet=").append(encoder.encode("true", "UTF-8"));
+            for(FieldFacet facet : searchParameters.getFieldFacets())
+            {
+                url.append("&facet.field=").append(encoder.encode(facet.getField(), "UTF-8"));
+                if(facet.getEnumMethodCacheMinDF() != 0)
+                {
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.enum.cache.minDf", "UTF-8")).append("=").append(encoder.encode(""+facet.getEnumMethodCacheMinDF(), "UTF-8"));
+                }
+                int facetLimit;
+                if(facet.getLimitOrNull() == null)
+                {
+                    if(mapping.isSharded())
+                    {
+                        facetLimit = defaultShardedFacetLimit;
+                    }
+                    else
+                    {
+                        facetLimit = defaultUnshardedFacetLimit;
+                    }
+                }
+                else
+                {
+                    facetLimit = facet.getLimitOrNull().intValue();
+                }
+                url.append("&").append(encoder.encode("f."+facet.getField()+".facet.limit", "UTF-8")).append("=").append(encoder.encode(""+facetLimit, "UTF-8"));
+                if(facet.getMethod() != null)
+                {
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.method", "UTF-8")).append("=").append(encoder.encode(facet.getMethod()== FieldFacetMethod.ENUM ?  "enum" : "fc", "UTF-8"));
+                }
+                if(facet.getMinCount() != 0)
+                {
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.mincount", "UTF-8")).append("=").append(encoder.encode(""+facet.getMinCount(), "UTF-8"));
+                }
+                if(facet.getOffset() != 0)
+                {
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.offset", "UTF-8")).append("=").append(encoder.encode(""+facet.getOffset(), "UTF-8"));
+                }
+                if(facet.getPrefix() != null)
+                {
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.prefix", "UTF-8")).append("=").append(encoder.encode(""+facet.getPrefix(), "UTF-8"));
+                }
+                if(facet.getSort() != null)
+                {
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.sort", "UTF-8")).append("=").append(encoder.encode(facet.getSort() == FieldFacetSort.COUNT ? "count" : "index", "UTF-8"));
+                }
+
+            }
+            for(String facetQuery : searchParameters.getFacetQueries())
+            {
+                if (!facetQuery.startsWith("{!afts"))
+                {
+                    facetQuery = "{!afts}"+facetQuery;
+                }
+                url.append("&facet.query=").append(encoder.encode(facetQuery, "UTF-8"));
+            }
+        }
+
+        // filter queries
+        for(String filterQuery : searchParameters.getFilterQueries())
+        {
+            if (!filterQuery.startsWith("{!afts"))
+            {
+                filterQuery = "{!afts}"+filterQuery;
+            }
+            url.append("&fq=").append(encoder.encode(filterQuery, "UTF-8"));
+        }
+
+        // end of field facets
+
+        if (searchParameters.getHightlight() != null)
+        {
+            url.append("&").append(HighlightParams.HIGHLIGHT+"=true");
+            url.append("&"+HighlightParams.HIGHLIGHT+".q=").append(encoder.encode(searchParameters.getSearchTerm(), "UTF-8"));
+
+            if (searchParameters.getHightlight().getSnippetCount() != null)
+            {
+                url.append("&")
+                   .append(HighlightParams.SNIPPETS+"=")
+                   .append(searchParameters.getHightlight().getSnippetCount());
+            }
+            if (searchParameters.getHightlight().getFragmentSize() != null)
+            {
+                url.append("&")
+                   .append(HighlightParams.FRAGSIZE+"=")
+                   .append(searchParameters.getHightlight().getFragmentSize());
+            }
+            if (searchParameters.getHightlight().getMaxAnalyzedChars() != null)
+            {
+                url.append("&")
+                   .append(HighlightParams.MAX_CHARS+"=")
+                   .append(searchParameters.getHightlight().getMaxAnalyzedChars());
+            }
+            if (searchParameters.getHightlight().getMergeContiguous() != null)
+            {
+                url.append("&")
+                   .append(HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS+"=")
+                   .append(searchParameters.getHightlight().getMergeContiguous());
+            }
+            if (searchParameters.getHightlight().getUsePhraseHighlighter() != null)
+            {
+                url.append("&")
+                   .append(HighlightParams.USE_PHRASE_HIGHLIGHTER+"=")
+                   .append(searchParameters.getHightlight().getUsePhraseHighlighter());
+            }
+            if (searchParameters.getHightlight().getUsePhraseHighlighter() != null)
+            {
+                url.append("&")
+                   .append(HighlightParams.USE_PHRASE_HIGHLIGHTER+"=")
+                   .append(searchParameters.getHightlight().getUsePhraseHighlighter());
+            }
+            if (searchParameters.getHightlight().getPrefix() != null)
+            {
+                url.append("&")
+                   .append(HighlightParams.SIMPLE_PRE+"=")
+                   .append(encoder.encode(searchParameters.getHightlight().getPrefix(), "UTF-8"));
+            }
+            if (searchParameters.getHightlight().getPostfix() != null)
+            {
+                url.append("&")
+                   .append(HighlightParams.SIMPLE_POST+"=")
+                   .append(encoder.encode(searchParameters.getHightlight().getPostfix(), "UTF-8"));
+            }
+            if (searchParameters.getHightlight().getFields() != null && !searchParameters.getHightlight().getFields().isEmpty())
+            {
+                List<String> fieldNames = new ArrayList<>(searchParameters.getHightlight().getFields().size());
+                for (FieldHighlightParameters aField:searchParameters.getHightlight().getFields())
+                {
+                    ParameterCheck.mandatoryString("highlight field", aField.getField());
+                    fieldNames.add(aField.getField());
+
+                    if (aField.getSnippetCount() != null)
+                    {
+                        url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
+                           .append("."+HighlightParams.SNIPPETS+"=")
+                           .append(aField.getSnippetCount());
+                    }
+
+                    if (aField.getFragmentSize() != null)
+                    {
+                        url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
+                                    .append("."+HighlightParams.FRAGSIZE+"=")
+                                    .append(aField.getFragmentSize());
+                    }
+
+                    if (aField.getFragmentSize() != null)
+                    {
+                        url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
+                                    .append("."+HighlightParams.FRAGSIZE+"=")
+                                    .append(aField.getFragmentSize());
+                    }
+
+                    if (aField.getMergeContiguous() != null)
+                    {
+                        url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
+                                    .append("."+HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS+"=")
+                                    .append(aField.getMergeContiguous());
+                    }
+
+                    if (aField.getPrefix() != null)
+                    {
+                        url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
+                                    .append("."+HighlightParams.SIMPLE_PRE+"=")
+                                    .append(encoder.encode(aField.getPrefix(), "UTF-8"));
+                    }
+
+                    if (aField.getPostfix() != null)
+                    {
+                        url.append("&f.").append(encoder.encode(aField.getField(), "UTF-8"))
+                                    .append("."+HighlightParams.SIMPLE_POST+"=")
+                                    .append(encoder.encode(aField.getPostfix(), "UTF-8"));
+                    }
+                }
+                url.append("&")
+                   .append(HighlightParams.FIELDS+"=")
+                   .append(encoder.encode(String.join(",", fieldNames), "UTF-8"));
+            }
         }
     }
 

@@ -85,6 +85,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>}
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/content}
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>}
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>/content}
      *
      */
@@ -282,6 +283,16 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/dummy/content", null, 404);
         }
 
+        // unauth access to get rendition info for a shared link (available => CREATED rendition only)
+        // -ve shared link rendition tests
+        {
+            // -ve test - try to get not created rendition for the given shared link
+            getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/doclib", null, 404);
+
+            // -ve test - try to get unregistered rendition
+            getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/dummy", null, 404);
+        }
+
         // unauth access to get shared link renditions info (available => CREATED renditions only)
         response = getAll(URL_SHARED_LINKS + "/" + shared1Id + "/renditions", null, 200);
         List<Rendition> renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
@@ -303,6 +314,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(1, renditions.size());
         assertEquals(Rendition.RenditionStatus.CREATED, renditions.get(0).getStatus());
         assertEquals("doclib", renditions.get(0).getId());
+
+        {
+            // try to get a created rendition for the given shared link
+            getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/doclib", null, 200);
+        }
 
         // unauth access to get shared link file rendition content
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/doclib/content", null, 200);
@@ -665,6 +681,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>}
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/content}
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>}
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>/content}
      *
      */
@@ -760,6 +777,16 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/dummy/content", null, 404);
         }
 
+        // unauth access to get rendition info for a shared link (available => CREATED rendition only)
+        // -ve shared link rendition tests
+        {
+            // -ve test - try to get not created rendition for the given shared link
+            getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/doclib", null, 404);
+
+            // -ve test - try to get unregistered rendition
+            getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/dummy", null, 404);
+        }
+
         // unauth access to get shared link renditions info (available => CREATED renditions only)
         response = getAll(URL_SHARED_LINKS + "/" + shared1Id + "/renditions", null, 200);
         List<Rendition> renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
@@ -780,6 +807,12 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(1, renditions.size());
         assertEquals(Rendition.RenditionStatus.CREATED, renditions.get(0).getStatus());
         assertEquals("doclib", renditions.get(0).getId());
+
+        // unauth access to get rendition info for a shared link (available => CREATED rendition only)
+        {
+            // get a created rendition for the given shared link
+            getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/doclib", null, 200);
+        }
 
         // unauth access to get shared link file rendition content
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id + "/renditions/doclib/content", null, 200);

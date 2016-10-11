@@ -98,7 +98,7 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
                 // set the disposition as of date to now on the record
                 rmActionService.executeRecordsManagementAction(record, 
                         EditDispositionActionAsOfDateAction.NAME, 
-                        Collections.singletonMap(EditDispositionActionAsOfDateAction.PARAM_AS_OF_DATE, new Date()));
+                        Collections.singletonMap(EditDispositionActionAsOfDateAction.PARAM_AS_OF_DATE, (Serializable)new Date()));
 
                 // cut off
                 rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null); 

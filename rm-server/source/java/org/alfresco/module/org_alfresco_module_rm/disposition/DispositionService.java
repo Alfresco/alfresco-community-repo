@@ -238,11 +238,12 @@ public interface DispositionService
      * Gets date of the disposition action for the given 
      * disposition schedule with the given action name
      * 
+     * @param record
      * @param dispositionSchedule nodeRef
      * @param dispositionActionName
      * @return date
      */
-    Date getDispositionActionDate(NodeRef dispositionSchedule, String dispositionActionName);
+    Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName);
 
     /**
      * Compute the "disposition as of" date (if necessary) for a disposition action and a node.

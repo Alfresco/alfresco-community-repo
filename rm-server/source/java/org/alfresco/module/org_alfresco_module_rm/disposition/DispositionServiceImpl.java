@@ -1004,7 +1004,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
     }
 
-    public Date getDispositionActionDate(NodeRef dispositionSchedule, String dispositionActionName)
+    public Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName)
     {
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(dispositionSchedule);
         if (assocs != null && assocs.size() > 0)
@@ -1015,12 +1015,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     Date newAsOfDate = null;
                     Period dispositionPeriod = (Period) nodeService.getProperty(assoc.getChildRef(), PROP_DISPOSITION_PERIOD);
-                    Date actionCreationDate = (Date)nodeService.getProperty(assoc.getChildRef(), ContentModel.PROP_CREATED);
+                    Date recordCreationDate = (Date)nodeService.getProperty(record, ContentModel.PROP_CREATED);
 
                     if (dispositionPeriod != null)
                     {
                         // calculate the new as of date as we have been provided a new period
-                        newAsOfDate = dispositionPeriod.getNextDate(actionCreationDate);
+                        newAsOfDate = dispositionPeriod.getNextDate(recordCreationDate);
                     }
                     return newAsOfDate;
                 }
@@ -1093,11 +1093,11 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         if (nextDispositionAction == null)
         {
-            return getFirstDispositionAction(recordFolders);
+            return getFirstDispositionAction(record, recordFolders);
         }
         else
         {
-            return getNextDispositionAction(recordFolders, nextDispositionAction);
+            return getNextDispositionAction(record, recordFolders, nextDispositionAction);
         }
     }
 
@@ -1107,7 +1107,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      * @param nextDispositionAction
      * @return next disposition action and the associated disposition schedule
      */
-    private NextActionFromDisposition getNextDispositionAction(List<NodeRef> recordFolders, DispositionAction nextDispositionAction)
+    private NextActionFromDisposition getNextDispositionAction(NodeRef record, List<NodeRef> recordFolders, DispositionAction nextDispositionAction)
     {
         String recordNextDispositionActionName = nextDispositionAction.getName();
         Date recordNextDispositionActionDate = nextDispositionAction.getAsOfDate();
@@ -1119,7 +1119,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             NodeRef dsNodeRef = getDispositionScheduleImpl(folder);
             if (dsNodeRef != null)
             {
-                Date dispActionDate = getDispositionActionDate(dsNodeRef, recordNextDispositionActionName);
+                Date dispActionDate = getDispositionActionDate(record, dsNodeRef, recordNextDispositionActionName);
                 if (nextDispositionActionDate == null || nextDispositionActionDate.before(dispActionDate))
                 {
                     nextDispositionActionDate = dispActionDate;
@@ -1150,7 +1150,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      * @param recordFolders
      * @return next disposition action and the associated disposition schedule
      */
-    private NextActionFromDisposition getFirstDispositionAction(List<NodeRef> recordFolders)
+    private NextActionFromDisposition getFirstDispositionAction(NodeRef record, List<NodeRef> recordFolders)
     {
         NodeRef newAction = null;
         String newDispositionActionName = null;
@@ -1171,7 +1171,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     {
                         newAction = firstAction;
                         newDispositionActionName = (String)nodeService.getProperty(newAction, PROP_DISPOSITION_ACTION_NAME);
-                        newDispositionActionDateAsOf = getDispositionActionDate(folderDS, newDispositionActionName);
+                        newDispositionActionDateAsOf = getDispositionActionDate(record, folderDS, newDispositionActionName);
                     }
                     else if (firstDispositionAction.getAsOfDate() != null && newDispositionActionDateAsOf.before(firstDispositionAction.getAsOfDate()))
                     {

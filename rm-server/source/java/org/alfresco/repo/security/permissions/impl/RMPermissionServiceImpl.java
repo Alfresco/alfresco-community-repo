@@ -115,7 +115,8 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         if (AccessStatus.DENIED.equals(acs) &&
             nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
-
+            // These strings come from alfresco-global.properties and allow fine tuning of the how permissions are mapped.
+            // This was added as a fix for MNT-16852 to enhance compatibility for our Outlook Integration.
             List<String> configuredReadPermissions = Arrays.asList(this.readMapping.split(","));
             List<String> configuredFilePermissions = Arrays.asList(this.fileMapping.split(","));
 

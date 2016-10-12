@@ -19,20 +19,27 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.cache.SimpleCache;
+
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.collections.ArrayStack;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationEvent;
+
 
 /**
  * Extends the core permission service implementation allowing the consideration of the read records
@@ -47,6 +54,10 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 {
 	/** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
+
+    /** Permission maps*/
+    protected String readMapping;
+    protected String fileMapping;
 
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setAnyDenyDenies(boolean)
@@ -64,6 +75,22 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     public void setWritersCache(SimpleCache<Serializable, Set<String>> writersCache)
     {
         this.writersCache = writersCache;
+    }
+
+    /**
+     * @param readMapping the mapping of permissions to ReadRecord
+     */
+    public void setReadMapping(String readMapping)
+    {
+        this.readMapping = readMapping;
+    }
+
+    /**
+     * @param fileMapping the mapping of permissions to ReadRecord
+     */
+    public void setFileMapping(String fileMapping)
+    {
+        this.fileMapping = fileMapping;
     }
 
     /**
@@ -91,13 +118,15 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         if (AccessStatus.DENIED.equals(acs) &&
             nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
-            if (PermissionService.READ.equals(perm) || PermissionService.READ_PROPERTIES.equals(perm))
+
+            List<String> configuredReadPermissions = Arrays.asList(this.readMapping.split(","));
+            List<String> configuredFilePermissions = Arrays.asList(this.fileMapping.split(","));
+
+            if (PermissionService.READ.equals(perm) || configuredReadPermissions.contains(perm))
             {
                 return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
             }
-            else if (PermissionService.WRITE.equals(perm) ||
-                    PermissionService.ADD_CHILDREN.equals(perm) ||
-                    PermissionService.WRITE_PROPERTIES.equals(perm))
+            else if (PermissionService.WRITE.equals(perm) || configuredFilePermissions.contains(perm))
             {
                 return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
             }

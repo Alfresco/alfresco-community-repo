@@ -91,7 +91,7 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         if (AccessStatus.DENIED.equals(acs) &&
             nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
-            if (PermissionService.READ.equals(perm))
+            if (PermissionService.READ.equals(perm) || PermissionService.READ_PROPERTIES.equals(perm))
             {
                 return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
             }

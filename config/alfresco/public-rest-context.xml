@@ -861,6 +861,16 @@
         <property name="nodes" ref="Nodes" />
     </bean>
 
+    <bean id="webscript.org.alfresco.api.DiscoveryApiWebscript.get"
+          class="org.alfresco.rest.api.discovery.DiscoveryApiWebscript" parent="webscript">
+        <property name="descriptorService" ref="DescriptorService"  />
+        <property name="repoAdminService" ref="repoAdminService" />
+        <property name="auditService" ref="auditService" />
+        <property name="quickShareService" ref="QuickShareService" />
+        <property name="moduleService" ref="ModuleService" />
+        <property name="assistant" ref="apiAssistant" />
+    </bean>
+
     <!-- OpenCMIS -->
 
     <bean id="publicApiCMISServiceFactory" class="org.alfresco.opencmis.PublicApiAlfrescoCmisServiceFactory" init-method="init">

@@ -57,6 +57,7 @@ import org.junit.runners.Suite;
     AuthenticationsTest.class,
     ModulePackagesApiTest.class,
     WherePredicateApiTest.class,
+	DiscoveryApiTest.class,
     TestSites.class,
     TestNodeComments.class,
     TestFavouriteSites.class,

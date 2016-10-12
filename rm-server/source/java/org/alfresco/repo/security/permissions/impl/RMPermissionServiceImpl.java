@@ -19,7 +19,6 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,8 +35,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.collections.ArrayStack;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationEvent;
 
 

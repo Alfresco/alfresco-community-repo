@@ -97,4 +97,12 @@ public interface QuickShareService
      * Determine if the current user has permission to delete the shared link.
      */
     public boolean canDeleteSharedLink(NodeRef nodeRef, String sharedByUserId);
+
+    /**
+     * Whether the quick share is enabled or not.
+     *
+     * @return <tt>true</tt> if quick share is enabled, false otherwise.
+     * @since 5.2
+     */
+    boolean isQuickShareEnabled();
 }

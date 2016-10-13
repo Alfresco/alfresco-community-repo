@@ -52,9 +52,15 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 	/** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
 
-    /** Permission maps*/
-    protected String readMapping;
-    protected String fileMapping;
+    /**
+     * Configured Permission mapping.
+     *
+     * These strings come from alfresco-global.properties and allow fine tuning of the how permissions are mapped.
+     * This was added as a fix for MNT-16852 to enhance compatibility with our Outlook Integration.
+     *
+     **/
+    protected List<String> configuredReadPermissions;
+    protected List<String> configuredFilePermissions;
 
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setAnyDenyDenies(boolean)
@@ -75,19 +81,25 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     }
 
     /**
+     * Maps the string from the properties file (rm.haspermissionmap.read)
+     * to the list used in the hasPermission method
+     *
      * @param readMapping the mapping of permissions to ReadRecord
      */
-    public void setReadMapping(String readMapping)
+    public void setConfiguredReadPermissions(String readMapping)
     {
-        this.readMapping = readMapping;
+        this.configuredReadPermissions = Arrays.asList(readMapping.split(","));
     }
 
     /**
-     * @param fileMapping the mapping of permissions to ReadRecord
+     * Maps the string set in the properties file (rm.haspermissionmap.write)
+     * to the list used in the hasPermission method
+     *
+     * @param fileMapping the mapping of permissions to FileRecord
      */
-    public void setFileMapping(String fileMapping)
+    public void setConfiguredFilePermissions(String fileMapping)
     {
-        this.fileMapping = fileMapping;
+        this.configuredFilePermissions = Arrays.asList(fileMapping.split(","));
     }
 
     /**
@@ -115,16 +127,11 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         if (AccessStatus.DENIED.equals(acs) &&
             nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
-            // These strings come from alfresco-global.properties and allow fine tuning of the how permissions are mapped.
-            // This was added as a fix for MNT-16852 to enhance compatibility for our Outlook Integration.
-            List<String> configuredReadPermissions = Arrays.asList(this.readMapping.split(","));
-            List<String> configuredFilePermissions = Arrays.asList(this.fileMapping.split(","));
-
-            if (PermissionService.READ.equals(perm) || configuredReadPermissions.contains(perm))
+            if (PermissionService.READ.equals(perm) || this.configuredReadPermissions.contains(perm))
             {
                 return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
             }
-            else if (PermissionService.WRITE.equals(perm) || configuredFilePermissions.contains(perm))
+            else if (PermissionService.WRITE.equals(perm) || this.configuredFilePermissions.contains(perm))
             {
                 return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
             }

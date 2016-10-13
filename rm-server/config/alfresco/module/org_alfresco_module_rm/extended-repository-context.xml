@@ -134,10 +134,10 @@
             <ref bean="extendedReaderDynamicAuthority" />
          </list>
       </property>
-      <property name="readMapping">
+      <property name="configuredReadPermissions">
          <value>{rm.haspermissionmap.read}</value>
       </property>
-      <property name="fileMapping">
+      <property name="configuredFilePermissions">
          <value>{rm.haspermissionmap.write}</value>
       </property>
    </bean>

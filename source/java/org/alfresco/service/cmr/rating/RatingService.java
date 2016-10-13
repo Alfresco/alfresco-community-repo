@@ -40,7 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * <p/>
  * The RatingService can be used to manage ratings on any content node in the repository.
  * These ratings are defined by {@link RatingScheme rating schemes}
- * which are injected via spring (see <code>rating-service-context.xml</code>). The rating
+ * which are injected via spring (see <code>rating-services-context.xml</code>). The rating
  * schemes define a minimum and a maximum score value for that scheme.
  * <p/>
  * Ratings can be {@link RatingService#applyRating(NodeRef, float, String) applied},

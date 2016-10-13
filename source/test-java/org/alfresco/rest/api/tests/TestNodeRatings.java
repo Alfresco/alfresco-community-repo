@@ -534,7 +534,29 @@ public class TestNodeRatings extends AbstractBaseApiTest
 				assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
 			}
 		}
-	}
+		
+        // Test case ACE-5453
+        {
+            try
+            {
+                testSkipCountLargeValue(person11, network1, nodeRef1, nodesProxy);
+            }
+            catch (PublicApiException e)
+            {
+                fail();
+            }
+        }
+    }
+
+    // test for retrieving the list of ratings with high value of skipCount(e.g. 10)
+    public void testSkipCountLargeValue(TestPerson person11, TestNetwork network1, NodeRef nodeRef1, Nodes nodesProxy) throws PublicApiException
+    {
+        List<NodeRating> expectedRatings = repoService.getNodeRatings(person11.getId(), network1.getId(), nodeRef1);
+        int skipCount = 10;
+        int maxItems = Integer.MAX_VALUE;
+        Paging paging = getPaging(skipCount, maxItems, expectedRatings.size(), expectedRatings.size());
+        nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(paging, null));
+    }
 
 	@Override
 	public String getScope()

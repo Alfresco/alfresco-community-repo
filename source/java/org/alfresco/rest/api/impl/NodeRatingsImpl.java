@@ -108,14 +108,16 @@ public class NodeRatingsImpl implements NodeRatings
 
 		int skipCount = paging.getSkipCount();
 		int maxItems = paging.getMaxItems();
+		int totalSize = schemes.size();
+		int count = 0;
+		
 		int end = skipCount + maxItems;
 		if(end < 0)
 		{
 			// overflow
 			end = Integer.MAX_VALUE;
 		}
-		int count = Math.min(maxItems, schemes.size() - skipCount);
-		List<NodeRating> ratings = new ArrayList<NodeRating>(count);
+		List<NodeRating> ratings = new ArrayList<NodeRating>(totalSize);
 
 		for(int i = 0; i < end && it.hasNext(); i++)
 		{
@@ -124,13 +126,12 @@ public class NodeRatingsImpl implements NodeRatings
 			{
 				continue;
 			}
-
+			count++;
         	RatingScheme ratingScheme = validateRatingScheme(schemeName);
     		NodeRating nodeRating = ratingScheme.getNodeRating(nodeRef);
             ratings.add(nodeRating);
 		}
 
-		int totalSize = schemes.size();
 		boolean hasMoreItems = (skipCount + count < totalSize);
 
         return CollectionWithPagingInfo.asPaged(paging, ratings, hasMoreItems, totalSize);

@@ -92,8 +92,8 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                 // notification has not been sent.
                 StringBuilder queryBuffer = new StringBuilder();
                 queryBuffer.append("+ASPECT:\"rma:vitalRecord\" ");
-                queryBuffer.append("+(@rma\\:reviewAsOf:[MIN TO NOW] ) ");
-                queryBuffer.append("+( ");
+                queryBuffer.append("AND @rma\\:reviewAsOf:[MIN TO NOW] ");
+                queryBuffer.append("AND ( ");
                 queryBuffer.append("@rma\\:notificationIssued:false ");
                 queryBuffer.append("OR ISNULL:\"rma:notificationIssued\" ");
                 queryBuffer.append(") ");

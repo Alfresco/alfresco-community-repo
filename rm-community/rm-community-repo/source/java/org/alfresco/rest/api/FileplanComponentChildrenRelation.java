@@ -31,9 +31,12 @@ import java.util.List;
 
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * An implementation of an Entity Resource for a fileplan component
@@ -42,8 +45,9 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  * @since 2.6
  */
 @RelationshipResource(name="children", entityResource = FileplanComponentsEntityResource.class, title = "Children of fileplan component")
-public class FileplanComponentChildrenRelation implements RelationshipResourceAction.Read<Node>, 
-                                                 RelationshipResourceAction.Create<Node>
+public class FileplanComponentChildrenRelation implements RelationshipResourceAction.Read<Node>,
+                                                 RelationshipResourceAction.Create<Node>,
+                                                 MultiPartRelationshipResourceAction.Create<Node>
 {
     private Nodes nodes;
 
@@ -70,4 +74,9 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
 
         return result;
     }
+
+	@Override
+	public Node create(String parentFolderNodeId, FormData formData, Parameters parameters, WithResponse withResponse) {
+		return nodes.upload(parentFolderNodeId, formData, parameters);
+	}
 }

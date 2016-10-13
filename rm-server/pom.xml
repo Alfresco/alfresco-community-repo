@@ -41,8 +41,8 @@
                   <configuration>
                      <name>rm.module.version</name>
                      <value>${project.version}</value>
-                     <regex>(\d+)\.(\d+).(\d+).*</regex>
-                     <replacement>$1.$2.$3</replacement>
+                     <regex>([0-9\.]*[0-9]).*</regex>
+                     <replacement>$1</replacement>
                      <failIfNoMatch>true</failIfNoMatch>
                   </configuration>
                </execution>

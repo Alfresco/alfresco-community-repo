@@ -86,6 +86,36 @@
    <build>
       <plugins>
          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>regex-property</id>
+                  <goals>
+                     <goal>regex-property</goal>
+                  </goals>
+                  <configuration>
+                     <name>rm.module.version</name>
+                     <value>${project.version}</value>
+                     <regex>(\d+)\.(\d+).(\d+).*</regex>
+                     <replacement>$1.$2.$3</replacement>
+                     <failIfNoMatch>true</failIfNoMatch>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>add-test-source</id>
+                  <goals>
+                     <goal>add-test-source</goal>
+                  </goals>
+                  <configuration>
+                     <sources>
+                        <source>unit-test/java</source>
+                     </sources>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-enforcer-plugin</artifactId>
             <version>1.3.1</version>
@@ -309,6 +339,21 @@
                            </pluginExecutionFilter>
                            <action>
                               <ignore />
+                           </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>org.codehaus.mojo</groupId>
+                              <artifactId>
+                                 build-helper-maven-plugin
+                              </artifactId>
+                              <versionRange>[1.8,)</versionRange>
+                              <goals>
+                                 <goal>regex-property</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore></ignore>
                            </action>
                         </pluginExecution>
                      </pluginExecutions>

@@ -19,6 +19,7 @@
       <resources>
          <resource>
             <directory>config</directory>
+             <filtering>true</filtering>
          </resource>
       </resources>
       <testResources>
@@ -32,6 +33,19 @@
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
             <executions>
+                 <execution>
+                  <id>regex-property</id>
+                  <goals>
+                     <goal>regex-property</goal>
+                  </goals>
+                  <configuration>
+                     <name>rm.module.version</name>
+                     <value>${project.version}</value>
+                     <regex>([0-9\.]*[0-9]).*</regex>
+                     <replacement>$1</replacement>
+                     <failIfNoMatch>true</failIfNoMatch>
+                  </configuration>
+               </execution>
                <execution>
                   <id>add-source</id>
                   <goals>
@@ -154,7 +168,7 @@
                            <goal>run</goal>
                         </goals>
                         <configuration>
-                           <tasks>
+                        <tasks>
                               <delete file="${project.build.outputDirectory}/alfresco/extension/dev-context.xml"/>
                               <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
                                  <fileset dir="${project.build.outputDirectory}/alfresco"/>

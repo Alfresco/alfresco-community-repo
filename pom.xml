@@ -7,7 +7,7 @@
         <version>6</version>
     </parent>
 
-    <artifactId>alfresco-data-model</artifactId>
+    <artifactId>alfresco-data-model-opencmis-upgrade</artifactId>
     <name>Alfresco Data Model</name>
     <description>Alfresco Data Model classes</description>
     <version>6.2-SNAPSHOT</version>

@@ -75,6 +75,7 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
     private Descriptor serverDescriptor;
     @Mock
     private LicenseDescriptor licenseDescriptorMock;
+    private DiscoveryApiWebscript discoveryApiWebscript;
 
     private Date licenseIssuedAt;
     private Date licenseExpiresAt;
@@ -112,9 +113,10 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         when(licenseDescriptorMock.isClusterEnabled()).thenReturn(true);
 
         // Override the descriptor service
-        DiscoveryApiWebscript discoveryApiWebscript = applicationContext
+        discoveryApiWebscript = applicationContext
                     .getBean("webscript.org.alfresco.api.DiscoveryApiWebscript.get", DiscoveryApiWebscript.class);
         discoveryApiWebscript.setDescriptorService(descriptorServiceMock);
+        discoveryApiWebscript.setEnabled(true);
     }
 
     @After
@@ -310,6 +312,22 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         assertNull(entitlements.getMaxDocs());
         assertFalse(entitlements.getIsClusterEnabled());
         assertTrue(entitlements.getIsCryptodocEnabled());
+    }
+
+    @Test
+    public void testDiscoveryDisabled() throws Exception
+    {
+        try
+        {
+            discoveryApiWebscript.setEnabled(false);
+
+            setRequestContext(null, user1, null);
+            get("discovery", null, 501);
+        }
+        finally
+        {
+            discoveryApiWebscript.setEnabled(true);
+        }
     }
 }
 

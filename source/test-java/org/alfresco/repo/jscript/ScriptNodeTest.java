@@ -30,6 +30,7 @@ package org.alfresco.repo.jscript;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionableAspect;
+import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -622,6 +624,67 @@ public class ScriptNodeTest
         
         NODE_SERVICE.removeProperty(newNode1, ContentModel.PROP_CONTENT);
         NODE_SERVICE.removeProperty(newNode2, ContentModel.PROP_CONTENT);
+    }
+    
+    @Test
+    public void testCreateFolderPath()
+    {
+        Repository repositoryHelper = (Repository) APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+
+        NodeRef folderNodeRef = testNodes.createNode(companyHome, "foldertest1", ContentModel.TYPE_FOLDER, AuthenticationUtil.getFullyAuthenticatedUser()); 
+        assertNotNull(folderNodeRef);
+        
+        ScriptNode folderNode = new ScriptNode(folderNodeRef, SERVICE_REGISTRY);
+        
+        // create a simple path of depth one - does not exist yet
+        assertNotNull(folderNode.createFolderPath("One"));
+        // create a simple path of depth one - does exist (which should be ignored and continue - createFolderPath() emulates 'mkdir -p' behaviour)
+        assertNotNull(folderNode.createFolderPath("One"));
+        // create depth path - none of which exists
+        assertNotNull(folderNode.createFolderPath("A/B"));
+        // create depth path - all of which exists
+        assertNotNull(folderNode.createFolderPath("A/B"));
+        // create depth path - some of which exists
+        assertNotNull(folderNode.createFolderPath("A/B/C"));
+        
+        // test last child is returned as the result
+        NodeRef folderARef = NODE_SERVICE.getChildByName(folderNodeRef, ContentModel.ASSOC_CONTAINS, "A");
+        NodeRef folderBRef = NODE_SERVICE.getChildByName(folderARef, ContentModel.ASSOC_CONTAINS, "B");
+        assertEquals(folderBRef, folderNode.createFolderPath("A/B").getNodeRef());
+        
+        // test case where folder should not should be created - under a content node
+        NodeRef contentNodeRef = testNodes.createNode(folderNodeRef, "CONTENT", ContentModel.TYPE_CONTENT, AuthenticationUtil.getFullyAuthenticatedUser()); 
+        assertNotNull(contentNodeRef);
+        try
+        {
+            folderNode.createFolderPath("CONTENT/A");
+            fail("Should not be able to create folder path when all nodes are not subtypes of cm:folder");
+        }
+        catch (ScriptException se1)
+        {
+            // expected
+        }
+        
+        // test string edge cases
+        try
+        {
+            assertNotNull(folderNode.createFolderPath("/A/B"));
+            fail("Leading slash not expected");
+        }
+        catch (Throwable e1)
+        {
+            // expected
+        }
+        try
+        {
+            assertNotNull(folderNode.createFolderPath("A/B/"));
+            fail("Trailing slash not expected");
+        }
+        catch (Throwable e2)
+        {
+            // expected
+        }
     }
 
     private ScriptableObject getScope() 

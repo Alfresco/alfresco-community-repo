@@ -39,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.dictionary.types.period.Immediately;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -70,11 +71,20 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 {
     /** Logger */
     private static final Logger LOGGER = LoggerFactory.getLogger(DispositionServiceImpl.class);
-    
-    private static final String PERIOD_IMMEDIATELY = "immediately";
 
     /** Transaction mode for setting next action */
-    public enum WriteMode {READ_ONLY, DATE_ONLY, DATE_AND_NAME};
+    public enum WriteMode
+    {
+        /** Do not update any data. */
+        READ_ONLY,
+        /** Only set the "disposition as of" date. */
+        DATE_ONLY,
+        /**
+         * Set the "disposition as of" date and the name of the next action. This only happens during the creation of a
+         * disposition schedule impl node under a record or folder.
+         */
+        DATE_AND_NAME
+    };
 
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
@@ -645,7 +655,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             return new DispositionActionImpl(serviceRegistry, childAssocs.get(0).getChildRef());
         }
-        
+
         // Create the properties
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
 
@@ -708,7 +718,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             }
             else
             {
-                if (period.getPeriodType().equals(PERIOD_IMMEDIATELY))
+                if (period.getPeriodType().equals(Immediately.PERIOD_TYPE))
                 {
                     contextDate = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
                 }
@@ -1123,19 +1133,27 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         String recordNextDispositionActionName = nextDispositionAction.getName();
         Date recordNextDispositionActionDate = nextDispositionAction.getAsOfDate();
-        Date nextDispositionActionDate = null;
+        // We're looking for the latest date, so initially start with a very early one.
+        Date nextDispositionActionDate = new Date(Long.MIN_VALUE);
         NodeRef dispositionNodeRef = null;
 
+        // Find the latest "disposition as of" date from all the schedules this record is subject to.
         for (NodeRef folder : recordFolders)
         {
             NodeRef dsNodeRef = getDispositionScheduleImpl(folder);
             if (dsNodeRef != null)
             {
                 Date dispActionDate = getDispositionActionDate(record, dsNodeRef, recordNextDispositionActionName);
-                if (nextDispositionActionDate == null || nextDispositionActionDate.before(dispActionDate))
+                if (dispActionDate == null || (nextDispositionActionDate != null
+                                && nextDispositionActionDate.before(dispActionDate)))
                 {
                     nextDispositionActionDate = dispActionDate;
                     dispositionNodeRef = dsNodeRef;
+                    if (dispActionDate == null)
+                    {
+                        // Treat null as the latest date possible (so stop searching further).
+                        break;
+                    }
                 }
             }
         }
@@ -1143,34 +1161,37 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
            return null;
         }
-        WriteMode mode = null;
-        if (recordNextDispositionActionDate != null)
+        WriteMode mode = determineWriteMode(recordNextDispositionActionDate, nextDispositionActionDate);
+
+        return new NextActionFromDisposition(dispositionNodeRef, nextDispositionAction.getNodeRef(),
+                recordNextDispositionActionName, nextDispositionActionDate, mode);
+    }
+
+    /**
+     * Determine what should be updated for an existing disposition schedule impl. We only update the date if the
+     * existing date is earlier than the calculated one.
+     *
+     * @param recordNextDispositionActionDate The next action date found on the record node (or folder node).
+     * @param nextDispositionActionDate The next action date calculated from the current disposition schedule(s)
+     *            affecting the node.
+     * @return READ_ONLY if nothing should be updated, or DATE_ONLY if the date needs updating.
+     */
+    private WriteMode determineWriteMode(Date recordNextDispositionActionDate, Date nextDispositionActionDate)
+    {
+        // Treat null dates as being the latest possible date.
+        Date maxDate = new Date(Long.MAX_VALUE);
+        Date recordDate = (recordNextDispositionActionDate != null ? recordNextDispositionActionDate : maxDate);
+        Date calculatedDate = (nextDispositionActionDate != null ? recordNextDispositionActionDate : maxDate);
+
+        // We only need to update the date if the current one is too early.
+        if (recordDate.before(calculatedDate))
         {
-            if ((nextDispositionActionDate == null)  
-                    || (!nextDispositionActionDate.equals(recordNextDispositionActionDate)
-                    && recordNextDispositionActionDate.before(nextDispositionActionDate)))
-            {
-                mode = WriteMode.DATE_ONLY;
-            }
-            else
-            {
-                mode = WriteMode.READ_ONLY;
-            }
+            return WriteMode.DATE_ONLY;
         }
         else
         {
-            if (nextDispositionActionDate != null)  
-            {
-                mode = WriteMode.DATE_ONLY;
-            }
-            else
-            {
-                mode = WriteMode.READ_ONLY;
-            }
+            return WriteMode.READ_ONLY;
         }
-        
-        return new NextActionFromDisposition(dispositionNodeRef, nextDispositionAction.getNodeRef(),
-                recordNextDispositionActionName, nextDispositionActionDate, mode);
     }
 
     /**
@@ -1182,7 +1203,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         NodeRef newAction = null;
         String newDispositionActionName = null;
-        Date newDispositionActionDateAsOf = null;
+        // We're looking for the latest date, so start with a very early one.
+        Date newDispositionActionDateAsOf = new Date(Long.MIN_VALUE);
         NodeRef dispositionNodeRef = null;
         for (NodeRef folder : recordFolders)
         {
@@ -1191,10 +1213,11 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             {
                 DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, folderDS);
                 List<DispositionActionDefinition> dispositionActionDefinitions = ds.getDispositionActionDefinitions();
-                
+
                 if (dispositionActionDefinitions != null && dispositionActionDefinitions.size() > 0)
                 {
                     DispositionActionDefinition firstDispositionActionDef = dispositionActionDefinitions.get(0);
+                    dispositionNodeRef = folderDS;
 
                     if (newAction == null)
                     {
@@ -1203,20 +1226,25 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         newDispositionActionName = (String)nodeService.getProperty(newAction, PROP_DISPOSITION_ACTION_NAME);
                         newDispositionActionDateAsOf = firstDispositionAction.getAsOfDate();
                     }
-                    else if (firstDispositionActionDef.getPeriod() != null) {
+                    else if (firstDispositionActionDef.getPeriod() != null)
+                    {
                         Date firstActionDate = calculateAsOfDate(record, firstDispositionActionDef, true);
-                       if (newDispositionActionDateAsOf.before(firstActionDate))
+                        if (firstActionDate == null || (newDispositionActionDateAsOf != null
+                                        && newDispositionActionDateAsOf.before(firstActionDate)))
                         {
-                            newDispositionActionName =firstDispositionActionDef.getName(); 
+                            newDispositionActionName = firstDispositionActionDef.getName();
                             newDispositionActionDateAsOf = firstActionDate;
+                            if (firstActionDate == null)
+                            {
+                                // Treat null as the latest date possible, so there's no point searching further.
+                                break;
+                            }
                         }
                     }
-                    dispositionNodeRef = folderDS;
-                 }
-              }
-           }
-        if (newDispositionActionName == null 
-                || dispositionNodeRef == null || newAction == null)
+                }
+            }
+        }
+        if (newDispositionActionName == null || dispositionNodeRef == null || newAction == null)
         {
             return null;
         }

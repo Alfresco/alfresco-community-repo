@@ -19,7 +19,13 @@
       <resources>
          <resource>
             <directory>config</directory>
-             <filtering>true</filtering>
+            <filtering>true</filtering>
+             <includes>
+                <include>**/module.properties</include>
+             </includes>
+         </resource>
+         <resource>
+            <directory>config</directory>
          </resource>
       </resources>
       <testResources>

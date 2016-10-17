@@ -1181,7 +1181,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Treat null dates as being the latest possible date.
         Date maxDate = new Date(Long.MAX_VALUE);
         Date recordDate = (recordNextDispositionActionDate != null ? recordNextDispositionActionDate : maxDate);
-        Date calculatedDate = (nextDispositionActionDate != null ? recordNextDispositionActionDate : maxDate);
+        Date calculatedDate = (nextDispositionActionDate != null ? nextDispositionActionDate : maxDate);
 
         // We only need to update the date if the current one is too early.
         if (recordDate.before(calculatedDate))

@@ -70,6 +70,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 {
     /** Logger */
     private static final Logger LOGGER = LoggerFactory.getLogger(DispositionServiceImpl.class);
+    
+    private static final String PERIOD_IMMEDIATELY = "immediately";
 
     /** Transaction mode for setting next action */
     public enum WriteMode {READ_ONLY, DATE_ONLY, DATE_AND_NAME};
@@ -636,8 +638,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *  @param dispositionActionDefinition disposition action definition
      *  @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
      */
-    private void initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition, boolean allowContextFromAsOf)
+    private DispositionAction initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition, boolean allowContextFromAsOf)
     {
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION, 1, true);
+        if (childAssocs != null && childAssocs.size() > 0)
+        {
+            return new DispositionActionImpl(serviceRegistry, childAssocs.get(0).getChildRef());
+        }
+        
         // Create the properties
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
 
@@ -667,6 +675,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             // For every event create an entry on the action
             da.addEventCompletionDetails(event);
         }
+        return da;
     }
 
     /**
@@ -699,7 +708,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             }
             else
             {
-                if (period.getPeriodType().equals("immediately"))
+                if (period.getPeriodType().equals(PERIOD_IMMEDIATELY))
                 {
                     contextDate = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
                 }
@@ -1130,20 +1139,36 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 }
             }
         }
-        if (nextDispositionActionDate == null || dispositionNodeRef == null)
+        if (dispositionNodeRef == null)
         {
            return null;
         }
         WriteMode mode = null;
-        if (!nextDispositionActionDate.equals(recordNextDispositionActionDate)
-                && recordNextDispositionActionDate.before(nextDispositionActionDate))
+        if (recordNextDispositionActionDate != null)
         {
-            mode = WriteMode.DATE_ONLY;
+            if ((nextDispositionActionDate == null)  
+                    || (!nextDispositionActionDate.equals(recordNextDispositionActionDate)
+                    && recordNextDispositionActionDate.before(nextDispositionActionDate)))
+            {
+                mode = WriteMode.DATE_ONLY;
+            }
+            else
+            {
+                mode = WriteMode.READ_ONLY;
+            }
         }
         else
         {
-            mode = WriteMode.READ_ONLY;
+            if (nextDispositionActionDate != null)  
+            {
+                mode = WriteMode.DATE_ONLY;
+            }
+            else
+            {
+                mode = WriteMode.READ_ONLY;
+            }
         }
+        
         return new NextActionFromDisposition(dispositionNodeRef, nextDispositionAction.getNodeRef(),
                 recordNextDispositionActionName, nextDispositionActionDate, mode);
     }
@@ -1164,28 +1189,33 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             NodeRef folderDS = getDispositionScheduleImpl(folder);
             if (folderDS != null)
             {
-                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(folderDS);
-                if (assocs != null && assocs.size() > 0)
+                DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, folderDS);
+                List<DispositionActionDefinition> dispositionActionDefinitions = ds.getDispositionActionDefinitions();
+                
+                if (dispositionActionDefinitions != null && dispositionActionDefinitions.size() > 0)
                 {
-                    NodeRef firstAction = assocs.get(0).getChildRef();
-                    DispositionAction firstDispositionAction = new DispositionActionImpl(serviceRegistry, firstAction);
+                    DispositionActionDefinition firstDispositionActionDef = dispositionActionDefinitions.get(0);
 
                     if (newAction == null)
                     {
-                        newAction = firstAction;
+                        DispositionAction firstDispositionAction = initialiseDispositionAction(record, firstDispositionActionDef, true);
+                        newAction = firstDispositionAction.getNodeRef();
                         newDispositionActionName = (String)nodeService.getProperty(newAction, PROP_DISPOSITION_ACTION_NAME);
-                        newDispositionActionDateAsOf = getDispositionActionDate(record, folderDS, newDispositionActionName);
-                    }
-                    else if (firstDispositionAction.getAsOfDate() != null && newDispositionActionDateAsOf.before(firstDispositionAction.getAsOfDate()))
-                    {
-                        newDispositionActionName = (String)nodeService.getProperty(firstAction, PROP_DISPOSITION_ACTION_NAME);
                         newDispositionActionDateAsOf = firstDispositionAction.getAsOfDate();
+                    }
+                    else if (firstDispositionActionDef.getPeriod() != null) {
+                        Date firstActionDate = calculateAsOfDate(record, firstDispositionActionDef, true);
+                       if (newDispositionActionDateAsOf.before(firstActionDate))
+                        {
+                            newDispositionActionName =firstDispositionActionDef.getName(); 
+                            newDispositionActionDateAsOf = firstActionDate;
+                        }
                     }
                     dispositionNodeRef = folderDS;
                  }
               }
            }
-        if (newDispositionActionName == null || newDispositionActionDateAsOf == null
+        if (newDispositionActionName == null 
                 || dispositionNodeRef == null || newAction == null)
         {
             return null;

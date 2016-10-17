@@ -1221,7 +1221,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
                     if (newAction == null)
                     {
-                        DispositionAction firstDispositionAction = initialiseDispositionAction(record, firstDispositionActionDef, true);
+                        NodeRef recordOrFolder = record;
+                        if (!ds.isRecordLevelDisposition()) 
+                        {
+                            recordOrFolder = folder;
+                        }
+                        DispositionAction firstDispositionAction = initialiseDispositionAction(recordOrFolder, firstDispositionActionDef, true);
                         newAction = firstDispositionAction.getNodeRef();
                         newDispositionActionName = (String)nodeService.getProperty(newAction, PROP_DISPOSITION_ACTION_NAME);
                         newDispositionActionDateAsOf = firstDispositionAction.getAsOfDate();

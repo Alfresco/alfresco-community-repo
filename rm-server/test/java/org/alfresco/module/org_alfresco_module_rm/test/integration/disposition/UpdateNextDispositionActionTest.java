@@ -36,6 +36,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.EditDispositionAct
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -95,11 +96,6 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
                 // complete record
                 utils.completeRecord(record);
 
-                // set the disposition as of date to now on the record
-                rmActionService.executeRecordsManagementAction(record, 
-                        EditDispositionActionAsOfDateAction.NAME, 
-                        Collections.singletonMap(EditDispositionActionAsOfDateAction.PARAM_AS_OF_DATE, (Serializable)new Date()));
-
                 // cut off
                 rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null); 
             }
@@ -120,7 +116,7 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
         Map<QName, Serializable> cutOff = new HashMap<QName, Serializable>(3);
         cutOff.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
         cutOff.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        cutOff.put(PROP_DISPOSITION_PERIOD, PERIOD_ONE_WEEK);
+        cutOff.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
         dispositionService.addDispositionActionDefinition(ds, cutOff);
 
         // create the properties for TRANSFER action and add it to the disposition action definition

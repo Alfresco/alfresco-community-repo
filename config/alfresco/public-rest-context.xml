@@ -869,6 +869,7 @@
         <property name="quickShareService" ref="QuickShareService" />
         <property name="moduleService" ref="ModuleService" />
         <property name="assistant" ref="apiAssistant" />
+        <property name="enabled" value="${system.api.discovery.enabled}" />
     </bean>
 
     <!-- OpenCMIS -->

@@ -31,6 +31,7 @@ import org.alfresco.rest.api.model.RepositoryInfo;
 import org.alfresco.rest.api.model.RepositoryInfo.LicenseInfo;
 import org.alfresco.rest.api.model.RepositoryInfo.StatusInfo;
 import org.alfresco.rest.api.model.RepositoryInfo.VersionInfo;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
@@ -64,6 +65,9 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
     private QuickShareService quickShareService;
     private ModuleService moduleService;
     private ApiAssistant assistant;
+
+    private boolean enabled = true;
+    private final static String DISABLED = "Not Implemented";
 
     public void setDescriptorService(DescriptorService descriptorService)
     {
@@ -111,6 +115,8 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
     {
         try
         {
+            checkEnabled();
+
             DiscoveryDetails discoveryDetails = new DiscoveryDetails(getRepositoryInfo());
             // Write response
             setResponse(webScriptResponse, DEFAULT_SUCCESS);
@@ -164,5 +170,18 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
             obj.put("entry", toSerialize);
             objectMapper.writeValue(generator, obj);
         });
+    }
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+
+    private void checkEnabled()
+    {
+        if (!enabled)
+        {
+            throw new DisabledServiceException(DISABLED);
+        }
     }
 }

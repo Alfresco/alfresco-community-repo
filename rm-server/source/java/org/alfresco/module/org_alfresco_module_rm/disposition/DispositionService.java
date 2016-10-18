@@ -255,4 +255,13 @@ public interface DispositionService
      */
     Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition,
                 boolean allowContextFromAsOf);
+    
+    /**
+     * Gets the origin disposition schedule for the record, not the calculated one
+     * in case of multiple dispositions applied to record
+     * 
+     * @param nodeRef record 
+     * @return the initial disposition
+     */
+    DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef);
 }

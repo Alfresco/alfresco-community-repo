@@ -34,12 +34,14 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeFileRecord;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionScheduleImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -228,7 +230,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
-
+    
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
 
@@ -385,7 +387,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         this.recordableVersionService = recordableVersionService;
     }
-
+    
     /**
      * Init method
      */
@@ -1732,7 +1734,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private void validateLinkConditions(NodeRef record, NodeRef recordFolder)
     {
         // ensure that the linking record folders have compatible disposition schedules
-        DispositionSchedule recordDispositionSchedule = dispositionService.getDispositionSchedule(record);
+        
+        // get the origin disposition schedule for the record, not the calculated one
+        DispositionSchedule recordDispositionSchedule = dispositionService.getOriginDispositionSchedule(record);
+                
         if (recordDispositionSchedule != null)
         {
             DispositionSchedule recordFolderDispositionSchedule = dispositionService.getDispositionSchedule(recordFolder);

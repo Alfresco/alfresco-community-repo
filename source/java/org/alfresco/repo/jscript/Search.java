@@ -49,6 +49,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.FieldHighlightParameters;
+import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -558,7 +560,8 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
         return (Scriptable)queryResultSet(search).get("nodes", getScope());
     }
     
-    public Scriptable queryResultSet(Object search)
+    @SuppressWarnings("unchecked")
+	public Scriptable queryResultSet(Object search)
     {
         Object[] results = null;
         Map<String,Object> meta = null;
@@ -754,7 +757,43 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                         sp.addFilterQuery(filter);
                     }
                 }
-
+                
+                
+                Map<Serializable, Serializable> highlighting = (Map<Serializable, Serializable>)def.get("highlighting");
+                if (highlighting != null)
+                {
+                   int snippetCount = this.getIntegerValue("snippetCount", 20, highlighting);
+                   int fragmentSize = this.getIntegerValue("fragmentSize", 50, highlighting);
+                   int maxAnalyzedChars = this.getIntegerValue("maxAnalyzedChars", 500, highlighting);
+                   boolean usePhraseHighlighter = this.getBooleanValue("usePhraseHighlighter", true, highlighting);
+                   boolean mergeContiguous = this.getBooleanValue("mergeContiguous", false, highlighting);
+                   
+                   String prefix = (String) highlighting.get("prefix");
+                   if (prefix == null)
+                   {
+                      prefix = "<mark>";
+                   }
+                   String postfix = (String) highlighting.get("postfix");
+                   if (postfix == null)
+                   {
+                      postfix = "</mark>";
+                   }
+                   
+                   List<FieldHighlightParameters> fieldHighlightParameters = new ArrayList<FieldHighlightParameters>();
+                   List<Map<Serializable, Serializable>> fields = (List<Map<Serializable, Serializable>>)def.get("fields");
+                   for (Map<Serializable, Serializable> field: fields)
+                   {
+                      String propertyName = (String) field.get("field");
+                      if (propertyName != null)
+                      {
+                    	  fieldHighlightParameters.add(new FieldHighlightParameters(propertyName, snippetCount, fragmentSize, mergeContiguous, prefix, postfix));
+                      }
+                   }
+                   
+                   GeneralHighlightParameters ghp = new GeneralHighlightParameters(snippetCount, fragmentSize, mergeContiguous, prefix, postfix, maxAnalyzedChars, usePhraseHighlighter, fieldHighlightParameters);
+                   sp.setHighlight(ghp);
+                }
+                
                 // error handling opions
                 boolean exceptionOnError = true;
                 if (onerror != null)
@@ -776,7 +815,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 // execute search based on search definition
                 Pair<Object[], Map<String,Object>> r = queryResultMeta(sp, exceptionOnError);
                 results = r.getFirst();
-                meta = r.getSecond();
+                meta = r.getSecond();  
             }
         }
         
@@ -804,6 +843,54 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
         res.put("nodes", res, Context.getCurrentContext().newArray(scope, results));
         res.put("meta", res, meta);
         return res;
+    }
+    
+    /**
+     * Attempts to retrieve and parse an attribute in the supplied object to an integer. If the attribute cannot be
+     * found or cannot be parsed then the supplied default is returned.
+     * 
+     * @param attribute
+     * @param defaultValue
+     * @param sourceObject
+     * @return
+     */
+    public int getIntegerValue(String attribute, int defaultValue, Map<Serializable, Serializable> sourceObject)
+    {
+    	int integer = defaultValue;
+        String stringValue = (String) sourceObject.get(attribute);
+        try 
+        {
+        	integer = Integer.parseInt(stringValue);
+        }
+        catch(NumberFormatException nfe)
+        {
+           // No action required
+        }
+        return integer;
+    }
+    
+    /**
+     * Attempts to retrieve and parse an attribute in the supplied object to an integer. If the attribute cannot be
+     * found or cannot be parsed then the supplied default is returned.
+     * 
+     * @param attribute
+     * @param defaultValue
+     * @param sourceObject
+     * @return
+     */
+    public boolean getBooleanValue(String attribute, boolean defaultValue, Map<Serializable, Serializable> sourceObject)
+    {
+        boolean bool = defaultValue;
+        String stringValue = (String) sourceObject.get(attribute);
+        try 
+        {
+        	bool = Boolean.getBoolean(stringValue);
+        }
+        catch(NumberFormatException nfe)
+        {
+           // No action required
+        }
+        return bool;
     }
     
     /**
@@ -951,6 +1038,8 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
             // results metadata
             meta.put("numberFound", results.getNumberFound());
             meta.put("hasMore", results.hasMore());
+            meta.put("highlighting", results.getHighlighting());
+            
             // results facets
             FacetLabelDisplayHandlerRegistry facetLabelDisplayHandlerRegistry = services.getFacetLabelDisplayHandlerRegistry();
             Map<String, List<ScriptFacetResult>> facetMeta = new HashMap<>();

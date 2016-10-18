@@ -130,6 +130,7 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.registerDispositionProperty=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionProperties=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionSchedule=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getOriginDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedRecordsManagementContainer=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.hasDisposableItems=RM_ALLOW

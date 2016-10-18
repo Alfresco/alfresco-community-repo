@@ -341,6 +341,28 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
         return result;
     }
+    
+    public DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef)
+    {
+        NodeRef parent = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
+        if (parent != null)
+        {
+            if (filePlanService.isRecordCategory(parent)) 
+            {
+                NodeRef result = getAssociatedDispositionScheduleImpl(parent);
+                if (result == null)
+                {
+                    return null;
+                }
+                return new DispositionScheduleImpl(serviceRegistry, nodeService, result);
+            }
+            else
+            {
+                return getOriginDispositionSchedule(parent);
+            }
+        } 
+        return null;
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getAssociatedDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)

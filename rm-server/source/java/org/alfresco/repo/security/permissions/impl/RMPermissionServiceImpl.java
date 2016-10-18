@@ -21,8 +21,10 @@ package org.alfresco.repo.security.permissions.impl;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -32,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.repo.cache.SimpleCache;
+
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -41,6 +44,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
+
 
 /**
  * Extends the core permission service implementation allowing the consideration of the read records
@@ -55,6 +59,16 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 {
 	/** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
+
+    /**
+     * Configured Permission mapping.
+     *
+     * These strings come from alfresco-global.properties and allow fine tuning of the how permissions are mapped.
+     * This was added as a fix for MNT-16852 to enhance compatibility with our Outlook Integration.
+     *
+     **/
+    protected List<String> configuredReadPermissions;
+    protected List<String> configuredFilePermissions;
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -98,6 +112,28 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     }
 
     /**
+     * Maps the string from the properties file (rm.haspermissionmap.read)
+     * to the list used in the hasPermission method
+     *
+     * @param readMapping the mapping of permissions to ReadRecord
+     */
+    public void setConfiguredReadPermissions(String readMapping)
+    {
+        this.configuredReadPermissions = Arrays.asList(readMapping.split(","));
+    }
+
+    /**
+     * Maps the string set in the properties file (rm.haspermissionmap.write)
+     * to the list used in the hasPermission method
+     *
+     * @param fileMapping the mapping of permissions to FileRecord
+     */
+    public void setConfiguredFilePermissions(String fileMapping)
+    {
+        this.configuredFilePermissions = Arrays.asList(fileMapping.split(","));
+    }
+
+    /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
@@ -118,18 +154,18 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         AccessStatus acs = super.hasPermission(nodeRef, perm);
-        if (AccessStatus.DENIED.equals(acs) == true &&
-            PermissionService.READ.equals(perm) == true &&
-            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
+
+        if (AccessStatus.DENIED.equals(acs) &&
+            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
-            return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
-        }
-        // Added ADD_CHILDREN check in for MNT-16852.
-        else if (AccessStatus.DENIED.equals(acs) &&
-                (PermissionService.WRITE.equals(perm) || PermissionService.ADD_CHILDREN.equals(perm)) &&
-                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-        {
-            return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
+            if (PermissionService.READ.equals(perm) || this.configuredReadPermissions.contains(perm))
+            {
+                return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
+            }
+            else if (PermissionService.WRITE.equals(perm) || this.configuredFilePermissions.contains(perm))
+            {
+                return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
+            }
         }
 
         return acs;

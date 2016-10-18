@@ -50,4 +50,46 @@
     <bean class="org.alfresco.rest.api.FileplanComponentChildrenRelation">
        <property name="nodes" ref="rm.Nodes" />
     </bean>
+
+   <!-- extended sites bean definition -->
+   <bean id="rm.sites" class="org.alfresco.rest.api.impl.RMSitesImpl" parent="sites">
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="nodes" ref="Nodes" />
+        <property name="people" ref="people" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="favouritesService" ref="FavouritesService" />
+        <property name="preferenceService" ref="PreferenceService" />
+        <property name="importerService" ref="importerComponent"/>
+        <property name="siteSurfConfig" ref="rm.siteSurfConfig" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="siteServiceImpl" ref="siteService" />
+   </bean>
+
+   <!--bean class="org.alfresco.util.BeanExtender">
+      <property name="beanName" value="sites" />
+      <property name="extendingBeanName" value="rm.sites" />
+   </bean-->
+
+    <bean id="rm.siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">
+        <property name="configPath" value="alfresco/module/org_alfresco_module_rm/bootstrap/site"/>
+    </bean>
+
+   <bean id="rm.Sites" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rest.api.Sites</value>
+       </property>
+       <property name="target">
+          <ref bean="rm.sites" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+
+   <bean class="org.alfresco.rest.api.sites.RMSiteEntityResource">
+       <property name="sites" ref="rm.Sites" />
+   </bean>
 </beans>

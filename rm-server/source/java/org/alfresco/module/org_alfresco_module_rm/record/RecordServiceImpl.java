@@ -231,9 +231,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
     
-    /** Records management service registry */
-    private RecordsManagementServiceRegistry serviceRegistry;
-
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
 
@@ -391,14 +388,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
         this.recordableVersionService = recordableVersionService;
     }
     
-    /**
-     * @param serviceRegistry   records management registry service
-     */
-    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
-
     /**
      * Init method
      */

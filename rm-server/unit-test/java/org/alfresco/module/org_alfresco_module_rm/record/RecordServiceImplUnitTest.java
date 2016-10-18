@@ -263,7 +263,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         DispositionSchedule recordDispositionSchedule = mock(DispositionSchedule.class);
         when(recordDispositionSchedule.isRecordLevelDisposition())
             .thenReturn(true);
-        when(mockedDispositionService.getDispositionSchedule(record))
+        when(mockedDispositionService.getOriginDispositionSchedule(record))
             .thenReturn(recordDispositionSchedule);
         
         DispositionSchedule recordFolderDispositionSchedule = mock(DispositionSchedule.class);

@@ -48,6 +48,7 @@ import org.alfresco.rest.api.model.RecordNode;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -55,7 +56,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
 /**
- * Centralizes access to the repository. 
+ * Centralizes access to the repository.
  *
  * @author Ana Bozianu
  * @since 2.6
@@ -72,7 +73,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         // Note: ordered
         CATEGORY, RECORD_FOLDER, FILE
     }
-    
+
     private FilePlanService filePlanService;
     private NodeService nodeService;
     private RecordsManagementServiceRegistry serviceRegistry;
@@ -255,7 +256,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
 
         return null;
     }
-    
+
     @Override
     protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(QName nodeTypeQName, boolean includeSubTypes, Set<QName> ignoreQNameTypes, Boolean includeFiles, Boolean includeFolders)
     {
@@ -272,5 +273,18 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         searchTypeQNames.remove(RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION);
 
         return new Pair<>(searchTypeQNames, ignoreAspectQNames);
+    }
+
+/**
+ * Overridden this as a work around for REPO-1443 issue to remove after that issue is fixed
+ */
+    @Override
+    public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters) {
+        if ((nodeId == null) || (nodeId.isEmpty()))
+        {
+            throw new InvalidArgumentException("Missing nodeId");
+        }
+        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        return super.updateNode(nodeRef.getId(), nodeInfo, parameters);
     }
 }

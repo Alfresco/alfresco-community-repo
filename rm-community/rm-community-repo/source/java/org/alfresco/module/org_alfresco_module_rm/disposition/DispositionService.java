@@ -242,6 +242,17 @@ public interface DispositionService
      * @param nodeRef   node reference
      */
     void refreshDispositionAction(NodeRef nodeRef);
+    
+    /**
+     * Gets date of the disposition action for the given 
+     * disposition schedule with the given action name
+     * 
+     * @param record
+     * @param dispositionSchedule nodeRef
+     * @param dispositionActionName
+     * @return date
+     */
+    Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName);
 
     /**
      * Compute the "disposition as of" date (if necessary) for a disposition action and a node.
@@ -253,4 +264,13 @@ public interface DispositionService
      */
     Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition,
                 boolean allowContextFromAsOf);
+    
+    /**
+     * Gets the origin disposition schedule for the record, not the calculated one
+     * in case of multiple dispositions applied to record
+     * 
+     * @param nodeRef record 
+     * @return the initial disposition
+     */
+    DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef);
 }

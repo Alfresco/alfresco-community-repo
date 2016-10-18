@@ -403,6 +403,7 @@ public class RepositoryInfo
         private boolean isReadOnly;
         private boolean isAuditEnabled;
         private boolean isQuickShareEnabled;
+        private boolean isThumbnailGenerationEnabled;
 
         public StatusInfo()
         {
@@ -441,6 +442,17 @@ public class RepositoryInfo
             return this;
         }
 
+        public boolean getIsThumbnailGenerationEnabled()
+        {
+            return isThumbnailGenerationEnabled;
+        }
+
+        public StatusInfo setThumbnailGenerationEnabled(boolean isThumbnailGenerationEnabled)
+        {
+            this.isThumbnailGenerationEnabled = isThumbnailGenerationEnabled;
+            return this;
+        }
+
         @Override
         public String toString()
         {
@@ -448,6 +460,7 @@ public class RepositoryInfo
             sb.append("StatusInfo [isReadOnly=").append(isReadOnly)
                         .append(", isAuditEnabled=").append(isAuditEnabled)
                         .append(", isQuickShareEnabled=").append(isQuickShareEnabled)
+                        .append(", isThumbnailGenerationEnabled=").append(isThumbnailGenerationEnabled)
                         .append(']');
             return sb.toString();
         }

@@ -138,6 +138,12 @@
       <property name="filePlanService">
          <ref bean="filePlanService" />
       </property>
+      <property name="configuredReadPermissions">
+         <value>${rm.haspermissionmap.read}</value>
+      </property>
+      <property name="configuredFilePermissions">
+         <value>${rm.haspermissionmap.write}</value>
+      </property>
    </bean>
 
    <bean id="extendedReaderDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority" />

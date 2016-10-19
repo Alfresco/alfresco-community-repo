@@ -2955,6 +2955,49 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
         }
 
+        // update folder(s) via well-known aliases rather than node id
+
+        // note: as of now, the platform does allow a user to modify their home folder [this may change in the future, if so adjust the test accordingly]
+        response = getSingle(URL_NODES, Nodes.PATH_MY, 200);
+        Folder user1MyFolder = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        String user1MyFolderId = user1MyFolder.getId();
+
+        String description = "my folder description "+RUNID;
+        props = new HashMap<>();
+        props.put("cm:description", description);
+
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+
+        response = put(URL_NODES, Nodes.PATH_MY, toJsonAsStringNonNull(fUpdate), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(description, folderResp.getProperties().get("cm:description"));
+
+        setRequestContext(networkAdmin);
+
+        props = new HashMap<>();
+        props.put("cm:description", description);
+
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+
+        response = put(URL_NODES, Nodes.PATH_ROOT, toJsonAsStringNonNull(fUpdate), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(description, folderResp.getProperties().get("cm:description"));
+
+        props = new HashMap<>();
+        props.put("cm:description", description);
+
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+
+        response = put(URL_NODES, Nodes.PATH_SHARED, toJsonAsStringNonNull(fUpdate), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(description, folderResp.getProperties().get("cm:description"));
+
+
+        setRequestContext(user1);
+
         // -ve test - fail on unknown property
         props = new HashMap<>();
         props.put("cm:xyz","my unknown property");
@@ -3004,6 +3047,30 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         fUpdate = new Folder();
         fUpdate.setProperties(props);
         put(URL_NODES, f2Id, toJsonAsStringNonNull(fUpdate), null, 400);
+
+        // -ve test - non-admin cannot modify root (Company Home) folder
+        props = new HashMap<>();
+        props.put("cm:description", "my folder description");
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+        put(URL_NODES, Nodes.PATH_ROOT, toJsonAsStringNonNull(fUpdate), null, 403);
+
+        // -ve test - non-admin cannot modify "Shared" folder
+        props = new HashMap<>();
+        props.put("cm:description", "my folder description");
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+        put(URL_NODES, Nodes.PATH_SHARED, toJsonAsStringNonNull(fUpdate), null, 403);
+
+        setRequestContext(user2);
+
+        // -ve test - user cannot modify another user's home folder
+        props = new HashMap<>();
+        props.put("cm:description", "my folder description");
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+        put(URL_NODES, user1MyFolderId, toJsonAsStringNonNull(fUpdate), null, 403);
+
     }
 
     /**

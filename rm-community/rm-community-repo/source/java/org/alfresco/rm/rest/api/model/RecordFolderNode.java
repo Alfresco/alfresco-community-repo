@@ -24,31 +24,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api.model;
+package org.alfresco.rm.rest.api.model;
 
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Concrete class carrying specific information for a category
+ * Concrete class carrying specific information for a record folder
  * 
  * @author Ana Bozianu
  * @since 2.6
  */
-public class CategoryNode extends FileplanComponentNode
+public class RecordFolderNode extends FileplanComponentNode
 {
-    protected Boolean hasRetentionSchedule;
+    private Boolean isClosed;
 
-    public CategoryNode(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
+    public RecordFolderNode(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         super(nodeRef, parentNodeRef, nodeProps, mapUserInfo, sr);
     }
 
-    public CategoryNode(Node node)
+    public RecordFolderNode(Node node)
     {
         super(node);
     }
@@ -56,18 +58,18 @@ public class CategoryNode extends FileplanComponentNode
     @Override
     protected void defineType()
     {
-        setIsCategory(true);
-        setIsRecordFolder(false);
+        setIsRecordFolder(true);
+        setIsCategory(false);
         setIsFile(false);
     }
 
-    public Boolean getHasRetentionSchedule()
+    public Boolean getIsClosed()
     {
-        return hasRetentionSchedule;
+        return isClosed;
     }
 
-    public void setHasRetentionSchedule(Boolean hasRetentionSchedule)
+    public void setIsClosed(Boolean isClosed)
     {
-        this.hasRetentionSchedule = hasRetentionSchedule;
+        this.isClosed = isClosed;
     }
 }

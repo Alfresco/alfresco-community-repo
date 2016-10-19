@@ -23,7 +23,7 @@
         </property>
     </bean>
 
-    <bean id="rm.nodes" class="org.alfresco.rest.api.impl.RMNodesImpl" parent="nodes" init-method="init">
+    <bean id="rm.nodes" class="org.alfresco.rm.rest.api.impl.RMNodesImpl" parent="nodes" init-method="init">
         <property name="quickShareLinks" ref="rm.QuickShareLinks"/>
         <property name="filePlanService" ref="FilePlanService"/>
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
@@ -43,33 +43,18 @@
        </property>
     </bean>
 
-    <bean class="org.alfresco.rest.api.FileplanComponentsEntityResource">
+    <bean class="org.alfresco.rm.rest.api.nodes.FileplanComponentsEntityResource">
        <property name="nodes" ref="rm.Nodes" />
     </bean>
 
-    <bean class="org.alfresco.rest.api.FileplanComponentChildrenRelation">
+    <bean class="org.alfresco.rm.rest.api.nodes.FileplanComponentChildrenRelation">
        <property name="nodes" ref="rm.Nodes" />
     </bean>
 
    <!-- extended sites bean definition -->
-   <bean id="rm.sites" class="org.alfresco.rest.api.impl.RMSitesImpl" parent="sites">
-        <property name="dictionaryService" ref="DictionaryService" />
-        <property name="nodes" ref="Nodes" />
-        <property name="people" ref="people" />
-        <property name="nodeService" ref="NodeService" />
-        <property name="siteService" ref="SiteService" />
-        <property name="favouritesService" ref="FavouritesService" />
-        <property name="preferenceService" ref="PreferenceService" />
-        <property name="importerService" ref="importerComponent"/>
+   <bean id="rm.sites" class="org.alfresco.rm.rest.api.impl.RMSitesImpl" parent="sites">
         <property name="siteSurfConfig" ref="rm.siteSurfConfig" />
-        <property name="permissionService" ref="PermissionService" />
-        <property name="siteServiceImpl" ref="siteService" />
    </bean>
-
-   <!--bean class="org.alfresco.util.BeanExtender">
-      <property name="beanName" value="sites" />
-      <property name="extendingBeanName" value="rm.sites" />
-   </bean-->
 
     <bean id="rm.siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">
         <property name="configPath" value="alfresco/module/org_alfresco_module_rm/bootstrap/site"/>
@@ -89,7 +74,7 @@
        </property>
     </bean>
 
-   <bean class="org.alfresco.rest.api.sites.RMSiteEntityResource">
+   <bean class="org.alfresco.rm.rest.api.sites.RMSiteEntityResource">
        <property name="sites" ref="rm.Sites" />
    </bean>
 </beans>

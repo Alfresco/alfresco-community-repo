@@ -24,11 +24,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api.model;
+package org.alfresco.rm.rest.api.model;
 
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;

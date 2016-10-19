@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.search.impl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.FacetFields;
@@ -64,6 +65,8 @@ import static org.alfresco.service.cmr.search.SearchService.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Maps from a json request and a solr SearchParameters object.
@@ -278,11 +281,29 @@ public class SearchMapper
                 throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
                             new Object[] { ": filterQueries {} not allowed with cmis language" });
             }
-
             for (FilterQuery fq:filterQueries)
             {
                 ParameterCheck.mandatoryString("filterQueries query", fq.getQuery());
-                sp.addFilterQuery(fq.getQuery());
+                String query = fq.getQuery().trim();
+                if (fq.getTags() == null || fq.getTags().isEmpty() || query.contains("afts tag"))
+                {
+                    //If its already got tags then just let it through
+                    sp.addFilterQuery(query);
+                }
+                else
+                {
+                    String tags = "tag="+String.join(",", fq.getTags());
+                    Matcher matcher = LuceneQueryLanguageSPI.AFTS_QUERY.matcher(query);
+                    if (matcher.find())
+                    {
+                        query = "{!afts "+tags+" "+matcher.group(1).trim()+"}"+matcher.group(2);
+                    }
+                    else
+                    {
+                        query = "{!afts "+tags+" }"+query;
+                    }
+                    sp.addFilterQuery(query);
+                }
             }
         }
     }
@@ -331,8 +352,11 @@ public class SearchMapper
                 {
                     ParameterCheck.mandatoryString("facetFields facet field", facet.getField());
                     String field = facet.getField();
-                    //String label = facet.getLabel()!=null?facet.getLabel():field;
-                    //field = "{key='"+label+"'}"+field;
+                    if (facet.getExcludeFilters() != null && !facet.getExcludeFilters().isEmpty())
+                    {
+                        int startIndex = field.startsWith("{!afts")?7:0;
+                        field = "{!afts ex="+String.join(",", facet.getExcludeFilters())+"}"+field.substring(startIndex);
+                    }
 
                     FieldFacet ff = new FieldFacet(field);
 
@@ -366,7 +390,6 @@ public class SearchMapper
                     ff.setOffset(facet.getOffset());
                     ff.setMinCount(facet.getMincount());
                     ff.setEnumMethodCacheMinDF(facet.getFacetEnumCacheMinDf());
-
                     sp.addFieldFacet(ff);
                 }
             }

@@ -52,6 +52,8 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.FieldHighlightParameters;
+import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -67,6 +69,7 @@ import org.mockito.stubbing.Answer;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -176,6 +179,31 @@ public class ResultMapperTests
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,new SpellCheckContext(null, null))));
         assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new FacetQueryContext(null, 0)),null,null)));
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,Arrays.asList(new FacetFieldContext(null, null)),null)));
+    }
+
+    @Test
+    public void testHighlight() throws Exception
+    {
+        SearchParameters sp = new SearchParameters();
+        sp.setBulkFetchEnabled(false);
+        GeneralHighlightParameters highlightParameters = new GeneralHighlightParameters(null,null,null,null,null,null,null,null);
+        sp.setHighlight(highlightParameters);
+        assertNull(sp.getHighlight().getMergeContiguous());
+        assertNull(sp.getHighlight().getFields());
+
+        List<FieldHighlightParameters> fields = new ArrayList<>(2);
+        fields.add(new FieldHighlightParameters(null, null, null, null, null,null));
+        fields.add(new FieldHighlightParameters("myfield", null, null, null, "(",")"));
+        highlightParameters = new GeneralHighlightParameters(1,2,null,null,null,50,true,fields);
+        sp.setHighlight(highlightParameters);
+        assertEquals(2,sp.getHighlight().getFields().size());
+        assertEquals(true,sp.getHighlight().getUsePhraseHighlighter().booleanValue());
+        assertEquals(1,sp.getHighlight().getSnippetCount().intValue());
+        assertEquals(50,sp.getHighlight().getMaxAnalyzedChars().intValue());
+        assertEquals(2,sp.getHighlight().getFragmentSize().intValue());
+        assertEquals("myfield",sp.getHighlight().getFields().get(1).getField());
+        assertEquals("(",sp.getHighlight().getFields().get(1).getPrefix());
+        assertEquals(")",sp.getHighlight().getFields().get(1).getPostfix());
     }
 
     private ResultSet mockResultset(List<Long> archivedNodes) throws JSONException

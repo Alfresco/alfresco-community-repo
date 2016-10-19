@@ -29,8 +29,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.PublicService;
-
 /**
  * The public API by which applications can query the audit logs and enable or disable auditing.
  * 

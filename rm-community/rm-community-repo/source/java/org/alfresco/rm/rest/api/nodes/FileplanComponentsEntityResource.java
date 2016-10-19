@@ -25,7 +25,7 @@
  * #L%
  */
 
-package org.alfresco.rest.api;
+package org.alfresco.rm.rest.api.nodes;
 
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;

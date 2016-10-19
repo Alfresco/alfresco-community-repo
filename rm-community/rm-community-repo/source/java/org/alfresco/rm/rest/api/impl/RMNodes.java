@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api.impl;
+package org.alfresco.rm.rest.api.impl;
 
 import org.alfresco.rest.api.Nodes;
 

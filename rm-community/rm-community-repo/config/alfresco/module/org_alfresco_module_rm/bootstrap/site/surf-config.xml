@@ -64,22 +64,6 @@
                   <cm:isIndexed>false</cm:isIndexed>
                 </view:properties>
               </cm:content>
-              <cm:content view:childName="cm:page.full-width-dashlet.site~${siteId}~dashboard.xml">
-                <view:aspects>
-                  <sys:localized></sys:localized>
-                  <sys:referenceable></sys:referenceable>
-                  <cm:auditable></cm:auditable>
-                </view:aspects>
-                <view:acl></view:acl>
-                <view:properties>
-                  <cm:name>page.full-width-dashlet.site~${siteId}~dashboard.xml</cm:name>
-                  <sys:store-identifier>SpacesStore</sys:store-identifier>
-                  <sys:locale>en_US_</sys:locale>
-                  <cm:content>contentUrl=surf-config/content2.bin|mimetype=application/octet-stream|size=356|encoding=UTF-8|locale=en_US_</cm:content>
-                  <sys:store-protocol>workspace</sys:store-protocol>
-                  <cm:isIndexed>false</cm:isIndexed>
-                </view:properties>
-              </cm:content>
               <cm:content view:childName="cm:page.component-1-1.site~${siteId}~dashboard.xml">
                 <view:aspects>
                   <sys:localized></sys:localized>

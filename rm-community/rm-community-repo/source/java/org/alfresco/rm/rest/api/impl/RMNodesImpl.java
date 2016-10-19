@@ -25,7 +25,7 @@
  * #L%
  */
 
-package org.alfresco.rest.api.impl;
+package org.alfresco.rm.rest.api.impl;
 
 import java.security.InvalidParameterException;
 import java.util.HashMap;
@@ -40,15 +40,16 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.rest.api.model.CategoryNode;
-import org.alfresco.rest.api.model.FileplanComponentNode;
+import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.RecordFolderNode;
-import org.alfresco.rest.api.model.RecordNode;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rm.rest.api.model.CategoryNode;
+import org.alfresco.rm.rest.api.model.FileplanComponentNode;
+import org.alfresco.rm.rest.api.model.RecordFolderNode;
+import org.alfresco.rm.rest.api.model.RecordNode;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;

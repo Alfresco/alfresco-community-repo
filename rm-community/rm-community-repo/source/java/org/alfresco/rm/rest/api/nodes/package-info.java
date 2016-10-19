@@ -24,50 +24,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api.model;
-
-import java.io.Serializable;
-import java.util.Map;
-
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 
 /**
- * Concrete class carrying specific information for a record folder
+ * Package info that defines the Information Governance REST API
  * 
  * @author Ana Bozianu
  * @since 2.6
  */
-public class RecordFolderNode extends FileplanComponentNode
-{
-    private Boolean isClosed;
-
-    public RecordFolderNode(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
-    {
-        super(nodeRef, parentNodeRef, nodeProps, mapUserInfo, sr);
-    }
-
-    public RecordFolderNode(Node node)
-    {
-        super(node);
-    }
-
-    @Override
-    protected void defineType()
-    {
-        setIsRecordFolder(true);
-        setIsCategory(false);
-        setIsFile(false);
-    }
-
-    public Boolean getIsClosed()
-    {
-        return isClosed;
-    }
-
-    public void setIsClosed(Boolean isClosed)
-    {
-        this.isClosed = isClosed;
-    }
-}
+@WebApi(name="ig", scope=Api.SCOPE.PUBLIC, version=1)
+package org.alfresco.rm.rest.api.nodes;
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.WebApi;

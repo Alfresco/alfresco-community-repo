@@ -25,12 +25,14 @@
  * #L%
  */
 
-package org.alfresco.rest.api.impl;
+package org.alfresco.rm.rest.api.impl;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteServiceException;
+import org.alfresco.rest.api.impl.SiteImportPackageHandler;
+import org.alfresco.rest.api.impl.SitesImpl;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -47,17 +49,17 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * Centralizes access to site services.
  *
  * @author Silviu Dinuta
  * @since 2.6
  *
  */
-public class RMSitesImpl extends SitesImpl implements RMSites
+public class RMSitesImpl extends SitesImpl
 {
-    private static final int SITE_MAXLEN_ID = 72;
+    private static final String RM_SITE_ID = "rm";
     private static final int SITE_MAXLEN_TITLE = 256;
     private static final int SITE_MAXLEN_DESCRIPTION = 512;
-    private static final String SITE_ID_VALID_CHARS_PARTIAL_REGEX = "A-Za-z0-9\\-";
 
     @Override
     public Site createSite(Site site, Parameters parameters) {
@@ -67,7 +69,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         SiteInfo siteInfo = null;
         try
         {
-            siteInfo = siteService.createSite("rm-site-dashboard", site.getId(), site.getTitle(), site.getDescription(), site.getVisibility(), RecordsManagementModel.TYPE_RM_SITE);
+            siteInfo = siteService.createSite("rm-site-dashboard", RM_SITE_ID, site.getTitle(), site.getDescription(), SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
         }
         catch (SiteServiceException sse)
         {
@@ -96,6 +98,13 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         return getSite(siteInfo, true);
     }
 
+    /**
+     * Copied from SitesImpl since we didn't had access to it.
+     *
+     * @param siteInfo
+     * @param includeRole
+     * @return
+     */
     private Site getSite(SiteInfo siteInfo, boolean includeRole)
     {
         // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
@@ -108,6 +117,12 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         return new Site(siteInfo, role);
     }
 
+    /**
+     * Copied from SitesImpl since we didn't had access to it
+     *
+     * @param siteId
+     * @param siteNodeRef
+     */
     private void importSite(final String siteId, final NodeRef siteNodeRef)
     {
         ImportPackageHandler acpHandler = new SiteImportPackageHandler(siteSurfConfig, siteId);
@@ -151,6 +166,14 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         importerService.importView(acpHandler, location, binding, (ImporterProgress)null);
     }
 
+    /**
+     * This method is copied from SitesImpl since we could not access it since it is private.
+     *
+     * Even if the method it will be protected in core, we still need to override since we don't need to check if the visibility is set since for RM site it is always PUBLIC.
+     * We also don't need to generate the id from title, or to check the id, since the id is always rm.
+     * @param site
+     * @return
+     */
     private Site validateSite(Site site)
     {
         // site title - mandatory
@@ -163,38 +186,6 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         {
             throw new InvalidArgumentException("Site title exceeds max length of "+SITE_MAXLEN_TITLE+" characters");
         }
-
-        SiteVisibility siteVisibility = site.getVisibility();
-        if (siteVisibility == null)
-        {
-            throw new InvalidArgumentException("Site visibility is expected: "+siteTitle+" (eg. PUBLIC, PRIVATE, MODERATED)");
-        }
-
-        String siteId = site.getId();
-        if (siteId == null)
-        {
-            // generate a site id from title (similar to Share create site dialog)
-            siteId = siteTitle.
-                    trim(). // trim leading & trailing whitespace
-                    replaceAll("[^"+SITE_ID_VALID_CHARS_PARTIAL_REGEX+" ]",""). // remove special characters (except spaces)
-                    replaceAll(" +", " "). // collapse multiple spaces to single space
-                    replace(" ","-"). // replaces spaces with dashs
-                    toLowerCase(); // lowercase :-)
-        }
-        else
-        {
-            if (! siteId.matches("^["+SITE_ID_VALID_CHARS_PARTIAL_REGEX+"]+"))
-            {
-                throw new InvalidArgumentException("Invalid site id - should consist of alphanumeric/dash characters");
-            }
-        }
-
-        if (siteId.length() > SITE_MAXLEN_ID)
-        {
-            throw new InvalidArgumentException("Site id exceeds max length of "+SITE_MAXLEN_ID+ "characters");
-        }
-
-        site.setId(siteId);
 
         String siteDescription = site.getDescription();
 

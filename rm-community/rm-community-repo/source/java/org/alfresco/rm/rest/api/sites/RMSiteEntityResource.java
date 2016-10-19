@@ -37,6 +37,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 /**
+ * RM Site operations
  *
  * @author Silviu Dinuta
  * @since 2.6

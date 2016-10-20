@@ -65,6 +65,7 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
             if (da != null)
             {
                 getNodeService().setProperty(da.getNodeRef(), PROP_DISPOSITION_AS_OF, asOfDate);
+                getNodeService().setProperty(da.getNodeRef(), PROP_MANUALLY_SET_AS_OF, true);
             }
         }
         else

@@ -27,6 +27,7 @@
 
 package org.alfresco.rm.rest.api.sites;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +62,11 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
     }
 
     @Override
-    public void delete(String id, Parameters parameters) {
-        sites.deleteSite(RM_SITE_ID, parameters);
+    public void delete(String siteId, Parameters parameters) {
+        if(!RM_SITE_ID.equals(siteId))
+        {
+            throw new InvalidParameterException("The Deletion is supported only for siteId = rm.");
+        }
+        sites.deleteSite(siteId, parameters);
     }
 }

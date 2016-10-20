@@ -14,8 +14,8 @@ package org.alfresco.rest.fileplancomponents;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 
+import org.alfresco.rest.BaseIgRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.ig.IgRestTest;
 import org.alfresco.rest.model.RestFilePlanComponentModel;
 import org.alfresco.rest.requests.RestFilePlanComponentApi;
 import org.alfresco.utility.data.DataUser;
@@ -28,7 +28,7 @@ import org.testng.annotations.Test;
  * @author Tuna Aksoy
  * @since 1.0
  */
-public class FilePlanComponentsTest extends IgRestTest
+public class FilePlanComponentsTest extends BaseIgRestTest
 {
     @Autowired
     private RestFilePlanComponentApi filePlanComponentApi;

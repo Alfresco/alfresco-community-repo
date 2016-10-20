@@ -13,8 +13,8 @@ package org.alfresco.rest.fileplancomponents;
 
 import java.util.UUID;
 
+import org.alfresco.rest.BaseIgRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.ig.IgRestTest;
 import org.alfresco.rest.model.RestFilePlanComponentModel;
 import org.alfresco.rest.requests.RestFilePlanComponentApi;
 import org.alfresco.utility.data.DataUser;
@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertNotNull;
-import static org.alfresco.rest.model.FileplanComponentType.CATEGORY;
+import static org.alfresco.rest.model.FileplanComponentType.RECORD_CATEGORY;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -35,7 +35,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
  * @author Kristijan Conkas
  * @since
  */
-public class RecordCategoryComponentsTest extends IgRestTest
+public class RecordCategoryComponentsTest extends BaseIgRestTest
 {
     @Autowired
     private RestFilePlanComponentApi filePlanComponentApi;
@@ -58,13 +58,13 @@ public class RecordCategoryComponentsTest extends IgRestTest
         RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper();
         restWrapper.authenticateUser(dataUser.getAdminUser());
         RestFilePlanComponentModel filePlanComponent = 
-            filePlanComponentApi.createFilePlanComponent("-filePlan-", categoryName, CATEGORY, null);
+            filePlanComponentApi.createFilePlanComponent("-filePlan-", categoryName, RECORD_CATEGORY, null);
         
         // verify returned object
         restWrapper.assertStatusCodeIs(CREATED);
         assertTrue(filePlanComponent.isIsCategory());
         assertEquals(filePlanComponent.getName(), categoryName);
-        assertEquals(filePlanComponent.getNodeType(), CATEGORY.toString());
+        assertEquals(filePlanComponent.getNodeType(), RECORD_CATEGORY.toString());
         newCategoryId = filePlanComponent.getId();
     }
     

@@ -13,23 +13,24 @@ package org.alfresco.rest.model;
 
 /**
  * Fileplan Component Types enum
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
 public enum FileplanComponentType
 {
-    CATEGORY("rma:recordCategory"),
-    FOLDER("rma:recordFolder"),
+    RECORD_CATEGORY("rma:recordCategory"),
+    RECORD_FOLDER("rma:recordFolder"),
     HOLD("rma:hold"),
     UNFILED_RECORD_FOLDER("rma:unfiledRecordFolder");
-    
+
     private String value;
-    
+
     FileplanComponentType (String value)
     {
         this.value = value;
     }
-    
+
     public String toString()
     {
         return this.value;

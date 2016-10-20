@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @author Tuna Aksoy
  * @since 1.0
  */
+// FIXME: Once the fields have been added this annotation should be removed
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RestFilePlanComponentModel
 {

@@ -32,6 +32,12 @@ import org.testng.annotations.BeforeClass;
 @PropertySource(value = "classpath:local.properties", ignoreResourceNotFound = true)
 public class BaseIgRestTest extends RestTest
 {
+    /** Alias which can be used instead of the identifier of a node. */
+    public static final String ALIAS_FILE_PLAN = "-filePlan-";
+    public static final String ALIAS_TRANSFERS = "-transfers-";
+    public static final String ALIAS_UNFILED_RECORDS_CONTAINER = "-unfiled-";
+    public static final String ALIAS_HOLDS = "-holds-";
+
     @Value("${alfresco.rm.scheme}")
     private String scheme;
 

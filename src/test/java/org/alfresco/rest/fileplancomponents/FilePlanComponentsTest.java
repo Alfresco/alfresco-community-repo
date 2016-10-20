@@ -11,6 +11,7 @@
  */
 package org.alfresco.rest.fileplancomponents;
 
+import static org.alfresco.rest.model.FileplanComponentType.FILE_PLAN;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 
@@ -41,8 +42,8 @@ public class FilePlanComponentsTest extends BaseIgRestTest
     {
         RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper();
         restWrapper.authenticateUser(dataUser.getAdminUser());
-        RestFilePlanComponentModel filePlanComponent = filePlanComponentApi.getFilePlanComponent("-filePlan-");
+        RestFilePlanComponentModel filePlanComponent = filePlanComponentApi.getFilePlanComponent(ALIAS_FILE_PLAN);
         restWrapper.assertStatusCodeIs(OK);
-        assertEquals(filePlanComponent.getNodeType(), "rma:filePlan");
+        assertEquals(filePlanComponent.getNodeType(), FILE_PLAN.toString());
     }
 }

@@ -19,6 +19,7 @@ package org.alfresco.rest.model;
  */
 public enum FileplanComponentType
 {
+    FILE_PLAN("rma:filePlan"),
     RECORD_CATEGORY("rma:recordCategory"),
     RECORD_FOLDER("rma:recordFolder"),
     HOLD("rma:hold"),

@@ -350,11 +350,11 @@ var Admin = Admin || {};
    {
       var req = new XMLHttpRequest();
       var data = config.data || {};
-      if ((config.method === "POST" || config.method === "PUT") && Admin.CSRF.enabled) {
-         setRequestHeader(Admin.CSRF.getHeader(), Admin.CSRFToken());
-      }
       if (req.overrideMimeType) req.overrideMimeType((config.responseContentType ? config.responseContentType : "application/json") + "; charset=utf-8");
       req.open(config.method ? config.method : "GET", config.url);
+      if ((config.method === "POST" || config.method === "PUT") && Admin.CSRF.enabled) {
+         req.setRequestHeader(Admin.CSRF.getHeader(), Admin.CSRFToken());
+      }
       req.setRequestHeader("Accept", config.requestContentType ? config.requestContentType : "application/json");
       req.onreadystatechange = function() {
          if (req.readyState === 4)
@@ -394,7 +394,7 @@ var Admin = Admin || {};
                else
                {
                   // default error handler
-                  alert("${msg("admin-console.requesterror")}\n\n" + res.responseText + "\n\n" + res.responseStatus);
+                  alert("${msg("admin-console.requesterror")}\n\n" + req.responseText + "\n\n" + req.responseStatus);
                }
             }
          }

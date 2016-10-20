@@ -61,11 +61,6 @@ public class MultipleSchedulesTest extends BaseRMTestCase
         applicationContext = ApplicationContextHelper.getApplicationContext(getConfigLocations());
         internalDispositionService = (DispositionService) applicationContext.getBean("dispositionService");
 
-        // Set up the file plan if it hasn't already been done.
-        if (categoryA == null)
-        {
-            setUpFilePlan();
-        }
         // Ensure different records are used for each test.
         record = null;
     }
@@ -77,6 +72,12 @@ public class MultipleSchedulesTest extends BaseRMTestCase
      */
     private void setUpFilePlan()
     {
+        // Only set up the file plan if it hasn't already been done.
+        if (categoryA == null)
+        {
+            return;
+        }
+
         // Create two categories.
         categoryA = filePlanService.createRecordCategory(filePlan, CATEGORY_A_NAME);
         categoryB = filePlanService.createRecordCategory(filePlan, CATEGORY_B_NAME);
@@ -119,6 +120,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
     {
         test()
             .given(() -> {
+                setUpFilePlan();
                 // Create a record filed under category A and linked to category B.
                 record = fileFolderService.create(folderA, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
                 recordService.link(record, folderB);
@@ -149,6 +151,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
     {
         test()
             .given(() -> {
+                setUpFilePlan();
                 // Create a record filed under category B and linked to category A.
                 record = fileFolderService.create(folderB, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
                 recordService.link(record, folderA);

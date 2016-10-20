@@ -73,7 +73,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
     private void setUpFilePlan()
     {
         // Only set up the file plan if it hasn't already been done.
-        if (categoryA == null)
+        if (categoryA != null)
         {
             return;
         }

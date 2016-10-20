@@ -28,6 +28,7 @@
 package org.alfresco.rm.rest.api.impl;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteServiceException;
@@ -37,6 +38,9 @@ import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rm.rest.api.RMSites;
+import org.alfresco.rm.rest.api.model.RMSite;
+import org.alfresco.rm.rest.api.model.RMSiteCompliance;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -55,21 +59,31 @@ import org.alfresco.service.namespace.QName;
  * @since 2.6
  *
  */
-public class RMSitesImpl extends SitesImpl
+public class RMSitesImpl extends SitesImpl implements RMSites
 {
     private static final String RM_SITE_ID = "rm";
     private static final int SITE_MAXLEN_TITLE = 256;
     private static final int SITE_MAXLEN_DESCRIPTION = 512;
 
+    public RMSite createRMSite(RMSite rmSite, Parameters parameters)
+    {
+        RMSiteCompliance compliance = rmSite.getCompliance();
+        if(compliance == null)
+        {
+            compliance = RMSiteCompliance.STANDARD;
+        }
+        Site site = createSite(rmSite, parameters);
+        return new RMSite(site, compliance);
+    }
+
     @Override
     public Site createSite(Site site, Parameters parameters) {
-        // note: if site id is null then will be generated from the site title
         site = validateSite(site);
 
         SiteInfo siteInfo = null;
         try
         {
-            siteInfo = siteService.createSite("rm-site-dashboard", RM_SITE_ID, site.getTitle(), site.getDescription(), SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
+            siteInfo = siteService.createSite("rm-site-dashboard", RM_SITE_ID, site.getTitle(), site.getDescription(), SiteVisibility.PUBLIC, getRMSiteType((RMSite) site));
         }
         catch (SiteServiceException sse)
         {
@@ -201,5 +215,14 @@ public class RMSitesImpl extends SitesImpl
         }
 
         return site;
+    }
+
+    private QName getRMSiteType(RMSite rmSite) {
+        RMSiteCompliance compliance = rmSite.getCompliance();
+        if (compliance == null || compliance.equals(RMSiteCompliance.STANDARD)) {
+            return RecordsManagementModel.TYPE_RM_SITE;
+        } else {
+            return DOD5015Model.TYPE_DOD_5015_SITE;
+        }
     }
 }

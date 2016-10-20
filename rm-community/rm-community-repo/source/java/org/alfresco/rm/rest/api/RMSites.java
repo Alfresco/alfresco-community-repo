@@ -25,43 +25,13 @@
  * #L%
  */
 
-package org.alfresco.rm.rest.api.sites;
+package org.alfresco.rm.rest.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.alfresco.rest.framework.resource.EntityResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rm.rest.api.RMSites;
 import org.alfresco.rm.rest.api.model.RMSite;
 
-/**
- * RM Site operations
- *
- * @author Silviu Dinuta
- * @since 2.6
- *
- */
-@EntityResource(name = "sites", title = "IG Sites")
-public class RMSiteEntityResource implements EntityResourceAction.Delete, EntityResourceAction.Create<RMSite>
+public interface RMSites extends Sites
 {
-    private static final String RM_SITE_ID = "rm";
-    private RMSites sites;
-
-    public void setSites(RMSites sites) {
-        this.sites = sites;
-    }
-
-    @Override
-    public List<RMSite> create(List<RMSite> entity, Parameters parameters) {
-        List<RMSite> result = new ArrayList<>(1);
-        result.add(sites.createRMSite(entity.get(0), parameters));
-        return result;
-    }
-
-    @Override
-    public void delete(String id, Parameters parameters) {
-        sites.deleteSite(RM_SITE_ID, parameters);
-    }
+    RMSite createRMSite(RMSite site, Parameters parameters);
 }

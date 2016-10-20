@@ -16,7 +16,7 @@ package org.alfresco.rest.model;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public enum FileplanComponentTypes
+public enum FileplanComponentType
 {
     CATEGORY("rma:recordCategory"),
     FOLDER("rma:recordFolder"),
@@ -25,7 +25,7 @@ public enum FileplanComponentTypes
     
     private String value;
     
-    FileplanComponentTypes (String value)
+    FileplanComponentType (String value)
     {
         this.value = value;
     }

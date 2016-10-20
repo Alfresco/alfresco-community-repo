@@ -19,11 +19,11 @@ import org.alfresco.rest.RestTest;
 import org.testng.annotations.BeforeClass;
 
 /**
- * Information Governance specific RestTest
+ * Information Governance RestTest implementation
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class IgTest extends RestTest
+public class IgRestTest extends RestTest
 {
     /**
      * @see org.alfresco.rest.RestTest#checkServerHealth()
@@ -33,7 +33,7 @@ public class IgTest extends RestTest
     public void checkServerHealth() throws Exception
     {
         // TODO: obtain these from property files
-        baseURI = "http://192.168.33.10";
+        baseURI = "http://localhost";
         port = 8080;
         basePath = "alfresco/api/-default-/public/ig/versions/1";
     }

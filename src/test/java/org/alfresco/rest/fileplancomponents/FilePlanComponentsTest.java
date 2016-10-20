@@ -11,20 +11,15 @@
  */
 package org.alfresco.rest.fileplancomponents;
 
-import static com.jayway.restassured.RestAssured.basePath;
-import static com.jayway.restassured.RestAssured.baseURI;
-import static com.jayway.restassured.RestAssured.port;
-
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 
-import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.ig.IgRestTest;
 import org.alfresco.rest.model.RestFilePlanComponentModel;
 import org.alfresco.rest.requests.RestFilePlanComponentApi;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -33,25 +28,13 @@ import org.testng.annotations.Test;
  * @author Tuna Aksoy
  * @since 1.0
  */
-public class FilePlanComponentsTest extends RestTest
+public class FilePlanComponentsTest extends IgRestTest
 {
     @Autowired
     private RestFilePlanComponentApi filePlanComponentApi;
 
     @Autowired
     private DataUser dataUser;
-
-    /**
-     * @see org.alfresco.rest.RestTest#checkServerHealth()
-     */
-    @Override
-    @BeforeClass(alwaysRun = true)
-    public void checkServerHealth() throws Exception
-    {
-        baseURI = "http://localhost";
-        port = 8090;
-        basePath = "alfresco/api/-default-/public/ig/versions/1";
-    }
 
     @Test
     public void testfilePlanComponentsGet() throws Exception

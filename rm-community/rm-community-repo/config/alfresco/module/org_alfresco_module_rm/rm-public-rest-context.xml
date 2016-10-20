@@ -62,7 +62,7 @@
 
    <bean id="rm.Sites" class="org.springframework.aop.framework.ProxyFactoryBean">
        <property name="proxyInterfaces">
-          <value>org.alfresco.rest.api.Sites</value>
+          <value>org.alfresco.rm.rest.api.RMSites</value>
        </property>
        <property name="target">
           <ref bean="rm.sites" />

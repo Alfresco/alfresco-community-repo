@@ -75,7 +75,7 @@
                   <cm:name>page.component-1-1.site~${siteId}~dashboard.xml</cm:name>
                   <sys:store-identifier>SpacesStore</sys:store-identifier>
                   <sys:locale>en_US_</sys:locale>
-                  <cm:content>contentUrl=surf-config/content3.bin|mimetype=application/octet-stream|size=326|encoding=UTF-8|locale=en_US_</cm:content>
+                  <cm:content>contentUrl=surf-config/content2.bin|mimetype=application/octet-stream|size=326|encoding=UTF-8|locale=en_US_</cm:content>
                   <sys:store-protocol>workspace</sys:store-protocol>
                   <cm:isIndexed>false</cm:isIndexed>
                 </view:properties>
@@ -91,7 +91,7 @@
                   <cm:name>page.component-2-1.site~${siteId}~dashboard.xml</cm:name>
                   <sys:store-identifier>SpacesStore</sys:store-identifier>
                   <sys:locale>en_US_</sys:locale>
-                  <cm:content>contentUrl=surf-config/content4.bin|mimetype=application/octet-stream|size=270|encoding=UTF-8|locale=en_US_</cm:content>
+                  <cm:content>contentUrl=surf-config/content3.bin|mimetype=application/octet-stream|size=270|encoding=UTF-8|locale=en_US_</cm:content>
                   <sys:store-protocol>workspace</sys:store-protocol>
                   <cm:isIndexed>false</cm:isIndexed>
                 </view:properties>
@@ -107,7 +107,7 @@
                   <cm:name>page.component-2-2.site~${siteId}~dashboard.xml</cm:name>
                   <sys:store-identifier>SpacesStore</sys:store-identifier>
                   <sys:locale>en_US_</sys:locale>
-                  <cm:content>contentUrl=surf-config/content5.bin|mimetype=application/octet-stream|size=272|encoding=UTF-8|locale=en_US_</cm:content>
+                  <cm:content>contentUrl=surf-config/content4.bin|mimetype=application/octet-stream|size=272|encoding=UTF-8|locale=en_US_</cm:content>
                   <sys:store-protocol>workspace</sys:store-protocol>
                   <cm:isIndexed>false</cm:isIndexed>
                 </view:properties>
@@ -174,7 +174,7 @@
                               <cm:name>dashboard.xml</cm:name>
                               <sys:store-identifier>SpacesStore</sys:store-identifier>
                               <sys:locale>en_US_</sys:locale>
-                              <cm:content>contentUrl=surf-config/content6.bin|mimetype=application/octet-stream|size=481|encoding=UTF-8|locale=en_US_</cm:content>
+                              <cm:content>contentUrl=surf-config/content5.bin|mimetype=application/octet-stream|size=481|encoding=UTF-8|locale=en_US_</cm:content>
                               <sys:store-protocol>workspace</sys:store-protocol>
                               <cm:isIndexed>false</cm:isIndexed>
                             </view:properties>

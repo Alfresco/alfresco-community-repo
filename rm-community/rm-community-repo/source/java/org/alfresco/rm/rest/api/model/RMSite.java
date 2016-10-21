@@ -31,23 +31,28 @@ import org.alfresco.rest.api.model.Site;
 import org.alfresco.service.cmr.site.SiteInfo;
 
 /**
+ * Concrete class carrying general information for RM site
  *
  * @author Silviu Dinuta
+ * @since 2.6
  *
  */
 public class RMSite extends Site
 {
     private RMSiteCompliance compliance;
 
-    public RMSiteCompliance getCompliance() {
+    public RMSiteCompliance getCompliance()
+    {
         return compliance;
     }
 
-    public void setCompliance(RMSiteCompliance compliance) {
+    public void setCompliance(RMSiteCompliance compliance)
+    {
         this.compliance = compliance;
     }
 
-    public RMSite() {
+    public RMSite()
+    {
         super();
     }
 
@@ -62,10 +67,12 @@ public class RMSite extends Site
         this.compliance = compliance;
     }
 
-    public RMSite(SiteInfo siteInfo, String role, RMSiteCompliance compliance) {
+    public RMSite(SiteInfo siteInfo, String role, RMSiteCompliance compliance)
+    {
         super(siteInfo, role);
         this.compliance = compliance;
     }
+
     @Override
     public String toString()
     {
@@ -73,5 +80,4 @@ public class RMSite extends Site
                 + title + ", description=" + description + ", visibility="
                 + visibility + ", role=" + role + ", compliance="+ compliance +"]";
     }
-
 }

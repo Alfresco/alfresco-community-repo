@@ -61,10 +61,12 @@ import org.alfresco.service.namespace.QName;
  */
 public class RMSitesImpl extends SitesImpl implements RMSites
 {
+    private static final String RM_SITE_PRESET = "rm-site-dashboard";
     private static final String RM_SITE_ID = "rm";
     private static final int SITE_MAXLEN_TITLE = 256;
     private static final int SITE_MAXLEN_DESCRIPTION = 512;
 
+    @Override
     public RMSite createRMSite(RMSite rmSite, Parameters parameters)
     {
         RMSiteCompliance compliance = rmSite.getCompliance();
@@ -77,13 +79,15 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     }
 
     @Override
-    public Site createSite(Site site, Parameters parameters) {
+    public Site createSite(Site site, Parameters parameters)
+    {
         site = validateSite(site);
 
         SiteInfo siteInfo = null;
         try
         {
-            siteInfo = siteService.createSite("rm-site-dashboard", RM_SITE_ID, site.getTitle(), site.getDescription(), SiteVisibility.PUBLIC, getRMSiteType((RMSite) site));
+            siteInfo = siteService.createSite(RM_SITE_PRESET, RM_SITE_ID, site.getTitle(), site.getDescription(),
+                        SiteVisibility.PUBLIC, getRMSiteType((RMSite) site));
         }
         catch (SiteServiceException sse)
         {
@@ -106,8 +110,13 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         // pre-create doclib
         siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
 
-        String personId = AuthenticationUtil.getFullyAuthenticatedUser();
-        favouritesService.addFavourite(personId, siteNodeRef); // ignore result
+        // default false (if not provided)
+        boolean skipAddToFavorites = Boolean.valueOf(parameters.getParameter(PARAM_SKIP_ADDTOFAVORITES));
+        if (skipAddToFavorites == false)
+        {
+            String personId = AuthenticationUtil.getFullyAuthenticatedUser();
+            favouritesService.addFavourite(personId, siteNodeRef); // ignore result
+        }
 
         return getSite(siteInfo, true);
     }
@@ -217,11 +226,21 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         return site;
     }
 
-    private QName getRMSiteType(RMSite rmSite) {
+    /**
+     * Gets RM site type based on compliance.
+     *
+     * @param rmSite
+     * @return
+     */
+    private QName getRMSiteType(RMSite rmSite)
+    {
         RMSiteCompliance compliance = rmSite.getCompliance();
-        if (compliance == null || compliance.equals(RMSiteCompliance.STANDARD)) {
+        if (compliance == null || compliance.equals(RMSiteCompliance.STANDARD))
+        {
             return RecordsManagementModel.TYPE_RM_SITE;
-        } else {
+        }
+        else
+        {
             return DOD5015Model.TYPE_DOD_5015_SITE;
         }
     }

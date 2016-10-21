@@ -241,13 +241,13 @@
                            <artifactItems>
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-enterprise-share</artifactId>
+                                 <artifactId>alfresco-rm-share</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
                               </artifactItem>
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-enterprise-repo</artifactId>
+                                 <artifactId>alfresco-rm-server</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
                               </artifactItem>
@@ -264,26 +264,26 @@
                   <extensions>true</extensions>
                   <executions>
                      <execution>
-                        <id>install-enterprise-repo-amp</id>
+                        <id>install-server-amp</id>
                         <goals>
                            <goal>install</goal>
                         </goals>
                         <phase>process-test-resources</phase>
                         <configuration>
                            <backup>true</backup>
-                           <ampLocation>${project.build.directory}/amps/alfresco-rm-enterprise-repo-${project.version}.amp</ampLocation>
+                           <ampLocation>${project.build.directory}/amps/alfresco-rm-server-${project.version}.amp</ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/alfresco.war</warLocation>
                         </configuration>
                      </execution>
                      <execution>
-                        <id>install-enterprise-share-amp</id>
+                        <id>install-share-amp</id>
                         <goals>
                            <goal>install</goal>
                         </goals>
                         <phase>process-test-resources</phase>
                         <configuration>
                            <backup>true</backup>
-                           <ampLocation>${project.build.directory}/amps/alfresco-rm-enterprise-share-${project.version}.amp</ampLocation>
+                           <ampLocation>${project.build.directory}/amps/alfresco-rm-share-${project.version}.amp</ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/share.war</warLocation>
                         </configuration>
                      </execution>

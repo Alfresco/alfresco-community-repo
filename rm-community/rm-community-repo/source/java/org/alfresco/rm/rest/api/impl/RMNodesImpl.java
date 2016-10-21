@@ -46,6 +46,7 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rm.rest.api.RMNodes;
 import org.alfresco.rm.rest.api.model.CategoryNode;
 import org.alfresco.rm.rest.api.model.FileplanComponentNode;
 import org.alfresco.rm.rest.api.model.RecordFolderNode;

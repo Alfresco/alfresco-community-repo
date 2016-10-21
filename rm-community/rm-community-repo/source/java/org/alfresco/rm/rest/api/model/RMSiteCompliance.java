@@ -27,15 +27,12 @@
 
 package org.alfresco.rm.rest.api.model;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 /**
  * Enumeration representing rm site compliance
  *
  * @author Silviu Dinuta
- *
+ * @since 2.6
  */
-@AlfrescoPublicApi
 public enum RMSiteCompliance
 {
     STANDARD,

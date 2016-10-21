@@ -31,7 +31,21 @@ import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.model.RMSite;
 
+/**
+ * RM Sites API
+ *
+ * @author Silviu Dinuta
+ * @since 2.6
+ *
+ */
 public interface RMSites extends Sites
 {
+    /**
+     * Creates RM site
+     *
+     * @param site
+     * @param parameters
+     * @return
+     */
     RMSite createRMSite(RMSite site, Parameters parameters);
 }

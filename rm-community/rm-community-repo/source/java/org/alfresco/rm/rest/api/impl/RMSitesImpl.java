@@ -36,11 +36,13 @@ import org.alfresco.rest.api.impl.SiteImportPackageHandler;
 import org.alfresco.rest.api.impl.SitesImpl;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMSites;
 import org.alfresco.rm.rest.api.model.RMSite;
 import org.alfresco.rm.rest.api.model.RMSiteCompliance;
+import org.alfresco.rm.rest.api.model.SiteUpdate;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -224,6 +226,79 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         }
 
         return site;
+    }
+
+    /**
+     * Updates the RM site
+     */
+    public RMSite updateRMSite(String siteId, SiteUpdate update, Parameters parameters)
+    {
+        Site updatedSite = updateSite(siteId, update, parameters);
+        SiteInfo siteInfo = siteService.getSite(siteId);
+        RMSiteCompliance compliance = getCompliance(siteInfo);
+       return new RMSite(updatedSite, compliance);
+    }
+
+    /**
+     * Obtain compliance from site info
+     *
+     * @param siteInfo
+     * @return
+     */
+    private RMSiteCompliance getCompliance(SiteInfo siteInfo)
+    {
+        NodeRef nodeRef = siteInfo.getNodeRef();
+        QName siteType = nodeService.getType(nodeRef);
+        RMSiteCompliance compliance;
+        if(RecordsManagementModel.TYPE_RM_SITE.equals(siteType))
+        {
+            compliance = RMSiteCompliance.STANDARD;
+        }
+        else
+        {
+            compliance = RMSiteCompliance.DOD5015;
+        }
+        return compliance;
+    }
+
+    /**
+     * TODO copied from core 5.2.N since we don't have it in 5.2.a-EA version. To be removed when upgrading.
+     * @param siteId
+     * @param update
+     * @param parameters
+     * @return
+     */
+    public Site updateSite(String siteId, SiteUpdate update, Parameters parameters)
+    {
+        // Get the site by ID (aka short name)
+        SiteInfo siteInfo = validateSite(siteId);
+        if (siteInfo == null)
+        {
+            // site does not exist
+            throw new EntityNotFoundException(siteId);
+        }
+
+        // Bind any provided values to the site info, allowing for "partial" updates.
+        if (update.getTitle() != null)
+        {
+            siteInfo.setTitle(update.getTitle());
+        }
+        if (update.getDescription() != null)
+        {
+            siteInfo.setDescription(update.getDescription());
+        }
+        if (update.getVisibility() != null)
+        {
+            siteInfo.setVisibility(update.getVisibility());
+        }
+
+        // Validate the new details
+        validateSite(new Site(siteInfo, null));
+
+        // Perform the actual update.
+        siteService.updateSite(siteInfo);
+
+        return getSite(siteId);
     }
 
     /**

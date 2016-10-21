@@ -28,8 +28,10 @@
 package org.alfresco.rm.rest.api;
 
 import org.alfresco.rest.api.Sites;
+import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.model.RMSite;
+import org.alfresco.rm.rest.api.model.SiteUpdate;
 
 /**
  * RM Sites API
@@ -48,4 +50,23 @@ public interface RMSites extends Sites
      * @return
      */
     RMSite createRMSite(RMSite site, Parameters parameters);
+
+    /**
+     * Updates RM site
+     * @param siteId
+     * @param site
+     * @param parameters
+     * @return
+     */
+    RMSite updateRMSite(String siteId, SiteUpdate site, Parameters parameters);
+
+    /**
+     * TODO Copied from Sites interface because was not available in 5.2.a-EA. To be removed when upgrading.
+     *
+     * @param siteId
+     * @param site
+     * @param parameters
+     * @return
+     */
+    Site updateSite(String siteId, SiteUpdate site, Parameters parameters);
 }

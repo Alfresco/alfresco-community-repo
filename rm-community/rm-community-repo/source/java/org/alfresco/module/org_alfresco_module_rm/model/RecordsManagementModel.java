@@ -158,6 +158,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_DISPOSITION_ACTION_ID = QName.createQName(RM_URI, "dispositionActionId");
     QName PROP_DISPOSITION_ACTION = QName.createQName(RM_URI, "dispositionAction");
     QName PROP_DISPOSITION_AS_OF = QName.createQName(RM_URI, "dispositionAsOf");
+    /** A flag indicating that the "disposition as of" date has been manually set and shouldn't be changed. */
+    QName PROP_MANUALLY_SET_AS_OF = QName.createQName(RM_URI, "manuallySetAsOf");
     QName PROP_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "dispositionEventsEligible");
     QName PROP_DISPOSITION_ACTION_STARTED_AT = QName.createQName(RM_URI, "dispositionActionStartedAt");
     QName PROP_DISPOSITION_ACTION_STARTED_BY = QName.createQName(RM_URI, "dispositionActionStartedBy");

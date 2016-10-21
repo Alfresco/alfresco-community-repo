@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rm.rest.api.model;
 
 import java.io.Serializable;
@@ -37,7 +38,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Concrete class carrying specific information for a category
- * 
+ *
  * @author Ana Bozianu
  * @since 2.6
  */

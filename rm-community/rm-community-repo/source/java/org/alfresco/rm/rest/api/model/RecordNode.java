@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rm.rest.api.model;
 
 import java.io.Serializable;
@@ -37,13 +38,12 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Concrete class carrying specific information for a record
- * 
+ *
  * @author Ana Bozianu
  * @since 2.6
  */
 public class RecordNode extends FileplanComponentNode
 {
-
     private Boolean isCompleted;
 
     public RecordNode(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)

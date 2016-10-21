@@ -28,7 +28,7 @@
 package org.alfresco.rm.rest.api.model;
 
 /**
- * Enumeration representing rm site compliance
+ * Enumeration representing RM site compliance
  *
  * @author Silviu Dinuta
  * @since 2.6

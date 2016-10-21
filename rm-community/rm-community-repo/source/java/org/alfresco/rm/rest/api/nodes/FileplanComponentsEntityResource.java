@@ -37,12 +37,12 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 /**
  * Fileplan component children
- * 
+ *
  * @author Ana Bozianu
  * @since 2.6
  */
 @EntityResource(name="fileplan-components", title = "Fileplan Components")
-public class FileplanComponentsEntityResource implements 
+public class FileplanComponentsEntityResource implements
         EntityResourceAction.ReadById<Node>,
         EntityResourceAction.Delete,
         EntityResourceAction.Update<Node>
@@ -72,5 +72,4 @@ public class FileplanComponentsEntityResource implements
     {
         nodes.deleteNode(nodeId, parameters);
     }
-
 }

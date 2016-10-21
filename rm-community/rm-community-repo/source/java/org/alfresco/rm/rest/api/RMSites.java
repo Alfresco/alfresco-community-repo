@@ -38,7 +38,6 @@ import org.alfresco.rm.rest.api.model.SiteUpdate;
  *
  * @author Silviu Dinuta
  * @since 2.6
- *
  */
 public interface RMSites extends Sites
 {
@@ -61,7 +60,7 @@ public interface RMSites extends Sites
     RMSite updateRMSite(String siteId, SiteUpdate site, Parameters parameters);
 
     /**
-     * TODO Copied from Sites interface because was not available in 5.2.a-EA. To be removed when upgrading.
+     * TODO Copied from Sites interface because was not available in 5.2.a-EA. To be removed after upgrading.
      *
      * @param siteId
      * @param site

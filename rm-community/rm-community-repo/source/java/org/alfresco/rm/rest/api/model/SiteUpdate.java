@@ -46,7 +46,6 @@ public class SiteUpdate implements Serializable
     private String description;
     private SiteVisibility visibility;
 
-
     public SiteUpdate(String title, String description, SiteVisibility visibility)
     {
         this.title = title;
@@ -95,7 +94,6 @@ public class SiteUpdate implements Serializable
         if (title != null ? !title.equals(that.title) : that.title != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         return visibility == that.visibility;
-
     }
 
     @Override

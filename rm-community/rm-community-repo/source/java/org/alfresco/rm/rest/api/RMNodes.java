@@ -24,16 +24,16 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rm.rest.api;
 
 import org.alfresco.rest.api.Nodes;
 
 /**
  * RM Nodes API
- * 
+ *
  * @author Ana Bozianu
  * @since 2.6
- *
  */
 public interface RMNodes extends Nodes
 {

@@ -47,7 +47,7 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
-import org.alfresco.rm.rest.api.model.CategoryNode;
+import org.alfresco.rm.rest.api.model.RecordCategoryNode;
 import org.alfresco.rm.rest.api.model.FileplanComponentNode;
 import org.alfresco.rm.rest.api.model.RecordFolderNode;
 import org.alfresco.rm.rest.api.model.RecordNode;
@@ -140,7 +140,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
             switch(type)
             {
                 case CATEGORY:
-                    CategoryNode categoryNode = new CategoryNode(originalNode);
+                    RecordCategoryNode categoryNode = new RecordCategoryNode(originalNode);
                     if (includeParam.contains(PARAM_INCLUDE_HAS_RETENTION_SCHEDULE))
                     {
                         DispositionSchedule ds = dispositionService.getDispositionSchedule(nodeRef);

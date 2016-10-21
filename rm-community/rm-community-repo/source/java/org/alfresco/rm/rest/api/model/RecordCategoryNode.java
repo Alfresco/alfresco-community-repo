@@ -41,16 +41,16 @@ import org.alfresco.service.namespace.QName;
  * @author Ana Bozianu
  * @since 2.6
  */
-public class CategoryNode extends FileplanComponentNode
+public class RecordCategoryNode extends FileplanComponentNode
 {
     protected Boolean hasRetentionSchedule;
 
-    public CategoryNode(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
+    public RecordCategoryNode(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         super(nodeRef, parentNodeRef, nodeProps, mapUserInfo, sr);
     }
 
-    public CategoryNode(Node node)
+    public RecordCategoryNode(Node node)
     {
         super(node);
     }

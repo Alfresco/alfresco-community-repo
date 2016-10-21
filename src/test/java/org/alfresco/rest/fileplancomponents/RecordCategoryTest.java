@@ -24,7 +24,6 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertNotNull;
-import static org.alfresco.rest.model.FileplanComponentType.RECORD_CATEGORY;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -35,7 +34,7 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
  * @author Kristijan Conkas
  * @since
  */
-public class RecordCategoryComponentsTest extends BaseIgRestTest
+public class RecordCategoryTest extends BaseIgRestTest
 {
     @Autowired
     private RestFilePlanComponentApi filePlanComponentApi;

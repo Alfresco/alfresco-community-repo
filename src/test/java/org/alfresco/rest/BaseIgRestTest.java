@@ -38,6 +38,13 @@ public class BaseIgRestTest extends RestTest
     public static final String ALIAS_UNFILED_RECORDS_CONTAINER = "-unfiled-";
     public static final String ALIAS_HOLDS = "-holds-";
 
+    /** Component types. */
+    public static final String FILE_PLAN = "rma:filePlan";
+    public static final String RECORD_CATEGORY = "rma:recordCategory";
+    public static final String RECORD_FOLDER = "rma:recordFolder";
+    public static final String HOLD = "rma:hold";
+    public static final String UNFILED_RECORD_FOLDER = "rma:unfiledRecordFolder";
+    
     @Value("${alfresco.rm.scheme}")
     private String scheme;
 

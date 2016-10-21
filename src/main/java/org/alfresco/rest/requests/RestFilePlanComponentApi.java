@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.alfresco.rest.core.RestAPI;
 import org.alfresco.rest.core.RestRequest;
-import org.alfresco.rest.model.FileplanComponentType;
 import org.alfresco.rest.model.RestFilePlanComponentModel;
 import org.json.JSONObject;
 import org.springframework.context.annotation.Scope;
@@ -61,14 +60,14 @@ public class RestFilePlanComponentApi extends RestAPI
      * @throws Exception
      */
     public RestFilePlanComponentModel createFilePlanComponent(String parentFilePlanComponentId, String componentName,
-        FileplanComponentType componentType, Map<String, String> properties) throws Exception
+        String componentType, Map<String, String> properties) throws Exception
     {
         if (componentName == null)
             throw new IllegalArgumentException("Child component name missing");
 
         JSONObject body = new JSONObject();
         body.put("name", componentName);
-        body.put("nodeType", componentType.toString());
+        body.put("nodeType", componentType);
         if (properties != null) body.put("properties", properties);
 
         RestRequest request = requestWithBody(POST, body.toString(), "fileplan-components/{fileplanComponentId}/children", parentFilePlanComponentId);

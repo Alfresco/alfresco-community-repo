@@ -3,3 +3,5 @@
 .classpath
 .project
 /src/test/resources/local.properties
+/.idea/
+*.iml

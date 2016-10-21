@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -280,26 +282,30 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
             if (dsNextAction != null)
             {
-                if (!dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
+                final NodeRef action = dsNextAction.getNextActionNodeRef();
+                if (isNotTrue((Boolean)nodeService.getProperty(action, PROP_MANUALLY_SET_AS_OF)))
                 {
-                    final NodeRef action = dsNextAction.getNextActionNodeRef();
-                    final String dispositionActionName = dsNextAction.getNextActionName();
-                    final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
-
-                    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                    if (!dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
                     {
-                        @Override
-                        public Void doWork()
+                        final String dispositionActionName = dsNextAction.getNextActionName();
+                        final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+
+                        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                         {
-                            nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                            if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
+                            @Override
+                            public Void doWork()
                             {
-                                nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
+                                nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                                if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
+                                {
+                                    nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
+                                }
+                                return null;
                             }
-                            return null;
-                        }
-                    });
+                        });
+                    }
                 }
+                
                 dsNodeRef = dsNextAction.getDispositionNodeRef();
             }
         }

@@ -273,7 +273,7 @@
                         <phase>process-test-resources</phase>
                         <configuration>
                            <backup>true</backup>
-                           <ampLocation>${project.build.directory}/amps/alfresco-rm-server-${project.version}.amp</ampLocation>
+                           <ampLocation>${project.build.directory}/amps/alfresco-rm-server-${project.version}-amp.amp</ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/alfresco.war</warLocation>
                         </configuration>
                      </execution>
@@ -285,7 +285,7 @@
                         <phase>process-test-resources</phase>
                         <configuration>
                            <backup>true</backup>
-                           <ampLocation>${project.build.directory}/amps/alfresco-rm-share-${project.version}.amp</ampLocation>
+                           <ampLocation>${project.build.directory}/amps/alfresco-rm-share-${project.version}-amp.amp</ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/share.war</warLocation>
                         </configuration>
                      </execution>

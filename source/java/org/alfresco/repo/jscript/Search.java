@@ -859,15 +859,10 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
      */
     public int getIntegerValue(String attribute, int defaultValue, Map<Serializable, Serializable> sourceObject)
     {
-    	int integer = defaultValue;
-        String stringValue = (String) sourceObject.get(attribute);
-        try 
+        Integer integer = (Integer) sourceObject.get(attribute);
+        if (integer == null)
         {
-        	integer = Integer.parseInt(stringValue);
-        }
-        catch(NumberFormatException nfe)
-        {
-           // No action required
+           integer = defaultValue;
         }
         return integer;
     }
@@ -883,17 +878,12 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
      */
     public boolean getBooleanValue(String attribute, boolean defaultValue, Map<Serializable, Serializable> sourceObject)
     {
-        boolean bool = defaultValue;
-        String stringValue = (String) sourceObject.get(attribute);
-        try 
-        {
-        	bool = Boolean.getBoolean(stringValue);
-        }
-        catch(NumberFormatException nfe)
-        {
-           // No action required
-        }
-        return bool;
+       Boolean bool = (Boolean) sourceObject.get(attribute);
+       if (bool == null)
+       {
+          bool = defaultValue;
+       }
+       return bool;
     }
     
     /**

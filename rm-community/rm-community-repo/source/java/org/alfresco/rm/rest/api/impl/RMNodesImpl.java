@@ -124,9 +124,9 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
             mapUserInfo = new HashMap<>(2);
         }
 
-        if(type == null)
+        if (type == null)
         {
-            if(filePlanService.isFilePlanComponent(nodeRef))
+            if (filePlanService.isFilePlanComponent(nodeRef))
             {
                 node = new FileplanComponentNode(originalNode);
             }
@@ -181,7 +181,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         if (nodeId.equals(FILE_PLAN))
         {
             NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            if(filePlan != null)
+            if (filePlan != null)
             {
                 return filePlan;
             }
@@ -193,7 +193,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         else if (nodeId.equals(TRANSFERS))
         {
             NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            if(filePlan != null)
+            if (filePlan != null)
             {
                 return filePlanService.getTransferContainer(filePlan);
             }
@@ -205,7 +205,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         else if (nodeId.equals(UNFILED))
         {
             NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            if(filePlan != null)
+            if (filePlan != null)
             {
                 return filePlanService.getUnfiledContainer(filePlan);
             }
@@ -217,7 +217,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         else if (nodeId.equals(HOLDS))
         {
             NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            if(filePlan != null)
+            if (filePlan != null)
             {
                 return filePlanService.getHoldContainer(filePlan);
             }
@@ -247,11 +247,11 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         }
 
         // check subclasses
-        if(dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
         {
             return RMNodeType.FILE;
         }
-        if(dictionaryService.isSubClass(typeQName, RecordsManagementModel.TYPE_RECORD_FOLDER))
+        if (dictionaryService.isSubClass(typeQName, RecordsManagementModel.TYPE_RECORD_FOLDER))
         {
             return RMNodeType.RECORD_FOLDER;
         }

@@ -59,7 +59,6 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Silviu Dinuta
  * @since 2.6
- *
  */
 public class RMSitesImpl extends SitesImpl implements RMSites
 {
@@ -72,7 +71,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     public RMSite createRMSite(RMSite rmSite, Parameters parameters)
     {
         RMSiteCompliance compliance = rmSite.getCompliance();
-        if(compliance == null)
+        if (compliance == null)
         {
             compliance = RMSiteCompliance.STANDARD;
         }
@@ -135,7 +134,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
         String siteId = siteInfo.getShortName();
         String role = null;
-        if(includeRole)
+        if (includeRole)
         {
             role = getSiteRole(siteId);
         }
@@ -236,7 +235,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         Site updatedSite = updateSite(siteId, update, parameters);
         SiteInfo siteInfo = siteService.getSite(siteId);
         RMSiteCompliance compliance = getCompliance(siteInfo);
-       return new RMSite(updatedSite, compliance);
+        return new RMSite(updatedSite, compliance);
     }
 
     /**
@@ -250,7 +249,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         NodeRef nodeRef = siteInfo.getNodeRef();
         QName siteType = nodeService.getType(nodeRef);
         RMSiteCompliance compliance;
-        if(RecordsManagementModel.TYPE_RM_SITE.equals(siteType))
+        if (RecordsManagementModel.TYPE_RM_SITE.equals(siteType))
         {
             compliance = RMSiteCompliance.STANDARD;
         }

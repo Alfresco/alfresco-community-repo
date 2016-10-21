@@ -35,7 +35,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
  *
  * @author Silviu Dinuta
  * @since 2.6
- *
  */
 public class RMSite extends Site
 {

@@ -67,7 +67,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
 
     @Override
     public void delete(String siteId, Parameters parameters) {
-        if(!RM_SITE_ID.equals(siteId))
+        if (!RM_SITE_ID.equals(siteId))
         {
             throw new InvalidParameterException("The Deletion is supported only for siteId = rm.");
         }
@@ -77,7 +77,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
     @Override
     public RMSite update(String siteId, RMSite site, Parameters parameters)
     {
-        if(!RM_SITE_ID.equals(siteId))
+        if (!RM_SITE_ID.equals(siteId))
         {
             throw new InvalidParameterException("The Update is supported only for siteId = rm.");
         }

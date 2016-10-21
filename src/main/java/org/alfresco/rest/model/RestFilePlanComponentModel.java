@@ -13,6 +13,9 @@ package org.alfresco.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 /**
  * FIXME: Document me :)
  *
@@ -20,6 +23,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * @since 1.0
  */
 // FIXME: Once the fields have been added this annotation should be removed
+@Component
+@Scope(value="prototype")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RestFilePlanComponentModel
 {

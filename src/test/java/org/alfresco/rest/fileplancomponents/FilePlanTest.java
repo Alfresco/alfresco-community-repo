@@ -43,6 +43,6 @@ public class FilePlanTest extends BaseIgRestTest
         restWrapper.authenticateUser(dataUser.getAdminUser());
         RestFilePlanComponentModel filePlanComponent = filePlanComponentApi.getFilePlanComponent(ALIAS_FILE_PLAN);
         restWrapper.assertStatusCodeIs(OK);
-        assertEquals(filePlanComponent.getNodeType(), FILE_PLAN);
+        assertEquals(filePlanComponent.getNodeType(), COMPONENT_FILE_PLAN);
     }
 }

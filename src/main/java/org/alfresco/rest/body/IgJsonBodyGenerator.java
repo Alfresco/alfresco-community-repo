@@ -13,8 +13,9 @@ package org.alfresco.rest.body;
 
 import javax.json.Json;
 import javax.json.JsonBuilderFactory;
-import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
+import org.alfresco.rest.model.PropertiesModel;
 import org.alfresco.rest.model.RestFilePlanComponentModel;
 
 /**
@@ -32,7 +33,9 @@ public class IgJsonBodyGenerator
     private static JsonBuilderFactory getJsonBuilder()
     {
         if (jsonBuilderFactory == null)
+        {
             return Json.createBuilderFactory(null);
+        }
         else
         {
             return jsonBuilderFactory;
@@ -41,12 +44,21 @@ public class IgJsonBodyGenerator
     
     public static String filePlanComponentCreate(RestFilePlanComponentModel model)
     {
-        JsonObject value = getJsonBuilder()
+        PropertiesModel properties = model.getProperties();
+        JsonObjectBuilder valueBuilder = getJsonBuilder()
             .createObjectBuilder()
             .add("name", model.getName())
-            .add("nodeType", model.getNodeType())
-            // TODO: handle properties for holds and unfiled record folders
-            .build();
-        return value.toString();
+            .add("nodeType", model.getNodeType());
+        if (properties != null)
+        {
+            // handle properties
+            JsonObjectBuilder propertiesBuilder = getJsonBuilder().createObjectBuilder();
+            if (properties.getTitle() != null)
+            {
+                propertiesBuilder.add("cm:title", properties.getTitle());
+            }
+            valueBuilder.add("properties", propertiesBuilder.build());
+        }
+        return valueBuilder.build().toString();
     }
 }

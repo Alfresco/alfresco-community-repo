@@ -11,16 +11,15 @@
  */
 package org.alfresco.rest.requests;
 
+import static org.alfresco.rest.body.IgJsonBodyGenerator.filePlanComponentCreate;
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
+
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
-import java.util.Map;
-
-import org.alfresco.rest.body.IgJsonBodyGenerator;
 import org.alfresco.rest.core.RestAPI;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestFilePlanComponentModel;
@@ -50,18 +49,17 @@ public class RestFilePlanComponentApi extends RestAPI
         RestRequest request = simpleRequest(GET, "fileplan-components/{fileplanComponentId}", filePlanComponentId);
         return usingRestWrapper().processModel(RestFilePlanComponentModel.class, request);
     }
-
     
     /**
-     * Post file plan component
+     * Create file plan component
      * @param model
      * @return
      * @throws Exception
      */
-    public RestFilePlanComponentModel postFilePlanComponent(RestFilePlanComponentModel model) throws Exception
+    public RestFilePlanComponentModel createFilePlanComponent(RestFilePlanComponentModel model) throws Exception
     {
         RestRequest request = requestWithBody(POST, 
-            IgJsonBodyGenerator.filePlanComponentCreate(model).toString(), 
+            filePlanComponentCreate(model).toString(), 
             "fileplan-components/{fileplanComponentId}/children", 
             model.getId());
         return usingRestWrapper().processModel(RestFilePlanComponentModel.class, request);
@@ -74,27 +72,15 @@ public class RestFilePlanComponentApi extends RestAPI
      * @return {@link RestFilePlanComponentModel} for <code>filePlanComponentId</code>
      * @throws Exception
      */
-    public RestFilePlanComponentModel putFilePlanComponent(String filePlanComponentId, JSONObject requestBody) throws Exception
+    public RestFilePlanComponentModel updateFilePlanComponent(String filePlanComponentId, RestFilePlanComponentModel update) throws Exception
     {
-        RestRequest request = requestWithBody(PUT, requestBody.toString(), "fileplan-components/{fileplanComponentId}", filePlanComponentId);
+        RestRequest request = requestWithBody(PUT, 
+            filePlanComponentCreate(update).toString(), 
+            "fileplan-components/{fileplanComponentId}", 
+            filePlanComponentId);
         return usingRestWrapper().processModel(RestFilePlanComponentModel.class, request);
     }
-
-    /**
-     * Rename file plan component
-     * @param filePlanComponentId
-     * @param newName
-     * @return
-     * @throws Exception
-     */
-    public RestFilePlanComponentModel renameFilePlanComponent(String filePlanComponentId, String newName) throws Exception
-    {
-        JSONObject body = new JSONObject();
-        body.put("name", newName);
-
-        return putFilePlanComponent(filePlanComponentId, body);
-    }
-
+    
     /**
      * Delete file plan component
      * @param filePlanComponentId

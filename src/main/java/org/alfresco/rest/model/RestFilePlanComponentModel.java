@@ -12,6 +12,7 @@
 package org.alfresco.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -22,9 +23,9 @@ import org.springframework.stereotype.Component;
  * @author Tuna Aksoy
  * @since 1.0
  */
-// FIXME: Once the fields have been added this annotation should be removed
 @Component
-@Scope(value="prototype")
+@Scope(value = "prototype")
+//FIXME: Once the fields have been added this annotation should be removed
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RestFilePlanComponentModel
 {
@@ -36,7 +37,10 @@ public class RestFilePlanComponentModel
     private boolean isRecordFolder;
     private boolean isFile;
     private boolean hasRetentionSchedule;
-
+    
+    @JsonProperty(value = "properties")
+    private PropertiesModel properties;
+    
     /**
      * @return the id
      */
@@ -163,5 +167,21 @@ public class RestFilePlanComponentModel
     public void setHasRetentionSchedule(boolean hasRetentionSchedule)
     {
         this.hasRetentionSchedule = hasRetentionSchedule;
+    }
+
+    /**
+     * @return the properties
+     */
+    public PropertiesModel getProperties()
+    {
+        return properties;
+    }
+
+    /**
+     * @param properties the properties to set
+     */
+    public void setProperties(PropertiesModel properties)
+    {
+        this.properties = properties;
     }
 }

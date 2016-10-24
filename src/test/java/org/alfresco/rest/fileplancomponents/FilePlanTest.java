@@ -11,7 +11,6 @@
  */
 package org.alfresco.rest.fileplancomponents;
 
-import static org.alfresco.rest.model.FileplanComponentType.FILE_PLAN;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 
@@ -29,7 +28,7 @@ import org.testng.annotations.Test;
  * @author Tuna Aksoy
  * @since 1.0
  */
-public class FilePlanComponentsTest extends BaseIgRestTest
+public class FilePlanTest extends BaseIgRestTest
 {
     @Autowired
     private RestFilePlanComponentApi filePlanComponentApi;
@@ -44,6 +43,6 @@ public class FilePlanComponentsTest extends BaseIgRestTest
         restWrapper.authenticateUser(dataUser.getAdminUser());
         RestFilePlanComponentModel filePlanComponent = filePlanComponentApi.getFilePlanComponent(ALIAS_FILE_PLAN);
         restWrapper.assertStatusCodeIs(OK);
-        assertEquals(filePlanComponent.getNodeType(), FILE_PLAN.toString());
+        assertEquals(filePlanComponent.getNodeType(), COMPONENT_FILE_PLAN);
     }
 }

@@ -330,6 +330,17 @@
    </bean>
    <bean id="extracter.PDFBox"        class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter"        parent="baseMetadataExtracter">
       <property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
+      <property name="mimetypeLimits">
+         <map>
+            <entry key="application/pdf">
+               <bean class="org.alfresco.repo.content.metadata.MetadataExtracterLimits">
+                  <property name="timeoutMs" value="${content.metadataExtracter.default.timeoutMs}"/>
+                  <property name="maxDocumentSizeMB" value="${content.metadataExtracter.pdf.maxDocumentSizeMB}"/>
+                  <property name="maxConcurrentExtractionsCount" value="${content.metadataExtracter.pdf.maxConcurrentExtractionsCount}"/>
+               </bean>
+            </entry>
+         </map>
+      </property>
    </bean>
    <bean id="extracter.Poi"           class="org.alfresco.repo.content.metadata.PoiMetadataExtracter"           parent="baseMetadataExtracter">
       <property name="poiFootnotesLimit" value="${content.transformer.Poi.poiFootnotesLimit}" />

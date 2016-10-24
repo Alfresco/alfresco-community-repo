@@ -48,8 +48,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.alfresco.api.AlfrescoPublicApi;
+import javax.activation.MimeType;
+
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.StreamAwareContentReaderProxy;
@@ -124,6 +127,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     public static final String PROPERTY_PREFIX_METADATA = "metadata.";
     public static final String PROPERTY_COMPONENT_EXTRACT = ".extract.";
     public static final String PROPERTY_COMPONENT_EMBED = ".embed.";
+    public static final int MEGABYTE_SIZE = 1048576;
     
     protected static Log logger = LogFactory.getLog(AbstractMappingMetadataExtracter.class);
     
@@ -148,6 +152,8 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Map<String, MetadataExtracterLimits> mimetypeLimits;
     private ExecutorService executorService;
     protected MetadataExtracterConfig metadataExtracterConfig;
+    
+    private static final AtomicInteger CONCURRENT_EXTRACTIONS_COUNT = new AtomicInteger(0);
 
     /**
      * Default constructor.  If this is called, then {@link #isSupported(String)} should
@@ -1220,6 +1226,12 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                             rawMetadata + "\n  Mapped and Accepted: " + changedProperties);
             }
         }
+        catch (LimitExceededException e)
+        {
+            logger.warn("Metadata extraction rejected: \n" + 
+                    "   Extracter: " + this + "\n" + 
+                    "   Reason:   " + e.getMessage());
+        }
         catch (Throwable e)
         {
             // Ask Tika to detect the document, and report back on if
@@ -1968,16 +1980,17 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * Gets the metadata extracter limits for the given mimetype.
      * <p>
      * A specific match for the given mimetype is tried first and
-     * if none is found a wildcard of "*" is tried.
+     * if none is found a wildcard of "*" is tried, if still not found 
+     * defaults value will be used
      * 
      * @param mimetype String
-     * @return the found limits or null
+     * @return the found limits or default values
      */
     protected MetadataExtracterLimits getLimits(String mimetype)
     {
         if (mimetypeLimits == null)
         {
-            return null;
+            return new MetadataExtracterLimits();
         }
         MetadataExtracterLimits limits = null;
         limits = mimetypeLimits.get(mimetype);
@@ -1985,6 +1998,11 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         {
             limits = mimetypeLimits.get("*");
         }
+        if (limits == null)
+        {
+            limits = new MetadataExtracterLimits();
+        }
+        
         return limits;
     }
     
@@ -2030,6 +2048,19 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
     
     /**
+     * Exception wrapper to handle exceeded limits imposed by {@link MetadataExtracterLimits}
+     * {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader, MetadataExtracterLimits)}
+     */
+    private class LimitExceededException extends Exception
+    {
+        private static final long serialVersionUID = 702554119174770130L;
+        public LimitExceededException(String message)
+        {
+            super(message);
+        }
+    }
+    
+    /**
      * Calls the {@link AbstractMappingMetadataExtracter#extractRaw(ContentReader)} method
      * using the given limits.
      * <p>
@@ -2049,12 +2080,34 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Map<String, Serializable> extractRaw(
             ContentReader reader, MetadataExtracterLimits limits) throws Throwable
     {
-        if (limits == null || limits.getTimeoutMs() == -1)
-        {
-            return extractRaw(reader);
-        }
         FutureTask<Map<String, Serializable>> task = null;
         StreamAwareContentReaderProxy proxiedReader = null;
+        
+        if (reader.getSize() > limits.getMaxDocumentSizeMB() * MEGABYTE_SIZE)
+        {
+            throw new LimitExceededException("Max doc size exceeded " + limits.getMaxDocumentSizeMB() + " MB");
+        }
+        
+        synchronized (CONCURRENT_EXTRACTIONS_COUNT)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Concurrent extractions : " + CONCURRENT_EXTRACTIONS_COUNT.get());
+            }
+            if (CONCURRENT_EXTRACTIONS_COUNT.get() < limits.getMaxConcurrentExtractionsCount())
+            {
+                int totalDocCount = CONCURRENT_EXTRACTIONS_COUNT.incrementAndGet();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("New extraction accepted. Concurrent extractions : " + totalDocCount);
+                }
+            }
+            else
+            {
+                throw new LimitExceededException("Reached concurrent extractions limit - " + limits.getMaxConcurrentExtractionsCount());
+            }
+        }
+        
         try
         {
             proxiedReader = new StreamAwareContentReaderProxy(reader);
@@ -2086,6 +2139,14 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                 cause = ((ExtractRawCallableException) cause).getCause();
             }
             throw cause;
+        }
+        finally
+        {
+            int totalDocCount = CONCURRENT_EXTRACTIONS_COUNT.decrementAndGet();
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Extraction finalized. Remaining concurrent extraction : " + totalDocCount);
+            }
         }
     }
     

@@ -318,4 +318,13 @@ public class RMSitesImpl extends SitesImpl implements RMSites
             return DOD5015Model.TYPE_DOD_5015_SITE;
         }
     }
+
+    @Override
+    public RMSite getRMSite(String siteId)
+    {
+        Site site = getSite(siteId);
+        SiteInfo siteInfo = siteService.getSite(siteId);
+        RMSiteCompliance compliance = getCompliance(siteInfo);
+        return new RMSite(site, compliance);
+    }
 }

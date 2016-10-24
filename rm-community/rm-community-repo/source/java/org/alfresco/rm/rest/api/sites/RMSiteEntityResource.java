@@ -31,6 +31,7 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
@@ -49,7 +50,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
  */
 @EntityResource(name = "sites", title = "IG Sites")
 public class RMSiteEntityResource implements EntityResourceAction.Delete, EntityResourceAction.Create<RMSite>,
-            EntityResourceAction.Update<RMSite>
+            EntityResourceAction.Update<RMSite>, EntityResourceAction.ReadById<RMSite>
 {
     private static final String RM_SITE_ID = "rm";
     private RMSites sites;
@@ -114,5 +115,15 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
         SiteUpdate update = new SiteUpdate(title, description, SiteVisibility.PUBLIC);
 
         return sites.updateRMSite(siteId, update, parameters);
+    }
+
+    @Override
+    public RMSite readById(String siteId, Parameters parameters) throws EntityNotFoundException
+    {
+        if (!RM_SITE_ID.equals(siteId))
+        {
+            throw new InvalidParameterException("The Get is supported only for siteId = rm.");
+        }
+        return sites.getRMSite(siteId);
     }
 }

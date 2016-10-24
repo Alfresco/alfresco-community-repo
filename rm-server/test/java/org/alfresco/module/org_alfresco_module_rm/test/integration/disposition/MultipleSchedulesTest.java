@@ -3,10 +3,9 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.disposition;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.bdt.BehaviourTest.test;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
-
-import com.google.common.collect.ImmutableMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
@@ -20,6 +19,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.extensions.webscripts.GUID;
+
+import com.google.common.collect.ImmutableMap;
 
 public class MultipleSchedulesTest extends BaseRMTestCase
 {
@@ -118,6 +119,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
      */
     public void testLinkedToLongerSchedule()
     {
+        Calendar calendar = Calendar.getInstance();
         test()
             .given(() -> {
                 setUpFilePlan();
@@ -130,11 +132,12 @@ public class MultipleSchedulesTest extends BaseRMTestCase
                 dispositionService.cutoffDisposableItem(record);
                 // Ensure the update has been applied to the record.
                 internalDispositionService.updateNextDispositionAction(record);
+                calendar.setTime((Date) nodeService.getProperty(record, PROP_CUT_OFF_DATE));            
+                calendar.add(Calendar.WEEK_OF_YEAR, 1);
             })
             .then()
-                .expect(7 * 24 * 60 * 60 * 1000L)
-                        .from(() -> dispositionService.getNextDispositionAction(record).getAsOfDate().getTime()
-                                        - ((Date) nodeService.getProperty(record, PROP_CUT_OFF_DATE)).getTime())
+                .expect(calendar.getTime())
+                        .from(() -> dispositionService.getNextDispositionAction(record).getAsOfDate())
                     .because("Record should follow largest rentention schedule period, which is one week.");
     }
 
@@ -149,6 +152,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
      */
     public void testLinkedToShorterSchedule()
     {
+        Calendar calendar = Calendar.getInstance();
         test()
             .given(() -> {
                 setUpFilePlan();
@@ -161,11 +165,12 @@ public class MultipleSchedulesTest extends BaseRMTestCase
                 dispositionService.cutoffDisposableItem(record);
                 // Ensure the update has been applied to the record.
                 internalDispositionService.updateNextDispositionAction(record);
+                calendar.setTime((Date) nodeService.getProperty(record, PROP_CUT_OFF_DATE));            
+                calendar.add(Calendar.WEEK_OF_YEAR, 1);
             })
             .then()
-                .expect(7 * 24 * 60 * 60 * 1000L)
-                        .from(() -> dispositionService.getNextDispositionAction(record).getAsOfDate().getTime()
-                                        - ((Date) nodeService.getProperty(record, PROP_CUT_OFF_DATE)).getTime())
+                .expect(calendar.getTime())
+                        .from(() -> dispositionService.getNextDispositionAction(record).getAsOfDate())
                     .because("Record should follow largest rentention schedule period, which is one week.");
     }
 }

@@ -386,8 +386,6 @@ public class MoveRecordFolderTest extends BaseRMTestCase
     }
     
     /**
-     * Try to move from a disposition schedule to another .. both record folder level
-     * Try to move from a disposition schedule to another .. from record to folder level
      * Try and move a cutoff folder
      * 
      * @see https://issues.alfresco.com/jira/browse/RM-1039

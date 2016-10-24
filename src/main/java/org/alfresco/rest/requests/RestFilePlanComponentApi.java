@@ -12,6 +12,7 @@
 package org.alfresco.rest.requests;
 
 import static org.alfresco.rest.body.IgJsonBodyGenerator.filePlanComponentCreate;
+import static org.alfresco.rest.body.IgJsonBodyGenerator.filePlanComponentUpdate;
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 
@@ -67,32 +68,31 @@ public class RestFilePlanComponentApi extends RestAPI
 
     /**
      * Update file plan component
-     * @param filePlanComponentId
-     * @param requestBody update body, refer to API reference for details
-     * @return {@link RestFilePlanComponentModel} for <code>filePlanComponentId</code>
+     * @param update {@link RestFilePlanComponentModel} to update
+     * @param returns updated {@link RestFilePlanComponentModel}
      * @throws Exception
      */
-    public RestFilePlanComponentModel updateFilePlanComponent(String filePlanComponentId, RestFilePlanComponentModel update) throws Exception
+    public RestFilePlanComponentModel updateFilePlanComponent(RestFilePlanComponentModel update) throws Exception
     {
         RestRequest request = requestWithBody(PUT, 
-            filePlanComponentCreate(update).toString(), 
+            filePlanComponentUpdate(update).toString(), 
             "fileplan-components/{fileplanComponentId}", 
-            filePlanComponentId);
+            update.getId());
         return usingRestWrapper().processModel(RestFilePlanComponentModel.class, request);
     }
     
     /**
      * Delete file plan component
-     * @param filePlanComponentId
+     * @param delete {@link RestFilePlanComponentModel} to delete
      * @param deletePermanently if set to <code>true</code> delete without moving to the trashcan
      * @throws Exception
      */
-    public RestRequest deleteFilePlanComponent(String filePlanComponentId, boolean deletePermanently) throws Exception
+    public RestRequest deleteFilePlanComponent(RestFilePlanComponentModel delete, boolean deletePermanently) throws Exception
     {
         JSONObject body = new JSONObject();
         if (deletePermanently) body.put("permanent", deletePermanently);
 
-        RestRequest request = requestWithBody(DELETE, body.toString(), "fileplan-components/{fileplanComponentId}", filePlanComponentId);
+        RestRequest request = requestWithBody(DELETE, body.toString(), "fileplan-components/{fileplanComponentId}", delete.getId());
         usingRestWrapper().processEmptyModel(request);
         return request;
     }

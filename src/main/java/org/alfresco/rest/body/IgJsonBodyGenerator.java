@@ -42,6 +42,11 @@ public class IgJsonBodyGenerator
         }
     }
     
+    /**
+     * Generate request body for create API calls
+     * @param model
+     * @return request body JSON string
+     */
     public static String filePlanComponentCreate(RestFilePlanComponentModel model)
     {
         PropertiesModel properties = model.getProperties();
@@ -49,6 +54,30 @@ public class IgJsonBodyGenerator
             .createObjectBuilder()
             .add("name", model.getName())
             .add("nodeType", model.getNodeType());
+        if (properties != null)
+        {
+            // handle properties
+            JsonObjectBuilder propertiesBuilder = getJsonBuilder().createObjectBuilder();
+            if (properties.getTitle() != null)
+            {
+                propertiesBuilder.add("cm:title", properties.getTitle());
+            }
+            valueBuilder.add("properties", propertiesBuilder.build());
+        }
+        return valueBuilder.build().toString();
+    }
+    
+    /**
+     * Generate request body for update API calls
+     * @param model
+     * @return request body JSON string
+     */
+    public static String filePlanComponentUpdate(RestFilePlanComponentModel model)
+    {
+        PropertiesModel properties = model.getProperties();
+        JsonObjectBuilder valueBuilder = getJsonBuilder()
+            .createObjectBuilder()
+            .add("name", model.getName());
         if (properties != null)
         {
             // handle properties

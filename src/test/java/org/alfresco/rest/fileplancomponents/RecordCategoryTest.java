@@ -97,28 +97,28 @@ public class RecordCategoryTest extends BaseIgRestTest
         RestFilePlanComponentModel filePlanComponent = filePlanComponentApi.getFilePlanComponent(newCategoryId);
         filePlanComponent.setName(newName);
         
-        RestFilePlanComponentModel renamedFilePlanComponent = filePlanComponentApi.updateFilePlanComponent(newCategoryId, filePlanComponent);
+        RestFilePlanComponentModel renamedFilePlanComponent = filePlanComponentApi.updateFilePlanComponent(filePlanComponent);
 
         // verify returned object
         restWrapper.assertStatusCodeIs(OK);
         assertEquals(renamedFilePlanComponent.getName(), newName);
     }
 
-//    @Test
-//    (
-//        description = "Rename category as authorised user", 
-//        dependsOnMethods= { "renameCategoryAsAuthorisedUser" }
-//    )
-//    public void deleteCategoryAsAuthorisedUser() throws Exception
-//    {
-//        // delete
-//        RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper();
-//        restWrapper.authenticateUser(dataUser.getAdminUser());
-//        filePlanComponentApi.deleteFilePlanComponent(newCategoryId, true);
-//        
-//        // verify deletion
-//        restWrapper.assertStatusCodeIs(NO_CONTENT);
-//        // TODO: verify we can't get an object with this ID again
-//        // TODO: can we verify that deletion with deletePermanently=false indeed ended up in trashcan?
-//    }
+    @Test
+    (
+        description = "Rename category as authorised user", 
+        dependsOnMethods= { "renameCategoryAsAuthorisedUser" }
+    )
+    public void deleteCategoryAsAuthorisedUser() throws Exception
+    {
+        // delete
+        RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper();
+        restWrapper.authenticateUser(dataUser.getAdminUser());
+        filePlanComponentApi.deleteFilePlanComponent(filePlanComponentApi.getFilePlanComponent(newCategoryId), true);
+
+        // verify deletion
+        restWrapper.assertStatusCodeIs(NO_CONTENT);
+        // TODO: verify we can't get an object with this ID again
+        // TODO: can we verify that deletion with deletePermanently=false indeed ended up in trashcan?
+    }
 }

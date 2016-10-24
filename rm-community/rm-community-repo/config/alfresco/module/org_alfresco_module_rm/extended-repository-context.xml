@@ -124,6 +124,10 @@
          <value>${rm.haspermissionmap.write}</value>
       </property>
    </bean>
+   <bean class="org.alfresco.util.BeanExtender">
+      <property name="beanName" value="permissionServiceImpl"/>
+      <property name="extendingBeanName" value="rm.permissionServiceImpl"/>
+   </bean>
 
    <!-- In-place reader and writer dynamic authorites -->
    <bean id="extendedReaderDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority" />

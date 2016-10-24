@@ -280,7 +280,8 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             DispositionSchedule originDispositionSchedule = getOriginDispositionSchedule(nodeRef);
             // if the initial disposition schedule of the record is folder based
-            if (isNotTrue(originDispositionSchedule.isRecordLevelDisposition()))
+            if (originDispositionSchedule!= null && 
+                    isNotTrue(originDispositionSchedule.isRecordLevelDisposition()))
             {
                 return null;
             }

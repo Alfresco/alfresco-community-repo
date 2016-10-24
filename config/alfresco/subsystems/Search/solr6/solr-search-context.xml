@@ -58,7 +58,7 @@
             </map>
         </property>
         <property name="storeMappings">
-            <ref bean="solr4.store.mappings" />
+            <ref bean="solr6.store.mappings" />
         </property>
         <property name="includeGroupsForRoleAdmin">
         	<value>${solr.query.includeGroupsForRoleAdmin}</value>
@@ -74,7 +74,7 @@
     
     
     <!--The configurable RPC user mappings - actually a post-processed composite property! -->
-    <bean id="solr4.store.mappings" class="org.springframework.beans.factory.config.ListFactoryBean">
+    <bean id="solr6.store.mappings" class="org.springframework.beans.factory.config.ListFactoryBean">
         <property name="singleton" value="false"/>
         <property name="sourceList">
             <list>

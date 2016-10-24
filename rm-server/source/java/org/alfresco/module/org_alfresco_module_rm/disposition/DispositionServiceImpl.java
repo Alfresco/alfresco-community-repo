@@ -278,6 +278,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         NodeRef dsNodeRef = null;
         if (isRecord(nodeRef))
         {
+            DispositionSchedule originDispositionSchedule = getOriginDispositionSchedule(nodeRef);
+            // if the initial disposition schedule of the record is folder based
+            if (isNotTrue(originDispositionSchedule.isRecordLevelDisposition()))
+            {
+                return null;
+            }
+            
             final NextActionFromDisposition dsNextAction = getDispositionActionByNameForRecord(nodeRef);
 
             if (dsNextAction != null)
@@ -1143,6 +1150,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
         if (nextDispositionAction == null)
         {
+            DispositionAction lastCompletedDispositionAction = getLastCompletedDispostionAction(record);
+            if (lastCompletedDispositionAction != null)
+            {
+                // all disposition actions upon the given record were completed
+                return null;
+            }
+
             return getFirstDispositionAction(record, recordFolders);
         }
         else

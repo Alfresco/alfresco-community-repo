@@ -28,10 +28,12 @@
 package org.alfresco.rm.rest.api.impl;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
@@ -40,20 +42,25 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
-import org.alfresco.rm.rest.api.model.RecordCategoryNode;
 import org.alfresco.rm.rest.api.model.FileplanComponentNode;
+import org.alfresco.rm.rest.api.model.RecordCategoryNode;
 import org.alfresco.rm.rest.api.model.RecordFolderNode;
 import org.alfresco.rm.rest.api.model.RecordNode;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -83,6 +90,10 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     private DictionaryService dictionaryService;
     private DispositionService dispositionService;
 
+    /**
+     * TODO to remove this after isSpecialNode is made protected in core implementation
+     */
+    private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
     public void init()
     {
         super.init();
@@ -116,6 +127,26 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         {
             nodeTypeQName = nodeService.getType(nodeRef);
         }
+
+        //TODO to remove this part of code after isSpecialNode will be made protected on core, will not need this anymore since the right allowed operations will be returned from core.
+        if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
+        {
+            List<String> allowableOperations = originalNode.getAllowableOperations();
+            List<String> modifiedAllowableOperations = new ArrayList<>();
+            modifiedAllowableOperations.addAll(allowableOperations);
+
+            for (String op : allowableOperations)
+            {
+                if (op.equals(OP_DELETE) && (isSpecialNode(nodeRef, nodeTypeQName)))
+                {
+                    // special case: do not return "delete" (as an allowable op) for specific system nodes
+                    modifiedAllowableOperations.remove(op);
+                }
+            }
+
+            originalNode.setAllowableOperations((modifiedAllowableOperations.size() > 0 )? modifiedAllowableOperations : null);
+        }
+
 
         RMNodeType type = getType(nodeTypeQName, nodeRef);
         FileplanComponentNode node = null;
@@ -288,5 +319,110 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         }
         NodeRef nodeRef = validateOrLookupNode(nodeId, null);
         return super.updateNode(nodeRef.getId(), nodeInfo, parameters);
+    }
+
+    /**
+     * TODO only override core method when will be made protected in core.
+     *
+     * @param nodeRef
+     * @param type
+     * @return
+     */
+    private boolean isSpecialNode(NodeRef nodeRef, QName type)
+    {
+        // Check for File Plan, Transfers Container, Holds Container, Unfiled Records Container
+        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+        if(filePlan != null)
+        {
+            if(filePlan.equals(nodeRef))
+            {
+                return true;
+            }
+            else if(filePlanService.getTransferContainer(filePlan).equals(nodeRef))
+            {
+                return true;
+            }
+            else if(filePlanService.getHoldContainer(filePlan).equals(nodeRef))
+            {
+                return true;
+            }
+            else if(filePlanService.getUnfiledContainer(filePlan).equals(nodeRef))
+            {
+                return true;
+            }
+        }
+        //TODO just run super after method after it will be made protected on core
+        return isCoreSpecialNode(nodeRef, type);
+    }
+
+    /**
+     * Copied from core implementation, because it is protected and we can't extend it with our special nodes.
+     *
+     * TODO to remove when isSpecialNode method will be made protected in core.
+     *
+     * @param nodeRef
+     * @param type
+     * @return
+     */
+    private boolean isCoreSpecialNode(NodeRef nodeRef, QName type)
+    {
+        // Check for Company Home, Sites and Data Dictionary (note: must be tenant-aware)
+        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+        if(filePlan != null)
+        {
+
+        }
+
+        if (nodeRef.equals(repositoryHelper.getCompanyHome()))
+        {
+            return true;
+        }
+        else if (type.equals(SiteModel.TYPE_SITES) || type.equals(SiteModel.TYPE_SITE))
+        {
+            // note: alternatively, we could inject SiteServiceInternal and use getSitesRoot (or indirectly via node locator)
+            return true;
+        }
+        else
+        {
+            String tenantDomain = TenantUtil.getCurrentDomain();
+            NodeRef ddNodeRef = ddCache.get(tenantDomain);
+            if (ddNodeRef == null)
+            {
+                List<ChildAssociationRef> ddAssocs = nodeService.getChildAssocs(
+                        repositoryHelper.getCompanyHome(),
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary"));
+                if (ddAssocs.size() == 1)
+                {
+                    ddNodeRef = ddAssocs.get(0).getChildRef();
+                    ddCache.put(tenantDomain, ddNodeRef);
+                }
+            }
+
+            if (nodeRef.equals(ddNodeRef))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Overridden this method just in order to use our isSpecialNode method since core method could not be overridden.
+     *
+     * TODO remove this after isSpecialNode will be made protected in core.
+     */
+    @Override
+    public void deleteNode(String nodeId, Parameters parameters)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        QName nodeType = nodeService.getType(nodeRef);
+
+        if (isSpecialNode(nodeRef, nodeType))
+        {
+            throw new PermissionDeniedException("Cannot delete: " + nodeId);
+        }
+        super.deleteNode(nodeId, parameters);
     }
 }

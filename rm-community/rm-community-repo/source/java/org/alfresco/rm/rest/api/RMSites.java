@@ -51,6 +51,13 @@ public interface RMSites extends Sites
     RMSite createRMSite(RMSite site, Parameters parameters);
 
     /**
+     * Gets RM site
+     * @param siteId
+     * @return
+     */
+    RMSite getRMSite(String siteId);
+
+    /**
      * Updates RM site
      * @param siteId
      * @param site

@@ -11,114 +11,155 @@
  */
 package org.alfresco.rest.fileplancomponents;
 
-import java.util.UUID;
+import static java.util.UUID.randomUUID;
 
-import org.alfresco.rest.BaseIgRestTest;
+import static org.alfresco.com.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.com.FilePlanComponentFields.NAME;
+import static org.alfresco.com.FilePlanComponentFields.NODE_TYPE;
+import static org.alfresco.com.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.com.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.com.FilePlanComponentType.RECORD_CATEGORY_TYPE;
+import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+import com.google.gson.JsonObject;
+
+import org.alfresco.rest.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.model.PropertiesModel;
-import org.alfresco.rest.model.RestFilePlanComponentModel;
-import org.alfresco.rest.requests.RestFilePlanComponentApi;
+import org.alfresco.rest.model.FilePlanComponent;
+import org.alfresco.rest.model.FilePlanComponentProperties;
+import org.alfresco.rest.requests.FilePlanComponentApi;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertNotNull;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
-
-
 /**
+ * FIXME: Document me :)
  *
  * @author Kristijan Conkas
- * @since
+ * @author Tuna Aksoy
+ * @since 1.0
  */
-public class RecordCategoryTest extends BaseIgRestTest
+public class RecordCategoryTest extends BaseRestTest
 {
     @Autowired
-    private RestFilePlanComponentApi filePlanComponentApi;
+    private FilePlanComponentApi filePlanComponentApi;
 
     @Autowired
     private DataUser dataUser;
-    
-    @Autowired
-    private RestFilePlanComponentModel componentModel;
-    
-    @Autowired
-    private PropertiesModel propertiesModel;
-    
-    /** new category name */
-    private String categoryName = "cat " + UUID.randomUUID().toString().substring(0, 8);
-    
-    private String newCategoryId = null;
-    
+
     @Test
     (
         description = "Create category as authorised user"
     )
     public void createCategoryAsAuthorisedUser() throws Exception
     {
-        // create category
-        propertiesModel.setTitle("New Test File Plan");
-        componentModel.setId(ALIAS_FILE_PLAN );
-        componentModel.setName(categoryName);
-        componentModel.setNodeType(COMPONENT_RECORD_CATEGORY);
-        componentModel.setProperties(propertiesModel);
-        
         RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        RestFilePlanComponentModel filePlanComponent = filePlanComponentApi.createFilePlanComponent(componentModel);
-        
-        // verify returned object
+
+        String categoryName = "Category name " + randomUUID().toString().substring(0, 8);
+        String categoryTitle = "Category title " + randomUUID().toString().substring(0, 8);
+
+        // Build the record category properties
+        JsonObject recordCategoryProperties = buildObject().
+                add(NAME, categoryName).
+                add(NODE_TYPE, RECORD_CATEGORY_TYPE.toString()).
+                addObject(PROPERTIES).
+                    add(PROPERTIES_TITLE, categoryTitle).
+                    end().
+                getJson();
+
+        // Create the record category
+        FilePlanComponent filePlanComponent = filePlanComponentApi.createFilePlanComponent(recordCategoryProperties, FILE_PLAN_ALIAS.toString());
+
+        // Verify the status code
         restWrapper.assertStatusCodeIs(CREATED);
+
+        // Verify the returned file plan component
         assertTrue(filePlanComponent.isIsCategory());
         assertEquals(filePlanComponent.getName(), categoryName);
-        assertEquals(filePlanComponent.getNodeType(), COMPONENT_RECORD_CATEGORY.toString());
-        assertFalse(filePlanComponent.getProperties().isVitalRecord());
-        
-        newCategoryId = filePlanComponent.getId();
+        assertEquals(filePlanComponent.getNodeType(), RECORD_CATEGORY_TYPE.toString());
+
+        // Verify the returned file plan component properties
+        FilePlanComponentProperties filePlanComponentProperties = filePlanComponent.getProperties();
+        assertEquals(filePlanComponentProperties.getTitle(), categoryTitle);
     }
-    
+
     @Test
     (
-        description = "Rename category as authorised user", 
-        dependsOnMethods= { "createCategoryAsAuthorisedUser" }
-        )
+        description = "Rename category as authorised user"
+    )
     public void renameCategoryAsAuthorisedUser() throws Exception
     {
-        assertNotNull(newCategoryId);
-        String newName = "renamed " + categoryName;
-        
-        RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper();
-        restWrapper.authenticateUser(dataUser.getAdminUser());
-        
-        RestFilePlanComponentModel filePlanComponent = filePlanComponentApi.getFilePlanComponent(newCategoryId);
-        filePlanComponent.setName(newName);
-        
-        RestFilePlanComponentModel renamedFilePlanComponent = filePlanComponentApi.updateFilePlanComponent(filePlanComponent);
+        RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        // verify returned object
+        // Create record category first
+
+        String categoryName = "Category name " + randomUUID().toString().substring(0, 8);
+        String categoryTitle = "Category title " + randomUUID().toString().substring(0, 8);
+
+        // Build the record category properties
+        JsonObject recordCategoryProperties = buildObject().
+                add(NAME, categoryName).
+                add(NODE_TYPE, RECORD_CATEGORY_TYPE.toString()).
+                addObject(PROPERTIES).
+                    add(PROPERTIES_TITLE, categoryTitle).
+                    end().
+                getJson();
+
+        // Create the record category
+        FilePlanComponent filePlanComponent = filePlanComponentApi.createFilePlanComponent(recordCategoryProperties, FILE_PLAN_ALIAS.toString());
+
+
+        String newCategoryName = "Rename " + categoryName;
+
+        // Build the properties which will be updated
+        JsonObject updateRecordCategoryProperties = buildObject().
+                add(NAME, newCategoryName).
+                getJson();
+
+        // Update the record category
+        FilePlanComponent renamedFilePlanComponent = filePlanComponentApi.updateFilePlanComponent(updateRecordCategoryProperties, filePlanComponent.getId());
+
+        // Verify the status code
         restWrapper.assertStatusCodeIs(OK);
-        assertEquals(renamedFilePlanComponent.getName(), newName);
+
+        // Verify the returned file plan component
+        assertEquals(renamedFilePlanComponent.getName(), newCategoryName);
     }
 
     @Test
     (
-        description = "Rename category as authorised user", 
-        dependsOnMethods= { "renameCategoryAsAuthorisedUser" }
+        description = "Rename category as authorised user"
     )
     public void deleteCategoryAsAuthorisedUser() throws Exception
     {
-        // delete
-        RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper();
-        restWrapper.authenticateUser(dataUser.getAdminUser());
-        filePlanComponentApi.deleteFilePlanComponent(filePlanComponentApi.getFilePlanComponent(newCategoryId), true);
+        RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        // verify deletion
+        // Create record category first
+
+        String categoryName = "Category name " + randomUUID().toString().substring(0, 8);
+        String categoryTitle = "Category title " + randomUUID().toString().substring(0, 8);
+
+        // Build the record category properties
+        JsonObject recordCategoryProperties = buildObject().
+                add(NAME, categoryName).
+                add(NODE_TYPE, RECORD_CATEGORY_TYPE.toString()).
+                addObject(PROPERTIES).
+                    add(PROPERTIES_TITLE, categoryTitle).
+                    end().
+                getJson();
+
+        // Create the record category
+        FilePlanComponent filePlanComponent = filePlanComponentApi.createFilePlanComponent(recordCategoryProperties, FILE_PLAN_ALIAS.toString());
+
+        // Delete the record category
+        filePlanComponentApi.deleteFilePlanComponent(filePlanComponent.getId());
+
+        // Verify the status code
         restWrapper.assertStatusCodeIs(NO_CONTENT);
-        // TODO: verify we can't get an object with this ID again
-        // TODO: can we verify that deletion with deletePermanently=false indeed ended up in trashcan?
     }
 }

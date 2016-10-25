@@ -25,26 +25,13 @@ import org.testng.annotations.BeforeClass;
  *
  * @author Kristijan Conkas
  * @author Tuna Aksoy
- * @since 2.6
+ * @since 1.0
  */
 @Configuration
 @PropertySource("classpath:config.properties")
 @PropertySource(value = "classpath:local.properties", ignoreResourceNotFound = true)
-public class BaseIgRestTest extends RestTest
+public class BaseRestTest extends RestTest
 {
-    /** Alias which can be used instead of the identifier of a node. */
-    public static final String ALIAS_FILE_PLAN = "-filePlan-";
-    public static final String ALIAS_TRANSFERS = "-transfers-";
-    public static final String ALIAS_UNFILED_RECORDS_CONTAINER = "-unfiled-";
-    public static final String ALIAS_HOLDS = "-holds-";
-
-    /** Component types. */
-    public static final String COMPONENT_FILE_PLAN = "rma:filePlan";
-    public static final String COMPONENT_RECORD_CATEGORY = "rma:recordCategory";
-    public static final String COMPONENT_RECORD_FOLDER = "rma:recordFolder";
-    public static final String COMPONENT_HOLD = "rma:hold";
-    public static final String COMPONENT_UNFILED_RECORD_FOLDER = "rma:unfiledRecordFolder";
-    
     @Value("${alfresco.rm.scheme}")
     private String scheme;
 

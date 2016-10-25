@@ -11,6 +11,10 @@
  */
 package org.alfresco.rest.model;
 
+import static org.alfresco.com.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
+import static org.alfresco.com.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.com.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,26 +22,28 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
- * Fileplan component properties
+ * POJO for file plan component properties
+ *
  * @author Kristijan Conkas
- * @since 2.6
+ * @since 1.0
  */
 @Component
 @Scope(value = "prototype")
+//FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PropertiesModel
+public class FilePlanComponentProperties
 {
     // TODO: handling individual properties is tedious and error prone, how about @JsonGetter + @JsonSetter?
-    
-    @JsonProperty("rma:vitalRecordIndicator")
+
+    @JsonProperty(PROPERTIES_VITAL_RECORD_INDICATOR)
     private boolean vitalRecord;
-    
-    @JsonProperty("cm:title")
+
+    @JsonProperty(PROPERTIES_TITLE)
     private String title;
-    
-    @JsonProperty("rma:holdReason")
+
+    @JsonProperty(PROPERTIES_HOLD_REASON)
     private String holdReason;
-    
+
     /**
      * @return the vitalRecord
      */

@@ -11,6 +11,8 @@
  */
 package org.alfresco.rest.model;
 
+import static org.alfresco.com.FilePlanComponentFields.PROPERTIES;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,29 +20,36 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
- * FIXME: Document me :)
+ * POJO for file plan component
  *
  * @author Tuna Aksoy
  * @since 1.0
  */
 @Component
 @Scope(value = "prototype")
-//FIXME: Once the fields have been added this annotation should be removed
+//FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RestFilePlanComponentModel
+public class FilePlanComponent
 {
     private String id;
+
     private String parentId;
+
     private String name;
+
     private String nodeType;
+
     private boolean isCategory;
+
     private boolean isRecordFolder;
+
     private boolean isFile;
+
     private boolean hasRetentionSchedule;
-    
-    @JsonProperty(value = "properties")
-    private PropertiesModel properties;
-    
+
+    @JsonProperty(PROPERTIES)
+    private FilePlanComponentProperties properties;
+
     /**
      * @return the id
      */
@@ -172,7 +181,7 @@ public class RestFilePlanComponentModel
     /**
      * @return the properties
      */
-    public PropertiesModel getProperties()
+    public FilePlanComponentProperties getProperties()
     {
         return properties;
     }
@@ -180,7 +189,7 @@ public class RestFilePlanComponentModel
     /**
      * @param properties the properties to set
      */
-    public void setProperties(PropertiesModel properties)
+    public void setProperties(FilePlanComponentProperties properties)
     {
         this.properties = properties;
     }

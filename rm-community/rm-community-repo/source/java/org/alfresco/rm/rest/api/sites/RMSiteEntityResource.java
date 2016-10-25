@@ -78,7 +78,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
         String permanentParameter = parameters.getParameter(PARAM_PERMANENT);
         if(permanentParameter != null)
         {
-            throw new InvalidArgumentException("Delete does not support parameter: permanent");
+            throw new InvalidArgumentException("DELETE does not support parameter: permanent");
         }
         sites.deleteSite(siteId, parameters);
     }
@@ -130,7 +130,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
     {
         if (!RM_SITE_ID.equals(siteId))
         {
-            throw new InvalidParameterException("The Get is supported only for siteId = rm.");
+            throw new InvalidParameterException("GET is supported only for siteId = rm.");
         }
         return sites.getRMSite(siteId);
     }

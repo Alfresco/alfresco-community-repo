@@ -24,6 +24,7 @@ import com.google.gson.JsonObject;
 
 import org.alfresco.rest.core.RestAPI;
 import org.alfresco.rest.model.FilePlanComponent;
+import org.alfresco.rest.model.FilePlanComponentsCollection;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -61,6 +62,29 @@ public class FilePlanComponentApi extends RestAPI
         ));
     }
 
+    /**
+     * List child components of a file plan component
+     *
+     * @param filePlanComponentId The id of the file plan component of which to get child components
+     * @return The {@link FilePlanComponent} for the given file plan component id
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>{@code fileplanComponentId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>{@code fileplanComponentId} does not exist</li>
+     * </ul>
+     */
+    public FilePlanComponentsCollection listChildComponents(String filePlanComponentId) throws Exception
+    {
+        mandatoryString("filePlanComponentId", filePlanComponentId);
+
+        return usingRestWrapper().processModels(FilePlanComponentsCollection.class, simpleRequest(
+                GET,
+                "fileplan-components/{fileplanComponentId}/children",
+                filePlanComponentId
+        ));
+    }
+    
     /**
      * Creates a file plan component with the given properties under the parent node with the given id
      *

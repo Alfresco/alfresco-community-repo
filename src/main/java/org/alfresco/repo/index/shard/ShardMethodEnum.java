@@ -38,7 +38,8 @@ public enum ShardMethodEnum
     DATE,//Time stamp
     DATE_YEAR,
     DATE_MONTH,
-    UNKOWN;
+    UNKOWN,
+    PROPERTY;
     
     public static ShardMethodEnum getShardMethod(String shardMethod)
     {
@@ -68,6 +69,9 @@ public enum ShardMethodEnum
                 break;
             case "DATE_MONTH":
                 shardMethodEnum = DATE_MONTH;
+                break;
+            case "PROPERTY":
+                shardMethodEnum = PROPERTY;
                 break;
             default:
                 shardMethodEnum = UNKOWN;

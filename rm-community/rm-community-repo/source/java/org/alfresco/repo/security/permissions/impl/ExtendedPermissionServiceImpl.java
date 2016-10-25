@@ -74,12 +74,16 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
 
     /**
      * Configured Permission mapping.
-     *
-     * These strings come from alfresco-global.properties and allow fine tuning of the how permissions are mapped.
+     * <p>
+     * This string comes from alfresco-global.properties and allows fine tuning of the how permissions are mapped.
      * This was added as a fix for MNT-16852 to enhance compatibility with our Outlook Integration.
-     *
-     **/
+     */
     protected List<String> configuredReadPermissions;
+    /**
+     * Configured Permission mapping.
+     * <p>
+     * This string also comes from alfresco-global.properties.
+     */
     protected List<String> configuredFilePermissions;
 
     /** File plan service */

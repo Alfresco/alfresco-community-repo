@@ -31,7 +31,6 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
@@ -55,19 +54,22 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
     private static final String RM_SITE_ID = "rm";
     private RMSites sites;
 
-    public void setSites(RMSites sites) {
+    public void setSites(RMSites sites)
+    {
         this.sites = sites;
     }
 
     @Override
-    public List<RMSite> create(List<RMSite> entity, Parameters parameters) {
+    public List<RMSite> create(List<RMSite> entity, Parameters parameters)
+    {
         List<RMSite> result = new ArrayList<>(1);
         result.add(sites.createRMSite(entity.get(0), parameters));
         return result;
     }
 
     @Override
-    public void delete(String siteId, Parameters parameters) {
+    public void delete(String siteId, Parameters parameters)
+    {
         if (!RM_SITE_ID.equals(siteId))
         {
             throw new InvalidParameterException("The Deletion is supported only for siteId = rm.");
@@ -118,7 +120,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
     }
 
     @Override
-    public RMSite readById(String siteId, Parameters parameters) throws EntityNotFoundException
+    public RMSite readById(String siteId, Parameters parameters)
     {
         if (!RM_SITE_ID.equals(siteId))
         {

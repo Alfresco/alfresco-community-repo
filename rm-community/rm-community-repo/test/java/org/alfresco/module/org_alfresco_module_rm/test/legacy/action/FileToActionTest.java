@@ -119,24 +119,27 @@ public class FileToActionTest extends BaseRMTestCase
                 // create record from document
                 recordService.createRecord(filePlan, dmDocument);
 
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(recordService.isFiled(dmDocument));
-
-                AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
-                {
-					public Void doWork() throws Exception 
-					{					
-						// is the unfiled container the primary parent of the filed record
-						NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-						assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
-						
-						// TODO Auto-generated method stub
-						return null;
-					}});
-
                 return null;
             }
+            
+            @Override
+            public void test(Void result) throws Exception 
+            {
+            	AuthenticationUtil.runAs(() ->
+            	{
+	                // check things have gone according to plan
+	                assertTrue(recordService.isRecord(dmDocument));
+	                assertFalse(recordService.isFiled(dmDocument));
+	
+	                // is the unfiled container the primary parent of the filed record
+	                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
+	                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+	                
+	                return null;
+            	},
+                AuthenticationUtil.getAdminUserName());
+            }
+            
         }, dmCollaborator);
     }
 

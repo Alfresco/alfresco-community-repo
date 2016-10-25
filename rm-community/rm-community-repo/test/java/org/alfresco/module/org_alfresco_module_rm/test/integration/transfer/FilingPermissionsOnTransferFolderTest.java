@@ -140,6 +140,7 @@ public class FilingPermissionsOnTransferFolderTest extends BaseRMTestCase
                 }, getAdminUserName());
 
                 // FIXME: This step should be executed in "when()".
+                // See RM-3931
                 transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
             }
 
@@ -149,7 +150,7 @@ public class FilingPermissionsOnTransferFolderTest extends BaseRMTestCase
             @Override
             public void when()
             {
-                // FIXME: If the transfer step is executed here the test fails.
+                // FIXME: If the transfer step is executed here the test fails. See RM-3931
                 //transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
 
                 // Give testUser2 filing permissions on transfer folder
@@ -187,7 +188,7 @@ public class FilingPermissionsOnTransferFolderTest extends BaseRMTestCase
                         // Check if testUser2 has filing permissions on the transfer folder
                         assertEquals(ALLOWED,  permissionService.hasPermission(transferFolder, FILING));
 
-                        // FIXME: Should be able to execute the action. Failing intermittently.
+                        // FIXME: Should be able to execute the action. Failing intermittently. See RM-3931
                         // Execute transfer complete action as testUser2 who has filing permissions on the transfer folder
                         // rmActionService.executeRecordsManagementAction(transferFolder, TransferCompleteAction.NAME);
 

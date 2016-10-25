@@ -51,6 +51,7 @@ import org.junit.runner.RunWith;
     "!.*RM2072Test",
     "!.*RM2190Test",
     "!.*RM981SystemTest",
+    "!.*RM3993Test",
     "!.*RecordsManagementEventServiceImplTest",
     "!.*RmRestApiTest",
     "!.*NotificationServiceHelperSystemTest",

@@ -11,7 +11,7 @@
          </list>
       </property>
    </bean>
-   
+
    <!-- Recordable version model behaviours -->
    <bean id="rmv.versionRecord" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.VersionRecordAspect" parent="rm.baseBehaviour">
         <property name="recordableVersionService" ref="RecordableVersionService" />
@@ -21,6 +21,7 @@
    <!-- extended version service bean definition -->
    <bean id="rm.versionService" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl">
       <property name="filePlanService" ref="FilePlanService" />
+      <property name="enableAutoVersionOnRecordCreation" value="${rm.enableAutoVersionOnRecordCreation}" />
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
       <property name="relationshipService" ref="RelationshipService" />
       <property name="recordService" ref="RecordService" />
@@ -44,8 +45,8 @@
    </bean>
 
    <!--  Extended auto-version behaviour -->
-   <bean id="rm.extendedVersionableAspect" class="org.alfresco.module.org_alfresco_module_rm.version.ExtendedVersionableAspect">      
-      <property name="nodeService" ref="NodeService" />  
+   <bean id="rm.extendedVersionableAspect" class="org.alfresco.module.org_alfresco_module_rm.version.ExtendedVersionableAspect">
+      <property name="nodeService" ref="NodeService" />
       <property name="versionService" ref="VersionService" />
       <property name="lockService" ref="LockService" />
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
@@ -56,7 +57,7 @@
    <!--  rmv:versionable aspect behaviour bean -->
    <bean id="rm.versionableAspect" class="org.alfresco.module.org_alfresco_module_rm.version.model.VersionableAspect" parent="rm.baseBehaviour">
    </bean>
-   
+
    <!-- recordable version service -->
    <bean id="RecordableVersionService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces" value="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService" />
@@ -77,6 +78,7 @@
          <value>
             <![CDATA[
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isCurrentVersionRecorded=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isEnableAutoVersionOnRecordCreation=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isRecordedVersion=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.getVersionRecord=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.getRecordedVersion=RM_ALLOW

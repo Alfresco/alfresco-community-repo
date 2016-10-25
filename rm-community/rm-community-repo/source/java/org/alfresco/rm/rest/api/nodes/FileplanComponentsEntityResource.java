@@ -30,6 +30,7 @@ package org.alfresco.rm.rest.api.nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -48,6 +49,7 @@ public class FileplanComponentsEntityResource implements
         EntityResourceAction.Update<Node>
 {
     private RMNodes nodes;
+    private String PARAM_PERMANENT = "permanent";
 
     public void setNodes(RMNodes nodes)
     {
@@ -70,6 +72,11 @@ public class FileplanComponentsEntityResource implements
     @Override
     public void delete(String nodeId, Parameters parameters)
     {
+        String permanentParameter = parameters.getParameter(PARAM_PERMANENT);
+        if(permanentParameter != null)
+        {
+            throw new InvalidArgumentException("Delete does not support parameter: permanent");
+        }
         nodes.deleteNode(nodeId, parameters);
     }
 }

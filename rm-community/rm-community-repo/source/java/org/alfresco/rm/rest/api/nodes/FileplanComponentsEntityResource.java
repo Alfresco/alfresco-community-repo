@@ -75,7 +75,7 @@ public class FileplanComponentsEntityResource implements
         String permanentParameter = parameters.getParameter(PARAM_PERMANENT);
         if(permanentParameter != null)
         {
-            throw new InvalidArgumentException("Delete does not support parameter: permanent");
+            throw new InvalidArgumentException("DELETE does not support parameter: permanent");
         }
         nodes.deleteNode(nodeId, parameters);
     }

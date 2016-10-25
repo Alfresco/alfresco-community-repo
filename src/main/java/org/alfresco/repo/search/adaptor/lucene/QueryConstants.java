@@ -189,6 +189,10 @@ public interface QueryConstants
     
     public static final String FIELD_PNAME = "PNAME";
     
+    public static final String FIELD_APATH = "APATH";
+    
+    public static final String FIELD_ANAME = "ANAME";
+    
     public static final String FIELD_PROPERTIES = "PROPERTIES";
     
     public static final String FIELD_NULLPROPERTIES = "NULLPROPERTIES";

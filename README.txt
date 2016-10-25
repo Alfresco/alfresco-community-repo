@@ -1,23 +1,26 @@
 Configuring and starting Alfresco/Share:
 ----------------------------------------
 
-- Clone the project (e.g. git clone git@gitlab.alfresco.com:records-management/records-management.git)
+- Clone the project from git
 
 - Import the project as a maven project
 
 - Start the Alfresco/Share instances with the following commands:
 
+  To start the repo:
+  cd rm-community/rm-community-repo
   mvn clean install -Pstart-repo
+  
+  To start Share:
+  cd rm-community/rm-community-share
   mvn clean install -Pstart-share
 
-  (these commands work best if run from the specific directories, e.g. start share from
-  rm-enterprise/rm-enterprise-share/ or rm-community/rm-community-share/ )
-
+  NOTE: If you have the enterprise code, see rm-enterprise/README.txt for instructions on how to build/start the enterprise code.
 
 Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
 --------------------------------------------------------------------
 
-- Create a file called "local.properties" under src/main/resources in alfresco-rm-enterprise-repo
+- Create a file called "local.properties" under src/main/resources in rm-community-repo (you may need to create the directory)
 
 - Add the following properties in this new file
   my.db.name -> The name of the database schema
@@ -100,3 +103,11 @@ Code Formatting:
 ----------------
 
 This project follows the usual Alfresco Coding Standards. If you use Eclipse or IntelliJ, there are settings inside the ide-config directory for you to import.
+
+Surf build errors:
+------------------
+
+If you get: 
+[ERROR] Failed to execute goal on project alfresco-rm-community-share: Could not resolve dependencies for project org.alfresco:alfresco-rm-community-share:amp:2.6-SNAPSHOT: Failed to collect dependencies at org.alfresco.surf:spring-surf-api:jar:6.3 -> org.alfresco.surf:spring-surf:jar:${dependency.surf.version}: Failed to read artifact descriptor for org.alfresco.surf:spring-surf:jar:${dependency.surf.version}: Could not transfer artifact org.alfresco.surf:spring-surf:pom:${dependency.surf.version} from/to alfresco-internal (https://artifacts.alfresco.com/nexus/content/groups/private): Not authorized , ReasonPhrase:Unauthorized. -> [Help 1]
+
+then please re-run with  -Ddependency.surf.version=6.3

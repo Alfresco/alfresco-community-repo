@@ -291,7 +291,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
             public void test(Void result)
             {
-                checkPermissions(READ_RECORDS, AccessStatus.DENIED, // file plan
+                checkPermissions(READ_RECORDS, 
+                        AccessStatus.DENIED, // file plan
                         AccessStatus.DENIED, // unfiled container
                         AccessStatus.DENIED, // record category
                         AccessStatus.DENIED, // record folder
@@ -300,7 +301,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
 
-                checkPermissions(FILING, AccessStatus.DENIED, // file plan
+                checkPermissions(FILING, 
+                        AccessStatus.DENIED, // file plan
                         AccessStatus.DENIED, // unfiled container
                         AccessStatus.DENIED, // record category
                         AccessStatus.DENIED, // record folder

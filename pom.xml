@@ -4,7 +4,7 @@
    <groupId>org.alfresco</groupId>
    <artifactId>alfresco-rm</artifactId>
    <packaging>pom</packaging>
-   <version>2.5.0</version>
+   <version>2.6-SNAPSHOT</version>
    <name>Alfresco Records Management</name>
 
    <parent>
@@ -24,7 +24,7 @@
       <connection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</connection>
       <developerConnection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</developerConnection>
       <url>https://gitlab.alfresco.com/records-management/records-management</url>
-      <tag>V2.5.0</tag>
+      <tag>HEAD</tag>
    </scm>
 
    <issueManagement>
@@ -84,9 +84,22 @@
 
    <modules>
       <module>rm-community</module>
-      <module>rm-enterprise</module>
-      <module>rm-automation</module>
    </modules>
+
+   <profiles>
+      <profile>
+         <id>enterprise</id>
+         <activation>
+            <property>
+               <name>!community</name>
+            </property>
+         </activation>
+         <modules>
+            <module>rm-enterprise</module>
+            <module>rm-automation</module>
+         </modules>
+      </profile>
+   </profiles>
 
    <properties>
       <alfresco.db.params>AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;MVCC=FALSE;LOCK_MODE=0;IGNORECASE=TRUE</alfresco.db.params>
@@ -139,8 +152,8 @@
                         <regexPropertySetting>
                            <name>rm.module.repo.version.min</name>
                            <value>${alfresco.version}</value>
-                           <regex>(\d+)\.(\d+).*</regex>
-                           <replacement>$1.$2</replacement>
+                           <regex>([0-9\.]*[0-9]).*</regex>
+                           <replacement>$1</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
                         </regexPropertySetting>
                         <regexPropertySetting>

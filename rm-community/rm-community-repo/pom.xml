@@ -9,7 +9,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm-community</artifactId>
-      <version>2.5.0</version>
+      <version>2.6-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -25,6 +25,7 @@
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
+      <maven.alfresco.rm.api.explorer.version>1.0-SNAPSHOT</maven.alfresco.rm.api.explorer.version>
    </properties>
 
    <build>
@@ -283,7 +284,6 @@
          <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-webscripts</artifactId>
          <classifier>tests</classifier>
-         <version>6.7</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -526,6 +526,14 @@
                                  <asWebapp>true</asWebapp>
                                  <contextPath>/solr4</contextPath>
                                  <contextFile>${alfresco.solr.home}/context.xml</contextFile>
+                              </webapp>
+                              <webapp>
+                                 <groupId>org.alfresco</groupId>
+                                 <artifactId>alfresco-rm-api-explorer</artifactId>
+                                 <version>${maven.alfresco.rm.api.explorer.version}</version>
+                                 <contextPath>/api-explorer</contextPath>
+                                 <type>war</type>
+                                 <asWebapp>true</asWebapp>
                               </webapp>
                            </webapps>
                         </configuration>

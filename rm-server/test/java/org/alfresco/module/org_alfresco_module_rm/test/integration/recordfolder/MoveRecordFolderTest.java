@@ -384,9 +384,12 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             }
         });
     }
-
-
-    // try and move a cutoff folder
+    
+    /**
+     * Try and move a cutoff folder
+     * 
+     * @see https://issues.alfresco.com/jira/browse/RM-1039
+     */
     public void testMoveCutoffRecordFolder() throws Exception
     {
         final NodeRef destination = doTestInTransaction(new Test<NodeRef>()

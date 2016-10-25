@@ -60,6 +60,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -89,6 +91,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     private Repository repositoryHelper;
     private DictionaryService dictionaryService;
     private DispositionService dispositionService;
+    private SiteService siteService;
 
     /**
      * TODO to remove this after isSpecialNode is made protected in core implementation
@@ -100,6 +103,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         this.nodeService = serviceRegistry.getNodeService();
         this.dictionaryService = serviceRegistry.getDictionaryService();
         this.dispositionService = serviceRegistry.getDispositionService();
+        this.siteService = serviceRegistry.getSiteService();
     }
 
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry serviceRegistry)
@@ -367,12 +371,6 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     private boolean isCoreSpecialNode(NodeRef nodeRef, QName type)
     {
         // Check for Company Home, Sites and Data Dictionary (note: must be tenant-aware)
-        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        if(filePlan != null)
-        {
-
-        }
-
         if (nodeRef.equals(repositoryHelper.getCompanyHome()))
         {
             return true;
@@ -424,5 +422,22 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
             throw new PermissionDeniedException("Cannot delete: " + nodeId);
         }
         super.deleteNode(nodeId, parameters);
+    }
+
+    @Override
+    public boolean isRMSite(String nodeId)
+    {
+        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+
+        SiteInfo siteInfo = siteService.getSite(FilePlanService.DEFAULT_RM_SITE_ID);
+        if(siteInfo !=null)
+        {
+            NodeRef rmNodeRef = siteInfo.getNodeRef();
+            if(rmNodeRef.equals(nodeRef))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

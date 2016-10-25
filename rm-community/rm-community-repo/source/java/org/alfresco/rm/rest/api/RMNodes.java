@@ -40,4 +40,12 @@ public interface RMNodes extends Nodes
     String PARAM_INCLUDE_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
     String PARAM_INCLUDE_IS_CLOSED = "isClosed";
     String PARAM_INCLUDE_IS_COMPLETED = "isCompleted";
+
+    /**
+     * Identifies if one node is RM site node.
+     *
+     * @param nodeId
+     * @return
+     */
+    boolean isRMSite(String nodeId);
 }

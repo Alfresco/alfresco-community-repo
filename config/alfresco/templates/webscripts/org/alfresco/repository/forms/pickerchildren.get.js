@@ -162,50 +162,60 @@ function main()
       else if (url.templateArgs.type == "category")
       {
          var catAspect = (args["aspect"] != null) ? args["aspect"] : "cm:generalclassifiable";
-
-         // TODO: Better way of finding this
-         var rootCategories = classification.getRootCategories(catAspect);
-         if (rootCategories != null && rootCategories.length > 0)
+         
+         if (nodeRef == "workspace://SpacesStore/tag:tag-root")
          {
-            if (argsRootNode)
+            categoryResults = classification.getRootCategories(catAspect, argsSearchTerm, maxResults, 0);
+            parent = resolveNode(nodeRef);
+         }
+         else
+         {
+            var rootCategories = classification.getRootCategories(catAspect);
+            if (rootCategories != null && rootCategories.length > 0)
             {
-               rootNode = resolveNode(argsRootNode);
-               if (rootNode == null)
+               if (argsRootNode)
+               {
+                  rootNode = resolveNode(argsRootNode);
+                  if (rootNode == null)
+                  {
+                     rootNode = rootCategories[0].parent;
+                  }
+               }
+               else
                {
                   rootNode = rootCategories[0].parent;
                }
-            }
-            else
-            {
-               rootNode = rootCategories[0].parent;
-            }
-
-            if (nodeRef == "alfresco://category/root")
-            {
-               parent = rootNode;
-               categoryResults = classification.getRootCategories(catAspect, argsSearchTerm, maxResults, 0);
-            }
-            else
-            {
-               parent = resolveNode(nodeRef);
-               categoryResults = parent.children;
-               if (argsSearchTerm != null)
+               
+               if (nodeRef == "alfresco://category/root")
                {
-                  var filteredResults = [];
-                  for each (result in categoryResults)
-                  {
-                     if (result.properties.name.indexOf(argsSearchTerm) == 0)
-                     {
-                        filteredResults.push(result);
-                     }
-                  }
-                  categoryResults = filteredResults.slice(0);
+                  parent = rootNode;
+                  categoryResults = classification.getRootCategories(catAspect, argsSearchTerm, maxResults, 0);
                }
-               categoryResults.sort(sortByName);
-               categoryResults = categoryResults.slice(0, maxResults);
+               else
+               {
+                  parent = resolveNode(nodeRef);
+                  categoryResults = parent.children;
+                  if (argsSearchTerm != null)
+                  {
+                     var filteredResults = [];
+                     for each (result in categoryResults)
+                     {
+                        if (result.properties.name.indexOf(argsSearchTerm) == 0)
+                        {
+                           filteredResults.push(result);
+                        }
+                     }
+                     categoryResults = filteredResults.slice(0);
+                  }
+                  categoryResults.sort(sortByName);
+                  categoryResults = categoryResults.slice(0, maxResults);
+               }
             }
-
-            // make each result an object and indicate it is selectable in the UI
+         }
+         
+         // make each result an object and indicate it is selectable in the UI
+         if (categoryResults)
+         {
             for each (var result in categoryResults)
             {
                results.push(

@@ -389,6 +389,11 @@
                <type>d:date</type>
                <mandatory>false</mandatory>
             </property>
+            <property name="rma:manuallySetAsOf">
+               <title>Manually Set Disposition Date Flag</title>
+               <type>d:boolean</type>
+               <default>false</default>
+            </property>
             <property name="rma:dispositionEventsEligible">
                <title>Disposition Events Eligible</title>
                <type>d:boolean</type>

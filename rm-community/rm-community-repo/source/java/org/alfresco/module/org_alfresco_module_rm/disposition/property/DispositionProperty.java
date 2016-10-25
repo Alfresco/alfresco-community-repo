@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.disposition.property;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
@@ -220,7 +222,11 @@ public class DispositionProperty extends BaseBehaviourBean
 
                                     // update asOf date on the disposition action based on the new property value
                                     NodeRef daNodeRef = dispositionAction.getNodeRef();
-                                    nodeService.setProperty(daNodeRef, PROP_DISPOSITION_AS_OF, updatedAsOf);
+                                    // Don't overwrite a manually set "disposition as of" date.
+                                    if (isNotTrue((Boolean) nodeService.getProperty(daNodeRef, PROP_MANUALLY_SET_AS_OF)))
+                                    {
+                                        nodeService.setProperty(daNodeRef, PROP_DISPOSITION_AS_OF, updatedAsOf);
+                                    }
                                 }
                             }
                         }

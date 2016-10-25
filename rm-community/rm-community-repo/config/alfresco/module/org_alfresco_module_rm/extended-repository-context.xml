@@ -114,9 +114,6 @@
             <ref bean="extendedReaderDynamicAuthority" />
          </list>
       </property>
-      <property name="filePlanService">
-         <ref bean="filePlanService" />
-      </property>
       <property name="configuredReadPermissions">
          <value>${rm.haspermissionmap.read}</value>
       </property>

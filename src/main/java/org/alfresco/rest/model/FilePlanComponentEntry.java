@@ -11,14 +11,23 @@
  */
 package org.alfresco.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.RestModels;
 
 /**
- * Handle collection of FilePlanComponents
- * @author Kristijan Conkas
+ * POJO for file plan component entry
+ *
+ * @author Tuna Aksoy
  * @since 1.0
  */
-public class FilePlanComponentsCollection extends RestModels<FilePlanComponentEntry, FilePlanComponentsCollection>
+public class FilePlanComponentEntry extends RestModels<FilePlanComponent, FilePlanComponentEntry>
 {
+    @JsonProperty(value = "entry")
+    FilePlanComponent filePlanComponent;
 
+    public FilePlanComponent getFilePlanComponent()
+    {
+        return filePlanComponent;
+    }
 }

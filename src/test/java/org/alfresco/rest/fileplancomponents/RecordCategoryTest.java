@@ -36,6 +36,7 @@ import com.google.gson.JsonObject;
 import org.alfresco.com.FilePlanComponentType;
 import org.alfresco.rest.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.model.FilePlanComponentEntry;
 import org.alfresco.rest.model.FilePlanComponent;
 import org.alfresco.rest.model.FilePlanComponentProperties;
 import org.alfresco.rest.model.FilePlanComponentsCollection;
@@ -249,11 +250,12 @@ public class RecordCategoryTest extends BaseRestTest
         FilePlanComponentsCollection apiChildren = filePlanComponentApi.listChildComponents(rootCategory.getId());
         restWrapper.assertStatusCodeIs(OK);
         
-        List<FilePlanComponent> childrenApi = apiChildren.getEntries();
+        List<FilePlanComponentEntry> childrenApi = apiChildren.getEntries();
         childrenApi.forEach(c -> {
             //assertNotNull(c.getId());
-            
-            logger.info(c + " id=" + c.getId() + " name=" + c.getName() + " properties=" + c.getProperties());
+
+            FilePlanComponent filePlanComponent = c.getFilePlanComponent();
+            logger.info(c + " id=" + filePlanComponent.getId() + " name=" + filePlanComponent.getName() + " properties=" + filePlanComponent.getProperties());
         });
     }
     

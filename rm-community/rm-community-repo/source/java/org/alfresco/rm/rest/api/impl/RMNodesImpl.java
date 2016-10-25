@@ -94,7 +94,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     private SiteService siteService;
 
     /**
-     * TODO to remove this after isSpecialNode is made protected in core implementation
+     * TODO to remove this after isSpecialNode is made protected in core implementation(REPO-1459)
      */
     private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
     public void init()
@@ -132,7 +132,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
             nodeTypeQName = nodeService.getType(nodeRef);
         }
 
-        //TODO to remove this part of code after isSpecialNode will be made protected on core, will not need this anymore since the right allowed operations will be returned from core.
+        //TODO to remove this part of code after isSpecialNode will be made protected on core, will not need this anymore since the right allowed operations will be returned from core(REPO-1459).
         if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
         {
             List<String> allowableOperations = originalNode.getAllowableOperations();
@@ -326,7 +326,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     }
 
     /**
-     * TODO only override core method when will be made protected in core.
+     * TODO only override core method when will be made protected in core(REPO-1459).
      *
      * @param nodeRef
      * @param type
@@ -355,14 +355,14 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
                 return true;
             }
         }
-        //TODO just run super after method after it will be made protected on core
+        //TODO just run super after method after it will be made protected on core(REPO-1459)
         return isCoreSpecialNode(nodeRef, type);
     }
 
     /**
      * Copied from core implementation, because it is protected and we can't extend it with our special nodes.
      *
-     * TODO to remove when isSpecialNode method will be made protected in core.
+     * TODO to remove when isSpecialNode method will be made protected in core (REPO-1459).
      *
      * @param nodeRef
      * @param type
@@ -409,7 +409,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     /**
      * Overridden this method just in order to use our isSpecialNode method since core method could not be overridden.
      *
-     * TODO remove this after isSpecialNode will be made protected in core.
+     * TODO remove this after isSpecialNode will be made protected in core(REPO-1459).
      */
     @Override
     public void deleteNode(String nodeId, Parameters parameters)

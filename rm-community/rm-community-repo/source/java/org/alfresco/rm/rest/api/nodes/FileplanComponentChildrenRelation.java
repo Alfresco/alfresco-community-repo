@@ -30,14 +30,15 @@ package org.alfresco.rm.rest.api.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.alfresco.rm.rest.api.RMNodes;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
@@ -51,9 +52,9 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
                                                  RelationshipResourceAction.Create<Node>,
                                                  MultiPartRelationshipResourceAction.Create<Node>
 {
-    private Nodes nodes;
+    private RMNodes nodes;
 
-    public void setNodes(Nodes nodes)
+    public void setNodes(RMNodes nodes)
     {
         this.nodes = nodes;
     }
@@ -67,6 +68,10 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     @Override
     public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
     {
+        if(nodes.isRMSite(parentFolderNodeId))
+        {
+            throw new PermissionDeniedException("POST request not allowed in RM site.");
+        }
         List<Node> result = new ArrayList<>(nodeInfos.size());
 
         for (Node nodeInfo : nodeInfos)
@@ -80,6 +85,10 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     @Override
     public Node create(String parentFolderNodeId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
+        if(nodes.isRMSite(parentFolderNodeId))
+        {
+            throw new PermissionDeniedException("POST request not allowed in RM site.");
+        }
         return nodes.upload(parentFolderNodeId, formData, parameters);
     }
 }

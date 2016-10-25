@@ -27,13 +27,13 @@
 
 package org.alfresco.rm.rest.api.nodes;
 
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rm.rest.api.RMNodes;
 
 /**
  * Fileplan component children
@@ -47,9 +47,9 @@ public class FileplanComponentsEntityResource implements
         EntityResourceAction.Delete,
         EntityResourceAction.Update<Node>
 {
-    private Nodes nodes;
+    private RMNodes nodes;
 
-    public void setNodes(Nodes nodes)
+    public void setNodes(RMNodes nodes)
     {
         this.nodes = nodes;
     }

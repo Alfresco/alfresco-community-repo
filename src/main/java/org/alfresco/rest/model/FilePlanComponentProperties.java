@@ -27,14 +27,10 @@ import org.springframework.stereotype.Component;
  * @author Kristijan Conkas
  * @since 1.0
  */
-@Component
-@Scope(value = "prototype")
 //FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FilePlanComponentProperties
 {
-    // TODO: handling individual properties is tedious and error prone, how about @JsonGetter + @JsonSetter?
-
     @JsonProperty(PROPERTIES_VITAL_RECORD_INDICATOR)
     private boolean vitalRecord;
 

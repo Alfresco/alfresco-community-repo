@@ -27,9 +27,11 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.google.gson.JsonObject;
 
@@ -210,6 +212,7 @@ public class RecordCategoryTest extends BaseRestTest
         
         // create subcategory as a child of rootCategory
         FilePlanComponent childCategory = createCategory(rootCategory.getId(), RandomData.getRandomAlphanumeric());
+        
         // child category created?
         assertNotNull(childCategory.getId());
     }
@@ -250,12 +253,31 @@ public class RecordCategoryTest extends BaseRestTest
         FilePlanComponentsCollection apiChildren = filePlanComponentApi.listChildComponents(rootCategory.getId());
         restWrapper.assertStatusCodeIs(OK);
         
+        // check listed children against created list
         List<FilePlanComponentEntry> childrenApi = apiChildren.getEntries();
-        childrenApi.forEach(c -> {
-            //assertNotNull(c.getId());
-
+        childrenApi.forEach(c -> 
+        {
             FilePlanComponent filePlanComponent = c.getFilePlanComponent();
+            assertNotNull(filePlanComponent.getId());
+            
             logger.info(c + " id=" + filePlanComponent.getId() + " name=" + filePlanComponent.getName() + " properties=" + filePlanComponent.getProperties());
+            
+            try 
+            {
+                FilePlanComponent createdComponent = children.stream()
+                    .filter(child -> child.getId().compareTo(filePlanComponent.getId()) == 0)
+                    .findFirst()
+                    .get();
+                
+                // does returned object have the same contents as the created one?
+                assertEquals(createdComponent.getName(), filePlanComponent.getName());
+                assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
+                assertEquals(createdComponent.getProperties().getTitle(), filePlanComponent.getProperties().getTitle());
+            } 
+            catch (NoSuchElementException e)
+            {
+                fail("No child element for " + filePlanComponent.getId());
+            }
         });
     }
     

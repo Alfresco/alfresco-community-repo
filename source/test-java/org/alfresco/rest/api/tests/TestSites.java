@@ -45,6 +45,7 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.*;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -96,6 +97,10 @@ public class TestSites extends EnterpriseTestApi
     private String site6_id = "c-" + GUID.generate();
     private String site6_title = "b_" + GUID.generate();
     private String site6_description = "a_" + GUID.generate();
+
+    private String preset = "sitePreset";
+    private static final String AND_PREDICATE = " AND ";
+    private static final String OR_PREDICATE = " OR ";
 
     @Override
 	@Before
@@ -159,9 +164,11 @@ public class TestSites extends EnterpriseTestApi
 
     private void initializeNetwork3WithSites() throws Exception
     {
+        String siteDescription = "description";
+
         if (network3 == null)
         {
-            network3 = getRepoService().createNetwork(this.getClass().getName().toLowerCase()+"-2-"+RUNID, true);
+            network3 = getRepoService().createNetwork(this.getClass().getName().toLowerCase() + "-3-" + RUNID, true);
             network3.create();
 
             TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
@@ -178,16 +185,20 @@ public class TestSites extends EnterpriseTestApi
 
             Sites sitesProxy = publicApiClient.sites();
 
-            Site site = new SiteImpl("site A" + GUID.generate(), SiteVisibility.PRIVATE.toString());
+            Site site = new SiteImpl().withSiteId("a-" + GUID.generate()).withTitle("site A" + GUID.generate()).withDescription(siteDescription)
+                    .withVisibility(SiteVisibility.PRIVATE.toString()).withPreset(preset);
             site7 = sitesProxy.createSite(site);
 
-            site = new SiteImpl("site B" + GUID.generate(), SiteVisibility.PUBLIC.toString());
+            site = new SiteImpl().withSiteId("b-" + GUID.generate()).withTitle("site B" + GUID.generate()).withDescription(siteDescription)
+                    .withVisibility(SiteVisibility.PUBLIC.toString()).withPreset(preset);
             site8 = sitesProxy.createSite(site);
 
-            site = new SiteImpl("site C" + GUID.generate(), SiteVisibility.PUBLIC.toString());
+            site = new SiteImpl().withSiteId("c-" + GUID.generate()).withTitle("site C" + GUID.generate()).withDescription(siteDescription)
+                    .withVisibility(SiteVisibility.PUBLIC.toString()).withPreset(preset);
             site9 = sitesProxy.createSite(site);
 
-            site = new SiteImpl("site D" + GUID.generate(), SiteVisibility.MODERATED.toString());
+            site = new SiteImpl().withSiteId("d-" + GUID.generate()).withTitle("site D" + GUID.generate()).withDescription(siteDescription)
+                    .withVisibility(SiteVisibility.MODERATED.toString()).withPreset("site-dashboard");
             site10 = sitesProxy.createSite(site);
         }
     }
@@ -980,15 +991,25 @@ public class TestSites extends EnterpriseTestApi
        return sitesProxy.getSites(createParams(paging, params));
     }
 
-    private ListResponse<Site> listSitesWithWhere(final Paging paging, String siteVisibility) throws Exception
+    private ListResponse<Site> listSitesWithWhere(final Paging paging, Map<String, String> filters, String predicate) throws Exception
     {
         final Sites sitesProxy = publicApiClient.sites();
 
+        String visibility = filters.get("visibility");
+        String preset = filters.get("preset");
+        String pred = predicate;
+
         final Map<String, String> params = new HashMap<>();
-        if (siteVisibility != null)
+        StringBuilder sb = new StringBuilder();
+        if (visibility != null || preset != null)
         {
-            params.put("where", "(visibility=" + siteVisibility + ")");
+            sb.append("(");
+            sb.append(visibility != null ? "visibility=" + visibility : "");
+            sb.append(pred != null ? pred : "");
+            sb.append(preset != null ? "preset='" + preset + "'" : "");
+            sb.append(")");
         }
+        params.put("where", sb.toString());
 
         return sitesProxy.getSites(createParams(paging, params));
     }
@@ -999,8 +1020,11 @@ public class TestSites extends EnterpriseTestApi
         int totalResults = 1;
         Paging paging = getPaging(null, null, totalResults, totalResults);
 
+        Map<String, String> filters = new HashMap<String, String>();
+        filters.put("visibility", SiteVisibility.PRIVATE.name());
+
         // list sites
-        ListResponse<Site> resp = listSitesWithWhere(null, SiteVisibility.PRIVATE.name());
+        ListResponse<Site> resp =  listSitesWithWhere(null, filters, null);
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
@@ -1015,8 +1039,11 @@ public class TestSites extends EnterpriseTestApi
         int totalResults = 2;
         Paging paging = getPaging(null, null, totalResults, totalResults);
 
+        Map<String, String> filters = new HashMap<String, String>();
+        filters.put("visibility", SiteVisibility.PUBLIC.name());
+
         // list sites
-        ListResponse<Site> resp = listSitesWithWhere(null, SiteVisibility.PUBLIC.name());
+        ListResponse<Site> resp = listSitesWithWhere(null, filters, null);
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
@@ -1034,8 +1061,11 @@ public class TestSites extends EnterpriseTestApi
         int totalResults = 2;
         Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
 
+        Map<String, String> filters = new HashMap<String, String>();
+        filters.put("visibility", SiteVisibility.PUBLIC.name());
+
         // list sites
-        ListResponse<Site> resp = listSitesWithWhere(paging, SiteVisibility.PUBLIC.name());
+        ListResponse<Site> resp = listSitesWithWhere(paging, filters, null);
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
@@ -1050,8 +1080,11 @@ public class TestSites extends EnterpriseTestApi
         int totalResults = 1;
         Paging paging = getPaging(null, null, totalResults, totalResults);
 
+        Map<String, String> filters = new HashMap<String, String>();
+        filters.put("visibility", SiteVisibility.MODERATED.name());
+
         // list sites
-        ListResponse<Site> resp = listSitesWithWhere(null, SiteVisibility.MODERATED.name());
+        ListResponse<Site> resp = listSitesWithWhere(null, filters, null);
 
         // check results
         List<SiteImpl> expectedList = new LinkedList<>();
@@ -1064,7 +1097,10 @@ public class TestSites extends EnterpriseTestApi
     {
         try
         {
-            listSitesWithWhere(null, "invalidVisibility");
+            Map<String, String> filters = new HashMap<String, String>();
+            filters.put("visibility", "invalidVisibility");
+
+            listSitesWithWhere(null, filters, null);
             fail("");
         }
         catch (PublicApiException e)
@@ -1073,6 +1109,63 @@ public class TestSites extends EnterpriseTestApi
         }
     }
 
+    public void testListSitesWhereByVisibilityORPreset() throws Exception
+    {
+        // paging
+        int totalResults = 2;
+        Paging paging = getPaging(null, null, totalResults, totalResults);
+
+        Map<String, String> filters = new HashMap<String, String>();
+        filters.put("visibility", SiteVisibility.PRIVATE.name());
+        filters.put("preset", "site-dashboard");
+
+        ListResponse<Site> resp =  listSitesWithWhere(null, filters, OR_PREDICATE);
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add((SiteImpl) site7);
+        expectedList.add((SiteImpl) site10);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    public void testListSitesWherePreset() throws Exception
+    {
+        // paging
+        int totalResults = 1;
+        Paging paging = getPaging(null, null, totalResults, totalResults);
+
+        Map<String, String> filters = new HashMap<String, String>();
+        filters.put("preset", "site-dashboard");
+        ListResponse<Site> resp = listSitesWithWhere(null, filters, null);
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add((SiteImpl) site10);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    public void testListSitesWherePresetNonexistent() throws Exception
+    {
+        Map<String, String> filters = new HashMap<String, String>();
+        filters.put("preset", "nonexistentPreset");
+        listSitesWithWhere(null, filters, null);
+    }
+
+    public void testListSitesWhereVisibilityANDPreset() throws Exception
+    {
+        try
+        {
+            Map<String, String> filters = new HashMap<String, String>();
+            filters.put("visibility", SiteVisibility.PUBLIC.name());
+            filters.put("preset", "sitePreset");
+            listSitesWithWhere(null, filters, AND_PREDICATE);
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+        }
+    }
     @Test
     public void testListSitesWhereExpected() throws Exception
     {
@@ -1084,6 +1177,11 @@ public class TestSites extends EnterpriseTestApi
         testListSitesWhereSiteVisibilityPublicAndSkipCount();
         testListSitesWhereSiteVisibilityModerated();
         testListSitesWhereSiteVisibilityInvalid();
+
+        testListSitesWherePreset();
+        testListSitesWherePresetNonexistent();
+        testListSitesWhereVisibilityANDPreset();
+        testListSitesWhereByVisibilityORPreset();
     }
 
 

@@ -98,11 +98,11 @@ public abstract class QueryHelper
      * Default implementation.  Override the methods you are interested in. If you don't
      * override the methods then an InvalidQueryException will be thrown.
      */
-    private static final String UNSUPPORTED_TEXT = "Unsupported Predicate";
-    private static final InvalidQueryException UNSUPPORTED = new InvalidQueryException(UNSUPPORTED_TEXT);
-
     public static class WalkerCallbackAdapter implements WalkerCallback
     {
+        private static final String UNSUPPORTED_TEXT = "Unsupported Predicate";
+        protected static final InvalidQueryException UNSUPPORTED = new InvalidQueryException(UNSUPPORTED_TEXT);
+
         @Override
         public void exists(String propertyName, boolean negated) { throw UNSUPPORTED;}
         @Override

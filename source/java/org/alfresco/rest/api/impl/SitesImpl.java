@@ -76,7 +76,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
-import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
+import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -144,7 +144,7 @@ public class SitesImpl implements Sites
     }
 
     // list children filtering (via where clause)
-    private final static Set<String> LIST_SITES_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_VISIBILITY }));
+    private final static Set<String> LIST_SITES_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_VISIBILITY, PARAM_PRESET }));
 
     protected Nodes nodes;
     protected People people;
@@ -759,16 +759,21 @@ public class SitesImpl implements Sites
         Query q = parameters.getQuery();
         if (q != null)
         {
-            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(LIST_SITES_EQUALS_QUERY_PROPERTIES, null);
+            filterProps = new ArrayList<FilterProp>();
+            MapBasedQueryWalkerOrSupported propertyWalker = new MapBasedQueryWalkerOrSupported(LIST_SITES_EQUALS_QUERY_PROPERTIES, null);
             QueryHelper.walk(q, propertyWalker);
 
             String siteVisibilityStr = propertyWalker.getProperty(PARAM_VISIBILITY, WhereClauseParser.EQUALS, String.class);
             if (siteVisibilityStr != null && !siteVisibilityStr.isEmpty())
             {
                 SiteVisibility siteVisibility = getSiteVisibilityFromParam(siteVisibilityStr);
-
-                filterProps = new ArrayList<FilterProp>();
                 filterProps.add(new FilterPropString(SiteModel.PROP_SITE_VISIBILITY, siteVisibility.name(), FilterPropString.FilterTypeString.EQUALS));
+            }
+
+            String sitePreset = propertyWalker.getProperty(PARAM_PRESET, WhereClauseParser.EQUALS, String.class);
+            if (sitePreset != null && !sitePreset.isEmpty())
+            {
+                filterProps.add(new FilterPropString(SiteModel.PROP_SITE_PRESET, sitePreset, FilterPropString.FilterTypeString.EQUALS));
             }
         }
 
@@ -779,7 +784,7 @@ public class SitesImpl implements Sites
     {
         Map<QName, Serializable> propVals = new HashMap<>();
         propVals.put(SiteModel.PROP_SITE_VISIBILITY, siteMembership.getSiteInfo().getVisibility().name());
-
+        propVals.put(SiteModel.PROP_SITE_PRESET, siteMembership.getSiteInfo().getSitePreset());
         return includeFilter(propVals, filterProps);
     }
 
@@ -1097,7 +1102,7 @@ public class SitesImpl implements Sites
         SiteInfo siteInfo = null;
         try
         {
-            siteInfo = siteService.createSite("sitePreset", site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
+            siteInfo = siteService.createSite(site.getPreset(), site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
         }
         catch (SiteServiceException sse)
         {

@@ -102,6 +102,7 @@
    </profiles>
 
    <properties>
+      <alfresco.rm.version>${project.version}</alfresco.rm.version>
       <alfresco.db.params>AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;MVCC=FALSE;LOCK_MODE=0;IGNORECASE=TRUE</alfresco.db.params>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.7</maven.build.sourceVersion>
@@ -109,6 +110,7 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+
 
 	  <!-- license properties -->
 	  <license.update.dryrun>true</license.update.dryrun>
@@ -152,15 +154,15 @@
                         <regexPropertySetting>
                            <name>rm.module.repo.version.min</name>
                            <value>${alfresco.version}</value>
-                           <regex>([0-9\.]*[0-9]).*</regex>
-                           <replacement>$1</replacement>
+-                           <regex>(\d+)\.(\d+).*</regex>
+-                           <replacement>$1.$2</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
                         </regexPropertySetting>
                         <regexPropertySetting>
                            <name>rm.module.version</name>
-                           <value>${project.version}</value>
-                           <regex>(\d+)\.(\d+).*</regex>
-                           <replacement>$1.$2</replacement>
+                           <value>${alfresco.rm.version}</value>
+                           <regex>([0-9\.]*[0-9]).*</regex>
+                           <replacement>$1</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
                         </regexPropertySetting>
                      </regexPropertySettings>

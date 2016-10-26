@@ -28,27 +28,34 @@
 package org.alfresco.rm.rest.api.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.rest.api.impl.SiteImportPackageHandler;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.model.RMSite;
 import org.alfresco.rm.rest.api.model.RMSiteCompliance;
 import org.alfresco.rm.rest.api.model.SiteUpdate;
+import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.view.Location;
+import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -71,12 +78,17 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
     private static final String RM_SITE_MANAGER_ROLE = "SiteManager";
     private static final String RM_SITE_TITLE = "RM Site Title";
     private static final String RM_SITE_DESCRIPTION = "RM Site Description";
+    private static final String RM_SITE_PRESET = "rm-site-dashboard";
     @InjectMocks
     private RMSitesImpl rmSitesImpl;
     @Mock
     private SiteService mockedSiteService;
     @Mock
     AuthenticationUtil mockAuthenticationUtil;
+    @Mock
+    private ImporterService mockedImporterService;
+    @Mock
+    private FavouritesService mockedFavouritesService;
 
     @Before
     public void before()
@@ -87,7 +99,54 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
     @Test
     public void createRMSite() throws Exception
     {
-        //TODO
+        RMSite toCreate = new RMSite();
+        toCreate.setTitle(RM_SITE_TITLE);
+        toCreate.setDescription(RM_SITE_DESCRIPTION);
+
+        //mocked SiteInfo
+        SiteInfo mockedSiteInfo = mock(SiteInfo.class);
+        NodeRef siteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedSiteInfo.getShortName()).thenReturn(RM_SITE_ID);
+        when(mockedSiteInfo.getNodeRef()).thenReturn(siteNodeRef);
+        when(mockedSiteInfo.getDescription()).thenReturn(RM_SITE_DESCRIPTION);
+        when(mockedSiteInfo.getTitle()).thenReturn(RM_SITE_TITLE);
+        when(mockedSiteInfo.getVisibility()).thenReturn(SiteVisibility.PUBLIC);
+
+        when(mockedSiteService.createSite(any(String.class), any(String.class), any(String.class), any(String.class), any(SiteVisibility.class), any(QName.class))).thenReturn(mockedSiteInfo);
+
+        //mock Parameters
+        Parameters mockedParameters = mock(Parameters.class);
+        //call createRMSite method
+        RMSite createdRMSite = rmSitesImpl.createRMSite(toCreate, mockedParameters);
+
+        //check siteService.createSite parameters
+        ArgumentCaptor<String> sitePresetCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> idCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> descriptionCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<SiteVisibility> visibilityCaptor = ArgumentCaptor.forClass(SiteVisibility.class);
+        ArgumentCaptor<QName> siteTypeCaptor = ArgumentCaptor.forClass(QName.class);
+        verify(mockedSiteService, times(1)).createSite(sitePresetCaptor.capture(), idCaptor.capture(), titleCaptor.capture(), descriptionCaptor.capture(), visibilityCaptor.capture(), siteTypeCaptor.capture());
+        assertEquals(RM_SITE_PRESET, sitePresetCaptor.getValue());
+        assertEquals(RM_SITE_ID, idCaptor.getValue());
+        assertEquals(RM_SITE_TITLE, titleCaptor.getValue());
+        assertEquals(RM_SITE_DESCRIPTION, descriptionCaptor.getValue());
+        assertEquals(SiteVisibility.PUBLIC, visibilityCaptor.getValue());
+        assertEquals(RecordsManagementModel.TYPE_RM_SITE, siteTypeCaptor.getValue());
+
+        verify(mockedImporterService, times(1)).importView(any(SiteImportPackageHandler.class), any(Location.class), any(ImporterBinding.class), eq(null));
+        verify(mockedSiteService, times(1)).createContainer(RM_SITE_ID, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+        verify(mockedFavouritesService, times(1)).addFavourite(any(String.class), any(NodeRef.class));
+
+        //verify returned values for RM site are the right ones
+        assertEquals(RMSiteCompliance.STANDARD, createdRMSite.getCompliance());
+        assertEquals(null, createdRMSite.getRole());
+        assertEquals(RM_SITE_ID, createdRMSite.getId());
+        assertEquals(siteNodeRef.getId(), createdRMSite.getGuid());
+        assertEquals(RM_SITE_DESCRIPTION, createdRMSite.getDescription());
+        assertEquals(RM_SITE_TITLE, createdRMSite.getTitle());
+        assertEquals(SiteVisibility.PUBLIC, createdRMSite.getVisibility());
+        //TODO verify for skypAddToFavorites parameter, also check with DOD type
     }
 
     @Test
@@ -96,6 +155,8 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         String siteId = RM_SITE_ID;
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         NodeRef siteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+
+        //mock SiteInfo
         when(mockedSiteInfo.getShortName()).thenReturn(siteId);
         when(mockedSiteInfo.getNodeRef()).thenReturn(siteNodeRef);
         when(mockedSiteInfo.getDescription()).thenReturn(RM_SITE_DESCRIPTION)
@@ -109,25 +170,35 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         when(mockedSiteService.getSite(siteId)).thenReturn(mockedSiteInfo);
         when(mockedSiteService.getMembersRole(eq(siteId), any(String.class))).thenReturn(RM_SITE_MANAGER_ROLE);
 
+        //mock UpdateSite
         SiteUpdate mockedSiteUpdate= mock(SiteUpdate.class);
         when(mockedSiteUpdate.getDescription()).thenReturn(RM_SITE_DESCRIPTION_AFTER_UPDATE);
         when(mockedSiteUpdate.getTitle()).thenReturn(RM_SITE_TITLE_AFTER_UPDATE);
         when(mockedSiteUpdate.getVisibility()).thenReturn(null);
 
+        //mock Parameters
         Parameters mockedParameters = mock(Parameters.class);
+
+        //call updateRMSite method
         RMSite updatedRMSite = rmSitesImpl.updateRMSite(siteId, mockedSiteUpdate, mockedParameters);
 
+        //check if the new title is set to siteInfo
         ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockedSiteInfo, times(1)).setTitle(titleCaptor.capture());
+        assertEquals(RM_SITE_TITLE_AFTER_UPDATE, titleCaptor.getValue());
+
+        //check that new description is set to siteInfo
         ArgumentCaptor<String> descriptionCaptor = ArgumentCaptor.forClass(String.class);
         verify(mockedSiteInfo, times(1)).setDescription(descriptionCaptor.capture());
-        verify(mockedSiteInfo, never()).setVisibility(any(SiteVisibility.class));
-
-        verify(mockedSiteService, times(1)).updateSite(any(SiteInfo.class));
-
-        assertEquals(RM_SITE_TITLE_AFTER_UPDATE, titleCaptor.getValue());
         assertEquals(RM_SITE_DESCRIPTION_AFTER_UPDATE, descriptionCaptor.getValue());
 
+        //check that site visibility is not changed
+        verify(mockedSiteInfo, never()).setVisibility(any(SiteVisibility.class));
+
+        //check that updateSite is called
+        verify(mockedSiteService, times(1)).updateSite(any(SiteInfo.class));
+
+        //verify returned values for RM site are the right ones
         assertEquals(RMSiteCompliance.STANDARD, updatedRMSite.getCompliance());
         assertEquals(RM_SITE_MANAGER_ROLE, updatedRMSite.getRole());
         assertEquals(siteId, updatedRMSite.getId());

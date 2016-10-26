@@ -38,7 +38,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMSites;
 import org.alfresco.rm.rest.api.model.RMSite;
 import org.alfresco.rm.rest.api.model.SiteUpdate;
-import org.alfresco.service.cmr.site.SiteVisibility;
 
 /**
  * RM Site operations
@@ -120,7 +119,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
         // Bind valid fields to a SiteUpdate instance.
         final String title = site.getTitle();
         final String description = site.getDescription();
-        SiteUpdate update = new SiteUpdate(title, description, SiteVisibility.PUBLIC);
+        SiteUpdate update = new SiteUpdate(title, description, null);
 
         return sites.updateRMSite(siteId, update, parameters);
     }

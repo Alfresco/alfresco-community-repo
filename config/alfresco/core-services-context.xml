@@ -384,7 +384,6 @@
                 <value>alfresco.messages.authentication</value>
                 <value>alfresco.messages.file-folder-service</value>
                 <value>alfresco.messages.custommodel-service</value>
-                <value>alfresco.messages.doclink-service</value>
             </list>
         </property>
     </bean>

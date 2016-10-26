@@ -62,7 +62,7 @@ public class RMSite extends Site
         this.title = site.getTitle();
         this.description = site.getDescription();
         this.visibility = site.getVisibility();
-        this.role = getRole();
+        this.role = site.getRole();
         this.compliance = compliance;
     }
 

@@ -79,6 +79,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
     private static final String RM_SITE_TITLE = "RM Site Title";
     private static final String RM_SITE_DESCRIPTION = "RM Site Description";
     private static final String RM_SITE_PRESET = "rm-site-dashboard";
+    private static final String PARAM_SKIP_ADDTOFAVORITES = "skipAddToFavorites";
     @InjectMocks
     private RMSitesImpl rmSitesImpl;
     @Mock
@@ -97,7 +98,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
     }
 
     @Test
-    public void createRMSite() throws Exception
+    public void createRMStandardSite() throws Exception
     {
         RMSite toCreate = new RMSite();
         toCreate.setTitle(RM_SITE_TITLE);
@@ -146,7 +147,90 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         assertEquals(RM_SITE_DESCRIPTION, createdRMSite.getDescription());
         assertEquals(RM_SITE_TITLE, createdRMSite.getTitle());
         assertEquals(SiteVisibility.PUBLIC, createdRMSite.getVisibility());
-        //TODO verify for skypAddToFavorites parameter, also check with DOD type
+    }
+
+    @Test
+    public void createRMDOD5015Site() throws Exception
+    {
+        RMSite toCreate = new RMSite();
+        toCreate.setTitle(RM_SITE_TITLE);
+        toCreate.setDescription(RM_SITE_DESCRIPTION);
+        toCreate.setCompliance(RMSiteCompliance.DOD5015);
+
+        //mocked SiteInfo
+        SiteInfo mockedSiteInfo = mock(SiteInfo.class);
+        NodeRef siteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedSiteInfo.getShortName()).thenReturn(RM_SITE_ID);
+        when(mockedSiteInfo.getNodeRef()).thenReturn(siteNodeRef);
+        when(mockedSiteInfo.getDescription()).thenReturn(RM_SITE_DESCRIPTION);
+        when(mockedSiteInfo.getTitle()).thenReturn(RM_SITE_TITLE);
+        when(mockedSiteInfo.getVisibility()).thenReturn(SiteVisibility.PUBLIC);
+
+        when(mockedSiteService.createSite(any(String.class), any(String.class), any(String.class), any(String.class), any(SiteVisibility.class), any(QName.class))).thenReturn(mockedSiteInfo);
+
+        //mock Parameters
+        Parameters mockedParameters = mock(Parameters.class);
+        //call createRMSite method
+        RMSite createdRMSite = rmSitesImpl.createRMSite(toCreate, mockedParameters);
+
+        //check siteService.createSite parameters
+        ArgumentCaptor<String> sitePresetCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> idCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> titleCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> descriptionCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<SiteVisibility> visibilityCaptor = ArgumentCaptor.forClass(SiteVisibility.class);
+        ArgumentCaptor<QName> siteTypeCaptor = ArgumentCaptor.forClass(QName.class);
+        verify(mockedSiteService, times(1)).createSite(sitePresetCaptor.capture(), idCaptor.capture(), titleCaptor.capture(), descriptionCaptor.capture(), visibilityCaptor.capture(), siteTypeCaptor.capture());
+        assertEquals(RM_SITE_PRESET, sitePresetCaptor.getValue());
+        assertEquals(RM_SITE_ID, idCaptor.getValue());
+        assertEquals(RM_SITE_TITLE, titleCaptor.getValue());
+        assertEquals(RM_SITE_DESCRIPTION, descriptionCaptor.getValue());
+        assertEquals(SiteVisibility.PUBLIC, visibilityCaptor.getValue());
+        assertEquals(DOD5015Model.TYPE_DOD_5015_SITE, siteTypeCaptor.getValue());
+
+        verify(mockedImporterService, times(1)).importView(any(SiteImportPackageHandler.class), any(Location.class), any(ImporterBinding.class), eq(null));
+        verify(mockedSiteService, times(1)).createContainer(RM_SITE_ID, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+        verify(mockedFavouritesService, times(1)).addFavourite(any(String.class), any(NodeRef.class));
+
+        //verify returned values for RM site are the right ones
+        assertEquals(RMSiteCompliance.DOD5015, createdRMSite.getCompliance());
+        assertEquals(null, createdRMSite.getRole());
+        assertEquals(RM_SITE_ID, createdRMSite.getId());
+        assertEquals(siteNodeRef.getId(), createdRMSite.getGuid());
+        assertEquals(RM_SITE_DESCRIPTION, createdRMSite.getDescription());
+        assertEquals(RM_SITE_TITLE, createdRMSite.getTitle());
+        assertEquals(SiteVisibility.PUBLIC, createdRMSite.getVisibility());
+    }
+
+    @Test
+    public void createRMSiteWithSkipAddToFavouritesParameter() throws Exception
+    {
+        RMSite toCreate = new RMSite();
+        toCreate.setTitle(RM_SITE_TITLE);
+        toCreate.setDescription(RM_SITE_DESCRIPTION);
+
+        //mocked SiteInfo
+        SiteInfo mockedSiteInfo = mock(SiteInfo.class);
+        NodeRef siteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedSiteInfo.getShortName()).thenReturn(RM_SITE_ID);
+        when(mockedSiteInfo.getNodeRef()).thenReturn(siteNodeRef);
+        when(mockedSiteInfo.getDescription()).thenReturn(RM_SITE_DESCRIPTION);
+        when(mockedSiteInfo.getTitle()).thenReturn(RM_SITE_TITLE);
+        when(mockedSiteInfo.getVisibility()).thenReturn(SiteVisibility.PUBLIC);
+
+        when(mockedSiteService.createSite(any(String.class), any(String.class), any(String.class), any(String.class), any(SiteVisibility.class), any(QName.class))).thenReturn(mockedSiteInfo);
+
+        //mock Parameters
+        Parameters mockedParameters = mock(Parameters.class);
+        when(mockedParameters.getParameter(PARAM_SKIP_ADDTOFAVORITES)).thenReturn("true");
+
+        //call createRMSite method
+        rmSitesImpl.createRMSite(toCreate, mockedParameters);
+
+        verify(mockedSiteService, times(1)).createSite(RM_SITE_PRESET, RM_SITE_ID, RM_SITE_TITLE, RM_SITE_DESCRIPTION, SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
+        verify(mockedImporterService, times(1)).importView(any(SiteImportPackageHandler.class), any(Location.class), any(ImporterBinding.class), eq(null));
+        verify(mockedSiteService, times(1)).createContainer(RM_SITE_ID, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+        verify(mockedFavouritesService, never()).addFavourite(any(String.class), any(NodeRef.class));
     }
 
     @Test

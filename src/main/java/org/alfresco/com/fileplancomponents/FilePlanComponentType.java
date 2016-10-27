@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.com;
+package org.alfresco.com.fileplancomponents;
 
 /**
  * File plan component type enumeration

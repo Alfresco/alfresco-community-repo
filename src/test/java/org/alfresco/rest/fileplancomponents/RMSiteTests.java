@@ -11,10 +11,14 @@
  */
 package org.alfresco.rest.fileplancomponents;
 
+import static org.alfresco.com.site.RMSiteCompliance.DOD5015;
 import static org.alfresco.com.site.RMSiteCompliance.STANDARD;
 import static org.alfresco.com.site.RMSiteFields.COMPLIANCE;
 import static org.alfresco.com.site.RMSiteFields.DESCRIPTION;
 import static org.alfresco.com.site.RMSiteFields.TITLE;
+import static org.alfresco.rest.TestData.ANOTHER_ADMIN;
+import static org.alfresco.rest.TestData.DEFAULT_EMAIL;
+import static org.alfresco.rest.TestData.DEFAULT_PASSWORD;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -26,9 +30,12 @@ import static org.testng.Assert.assertEquals;
 
 import com.google.gson.JsonObject;
 
+import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.site.RMSite;
+import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -48,25 +55,27 @@ public class RMSiteTests extends BaseRestTest
     private static final String RM_ID = "rm";
     private static final String RM_TITLE = "Records Management";
     private static final String RM_DESCRIPTION = "Records Management Site";
+    @Autowired
+    private UserService userService;
 
     @Test
     (
-            description = "Create RM site as admin user with standard Compliance"
+            description = "Create RM site as admin user with Standard Compliance"
     )
     public void createRMSiteAsAdminUser() throws Exception
     {
-        RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         if (siteRMExist())
         {
             //Delete the RM site
             rmSiteAPI.deleteRMSite();
         }
         // Build the RM site properties
-        JsonObject rmSiteProperties = buildObject().
-                add(TITLE, RM_TITLE).
-                add(DESCRIPTION, RM_DESCRIPTION).
-                add(COMPLIANCE, STANDARD.toString()).
-                getJson();
+        JsonObject rmSiteProperties = buildObject()
+                .add(TITLE, RM_TITLE)
+                .add(DESCRIPTION, RM_DESCRIPTION)
+                .add(COMPLIANCE, STANDARD.toString())
+                .getJson();
 
         // Create the RM site
         RMSite rmSite = rmSiteAPI.createRMSite(rmSiteProperties);
@@ -97,11 +106,11 @@ public class RMSiteTests extends BaseRestTest
         String newDescription = RM_DESCRIPTION + "createRMSiteWhenSiteExists";
 
         // Build the RM site properties
-        JsonObject rmSiteProperties = buildObject().
-                add(TITLE, newTitle).
-                add(DESCRIPTION, newDescription).
-                add(COMPLIANCE, STANDARD.toString()).
-                getJson();
+        JsonObject rmSiteProperties = buildObject()
+                .add(TITLE, newTitle)
+                .add(DESCRIPTION, newDescription)
+                .add(COMPLIANCE, STANDARD.toString())
+                .getJson();
 
         // Create the RM site
         rmSiteAPI.createRMSite(rmSiteProperties);
@@ -126,16 +135,15 @@ public class RMSiteTests extends BaseRestTest
     }
 
     @Test
-            (
-                    description = "GET RM site as admin user"
-            )
+    (
+            description = "GET RM site as admin user"
+    )
     public void getRMSite() throws Exception
     {
         RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Get the RM site
         RMSite rmSite=rmSiteAPI.getSite();
-
         if (!siteRMExist())
         {
             // Verify the status code
@@ -150,6 +158,48 @@ public class RMSiteTests extends BaseRestTest
             assertEquals(rmSite.getCompliance(), STANDARD);
             assertEquals(rmSite.getVisibility(), PUBLIC);
         }
-
     }
-}
+
+    @Test
+    (
+            description = "Create RM site as an admin user created with DOD compliance"
+    )
+    public void createRMSiteAsAnotherAdminUser() throws Exception
+    {
+        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        if (siteRMExist())
+        {
+            //Delete the RM site
+            rmSiteAPI.deleteRMSite();
+        }
+        rmSiteAPI.usingRestWrapper().disconnect();
+        userService.create(dataUser.getAdminUser().getUsername(),
+                dataUser.getAdminUser().getPassword(),
+                ANOTHER_ADMIN,
+                DEFAULT_PASSWORD,
+                DEFAULT_EMAIL,
+                ANOTHER_ADMIN,
+                ANOTHER_ADMIN);
+        UserModel userModel=new UserModel(ANOTHER_ADMIN,DEFAULT_PASSWORD);
+        rmSiteAPI.usingRestWrapper().authenticateUser(userModel);
+        // Build the RM site properties
+        JsonObject rmSiteProperties = buildObject()
+                .add(TITLE, RM_TITLE)
+                .add(DESCRIPTION, RM_DESCRIPTION)
+                .add(COMPLIANCE, DOD5015.toString())
+                .getJson();
+
+        // Create the RM site
+        RMSite rmSite = rmSiteAPI.createRMSite(rmSiteProperties);
+
+        // Verify the status code
+        rmSiteAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+
+        // Verify the returned file plan component
+        assertEquals(rmSite.getId(), RM_ID);
+        assertEquals(rmSite.getTitle(), RM_TITLE);
+        assertEquals(rmSite.getDescription(), RM_DESCRIPTION);
+        assertEquals(rmSite.getCompliance(), DOD5015);
+        assertEquals(rmSite.getVisibility(), PUBLIC);
+    }
+   }

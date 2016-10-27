@@ -26,7 +26,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
- * FIXME: Document me :)
+ *  File plan component REST API Wrapper
+ *
+ * @author Tuna Aksoy
+ * @author Rodica Sutu
+ * @since 1.0
  */
 @Component
 @Scope (value = "prototype")
@@ -35,8 +39,14 @@ public class RMSiteAPI extends RestAPI
     /**
      * Get the RM site
      *
-     * @return FIXME: Document me :)
-     * @throws FIXME: Document me :)
+     * @return The {@link RMSite} for the given file plan component id
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>Api Response code 400 Invalid parameter: GET request is suported only for the RM site</li>
+     *  <li>Api Response code 401 If authentication failed</li>
+     *  <li>Api Response code 409 If RM Site does not exist</li>
+     *  <li>Api Response code default Unexpected error</li>
+     * </ul>
      */
     public RMSite getSite() throws Exception
     {
@@ -49,9 +59,15 @@ public class RMSiteAPI extends RestAPI
     /**
      * Create the RM site
      *
-     * @param rmSiteProperties FIXME: Document me :)
-     * @return FIXME: Document me :)
-     * @throws Exception FIXME: Document me :)
+     * @param rmSiteProperties The properties of the rm site to be created
+     * @return The {@link RMSite} with the given properties
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>Api Response code 400 Invalid parameter: title, or description exceed the maximum length; or siteBodyCreate invalid</li>
+     *  <li>Api Response code 401 If authentication failed</
+     *  <li>Api Response code 409 RM Site already exists</li>
+     *  <li>Api Response code default Unexpected error</li>
+     * </ul>
      */
     public RMSite createRMSite(JsonObject rmSiteProperties) throws Exception
     {
@@ -64,8 +80,14 @@ public class RMSiteAPI extends RestAPI
 
     /**
      * Delete RM site
-     *
-     * @throws Exception FIXME: Document me :)
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>Api Response code 400 Invalid parameter: DELETE request is suported only for the RM site</li>
+     *  <li>Api Response code 401 If authentication failed</
+     *  <li>Api Response code 403 Current user does not have permission to delete the site that is visible to them.</li>
+     *  <li>Api Response code 404 RM site does not exist</li>
+     *  <li>Api Response code default Unexpected error</li>
+     * </ul>
      */
     public void deleteRMSite() throws Exception
     {
@@ -78,9 +100,16 @@ public class RMSiteAPI extends RestAPI
     /**
      * Update RM site
      *
-     * @param rmSiteProperties FIXME: Document me :)
-     * @return FIXME: Document me :)
-     * @throws Exception FIXME: Document me :)
+     * @param rmSiteProperties The properties to be updated
+     * @return The updated {@link RMSite}
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>Api Response code 400 the update request is invalid {@code rmSiteProperties} is invalid</li>
+     *  <li>Api Response code 401 If authentication fails</li>
+     *  <li>Api Response code 403 does not have permission to update {@code RMSite}</li>
+     *  <li>Api Response code 404 {@code RMSite} does not exist</li>
+     *  <li>Api Response code default Unexpected error,model integrity exception</li>
+     * </ul>
      */
     public RMSite updateRMSite(JsonObject rmSiteProperties) throws Exception
     {
@@ -90,4 +119,5 @@ public class RMSiteAPI extends RestAPI
                 "sites/rm"
         ));
     }
+
 }

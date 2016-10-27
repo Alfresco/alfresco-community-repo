@@ -12,9 +12,18 @@
 package org.alfresco.com.site;
 
 /**
- * FIXME: Document me :)
- *
+ *RM Site properties from the RM Model Schema
+ *"entry": {
+ *      "id": "string",
+ *      "guid": "string",
+ *      "title": "string",
+ *      "description": "string",
+ *      "visibility": "{@link org.springframework.social.alfresco.api.entities.Site.Visibility}",
+ *      "compliance": "{@link RMSiteCompliance}",
+ *      "role": "{@link org.alfresco.utility.constants.UserRole}"
+ *}
  * @author Tuna Aksoy
+ * @author Rodica Sutu
  * @since 1.0
  */
 public class RMSiteFields
@@ -23,4 +32,6 @@ public class RMSiteFields
     public static final String COMPLIANCE = "compliance";
     public static final String TITLE = "title";
     public static final String DESCRIPTION = "description";
+    public static final String VISIBILITY ="visibility";
+    public static final String ROLE = "role";
 }

@@ -17,7 +17,7 @@ import org.alfresco.com.site.RMSiteCompliance;
 import org.alfresco.rest.model.RestSiteModel;
 
 /**
- * FIXME: Document me :)
+ * POJO for RM Site component
  *
  * @author Rodica Sutu
  * @since 1.0
@@ -28,9 +28,8 @@ public class RMSite extends RestSiteModel
     protected RMSiteCompliance compliance;
 
     /**
-     * FIXME: Document me :)
-     *
-     * @param compliance the compliance to set
+     * Helper method to set RM site compliance
+     * @param compliance {@link RMSiteCompliance} the compliance to set
      */
     public void setCompliance(RMSiteCompliance compliance)
     {
@@ -38,9 +37,8 @@ public class RMSite extends RestSiteModel
     }
 
     /**
-     * FIXME: Document me :)
-     *
-     * @return FIXME: Document me :)
+     * Helper method to get RM site compliance
+     * @return compliance the RM Site compliance to get
      */
     public RMSiteCompliance getCompliance()
     {

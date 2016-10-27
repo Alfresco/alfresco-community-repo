@@ -12,7 +12,7 @@
 package org.alfresco.com.site;
 
 /**
- * FIXME: Document me :)
+ * RM Site compliance
  *
  * @author Tuna Aksoy
  * @since 1.0

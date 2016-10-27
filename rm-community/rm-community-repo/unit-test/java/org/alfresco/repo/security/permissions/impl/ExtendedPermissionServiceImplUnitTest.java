@@ -34,6 +34,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
@@ -121,15 +123,21 @@ public class ExtendedPermissionServiceImplUnitTest extends BaseUnitTest
 	{
 		NodeRef nodeRef = generateCmContent("anyname");
 		String perm = AlfMock.generateText();
+		List<String> configuredReadPermissions = asList("ReadProperties", "ReadChildren");
+		List<String> configuredFilePermissions = asList("WriteProperties", "AddChildren");
+
+		extendedPermissionServiceImpl.setConfiguredReadPermissions("ReadProperties,ReadChildren");
+		extendedPermissionServiceImpl.setConfiguredFilePermissions("WriteProperties,AddChildren");
+
 		when(mockedPermissionProcessorRegistry.getPermissionPostProcessors())
 			.thenReturn(asList(mockedPermissionPostProcessor));
-		when(mockedPermissionPostProcessor.process(AccessStatus.UNDETERMINED, nodeRef, perm))
+		when(mockedPermissionPostProcessor.process(AccessStatus.UNDETERMINED, nodeRef, perm, configuredReadPermissions, configuredFilePermissions))
 	    	.thenReturn(AccessStatus.ALLOWED);
 	
 		AccessStatus result = extendedPermissionServiceImpl.hasPermission(nodeRef, perm);		
 
 		assertEquals(AccessStatus.ALLOWED, result);
-		verify(mockedPermissionPostProcessor).process(AccessStatus.UNDETERMINED, nodeRef, perm);
+		verify(mockedPermissionPostProcessor).process(AccessStatus.UNDETERMINED, nodeRef, perm, configuredReadPermissions, configuredFilePermissions);
 		verify(extendedPermissionServiceImpl).hasPermissionImpl(nodeRef, perm);
 	}
 }

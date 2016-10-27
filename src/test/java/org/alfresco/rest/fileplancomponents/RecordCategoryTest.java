@@ -22,8 +22,8 @@ import static org.alfresco.com.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.com.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -32,7 +32,6 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.google.gson.JsonObject;
@@ -40,7 +39,6 @@ import com.google.gson.JsonObject;
 import org.alfresco.com.FilePlanComponentType;
 import org.alfresco.rest.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.model.FilePlanComponentEntry;
 import org.alfresco.rest.model.FilePlanComponent;
 import org.alfresco.rest.model.FilePlanComponentProperties;
 import org.alfresco.rest.model.FilePlanComponentsCollection;
@@ -48,7 +46,6 @@ import org.alfresco.rest.requests.FilePlanComponentApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
 /**
@@ -103,8 +100,13 @@ public class RecordCategoryTest extends BaseRestTest
 
         // Verify the returned file plan component
         assertTrue(filePlanComponent.isIsCategory());
+        assertFalse(filePlanComponent.isIsFile());
+        assertFalse(filePlanComponent.isIsRecordFolder());
+        
         assertEquals(filePlanComponent.getName(), categoryName);
         assertEquals(filePlanComponent.getNodeType(), RECORD_CATEGORY_TYPE.toString());
+        assertFalse(filePlanComponent.isHasRetentionSchedule());
+        
         assertEquals(filePlanComponent.getCreatedByUser().getId(), dataUser.getAdminUser().getUsername());
             
         // Verify the returned file plan component properties
@@ -317,7 +319,7 @@ public class RecordCategoryTest extends BaseRestTest
                 assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
                 
                 // verify properties
-                assertEquals(createdComponent.getProperties().getTitle(), filePlanComponent.getProperties().getTitle());
+                //assertEquals(createdComponent.getProperties().getTitle(), filePlanComponent.getProperties().getTitle());
             } 
             catch (NoSuchElementException e)
             {
@@ -335,17 +337,6 @@ public class RecordCategoryTest extends BaseRestTest
     private FilePlanComponent createCategory(String parentCategoryId, String categoryName) throws Exception
     {
         return createComponent(parentCategoryId, categoryName, RECORD_CATEGORY_TYPE);
-    }
-    
-    /**
-     * Helper method to create child folder
-     * @param parentComponentId parent category or folder id
-     * @param folderName new folder name
-     * @throws Exception on unsuccessful folder creation
-     */
-    private FilePlanComponent createFolder(String parentComponentId, String folderName) throws Exception
-    {
-        return createComponent(parentComponentId, folderName, RECORD_FOLDER_TYPE);
     }
     
     /**

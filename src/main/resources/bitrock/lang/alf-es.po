@@ -406,8 +406,8 @@ msgstr "Solr1"
 msgid "Solr4"
 msgstr "Solr4"
 
-msgid "Some or all of the libraries needed to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext libcups libGLU\nYou are strongly advised to stop this installation and install the libraries.\nFor more information, see the LibreOffice documentation at http://docs.alfresco.com\n\nDo you want to continue with the installation?"
-msgstr "Algunas o todas las bibliotecas necesarias para que funcione LibreOffice no se encontraron en el sistema: fontconfig libSM libICE libXrender libXextlibcups libGLU\nLe recomendamos encarecidamente que anule esta instalación y que instale las bibliotecas.\nPara obtener más información, consulte la documentación de LibreOffice en http://docs.alfresco.com\n\n¿Desea continuar?"
+msgid "Some or all of the libraries needed to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext libcups libGLU libcairo2 libgl1-mesa-glx\nYou are strongly advised to stop this installation and install the libraries.\nFor more information, see the LibreOffice documentation at http://docs.alfresco.com\n\nDo you want to continue with the installation?"
+msgstr "Algunas o todas las bibliotecas necesarias para que funcione LibreOffice no se encontraron en el sistema: fontconfig libSM libICE libXrender libXext libcups libGLU libcairo2 libgl1-mesa-glx\nLe recomendamos encarecidamente que anule esta instalación y que instale las bibliotecas.\nPara obtener más información, consulte la documentación de LibreOffice en http://docs.alfresco.com\n\n¿Desea continuar?"
 
 msgid "We support PostgreSQL as service only."
 msgstr "Solo admitimos PostgreSQL como servicio."

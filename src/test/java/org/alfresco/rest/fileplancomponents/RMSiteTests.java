@@ -11,10 +11,12 @@
  */
 package org.alfresco.rest.fileplancomponents;
 
+import static org.alfresco.com.site.RMSiteCompliance.DOD5015;
 import static org.alfresco.com.site.RMSiteCompliance.STANDARD;
 import static org.alfresco.com.site.RMSiteFields.COMPLIANCE;
 import static org.alfresco.com.site.RMSiteFields.DESCRIPTION;
 import static org.alfresco.com.site.RMSiteFields.TITLE;
+import static org.alfresco.rest.TestData.ANOTHER_ADMIN;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -51,11 +53,11 @@ public class RMSiteTests extends BaseRestTest
 
     @Test
     (
-            description = "Create RM site as admin user with standard Compliance"
+            description = "Create RM site as admin user with Standard Compliance"
     )
     public void createRMSiteAsAdminUser() throws Exception
     {
-        RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         if (siteRMExist())
         {
             //Delete the RM site
@@ -135,7 +137,6 @@ public class RMSiteTests extends BaseRestTest
 
         // Get the RM site
         RMSite rmSite=rmSiteAPI.getSite();
-
         if (!siteRMExist())
         {
             // Verify the status code
@@ -150,6 +151,42 @@ public class RMSiteTests extends BaseRestTest
             assertEquals(rmSite.getCompliance(), STANDARD);
             assertEquals(rmSite.getVisibility(), PUBLIC);
         }
-
     }
+
+    @Test
+            (
+                    description = "Create RM site as an admin user created with DOD compliance"
+            )
+    public void createRMSiteAsAnotherAdminUser() throws Exception
+    {
+        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        if (siteRMExist())
+        {
+            //Delete the RM site
+            rmSiteAPI.deleteRMSite();
+        }
+
+        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.createRandomTestUser(ANOTHER_ADMIN));
+        // Build the RM site properties
+        JsonObject rmSiteProperties = buildObject().
+                                                           add(TITLE, RM_TITLE).
+                                                           add(DESCRIPTION, RM_DESCRIPTION).
+                                                           add(COMPLIANCE, DOD5015.toString()).
+                                                           getJson();
+
+        // Create the RM site
+        RMSite rmSite = rmSiteAPI.createRMSite(rmSiteProperties);
+
+        // Verify the status code
+        rmSiteAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+
+        // Verify the returned file plan component
+        assertEquals(rmSite.getId(), RM_ID);
+        assertEquals(rmSite.getTitle(), RM_TITLE);
+        assertEquals(rmSite.getDescription(), RM_DESCRIPTION);
+        assertEquals(rmSite.getCompliance(), DOD5015);
+        assertEquals(rmSite.getVisibility(), PUBLIC);
+    }
+
+
 }

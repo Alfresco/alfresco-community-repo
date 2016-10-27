@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.com;
+package org.alfresco.com.fileplancomponents;
 
 /**
  * FIXME: Document me :)

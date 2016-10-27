@@ -209,7 +209,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
         for (PermissionPostProcessor postProcessor : postProcessors) 
         {
         	// post process permission
-        	result = postProcessor.process(result, nodeRef, perm, this.configuredReadPermissions, this.configuredReadPermissions);
+        	result = postProcessor.process(result, nodeRef, perm, this.configuredReadPermissions, this.configuredFilePermissions);
 		}        
         
         return result;

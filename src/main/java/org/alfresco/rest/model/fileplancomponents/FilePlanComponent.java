@@ -16,21 +16,16 @@ import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPER
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 /**
  * POJO for file plan component
  *
  * @author Tuna Aksoy
  * @since 1.0
  */
-@Component
-@Scope(value = "prototype")
 //FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FilePlanComponent
-{
+{    
     private String id;
 
     private String parentId;

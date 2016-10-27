@@ -70,8 +70,8 @@ public class RecordsManagementPermissionPostProcessorUnitTest
 
     /**
      * Given the configured permissions are set
-     * When hasPermission is called
-     * Then the correct result is returned
+     * When process is called
+     * Then access is allowed
      */
     @Test
     public void configurePermissionsAllowed()
@@ -94,9 +94,9 @@ public class RecordsManagementPermissionPostProcessorUnitTest
     }
 
     /**
-     * Given the configured permissions are set
-     * When hasPermission is called
-     * Then the correct result is returned
+     * Given the configured permissions are not set
+     * When process is called
+     * Then access is denied
      */
     @Test
     public void configurePermissionsDenied()

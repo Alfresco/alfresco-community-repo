@@ -83,10 +83,9 @@ public class BaseRestTest extends RestTest
         createRMSiteIfNotExists();
     }
     /**
-    * Helper method to create the RM Site via the POST request
-    * if the site doesn't exist
-    */
-
+     * Helper method to create the RM Site via the POST request
+     * if the site doesn't exist
+     */
     public void createRMSiteIfNotExists() throws Exception
     {
         final String RM_TITLE = "Records Management";
@@ -96,11 +95,11 @@ public class BaseRestTest extends RestTest
         {
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
             // Build the RM site properties
-            JsonObject rmSiteProperties = buildObject().
-                     add(TITLE, RM_TITLE).
-                     add(DESCRIPTION, RM_DESCRIPTION).
-                     add(COMPLIANCE, STANDARD.toString()).
-                     getJson();
+            JsonObject rmSiteProperties = buildObject()
+                    .add(TITLE, RM_TITLE)
+                    .add(DESCRIPTION, RM_DESCRIPTION)
+                    .add(COMPLIANCE, STANDARD.toString())
+                    .getJson();
             // Create the RM site
             rmSiteAPI.createRMSite(rmSiteProperties);
 
@@ -111,8 +110,8 @@ public class BaseRestTest extends RestTest
 
 
     /**
-    * Check the RM site exist via the GET request
-    */
+     * Check the RM site exist via the GET request
+     */
     public boolean siteRMExist() throws Exception
     {
         RestWrapper restWrapper=rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());

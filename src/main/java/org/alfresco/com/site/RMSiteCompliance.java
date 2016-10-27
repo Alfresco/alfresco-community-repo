@@ -20,5 +20,5 @@ package org.alfresco.com.site;
 public enum RMSiteCompliance
 {
     STANDARD,
-    DOD5015;
+    DOD5015
 }

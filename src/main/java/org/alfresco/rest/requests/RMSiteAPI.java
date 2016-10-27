@@ -42,7 +42,7 @@ public class RMSiteAPI extends RestAPI
      * @return The {@link RMSite} for the given file plan component id
      * @throws Exception for the following cases:
      * <ul>
-     *  <li>Api Response code 400 Invalid parameter: GET request is suported only for the RM site</li>
+     *  <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM site</li>
      *  <li>Api Response code 401 If authentication failed</li>
      *  <li>Api Response code 409 If RM Site does not exist</li>
      *  <li>Api Response code default Unexpected error</li>
@@ -82,7 +82,7 @@ public class RMSiteAPI extends RestAPI
      * Delete RM site
      * @throws Exception for the following cases:
      * <ul>
-     *  <li>Api Response code 400 Invalid parameter: DELETE request is suported only for the RM site</li>
+     *  <li>Api Response code 400 Invalid parameter: DELETE request is supported only for the RM site</li>
      *  <li>Api Response code 401 If authentication failed</
      *  <li>Api Response code 403 Current user does not have permission to delete the site that is visible to them.</li>
      *  <li>Api Response code 404 RM site does not exist</li>

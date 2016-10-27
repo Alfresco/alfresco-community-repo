@@ -25,7 +25,7 @@ import org.alfresco.rest.model.RestSiteModel;
 public class RMSite extends RestSiteModel
 {
     @JsonProperty (required = true)
-    protected RMSiteCompliance compliance;
+    private RMSiteCompliance compliance;
 
     /**
      * Helper method to set RM site compliance

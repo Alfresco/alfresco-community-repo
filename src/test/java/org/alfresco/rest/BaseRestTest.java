@@ -73,7 +73,7 @@ public class BaseRestTest extends RestTest
      * @see org.alfresco.rest.RestTest#checkServerHealth()
      */
     @Override
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
         RestAssured.baseURI = scheme + "://" + host;
@@ -82,10 +82,10 @@ public class BaseRestTest extends RestTest
         //create RM Site if not exist
         createRMSiteIfNotExists();
     }
-    /*
+    /**
     * Helper method to create the RM Site via the POST request
     * if the site doesn't exist
-     */
+    */
 
     public void createRMSiteIfNotExists() throws Exception
     {
@@ -110,23 +110,13 @@ public class BaseRestTest extends RestTest
     }
 
 
-    /*
+    /**
     * Check the RM site exist via the GET request
-    *
     */
     public boolean siteRMExist() throws Exception
-    { /*
-        return siteService.exists(RM_ID, dataUser.getAdminUser().getUsername(),
-                                            dataUser.getAdminUser().getPassword());
-        */
+    {
         RestWrapper restWrapper=rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         rmSiteAPI.getSite();
-        if (restWrapper.getStatusCode().equals(HttpStatus.OK.toString()))
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
+        return restWrapper.getStatusCode().equals(HttpStatus.OK.toString());
     }
 }

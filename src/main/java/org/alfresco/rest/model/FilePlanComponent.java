@@ -13,6 +13,8 @@ package org.alfresco.rest.model;
 
 import static org.alfresco.com.FilePlanComponentFields.PROPERTIES;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -42,8 +44,12 @@ public class FilePlanComponent
 
     private boolean hasRetentionSchedule;
 
+    private List<String> aspectNames;
+    
     @JsonProperty(PROPERTIES)
     private FilePlanComponentProperties properties;
+    
+    private FilePlanComponentCreatedByUser createdByUser;
 
     /**
      * @return the id
@@ -187,5 +193,37 @@ public class FilePlanComponent
     public void setProperties(FilePlanComponentProperties properties)
     {
         this.properties = properties;
+    }
+
+    /**
+     * @return the aspectNames
+     */
+    public List<String> getAspectNames()
+    {
+        return this.aspectNames;
+    }
+
+    /**
+     * @param aspectNames the aspectNames to set
+     */
+    public void setAspectNames(List<String> aspectNames)
+    {
+        this.aspectNames = aspectNames;
+    }
+
+    /**
+     * @return the createdByUser
+     */
+    public FilePlanComponentCreatedByUser getCreatedByUser()
+    {
+        return this.createdByUser;
+    }
+
+    /**
+     * @param createdByUser the createdByUser to set
+     */
+    public void setCreatedByUser(FilePlanComponentCreatedByUser createdByUser)
+    {
+        this.createdByUser = createdByUser;
     }
 }

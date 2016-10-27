@@ -21,6 +21,7 @@ public class FilePlanComponentFields
 {
     public static final String NAME = "name";
     public static final String NODE_TYPE = "nodeType";
+    public static final String NODE_PARENT_ID = "parentId";
     public static final String PROPERTIES = "properties";
     public static final String PROPERTIES_TITLE = "cm:title";
     public static final String PROPERTIES_VITAL_RECORD_INDICATOR = "rma:vitalRecordIndicator";

@@ -14,6 +14,7 @@ package org.alfresco.rest.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.core.RestModels;
+import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
 
 /**
  * POJO for file plan component entry

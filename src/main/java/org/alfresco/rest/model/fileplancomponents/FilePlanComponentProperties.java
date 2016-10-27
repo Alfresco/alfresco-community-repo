@@ -18,9 +18,6 @@ import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPER
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 /**
  * POJO for file plan component properties
  *

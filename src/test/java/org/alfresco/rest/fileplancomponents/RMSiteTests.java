@@ -36,19 +36,13 @@ import org.testng.annotations.Test;
  * FIXME: Should we use dependent tests or not?
  * They were removed here but there is no guarantee for the test execution order.
  * In {@link RecordCategoryTest} we create a record category first to delete it.
- * Probbaly something to think about again.
+ * Probably something to think about again.
  *
  * @author Rodica Sutu
  * @since 1.0
  */
 public class RMSiteTests extends BaseRestTest
 {
-
-    // Constants
-    private static final String RM_ID = "rm";
-    private static final String RM_TITLE = "Records Management";
-    private static final String RM_DESCRIPTION = "Records Management Site";
-
     @Test
     (
             description = "Create RM site as admin user with standard Compliance"
@@ -58,7 +52,7 @@ public class RMSiteTests extends BaseRestTest
         RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         if (siteRMExist())
         {
-            //Delete the RM site
+            // Delete the RM site
             rmSiteAPI.deleteRMSite();
         }
         // Build the RM site properties
@@ -72,7 +66,7 @@ public class RMSiteTests extends BaseRestTest
         RMSite rmSite = rmSiteAPI.createRMSite(rmSiteProperties);
 
         // Verify the status code
-        rmSiteAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+        restWrapper.assertStatusCodeIs(CREATED);
 
         // Verify the returned file plan component
         assertEquals(rmSite.getId(), RM_ID);
@@ -126,15 +120,15 @@ public class RMSiteTests extends BaseRestTest
     }
 
     @Test
-            (
-                    description = "GET RM site as admin user"
-            )
+    (
+            description = "GET RM site as admin user"
+    )
     public void getRMSite() throws Exception
     {
         RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Get the RM site
-        RMSite rmSite=rmSiteAPI.getSite();
+        RMSite rmSite = rmSiteAPI.getSite();
 
         if (!siteRMExist())
         {
@@ -150,6 +144,5 @@ public class RMSiteTests extends BaseRestTest
             assertEquals(rmSite.getCompliance(), STANDARD);
             assertEquals(rmSite.getVisibility(), PUBLIC);
         }
-
     }
 }

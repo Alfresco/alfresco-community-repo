@@ -48,7 +48,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /**
- * Extended permission service implementation unit test
+ * Unit tests for {@link RecordsManagementPermissionPostProcessor}.
  *
  * @author David Webster
  * @since 2.4.1

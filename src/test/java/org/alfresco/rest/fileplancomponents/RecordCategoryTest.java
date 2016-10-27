@@ -13,13 +13,13 @@ package org.alfresco.rest.fileplancomponents;
 
 import static java.util.UUID.randomUUID;
 
-import static org.alfresco.com.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.com.FilePlanComponentFields.NAME;
-import static org.alfresco.com.FilePlanComponentFields.NODE_TYPE;
-import static org.alfresco.com.FilePlanComponentFields.PROPERTIES;
-import static org.alfresco.com.FilePlanComponentFields.PROPERTIES_TITLE;
-import static org.alfresco.com.FilePlanComponentType.RECORD_CATEGORY_TYPE;
-import static org.alfresco.com.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.NAME;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -35,13 +35,13 @@ import java.util.NoSuchElementException;
 
 import com.google.gson.JsonObject;
 
-import org.alfresco.com.FilePlanComponentType;
+import org.alfresco.com.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.model.FilePlanComponentEntry;
-import org.alfresco.rest.model.FilePlanComponent;
-import org.alfresco.rest.model.FilePlanComponentProperties;
-import org.alfresco.rest.model.FilePlanComponentsCollection;
+import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.model.fileplancomponents.FilePlanComponentEntry;
+import org.alfresco.rest.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.requests.FilePlanComponentApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;

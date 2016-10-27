@@ -50,6 +50,8 @@ import org.testng.annotations.Test;
  */
 public class RMSiteTests extends BaseRestTest
 {
+    @Autowired
+    private UserService userService;
     @Test
     (
             description = "Create RM site as admin user with Standard Compliance"

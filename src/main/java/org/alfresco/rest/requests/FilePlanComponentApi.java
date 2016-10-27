@@ -23,8 +23,8 @@ import static org.springframework.http.HttpMethod.PUT;
 import com.google.gson.JsonObject;
 
 import org.alfresco.rest.core.RestAPI;
-import org.alfresco.rest.model.FilePlanComponentsCollection;
 import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.model.fileplancomponents.FilePlanComponentsCollection;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 

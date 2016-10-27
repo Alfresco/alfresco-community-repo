@@ -13,13 +13,13 @@ package org.alfresco.rest.fileplancomponents;
 
 import static java.util.UUID.randomUUID;
 
-import static org.alfresco.com.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.com.FilePlanComponentFields.NAME;
-import static org.alfresco.com.FilePlanComponentFields.NODE_TYPE;
-import static org.alfresco.com.FilePlanComponentFields.PROPERTIES;
-import static org.alfresco.com.FilePlanComponentFields.PROPERTIES_TITLE;
-import static org.alfresco.com.FilePlanComponentType.RECORD_CATEGORY_TYPE;
-import static org.alfresco.com.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.NAME;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
+import static org.alfresco.com.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -36,12 +36,12 @@ import java.util.NoSuchElementException;
 
 import com.google.gson.JsonObject;
 
-import org.alfresco.com.FilePlanComponentType;
+import org.alfresco.com.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.model.FilePlanComponent;
-import org.alfresco.rest.model.FilePlanComponentProperties;
 import org.alfresco.rest.model.FilePlanComponentsCollection;
+import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.requests.FilePlanComponentApi;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
@@ -62,7 +62,7 @@ public class RecordCategoryTest extends BaseRestTest
 
     @Autowired
     private DataUser dataUser;
-    
+
     // for children creation test
     private static final int NUMBER_OF_CHILDREN = 10;
 
@@ -208,7 +208,7 @@ public class RecordCategoryTest extends BaseRestTest
         filePlanComponentApi.getFilePlanComponent(filePlanComponent.getId());
         restWrapper.assertStatusCodeIs(NOT_FOUND);
     }
-    
+
     /**
      * <pre>
      * Given that a record category exists
@@ -224,10 +224,10 @@ public class RecordCategoryTest extends BaseRestTest
         // create root level category
         FilePlanComponent rootCategory = createCategory(FILE_PLAN_ALIAS.toString(), RandomData.getRandomAlphanumeric());
         assertNotNull(rootCategory.getId());
-        
+
         // create subcategory as a child of rootCategory
         FilePlanComponent childCategory = createCategory(rootCategory.getId(), RandomData.getRandomAlphanumeric());
-        
+
         // child category created?
         assertNotNull(childCategory.getId());
         
@@ -238,7 +238,7 @@ public class RecordCategoryTest extends BaseRestTest
         assertFalse(childCategory.isIsRecordFolder());
         assertEquals(childCategory.getNodeType(), RECORD_CATEGORY_TYPE.toString());
     }
-    
+
     /**
      * <pre>
      * Given that a record category exists
@@ -256,25 +256,24 @@ public class RecordCategoryTest extends BaseRestTest
         // create root level category
         FilePlanComponent rootCategory = createCategory(FILE_PLAN_ALIAS.toString(), RandomData.getRandomAlphanumeric());
         assertNotNull(rootCategory.getId());   
-        
+
         // add child categories/folders
         ArrayList<FilePlanComponent> children = new ArrayList<FilePlanComponent>();
-        for(int i=0; i < NUMBER_OF_CHILDREN; i++)
+        for (int i=0; i < NUMBER_OF_CHILDREN; i++)
         {
             // create a child
-            FilePlanComponent child = createComponent(rootCategory.getId(), 
+            FilePlanComponent child = createComponent(rootCategory.getId(),
                 RandomData.getRandomAlphanumeric(),
                 // half of the children should be subcategories, the other subfolders
                 (i <= NUMBER_OF_CHILDREN / 2) ? RECORD_CATEGORY_TYPE : RECORD_FOLDER_TYPE);
             assertNotNull(child.getId());
             children.add(child);
         }
-        
+
         // list children from API
         RestWrapper restWrapper = filePlanComponentApi.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         FilePlanComponentsCollection apiChildren = filePlanComponentApi.listChildComponents(rootCategory.getId());
         restWrapper.assertStatusCodeIs(OK);
-        
         logger.info("parent: " + rootCategory.getId());
         
         // check listed children against created list
@@ -291,7 +290,7 @@ public class RecordCategoryTest extends BaseRestTest
                     .filter(child -> child.getId().equals(filePlanComponent.getId()))
                     .findFirst()
                     .get();
-                
+
                 // created by
                 assertEquals(filePlanComponent.getCreatedByUser().getId(), dataUser.getAdminUser().getUsername());
                 
@@ -319,7 +318,6 @@ public class RecordCategoryTest extends BaseRestTest
                 assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
                 
                 // verify properties
-                //assertEquals(createdComponent.getProperties().getTitle(), filePlanComponent.getProperties().getTitle());
             } 
             catch (NoSuchElementException e)
             {
@@ -327,7 +325,7 @@ public class RecordCategoryTest extends BaseRestTest
             }
         });
     }
-    
+
     /**
      * Helper method to create child category
      * @param parentCategoryId
@@ -338,7 +336,7 @@ public class RecordCategoryTest extends BaseRestTest
     {
         return createComponent(parentCategoryId, categoryName, RECORD_CATEGORY_TYPE);
     }
-    
+
     /**
      * Helper method to create generic child component
      * @param parentComponentId

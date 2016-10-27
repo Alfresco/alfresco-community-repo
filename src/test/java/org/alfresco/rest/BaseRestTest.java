@@ -19,11 +19,11 @@ import static org.alfresco.com.site.RMSiteFields.DESCRIPTION;
 import static org.alfresco.com.site.RMSiteFields.TITLE;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 import com.google.gson.JsonObject;
 import com.jayway.restassured.RestAssured;
 
-import org.alfresco.dataprep.SiteService;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 
 /**
@@ -64,10 +63,10 @@ public class BaseRestTest extends RestTest
     @Autowired
     public DataUser dataUser;
 
-    private static final String RM_ID = "rm";
-
-    @Autowired
-    private SiteService siteService;
+    // Constants
+    public static final String RM_ID = "rm";
+    public static final String RM_TITLE = "Records Management";
+    public static final String RM_DESCRIPTION = "Records Management Site";
 
     /**
      * @see org.alfresco.rest.RestTest#checkServerHealth()
@@ -79,6 +78,7 @@ public class BaseRestTest extends RestTest
         RestAssured.baseURI = scheme + "://" + host;
         RestAssured.port = parseInt(port);
         RestAssured.basePath = basePath;
+
         //create RM Site if not exist
         createRMSiteIfNotExists();
     }
@@ -88,18 +88,18 @@ public class BaseRestTest extends RestTest
      */
     public void createRMSiteIfNotExists() throws Exception
     {
-        final String RM_TITLE = "Records Management";
-        final String RM_DESCRIPTION = "Records Management Site";
         //check RM site doesn't exist
         if (!siteRMExist())
         {
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
             // Build the RM site properties
             JsonObject rmSiteProperties = buildObject()
                     .add(TITLE, RM_TITLE)
                     .add(DESCRIPTION, RM_DESCRIPTION)
                     .add(COMPLIANCE, STANDARD.toString())
                     .getJson();
+
             // Create the RM site
             rmSiteAPI.createRMSite(rmSiteProperties);
 
@@ -108,14 +108,13 @@ public class BaseRestTest extends RestTest
         }
     }
 
-
     /**
      * Check the RM site exist via the GET request
      */
     public boolean siteRMExist() throws Exception
     {
-        RestWrapper restWrapper=rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         rmSiteAPI.getSite();
-        return restWrapper.getStatusCode().equals(HttpStatus.OK.toString());
+        return restWrapper.getStatusCode().equals(OK.toString());
     }
 }

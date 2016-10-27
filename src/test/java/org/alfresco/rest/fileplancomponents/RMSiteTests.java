@@ -50,14 +50,6 @@ import org.testng.annotations.Test;
  */
 public class RMSiteTests extends BaseRestTest
 {
-
-    // Constants
-    private static final String RM_ID = "rm";
-    private static final String RM_TITLE = "Records Management";
-    private static final String RM_DESCRIPTION = "Records Management Site";
-    @Autowired
-    private UserService userService;
-
     @Test
     (
             description = "Create RM site as admin user with Standard Compliance"
@@ -67,7 +59,7 @@ public class RMSiteTests extends BaseRestTest
         rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         if (siteRMExist())
         {
-            //Delete the RM site
+            // Delete the RM site
             rmSiteAPI.deleteRMSite();
         }
         // Build the RM site properties
@@ -143,7 +135,7 @@ public class RMSiteTests extends BaseRestTest
         RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Get the RM site
-        RMSite rmSite=rmSiteAPI.getSite();
+        RMSite rmSite = rmSiteAPI.getSite();
         if (!siteRMExist())
         {
             // Verify the status code

@@ -27,8 +27,10 @@ package org.alfresco.rest.api.people;
 
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -37,6 +39,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * An implementation of an Entity Resource for a Person
  * 
@@ -44,7 +49,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Gethin James
  */
 @EntityResource(name="people", title = "People")
-public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, InitializingBean
+public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>, InitializingBean
 {
     private static Log logger = LogFactory.getLog(PeopleEntityResource.class);
     
@@ -75,4 +80,43 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
         return person;
     }
 
+    @Override
+    @WebApiDescription(title="Create person", description="Create a person")
+    @WebApiParam(name="entity", title="A single person", description="A single person, multiple people are not supported.",
+            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
+    public List<Person> create(List<Person> persons, Parameters parameters)
+    {
+        // Until REPO-110 is solved, we need to explicitly test for the presence of fields
+        // that are present on Person but not PersonUpdate
+        // see also, SiteEntityResource.update(String, Site, Parameters)
+
+        // TODO: these are the extras:
+        // avatarId
+        // statusUpdatedAt
+        // quota
+        // quotaUsed
+
+        List<Person> result = new ArrayList<>(1);
+        Person p = persons.get(0);
+        PersonUpdate person = new PersonUpdate.Builder()
+                .id(p.getUserName())
+                .firstName(p.getFirstName())
+                .lastName(p.getLastName())
+                .description(p.getDescription())
+                .email(p.getEmail())
+                .skypeId(p.getSkypeId())
+                .googleId(p.getGoogleId())
+                .instantMessageId(p.getInstantMessageId())
+                .jobTitle(p.getJobTitle())
+                .location(p.getLocation())
+                .company(p.getCompany())
+                .mobile(p.getMobile())
+                .telephone(p.getTelephone())
+                .userStatus(p.getUserStatus())
+                .enabled(p.isEnabled())
+                .emailNotificationsEnabled(p.isEmailNotificationsEnabled()).build();
+
+        result.add(people.create(person));
+        return result;
+    }
 }

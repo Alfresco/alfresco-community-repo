@@ -26,6 +26,7 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 
@@ -42,5 +43,14 @@ public interface People
      * @throws NoSuchPersonException if personId does not exist
      */
     Person getPerson(final String personId);
+
+    /**
+     * Create a person.
+     *
+     * @param person
+     * @return
+     */
+    Person create(PersonUpdate person);
+
     //Person updatePerson(String personId, Person person);
 }

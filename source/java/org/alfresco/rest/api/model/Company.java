@@ -42,6 +42,13 @@ public class Company
 	private String fax;
 	private String email;
 
+	/**
+	 * Default constructor, required for deserialising from JSON.
+	 */
+	public Company()
+	{
+	}
+
 	public Company(String organization, String address1, String address2, String address3,
 			String postcode, String telephone, String fax, String email)
 	{

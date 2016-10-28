@@ -30,36 +30,26 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.text.Collator;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.rest.api.tests.QueriesPeopleApiTest;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-public class Person implements Serializable, Comparable<Person>, ExpectedComparison
+public class Person
+    extends org.alfresco.rest.api.model.Person
+        implements Serializable, Comparable<Person>, ExpectedComparison
 {
     private static final long serialVersionUID = 3185698391792389751L;
 
     private String id;
-    private Boolean enabled;
-    private String username;
-    private String firstName;
-    private String lastName;
-    private Company company;
-    private String skype;
-    private String location;
-    private String tel;
-    private String mob;
-    private String instantmsg;
-    private String google;
-    private String description;
 
     private static Collator collator = Collator.getInstance();
 
@@ -67,20 +57,52 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
             Company company, String skype, String location, String tel,
             String mob, String instantmsg, String google, String description)
     {
-        super();
+        super(username, enabled, null, firstName, lastName, null, location, tel, mob, null, skype, instantmsg, null, null, google, null, null, null, description, company);
         this.id = id;
-        this.username = username;
-        this.enabled = enabled;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.company = company;
-        this.skype = skype;
-        this.location = location;
-        this.tel = tel;
-        this.mob = mob;
-        this.instantmsg = instantmsg;
-        this.google = google;
-        this.description = description;
+    }
+
+    public Person(String userName,
+                  Boolean enabled,
+                  NodeRef avatarId,
+                  String firstName,
+                  String lastName,
+                  String jobTitle,
+                  String location,
+                  String telephone,
+                  String mobile,
+                  String email,
+                  String skypeId,
+                  String instantMessageId,
+                  String userStatus,
+                  Date statusUpdatedAt,
+                  String googleId,
+                  Long quota,
+                  Long quotaUsed,
+                  Boolean emailNotificationsEnabled,
+                  String description,
+                  org.alfresco.rest.api.model.Company company)
+    {
+        super(userName,
+                enabled,
+                avatarId,
+                firstName,
+                lastName,
+                jobTitle,
+                location,
+                telephone,
+                mobile,
+                email,
+                skypeId,
+                instantMessageId,
+                userStatus,
+                statusUpdatedAt,
+                googleId,
+                quota,
+                quotaUsed,
+                emailNotificationsEnabled,
+                description,
+                company);
+        this.id = userName;
     }
 
     public String getId()
@@ -93,120 +115,25 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
         this.id = id;
     }
 
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getSkype() {
-        return skype;
-    }
-
-    public void setSkype(String skype) {
-        this.skype = skype;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getTel() {
-        return tel;
-    }
-
-    public void setTel(String tel) {
-        this.tel = tel;
-    }
-
-    public String getMob() {
-        return mob;
-    }
-
-    public void setMob(String mob) {
-        this.mob = mob;
-    }
-
-    public String getInstantmsg() {
-        return instantmsg;
-    }
-
-    public void setInstantmsg(String instantmsg) {
-        this.instantmsg = instantmsg;
-    }
-
-    public String getGoogle() {
-        return google;
-    }
-
-    public void setGoogle(String google) {
-        this.google = google;
-    }
-
-    public String getFirstName()
-    {
-        return firstName;
-    }
-
-    public Company getCompany()
-    {
-        return company;
-    }
-
-    public void setCompany(Company company)
-    {
-        this.company = company;
-    }
-
-    public void setFirstName(String firstName)
-    {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() 
-    {
-        return lastName;
-    }
-
-    public void setLastName(String lastName)
-    {
-        this.lastName = lastName;
-    }
-
-    public String getDescription()
-    {
-        return description;
-    }
-
+    /**
+     * Note: used for string comparisons in tests.
+     *
+     * @see QueriesPeopleApiTest#checkApiCall(java.lang.String, java.lang.String, java.lang.String, org.alfresco.rest.api.tests.client.PublicApiClient.Paging, int, java.lang.String[])
+     */
     @Override
     public String toString()
     {
         return "Person [" + (id != null ? "id=" + id + ", " : "")
                 + (enabled != null ? "enabled=" + enabled + ", " : "")
-                + (username != null ? "username=" + username + ", " : "")
                 + (firstName != null ? "firstName=" + firstName + ", " : "")
                 + (lastName != null ? "lastName=" + lastName + ", " : "")
                 + (company != null ? "company=" + company + ", " : "")
-                + (skype != null ? "skype=" + skype + ", " : "")
+                + (skypeId != null ? "skype=" + skypeId + ", " : "")
                 + (location != null ? "location=" + location + ", " : "")
-                + (tel != null ? "tel=" + tel + ", " : "")
-                + (mob != null ? "mob=" + mob + ", " : "")
-                + (instantmsg != null ? "instantmsg=" + instantmsg + ", " : "")
-                + (google != null ? "google=" + google + ", " : "")
+                + (telephone != null ? "tel=" + telephone + ", " : "")
+                + (mobile != null ? "mob=" + mobile + ", " : "")
+                + (instantMessageId != null ? "instantmsg=" + instantMessageId + ", " : "")
+                + (googleId != null ? "google=" + googleId + ", " : "")
                 + (description != null ? "description=" + description + ", " : "")
                 + "]";
     }
@@ -215,41 +142,46 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
     public JSONObject toJSON(boolean fullVisibility)
     {
         JSONObject personJson = new JSONObject();
+
         personJson.put("id", getId());
         personJson.put("firstName", getFirstName());
         personJson.put("lastName", getLastName());
+
         if(fullVisibility)
         {
-            personJson.put("skypeId", "skype");
-            personJson.put("location", "location");
-            personJson.put("telephone", "tel");
-            personJson.put("mobile", "mob");
-            personJson.put("instantMessageId", "instantmsg");
-            personJson.put("googleId", "google");
-
-            personJson.put("company", company.toJSON());
-
+            personJson.put("description", getDescription());
+            personJson.put("email", getEmail());
+            personJson.put("skypeId", getSkypeId());
+            personJson.put("googleId", getGoogleId());
+            personJson.put("instantMessageId", getInstantMessageId());
+            personJson.put("jobTitle", getJobTitle());
+            personJson.put("location", getLocation());
+            personJson.put("company", new Company(company).toJSON());
+            personJson.put("mobile", getMobile());
+            personJson.put("telephone", getTelephone());
+            personJson.put("userStatus", getUserStatus());
+            personJson.put("enabled", isEnabled());
+            personJson.put("emailNotificationsEnabled", isEmailNotificationsEnabled());
         }
         return personJson;
     }
     
     public static Person parsePerson(JSONObject jsonObject)
     {
-        Boolean enabled = (Boolean)jsonObject.get("enabled");
-        String location = (String)jsonObject.get("location");
-        String instantMessageId = (String)jsonObject.get("instantMessageId");
-        String googleId = (String)jsonObject.get("googleId");
-        String skypeId = (String)jsonObject.get("skypeId");
-        String username = (String)jsonObject.get("username");
-        String telephone = (String)jsonObject.get("telephone");
-        String mobile = (String)jsonObject.get("mobile");
         String userId = (String)jsonObject.get("id");
         String firstName = (String)jsonObject.get("firstName");
         String lastName = (String)jsonObject.get("lastName");
-        String description = (String)jsonObject.get("description");
 
-        JSONObject companyJSON = (JSONObject)jsonObject.get("company");
+        String description = (String)jsonObject.get("description");
+        String email = (String) jsonObject.get("email");
+        String skypeId = (String)jsonObject.get("skypeId");
+        String googleId = (String)jsonObject.get("googleId");
+        String instantMessageId = (String)jsonObject.get("instantMessageId");
+        String jobTitle = (String) jsonObject.get("jobTitle");
+        String location = (String)jsonObject.get("location");
+
         Company company = null;
+        JSONObject companyJSON = (JSONObject)jsonObject.get("company");
         if(companyJSON != null)
         {
             String organization = (String)companyJSON.get("organization");
@@ -261,25 +193,49 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
             String fax = (String)companyJSON.get("fax");
             String companyEmail = (String)companyJSON.get("email");
             if (organization != null ||
-                address2 != null ||
-                address3 != null ||
-                postcode != null ||
-                companyTelephone != null ||
-                fax != null ||
-                companyEmail != null)
+                    address2 != null ||
+                    address3 != null ||
+                    postcode != null ||
+                    companyTelephone != null ||
+                    fax != null ||
+                    companyEmail != null)
             {
                 company = new Company(organization, address1, address2, address3, postcode, companyTelephone, fax, companyEmail);
             }
         }
-        Person person = new Person(userId, username, enabled, firstName, lastName, company, skypeId, location, telephone, mobile, instantMessageId, googleId, description);
+
+        String mobile = (String)jsonObject.get("mobile");
+        String telephone = (String)jsonObject.get("telephone");
+        String userStatus = (String) jsonObject.get("userStatus");
+        Boolean enabled = (Boolean)jsonObject.get("enabled");
+        Boolean emailNotificationsEnabled = (Boolean) jsonObject.get("emailNotificationsEnabled");
+
+        // TODO: create a PersonCreate request class.
+        Person person = new Person(
+                userId,
+                enabled,
+                null, // avatarId is not accepted by "create person"
+                firstName,
+                lastName,
+                jobTitle,
+                location,
+                telephone,
+                mobile,
+                email,
+                skypeId,
+                instantMessageId,
+                userStatus,
+                null, // userStatusUpdateAt is read only - not used in create person
+                googleId,
+                null, // quota - not used in create person
+                null, // quotaUsers - not used
+                emailNotificationsEnabled,
+                description,
+                company
+        );
         return person;
     }
-    
-    public Person restriced()
-    {
-        Person p = new Person(getId(), getUsername(), getEnabled(), getFirstName(), getLastName(), null, null, null, null, null, null, null, null);
-        return p;
-    }
+
 
     private static class UserContext
     {
@@ -356,121 +312,26 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 
         Person other = (Person)o;
         
-        AssertUtil.assertEquals("userId", id, other.getId());
+        AssertUtil.assertEquals("userId", getId(), other.getId());
         AssertUtil.assertEquals("firstName", firstName, other.getFirstName());
         AssertUtil.assertEquals("lastName", lastName, other.getLastName());
-        AssertUtil.assertEquals("enabled", enabled, other.getEnabled());
+        AssertUtil.assertEquals("enabled", enabled, other.isEnabled());
 
         if(isVisible())
         {
-            AssertUtil.assertEquals("skype", skype, other.getSkype());
-            AssertUtil.assertEquals("location", location, other.getLocation());
-            AssertUtil.assertEquals("tel", tel, other.getTel());
-            AssertUtil.assertEquals("mobile", mob, other.getMob());
-            AssertUtil.assertEquals("instanceMessageId", instantmsg, other.getInstantmsg());
-            AssertUtil.assertEquals("googleId", google, other.getGoogle());
+            AssertUtil.assertEquals("skype", getSkypeId(), other.getSkypeId());
+            AssertUtil.assertEquals("location", getLocation(), other.getLocation());
+            AssertUtil.assertEquals("tel", getTelephone(), other.getTelephone());
+            AssertUtil.assertEquals("mobile", getMobile(), other.getMobile());
+            AssertUtil.assertEquals("instanceMessageId", getInstantMessageId(), other.getInstantMessageId());
+            AssertUtil.assertEquals("googleId", getGoogleId(), other.getGoogleId());
             if(company != null)
             {
-                company.expected(getCompany());
+                new Company(company).expected(getCompany());
             }
         }
     }
-    
-    public Map<QName, Serializable> getProperties()
-    {
-        final Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        
-        if(firstName != null)
-        {
-            props.put(ContentModel.PROP_FIRSTNAME, firstName);
-        }
-        
-        if(lastName != null)
-        {
-            props.put(ContentModel.PROP_LASTNAME, lastName);
-        }
-        
-        if(skype != null)
-        {
-            props.put(ContentModel.PROP_SKYPE, skype);
-        }
-        
-        if(location != null)
-        {
-            props.put(ContentModel.PROP_LOCATION, location);
-        }
-        
-        if(tel != null)
-        {
-            props.put(ContentModel.PROP_TELEPHONE, tel);
-        }
 
-        if(username != null)
-        {
-            props.put(ContentModel.PROP_USERNAME, username);
-        }
-        
-        if(mob != null)
-        {
-            props.put(ContentModel.PROP_MOBILE, mob);
-        }
-        
-        if(instantmsg != null)
-        {
-            props.put(ContentModel.PROP_INSTANTMSG, instantmsg);
-        }
-        
-        if(google != null)
-        {
-            props.put(ContentModel.PROP_GOOGLEUSERNAME, google);
-        }
-
-        if(company != null)
-        {
-            if(company.getOrganization() != null)
-            {
-                props.put(ContentModel.PROP_ORGANIZATION, company.getOrganization());
-            }
-            
-            if(company.getAddress1() != null)
-            {
-                props.put(ContentModel.PROP_COMPANYADDRESS1, company.getAddress1());
-            }
-            
-            if(company.getAddress2() != null)
-            {
-                props.put(ContentModel.PROP_COMPANYADDRESS2, company.getAddress2());
-            }
-            
-            if(company.getAddress3() != null)
-            {
-                props.put(ContentModel.PROP_COMPANYADDRESS3, company.getAddress3());
-            }
-            
-            if(company.getPostcode() != null)
-            {
-                props.put(ContentModel.PROP_COMPANYPOSTCODE, company.getPostcode());
-            }
-            
-            if(company.getTelephone() != null)
-            {
-                props.put(ContentModel.PROP_COMPANYTELEPHONE, company.getTelephone());
-            }
-            
-            if(company.getFax() != null)
-            {
-                props.put(ContentModel.PROP_COMPANYFAX, company.getFax());
-            }
-            
-            if(company.getEmail() != null)
-            {
-                props.put(ContentModel.PROP_COMPANYEMAIL, company.getEmail());
-            }
-        }
-
-        return props;
-    }
-    
     @Override
     public int compareTo(Person o)
     {

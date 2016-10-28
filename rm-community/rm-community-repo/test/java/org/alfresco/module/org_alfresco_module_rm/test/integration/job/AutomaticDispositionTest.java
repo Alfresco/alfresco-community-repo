@@ -40,6 +40,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Test automatic disposition via scheduled job.
@@ -55,12 +56,7 @@ public class AutomaticDispositionTest extends BaseRMTestCase
     /** additional job context to override job frequency */
     protected String[] getConfigLocations()
     {
-        return new String[]
-        {
-            "classpath:alfresco/application-context.xml",
-            "classpath:test-context.xml",
-            "classpath:test-job-context.xml"
-        };
+        return ArrayUtils.add(super.getConfigLocations(), "classpath:test-job-context.xml");
     }
 
     /**

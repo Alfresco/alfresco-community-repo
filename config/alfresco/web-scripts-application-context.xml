@@ -1846,6 +1846,7 @@
         <property name="nodeService" ref="NodeService" />
         <property name="siteService" ref="SiteService" />
         <property name="documentLinkService" ref="DocumentLinkService" />
+        <property name="activityService" ref="activityService"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.doclink.doclinks.delete"
@@ -1854,6 +1855,7 @@
         <property name="nodeService" ref="NodeService" />
         <property name="siteService" ref="SiteService" />
         <property name="documentLinkService" ref="DocumentLinkService" />
+        <property name="activityService" ref="activityService"/>
    </bean>
 
    <!-- CMM - Custom model import API -->

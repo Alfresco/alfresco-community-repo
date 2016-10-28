@@ -45,6 +45,7 @@ import org.alfresco.repo.web.scripts.groups.GroupsTest;
 import org.alfresco.repo.web.scripts.invitation.InvitationWebScriptTest;
 import org.alfresco.repo.web.scripts.invite.InviteServiceTest;
 import org.alfresco.repo.web.scripts.links.LinksRestApiTest;
+import org.alfresco.repo.web.scripts.node.NodeWebScripTest;
 import org.alfresco.repo.web.scripts.person.PersonServiceTest;
 import org.alfresco.repo.web.scripts.preference.PreferenceServiceTest;
 import org.alfresco.repo.web.scripts.publishing.PublishingRestApiTest;
@@ -117,6 +118,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( ReadOnlyTransactionInGetRestApiTest.class );
         suite.addTestSuite( CustomModelImportTest.class );
         suite.addTestSuite( SurfConfigTest.class );
+        suite.addTestSuite( NodeWebScripTest.class );
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,
         //  due to finalisers closing caches when we're not looking

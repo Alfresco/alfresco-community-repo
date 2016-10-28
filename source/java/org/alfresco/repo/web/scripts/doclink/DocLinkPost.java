@@ -26,13 +26,19 @@
 package org.alfresco.repo.web.scripts.doclink;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -50,7 +56,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class DocLinkPost extends AbstractDocLink
 {
-    private static String PARAM_DESTINATION_NODE = "destinationNodeRef";
+    private static final String PARAM_DESTINATION_NODE = "destinationNodeRef";
+    private static final String PARAM_MULTIPLE_FILES = "multipleFiles";
 
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -94,7 +101,78 @@ public class DocLinkPost extends AbstractDocLink
         ParameterCheck.mandatoryString("destinationNodeParam", destinationNodeParam);
         destinationNodeRef = new NodeRef(destinationNodeParam);
 
-        /* Create link */
+        List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
+        if (json.containsKey(PARAM_MULTIPLE_FILES))
+        {
+            JSONArray multipleFiles = (JSONArray) json.get(PARAM_MULTIPLE_FILES);
+            for (int i = 0; i < multipleFiles.size(); i++)
+            {
+                String nodeRefString = (String) multipleFiles.get(i);
+                if (nodeRefString != null)
+                {
+                    try
+                    {
+                        NodeRef nodeRefToCreateLink = new NodeRef(nodeRefString);
+                        nodeRefs.add(nodeRefToCreateLink);
+                    }
+                    catch (AlfrescoRuntimeException ex)
+                    {
+                        throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid Arguments: " + ex.getMessage());
+                    }
+                }
+            }
+        }
+        else
+        {
+            nodeRefs.add(sourceNodeRef);
+        }
+
+        // getSite for destination folder
+        String siteName = siteService.getSiteShortName(destinationNodeRef);
+
+        List<String> linksResults = new ArrayList<String>();
+        NodeRef linkNodeRef = null;
+        int successCount = 0;
+        int failureCount = 0;
+
+        if (nodeRefs != null && nodeRefs.size() > 0)
+        {
+            for (NodeRef sourceNode : nodeRefs)
+            {
+                /* Create link */
+                linkNodeRef = createLink(destinationNodeRef, sourceNode);
+
+                if (linkNodeRef != null)
+                {
+                    String sourceName = (String) nodeService.getProperty(sourceNode, ContentModel.PROP_NAME);
+                    if (siteName != null)
+                    {
+                        addActivityEntry(ActivityType.DOCLINK_CREATED, sourceName, sourceNode.toString(), siteName);
+                    }
+                    linksResults.add(linkNodeRef.toString());
+                    successCount++;
+                }
+            }
+        }
+
+        failureCount = nodeRefs.size() - successCount;
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("results", linksResults);
+        model.put("successCount", successCount);
+        model.put("failureCount", failureCount);
+        model.put("overallSuccess", failureCount == 0);
+        return model;
+    }
+
+    /**
+     * Create link for sourceNodeRef in destinationNodeRef location
+     * 
+     * @param destinationNodeRef
+     * @param sourceNodeRef
+     * @return
+     */
+    private NodeRef createLink(NodeRef destinationNodeRef, NodeRef sourceNodeRef)
+    {
         NodeRef linkNodeRef = null;
         try
         {
@@ -108,10 +186,6 @@ public class DocLinkPost extends AbstractDocLink
         {
             throw new WebScriptException(Status.STATUS_FORBIDDEN, "You don't have permission to perform this operation");
         }
-
-        /* Build response */
-        Map<String, Object> model = new HashMap<String, Object>();
-        model.put("linkNodeRef", linkNodeRef.toString());
-        return model;
+        return linkNodeRef;
     }
 }

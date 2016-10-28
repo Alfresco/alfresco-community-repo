@@ -26,9 +26,12 @@
 package org.alfresco.repo.web.scripts.node;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -37,6 +40,7 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -44,10 +48,12 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.context.support.AbstractRefreshableApplicationContext;
@@ -376,5 +382,210 @@ public class NodeWebScripTest extends BaseWebScriptTest
         
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         sendRequest(req, Status.STATUS_FORBIDDEN);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testLinkCreation() throws Exception
+    {
+        // Create a folder within the DocLib
+        NodeRef siteDocLib = siteService.getContainer(TEST_SITE.getShortName(), SiteService.DOCUMENT_LIBRARY);
+
+        String testFolder1Name = "testingLinkCreationFolder1";
+        Map<QName, Serializable> testFolderProps = new HashMap<QName, Serializable>();
+        testFolderProps.put(ContentModel.PROP_NAME, testFolder1Name);
+        NodeRef testFolder1 = nodeService.createNode(siteDocLib, ContentModel.ASSOC_CONTAINS,
+                QName.createQName("testingLinkCreationFolder1"), ContentModel.TYPE_FOLDER, testFolderProps).getChildRef();
+
+        JSONObject jsonReq = null;
+        JSONObject json = null;
+        JSONArray jsonArray = new JSONArray();
+        JSONArray jsonLinkNodes = null;
+        JSONObject jsonLinkNode = null;
+
+        //Create files in the folder
+        NodeRef testFile1 = createNode(testFolder1, "testingLinkCreationFile1", ContentModel.TYPE_CONTENT,
+                AuthenticationUtil.getAdminUserName());
+        NodeRef testFile2 = createNode(testFolder1, "testingLinkCreationFile2", ContentModel.TYPE_CONTENT,
+                AuthenticationUtil.getAdminUserName());
+        NodeRef testFile3 = createNode(testFolder1, "testingLinkCreationFile3", ContentModel.TYPE_CONTENT,
+                AuthenticationUtil.getAdminUserName());
+
+        //Create another folder in the folder
+        String testFolder2Name = "testingLinkCreationFolder2";
+        testFolderProps = new HashMap<QName, Serializable>();
+        testFolderProps.put(ContentModel.PROP_NAME, testFolder2Name);
+        NodeRef testFolder2 = nodeService.createNode(siteDocLib, ContentModel.ASSOC_CONTAINS,
+                QName.createQName("testingLinkCreationFolder2"), ContentModel.TYPE_FOLDER, testFolderProps).getChildRef();
+
+        // Create link to file1 in same folder
+        Request req = new Request("POST", "/api/node/doclink/" + testFile1.getStoreRef().getProtocol() + "/"
+                + testFile1.getStoreRef().getIdentifier() + "/" + testFile1.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put("destinationNodeRef", testFolder1.toString());
+
+        jsonArray.add(testFile1.toString());
+        jsonReq.put("multipleFiles", jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_OK));
+        jsonLinkNodes = (JSONArray) json.get("linkNodes");
+        assertNotNull(jsonLinkNodes);
+        assertEquals(1, jsonLinkNodes.size());
+        assertEquals("true", json.get("overallSuccess"));
+        assertEquals("1", json.get("successCount"));
+        assertEquals("0", json.get("failureCount"));
+
+        jsonLinkNode = (JSONObject) jsonLinkNodes.get(0);
+        String nodeRef = (String) jsonLinkNode.get("nodeRef");
+        NodeRef file1Link = new NodeRef(nodeRef);
+
+        //Check that app:linked aspect is added on sourceNode
+        assertEquals(true, nodeService.hasAspect(testFile1, ApplicationModel.ASPECT_LINKED));
+        assertEquals(true, nodeService.exists(file1Link));
+        nodeService.deleteNode(file1Link);
+        assertEquals(false, nodeService.hasAspect(testFile1, ApplicationModel.ASPECT_LINKED));
+
+        //Create link to testFolder2 in same folder (testFolder1)
+        req = new Request("POST", "/api/node/doclink/" + testFolder2.getStoreRef().getProtocol() + "/"
+                + testFolder2.getStoreRef().getIdentifier() + "/" + testFolder2.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put("destinationNodeRef", testFolder1.toString());
+        jsonArray = new JSONArray();
+        jsonArray.add(testFolder2.toString());
+        jsonReq.put("multipleFiles", jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_OK));
+        jsonLinkNodes = (JSONArray) json.get("linkNodes");
+        assertNotNull(jsonLinkNodes);
+        assertEquals(1, jsonLinkNodes.size());
+        assertEquals("true", json.get("overallSuccess"));
+        assertEquals("1", json.get("successCount"));
+        assertEquals("0", json.get("failureCount"));
+
+        jsonLinkNode = (JSONObject) jsonLinkNodes.get(0);
+        nodeRef = (String) jsonLinkNode.get("nodeRef");
+        NodeRef folder2Link = new NodeRef(nodeRef);
+        assertEquals(true, nodeService.hasAspect(testFolder2, ApplicationModel.ASPECT_LINKED));
+        assertEquals(true, nodeService.exists(folder2Link));
+
+        // create another link of testFolder2 in siteDocLib
+        req = new Request("POST", "/api/node/doclink/" + testFolder2.getStoreRef().getProtocol() + "/"
+                + testFolder2.getStoreRef().getIdentifier() + "/" + testFolder2.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put("destinationNodeRef", siteDocLib.toString());
+        jsonArray = new JSONArray();
+        jsonArray.add(testFolder2.toString());
+        jsonReq.put("multipleFiles", jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_OK));
+        jsonLinkNodes = (JSONArray) json.get("linkNodes");
+        assertNotNull(jsonLinkNodes);
+        assertEquals(1, jsonLinkNodes.size());
+        assertEquals("true", json.get("overallSuccess"));
+        assertEquals("1", json.get("successCount"));
+        assertEquals("0", json.get("failureCount"));
+
+        jsonLinkNode = (JSONObject) jsonLinkNodes.get(0);
+        nodeRef = (String) jsonLinkNode.get("nodeRef");
+        NodeRef folder2Link2 = new NodeRef(nodeRef);
+
+        // delete folder2Link and check that aspect exists since we have another
+        // link for testFolder2
+        nodeService.deleteNode(folder2Link);
+        assertEquals(true, nodeService.hasAspect(testFolder2, ApplicationModel.ASPECT_LINKED));
+        nodeService.deleteNode(folder2Link2);
+        assertEquals(false, nodeService.hasAspect(testFolder2, ApplicationModel.ASPECT_LINKED));
+
+        // Create link to testFile1, testFile2 and testFile3 in same testFolder1
+        req = new Request("POST", "/api/node/doclink/" + testFolder1.getStoreRef().getProtocol() + "/"
+                + testFolder1.getStoreRef().getIdentifier() + "/" + testFolder1.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put("destinationNodeRef", testFolder1.toString());
+        jsonArray = new JSONArray();
+        jsonArray.add(testFile1.toString());
+        jsonArray.add(testFile2.toString());
+        jsonArray.add(testFile3.toString());
+        jsonReq.put("multipleFiles", jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_OK));
+        jsonLinkNodes = (JSONArray) json.get("linkNodes");
+        assertNotNull(jsonLinkNodes);
+        assertEquals(3, jsonLinkNodes.size());
+        assertEquals("true", json.get("overallSuccess"));
+        assertEquals("3", json.get("successCount"));
+        assertEquals("0", json.get("failureCount"));
+
+        NodeRef fileLink = null;
+        List<NodeRef> fileLinks = new ArrayList<NodeRef>();
+        for (int i = 0; i < jsonLinkNodes.size(); i++)
+        {
+            jsonLinkNode = (JSONObject) jsonLinkNodes.get(i);
+            nodeRef = (String) jsonLinkNode.get("nodeRef");
+            fileLink = new NodeRef(nodeRef);
+            fileLinks.add(fileLink);
+            assertEquals(true, nodeService.exists(fileLink));
+        }
+        
+        //try to create another link in the same location - an exception should be thrown
+        req = new Request("POST", "/api/node/doclink/" + testFolder1.getStoreRef().getProtocol() + "/"
+                + testFolder1.getStoreRef().getIdentifier() + "/" + testFolder1.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put("destinationNodeRef", testFolder1.toString());
+        jsonArray = new JSONArray();
+        jsonArray.add(testFile1.toString());
+        jsonReq.put("multipleFiles", jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_BAD_REQUEST));
+
+        // delete all 3 files and check that the links are deleted too
+        nodeService.deleteNode(testFile1);
+        nodeService.deleteNode(testFile2);
+        nodeService.deleteNode(testFile3);
+        for (NodeRef linkNodeRef : fileLinks)
+        {
+            assertEquals(false, nodeService.exists(linkNodeRef));
+        }
+
+        //try create a link to a site
+        SiteInfo site2 = createSite("Site2TestingNodeCreateLink");
+        NodeRef siteNodeRef = site2.getNodeRef();
+
+        req = new Request("POST", "/api/node/doclink/" + testFolder1.getStoreRef().getProtocol() + "/"
+                + testFolder1.getStoreRef().getIdentifier() + "/" + testFolder1.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put("destinationNodeRef", testFolder1.toString());
+        jsonArray = new JSONArray();
+        jsonArray.add(siteNodeRef.toString());
+        jsonReq.put("multipleFiles", jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_BAD_REQUEST));
+
+        siteService.deleteSite(site2.getShortName());
+        nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteNodeRef));
+    }
+
+    private NodeRef createNode(NodeRef parentNode, String nodeCmName, QName nodeType, String ownerUserName)
+    {
+        QName childName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, nodeCmName);
+
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, nodeCmName);
+        ChildAssociationRef childAssoc = nodeService.createNode(parentNode,
+                    ContentModel.ASSOC_CONTAINS,
+                    childName,
+                    nodeType,
+                    props);
+        return childAssoc.getChildRef();
     }
 }

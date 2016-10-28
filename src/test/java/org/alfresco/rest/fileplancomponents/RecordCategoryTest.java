@@ -74,7 +74,7 @@ public class RecordCategoryTest extends BaseRestTest
      */
     @Test
     (
-        description = "Create category as authorised user"
+        description = "Create root category"
     )
     public void createCategoryTest() throws Exception
     {
@@ -124,7 +124,7 @@ public class RecordCategoryTest extends BaseRestTest
      */
     @Test
     (
-        description = "Rename category as authorised user"
+        description = "Rename root category"
     )
     public void renameCategory() throws Exception
     {
@@ -176,7 +176,7 @@ public class RecordCategoryTest extends BaseRestTest
      */
     @Test
     (
-        description = "Delete category as authorised user"
+        description = "Delete category"
     )
     public void deleteCategory() throws Exception
     {

@@ -12,7 +12,7 @@
 package org.alfresco.com.fileplancomponents;
 
 /**
- * FIXME: Document me :)
+ * File plan component field names constants
  *
  * @author Tuna Aksoy
  * @since 1.0

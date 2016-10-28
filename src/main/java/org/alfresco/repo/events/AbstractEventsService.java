@@ -782,10 +782,9 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 				    	String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
 
 				    	Set<QName> aspects = nodeService.getAspects(nodeRef);
-
-				    	// get all paths (multi-filing)
+				    	
 						final String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-						List<Path> nodePaths = nodeService.getPaths(nodeRef, false);					
+						List<Path> nodePaths = Collections.singletonList(nodeService.getPath(nodeRef));
 	
 						Date modifiedTime = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
 						Long modificationTimestamp = ( modifiedTime != null ? modifiedTime.getTime() : null);

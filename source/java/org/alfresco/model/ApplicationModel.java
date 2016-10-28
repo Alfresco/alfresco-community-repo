@@ -66,4 +66,7 @@ public interface ApplicationModel
     // Default view config aspect
     static final QName ASPECT_DEFAULT_VIEW_CONFIG = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "defaultViewConfig");
     static final QName PROP_DEFAULT_VIEW_ID = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "defaultViewId");
+
+    // Linked aspect
+    static final QName ASPECT_LINKED = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "linked");
 }

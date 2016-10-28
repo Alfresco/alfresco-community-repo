@@ -146,6 +146,10 @@
          </properties>
       </aspect>
       
+      <aspect name="app:linked">
+         <title>Marker aspect to indicate that the node has been linked.</title>
+      </aspect>
+
 	</aspects>
 	
 </model>

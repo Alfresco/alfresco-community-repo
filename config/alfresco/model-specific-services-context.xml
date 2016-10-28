@@ -94,11 +94,14 @@
       <property name="hiddenAspect" ref="hiddenAspect"/>
    </bean>
 
-   <bean name="documentLinkService" class="org.alfresco.repo.doclink.DocumentLinkServiceImpl">
+   <bean name="documentLinkService" class="org.alfresco.repo.doclink.DocumentLinkServiceImpl" init-method="init">
    	   <property name="nodeService" ref="NodeService"/>
    	   <property name="dictionaryService" ref="dictionaryService"/>
    	   <property name="searchService" ref="admSearchService"/>
    	   <property name="namespaceService" ref="namespaceService"/>
+   	   <property name="checkOutCheckInService" ref="checkOutCheckInService"/>
+   	   <property name="policyComponent" ref="policyComponent"/>
+       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
 
    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >

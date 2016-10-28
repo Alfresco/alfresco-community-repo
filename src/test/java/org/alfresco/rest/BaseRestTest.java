@@ -41,21 +41,21 @@ import org.testng.annotations.BeforeClass;
  * @since 1.0
  */
 @Configuration
-@PropertySource("classpath:config.properties")
+@PropertySource("classpath:default.properties")
 @PropertySource(value = "classpath:local.properties", ignoreResourceNotFound = true)
 public class BaseRestTest extends RestTest
 {
-    @Value ("${alfresco.rm.scheme}")
+    @Value ("${alfresco.scheme}")
     private String scheme;
 
-    @Value ("${alfresco.rm.host}")
-    private String host;
+    @Value ("${alfresco.server}")
+    private String server;
 
-    @Value ("${alfresco.rm.port}")
+    @Value ("${alfresco.port}")
     private String port;
 
-    @Value ("${alfresco.rm.basePath}")
-    private String basePath;
+    @Value ("${rest.rmPath}")
+    private String restRmPath;
 
     @Autowired
     public RMSiteAPI rmSiteAPI;
@@ -75,9 +75,9 @@ public class BaseRestTest extends RestTest
     @BeforeClass(alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
-        RestAssured.baseURI = scheme + "://" + host;
+        RestAssured.baseURI = scheme + "://" + server;
         RestAssured.port = parseInt(port);
-        RestAssured.basePath = basePath;
+        RestAssured.basePath = restRmPath;
 
         //create RM Site if not exist
         createRMSiteIfNotExists();

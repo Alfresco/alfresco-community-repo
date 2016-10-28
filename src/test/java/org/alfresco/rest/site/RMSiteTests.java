@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.fileplancomponents;
+package org.alfresco.rest.site;
 
 import static org.alfresco.com.site.RMSiteCompliance.DOD5015;
 import static org.alfresco.com.site.RMSiteCompliance.STANDARD;
@@ -33,6 +33,7 @@ import com.google.gson.JsonObject;
 import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.fileplancomponents.RecordCategoryTest;
 import org.alfresco.rest.model.site.RMSite;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;

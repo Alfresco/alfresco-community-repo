@@ -33,6 +33,7 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.simple.JSONObject;
 import org.junit.Before;
@@ -46,25 +47,33 @@ import static org.junit.Assert.fail;
 public class TestPeople extends EnterpriseTestApi
 {
 	private People people;
+	private Iterator<TestNetwork> accountsIt;
+	private TestNetwork account1;
+	private TestNetwork account2;
+	private Iterator<String> account1PersonIt;
+	private Iterator<String> account2PersonIt;
+	private String account1Admin;
+	private String account2Admin;
 
 	@Before
 	public void setUp() throws Exception
 	{
 		people = publicApiClient.people();
+		accountsIt = getTestFixture().getNetworksIt();
+		account1 = accountsIt.next();
+		account2 = accountsIt.next();
+		account1Admin = "admin@"+account1.getId();
+		account2Admin = "admin@"+account2.getId();
+		account1PersonIt = account1.getPersonIds().iterator();
+		account2PersonIt = account2.getPersonIds().iterator();
 	}
 
 	@Test
 	public void testPeople() throws Exception
 	{
-		Iterator<TestNetwork> accountsIt = getTestFixture().getNetworksIt();
-		final TestNetwork account1 = accountsIt.next();
-		Iterator<String> personIt1 = account1.getPersonIds().iterator();
-		final String person1 = personIt1.next();
-    	final String person2 = personIt1.next();
-
-		final TestNetwork account2 = accountsIt.next();
-		Iterator<String> personIt2 = account2.getPersonIds().iterator();
-    	final String person3 = personIt2.next();
+		final String person1 = account1PersonIt.next();
+    	final String person2 = account1PersonIt.next();
+		final String person3 = account2PersonIt.next();
 
     	// Test Case cloud-2192
     	// should be able to see oneself
@@ -116,13 +125,10 @@ public class TestPeople extends EnterpriseTestApi
 	@Test
 	public void testCreatePerson() throws Exception
 	{
-		Iterator<TestNetwork> accountsIt = getTestFixture().getNetworksIt();
-		final TestNetwork account1 = accountsIt.next();
-		final String networkAdmin = "admin@"+account1.getId();
-		publicApiClient.setRequestContext(new RequestContext(account1.getId(), networkAdmin, "admin"));
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 
 		PersonUpdate person = new PersonUpdate.Builder().
-				id("myUserName@"+account1.getId()).
+				id("myUserName00@"+account1.getId()).
 				firstName("Firstname").
 				lastName("Lastname").
 				description("my description").
@@ -140,10 +146,9 @@ public class TestPeople extends EnterpriseTestApi
 				emailNotificationsEnabled(true).
 			build();
 
-		// true -> use extra fields such as company
-		Person p = people.create(person, true);
+		Person p = people.create(person);
 
-		assertEquals("myUserName@"+account1.getId(), p.getId());
+		assertEquals("myUserName00@"+account1.getId(), p.getId());
 		assertEquals("Firstname", p.getFirstName());
 		assertEquals("Lastname", p.getLastName());
 
@@ -181,41 +186,141 @@ public class TestPeople extends EnterpriseTestApi
 	@Test
 	public void testCreatePerson_notAllFieldsRequired() throws Exception
 	{
-		Iterator<TestNetwork> accountsIt = getTestFixture().getNetworksIt();
-		final TestNetwork account1 = accountsIt.next();
-		final String networkAdmin = "admin@"+account1.getId();
-		publicApiClient.setRequestContext(new RequestContext(account1.getId(), networkAdmin, "admin"));
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 
-		PersonUpdate person = new PersonUpdate.Builder().
-				id("joe.bloggs@"+account1.getId()).
-				firstName("Joe").
-				lastName("Bloggs").
-				email("joe.bloggs@example.com").
-				skypeId("jb.skype.id").
-				telephone("1234 5678 9012").
-				enabled(false).
-				emailNotificationsEnabled(false).
-				build();
+		// +ve: a random subset of fields should succeed.
+		{
+			PersonUpdate person = new PersonUpdate.Builder().
+					id("joe.bloggs@" + account1.getId()).
+					firstName("Joe").
+					lastName("Bloggs").
+					email("joe.bloggs@example.com").
+					skypeId("jb.skype.id").
+					telephone("1234 5678 9012").
+					enabled(false).
+					emailNotificationsEnabled(false).
+					build();
 
-		// true -> use extra fields such as company
-		Person p = people.create(person, true);
+			Person p = people.create(person);
 
-		assertEquals("joe.bloggs@"+account1.getId(), p.getId());
-		assertEquals("Joe", p.getFirstName());
-		assertEquals("Bloggs", p.getLastName());
-		assertEquals(null, p.getDescription());
-		assertEquals("joe.bloggs@example.com", p.getEmail());
-		assertEquals("jb.skype.id", p.getSkypeId());
-		assertEquals(null, p.getGoogleId());
-		assertEquals(null, p.getInstantMessageId());
-		assertEquals(null, p.getJobTitle());
-		assertEquals(null, p.getLocation());
-		assertEquals(null, p.getCompany());
-		assertEquals(null, p.getMobile());
-		assertEquals("1234 5678 9012", p.getTelephone());
-		assertEquals(null, p.getUserStatus());
-		assertEquals(true, p.isEnabled());
-		assertEquals(false, p.isEmailNotificationsEnabled());
+			assertEquals("joe.bloggs@" + account1.getId(), p.getId());
+			assertEquals("Joe", p.getFirstName());
+			assertEquals("Bloggs", p.getLastName());
+			assertEquals(null, p.getDescription());
+			assertEquals("joe.bloggs@example.com", p.getEmail());
+			assertEquals("jb.skype.id", p.getSkypeId());
+			assertEquals(null, p.getGoogleId());
+			assertEquals(null, p.getInstantMessageId());
+			assertEquals(null, p.getJobTitle());
+			assertEquals(null, p.getLocation());
+			assertEquals(null, p.getCompany());
+			assertEquals(null, p.getMobile());
+			assertEquals("1234 5678 9012", p.getTelephone());
+			assertEquals(null, p.getUserStatus());
+			assertEquals(true, p.isEnabled());
+			assertEquals(false, p.isEmailNotificationsEnabled());
+		}
+
+		// +ve: absolute minimum
+		{
+			PersonUpdate person = new PersonUpdate.Builder().
+					id("joe.bloggs.2@" + account1.getId()).
+					build();
+
+			Person p = people.create(person);
+
+			assertEquals("joe.bloggs.2@" + account1.getId(), p.getId());
+			assertEquals(null, p.getFirstName());
+			assertEquals(null, p.getLastName());
+			assertEquals(null, p.getDescription());
+			assertEquals(null, p.getEmail());
+			assertEquals(null, p.getSkypeId());
+			assertEquals(null, p.getGoogleId());
+			assertEquals(null, p.getInstantMessageId());
+			assertEquals(null, p.getJobTitle());
+			assertEquals(null, p.getLocation());
+			assertEquals(null, p.getCompany());
+			assertEquals(null, p.getMobile());
+			assertEquals(null, p.getTelephone());
+			assertEquals(null, p.getUserStatus());
+			assertEquals(true, p.isEnabled());
+			assertEquals(true, p.isEmailNotificationsEnabled());
+		}
+
+		// -ve: not enough fields!
+		{
+			// Create a person with no fields set.
+			PersonUpdate person = new PersonUpdate.Builder().build();
+			people.create(person, 400);
+		}
+	}
+
+	@Test
+	public void testCreatePerson_extraFieldsCauseError() throws Exception {
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+
+		String username = "joe.bloggs@"+account1.getId();
+
+		String[] illegalFields = new String[] {
+				"\"avatarId\": \"workspace://SpacesStore/\"",
+				"\"statusUpdatedAt\": \"2016-10-25T09:12:58.621Z\"",
+				"\"quota\": \"123\"",
+				"\"quotaUsed\": \"80\""
+		};
+
+		for (String badField : illegalFields)
+		{
+			String json =
+					"{\n" +
+					"  \"id\": \"" + username + "\",\n" +
+					"  \"firstName\": \"Joe\",\n" +
+					"  \"lastName\": \"Bloggs\",\n" +
+					badField +
+					"}";
+			people.create("people", null, null, null, json, "Illegal field test:"+badField, 400);
+		}
+	}
+
+	/**
+	 * General error conditions not covered by other "create person" tests.
+	 */
+	@Test
+	public void testCreatePerson_errorResponses() throws Exception {
+		// -ve: authorisation required
+		{
+			// Invalid auth details
+			publicApiClient.setRequestContext(new RequestContext(account1.getId(), GUID.generate(), "password"));
+			PersonUpdate person = new PersonUpdate.Builder().
+					id("myUserName01@"+account1.getId()).
+					build();
+			people.create(person, 401);
+		}
+
+		// -ve: API user does not have permission to create user.
+		{
+			String apiUser = account2PersonIt.next();
+			publicApiClient.setRequestContext(new RequestContext(account2.getId(), apiUser));
+			PersonUpdate person = new PersonUpdate.Builder().
+					id("myUserName02@"+account2.getId()).
+					build();
+			people.create(person, 403);
+
+			publicApiClient.setRequestContext(new RequestContext(account2.getId(), account2Admin, "admin"));
+			// Should succeed this time.
+			people.create(person, 201);
+		}
+
+		// -ve: person already exists
+		{
+			publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+			PersonUpdate person = new PersonUpdate.Builder().
+					id("myUserName03@"+account1.getId()).
+					build();
+			people.create(person);
+
+			// Attempt to create the person a second time.
+			people.create(person, 409);
+		}
 	}
 
 	public static class PersonUpdateJSONSerializer implements JSONAble
@@ -230,38 +335,31 @@ public class TestPeople extends EnterpriseTestApi
 		@Override
 		public JSONObject toJSON()
 		{
-			return toJSON(true);
-		}
-
-		public JSONObject toJSON(boolean fullVisibility)
-		{
 			JSONObject personJson = new JSONObject();
 
 			personJson.put("id", personUpdate.getUserName());
 			personJson.put("firstName", personUpdate.getFirstName());
 			personJson.put("lastName", personUpdate.getLastName());
 
-			if (fullVisibility)
+			personJson.put("description", personUpdate.getDescription());
+			personJson.put("email", personUpdate.getEmail());
+			personJson.put("skypeId", personUpdate.getSkypeId());
+			personJson.put("googleId", personUpdate.getGoogleId());
+			personJson.put("instantMessageId", personUpdate.getInstantMessageId());
+			personJson.put("jobTitle", personUpdate.getJobTitle());
+			personJson.put("location", personUpdate.getLocation());
+			org.alfresco.rest.api.model.Company co = personUpdate.getCompany();
+			if (co == null)
 			{
-				personJson.put("description", personUpdate.getDescription());
-				personJson.put("email", personUpdate.getEmail());
-				personJson.put("skypeId", personUpdate.getSkypeId());
-				personJson.put("googleId", personUpdate.getGoogleId());
-				personJson.put("instantMessageId", personUpdate.getInstantMessageId());
-				personJson.put("jobTitle", personUpdate.getJobTitle());
-				personJson.put("location", personUpdate.getLocation());
-				org.alfresco.rest.api.model.Company co = personUpdate.getCompany();
-				if (co == null)
-				{
-					co = new org.alfresco.rest.api.model.Company();
-				}
-				personJson.put("company", new Company(co).toJSON());
-				personJson.put("mobile", personUpdate.getMobile());
-				personJson.put("telephone", personUpdate.getTelephone());
-				personJson.put("userStatus", personUpdate.getUserStatus());
-				personJson.put("enabled", personUpdate.isEnabled());
-				personJson.put("emailNotificationsEnabled", personUpdate.isEmailNotificationsEnabled());
+				co = new org.alfresco.rest.api.model.Company();
 			}
+			personJson.put("company", new Company(co).toJSON());
+			personJson.put("mobile", personUpdate.getMobile());
+			personJson.put("telephone", personUpdate.getTelephone());
+			personJson.put("userStatus", personUpdate.getUserStatus());
+			personJson.put("enabled", personUpdate.isEnabled());
+			personJson.put("emailNotificationsEnabled", personUpdate.isEmailNotificationsEnabled());
+
 			return personJson;
 		}
 	}

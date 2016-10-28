@@ -1072,12 +1072,25 @@ public class PublicApiClient
 			return retSite;
 		}
 
-		public Person create(PersonUpdate person, boolean fullVisibility) throws PublicApiException
+		public Person create(PersonUpdate person) throws PublicApiException
+		{
+			return create(person, 201);
+		}
+
+		public Person create(PersonUpdate person, int expectedStatus) throws PublicApiException
 		{
 			TestPeople.PersonUpdateJSONSerializer jsonizer = new TestPeople.PersonUpdateJSONSerializer(person) ;
-			HttpResponse response = create("people", null, null, null, jsonizer.toJSON(fullVisibility).toString(), "Failed to create person");
-			Person retSite = Person.parsePerson((JSONObject)response.getJsonResponse().get("entry"));
-			return retSite;
+			HttpResponse response = create("people", null, null, null, jsonizer.toJSON().toString(), "Failed to create person", expectedStatus);
+			if ((response != null) && (response.getJsonResponse() != null))
+			{
+				Object entry = response.getJsonResponse().get("entry");
+				// entry will be null if there is an "error" data structure returned instead.
+				if (entry != null)
+				{
+					return Person.parsePerson((JSONObject) entry);
+				}
+			}
+			return null;
 		}
 
 		public void remove(Person person) throws PublicApiException

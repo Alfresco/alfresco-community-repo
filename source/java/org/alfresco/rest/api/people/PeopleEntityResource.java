@@ -31,6 +31,7 @@ import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -86,18 +87,29 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
             kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
     public List<Person> create(List<Person> persons, Parameters parameters)
     {
+        Person p = persons.get(0);
+
         // Until REPO-110 is solved, we need to explicitly test for the presence of fields
         // that are present on Person but not PersonUpdate
         // see also, SiteEntityResource.update(String, Site, Parameters)
-
-        // TODO: these are the extras:
-        // avatarId
-        // statusUpdatedAt
-        // quota
-        // quotaUsed
+        if (p.getStatusUpdatedAt() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: statusUpdatedAt");
+        }
+        if (p.getAvatarId() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: avatarId");
+        }
+        if (p.getQuota() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: quota");
+        }
+        if (p.getQuotaUsed() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: quotaUsed");
+        }
 
         List<Person> result = new ArrayList<>(1);
-        Person p = persons.get(0);
         PersonUpdate person = new PersonUpdate.Builder()
                 .id(p.getUserName())
                 .firstName(p.getFirstName())

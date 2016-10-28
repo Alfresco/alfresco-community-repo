@@ -30,6 +30,7 @@ package org.alfresco.repo.security.permissions.impl;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.repo.cache.SimpleCache;
+
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
@@ -55,6 +57,7 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationEvent;
 
+
 /**
  * Extends the core permission service implementation allowing the consideration of the read records permission.
  * <p>
@@ -66,6 +69,20 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
 {
     /** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
+
+    /**
+     * Configured Permission mapping.
+     * <p>
+     * This string comes from alfresco-global.properties and allows fine tuning of the how permissions are mapped.
+     * This was added as a fix for MNT-16852 to enhance compatibility with our Outlook Integration.
+     */
+    protected List<String> configuredReadPermissions;
+    /**
+     * Configured Permission mapping.
+     * <p>
+     * This string also comes from alfresco-global.properties.
+     */
+    protected List<String> configuredFilePermissions;
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -125,6 +142,28 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     }
 
     /**
+     * Maps the string from the properties file (rm.haspermissionmap.read)
+     * to the list used in the hasPermission method
+     *
+     * @param readMapping the mapping of permissions to ReadRecord
+     */
+    public void setConfiguredReadPermissions(String readMapping)
+    {
+        this.configuredReadPermissions = Arrays.asList(readMapping.split(","));
+    }
+
+    /**
+     * Maps the string set in the properties file (rm.haspermissionmap.write)
+     * to the list used in the hasPermission method
+     *
+     * @param fileMapping the mapping of permissions to FileRecord
+     */
+    public void setConfiguredFilePermissions(String fileMapping)
+    {
+        this.configuredFilePermissions = Arrays.asList(fileMapping.split(","));
+    }
+
+    /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
@@ -166,7 +205,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
             for (PermissionPostProcessor postProcessor : postProcessors)
             {
                 // post process permission
-                result = postProcessor.process(result, nodeRef, perm);
+                result = postProcessor.process(result, nodeRef, perm, this.configuredReadPermissions, this.configuredFilePermissions);
             }
         }
         return result;

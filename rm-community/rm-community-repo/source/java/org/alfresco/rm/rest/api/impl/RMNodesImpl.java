@@ -74,11 +74,6 @@ import org.alfresco.util.Pair;
  */
 public class RMNodesImpl extends NodesImpl implements RMNodes
 {
-    String FILE_PLAN = "-filePlan-";
-    String TRANSFERS = "-transfers-";
-    String UNFILED = "-unfiled-";
-    String HOLDS = "-holds-";
-
     private enum RMNodeType
     {
         // Note: ordered
@@ -213,7 +208,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
             throw new InvalidArgumentException("Missing nodeId");
         }
 
-        if (nodeId.equals(FILE_PLAN))
+        if (nodeId.equals(PATH_FILE_PLAN))
         {
             NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
             if (filePlan != null)
@@ -225,7 +220,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
                 throw new EntityNotFoundException(nodeId);
             }
         }
-        else if (nodeId.equals(TRANSFERS))
+        else if (nodeId.equals(PATH_TRANSFERS))
         {
             NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
             if (filePlan != null)
@@ -237,7 +232,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
                 throw new EntityNotFoundException(nodeId);
             }
         }
-        else if (nodeId.equals(UNFILED))
+        else if (nodeId.equals(PATH_UNFILED))
         {
             NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
             if (filePlan != null)
@@ -249,7 +244,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
                 throw new EntityNotFoundException(nodeId);
             }
         }
-        else if (nodeId.equals(HOLDS))
+        else if (nodeId.equals(PATH_HOLDS))
         {
             NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
             if (filePlan != null)

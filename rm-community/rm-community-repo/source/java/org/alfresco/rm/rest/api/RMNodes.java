@@ -37,9 +37,14 @@ import org.alfresco.rest.api.Nodes;
  */
 public interface RMNodes extends Nodes
 {
-    String PARAM_INCLUDE_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
-    String PARAM_INCLUDE_IS_CLOSED = "isClosed";
-    String PARAM_INCLUDE_IS_COMPLETED = "isCompleted";
+    public static String PATH_FILE_PLAN = "-filePlan-";
+    public static String PATH_TRANSFERS = "-transfers-";
+    public static String PATH_UNFILED = "-unfiled-";
+    public static String PATH_HOLDS = "-holds-";
+
+    public static String PARAM_INCLUDE_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
+    public static String PARAM_INCLUDE_IS_CLOSED = "isClosed";
+    public static String PARAM_INCLUDE_IS_COMPLETED = "isCompleted";
 
     /**
      * Identifies if one node is RM site node.

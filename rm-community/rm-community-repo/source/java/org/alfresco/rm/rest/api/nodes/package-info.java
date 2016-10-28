@@ -26,7 +26,7 @@
  */
 
 /**
- * Package info that defines the Information Governance REST API
+ * Package info that defines the Information Governance Nodes REST API
  * 
  * @author Ana Bozianu
  * @since 2.6

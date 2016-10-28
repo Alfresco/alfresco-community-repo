@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model;
+package org.alfresco.rest.model.fileplancomponents;
 
 import org.alfresco.rest.core.RestModels;
 

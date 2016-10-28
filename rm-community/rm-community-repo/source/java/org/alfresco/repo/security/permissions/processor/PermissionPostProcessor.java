@@ -27,6 +27,8 @@
 
 package org.alfresco.repo.security.permissions.processor;
 
+import java.util.List;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 
@@ -46,7 +48,9 @@ public interface PermissionPostProcessor
 	 * @param  accessStatus			current access status
 	 * @param  nodeRef				node reference
 	 * @param  perm					permission
+	 *
 	 * @return {@link AccessStatus}
 	 */
-	AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm);		
+	AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm,
+						List configuredReadPermissions, List configuredFilePermissions);
 }

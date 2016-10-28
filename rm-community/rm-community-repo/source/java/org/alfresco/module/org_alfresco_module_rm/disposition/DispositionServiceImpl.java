@@ -287,7 +287,15 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         NodeRef dsNodeRef = null;
         if (isRecord(nodeRef))
         {
-            DispositionSchedule originDispositionSchedule = getOriginDispositionSchedule(nodeRef);
+            // calculate disposition schedule without taking into account the user
+            DispositionSchedule originDispositionSchedule = AuthenticationUtil.runAsSystem(new RunAsWork<DispositionSchedule>()
+            {
+                @Override
+                public DispositionSchedule doWork()
+                {
+                    return getOriginDispositionSchedule(nodeRef);
+                }
+            });
             // if the initial disposition schedule of the record is folder based
             if (originDispositionSchedule == null || 
                     isNotTrue(originDispositionSchedule.isRecordLevelDisposition()))

@@ -256,6 +256,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         return this.propertyDefaults;
     }
 
+    protected Properties getEncryptedPropertyDefaults()
+    {
+        return this.encryptedPropertyDefaults;
+    }
+
     /**
      * Resolves the default value of a property, if there is one, expanding placholders as necessary.
      * 

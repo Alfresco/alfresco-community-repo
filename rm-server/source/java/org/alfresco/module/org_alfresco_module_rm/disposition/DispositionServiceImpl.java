@@ -1095,24 +1095,27 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         return null;
     }
     
-    public void updateDispositionWhenLinkingOrUnlinking(NodeRef record)
+    public void recalculateNextDispositionStep(NodeRef record)
     {
         List<NodeRef> recordFolders = recordFolderService.getRecordFolders(record);
         
         DispositionAction nextDispositionAction = getNextDispositionAction(record);
         
-        NextActionFromDisposition dsNextAction = getNextDispositionAction(record, recordFolders, nextDispositionAction);
-        final NodeRef action = dsNextAction.getNextActionNodeRef();
-        final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        if (nextDispositionAction != null)
         {
-            @Override
-            public Void doWork()
+            NextActionFromDisposition dsNextAction = getNextDispositionAction(record, recordFolders, nextDispositionAction);
+            final NodeRef action = dsNextAction.getNextActionNodeRef();
+            final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
-                nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                return null;
-            }
-        });
+                @Override
+                public Void doWork()
+                {
+                    nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                    return null;
+                }
+            });
+        }
     }
 
     /**

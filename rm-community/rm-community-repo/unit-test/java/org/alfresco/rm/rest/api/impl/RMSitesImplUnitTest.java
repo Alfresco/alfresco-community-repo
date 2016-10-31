@@ -222,7 +222,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
 
         //mock Parameters
         Parameters mockedParameters = mock(Parameters.class);
-        when(mockedParameters.getParameter(PARAM_SKIP_ADDTOFAVORITES)).thenReturn("true");
+        when(mockedParameters.getParameter(PARAM_SKIP_ADDTOFAVORITES)).thenReturn(Boolean.toString(true));
 
         //call createRMSite method
         rmSitesImpl.createRMSite(toCreate, mockedParameters);

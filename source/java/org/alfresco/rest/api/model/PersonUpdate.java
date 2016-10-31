@@ -251,6 +251,7 @@ public class PersonUpdate
         addToMap(properties, ContentModel.PROP_MOBILE, getMobile());
         addToMap(properties, ContentModel.PROP_TELEPHONE, getTelephone());
         addToMap(properties, ContentModel.PROP_USER_STATUS, getUserStatus());
+        addToMap(properties, ContentModel.PROP_ENABLED, isEnabled());
         addToMap(properties, ContentModel.PROP_EMAIL_FEED_DISABLED,
                 isEmailNotificationsEnabled() != null ? !isEmailNotificationsEnabled() : null);
 

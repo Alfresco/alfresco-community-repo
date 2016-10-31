@@ -25,18 +25,12 @@
  */
 package org.alfresco.rest.api.impl;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
-import org.alfresco.rest.api.model.Company;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
@@ -44,12 +38,18 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.QName;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Centralises access to people services and maps between representations.
@@ -295,6 +295,11 @@ public class PeopleImpl implements People
 			throw new ConstraintViolatedException("Person '"+person.getUserName()+"' already exists.");
 		}
 		Map<QName, Serializable> props = person.toProperties();
+
+		MutableAuthenticationService mas = (MutableAuthenticationService) authenticationService;
+		// TODO: very temporary code, until REPO-1503 (set password) implemented.
+		mas.createAuthentication(person.getUserName(), UUID.randomUUID().toString().toCharArray());
+		mas.setAuthenticationEnabled(person.getUserName(), person.isEnabled());
 		NodeRef nodeRef = personService.createPerson(props);
 		
 		// Write the contents of PersonUpdate.getDescription() text to a content file
@@ -314,15 +319,7 @@ public class PeopleImpl implements People
 		}
 
 		// Return a fresh retrieval
-		props = nodeService.getProperties(nodeRef);
-		// Do not put this pseudo/temp-property into the bag before creating the person
-		// as it would be created as a residual property.
-		props.put(Person.PROP_PERSON_DESCRIPTION, person.getDescription());
-		final boolean enabled = personService.isEnabled(person.getUserName());
-		return new Person(nodeRef, props, enabled);
-
-		// ...or
-//		return getPerson(person.getUserName());
+		return getPerson(person.getUserName());
 	}
 
 	private void validateCreatePersonData(PersonUpdate person)

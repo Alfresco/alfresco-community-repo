@@ -176,7 +176,45 @@ public class TestPeople extends EnterpriseTestApi
 		assertEquals(true, p.isEnabled());
 		assertEquals(true, p.isEmailNotificationsEnabled());
 	}
+	
+	@Test
+	public void testCreatePerson_canCreateDisabledPerson() throws PublicApiException
+	{
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 
+		// Person disabled
+		{
+			PersonUpdate person = new PersonUpdate.Builder().
+					id("myUserName04@"+account1.getId()).
+					firstName("Firstname").
+					email("myUserName04@"+account1.getId()).
+					enabled(false).
+					build();
+
+			Person p = people.create(person);
+			assertEquals(false, p.isEnabled());
+			// Check that a freshly retrieved person exhibits the same result
+			p = people.getPerson(person.getUserName());
+			assertEquals(false, p.isEnabled());
+		}
+
+		// Person enabled
+		{
+			PersonUpdate person = new PersonUpdate.Builder().
+					id("myUserName05@"+account1.getId()).
+					firstName("Firstname").
+					email("myUserName05@"+account1.getId()).
+					enabled(true).
+					build();
+
+			Person p = people.create(person);
+			assertEquals(true, p.isEnabled());
+			// Check that a freshly retrieved person exhibits the same result
+			p = people.getPerson(person.getUserName());
+			assertEquals(true, p.isEnabled());
+		}
+	}
+	
 	@Test
 	public void testCreatePerson_notAllFieldsRequired() throws Exception
 	{
@@ -211,7 +249,7 @@ public class TestPeople extends EnterpriseTestApi
 			assertEquals(null, p.getMobile());
 			assertEquals("1234 5678 9012", p.getTelephone());
 			assertEquals(null, p.getUserStatus());
-			assertEquals(true, p.isEnabled());
+			assertEquals(false, p.isEnabled());
 			assertEquals(false, p.isEmailNotificationsEnabled());
 		}
 

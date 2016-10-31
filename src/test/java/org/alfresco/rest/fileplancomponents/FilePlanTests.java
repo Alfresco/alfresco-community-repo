@@ -120,13 +120,13 @@ public class FilePlanTests extends BaseRestTest
         dataProviderClass = TestData.class,
         dataProvider = "getContainers"
     )
-    public void includeAllowableOperations(FilePlanComponentAlias filePlanAlias) throws Exception
+    public void includeAllowableOperations(String specialContainerAlias) throws Exception
     {
         //create RM Site if doesn't exist
         createRMSiteIfNotExists();
         filePlanComponentApi.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         //GET the file plan special containers with the optional parameter allowableOperations
-        FilePlanComponent filePlanComponent = filePlanComponentApi.withParams("include=allowableOperations").getFilePlanComponent(filePlanAlias.toString());
+        FilePlanComponent filePlanComponent = filePlanComponentApi.withParams("include=allowableOperations").getFilePlanComponent(specialContainerAlias);
         //Check the list of allowableOperations returned
         assertTrue(filePlanComponent.getAllowableOperations().containsAll(Arrays.asList("update", "create")),
                 "Wrong list of the allowable operations is return" + filePlanComponent.getAllowableOperations().toString());

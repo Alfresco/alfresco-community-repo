@@ -34,14 +34,12 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeFileRecord;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionScheduleImpl;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -547,6 +545,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                             // create and file the content as a record
                             file(nodeRef);
+                            // recalculate disposition schedule for the record when linking it
+                            dispositionService.updateDispositionWhenLinkingOrUnlinking(nodeRef);
                         }
                     }
                 }
@@ -1695,7 +1695,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // ensure we are linking a record to a record folder
         if(isRecord(record) && isRecordFolder(recordFolder))
         {
-            // ensure that we are not linking a record to an exisiting location
+            // ensure that we are not linking a record to an existing location
             List<ChildAssociationRef> parents = nodeService.getParentAssocs(record);
             for (ChildAssociationRef parent : parents)
             {
@@ -1718,6 +1718,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 record,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+            
+            // recalculate disposition schedule for the record when linking it
+            dispositionService.updateDispositionWhenLinkingOrUnlinking(record);
         }
         else
         {
@@ -1774,6 +1777,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             // remove the link
             nodeService.removeChild(recordFolder, record);
+            
+            // recalculate disposition schedule for record after unlinking it
+            dispositionService.updateDispositionWhenLinkingOrUnlinking(record);
         }
         else
         {

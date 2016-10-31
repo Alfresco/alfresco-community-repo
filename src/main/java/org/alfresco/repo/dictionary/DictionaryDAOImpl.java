@@ -186,9 +186,6 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
     {
         DictionaryRegistry dictionaryRegistry = new CoreDictionaryRegistryImpl(
                 this);
-        getThreadLocal().put("", dictionaryRegistry);
-        dictionaryRegistry.init();
-        getThreadLocal().remove("");
         return dictionaryRegistry;
     }
 
@@ -202,9 +199,6 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
                     {
                         DictionaryRegistry dictionaryRegistry = new TenantDictionaryRegistryImpl(
                                 DictionaryDAOImpl.this, tenant);
-                        getThreadLocal().put(tenant, dictionaryRegistry);
-                        dictionaryRegistry.init();
-                        getThreadLocal().remove(tenant);
                         return dictionaryRegistry;
                     }
                 }, tenantService.getDomainUser(

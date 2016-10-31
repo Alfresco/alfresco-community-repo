@@ -174,7 +174,7 @@ public class FilePlanTests extends BaseRestTest
     /**
      * Given that a file plan exists
      * When I ask the API to delete the file plan
-     * Then the 405 response code is returned. (see https://docs.google.com/document/d/1l4tcAnZotJR6qTHI4LFi62dy_i5Zuk-9ImDXDHpD_rA/edit?ts=578f7b64# page 20 and36)
+     * Then the 403 response code is returned.
      */
     @Test
     (
@@ -195,7 +195,7 @@ public class FilePlanTests extends BaseRestTest
     /**
      * Given that RM site exists
      * When I ask to create the file plan
-     * Then the 405 response code is returned. (see https://docs.google.com/document/d/1l4tcAnZotJR6qTHI4LFi62dy_i5Zuk-9ImDXDHpD_rA/edit?ts=578f7b64# page 20)
+     * Then the 403 response code is returned.
      */
     @Test
     (

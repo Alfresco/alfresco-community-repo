@@ -173,4 +173,33 @@ public class MultipleSchedulesTest extends BaseRMTestCase
                         .from(() -> dispositionService.getNextDispositionAction(record).getAsOfDate())
                     .because("Record should follow largest rentention schedule period, which is one week.");
     }
+    
+    /**
+     * <a href="https://issues.alfresco.com/jira/browse/RM-4292">RM-4292</a>
+     * <p><pre>
+     * Given a record subject to a mixed disposition schedule
+     * When the record is unlinked from one of its secondary parents
+     * Then the next disposition action is recalculated.
+     * </pre>
+     */
+    public void testRecalculateDispositionWhenUnlinking()
+    {
+        test()
+            .given(() -> {
+                setUpFilePlan();
+                // Create a record filed under category A and linked to category B.
+                record = fileFolderService.create(folderA, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
+                recordService.link(record, folderB);
+            })
+            .when(() -> {
+                // Cut off the record.
+                dispositionService.cutoffDisposableItem(record);
+                // Unlink the record from folder B.
+                recordService.unlink(record, folderB);
+            })
+            .then()
+                .expect(true)
+                        .from(() -> dispositionService.isNextDispositionActionEligible(record))
+                    .because("Destroy action should be available, as the record should follow its origin disposition schedule.");
+    }
 }

@@ -199,9 +199,9 @@ public class FilePlanTests extends BaseRestTest
      */
     @Test
     (
-            description = "Check the response code when creating the special file plan components",
-            dataProviderClass = TestData.class,
-            dataProvider = "getContainersAndTypes"
+        description = "Check the response code when creating the special file plan components",
+        dataProviderClass = TestData.class,
+        dataProvider = "getContainersAndTypes"
     )
     @Bug(id="RM-4296")
     public void createFilePlanSpecialContainerWhenExists(FilePlanComponentAlias filePlanAlias, FilePlanComponentType rmType) throws Exception
@@ -231,15 +231,15 @@ public class FilePlanTests extends BaseRestTest
     }
 
     /**
-     * Given that RM exists
+     * Given that RM site  exists
      * When a non-RM user ask the API for the details of the file plan
      * Then the status code 403 (Permission denied) is return
      */
     @Test
     (
-            description = "Check the response code when the RM site containers are get with non rm users",
-            dataProviderClass = TestData.class,
-            dataProvider = "getContainers"
+        description = "Check the response code when the RM site containers are get with non rm users",
+        dataProviderClass = TestData.class,
+        dataProvider = "getContainers"
     )
     public void getSpecialFilePlanComponentsWithNonRMuser(String filePlanAlias) throws Exception
     {

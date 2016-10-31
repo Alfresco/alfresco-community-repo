@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.permission;
 
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.permissions.processor.impl.PermissionPostProcessorBaseImpl;
@@ -55,20 +57,21 @@ public class RecordsManagementPermissionPostProcessor extends PermissionPostProc
 	 * @see org.alfresco.repo.security.permissions.processor.PermissionPostProcessor#process(org.alfresco.service.cmr.security.AccessStatus, org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
 	 */
 	@Override
-	public AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm) 
+	public AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm,
+								List configuredReadPermissions, List configuredFilePermissions)
 	{
 		AccessStatus result = accessStatus;
 		if (AccessStatus.DENIED.equals(accessStatus) &&
             nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
 		{        
 			// if read denied on rm artifact
-	        if (PermissionService.READ.equals(perm))
+	        if (PermissionService.READ.equals(perm) || configuredReadPermissions.contains(perm))
 	        {
 	        	// check for read record
 	            result = permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
 	        }
 	        // if write deinied on rm artificat
-	        else if (PermissionService.WRITE.equals(perm) || PermissionService.ADD_CHILDREN.equals(perm))
+	        else if (PermissionService.WRITE.equals(perm) || configuredFilePermissions.contains(perm))
 	        {
 	        	// check for file record
 	        	result = permissionService.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);

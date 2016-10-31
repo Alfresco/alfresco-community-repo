@@ -142,7 +142,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
     {
         String siteId = RM_SITE_ID;
         Params parameters = mock(Params.class);
-        when(parameters.getParameter(PERMANENT_PARAMETER)).thenReturn("true");
+        when(parameters.getParameter(PERMANENT_PARAMETER)).thenReturn(Boolean.toString(true));
         try
         {
             rmSiteEntityResource.delete(siteId, parameters);

@@ -341,6 +341,9 @@
             </entry>
          </map>
       </property>
+      <property name="overwritePolicy">
+         <value>${content.metadataExtracter.pdf.overwritePolicy}</value>
+      </property>
    </bean>
    <bean id="extracter.Poi"           class="org.alfresco.repo.content.metadata.PoiMetadataExtracter"           parent="baseMetadataExtracter">
       <property name="poiFootnotesLimit" value="${content.transformer.Poi.poiFootnotesLimit}" />

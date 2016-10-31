@@ -26,4 +26,6 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_TITLE = "cm:title";
     public static final String PROPERTIES_VITAL_RECORD_INDICATOR = "rma:vitalRecordIndicator";
     public static final String PROPERTIES_HOLD_REASON = "rma:holdReason";
+    public static final String PROPERTIES_DESCRIPTION = "cm:description";
+    public static final String ALLOWABLE_OPERATIONS = "allowableOperations";
 }

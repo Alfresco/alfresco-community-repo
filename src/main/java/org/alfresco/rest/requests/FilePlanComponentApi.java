@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope(value = "prototype")
-public class FilePlanComponentApi extends RestAPI
+public class FilePlanComponentApi extends RestAPI<FilePlanComponentApi>
 {
     /**
      * Get a file plan component
@@ -57,8 +57,8 @@ public class FilePlanComponentApi extends RestAPI
 
         return usingRestWrapper().processModel(FilePlanComponent.class, simpleRequest(
                 GET,
-                "fileplan-components/{fileplanComponentId}",
-                filePlanComponentId
+                "fileplan-components/{fileplanComponentId}?{parameters}",
+                filePlanComponentId, getParameters()
         ));
     }
 

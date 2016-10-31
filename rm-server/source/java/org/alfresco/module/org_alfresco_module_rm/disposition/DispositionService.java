@@ -271,5 +271,5 @@ public interface DispositionService
      * 
      * @param record
      */
-    void updateDispositionWhenLinkingOrUnlinking(NodeRef record);
+    void recalculateNextDispositionStep(NodeRef record);
 }

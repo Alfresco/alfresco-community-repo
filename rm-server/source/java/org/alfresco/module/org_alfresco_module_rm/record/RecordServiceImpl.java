@@ -546,7 +546,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             // create and file the content as a record
                             file(nodeRef);
                             // recalculate disposition schedule for the record when linking it
-                            dispositionService.updateDispositionWhenLinkingOrUnlinking(nodeRef);
+                            dispositionService.recalculateNextDispositionStep(nodeRef);
                         }
                     }
                 }
@@ -1720,7 +1720,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
             
             // recalculate disposition schedule for the record when linking it
-            dispositionService.updateDispositionWhenLinkingOrUnlinking(record);
+            dispositionService.recalculateNextDispositionStep(record);
         }
         else
         {
@@ -1779,7 +1779,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             nodeService.removeChild(recordFolder, record);
             
             // recalculate disposition schedule for record after unlinking it
-            dispositionService.updateDispositionWhenLinkingOrUnlinking(record);
+            dispositionService.recalculateNextDispositionStep(record);
         }
         else
         {

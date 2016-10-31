@@ -29,7 +29,11 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -197,7 +201,21 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             if (requestBody != null && requestBody instanceof StringRequestEntity)
             {
                 StringRequestEntity re = (StringRequestEntity)request.getRequestBody();
-                logger.debug("Payload (string): " + re.getContent());
+                // remove credentials from logs, such as "username":"John.Doe@test.com" and "password":"123456abc"
+                // REPO-1471
+                String payload = re.getContent(); // returns a new string, should be safe to modify
+                List<String> matches = new LinkedList<>();
+                Matcher m = Pattern.compile("\"username\":\"([^\"]+)\"|\"password\":\"([^\"]+)\"").matcher(payload);
+                while(m.find())
+                {
+                    matches.add(m.group());
+                }
+                for (String match: matches)
+                {
+                    payload = payload.replace(match.split("\"")[3], "<hidden>");
+                }
+
+                logger.debug("Payload (string): " + payload);
             }
             else if (requestBody != null && requestBody instanceof ByteArrayRequestEntity)
             {

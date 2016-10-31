@@ -11,6 +11,7 @@
  */
 package org.alfresco.rest.model.fileplancomponents;
 
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
 import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
 import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
@@ -37,6 +38,8 @@ public class FilePlanComponentProperties
     @JsonProperty(PROPERTIES_HOLD_REASON)
     private String holdReason;
 
+    @JsonProperty (PROPERTIES_DESCRIPTION)
+    private String description;
     /**
      * @return the vitalRecord
      */
@@ -84,4 +87,21 @@ public class FilePlanComponentProperties
     {
         this.holdReason = holdReason;
     }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription()
+    {
+        return this.description;
+    }
+
 }

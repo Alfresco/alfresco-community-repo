@@ -11,6 +11,7 @@
  */
 package org.alfresco.rest.model.fileplancomponents;
 
+import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
 import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES;
 
 import java.util.List;
@@ -51,6 +52,8 @@ public class FilePlanComponent
     
     private FilePlanComponentCreatedByUser createdByUser;
 
+    @JsonProperty (ALLOWABLE_OPERATIONS)
+    private List<String> allowableOperations;
     /**
      * @return the id
      */
@@ -225,5 +228,13 @@ public class FilePlanComponent
     public void setCreatedByUser(FilePlanComponentCreatedByUser createdByUser)
     {
         this.createdByUser = createdByUser;
+    }
+
+    /**
+     * @return the allowableOperations
+     */
+    public List<String> getAllowableOperations()
+    {
+        return this.allowableOperations;
     }
 }

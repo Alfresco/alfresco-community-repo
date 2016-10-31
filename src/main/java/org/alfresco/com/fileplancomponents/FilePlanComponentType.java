@@ -23,7 +23,10 @@ public enum FilePlanComponentType
     RECORD_CATEGORY_TYPE("rma:recordCategory"),
     RECORD_FOLDER_TYPE("rma:recordFolder"),
     HOLD_TYPE("rma:hold"),
-    UNFILED_RECORD_FOLDER_TYPE("rma:unfiledRecordFolder");
+    UNFILED_RECORD_FOLDER_TYPE("rma:unfiledRecordFolder"),
+    HOLD_CONTAINER_TYPE("rma:holdContainer"),
+    TRANSFER_CONTAINER_TYPE("rma:transferContainer"),
+    UNFILED_CONTAINER_TYPE("rma:unfiledRecordContainer");
 
     private String type;
 
@@ -46,6 +49,12 @@ public enum FilePlanComponentType
                 return HOLD_TYPE;
             case "rma:unfiledRecordFolder":
                 return UNFILED_RECORD_FOLDER_TYPE;
+            case "rma:holdContainer":
+                return HOLD_CONTAINER_TYPE;
+            case "rma:transferContainer":
+                return TRANSFER_CONTAINER_TYPE;
+            case "rma:unfiledRecordContainer":
+                return UNFILED_CONTAINER_TYPE;
         }
 
         throw new IllegalArgumentException("Invalid file plan component type enum value: '" + type + "'.");

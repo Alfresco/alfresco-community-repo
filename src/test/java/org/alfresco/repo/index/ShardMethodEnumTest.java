@@ -59,16 +59,6 @@ public class ShardMethodEnumTest
         Assert.assertEquals(ShardMethodEnum.DATE, ShardMethodEnum.getShardMethod("DATE"));
     }
     @Test
-    public void testTypeDateYear()
-    {
-        Assert.assertEquals(ShardMethodEnum.DATE_YEAR, ShardMethodEnum.getShardMethod("DATE_YEAR"));
-    }
-    @Test
-    public void testTypeDateMonth()
-    {
-        Assert.assertEquals(ShardMethodEnum.DATE_MONTH, ShardMethodEnum.getShardMethod("DATE_MONTH"));
-    }
-    @Test
     public void testTypeProperty()
     {
         Assert.assertEquals(ShardMethodEnum.PROPERTY, ShardMethodEnum.getShardMethod("PROPERTY"));

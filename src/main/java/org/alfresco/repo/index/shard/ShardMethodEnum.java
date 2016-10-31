@@ -35,9 +35,7 @@ public enum ShardMethodEnum
     MOD_ACL_ID,
     ACL_ID,
     DB_ID,
-    DATE,//Time stamp
-    DATE_YEAR,
-    DATE_MONTH,
+    DATE,
     UNKOWN,
     PROPERTY;
     
@@ -63,12 +61,6 @@ public enum ShardMethodEnum
                 break;
             case "DATE":
                 shardMethodEnum = DATE;
-                break;
-            case "DATE_YEAR":
-                shardMethodEnum = DATE_YEAR;
-                break;
-            case "DATE_MONTH":
-                shardMethodEnum = DATE_MONTH;
                 break;
             case "PROPERTY":
                 shardMethodEnum = PROPERTY;

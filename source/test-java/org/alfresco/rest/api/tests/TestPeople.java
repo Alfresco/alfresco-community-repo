@@ -151,13 +151,7 @@ public class TestPeople extends EnterpriseTestApi
 		assertEquals("myUserName00@"+account1.getId(), p.getId());
 		assertEquals("Firstname", p.getFirstName());
 		assertEquals("Lastname", p.getLastName());
-
-		// TODO: we currently have confusion over cm:description, cm:persondescription and RestApi:description
-		// PeopleImpl currently removes cm:persondescription and replaces it with {RestApi}description
-		// We'll keep description as null until we know better.
-//		assertEquals("my description", p.getDescription());
-		assertEquals(null, p.getDescription());
-
+		assertEquals("my description", p.getDescription());
 		assertEquals("email@example.com", p.getEmail());
 		assertEquals("my.skype.id", p.getSkypeId());
 		assertEquals("google", p.getGoogleId());

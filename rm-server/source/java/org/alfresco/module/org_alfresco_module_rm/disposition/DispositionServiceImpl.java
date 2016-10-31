@@ -1104,17 +1104,20 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (nextDispositionAction != null)
         {
             NextActionFromDisposition dsNextAction = getNextDispositionAction(record, recordFolders, nextDispositionAction);
-            final NodeRef action = dsNextAction.getNextActionNodeRef();
-            final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            if (dsNextAction != null)
             {
-                @Override
-                public Void doWork()
+                final NodeRef action = dsNextAction.getNextActionNodeRef();
+                final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                 {
-                    nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
-                    return null;
-                }
-            });
+                    @Override
+                    public Void doWork()
+                    {
+                        nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                        return null;
+                    }
+                });
+            }
         }
     }
 

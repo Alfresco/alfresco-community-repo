@@ -33,19 +33,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -55,7 +51,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
@@ -64,8 +59,6 @@ import org.alfresco.rm.rest.api.model.RecordCategoryNode;
 import org.alfresco.rm.rest.api.model.RecordFolderNode;
 import org.alfresco.rm.rest.api.model.RecordNode;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -77,7 +70,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -551,16 +543,16 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testValidateorLookupNodeWithFilePlanAlias() throws Exception
+    public void testValidateNodeWithFilePlanAlias() throws Exception
     {
         NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
-        NodeRef validateOrLookupNode = rmNodesImpl.validateOrLookupNode(FILE_PLAN_ALIAS, null);
+        NodeRef validateOrLookupNode = rmNodesImpl.validateNode(FILE_PLAN_ALIAS);
         assertEquals(filePlanNodeRef, validateOrLookupNode);
     }
 
     @Test
-    public void testValidateorLookupNodeWithTransfersAlias() throws Exception
+    public void testValidateNodeWithTransfersAlias() throws Exception
     {
         NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
@@ -568,12 +560,12 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef transferContainerNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getTransferContainer(filePlanNodeRef)).thenReturn(transferContainerNodeRef);
 
-        NodeRef validateOrLookupNode = rmNodesImpl.validateOrLookupNode(TRANSFERS_ALIAS, null);
+        NodeRef validateOrLookupNode = rmNodesImpl.validateNode(TRANSFERS_ALIAS);
         assertEquals(transferContainerNodeRef, validateOrLookupNode);
     }
 
     @Test
-    public void testValidateorLookupNodeWithHoldsAlias() throws Exception
+    public void testValidateNodeWithHoldsAlias() throws Exception
     {
         NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
@@ -581,12 +573,12 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef holdsContainerNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getHoldContainer(filePlanNodeRef)).thenReturn(holdsContainerNodeRef);
 
-        NodeRef validateOrLookupNode = rmNodesImpl.validateOrLookupNode(HOLDS_ALIAS, null);
+        NodeRef validateOrLookupNode = rmNodesImpl.validateNode(HOLDS_ALIAS);
         assertEquals(holdsContainerNodeRef, validateOrLookupNode);
     }
 
     @Test
-    public void testValidateorLookupNodeWithUnfiledAlias() throws Exception
+    public void testValidateNodeWithUnfiledAlias() throws Exception
     {
         NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
@@ -594,18 +586,18 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef unfiledContainerNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getUnfiledContainer(filePlanNodeRef)).thenReturn(unfiledContainerNodeRef);
 
-        NodeRef validateOrLookupNode = rmNodesImpl.validateOrLookupNode(UNFILED_ALIAS, null);
+        NodeRef validateOrLookupNode = rmNodesImpl.validateNode(UNFILED_ALIAS);
         assertEquals(unfiledContainerNodeRef, validateOrLookupNode);
     }
 
     @Test
-    public void testValidateorLookupNodeWithFilePlanAliasRMSiteNotCreated() throws Exception
+    public void testValidateNodeWithFilePlanAliasRMSiteNotCreated() throws Exception
     {
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(null);
 
         try
         {
-            rmNodesImpl.validateOrLookupNode(FILE_PLAN_ALIAS, null);
+            rmNodesImpl.validateNode(FILE_PLAN_ALIAS);
             fail("Expected exception as RM site is not created.");
         }
         catch(EntityNotFoundException ex)
@@ -615,13 +607,13 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testValidateorLookupNodeWithTransferAliasRMSiteNotCreated() throws Exception
+    public void testValidateNodeWithTransferAliasRMSiteNotCreated() throws Exception
     {
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(null);
 
         try
         {
-            rmNodesImpl.validateOrLookupNode(TRANSFERS_ALIAS, null);
+            rmNodesImpl.validateNode(TRANSFERS_ALIAS);
             fail("Expected exception as RM site is not created.");
         }
         catch(EntityNotFoundException ex)
@@ -631,13 +623,13 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testValidateorLookupNodeWithHoldsAliasRMSiteNotCreated() throws Exception
+    public void testValidateNodeWithHoldsAliasRMSiteNotCreated() throws Exception
     {
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(null);
 
         try
         {
-            rmNodesImpl.validateOrLookupNode(HOLDS_ALIAS, null);
+            rmNodesImpl.validateNode(HOLDS_ALIAS);
             fail("Expected exception as RM site is not created.");
         }
         catch(EntityNotFoundException ex)
@@ -647,13 +639,13 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testValidateorLookupNodeWithUnfiledAliasRMSiteNotCreated() throws Exception
+    public void testValidateNodeWithUnfiledAliasRMSiteNotCreated() throws Exception
     {
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(null);
 
         try
         {
-            rmNodesImpl.validateOrLookupNode(UNFILED_ALIAS, null);
+            rmNodesImpl.validateNode(UNFILED_ALIAS);
             fail("Expected exception as RM site is not created.");
         }
         catch(EntityNotFoundException ex)
@@ -663,78 +655,25 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testValidateorLookupNodeNullNodeRef() throws Exception
+    public void testValidateNodeNullNodeRef() throws Exception
     {
         try
         {
-            rmNodesImpl.validateOrLookupNode(null, null);
+            rmNodesImpl.validateNode((String)null);
             fail("Expected exception as nodId should not be null or empty.");
         }
-        catch(InvalidArgumentException ex)
+        catch(IllegalArgumentException ex)
         {
-            assertEquals("Missing nodeId", ex.getMsgId());
+            assertEquals("nodeId is a mandatory parameter", ex.getMessage());
         }
     }
 
     @Test
-    public void testValidateorLookupNode() throws Exception
+    public void testValidateNode() throws Exception
     {
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        NodeRef validateOrLookupNode = rmNodesImpl.validateOrLookupNode(nodeRef.getId(), null);
+        NodeRef validateOrLookupNode = rmNodesImpl.validateNode(nodeRef.getId());
         assertEquals(nodeRef, validateOrLookupNode);
-    }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Test
-    public void testUpdateNode() throws Exception
-    {
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        QName mockedType = AlfMock.generateQName();
-        when(mockedNodeService.getType(nodeRef)).thenReturn(mockedType);
-        when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_CMOBJECT)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_SYSTEM_FOLDER)).thenReturn(false);
-
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
-
-        Parameters mockedParameters = mock(Parameters.class);
-        Node mockedNodeInfo = mock(Node.class);
-        Map<String, Object> nodeProperties = new HashMap<>();
-        nodeProperties.put("cm:title", "New Title");
-        nodeProperties.put("cm:description", "New Description");
-        when(mockedNodeInfo.getProperties()).thenReturn(nodeProperties);
-
-        PropertyDefinition mockedPropertyDefinition = mock(PropertyDefinition.class);
-        when(mockedDictionaryService.getProperty(any(QName.class))).thenReturn(mockedPropertyDefinition);
-
-        DataTypeDefinition mockedDataTypeDef = mock(DataTypeDefinition.class);
-        when(mockedPropertyDefinition.getDataType()).thenReturn(mockedDataTypeDef);
-        when(mockedDataTypeDef.getName()).thenReturn(AlfMock.generateQName());
-        when(mockedNamespaceService.getNamespaceURI(any(String.class))).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
-
-        when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
-
-        Node updatedNode = rmNodesImpl.updateNode(nodeRef.getId(), mockedNodeInfo, mockedParameters);
-        assertNotNull(updatedNode);
-
-        ArgumentCaptor<Map> propertiesMapCaptor = ArgumentCaptor.forClass(Map.class);
-        verify(mockedNodeService, times(1)).addProperties(eq(nodeRef), propertiesMapCaptor.capture());
-
-        // check property map
-        Map<QName, Serializable> propertyMap = (Map<QName, Serializable>)propertiesMapCaptor.getValue();
-        assertNotNull(propertyMap);
-        assertEquals(2, propertyMap.size());
-        assertTrue(propertyMap.containsKey(ContentModel.PROP_DESCRIPTION));
-        assertTrue(propertyMap.containsKey(ContentModel.PROP_TITLE));
-
-
-        //TODO have a look on this after RM-4295 is fixed
-//        assertEquals("New Description", updatedNode.getDescription());
-//        assertEquals("New Title", updatedNode.getTitle());
     }
 
     @Test

@@ -3,15 +3,24 @@
 # Note: for an installation created by the Alfresco installer, you only need to edit ALFRESCO_HOME
 
 # Alfresco installation directory
-ALFRESCO_HOME=/opt/alfresco-4.1
+if [ -z "$ALFRESCO_HOME" ]; then
+    ALFRESCO_HOME=/opt/alfresco-5.2
+    echo "Setting ALFRESCO_HOME to $ALFRESCO_HOME"
+    exit 1
+fi
+
 # The directory containing the alfresco keystores, as referenced by keystoreFile and truststoreFile attributes in tomcat/conf/server.xml
 ALFRESCO_KEYSTORE_HOME=$ALFRESCO_HOME/alf_data/keystore
-# SOLR installation directory
-SOLR_HOME=$ALFRESCO_HOME/solr4
+
+# Location in which new keystore files will be generated
+if [ -z "$CERTIFICATE_HOME" ]; then
+    CERTIFICATE_HOME=$HOME
+    echo "Certificates will be generated in $CERTIFICATE_HOME and then moved to $ALFRESCO_KEYSTORE_HOME"
+fi
+
 # Java installation directory
 JAVA_HOME=$ALFRESCO_HOME/java
-# Location in which new keystore files will be generated
-CERTIFICATE_HOME=$HOME
+
 # The repository server certificate subject name, as specified in tomcat/conf/tomcat-users.xml with roles="repository"
 REPO_CERT_DNAME="CN=Alfresco Repository, OU=Unknown, O=Alfresco Software Ltd., L=Maidenhead, ST=UK, C=GB"
 # The SOLR client certificate subject name, as specified in tomcat/conf/tomcat-users.xml with roles="repoclient"
@@ -19,8 +28,8 @@ SOLR_CLIENT_CERT_DNAME="CN=Alfresco Repository Client, OU=Unknown, O=Alfresco So
 # The number of days before the certificate expires
 CERTIFICATE_VALIDITY=36525
 
-# Stop alfresco
-"$ALFRESCO_HOME/alfresco.sh" stop
+# Stop
+if [ -f "$ALFRESCO_HOME/alfresco.sh" ]; then "$ALFRESCO_HOME/alfresco.sh" stop; fi
 
 # Ensure certificate output dir exists
 mkdir -p "$CERTIFICATE_HOME"
@@ -54,35 +63,21 @@ mkdir -p "$ALFRESCO_KEYSTORE_HOME"
 cp "$ALFRESCO_KEYSTORE_HOME/ssl.keystore" "$ALFRESCO_KEYSTORE_HOME/ssl.keystore.old"
 cp "$ALFRESCO_KEYSTORE_HOME/ssl.truststore" "$ALFRESCO_KEYSTORE_HOME/ssl.truststore.old"
 cp "$ALFRESCO_KEYSTORE_HOME/browser.p12" "$ALFRESCO_KEYSTORE_HOME/browser.p12.old"
-cp "$SOLR_HOME/workspace-SpacesStore/conf/ssl.repo.client.keystore" "$SOLR_HOME/workspace-SpacesStore/conf/ssl.repo.client.keystore.old"
-cp "$SOLR_HOME/workspace-SpacesStore/conf/ssl.repo.client.truststore" "$SOLR_HOME/workspace-SpacesStore/conf/ssl.repo.client.truststore.old"
-cp "$SOLR_HOME/archive-SpacesStore/conf/ssl.repo.client.keystore" "$SOLR_HOME/archive-SpacesStore/conf/ssl.repo.client.keystore.old"
-cp "$SOLR_HOME/archive-SpacesStore/conf/ssl.repo.client.truststore" "$SOLR_HOME/archive-SpacesStore/conf/ssl.repo.client.truststore.old"
-cp "$SOLR_HOME/templates/test/conf/ssl.repo.client.keystore" "$SOLR_HOME/templates/test/conf/ssl.repo.client.keystore.old"
-cp "$SOLR_HOME/templates/test/conf/ssl.repo.client.truststore" "$SOLR_HOME/templates/test/conf/ssl.repo.client.truststore.old"
-cp "$SOLR_HOME/templates/rerank/conf/ssl.repo.client.keystore" "$SOLR_HOME/templates/rerank/conf/ssl.repo.client.keystore.old"
-cp "$SOLR_HOME/templates/rerank/conf/ssl.repo.client.truststore" "$SOLR_HOME/templates/rerank/conf/ssl.repo.client.truststore.old"
-cp "$SOLR_HOME/templates/vanilla/conf/ssl.repo.client.keystore" "$SOLR_HOME/templates/vanilla/conf/ssl.repo.client.keystore.old"
-cp "$SOLR_HOME/templates/vanilla/conf/ssl.repo.client.truststore" "$SOLR_HOME/templates/vanilla/conf/ssl.repo.client.truststore.old"
-cp "$SOLR_HOME/templates/without_suggest/conf/ssl.repo.client.keystore" "$SOLR_HOME/templates/without_suggest/conf/ssl.repo.client.keystore.old"
-cp "$SOLR_HOME/templates/without_suggest/conf/ssl.repo.client.truststore" "$SOLR_HOME/templates/without_suggest/conf/ssl.repo.client.truststore.old"
 
 # Install the new files
 cp "$CERTIFICATE_HOME/ssl.keystore" "$ALFRESCO_KEYSTORE_HOME/ssl.keystore"
 cp "$CERTIFICATE_HOME/ssl.truststore" "$ALFRESCO_KEYSTORE_HOME/ssl.truststore"
 cp "$CERTIFICATE_HOME/browser.p12" "$ALFRESCO_KEYSTORE_HOME/browser.p12"
-cp "$CERTIFICATE_HOME/ssl.repo.client.keystore" "$SOLR_HOME/workspace-SpacesStore/conf/ssl.repo.client.keystore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.truststore" "$SOLR_HOME/workspace-SpacesStore/conf/ssl.repo.client.truststore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.keystore" "$SOLR_HOME/archive-SpacesStore/conf/ssl.repo.client.keystore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.truststore" "$SOLR_HOME/archive-SpacesStore/conf/ssl.repo.client.truststore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.keystore" "$SOLR_HOME/templates/test/conf/ssl.repo.client.keystore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.truststore" "$SOLR_HOME/templates/test/conf/ssl.repo.client.truststore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.keystore" "$SOLR_HOME/templates/rerank/conf/ssl.repo.client.keystore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.truststore" "$SOLR_HOME/templates/rerank/conf/ssl.repo.client.truststore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.keystore" "$SOLR_HOME/templates/vanilla/conf/ssl.repo.client.keystore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.truststore" "$SOLR_HOME/templates/vanilla/conf/ssl.repo.client.truststore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.keystore" "$SOLR_HOME/templates/without_suggest/conf/ssl.repo.client.keystore"
-cp "$CERTIFICATE_HOME/ssl.repo.client.truststore" "$SOLR_HOME/templates/without_suggest/conf/ssl.repo.client.truststore"
 
-echo "Certificate update complete"
+echo " "
+echo "*******************************************"
+echo "You must sure copy the following files to the correct location."
+echo " "
+echo " $ALFRESCO_KEYSTORE_HOME/ssl.keystore"
+echo " $ALFRESCO_KEYSTORE_HOME/ssl.truststore"
+echo " eg. for Solr 4 the location is SOLR_HOME/workspace-SpacesStore/conf/ and SOLR_HOME/archive-SpacesStore/conf/"
+echo " "
+echo "$ALFRESCO_KEYSTORE_HOME/browser.p12 has also been generated."
+echo " "
 echo "Please ensure that you set dir.keystore=$ALFRESCO_KEYSTORE_HOME in alfresco-global.properties"
+echo "*******************************************"

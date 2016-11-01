@@ -2,11 +2,9 @@
 @rem Note: for an installation created by the Alfresco installer, you only need to edit ALFRESCO_HOME
 
 @rem Alfresco installation directory
-set ALFRESCO_HOME=C:\Alfresco-4.1
+set ALFRESCO_HOME=C:\Alfresco-5.2
 @rem The directory containing the alfresco keystores, as referenced by keystoreFile and truststoreFile attributes in tomcat\conf\server.xml
 set ALFRESCO_KEYSTORE_HOME=%ALFRESCO_HOME%\alf_data\keystore
-@rem SOLR installation directory
-set SOLR_HOME=%ALFRESCO_HOME%\solr4
 @rem Java installation directory
 set JAVA_HOME=%ALFRESCO_HOME%\java
 @rem Location in which new keystore files will be generated
@@ -46,39 +44,15 @@ set CERTIFICATE_VALIDITY=36525
 @rem Ensure keystore dir actually exists
 @if not exist "%ALFRESCO_KEYSTORE_HOME%" mkdir "%ALFRESCO_KEYSTORE_HOME%"
 
-@rem Back up old files
-copy /Y "%ALFRESCO_KEYSTORE_HOME%\ssl.keystore" "%ALFRESCO_KEYSTORE_HOME%\ssl.keystore.old"
-copy /Y "%ALFRESCO_KEYSTORE_HOME%\ssl.truststore" "%ALFRESCO_KEYSTORE_HOME%\ssl.truststore.old"
-copy /Y "%ALFRESCO_KEYSTORE_HOME%\browser.p12" "%ALFRESCO_KEYSTORE_HOME%\browser.p12.old"
-copy /Y "%SOLR_HOME%\workspace-SpacesStore\conf\ssl.repo.client.keystore" "%SOLR_HOME%\workspace-SpacesStore\conf\ssl.repo.client.keystore.old"
-copy /Y "%SOLR_HOME%\workspace-SpacesStore\conf\ssl.repo.client.truststore" "%SOLR_HOME%\workspace-SpacesStore\conf\ssl.repo.client.truststore.old"
-copy /Y "%SOLR_HOME%\archive-SpacesStore\conf\ssl.repo.client.keystore" "%SOLR_HOME%\archive-SpacesStore\conf\ssl.repo.client.keystore.old"
-copy /Y "%SOLR_HOME%\archive-SpacesStore\conf\ssl.repo.client.truststore" "%SOLR_HOME%\archive-SpacesStore\conf\ssl.repo.client.truststore.old"
-copy /Y "%SOLR_HOME%\templates\test\conf\ssl.repo.client.keystore" "%SOLR_HOME%\templates\test\conf\ssl.repo.client.keystore.old"
-copy /Y "%SOLR_HOME%\templates\test\conf\ssl.repo.client.truststore" "%SOLR_HOME%\templates\test\conf\ssl.repo.client.truststore.old"
-copy /Y "%SOLR_HOME%\templates\rerank\conf\ssl.repo.client.keystore" "%SOLR_HOME%\templates\rerank\conf\ssl.repo.client.keystore.old"
-copy /Y "%SOLR_HOME%\templates\rerank\conf\ssl.repo.client.truststore" "%SOLR_HOME%\templates\rerank\conf\ssl.repo.client.truststore.old"
-copy /Y "%SOLR_HOME%\templates\vanilla\conf\ssl.repo.client.keystore" "%SOLR_HOME%\templates\vanilla\conf\ssl.repo.client.keystore.old"
-copy /Y "%SOLR_HOME%\templates\vanilla\conf\ssl.repo.client.truststore" "%SOLR_HOME%\templates\vanilla\conf\ssl.repo.client.truststore.old"
-copy /Y "%SOLR_HOME%\templates\without_suggest\conf\ssl.repo.client.keystore" "%SOLR_HOME%\templates\without_suggest\conf\ssl.repo.client.keystore.old"
-copy /Y "%SOLR_HOME%\templates\without_suggest\conf\ssl.repo.client.truststore" "%SOLR_HOME%\templates\without_suggest\conf\ssl.repo.client.truststore.old"
-
 @rem Install the new files
 copy /Y "%CERTIFICATE_HOME%\ssl.keystore" "%ALFRESCO_KEYSTORE_HOME%\ssl.keystore"
 copy /Y "%CERTIFICATE_HOME%\ssl.truststore" "%ALFRESCO_KEYSTORE_HOME%\ssl.truststore"
 copy /Y "%CERTIFICATE_HOME%\browser.p12" "%ALFRESCO_KEYSTORE_HOME%\browser.p12"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.keystore" "%SOLR_HOME%\workspace-SpacesStore\conf\ssl.repo.client.keystore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.truststore" "%SOLR_HOME%\workspace-SpacesStore\conf\ssl.repo.client.truststore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.keystore" "%SOLR_HOME%\archive-SpacesStore\conf\ssl.repo.client.keystore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.truststore" "%SOLR_HOME%\archive-SpacesStore\conf\ssl.repo.client.truststore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.keystore" "%SOLR_HOME%\templates\test\conf\ssl.repo.client.keystore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.truststore" "%SOLR_HOME%\templates\test\conf\ssl.repo.client.truststore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.keystore" "%SOLR_HOME%\templates\rerank\conf\ssl.repo.client.keystore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.truststore" "%SOLR_HOME%\templates\rerank\conf\ssl.repo.client.truststore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.keystore" "%SOLR_HOME%\templates\vanilla\conf\ssl.repo.client.keystore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.truststore" "%SOLR_HOME%\templates\vanilla\conf\ssl.repo.client.truststore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.keystore" "%SOLR_HOME%\templates\without_suggest\conf\ssl.repo.client.keystore"
-copy /Y "%CERTIFICATE_HOME%\ssl.repo.client.truststore" "%SOLR_HOME%\templates\without_suggest\conf\ssl.repo.client.truststore"
 
-@echo Certificate update complete
+@echo ****************************************
+@echo You must copy the following files to the correct location.
+@echo %ALFRESCO_KEYSTORE_HOME%\ssl.keystore
+@echo %ALFRESCO_KEYSTORE_HOME%\ssl.truststore
+@echo eg. for Solr 4 the location is SOLR_HOME\workspace-SpacesStore\conf and SOLR_HOME\archive-SpacesStore\conf  
 @echo Please ensure that you set dir.keystore=%ALFRESCO_KEYSTORE_HOME% in alfresco-global.properties
+@echo ****************************************

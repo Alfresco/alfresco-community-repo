@@ -9,14 +9,14 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest;
+package org.alfresco.rest.base;
 
 import static java.lang.Integer.parseInt;
 
-import static org.alfresco.com.site.RMSiteCompliance.STANDARD;
-import static org.alfresco.com.site.RMSiteFields.COMPLIANCE;
-import static org.alfresco.com.site.RMSiteFields.DESCRIPTION;
-import static org.alfresco.com.site.RMSiteFields.TITLE;
+import static org.alfresco.rest.model.site.RMSiteCompliance.STANDARD;
+import static org.alfresco.rest.model.site.RMSiteFields.COMPLIANCE;
+import static org.alfresco.rest.model.site.RMSiteFields.DESCRIPTION;
+import static org.alfresco.rest.model.site.RMSiteFields.TITLE;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -24,6 +24,7 @@ import static org.springframework.http.HttpStatus.OK;
 import com.google.gson.JsonObject;
 import com.jayway.restassured.RestAssured;
 
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.requests.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
@@ -58,10 +59,10 @@ public class BaseRestTest extends RestTest
     private String restRmPath;
 
     @Autowired
-    public RMSiteAPI rmSiteAPI;
+    private RMSiteAPI rmSiteAPI;
 
     @Autowired
-    public DataUser dataUser;
+    private DataUser dataUser;
 
     // Constants
     public static final String RM_ID = "rm";
@@ -79,17 +80,18 @@ public class BaseRestTest extends RestTest
         RestAssured.port = parseInt(port);
         RestAssured.basePath = restRmPath;
 
-        //create RM Site if not exist
+        // Create RM Site if not exist
         createRMSiteIfNotExists();
     }
+
     /**
      * Helper method to create the RM Site via the POST request
      * if the site doesn't exist
      */
     public void createRMSiteIfNotExists() throws Exception
     {
-        //check RM site doesn't exist
-        if (!siteRMExist())
+        // Check RM site doesn't exist
+        if (!siteRMExists())
         {
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
@@ -109,9 +111,9 @@ public class BaseRestTest extends RestTest
     }
 
     /**
-     * Check the RM site exist via the GET request
+     * Check if the RM site exists via the GET request
      */
-    public boolean siteRMExist() throws Exception
+    public boolean siteRMExists() throws Exception
     {
         RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         rmSiteAPI.getSite();

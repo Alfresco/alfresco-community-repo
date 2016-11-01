@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.com.util;
+package org.alfresco.rest.util;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -27,11 +27,11 @@ public class ParameterCheck
     }
 
     /**
-     * FIXME: Document me :)
+     * Checks if a given {@link String} is blank or not, i.e. not <code>null<code>, "" or " ".
      *
-     * @param paramName FIXME: Document me :)
-     * @param paramValue FIXME: Document me :)
-     * @throws IllegalArgumentException FIXME: Document me :)
+     * @param paramName The name of the parameter to check
+     * @param paramValue The value of the parameter to check
+     * @throws IllegalArgumentException Throws an exception if the given value is blank
      */
     public static void mandatoryString(final String paramName, final String paramValue) throws IllegalArgumentException
     {
@@ -42,12 +42,13 @@ public class ParameterCheck
     }
 
     /**
-     * FIXME: Document me :)
+     * Checks if a given {@link Object} is null or not
      *
-     * @param paramName FIXME: Document me :)
-     * @param object FIXME: Document me :)
+     * @param paramName The name of the parameter to check
+     * @param object The value of the parameter to check
+     * @throws IllegalArgumentException Throws an exception if the given value is null
      */
-    public static void mandatoryObject(final String paramName, final Object object)
+    public static void mandatoryObject(final String paramName, final Object object) throws IllegalArgumentException
     {
         if (object == null)
         {

@@ -11,10 +11,10 @@
  */
 package org.alfresco.rest.requests;
 
-import static org.alfresco.com.util.ParameterCheck.mandatoryObject;
-import static org.alfresco.com.util.ParameterCheck.mandatoryString;
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
+import static org.alfresco.rest.util.ParameterCheck.mandatoryObject;
+import static org.alfresco.rest.util.ParameterCheck.mandatoryString;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope(value = "prototype")
-public class FilePlanComponentApi extends RestAPI<FilePlanComponentApi>
+public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
 {
     /**
      * Get a file plan component

@@ -11,10 +11,10 @@
  */
 package org.alfresco.rest.model.fileplancomponents;
 
-import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,8 +38,9 @@ public class FilePlanComponentProperties
     @JsonProperty(PROPERTIES_HOLD_REASON)
     private String holdReason;
 
-    @JsonProperty (PROPERTIES_DESCRIPTION)
+    @JsonProperty(PROPERTIES_DESCRIPTION)
     private String description;
+
     /**
      * @return the vitalRecord
      */
@@ -103,5 +104,4 @@ public class FilePlanComponentProperties
     {
         return this.description;
     }
-
 }

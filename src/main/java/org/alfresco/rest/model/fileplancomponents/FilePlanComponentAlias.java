@@ -9,7 +9,9 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.com.fileplancomponents;
+package org.alfresco.rest.model.fileplancomponents;
+
+import static org.alfresco.rest.util.ParameterCheck.mandatoryString;
 
 /**
  * File plan component alias enumeration
@@ -33,19 +35,26 @@ public enum FilePlanComponentAlias
 
     public static final FilePlanComponentAlias getFilePlanComponentAlias(String alias)
     {
-        switch (alias)
+        mandatoryString("alias", alias);
+
+        FilePlanComponentAlias result = null;
+        FilePlanComponentAlias[] values = values();
+
+        for (FilePlanComponentAlias filePlanComponentAlias : values)
         {
-            case "-filePlan-":
-                return FILE_PLAN_ALIAS;
-            case "-transfers-":
-                return TRANSFERS_ALIAS;
-            case "-unfiled-":
-                return UNFILED_RECORDS_CONTAINER_ALIAS;
-            case "-holds-":
-                return HOLDS_ALIAS;
+            if (filePlanComponentAlias.toString().equals(alias))
+            {
+                result = filePlanComponentAlias;
+                break;
+            }
         }
 
-        throw new IllegalArgumentException("Invalid file plan component alias enum value: '" + alias + "'.");
+        if (result == null)
+        {
+            throw new IllegalArgumentException("Invalid file plan component alias enum value: '" + alias + "'.");
+        }
+
+        return result;
     }
 
     /**

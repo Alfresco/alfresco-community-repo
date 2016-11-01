@@ -13,6 +13,7 @@ package org.alfresco.rest.model.fileplancomponents;
 
 /**
  * POJO for file plan component created by object
+ *
  * @author Kristijan Conkas
  * @since 1.0
  */
@@ -20,6 +21,7 @@ public class FilePlanComponentCreatedByUser
 {
     private String id;
     private String displayName;
+
     /**
      * @return the id
      */
@@ -27,6 +29,7 @@ public class FilePlanComponentCreatedByUser
     {
         return this.id;
     }
+
     /**
      * @param id the id to set
      */
@@ -34,6 +37,7 @@ public class FilePlanComponentCreatedByUser
     {
         this.id = id;
     }
+
     /**
      * @return the displayName
      */
@@ -41,6 +45,7 @@ public class FilePlanComponentCreatedByUser
     {
         return this.displayName;
     }
+
     /**
      * @param displayName the displayName to set
      */

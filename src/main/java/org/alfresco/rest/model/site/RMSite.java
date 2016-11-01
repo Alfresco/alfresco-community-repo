@@ -13,7 +13,6 @@ package org.alfresco.rest.model.site;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.alfresco.com.site.RMSiteCompliance;
 import org.alfresco.rest.model.RestSiteModel;
 
 /**
@@ -29,6 +28,7 @@ public class RMSite extends RestSiteModel
 
     /**
      * Helper method to set RM site compliance
+     *
      * @param compliance {@link RMSiteCompliance} the compliance to set
      */
     public void setCompliance(RMSiteCompliance compliance)
@@ -38,6 +38,7 @@ public class RMSite extends RestSiteModel
 
     /**
      * Helper method to get RM site compliance
+     *
      * @return compliance the RM Site compliance to get
      */
     public RMSiteCompliance getCompliance()

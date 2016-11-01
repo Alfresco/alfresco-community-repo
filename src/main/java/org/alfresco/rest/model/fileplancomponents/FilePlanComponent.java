@@ -11,8 +11,8 @@
  */
 package org.alfresco.rest.model.fileplancomponents;
 
-import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
 
 import java.util.List;
 
@@ -28,32 +28,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 //FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FilePlanComponent
-{    
+{
     private String id;
-
     private String parentId;
-
     private String name;
-
     private String nodeType;
-
     private boolean isCategory;
-
     private boolean isRecordFolder;
-
     private boolean isFile;
-
     private boolean hasRetentionSchedule;
-
     private List<String> aspectNames;
-    
+    private FilePlanComponentCreatedByUser createdByUser;
     @JsonProperty(PROPERTIES)
     private FilePlanComponentProperties properties;
-    
-    private FilePlanComponentCreatedByUser createdByUser;
-
     @JsonProperty (ALLOWABLE_OPERATIONS)
     private List<String> allowableOperations;
+
     /**
      * @return the id
      */

@@ -106,6 +106,7 @@ public class FileplanComponentsEntityResourceUnitTest extends BaseUnitTest
         NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         Parameters mockedParameters = mock(Parameters.class);
         when(mockedParameters.getParameter(PERMANENT_PARAMETER)).thenReturn(Boolean.toString(true));
+
         try
         {
             filePlanComponentsEntityResource.delete(parentNodeRef.getId(), mockedParameters);

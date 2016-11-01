@@ -56,6 +56,9 @@ import org.alfresco.repo.search.TypeIndexFilter;
 import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.version.Version2Model;
+import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -75,8 +78,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
-
-import com.sun.xml.txw2.NamespaceResolver;
 
 /**
  * Component providing data for SOLR tracking
@@ -685,9 +686,9 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
     public long getCRC(Long nodeId)
     {
-        Status status = nodeDAO.getNodeIdStatus(nodeId);
-        Set<QName> aspects = getNodeAspects(nodeId);
-        Map<QName, Serializable> props = getProperties(nodeId);
+        //Status status = nodeDAO.getNodeIdStatus(nodeId);
+        //Set<QName> aspects = getNodeAspects(nodeId);
+        //Map<QName, Serializable> props = getProperties(nodeId);
         
         //Category membership does not cascade to children - only the node needs reindexing, not its children
         //This was producing cascade updates that were not required
@@ -781,6 +782,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 continue;
             }
             NodeRef nodeRef = status.getNodeRef();
+            
+            NodeRef unversionedNodeRef = null;
+            if(isVersionNodeRef(nodeRef))
+            {
+            	unversionedNodeRef = convertVersionNodeRefToVersionedNodeRef(VersionUtil.convertNodeRef(nodeRef));
+            }
           
             NodeMetaData nodeMetaData = new NodeMetaData();
             nodeMetaData.setNodeId(nodeId);
@@ -803,8 +810,22 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             
             Map<QName, Serializable> props = null;
             Set<QName> aspects = null;
-        
-            nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
+
+            Status unversionedStatus = null;
+            if(unversionedNodeRef != null)
+            {
+            	unversionedStatus = nodeDAO.getNodeRefStatus(unversionedNodeRef);
+            }
+
+            if(unversionedStatus != null)
+            {
+            	nodeMetaData.setAclId(nodeDAO.getNodeAclId(unversionedStatus.getDbId()));
+            }
+            else
+            {
+            	nodeMetaData.setAclId(nodeDAO.getNodeAclId(nodeId));
+            }
+
             
             if(includeType)
             {
@@ -903,8 +924,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 }
 
                 List<Path> directPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(nodeId, status.getNodeRef()), false);
-
                 Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.getPaths().size());
+               
                 for (Path path : directPaths)
                 {
                     paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
@@ -912,6 +933,14 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 for (Pair<Path, QName> catPair : categoryPaths.getPaths())
                 {
                     paths.add(new Pair<Path, QName>(catPair.getFirst().getBaseNamePath(tenantService), catPair.getSecond()));
+                }
+                if(unversionedStatus !=  null)
+                {
+                	 List<Path>  unversionedPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(unversionedStatus.getDbId(), unversionedStatus.getNodeRef()), false);
+                	 for (Path path : unversionedPaths)
+                     {
+                         paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
+                     }
                 }
 
                 nodeMetaData.setPaths(paths);
@@ -1123,6 +1152,41 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         }
     }
 
+    private boolean isVersionNodeRef(NodeRef nodeRef)
+    {
+    	return nodeRef.getStoreRef().getProtocol().equals(VersionModel.STORE_PROTOCOL) || nodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID);
+    }
+    
+    @SuppressWarnings("deprecation")
+	protected NodeRef convertVersionNodeRefToVersionedNodeRef(NodeRef versionNodeRef)
+    {
+    	Status status = nodeDAO.getNodeRefStatus(versionNodeRef);
+        if (status == null)
+        {
+        	return versionNodeRef;
+        }
+    	
+        Map<QName, Serializable> properties = nodeDAO.getNodeProperties(status.getDbId());
+        
+        NodeRef nodeRef = null;
+        
+        // Switch VersionStore depending on configured impl
+        if (versionNodeRef.getStoreRef().getIdentifier().equals(Version2Model.STORE_ID))
+        {
+            // V2 version store (eg. workspace://version2Store)
+            nodeRef = (NodeRef)properties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
+        } 
+        else if (versionNodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            // Deprecated V1 version store (eg. workspace://lightWeightVersionStore)
+            nodeRef = new NodeRef((String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_STORE_PROTOCOL),
+                                  (String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_STORE_ID),
+                                  (String) properties.get(VersionModel.PROP_QNAME_FROZEN_NODE_ID));
+        }
+        
+        return nodeRef;
+    }
+    
     private QName getNodeType(Long nodeId)
     {
         QName result = nodeDAO.getNodeType(nodeId);

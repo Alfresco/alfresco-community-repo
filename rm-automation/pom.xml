@@ -194,7 +194,7 @@
                               <echo>Recreating database...</echo>
                               <sql driver="org.postgresql.Driver" url="jdbc:postgresql:template1" userid="alfresco" password="alfresco" autocommit="true">drop database if exists alfresco; create database alfresco</sql>
                               <echo>Downloading Alfresco installer...</echo>
-                              <get src="https://bamboo.alfresco.com/qa/${installer.path}" dest="target/alf-installer.bin" />
+                              <get src="https://bamboo.alfresco.com/${installer.path}" dest="target/alf-installer.bin" />
                               <chmod file="target/alf-installer.bin" perm="a+x" verbose="true" />
                               <echo>Installing Alfresco...</echo>
                               <exec executable="${basedir}/target/alf-installer.bin" dir="target" failonerror="true">

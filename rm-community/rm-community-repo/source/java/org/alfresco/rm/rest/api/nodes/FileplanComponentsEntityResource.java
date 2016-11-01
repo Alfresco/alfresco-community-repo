@@ -35,6 +35,8 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
+import org.alfresco.util.ParameterCheck;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Fileplan component children
@@ -46,7 +48,8 @@ import org.alfresco.rm.rest.api.RMNodes;
 public class FileplanComponentsEntityResource implements
         EntityResourceAction.ReadById<Node>,
         EntityResourceAction.Delete,
-        EntityResourceAction.Update<Node>
+        EntityResourceAction.Update<Node>,
+        InitializingBean
 {
     private RMNodes nodes;
     private String PARAM_PERMANENT = "permanent";
@@ -64,12 +67,14 @@ public class FileplanComponentsEntityResource implements
     }
 
     @Override
+    @WebApiDescription(title="Updates a node (file or folder) with id 'nodeId'")
     public Node update(String nodeId, Node nodeInfo, Parameters parameters)
     {
         return nodes.updateNode(nodeId, nodeInfo, parameters);
     }
 
     @Override
+    @WebApiDescription(title = "Delete Node", description="Delete the file or folder with id 'nodeId'. Folder will cascade delete")
     public void delete(String nodeId, Parameters parameters)
     {
         String permanentParameter = parameters.getParameter(PARAM_PERMANENT);
@@ -78,5 +83,11 @@ public class FileplanComponentsEntityResource implements
             throw new InvalidArgumentException("DELETE does not support parameter: permanent");
         }
         nodes.deleteNode(nodeId, parameters);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        ParameterCheck.mandatory("nodes", this.nodes);
     }
 }

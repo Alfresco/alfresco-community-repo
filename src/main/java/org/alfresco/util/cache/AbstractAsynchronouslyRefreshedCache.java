@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.transaction.TransactionListener;
 import org.alfresco.util.transaction.TransactionSupportUtil;
@@ -201,6 +202,8 @@ public abstract class AbstractAsynchronouslyRefreshedCache<T>
             {
                 liveLock.writeLock().unlock();
             }
+
+            broadcastEvent(new RefreshableCacheRefreshedEvent(cacheId, key));
         }
 
         protected void waitForBuild(Refresh refresh)

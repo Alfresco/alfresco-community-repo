@@ -48,7 +48,6 @@ import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
@@ -65,6 +64,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * Centralizes access to the repository.
@@ -201,12 +201,9 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     }
 
     @Override
-    public NodeRef validateOrLookupNode(String nodeId, String path)
+    public NodeRef validateNode(String nodeId)
     {
-        if ((nodeId == null) || (nodeId.isEmpty()))
-        {
-            throw new InvalidArgumentException("Missing nodeId");
-        }
+        ParameterCheck.mandatoryString("nodeId", nodeId);
 
         if (nodeId.equals(PATH_FILE_PLAN))
         {
@@ -257,9 +254,9 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
             }
         }
 
-        return super.validateOrLookupNode(nodeId, path);
+        return super.validateNode(nodeId);
     }
-
+    
     private RMNodeType getType(QName typeQName, NodeRef nodeRef)
     {
         // quick check for common types
@@ -305,19 +302,6 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         searchTypeQNames.remove(RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION);
 
         return new Pair<>(searchTypeQNames, ignoreAspectQNames);
-    }
-
-/**
- * Overridden this as a work around for REPO-1443 issue to remove after that issue is fixed
- */
-    @Override
-    public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters) {
-        if ((nodeId == null) || (nodeId.isEmpty()))
-        {
-            throw new InvalidArgumentException("Missing nodeId");
-        }
-        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
-        return super.updateNode(nodeRef.getId(), nodeInfo, parameters);
     }
 
     /**

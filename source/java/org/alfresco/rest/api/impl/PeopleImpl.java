@@ -297,8 +297,7 @@ public class PeopleImpl implements People
 		Map<QName, Serializable> props = person.toProperties();
 
 		MutableAuthenticationService mas = (MutableAuthenticationService) authenticationService;
-		String password = person.getPassword() == null ? UUID.randomUUID().toString() : person.getPassword();
-		mas.createAuthentication(person.getUserName(), password.toCharArray());
+		mas.createAuthentication(person.getUserName(), person.getPassword().toCharArray());
 		mas.setAuthenticationEnabled(person.getUserName(), person.isEnabled());
 		NodeRef nodeRef = personService.createPerson(props);
 		
@@ -328,6 +327,7 @@ public class PeopleImpl implements People
 		checkRequiredField("firstName", person.getFirstName());
 		checkRequiredField("email", person.getEmail());
 		checkRequiredField("enabled", person.isEnabled());
+		checkRequiredField("password", person.getPassword());
 	}
 	
 	private void checkRequiredField(String fieldName, Object fieldValue)

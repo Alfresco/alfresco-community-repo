@@ -44,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
- * This class contains the test for testing
+ * This class contains the tests for
  * the File Plan CRUD API
  *
  * @author Rodica Sutu

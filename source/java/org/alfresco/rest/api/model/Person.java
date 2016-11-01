@@ -65,6 +65,7 @@ public class Person
 	protected Boolean emailNotificationsEnabled;
 	protected String description;
 	protected Company company;
+	protected String password;
 
 	public Person()
     {
@@ -201,6 +202,11 @@ public class Person
 	{
 		this.avatarId = avatarId;
 	}
+	
+	public void setPassword(String password)
+	{
+		this.password = password;
+	}
 
 	public NodeRef getAvatarId()
 	{
@@ -272,6 +278,11 @@ public class Person
 		return emailNotificationsEnabled;
 	}
 
+	public String getPassword()
+	{
+		return this.password;
+	}
+	
 	@Override
 	public String toString()
 	{
@@ -347,9 +358,6 @@ public class Person
 		addToMap(properties, ContentModel.PROP_GOOGLEUSERNAME, getGoogleId());
 		addToMap(properties, ContentModel.PROP_SIZE_QUOTA, getQuota());
 		addToMap(properties, ContentModel.PROP_SIZE_CURRENT, getQuotaUsed());
-
-		// What's the correct behaviour here? Store it as "content" somehow?
-		// so that it can be 'inlined' by the code in PeopleImpl.processPersonProperties ?
 		addToMap(properties, ContentModel.PROP_PERSONDESC, getDescription());
 	}
 	

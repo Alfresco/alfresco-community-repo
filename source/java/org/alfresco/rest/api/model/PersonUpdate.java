@@ -57,7 +57,7 @@ public class PersonUpdate
     protected final String userStatus;
     protected final Boolean enabled;
     protected final Boolean emailNotificationsEnabled;
-
+    protected final String password;
 
     private PersonUpdate(
             String userName,
@@ -75,7 +75,8 @@ public class PersonUpdate
             String telephone,
             String userStatus,
             Boolean enabled,
-            Boolean emailNotificationsEnabled)
+            Boolean emailNotificationsEnabled,
+            String password)
     {
         this.userName = userName;
         this.firstName = firstName;
@@ -93,6 +94,7 @@ public class PersonUpdate
         this.userStatus = userStatus;
         this.enabled = enabled;
         this.emailNotificationsEnabled = emailNotificationsEnabled;
+        this.password = password;
     }
 
     public Company getCompany()
@@ -176,6 +178,11 @@ public class PersonUpdate
         return emailNotificationsEnabled;
     }
 
+    public String getPassword()
+    {
+        return password;
+    }
+
     @Override
     public String toString()
     {
@@ -194,7 +201,9 @@ public class PersonUpdate
                 + ", googleId=" + googleId
                 + ", emailNotificationsEnabled=" + emailNotificationsEnabled
                 + ", description=" + description
-                + ", company=" + company + "]";
+                + ", company=" + company
+                + ", password=(not shown)"
+                + "]";
     }
 
     public Map<QName, Serializable> toProperties()
@@ -275,6 +284,7 @@ public class PersonUpdate
         private String userStatus;
         private Boolean enabled;
         private Boolean emailNotificationsEnabled;
+        private String password;
 
         public Builder id(String userId)
         {
@@ -371,6 +381,12 @@ public class PersonUpdate
             this.emailNotificationsEnabled = emailNotificationsEnabled;
             return this;
         }
+        
+        public Builder password(String password)
+        {
+            this.password = password;
+            return this;
+        }
 
         public PersonUpdate build()
         {
@@ -390,7 +406,8 @@ public class PersonUpdate
                     telephone,
                     userStatus,
                     enabled,
-                    emailNotificationsEnabled
+                    emailNotificationsEnabled,
+                    password
             );
         }
     }

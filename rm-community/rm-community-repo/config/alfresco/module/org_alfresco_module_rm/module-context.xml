@@ -258,4 +258,7 @@
    <!-- Import the Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/content-context.xml"/>
 
+   <!-- Import the RM public api -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-public-rest-context.xml"/>
+
 </beans>

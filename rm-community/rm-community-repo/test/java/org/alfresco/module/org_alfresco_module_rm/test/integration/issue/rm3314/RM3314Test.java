@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Test for https://issues.alfresco.com/jira/browse/RM-3114
@@ -43,12 +44,7 @@ public class RM3314Test extends BaseRMTestCase
     /** Application context */
     protected String[] getConfigLocations()
     {
-        return new String[]
-        {
-            "classpath:alfresco/application-context.xml",
-            "classpath:test-context.xml",
-            "classpath:test-rm3314-context.xml"
-        };
+        return ArrayUtils.add(super.getConfigLocations(), "classpath:test-rm3314-context.xml");
     }
     
 	/** registry to record callback from test beans "test.rm3114.1" and "test.rm3114.2" */

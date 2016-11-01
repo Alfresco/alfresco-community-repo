@@ -36,7 +36,6 @@ import com.google.gson.JsonObject;
 import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.fileplancomponents.RecordCategoryTest;
 import org.alfresco.rest.model.site.RMSite;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.RandomData;
@@ -46,11 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
- * FIXME: Document me :)
- * FIXME: Should we use dependent tests or not?
- * They were removed here but there is no guarantee for the test execution order.
- * In {@link RecordCategoryTest} we create a record category first to delete it.
- * Probbaly something to think about again.
+ * This class contains the test for testing
+ * the RM site CRUD API
  *
  * @author Rodica Sutu
  * @since 1.0
@@ -69,7 +65,7 @@ public class RMSiteTests extends BaseRestTest
      */
     @Test
     (
-        description = "Create RM site as admin user with Standard Compliance"
+        description = "Create RM site with Standard Compliance as admin user"
     )
     public void createRMSiteAsAdminUser() throws Exception
     {
@@ -238,13 +234,13 @@ public class RMSiteTests extends BaseRestTest
 
     /**
      * Given that RM site exist
-     * When a new created user want to update the RM site details (title or description)
+     * When a non-RM user wants to update the RM site details (title or description)
      * Then 403 response status code is return
      * When the admin user wants to update the RM site details (title or description)
      * Then RM site details are updated
      */
     @Test
-    public void updateRMSiteDetailsAsAdmin()throws Exception
+    public void updateRMSiteDetails()throws Exception
     {
         String NEW_TITLE = RM_TITLE + RandomData.getRandomAlphanumeric();
         String NEW_DESCRIPTION=RM_DESCRIPTION+ RandomData.getRandomAlphanumeric();
@@ -286,7 +282,6 @@ public class RMSiteTests extends BaseRestTest
         assertEquals(rmSite.getDescription(), NEW_DESCRIPTION);
         assertNotNull(rmSite.getCompliance());
         assertEquals(rmSite.getVisibility(), PUBLIC);
-
     }
 
 

@@ -19,7 +19,7 @@
         <showQuestion>
             <text>Some or all of the libraries needed to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext libcups libGLU libcairo2 libgl1-mesa-glx
 You are strongly advised to stop this installation and install the libraries.
-For more information, see the LibreOffice documentation at http://docs.alfresco.com
+For more information, see the LibreOffice documentation at http://docs.alfresco.com/search/site/all?keys=libfontconfig
 
 Do you want to continue with the installation?</text>
             <variable>continue_installation</variable>
@@ -35,14 +35,14 @@ Do you want to continue with the installation?</text>
                 <ruleGroup>
                     <ruleEvaluationLogic>or</ruleEvaluationLogic>
                     <ruleList>
-                    <!-- Ubuntu 10.04 -->
-                    <fileTest path="/usr/lib/libICE.so.6" condition="not_exists" />
-                    <fileTest path="/usr/lib/libSM.so.6" condition="not_exists" />
-                    <fileTest path="/usr/lib/libXext.so.6" condition="not_exists" />
-                    <fileTest path="/usr/lib/libXrender.so.1" condition="not_exists" />
-                    <fileTest path="/usr/lib/libfontconfig.so.1" condition="not_exists" />
-                                        <fileTest path="/usr/lib/libcups.so.2" condition="not_exists" />
-                                        <fileTest path="/usr/lib/libGLU.so.1" condition="not_exists" />
+                        <!-- Ubuntu 10.04 -->
+                        <fileTest path="/usr/lib/libICE.so.6" condition="not_exists" />
+                        <fileTest path="/usr/lib/libSM.so.6" condition="not_exists" />
+                        <fileTest path="/usr/lib/libXext.so.6" condition="not_exists" />
+                        <fileTest path="/usr/lib/libXrender.so.1" condition="not_exists" />
+                        <fileTest path="/usr/lib/libfontconfig.so.1" condition="not_exists" />
+                        <fileTest path="/usr/lib/libcups.so.2" condition="not_exists" />
+                        <fileTest path="/usr/lib/libGLU.so.1" condition="not_exists" />
                         <fileTest path="/usr/lib/libcairo.so.2" condition="not_exists" />
                         <fileTest path="/usr/lib/libGL.so.1" condition="not_exists" />
                     </ruleList>

@@ -322,9 +322,17 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     @Override
     public RMSite getRMSite(String siteId)
     {
+        siteService.hasSite(RM_SITE_ID);
         Site site = getSite(siteId);
         SiteInfo siteInfo = siteService.getSite(siteId);
         RMSiteCompliance compliance = getCompliance(siteInfo);
         return new RMSite(site, compliance);
+    }
+
+    @Override
+    public void deleteSite(String siteId, Parameters parameters)
+    {
+        siteService.hasSite(RM_SITE_ID);
+        super.deleteSite(siteId, parameters);
     }
 }

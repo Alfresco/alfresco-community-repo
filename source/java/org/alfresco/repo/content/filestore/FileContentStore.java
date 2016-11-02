@@ -45,7 +45,6 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Deleter;
-import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
@@ -91,6 +90,7 @@ public class FileContentStore
     private boolean readOnly;
     private ApplicationContext applicationContext;
     private boolean deleteEmptyDirs = true;
+    private FileContentUrlProvider fileContentUrlProvider = new TimeBasedFileContentUrlProvider();
 
     /**
      * Private: for Spring-constructed instances only.
@@ -207,6 +207,10 @@ public class FileContentStore
     {
         this.readOnly = readOnly;
     }
+    
+    public void setFileContentUrlProvider(FileContentUrlProvider fileContentUrlProvider) {
+        this.fileContentUrlProvider = fileContentUrlProvider;
+    }
 
     /**
      * Generates a new URL and file appropriate to it.
@@ -216,7 +220,7 @@ public class FileContentStore
      */
     /*package*/ File createNewFile() throws IOException
     {
-        String contentUrl = FileContentStore.createNewFileStoreUrl();
+        String contentUrl = fileContentUrlProvider.createNewFileStoreUrl();
         return createNewFile(contentUrl);
     }
     
@@ -587,25 +591,7 @@ public class FileContentStore
      */
     public static String createNewFileStoreUrl()
     {
-        Calendar calendar = new GregorianCalendar();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH) + 1;  // 0-based
-        int day = calendar.get(Calendar.DAY_OF_MONTH);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int minute = calendar.get(Calendar.MINUTE);
-        // create the URL
-        StringBuilder sb = new StringBuilder(20);
-        sb.append(FileContentStore.STORE_PROTOCOL)
-          .append(ContentStore.PROTOCOL_DELIMITER)
-          .append(year).append('/')
-          .append(month).append('/')
-          .append(day).append('/')
-          .append(hour).append('/')
-          .append(minute).append('/')
-          .append(GUID.generate()).append(".bin");
-        String newContentUrl = sb.toString();
-        // done
-        return newContentUrl;
+        return TimeBasedFileContentUrlProvider.createNewFileStoreUrl(0);
     }
 
     /**

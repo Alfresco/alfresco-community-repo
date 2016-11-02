@@ -221,6 +221,36 @@
                   </dependencies>
                </plugin>
                <plugin>
+                  <artifactId>maven-dependency-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>fetch-amps</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                           <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                           <artifactItems>
+                              <artifactItem>
+                                 <groupId>org.alfresco</groupId>
+                                 <artifactId>alfresco-rm-enterprise-share</artifactId>
+                                 <version>${project.version}</version>
+                                 <type>amp</type>
+                              </artifactItem>
+                              <artifactItem>
+                                 <groupId>org.alfresco</groupId>
+                                 <artifactId>alfresco-rm-enterprise-repo</artifactId>
+                                 <version>${project.version}</version>
+                                 <type>amp</type>
+                              </artifactItem>
+                           </artifactItems>
+                           <outputDirectory>${project.build.directory}/amps</outputDirectory>
+                           <useBaseVersion>true</useBaseVersion>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+               <plugin>
                   <groupId>org.alfresco.maven.plugin</groupId>
                   <artifactId>alfresco-maven-plugin</artifactId>
                   <extensions>true</extensions>

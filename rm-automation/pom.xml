@@ -206,24 +206,7 @@
                            </target>
                         </configuration>
                      </execution>
-                  </executions>
-                  <dependencies>
-                     <dependency>
-                        <groupId>org.apache.ant</groupId>
-                        <artifactId>ant-jsch</artifactId>
-                        <version>1.8.2</version>
-                     </dependency>
-                     <dependency>
-                        <groupId>postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>9.1-901-1.jdbc4</version>
-                     </dependency>
-                  </dependencies>
-               </plugin>
-               <plugin>
-                  <artifactId>maven-dependency-plugin</artifactId>
-                  <executions>
-                     <execution>
+					 <execution>
                         <id>fetch-amps</id>
                         <phase>process-test-resources</phase>
                         <goals>
@@ -242,6 +225,18 @@
                         </configuration>
                      </execution>
                   </executions>
+                  <dependencies>
+                     <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant-jsch</artifactId>
+                        <version>1.8.2</version>
+                     </dependency>
+                     <dependency>
+                        <groupId>postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>9.1-901-1.jdbc4</version>
+                     </dependency>
+                  </dependencies>
                </plugin>
                <plugin>
                   <groupId>org.alfresco.maven.plugin</groupId>

@@ -236,14 +236,12 @@
                                  <artifactId>alfresco-rm-enterprise-share</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
-								 <classifier>amp</classifier>
                               </artifactItem>
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
                                  <artifactId>alfresco-rm-enterprise-repo</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
-								 <classifier>amp</classifier>
                               </artifactItem>
                            </artifactItems>
                            <outputDirectory>${project.build.directory}/amps</outputDirectory>

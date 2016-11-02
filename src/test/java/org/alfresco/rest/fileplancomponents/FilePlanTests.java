@@ -234,22 +234,24 @@ public class FilePlanTests extends BaseRestTest
     @Bug(id="RM-4296")
     public void createFilePlanSpecialContainerWhenExists(FilePlanComponentAlias filePlanAlias, FilePlanComponentType rmType) throws Exception
     {
-        String rmSiteId = rmSiteAPI.getSite().getGuid();
-
         // Create RM Site if doesn't exist
         createRMSiteIfNotExists();
 
         // Authenticate with admin user
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        // Get the RM site ID
+        String rmSiteId = rmSiteAPI.getSite().getGuid();
 
         String name = filePlanAlias + getRandomAlphanumeric();
 
-        //Build the file plan root properties
+        // Build the file plan root properties
         JsonObject componentProperties = buildObject()
                 .add(NAME, name)
                 .add(NODE_TYPE, rmType.toString())
                 .getJson();
 
+        // Authenticate with admin user
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         // Create the special containers into RM site - parent folder
         filePlanComponentAPI.createFilePlanComponent(componentProperties, rmSiteId);
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(FORBIDDEN);

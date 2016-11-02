@@ -230,22 +230,15 @@
                            <goal>copy</goal>
                         </goals>
                         <configuration>
-                           <artifactItems>
-                              <artifactItem>
-                                 <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-enterprise-share</artifactId>
-                                 <version>${project.version}</version>
-                                 <type>amp</type>
-                              </artifactItem>
-                              <artifactItem>
-                                 <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-enterprise-repo</artifactId>
-                                 <version>${project.version}</version>
-                                 <type>amp</type>
-                              </artifactItem>
-                           </artifactItems>
-                           <outputDirectory>${project.build.directory}/amps</outputDirectory>
-                           <useBaseVersion>true</useBaseVersion>
+                           <target>
+                              <echo>Fetching repo amp...</echo> 
+                              <sshexec username="tomcat" host="pbam01.alfresco.com" keyfile="${user.home}/.ssh/id_rsa" outputproperty="repoAmpPath" command="ls -rt /xml-data/build-dir/${amp.build.plan}-EN/rm-enterprise/rm-enterprise-repo/target/alfresco-rm-enterprise-repo-*.amp | tail -1 | tr ' ' '?' "/>
+                              <scp file="tomcat@pbam01.alfresco.com:${repoAmpPath}" localTofile="${project.build.directory}/amps/alfresco-rm-enterprise-repo-${project.version}.amp" keyfile="${user.home}/.ssh/id_rsa"/>
+
+                              <echo>Fetching share amp...</echo> 
+                              <sshexec username="tomcat" host="pbam01.alfresco.com" keyfile="${user.home}/.ssh/id_rsa" outputproperty="shareAmpPath" command="ls -rt /xml-data/build-dir/${amp.build.plan}-EN/rm-enterprise/rm-enterprise-share/target/alfresco-rm-enterprise-share-*.amp | tail -1 | tr ' ' '?' "/>
+                              <scp file="tomcat@pbam01.alfresco.com:${shareAmpPath}" localTofile="${project.build.directory}/amps/alfresco-rm-enterprise-share-${project.version}.amp" keyfile="${user.home}/.ssh/id_rsa"/>
+                           </target>
                         </configuration>
                      </execution>
                   </executions>

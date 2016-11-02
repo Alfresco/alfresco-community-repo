@@ -264,4 +264,12 @@ public interface DispositionService
      * @return the initial disposition
      */
     DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef);
+    
+    /**
+     * Updates disposition action step when linking or unlinking 
+     * the given record to/from a record folder
+     * 
+     * @param record
+     */
+    void recalculateNextDispositionStep(NodeRef record);
 }

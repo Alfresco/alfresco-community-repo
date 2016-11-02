@@ -227,7 +227,6 @@ public class DictionaryDAOImpl implements DictionaryDAO, NamespaceDAO,
 
         // TODO Should be reworked when ACE-2001 will be implemented
         dictionaryRegistryCache.remove(tenant);
-        dictionaryRegistryCache.refresh(tenant);
 
         if (logger.isDebugEnabled())
         {

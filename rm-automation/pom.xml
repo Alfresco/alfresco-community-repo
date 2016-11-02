@@ -227,7 +227,7 @@
                         <id>fetch-amps</id>
                         <phase>process-test-resources</phase>
                         <goals>
-                           <goal>copy</goal>
+                           <goal>run</goal>
                         </goals>
                         <configuration>
                            <target>

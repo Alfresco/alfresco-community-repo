@@ -66,7 +66,6 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
 {
     private ServiceRegistry serviceRegistry;
     private SearchService searchService;
-    private Nodes nodes;
     private SearchMapper searchMapper;
     private ResultMapper resultMapper;
     protected ApiAssistant assistant;
@@ -78,10 +77,8 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
         this.searchService = serviceRegistry.getSearchService();
         ParameterCheck.mandatory("assistant", this.assistant);
-        ParameterCheck.mandatory("nodes", this.nodes);
 
         searchMapper = new SearchMapper();
-        resultMapper = new ResultMapper(nodes);
     }
 
     @Override
@@ -145,8 +142,9 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         return Params.valueOf(null, recognizedParams, null, webScriptRequest);
     }
 
-    public void setNodes(Nodes nodes) {
-        this.nodes = nodes;
+    public void setResultMapper(ResultMapper resultMapper)
+    {
+        this.resultMapper = resultMapper;
     }
 
     public void setAssistant(ApiAssistant assistant) {

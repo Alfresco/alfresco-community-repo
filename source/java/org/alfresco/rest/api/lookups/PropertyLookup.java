@@ -23,60 +23,30 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api.search.context;
+
+package org.alfresco.rest.api.lookups;
+
 
 import java.util.List;
+import java.util.Set;
 
 /**
- * The results of a Field Facetting
+ * Looks up property values for the api
+ *
+ * @author Gethin James
  */
-public class FacetFieldContext
+public interface PropertyLookup<T extends Object>
 {
-    private final String label;
-    private final List<Bucket> buckets;
+    /**
+     * The list of property keys that are supported by this class
+     * @return Set<String> property keys
+     */
+    public Set<String> supports();
 
-    public FacetFieldContext(String label, List<Bucket> buckets)
-    {
-        this.label = label;
-        this.buckets = buckets;
-    }
-
-    public String getLabel()
-    {
-        return label;
-    }
-
-    public List<Bucket> getBuckets()
-    {
-        return buckets;
-    }
-
-    public static class Bucket
-    {
-        private final String label;
-        private final int count;
-        private final Object display;
-
-        public Bucket(String label, int count, Object display)
-        {
-            this.label = label;
-            this.count = count;
-            this.display = display;
-        }
-
-        public Object getDisplay()
-        {
-            return display;
-        }
-
-        public String getLabel()
-        {
-            return label;
-        }
-
-        public int getCount()
-        {
-            return count;
-        }
-    }
+    /**
+     * Lookup the property value with a new value.
+     * @param propertyValue
+     * @return a new value or null if the property value isn't found.
+     */
+    public T lookup(String propertyValue);
 }

@@ -28,22 +28,22 @@ package org.alfresco.rest.api.search.impl;
 
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.lookups.PropertyLookupRegistry;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
+import org.alfresco.rest.api.search.context.FacetQueryContext;
+import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchEntry;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.api.search.context.SearchContext;
-import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
-import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -62,12 +62,21 @@ public class ResultMapper
 {
 
     private Nodes nodes;
+    private PropertyLookupRegistry propertyLookup;
     private static Log logger = LogFactory.getLog(ResultMapper.class);
 
-    public ResultMapper(Nodes nodes)
+    public ResultMapper()
+    {
+    }
+
+    public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
-        ParameterCheck.mandatory("nodes", this.nodes);
+    }
+
+    public void setPropertyLookup(PropertyLookupRegistry propertyLookup)
+    {
+        this.propertyLookup = propertyLookup;
     }
 
     /**
@@ -179,7 +188,8 @@ public class ResultMapper
                     List<Bucket> buckets = new ArrayList<>(facet.getValue().size());
                     for (Pair<String, Integer> buck:facet.getValue())
                     {
-                        buckets.add(new Bucket(buck.getFirst(), buck.getSecond()));
+                        Object display = propertyLookup.lookup(facet.getKey(), buck.getFirst());
+                        buckets.add(new Bucket(buck.getFirst(), buck.getSecond(), display));
                     }
                     ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
                 }

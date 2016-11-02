@@ -736,6 +736,39 @@
        </property>
     </bean>
 
+    <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="supported">
+            <list>
+                <value>cm:content.mimetype</value>
+                <value>content.mimetype</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="publicapi.personPropertyLookup" class="org.alfresco.rest.api.lookups.PersonPropertyLookup">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="supported">
+            <list>
+                <value>cm:creator</value>
+                <value>cm:modifier</value>
+                <value>cm:owner</value>
+                <value>creator</value>
+                <value>modifier</value>
+                <value>owner</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="publicapi.propertyLookups" class="org.alfresco.rest.api.lookups.PropertyLookupRegistry">
+        <property name="lookups">
+            <list>
+                <ref bean="publicapi.personPropertyLookup" />
+                <ref bean="publicapi.mimeTypePropertyLookup" />
+            </list>
+        </property>
+    </bean>
+
     <!-- API webscripts -->
 
 	 <bean class="org.alfresco.rest.api.sites.SiteEntityResource">
@@ -858,7 +891,14 @@
         <property name="serviceRegistry" ref="ServiceRegistry" />
         <property name="assistant" ref="apiAssistant" />
         <property name="helper" ref="webscriptHelper" />
+        <property name="resultMapper" ref="searchapiResultMapper" />
+    </bean>
+
+    <bean id="searchapiResultMapper" class="org.alfresco.rest.api.search.impl.ResultMapper">
         <property name="nodes" ref="Nodes" />
+        <property name="propertyLookup">
+            <ref bean="publicapi.propertyLookups"/>
+        </property>
     </bean>
 
     <bean id="webscript.org.alfresco.api.DiscoveryApiWebscript.get"

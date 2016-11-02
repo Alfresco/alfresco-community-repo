@@ -38,6 +38,7 @@ import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.impl.NodesImpl;
+import org.alfresco.rest.api.lookups.PropertyLookupRegistry;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
@@ -119,7 +120,9 @@ public class ResultMapperTests
                 return new Node(aNode, (NodeRef)args[1], nodeProps, mapUserInfo, sr);
             }
         });
-        mapper = new ResultMapper(nodes);
+        mapper = new ResultMapper();
+        mapper.setNodes(nodes);
+        mapper.setPropertyLookup(new PropertyLookupRegistry());
     }
 
     @Test

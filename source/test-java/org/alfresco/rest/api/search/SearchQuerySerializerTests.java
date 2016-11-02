@@ -143,7 +143,7 @@ public class SearchQuerySerializerTests
     {
         ExecutionResult exec1 = new ExecutionResult(new Farmer("180"),null);
 
-        FacetFieldContext ffc = new FacetFieldContext("theLabel", Arrays.asList(new Bucket("b1", 23), new Bucket("b2", 34)));
+        FacetFieldContext ffc = new FacetFieldContext("theLabel", Arrays.asList(new Bucket("b1", 23, "displayText1"), new Bucket("b2", 34, "displayText2")));
         SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryContext("f1", 15), new FacetQueryContext("f2", 20)),
                     Arrays.asList(ffc),
                     new SpellCheckContext("aFlag", Arrays.asList("bish", "bash")));
@@ -155,8 +155,8 @@ public class SearchQuerySerializerTests
         assertTrue("There must 'facetQueries f2' json output", out.contains("{\"label\":\"f2\",\"count\":20}"));
         assertTrue("There must 'spellCheck' json output", out.contains("\"spellCheck\":{\"type\":\"aFlag\",\"suggestions\":[\"bish\",\"bash\"]}"));
         assertTrue("There must 'facetsFields' json output", out.contains("\"facetsFields\":[{\"label\":\"theLabel\",\"buckets\""));
-        assertTrue("There must 'bucket1' json output", out.contains("{\"label\":\"b1\",\"count\":23}"));
-        assertTrue("There must 'bucket2' json output", out.contains("{\"label\":\"b2\",\"count\":34}"));
+        assertTrue("There must 'bucket1' json output", out.contains("{\"label\":\"b1\",\"count\":23,\"display\":\"displayText1\"}"));
+        assertTrue("There must 'bucket2' json output", out.contains("{\"label\":\"b2\",\"count\":34,\"display\":\"displayText2\"}"));
 
         searchContext = new SearchContext(-1, null, null, null);
         coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);

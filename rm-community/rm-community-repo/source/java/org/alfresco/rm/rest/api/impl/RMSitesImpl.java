@@ -232,6 +232,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
      */
     public RMSite updateRMSite(String siteId, SiteUpdate update, Parameters parameters)
     {
+        siteService.hasSite(RM_SITE_ID);
         Site updatedSite = updateSite(siteId, update, parameters);
         SiteInfo siteInfo = siteService.getSite(siteId);
         RMSiteCompliance compliance = getCompliance(siteInfo);

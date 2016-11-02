@@ -128,7 +128,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         }
 
         //TODO to remove this part of code after isSpecialNode will be made protected on core, will not need this anymore since the right allowed operations will be returned from core(REPO-1459).
-        if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
+        if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS) && originalNode.getAllowableOperations() != null)
         {
             List<String> allowableOperations = originalNode.getAllowableOperations();
             List<String> modifiedAllowableOperations = new ArrayList<>();
@@ -256,7 +256,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
 
         return super.validateNode(nodeId);
     }
-    
+
     private RMNodeType getType(QName typeQName, NodeRef nodeRef)
     {
         // quick check for common types

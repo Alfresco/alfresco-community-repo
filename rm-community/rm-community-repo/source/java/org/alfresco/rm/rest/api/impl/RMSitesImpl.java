@@ -330,6 +330,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         return new RMSite(site, compliance);
     }
 
+    @Override
     public void deleteRMSite(String siteId, Parameters parameters)
     {
         solveRMSiteNodeRefCaching();
@@ -337,7 +338,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     }
 
     /**
-     * Method used for solving rm site nodeRef caching problem that affected rm site update, delete and get from rest api
+     * Method used for solving rm site nodeRef caching problem that affected rm site update, delete and get from rest api. See RM-4289 issue for details.
      *
      */
     private void solveRMSiteNodeRefCaching()

@@ -30,6 +30,7 @@ package org.alfresco.rm.rest.api.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -185,6 +186,44 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         assertTrue("Create operation should be available for FilePlan.", allowableOperations.contains(RMNodes.OP_CREATE));
         assertTrue("Update operation should be available for FilePlan.", allowableOperations.contains(RMNodes.OP_UPDATE));
         assertFalse("Delete operation should note be available for FilePlan.", allowableOperations.contains(RMNodes.OP_DELETE));
+    }
+
+    @Test
+    public void testGetFilePlanAllowableOperationsWithoutPermissions() throws Exception
+    {
+        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        QName mockedType = AlfMock.generateQName();
+        when(mockedNodeService.getType(nodeRef)).thenReturn(mockedType);
+        when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_CMOBJECT)).thenReturn(true);
+        when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_SYSTEM_FOLDER)).thenReturn(false);
+        when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_FOLDER)).thenReturn(true);
+
+        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
+        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+
+        when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
+        List<String> includeParamList = new ArrayList<String>();
+        includeParamList.add(RMNodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS);
+
+        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.DENIED);
+        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.DELETE)).thenReturn(AccessStatus.DENIED);
+        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)).thenReturn(AccessStatus.DENIED);
+
+        when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(nodeRef);
+        Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
+        assertNotNull(folderOrDocument);
+        assertTrue(FileplanComponentNode.class.isInstance(folderOrDocument));
+
+        FileplanComponentNode resultNode = (FileplanComponentNode) folderOrDocument;
+        assertEquals(false, resultNode.getIsRecordFolder());
+        assertEquals(false, resultNode.getIsFile());
+        assertEquals(false, resultNode.getIsCategory());
+        List<String> allowableOperations = resultNode.getAllowableOperations();
+        assertNull(allowableOperations);
     }
 
     @Test

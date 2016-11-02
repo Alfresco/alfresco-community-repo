@@ -1043,7 +1043,6 @@ public class ACLEntryAfterInvocationTest extends AbstractPermissionTest
             after.setNamespacePrefixResolver(namespacePrefixResolver);
             after.setPermissionService(permissionService);
             after.setNodeService(nodeService);
-            after.setAuthenticationService(authenticationService);
             after.setUnfilteredFor(Collections.singleton("{ns}ln"));
             after.afterPropertiesSet();
 

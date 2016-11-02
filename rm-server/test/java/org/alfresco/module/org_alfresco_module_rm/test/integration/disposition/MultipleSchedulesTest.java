@@ -34,6 +34,10 @@ public class MultipleSchedulesTest extends BaseRMTestCase
     protected static final String CATEGORY_B_NAME = TEST_PREFIX + "CategoryB";
     /** The name to use for the folder within the second category. */
     protected static final String FOLDER_B_NAME = TEST_PREFIX + "FolderB";
+    /** The name to use for the third category. */
+    protected static final String CATEGORY_C_NAME = TEST_PREFIX + "CategoryC";
+    /** The name to use for the folder within the third category. */
+    protected static final String FOLDER_C_NAME = TEST_PREFIX + "FolderC";
     /** The name to use for the record. */
     protected static final String RECORD_NAME = TEST_PREFIX + "Record";
 
@@ -48,6 +52,10 @@ public class MultipleSchedulesTest extends BaseRMTestCase
     private NodeRef categoryB;
     /** The folder node within the second category. */
     private NodeRef folderB;
+    /** The third category node. */
+    private NodeRef categoryC;
+    /** The folder node within the third category. */
+    private NodeRef folderC;
     /** The record node. */
     private NodeRef record;
 
@@ -82,6 +90,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
         // Create two categories.
         categoryA = filePlanService.createRecordCategory(filePlan, CATEGORY_A_NAME);
         categoryB = filePlanService.createRecordCategory(filePlan, CATEGORY_B_NAME);
+        categoryC = filePlanService.createRecordCategory(filePlan, CATEGORY_C_NAME);
         // Create a disposition schedule for category A (Cut off immediately, then Destroy immediately).
         DispositionSchedule dispSchedA = utils.createBasicDispositionSchedule(categoryA, "instructions", "authority", true, false);
         Map<QName, Serializable> cutOffParamsA = ImmutableMap.of(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME,
@@ -103,9 +112,21 @@ public class MultipleSchedulesTest extends BaseRMTestCase
                         PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_ONE_WEEK,
                         PROP_DISPOSITION_PERIOD_PROPERTY, PROP_CUT_OFF_DATE);
         dispositionService.addDispositionActionDefinition(dispSchedB, destroyParamsB);
+        // Create a disposition schedule for category C (Cut off immediately, then Destroy one year after cutoff).
+        DispositionSchedule dispSchedC = utils.createBasicDispositionSchedule(categoryC, "instructions", "authority", true, false);
+        Map<QName, Serializable> cutOffParamsC = ImmutableMap.of(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME,
+                        PROP_DISPOSITION_DESCRIPTION, "description",
+                        PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
+        dispositionService.addDispositionActionDefinition(dispSchedC, cutOffParamsC);
+        Map<QName, Serializable> destroyParamsC = ImmutableMap.of(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME,
+                        PROP_DISPOSITION_DESCRIPTION, "description",
+                        PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_ONE_YEAR,
+                        PROP_DISPOSITION_PERIOD_PROPERTY, PROP_CUT_OFF_DATE);
+        dispositionService.addDispositionActionDefinition(dispSchedC, destroyParamsC);
         // Create a folder within each category.
         folderA = recordFolderService.createRecordFolder(categoryA, FOLDER_A_NAME);
         folderB = recordFolderService.createRecordFolder(categoryB, FOLDER_B_NAME);
+        folderC = recordFolderService.createRecordFolder(categoryC, FOLDER_C_NAME);
     }
 
     /**
@@ -123,6 +144,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
         test()
             .given(() -> {
                 setUpFilePlan();
+                
                 // Create a record filed under category A and linked to category B.
                 record = fileFolderService.create(folderA, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
                 recordService.link(record, folderB);
@@ -172,5 +194,37 @@ public class MultipleSchedulesTest extends BaseRMTestCase
                 .expect(calendar.getTime())
                         .from(() -> dispositionService.getNextDispositionAction(record).getAsOfDate())
                     .because("Record should follow largest rentention schedule period, which is one week.");
+    }
+    
+    /**
+     * <a href="https://issues.alfresco.com/jira/browse/RM-4292">RM-4292</a>
+     * <p><pre>
+     * Given a record subject to a mixed disposition schedule
+     * When the record is unlinked from one of its secondary parents
+     * Then the next disposition action is recalculated.
+     * </pre>
+     */
+    public void testRecalculateDispositionWhenUnlinking()
+    {
+        test()
+            .given(() -> {
+                setUpFilePlan();
+                // Create a record filed under category A and linked to category B and C.
+                record = fileFolderService.create(folderA, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
+                recordService.link(record, folderB);
+                recordService.link(record, folderC);
+                // Cut off the record.
+                dispositionService.cutoffDisposableItem(record);
+                // Ensure the update has been applied to the record.
+                internalDispositionService.updateNextDispositionAction(record);
+            })
+            .when(() -> {
+                // Unlink the record from folder B.
+                recordService.unlink(record, folderB);
+            })
+            .then()
+                .expect(false)
+                        .from(() -> dispositionService.isNextDispositionActionEligible(record))
+                    .because("Destroy action shouldn't be available, as the record should follow disposition schedule from category C.");
     }
 }

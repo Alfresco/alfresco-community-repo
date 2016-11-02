@@ -62,7 +62,6 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
@@ -173,16 +172,6 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
         this.nodeService = nodeService;
     }
     
-    /**
-     * Set the authentication service
-     * 
-     * @param authenticationService AuthenticationService
-     */
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
-        log.warn("Bean property 'authenticationService' no longer required.");
-    }
-
     /**
      * Set the max number of permission checks
      * 

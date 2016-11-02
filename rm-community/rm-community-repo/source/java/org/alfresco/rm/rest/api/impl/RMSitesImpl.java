@@ -232,7 +232,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
      */
     public RMSite updateRMSite(String siteId, SiteUpdate update, Parameters parameters)
     {
-        siteService.hasSite(RM_SITE_ID);
+        solveRMSiteNodeRefCaching();
         Site updatedSite = updateSite(siteId, update, parameters);
         SiteInfo siteInfo = siteService.getSite(siteId);
         RMSiteCompliance compliance = getCompliance(siteInfo);
@@ -323,7 +323,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     @Override
     public RMSite getRMSite(String siteId)
     {
-        siteService.hasSite(RM_SITE_ID);
+        solveRMSiteNodeRefCaching();
         Site site = getSite(siteId);
         SiteInfo siteInfo = siteService.getSite(siteId);
         RMSiteCompliance compliance = getCompliance(siteInfo);
@@ -332,7 +332,17 @@ public class RMSitesImpl extends SitesImpl implements RMSites
 
     public void deleteRMSite(String siteId, Parameters parameters)
     {
-        siteService.hasSite(RM_SITE_ID);
+        solveRMSiteNodeRefCaching();
         deleteSite(siteId, parameters);
+    }
+
+    /**
+     * Method used for solving rm site nodeRef caching problem that affected rm site update, delete and get from rest api
+     *
+     */
+    private void solveRMSiteNodeRefCaching()
+    {
+        //since we do not have access to SiteServiceImpl.getSiteNodeRef(String shortName, boolean enforcePermissions) method we can use hasSite method to solve caching problem
+        siteService.hasSite(RM_SITE_ID);
     }
 }

@@ -61,6 +61,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.extensions.webscripts.Status;
 
+import static org.alfresco.service.cmr.favourites.FavouritesService.SortFields.username;
+
 /**
  * HttpClient powered implementation of {@link RemoteConnectorService}, which 
  *  performs requests to remote HTTP servers.
@@ -202,17 +204,41 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             {
                 StringRequestEntity re = (StringRequestEntity)request.getRequestBody();
                 // remove credentials from logs, such as "username":"John.Doe@test.com" and "password":"123456abc"
+                // the strings can include double quotes, therefore we should check for proper end, it can be either
+                // a comma "," or "}"
                 // REPO-1471
                 String payload = re.getContent(); // returns a new string, should be safe to modify
+                String usernameString = "\"username\"";
+                String passwordString = "\"password\"";
+                String hiddenString = "\"<hidden>\"";
                 List<String> matches = new LinkedList<>();
-                Matcher m = Pattern.compile("\"username\":\"([^\"]+)\"|\"password\":\"([^\"]+)\"").matcher(payload);
+                Matcher m = Pattern.compile(usernameString + ":\"(.+)\",|" +
+                                            usernameString + ":\"(.+)\"}|" +
+                                            passwordString + ":\"(.+)\",|" +
+                                            passwordString + ":\"(.+)\"}").matcher(payload);
                 while(m.find())
                 {
                     matches.add(m.group());
                 }
                 for (String match: matches)
                 {
-                    payload = payload.replace(match.split("\"")[3], "<hidden>");
+                    if (match.contains(usernameString))
+                    {
+                        payload = payload.replace(
+                                match.substring(
+                                        match.indexOf(usernameString) + usernameString.length() + 1, // 1 is semicolon
+                                        match.lastIndexOf("\"") + 1), // 1 is a double quote
+                                hiddenString);
+                    }
+                    else if (match.contains(passwordString))
+                    {
+                        payload = payload.replace(
+                                match.substring(
+                                        match.indexOf(passwordString) + passwordString.length() + 1, // 1 is semicolon
+                                        match.lastIndexOf("\"") + 1), // 1 is a double quote
+                                hiddenString);
+                    }
+
                 }
 
                 logger.debug("Payload (string): " + payload);

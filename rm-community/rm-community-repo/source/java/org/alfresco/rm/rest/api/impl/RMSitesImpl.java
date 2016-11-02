@@ -330,10 +330,9 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         return new RMSite(site, compliance);
     }
 
-    @Override
-    public void deleteSite(String siteId, Parameters parameters)
+    public void deleteRMSite(String siteId, Parameters parameters)
     {
         siteService.hasSite(RM_SITE_ID);
-        super.deleteSite(siteId, parameters);
+        deleteSite(siteId, parameters);
     }
 }

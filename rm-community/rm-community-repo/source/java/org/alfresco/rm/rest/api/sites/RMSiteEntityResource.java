@@ -79,7 +79,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
         {
             throw new InvalidArgumentException("DELETE does not support parameter: permanent");
         }
-        sites.deleteSite(siteId, parameters);
+        sites.deleteRMSite(siteId, parameters);
     }
 
     @Override

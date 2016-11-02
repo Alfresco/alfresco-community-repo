@@ -59,12 +59,6 @@ public class CoreDictionaryRegistryImpl extends AbstractDictionaryRegistry
             dictionaryDeployer.onDictionaryInit();
         }
 
-        // notify registered listeners that dictionary has been initialised (population is complete)
-        for (DictionaryListener dictionaryListener : dictionaryDAO.getDictionaryListeners())
-        {
-            dictionaryListener.afterDictionaryInit();
-        }
-
         // Done
         if (logger.isInfoEnabled())
         {

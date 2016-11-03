@@ -8,20 +8,39 @@
         <DataExtractor name="nullValue" registeredName="auditModel.extractor.nullValue" />
     </DataExtractors>
 
+    <!-- MNT-16748 -->
+    <!-- An example of how to audit search -->
+    <!-- Note the 'X' suffix showing that the data generated can be on any path -->
+    <!-- 
+        New audit entry: 
+            Application ID: 4
+            Entry ID:       51
+            Values:         
+                /searchaudit/query/args/store=workspace://SpacesStore
+                /searchaudit/query/args/language=xpath
+                /searchaudit/query/args/query=/company_home
+                /searchaudit/query/no-error=null
+        
+            Audit Data: 
+                /searchaudit/queryX/languageX=xpath
+                /searchaudit/queryX/storeX=workspace://SpacesStore
+                /searchaudit/queryX/queryX=/company_home
+    -->
+
     <PathMappings>
-        <PathMap source="/alfresco-api/post/SearchService/query/args"
-                 target="/alfresco-mnt-16748/search" />
+        <!-- Take the entire post-call data for 'SearchService.query' method and route it to '/searchaudit/query'-->
+        <PathMap source="/alfresco-api/post/SearchService/query" target="/searchaudit/query" />
     </PathMappings>
-
-    <Application name="alfresco-mnt-16748" key="alfresco-mnt-16748">
-
-        <AuditPath key="search">
-            <RecordValue key="language" dataExtractor="simpleValue"
-                         dataSource="/alfresco-mnt-16748/search/language" dataTrigger="/alfresco-mnt-16748/search/language" />
-            <RecordValue key="query" dataExtractor="simpleValue"
-                         dataSource="/alfresco-mnt-16748/search/query" dataTrigger="/alfresco-mnt-16748/search/query" />
+ 
+    <Application name="SearchAudit" key="searchaudit">
+        <AuditPath key="queryX">
+            <RecordValue key="storeX" dataExtractor="simpleValue"
+                        dataSource="/searchaudit/query/args/store" dataTrigger="/searchaudit/query/no-error" />
+            <RecordValue key="languageX" dataExtractor="simpleValue"
+                        dataSource="/searchaudit/query/args/language" dataTrigger="/searchaudit/query/no-error" />
+            <RecordValue key="queryX" dataExtractor="simpleValue"
+                        dataSource="/searchaudit/query/args/query" dataTrigger="/searchaudit/query/no-error" />
         </AuditPath>
-
     </Application>
 
 </Audit>

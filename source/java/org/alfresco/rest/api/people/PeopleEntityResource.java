@@ -33,6 +33,7 @@ import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -49,7 +50,7 @@ import java.util.List;
  * @author Gethin James
  */
 @EntityResource(name="people", title = "People")
-public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>, EntityResourceAction.Update<Person>, InitializingBean
+public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>, EntityResourceAction.Update<Person>,EntityResourceAction.Read<Person>, InitializingBean
 {
     private static Log logger = LogFactory.getLog(PeopleEntityResource.class);
     
@@ -174,5 +175,12 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
         {
             throw new InvalidArgumentException("Unsupported field: quotaUsed");
         }
+    }
+
+    @Override
+    @WebApiDescription(title = "Get List of People", description = "Get List of People")
+    public CollectionWithPagingInfo<Person> readAll(Parameters params)
+    {
+        return people.getPeople(params);
     }
 }

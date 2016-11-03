@@ -433,10 +433,14 @@ public final class AuthenticationHelper
       if (logger.isDebugEnabled())
           logger.debug("Creating an object for " + currentUsername + " with ticket: " + ticket);
       final ServiceRegistry services = (ServiceRegistry) wc.getBean(ServiceRegistry.SERVICE_REGISTRY);
+
+      // If the repository is read only, we have to settle for a read only transaction. Auto user creation
+      // will not be possible.
+      boolean readOnly = services.getTransactionService().isReadOnly();
+
       return services.getTransactionService().getRetryingTransactionHelper().doInTransaction(
             new RetryingTransactionHelper.RetryingTransactionCallback<User>()
             {
-
                public User execute() throws Throwable
                {
                   NodeService nodeService = services.getNodeService();
@@ -453,7 +457,7 @@ public final class AuthenticationHelper
                   user.setHomeSpaceId(homeRef.getId());
                   return user;
                }
-            });
+            }, readOnly, false);
    }
     
    /**

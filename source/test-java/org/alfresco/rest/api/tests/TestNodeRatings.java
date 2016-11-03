@@ -44,6 +44,7 @@ import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Comments;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Nodes;
@@ -54,15 +55,19 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.NodeRating;
+import org.alfresco.rest.api.tests.client.data.Site;
+import org.alfresco.rest.api.tests.client.data.SiteContainer;
+import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.simple.JSONArray;
 import org.junit.Test;
 
-public class TestNodeRatings extends EnterpriseTestApi
+public class TestNodeRatings extends AbstractBaseApiTest
 {
 	@Test
 	public void testNodeRatings() throws Exception
@@ -103,35 +108,26 @@ public class TestNodeRatings extends EnterpriseTestApi
 		final TestPerson person11 = people.get(0);
 		final TestPerson person12 = people.get(1);
 		final TestPerson person21 = people.get(2);
-
-		final List<NodeRef> nodes = new ArrayList<NodeRef>();
-		final List<TestSite> sites = new ArrayList<TestSite>();
-
-		// Create site
-		TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-		{
-			@Override
-			public Void doWork() throws Exception
-			{
-				TestSite site = network1.createSite(SiteVisibility.PRIVATE);
-				sites.add(site);
-
-				NodeRef nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc 1", "Test Content");
-				nodes.add(nodeRef);
-				
-				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc 2", "Test Content");
-				nodes.add(nodeRef);
-
-				return null;
-			}
-		}, person11.getId(), network1.getId());
-
-		final NodeRef nodeRef1 = nodes.get(0);		
-
+		
+		PublicApiClient.Sites sitesProxy = publicApiClient.sites();
 		Comments commentsProxy = publicApiClient.comments();
 		People peopleProxy = publicApiClient.people();
 		Nodes nodesProxy = publicApiClient.nodes();
 		DateFormat format = PublicApiDateFormat.getDateFormat();
+
+		// Create site and document
+
+		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+
+		String siteId = "TESTSITE" + GUID.generate();
+		Site site = new SiteImpl(siteId, siteId, siteId, SiteVisibility.PRIVATE.toString());
+		site = sitesProxy.createSite(site);
+
+		SiteContainer sc = sitesProxy.getSingleSiteContainer(site.getSiteId(), "documentLibrary");
+		final String node1Id = createTextFile(sc.getId(), "Test Doc 1.txt", "Test Content").getId();
+
+		// TEMP - pending remote api to list node ratings
+		NodeRef nodeRef1 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, node1Id);
 
 		// Test Case cloud-1976
 		// Create node ratings
@@ -141,7 +137,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 
 			Comment comment = new Comment("Test Comment", "Test Comment");
-			Comment newComment = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
+			Comment newComment = commentsProxy.createNodeComment(node1Id, comment);
 			NodeRating rating = new NodeRating("likes", true);
 			nodesProxy.createNodeRating(newComment.getId(), rating);
 			fail();
@@ -170,7 +166,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 
 			Tag tag = new Tag("testTag");
-			Tag newTag = nodesProxy.createNodeTag(nodeRef1.getId(), tag);
+			Tag newTag = nodesProxy.createNodeTag(node1Id, tag);
 			NodeRating rating = new NodeRating("likes", true);
 			nodesProxy.createNodeRating(newTag.getId(), rating);
 			fail();
@@ -184,7 +180,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 		try
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-			nodesProxy.createNodeRating(nodeRef1.getId(), new NodeRating("missingRatingScheme", Double.valueOf(1.0f)));
+			nodesProxy.createNodeRating(node1Id, new NodeRating("missingRatingScheme", Double.valueOf(1.0f)));
 			fail("");
 		}
 		catch(PublicApiException e)
@@ -196,7 +192,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 		try
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-			nodesProxy.createNodeRating(nodeRef1.getId(), new NodeRating("likes", Double.valueOf(2.0f)));
+			nodesProxy.createNodeRating(node1Id, new NodeRating("likes", Double.valueOf(2.0f)));
 			fail("");
 		}
 		catch(PublicApiException e)
@@ -208,7 +204,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 		try
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-			nodesProxy.createNodeRating(nodeRef1.getId(), new NodeRating("fiveStar", true));
+			nodesProxy.createNodeRating(node1Id, new NodeRating("fiveStar", true));
 			fail("");
 		}
 		catch(PublicApiException e)
@@ -220,7 +216,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 		try
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-			nodesProxy.createNodeRating(nodeRef1.getId(), new NodeRating("fiveStar", 5));
+			nodesProxy.createNodeRating(node1Id, new NodeRating("fiveStar", 5));
 			fail("");
 		}
 		catch(PublicApiException e)
@@ -236,21 +232,21 @@ public class TestNodeRatings extends EnterpriseTestApi
 
 			// rate by multiple users in more than 1 network
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-			NodeRating ret = nodesProxy.createNodeRating(nodeRef1.getId(), rating);
+			NodeRating ret = nodesProxy.createNodeRating(node1Id, rating);
 			assertEquals(rating.getMyRating(), ret.getMyRating());
 			assertTrue(format.parse(ret.getRatedAt()).after(time));
 			assertEquals(rating.getId(), ret.getId());
 			assertEquals(new NodeRating.Aggregate(1, null), ret.getAggregate());
 
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person12.getId()));
-			ret = nodesProxy.createNodeRating(nodeRef1.getId(), rating);
+			ret = nodesProxy.createNodeRating(node1Id, rating);
 			assertEquals(rating.getMyRating(), ret.getMyRating());
 			assertTrue(format.parse(ret.getRatedAt()).after(time));
 			assertEquals(rating.getId(), ret.getId());
 			assertEquals(new NodeRating.Aggregate(2, null), ret.getAggregate());
 			
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person12.getId()));
-			ret = nodesProxy.createNodeRating(nodeRef1.getId(), rating);
+			ret = nodesProxy.createNodeRating(node1Id, rating);
 			assertEquals(rating.getMyRating(), ret.getMyRating());
 			assertTrue(format.parse(ret.getRatedAt()).after(time));
 			assertEquals(rating.getId(), ret.getId());
@@ -260,7 +256,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 			try
 			{
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person21.getId()));
-				nodesProxy.createNodeRating(nodeRef1.getId(), rating);
+				nodesProxy.createNodeRating(node1Id, rating);
 				fail();
 			}
 			catch(PublicApiException e)
@@ -284,7 +280,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 					int skipCount = 0;
 					int maxItems = 1;
 					Paging paging = getPaging(skipCount, maxItems, expectedRatings.size(), expectedRatings.size());
-	 				ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(paging, null));
+	 				ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(node1Id, createParams(paging, null));
 					checkList(expectedRatings.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 				}
 	
@@ -293,7 +289,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 					int maxItems = Integer.MAX_VALUE;
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 					Paging paging = getPaging(skipCount, maxItems, expectedRatings.size(), expectedRatings.size());
-					ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(paging, null));
+					ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(node1Id, createParams(paging, null));
 					checkList(expectedRatings.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 				}
 	
@@ -302,7 +298,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 					int maxItems = expectedRatings.size();
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 					Paging paging = getPaging(skipCount, maxItems, expectedRatings.size(), expectedRatings.size());
-					ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(paging, null));
+					ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(node1Id, createParams(paging, null));
 					checkList(expectedRatings.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 				}
 			}
@@ -317,7 +313,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 					int skipCount = 0;
 					int maxItems = 1;
 					Paging paging = getPaging(skipCount, maxItems, expectedRatings.size(), expectedRatings.size());
-					ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(paging, null));
+					ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(node1Id, createParams(paging, null));
 					checkList(expectedRatings.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 				}
 	
@@ -325,7 +321,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 					int skipCount = 1;
 					int maxItems = Integer.MAX_VALUE;
 					Paging paging = getPaging(skipCount, maxItems, expectedRatings.size(), expectedRatings.size());
-					ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(paging, null));
+					ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(node1Id, createParams(paging, null));
 					checkList(expectedRatings.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 				}
 			}
@@ -343,7 +339,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 					int maxItems = 1;
 
 					Paging paging = getPaging(skipCount, maxItems, expectedRatings.size(), expectedRatings.size());
-					nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(paging, null));
+					nodesProxy.getNodeRatings(node1Id, createParams(paging, null));
 					fail();
 				}
 				catch(PublicApiException e)
@@ -386,7 +382,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 						assertNotNull(summary);
 						String objectId = (String)summary.get("objectId");
 						assertNotNull(objectId);
-						if(nodeRef1.getId().equals(objectId))
+						if(node1Id.equals(objectId))
 						{
 							found = true;
 							break;
@@ -406,7 +402,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 			try
 			{
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person21.getId()));
-				nodesProxy.removeNodeRating(nodeRef1.getId(), rating);
+				nodesProxy.removeNodeRating(node1Id, rating);
 				fail();
 			}
 			catch(PublicApiException e)
@@ -416,7 +412,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 
 			{
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person12.getId()));
-				nodesProxy.removeNodeRating(nodeRef1.getId(), rating);
+				nodesProxy.removeNodeRating(node1Id, rating);
 			}
 
 			// check list
@@ -427,7 +423,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 				int maxItems = Integer.MAX_VALUE;
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 				Paging paging = getPaging(skipCount, maxItems, ratings.size(), ratings.size());
-				ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(paging, null));
+				ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(node1Id, createParams(paging, null));
 				checkList(ratings.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 			}
 		}
@@ -438,8 +434,8 @@ public class TestNodeRatings extends EnterpriseTestApi
 			NodeRating rating = new NodeRating("likes", true);
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 
-			NodeRating expected = nodesProxy.createNodeRating(nodeRef1.getId(), rating);
-			NodeRating actual = nodesProxy.getNodeRating(nodeRef1.getId(), "likes");
+			NodeRating expected = nodesProxy.createNodeRating(node1Id, rating);
+			NodeRating actual = nodesProxy.getNodeRating(node1Id, "likes");
 			expected.expected(actual);
 		}
 
@@ -450,13 +446,13 @@ public class TestNodeRatings extends EnterpriseTestApi
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person12.getId()));
 
 			// create initial rating
-			NodeRating createdRating = nodesProxy.createNodeRating(nodeRef1.getId(), rating);
+			NodeRating createdRating = nodesProxy.createNodeRating(node1Id, rating);
 			NodeRating updateRating = new NodeRating(createdRating.getId(), 5);
 
 			// update - not supported
 			try
 			{
-				nodesProxy.updateNodeRating(nodeRef1.getId(), updateRating);
+				nodesProxy.updateNodeRating(node1Id, updateRating);
 				fail();
 			}
 			catch(PublicApiException e)
@@ -476,7 +472,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 				ratings.add(new NodeRating("likes", false));
                 
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-				nodesProxy.create("nodes",  nodeRef1.getId(), "ratings", null, JSONArray.toJSONString(ratings), "Unable to POST to multiple ratings");
+				nodesProxy.create("nodes", node1Id, "ratings", null, JSONArray.toJSONString(ratings), "Unable to POST to multiple ratings");
 				fail();
 			}
 			catch(PublicApiException e)
@@ -486,7 +482,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 
 			// get an arbitrary rating
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-			ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(getPaging(0, Integer.MAX_VALUE), null));
+			ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(node1Id, createParams(getPaging(0, Integer.MAX_VALUE), null));
 			List<NodeRating> nodeRatings = resp.getList();
 			assertTrue(nodeRatings.size() > 0);
 
@@ -495,7 +491,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 				NodeRating rating = new NodeRating("likes", true);
 
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-				nodesProxy.create("nodes", nodeRef1.getId(), "ratings", "likes", rating.toJSON().toString(), "Unable to POST to a node rating");
+				nodesProxy.create("nodes", node1Id, "ratings", "likes", rating.toJSON().toString(), "Unable to POST to a node rating");
 				fail();
 			}
 			catch(PublicApiException e)
@@ -506,7 +502,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 			try
 			{
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-				nodesProxy.update("nodes", nodeRef1.getId(), "ratings", null, null, "Unable to PUT node ratings");
+				nodesProxy.update("nodes", node1Id, "ratings", null, null, "Unable to PUT node ratings");
 				fail();
 			}
 			catch(PublicApiException e)
@@ -517,7 +513,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 			try
 			{
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-				nodesProxy.remove("nodes", nodeRef1.getId(), "ratings", null, "Unable to DELETE node ratings");
+				nodesProxy.remove("nodes", node1Id, "ratings", null, "Unable to DELETE node ratings");
 				fail();
 			}
 			catch(PublicApiException e)
@@ -530,7 +526,7 @@ public class TestNodeRatings extends EnterpriseTestApi
 				NodeRating rating = nodeRatings.get(0);
 
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-				nodesProxy.update("nodes", nodeRef1.getId(), "ratings", rating.getId(), null, "Unable to PUT a node rating");
+				nodesProxy.update("nodes", node1Id, "ratings", rating.getId(), null, "Unable to PUT a node rating");
 				fail();
 			}
 			catch(PublicApiException e)
@@ -538,5 +534,11 @@ public class TestNodeRatings extends EnterpriseTestApi
 				assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
 			}
 		}
+	}
+
+	@Override
+	public String getScope()
+	{
+		return "public";
 	}
 }

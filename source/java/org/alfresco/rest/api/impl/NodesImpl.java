@@ -1193,14 +1193,7 @@ public class NodesImpl implements Nodes
 
         final List<String> includeParam = parameters.getInclude();
 
-        // filters
-        Boolean includeFolders = null;
-        Boolean includeFiles = null;
         QName assocTypeQNameParam = null;
-        QName filterNodeTypeQName = null;
-
-        // note: for files/folders, include subtypes by default (unless filtering by a specific nodeType - see below)
-        boolean filterIncludeSubTypes = true;
 
         Query q = parameters.getQuery();
 
@@ -1215,37 +1208,6 @@ public class NodesImpl implements Nodes
             {
                 assocTypeQNameParam = getAssocType(assocTypeQNameStr);
             }
-
-            Boolean isFolder = propertyWalker.getProperty(PARAM_ISFOLDER, WhereClauseParser.EQUALS, Boolean.class);
-            Boolean isFile = propertyWalker.getProperty(PARAM_ISFILE, WhereClauseParser.EQUALS, Boolean.class);
-
-            if (isFolder != null)
-            {
-                includeFolders = isFolder;
-            }
-
-            if (isFile != null)
-            {
-                includeFiles = isFile;
-            }
-
-            if (Boolean.TRUE.equals(includeFiles) && Boolean.TRUE.equals(includeFolders))
-            {
-                throw new InvalidArgumentException("Invalid filter (isFile=true and isFolder=true) - a node cannot be both a file and a folder");
-            }
-
-            String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
-            if ((nodeTypeStr != null) && (! nodeTypeStr.isEmpty()))
-            {
-                if ((isFile != null) || (isFolder != null))
-                {
-                    throw new InvalidArgumentException("Invalid filter - nodeType and isFile/isFolder are mutually exclusive");
-                }
-
-                Pair<QName, Boolean> pair = parseNodeTypeFilter(nodeTypeStr);
-                filterNodeTypeQName = pair.getFirst();
-                filterIncludeSubTypes = pair.getSecond();
-            }
         }
 
         List<Pair<QName, Boolean>> sortProps = getListChildrenSortProps(parameters);
@@ -1257,42 +1219,8 @@ public class NodesImpl implements Nodes
 
         final PagingResults<FileInfo> pagingResults;
 
-        // notes (see also earlier validation checks):
-        // - no filtering means any types/sub-types (well, apart from hidden &/or default ignored types - eg. systemfolder, fm types)
-        // - node type filtering is mutually exclusive from isFile/isFolder, can optionally also include sub-types
-        // - isFile & isFolder cannot both be true
-        // - (isFile=false) means any other types/sub-types (other than files)
-        // - (isFolder=false) means any other types/sub-types (other than folders)
-        // - (isFile=false and isFolder=false) means any other types/sub-types (other than files or folders)
+        Pair<Set<QName>, Set<QName>> pair = buildSearchTypesAndIgnoreAspects(parameters);
 
-        if (filterNodeTypeQName == null)
-        {
-            if ((includeFiles == null) && (includeFolders == null))
-            {
-                // no additional filtering
-                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
-            }
-            else if ((includeFiles != null) && (includeFolders != null))
-            {
-                if ((! includeFiles) && (! includeFolders))
-                {
-                    // no files or folders
-                    filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
-                }
-            }
-            else if ((includeFiles != null) && (! includeFiles))
-            {
-                // no files
-                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
-            }
-            else if ((includeFolders != null) && (! includeFolders))
-            {
-                // no folders
-                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
-            }
-        }
-
-        Pair<Set<QName>, Set<QName>> pair = buildSearchTypesAndIgnoreAspects(filterNodeTypeQName, filterIncludeSubTypes, ignoreQNames, includeFiles, includeFolders);
         Set<QName> searchTypeQNames = pair.getFirst();
         Set<QName> ignoreAspectQNames = pair.getSecond();
 
@@ -1572,6 +1500,94 @@ public class NodesImpl implements Nodes
         }
 
         return new Pair<>(searchTypeQNames, ignoreAspectQNames);
+    }
+
+    protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(final Parameters parameters)
+    {
+        // filters
+        Boolean includeFolders = null;
+        Boolean includeFiles = null;
+        QName filterNodeTypeQName = null;
+
+        // note: for files/folders, include subtypes by default (unless filtering by a specific nodeType - see below)
+        boolean filterIncludeSubTypes = true;
+
+        Query q = parameters.getQuery();
+
+        if (q != null)
+        {
+            // filtering via "where" clause
+            MapBasedQueryWalker propertyWalker = createListChildrenQueryWalker();
+            QueryHelper.walk(q, propertyWalker);
+
+            Boolean isFolder = propertyWalker.getProperty(PARAM_ISFOLDER, WhereClauseParser.EQUALS, Boolean.class);
+            Boolean isFile = propertyWalker.getProperty(PARAM_ISFILE, WhereClauseParser.EQUALS, Boolean.class);
+
+            if (isFolder != null)
+            {
+                includeFolders = isFolder;
+            }
+
+            if (isFile != null)
+            {
+                includeFiles = isFile;
+            }
+
+            if (Boolean.TRUE.equals(includeFiles) && Boolean.TRUE.equals(includeFolders))
+            {
+                throw new InvalidArgumentException("Invalid filter (isFile=true and isFolder=true) - a node cannot be both a file and a folder");
+            }
+
+            String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
+            if ((nodeTypeStr != null) && (! nodeTypeStr.isEmpty()))
+            {
+                if ((isFile != null) || (isFolder != null))
+                {
+                    throw new InvalidArgumentException("Invalid filter - nodeType and isFile/isFolder are mutually exclusive");
+                }
+
+                Pair<QName, Boolean> pair = parseNodeTypeFilter(nodeTypeStr);
+                filterNodeTypeQName = pair.getFirst();
+                filterIncludeSubTypes = pair.getSecond();
+            }
+        }
+
+        // notes (see also earlier validation checks):
+        // - no filtering means any types/sub-types (well, apart from hidden &/or default ignored types - eg. systemfolder, fm types)
+        // - node type filtering is mutually exclusive from isFile/isFolder, can optionally also include sub-types
+        // - isFile & isFolder cannot both be true
+        // - (isFile=false) means any other types/sub-types (other than files)
+        // - (isFolder=false) means any other types/sub-types (other than folders)
+        // - (isFile=false and isFolder=false) means any other types/sub-types (other than files or folders)
+
+        if (filterNodeTypeQName == null)
+        {
+            if ((includeFiles == null) && (includeFolders == null))
+            {
+                // no additional filtering
+                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
+            }
+            else if ((includeFiles != null) && (includeFolders != null))
+            {
+                if ((! includeFiles) && (! includeFolders))
+                {
+                    // no files or folders
+                    filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
+                }
+            }
+            else if ((includeFiles != null) && (! includeFiles))
+            {
+                // no files
+                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
+            }
+            else if ((includeFolders != null) && (! includeFolders))
+            {
+                // no folders
+                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
+            }
+        }
+
+        return buildSearchTypesAndIgnoreAspects(filterNodeTypeQName, filterIncludeSubTypes, ignoreQNames, includeFiles, includeFolders);
     }
 
     private Set<QName> getAspectsToIgnore(Set<QName> ignoreQNames)

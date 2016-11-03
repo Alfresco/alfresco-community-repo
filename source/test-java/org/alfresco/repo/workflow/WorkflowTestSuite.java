@@ -33,6 +33,7 @@ import org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest;
 import org.alfresco.repo.workflow.activiti.ActivitiSpringTransactionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiTimerExecutionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiWorkflowServiceIntegrationTest;
+import org.alfresco.repo.workflow.activiti.WorklfowObjectFactoryTest;
 import org.alfresco.util.ApplicationContextHelper;
 
 /**
@@ -65,7 +66,10 @@ public class WorkflowTestSuite extends TestSuite
 
         // These tests use a different Spring config.
         suite.addTestSuite( ActivitiMultitenantWorkflowTest.class );
-                
+
+        // General workflows tests
+        suite.addTestSuite(WorklfowObjectFactoryTest.class);
+
         // Note the following workflow tests are not included in this sutie:
         // ActivitiTaskComponentTest
         // ActivitiWorkflowComponentTest

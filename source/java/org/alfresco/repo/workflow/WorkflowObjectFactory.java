@@ -209,7 +209,7 @@ public class WorkflowObjectFactory
             boolean isDefault, String... baseLabelKeys)
     {
         String title = getLabel(baseLabelKeys, TITLE_LABEL, defaultTitle);
-        String description = getLabel(baseLabelKeys, TITLE_LABEL, defaultDescription);
+        String description = getLabel(baseLabelKeys, DESC_LABEL, defaultDescription);
         return new WorkflowTransition(id, title, description, isDefault);
     }
     

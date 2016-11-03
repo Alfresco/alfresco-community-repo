@@ -130,8 +130,11 @@ public class SitesImpl implements Sites
     {
         Map<String,SiteService.SortFields> aMap = new HashMap<>(3);
         aMap.put(PARAM_SITE_TITLE, SiteService.SortFields.SiteTitle);
+        aMap.put(SiteService.SortFields.SiteTitle.toString(), SiteService.SortFields.SiteTitle); // for backwards compat'
         aMap.put(PARAM_SITE_ID, SiteService.SortFields.SiteShortName);
+        aMap.put(SiteService.SortFields.SiteShortName.toString(), SiteService.SortFields.SiteShortName); // for backwards compat'
         aMap.put(PARAM_SITE_ROLE, SiteService.SortFields.Role);
+        aMap.put(SiteService.SortFields.Role.toString(), SiteService.SortFields.Role);  // for backwards compat'
         SORT_SITE_MEMBERSHIP = Collections.unmodifiableMap(aMap);
     }
 

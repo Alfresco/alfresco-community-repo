@@ -886,6 +886,12 @@ public class QuickShareServiceImpl implements QuickShareService,
         return canDeleteSharedLink;
     }
 
+    @Override
+    public boolean isQuickShareEnabled()
+    {
+        return this.enabled;
+    }
+
     private String getSiteName(NodeRef nodeRef)
     {
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();

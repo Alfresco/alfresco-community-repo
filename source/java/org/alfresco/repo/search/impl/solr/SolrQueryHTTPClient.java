@@ -658,6 +658,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 {
                     url.append("&").append(encoder.encode("f."+facet.getField()+".facet.sort", "UTF-8")).append("=").append(encoder.encode(facet.getSort() == FieldFacetSort.COUNT ? "count" : "index", "UTF-8"));
                 }
+                if(facet.isCountDocsMissingFacetField() != false)
+                {
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.missing", "UTF-8")).append("=").append(encoder.encode(""+facet.isCountDocsMissingFacetField(), "UTF-8"));
+                }
 
             }
             for(String facetQuery : searchParameters.getFacetQueries())

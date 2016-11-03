@@ -232,7 +232,6 @@ public class RMSitesImpl extends SitesImpl implements RMSites
      */
     public RMSite updateRMSite(String siteId, SiteUpdate update, Parameters parameters)
     {
-        solveRMSiteNodeRefCaching();
         Site updatedSite = updateSite(siteId, update, parameters);
         SiteInfo siteInfo = siteService.getSite(siteId);
         RMSiteCompliance compliance = getCompliance(siteInfo);
@@ -323,7 +322,6 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     @Override
     public RMSite getRMSite(String siteId)
     {
-        solveRMSiteNodeRefCaching();
         Site site = getSite(siteId);
         SiteInfo siteInfo = siteService.getSite(siteId);
         RMSiteCompliance compliance = getCompliance(siteInfo);
@@ -333,12 +331,13 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     @Override
     public void deleteRMSite(String siteId, Parameters parameters)
     {
-        solveRMSiteNodeRefCaching();
         deleteSite(siteId, parameters);
+        solveRMSiteNodeRefCaching();
     }
 
     /**
-     * Method used for solving rm site nodeRef caching problem that affected rm site update, delete and get from rest api. See RM-4289 issue for details.
+     * Method used for solving rm site nodeRef caching problem that affected rm site update and get from rest api, after site deletion from rest api.
+     * See RM-4289 issue for details.
      *
      */
     private void solveRMSiteNodeRefCaching()

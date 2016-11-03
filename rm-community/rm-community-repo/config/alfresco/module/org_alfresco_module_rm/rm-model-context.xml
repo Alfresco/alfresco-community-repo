@@ -84,6 +84,9 @@
    <bean id="rma.transferContainer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.TransferContainerType" parent="rm.baseBehaviour">
    </bean>
 
+   <bean id="rma.unfiledRecordsContainer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.UnfiledRecordContainerType" parent="rm.baseBehaviour">
+   </bean>
+
    <bean id="rma.recordCategory" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.RecordCategoryType" parent="rm.baseBehaviour">
         <property name="vitalRecordService" ref="VitalRecordService" />
         <property name="filePlanPermissionService" ref="FilePlanPermissionService" />

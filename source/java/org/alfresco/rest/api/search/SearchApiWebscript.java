@@ -51,7 +51,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * An implementation of the {{baseUrl}}/{{networkId}}/public/search/versions/1/search endpoint
@@ -123,7 +125,13 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         BeanPropertiesFilter filter = null;
         if (searchQuery.getFields()!= null && !searchQuery.getFields().isEmpty())
         {
-          filter = getFilter("", searchQuery.getFields());
+            List<String> selectList = new ArrayList<>(searchQuery.getFields().size());
+            selectList.addAll(searchQuery.getFields());
+            if (searchQuery.getInclude()!= null && !searchQuery.getInclude().isEmpty())
+            {
+                selectList.addAll(searchQuery.getInclude());
+            }
+          filter = getFilter("", selectList);
         }
         Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, null, filter, null, null, null, null, null, false);
         return Params.valueOf(null, recognizedParams, searchQuery, webScriptRequest);

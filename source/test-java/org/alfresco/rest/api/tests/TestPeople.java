@@ -27,6 +27,8 @@ package org.alfresco.rest.api.tests;
 
 import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
+import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.Pair;
 import org.alfresco.rest.api.tests.client.PublicApiClient.People;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
@@ -39,9 +41,16 @@ import org.json.simple.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class TestPeople extends EnterpriseTestApi
 {
@@ -49,23 +58,39 @@ public class TestPeople extends EnterpriseTestApi
 	private Iterator<TestNetwork> accountsIt;
 	private TestNetwork account1;
 	private TestNetwork account2;
+    private TestNetwork account3;
 	private Iterator<String> account1PersonIt;
 	private Iterator<String> account2PersonIt;
+    private Iterator<String> account3PersonIt;
 	private String account1Admin;
 	private String account2Admin;
+    private String account3Admin;
 
-	@Before
-	public void setUp() throws Exception
-	{
-		people = publicApiClient.people();
-		accountsIt = getTestFixture().getNetworksIt();
-		account1 = accountsIt.next();
-		account2 = accountsIt.next();
-		account1Admin = "admin@"+account1.getId();
-		account2Admin = "admin@"+account2.getId();
-		account1PersonIt = account1.getPersonIds().iterator();
-		account2PersonIt = account2.getPersonIds().iterator();
-	}
+    @Before
+    public void setUp() throws Exception
+    {
+        people = publicApiClient.people();
+        accountsIt = getTestFixture().getNetworksIt();
+        account1 = accountsIt.next();
+        account2 = accountsIt.next();
+        account3 = createNetwork("account3");
+        account1Admin = "admin@" + account1.getId();
+        account2Admin = "admin@" + account2.getId();
+        account3Admin = "admin@" + account3.getId();
+        account1PersonIt = account1.getPersonIds().iterator();
+        account2PersonIt = account2.getPersonIds().iterator();
+
+        account3.createUser();
+        account3PersonIt = account3.getPersonIds().iterator();
+    }
+
+    private TestNetwork createNetwork(String networkPrefix)
+    {
+        TestNetwork network = getRepoService().createNetwork(networkPrefix + GUID.generate(), true);
+        network.create();
+
+        return network;
+    }
 
 	@Test
 	public void testPeople() throws Exception
@@ -442,4 +467,241 @@ public class TestPeople extends EnterpriseTestApi
 			return personJson;
 		}
 	}
+
+    @Test
+    public void testUpdatePersonAuthenticationFailed() throws PublicApiException
+    {
+        final String personId = account2PersonIt.next();
+
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), personId));
+
+        people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 401 response when updating " + personId, 401);
+    }
+
+    @Test
+    public  void testUpdatePersonNonAdminNotAllowed() throws PublicApiException
+    {
+        final String personId = account3PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
+
+        people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 403 response when updating " + personId, 403);
+    }
+
+    @Test
+    public  void testUpdatePersonNonexistentPerson() throws PublicApiException
+    {
+        final String personId = "non-existent";
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+
+        people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 404 response when updating " + personId, 404);
+    }
+
+    @Test
+    public void testUpdatePersonUsingPartialUpdate() throws PublicApiException
+    {
+        final String personId = account3PersonIt.next();
+
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+
+        String updatedFirstName = "Updated firstName";
+
+        HttpResponse response = people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"" + updatedFirstName + "\"\n" + "}", null,
+                "Expected 200 response when updating " + personId, 200);
+
+        Person updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+
+        assertEquals(updatedFirstName, updatedPerson.getFirstName());
+    }
+
+    @Test
+    public  void testUpdatePersonWithRestrictedResponseFields() throws PublicApiException
+    {
+        final String personId = account3PersonIt.next();
+
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+
+        String updatedFirstName = "Updated firstName";
+
+        Map<String, String> params = new HashMap<>();
+        params.put("fields", "id,firstName");
+
+        HttpResponse response = people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"" + updatedFirstName + "\"\n" + "}", params,
+                "Expected 200 response when updating " + personId, 200);
+
+        Person updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+
+        assertNotNull(updatedPerson.getId());
+        assertEquals(updatedFirstName, updatedPerson.getFirstName());
+        assertNull(updatedPerson.getEmail());
+    }
+
+    @Test
+    public void testUpdatePersonUpdate() throws Exception
+    {
+        final String personId = account3PersonIt.next();
+
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+
+        String firstName = "updatedFirstName";
+        String lastName = "updatedLastName";
+        String description = "updatedDescription";
+        String email = "updated@example.com";
+        String skypeId = "updated.skype.id";
+        String googleId = "googleId";
+        String instantMessageId = "updated.user@example.com";
+        String jobTitle = "updatedJobTitle";
+        String location = "updatedLocation";
+
+        Company company = new Company("updatedOrganization", "updatedAddress1", "updatedAddress2", "updatedAddress3", "updatedPostcode", "updatedTelephone", "updatedFax", "updatedEmail");
+
+        String mobile = "mobile";
+        String telephone = "telephone";
+        String userStatus = "userStatus";
+        Boolean enabled = true;
+        Boolean emailNotificationsEnabled = false;
+
+        Map<String, String> params = new HashMap<>();
+        params.put("fields", "id,firstName,lastName,description,avatarId,email,skypeId,googleId,instantMessageId,jobTitle,location,mobile,telephone,userStatus,emailNotificationsEnabled,enabled,company");
+
+        HttpResponse response = people.update("people", personId, null, null,
+                "{\n"
+                        + "  \"firstName\": \"" + firstName + "\",\n"
+                        + "  \"lastName\": \"" + lastName + "\",\n"
+                        + "  \"description\": \"" + description + "\",\n"
+                        + "  \"email\": \"" + email + "\",\n"
+                        + "  \"skypeId\": \"" + skypeId + "\",\n"
+                        + "  \"googleId\": \"" + googleId + "\",\n"
+                        + "  \"instantMessageId\": \"" + instantMessageId + "\",\n"
+                        + "  \"jobTitle\": \"" + jobTitle + "\",\n"
+                        + "  \"location\": \"" + location + "\",\n"
+
+                        + "  \"company\": {\n"
+                        + "    \"organization\": \"" + company.getOrganization() + "\",\n"
+                        + "    \"address1\": \"" + company.getAddress1() + "\",\n"
+                        + "    \"address2\": \"" + company.getAddress2() + "\",\n"
+                        + "    \"address3\": \"" + company.getAddress3() + "\",\n"
+                        + "    \"postcode\": \"" + company.getPostcode() + "\",\n"
+                        + "    \"telephone\": \"" + company.getTelephone() + "\",\n"
+                        + "    \"fax\": \"" + company.getFax() + "\",\n"
+                        + "    \"email\": \"" + company.getEmail() + "\"\n"
+                        + "  },\n"
+
+                        + "  \"mobile\": \"" + mobile + "\",\n"
+                        + "  \"telephone\": \"" + telephone + "\",\n"
+                        + "  \"userStatus\": \"" + userStatus + "\",\n"
+                        + "  \"emailNotificationsEnabled\": \"" + emailNotificationsEnabled + "\",\n"
+                        + "  \"enabled\": \"" + enabled + "\"\n"
+
+                        + "}", params,
+                "Expected 200 response when updating " + personId, 200);
+
+        Person updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+
+        assertNotNull(updatedPerson.getId());
+        assertEquals(firstName, updatedPerson.getFirstName());
+        assertEquals(lastName, updatedPerson.getLastName());
+        assertEquals(description, updatedPerson.getDescription());
+        assertEquals(email, updatedPerson.getEmail());
+        assertEquals(skypeId, updatedPerson.getSkypeId());
+        assertEquals(googleId, updatedPerson.getGoogleId());
+        assertEquals(instantMessageId, updatedPerson.getInstantMessageId());
+        assertEquals(jobTitle, updatedPerson.getJobTitle());
+        assertEquals(location, updatedPerson.getLocation());
+
+        assertNotNull(updatedPerson.getCompany());
+        company.expected(updatedPerson.getCompany());
+
+        assertEquals(mobile, updatedPerson.getMobile());
+        assertEquals(telephone, updatedPerson.getTelephone());
+        assertEquals(userStatus, updatedPerson.getUserStatus());
+        assertEquals(emailNotificationsEnabled, updatedPerson.isEmailNotificationsEnabled());
+        assertEquals(enabled, updatedPerson.isEnabled());
+    }
+
+    @Test
+    public  void testUpdatePersonEnabledNonAdminNotAllowed() throws PublicApiException
+    {
+        final String personId = account3PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
+
+        people.update("people", personId, null, null, "{\n" + "  \"enabled\": \"false\"\n" + "}", null, "Expected 403 response when updating " + personId, 403);
+    }
+
+    @Test
+    public  void testUpdatePersonEnabled() throws PublicApiException
+    {
+        final String personId = account3PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+
+        Boolean enabled = false;
+
+        Map<String, String> params = new HashMap<>();
+        params.put("fields", "enabled");
+
+        HttpResponse response = people.update("people", personId, null, null, "{\n" + "  \"enabled\": \"" + enabled + "\"\n" + "}", params,
+                "Expected 200 response when updating " + personId, 200);
+
+        Person updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+
+        assertEquals(enabled, updatedPerson.isEnabled());
+    }
+
+    @Test
+    public void testUpdatePersonPasswordNonAdminNotAllowed() throws PublicApiException
+    {
+        final String personId = account3PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
+
+        people.update("people", personId, null, null, "{\n" + "  \"password\": \"newPassword\"\n" + "}", null, "Expected 403 response when updating " + personId, 403);
+    }
+
+    @Test
+    public  void testUpdatePersonPassword() throws PublicApiException
+    {
+        final String personId = account3PersonIt.next();
+        final String networkId = account3.getId();
+
+        publicApiClient.setRequestContext(new RequestContext(networkId, account3Admin, "admin"));
+
+        String invalidPassword = "invalidPassword";
+        String updatedPassword = "newPassword";
+
+        people.update("people", personId, null, null, "{\n" + "  \"password\": \"" + updatedPassword + "\"\n" + "}", null,
+                "Expected 200 response when updating " + personId, 200);
+
+        publicApiClient.setRequestContext(new RequestContext(networkId, personId, invalidPassword));
+        try
+        {
+            this.people.getPerson(personId);
+            fail("");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
+        }
+
+        publicApiClient.setRequestContext(new RequestContext(networkId, personId, updatedPassword));
+        this.people.getPerson(personId);
+    }
+
+    @Test
+    public void testUpdatePersonWithNotUpdatableFields() throws PublicApiException
+    {
+        final String personId = account3PersonIt.next();
+
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+
+        List<Pair<String, String>> notUpdatableFields = new ArrayList<>();
+        notUpdatableFields.add(new Pair("userName", "userName"));
+        notUpdatableFields.add(new Pair("avatarId", "avatarId"));
+        notUpdatableFields.add(new Pair("statusUpdatedAt", "statusUpdatedAt"));
+        notUpdatableFields.add(new Pair("quota", "quota"));
+        notUpdatableFields.add(new Pair("quotaUsed", "quotaUsed"));
+
+        for (Pair<String, String> notUpdatableField : notUpdatableFields)
+        {
+            people.update("people", personId, null, null, "{\n" + "\"" + notUpdatableField.getFirst() + "\": \"" + notUpdatableField.getSecond() + "\"\n" + "}", null,
+                    "Expected 400 response when updating " + personId, 400);
+        }
+    }
 }

@@ -52,5 +52,12 @@ public interface People
      */
     Person create(PersonUpdate person);
 
-    //Person updatePerson(String personId, Person person);
+    /**
+     * Update the given person's details.
+     * 
+     * @param personId The identifier of a person.
+     * @param person The person details.
+     * @return The updated person details.
+     */
+    Person update(String personId, Person person);
 }

@@ -36,6 +36,7 @@ import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -300,26 +301,38 @@ public class PeopleImpl implements People
 		mas.createAuthentication(person.getUserName(), person.getPassword().toCharArray());
 		mas.setAuthenticationEnabled(person.getUserName(), person.isEnabled());
 		NodeRef nodeRef = personService.createPerson(props);
-		
-		// Write the contents of PersonUpdate.getDescription() text to a content file
-		// and store the content URL in ContentModel.PROP_PERSONDESC
-		if (person.getDescription() != null)
-		{
-			AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-			{
-				@Override
-				public Void doWork() throws Exception
-				{
-					ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_PERSONDESC, true);
-					writer.putContent(person.getDescription());
-					return null;
-				}
-			});
-		}
 
-		// Return a fresh retrieval
-		return getPerson(person.getUserName());
-	}
+        // Write the contents of PersonUpdate.getDescription() text to a content file
+        // and store the content URL in ContentModel.PROP_PERSONDESC
+        if (person.getDescription() != null)
+        {
+            savePersonDescription(person.getDescription(), nodeRef);
+        }
+
+        // Return a fresh retrieval
+        return getPerson(person.getUserName());
+    }
+
+    /**
+     * Write the description to a content file and store the content URL in
+     * ContentModel.PROP_PERSONDESC
+     * 
+     * @param description
+     * @param nodeRef
+     */
+    private void savePersonDescription(final String description, final NodeRef nodeRef)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_PERSONDESC, true);
+                writer.putContent(description);
+                return null;
+            }
+        });
+    }
 
 	private void validateCreatePersonData(PersonUpdate person)
 	{
@@ -337,28 +350,38 @@ public class PeopleImpl implements People
 			throw new InvalidArgumentException("Field '"+fieldName+"' is null, but is required.");
 		}
 	}
-	
-	/**
 
-    public Person updatePerson(String personId, final Person person)
+    public Person update(String personId, final Person person)
     {
-    	personId = validatePerson(personId);
+        MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
 
-    	final Map<QName, Serializable> properties = toProperties(person);
+        final String personIdToUpdate = validatePerson(personId);
+        final Map<QName, Serializable> properties = person.toProperties();
 
-		final String pId = personId;
-		AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-		{
-			@Override
-			public Void doWork() throws Exception
-			{
-		    	personService.setPersonProperties(pId, properties, false);
-				return null;
-			}
-			
-		});
+        if (person.getPassword() != null && !person.getPassword().isEmpty())
+        {
+            // an Admin user can update without knowing the original pass - but
+            // must know their own!
+            mutableAuthenticationService.setAuthentication(personIdToUpdate, person.getPassword().toCharArray());
+        }
 
-    	return getPerson(personId);
+        if (person.isEnabled() != null)
+        {
+            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
+        }
+        
+        if (person.getDescription() != null)
+        {
+            // Remove person description from saved properties
+            properties.remove(ContentModel.PROP_PERSONDESC);
+
+            // Custom save for person description.
+            NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
+            savePersonDescription(person.getDescription(), personNodeRef);
+        }
+
+        personService.setPersonProperties(personIdToUpdate, properties, false);
+
+        return getPerson(personId);
     }
- */
 }

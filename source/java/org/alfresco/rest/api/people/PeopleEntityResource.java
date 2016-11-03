@@ -50,7 +50,7 @@ import java.util.List;
  * @author Gethin James
  */
 @EntityResource(name="people", title = "People")
-public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>, InitializingBean
+public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>, EntityResourceAction.Update<Person>, InitializingBean
 {
     private static Log logger = LogFactory.getLog(PeopleEntityResource.class);
     
@@ -132,5 +132,49 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
 
         result.add(people.create(person));
         return result;
+    }
+
+    @Override
+    @WebApiDescription(title="Update person", description="Update the given person's details")
+    public Person update(String personId, Person person, Parameters parameters)
+    {
+        validateNonUpdatableFieldsExistence(person);
+
+        return people.update(personId, person);
+    }
+
+    /**
+     * Explicitly test for the presence of fields that are present on Person but
+     * shouldn't be updatable (until REPO-110 is solved).
+     * 
+     * @param person
+     */
+    private void validateNonUpdatableFieldsExistence(Person person)
+    {
+
+        if (person.getUserName() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: userName");
+        }
+
+        if (person.getStatusUpdatedAt() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: statusUpdatedAt");
+        }
+
+        if (person.getAvatarId() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: avatarId");
+        }
+
+        if (person.getQuota() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: quota");
+        }
+
+        if (person.getQuotaUsed() != null)
+        {
+            throw new InvalidArgumentException("Unsupported field: quotaUsed");
+        }
     }
 }

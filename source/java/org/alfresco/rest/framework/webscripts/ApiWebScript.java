@@ -32,29 +32,15 @@ import java.util.Map;
 import org.alfresco.repo.web.scripts.BufferedRequest;
 import org.alfresco.repo.web.scripts.BufferedResponse;
 import org.alfresco.rest.framework.Api;
-import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
-import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
-import org.alfresco.rest.framework.core.exceptions.ExceptionResolver;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
-import org.alfresco.rest.framework.resource.content.ContentInfo;
-import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
+import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.json.simple.JSONObject;
-import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.webscripts.*;
-import org.springframework.extensions.webscripts.Description.RequiredCache;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
+import org.springframework.extensions.webscripts.AbstractWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * Entry point for API webscript.  Supports version/scope as well
@@ -70,7 +56,7 @@ public abstract class ApiWebScript extends AbstractWebScript
     protected String tempDirectoryName = null;
     protected int memoryThreshold = 4 * 1024 * 1024; // 4mb
     protected long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
-    protected ThresholdOutputStreamFactory streamFactory = null;
+    protected TempStoreOutputStreamFactory streamFactory = null;
     protected TransactionService transactionService;
 
     public void setTransactionService(TransactionService transactionService)
@@ -102,7 +88,7 @@ public abstract class ApiWebScript extends AbstractWebScript
         this.maxContentSize = maxContentSize;
     }
 
-    public void setStreamFactory(ThresholdOutputStreamFactory streamFactory)
+    public void setStreamFactory(TempStoreOutputStreamFactory streamFactory)
     {
         this.streamFactory = streamFactory;
     }
@@ -110,7 +96,7 @@ public abstract class ApiWebScript extends AbstractWebScript
     public void init()
     {
         File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
-        this.streamFactory = ThresholdOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
+        this.streamFactory = TempStoreOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
     }
 
     @Override

@@ -870,6 +870,7 @@
         <property name="moduleService" ref="ModuleService" />
         <property name="assistant" ref="apiAssistant" />
         <property name="enabled" value="${system.api.discovery.enabled}" />
+        <property name="thumbnailService" ref="ThumbnailService" />
     </bean>
 
     <!-- OpenCMIS -->

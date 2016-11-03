@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.util.PropertyCheck;
@@ -65,6 +66,7 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
     private QuickShareService quickShareService;
     private ModuleService moduleService;
     private ApiAssistant assistant;
+    private ThumbnailService thumbnailService;
 
     private boolean enabled = true;
     private final static String DISABLED = "Not Implemented";
@@ -99,6 +101,11 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
         this.assistant = assistant;
     }
 
+    public void setThumbnailService(ThumbnailService thumbnailService)
+    {
+        this.thumbnailService = thumbnailService;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -108,6 +115,7 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
         PropertyCheck.mandatory(this, "quickShareService", quickShareService);
         PropertyCheck.mandatory(this, "moduleService", moduleService);
         PropertyCheck.mandatory(this, "assistant", assistant);
+        PropertyCheck.mandatory(this, "thumbnailService", thumbnailService);
     }
 
     @Override
@@ -144,7 +152,8 @@ public class DiscoveryApiWebscript extends AbstractWebScript implements Recogniz
                     .setStatus(new StatusInfo()
                                 .setReadOnly(repoAdminService.getUsage().isReadOnly())
                                 .setAuditEnabled(auditService.isAuditEnabled())
-                                .setQuickShareEnabled(quickShareService.isQuickShareEnabled()));
+                                .setQuickShareEnabled(quickShareService.isQuickShareEnabled())
+                                .setThumbnailGenerationEnabled(thumbnailService.getThumbnailsEnabled()));
     }
 
     private List<ModulePackage> getModules()

@@ -98,6 +98,12 @@
       -->
    </filter>
 
+   <filter>
+      <description>CSRF Token filter. Checks for a session based CSRF token in request headers (or form parameters) based on config.</description>
+      <filter-name>CSRF Token Filter</filter-name>
+      <filter-class>org.springframework.extensions.webscripts.servlet.CSRFFilter</filter-class>
+   </filter>
+
    <!-- AOSM filter placeholder -->
 
    <!-- CORS Filter Begin -->
@@ -230,6 +236,16 @@
    <filter-mapping>
       <filter-name>X509AuthFilter</filter-name>
       <url-pattern>/wcs/api/solr/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/service/enterprise/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/s/enterprise/admin/*</url-pattern>
    </filter-mapping>
 
    <!-- AOSM filter-mapping placeholder -->

@@ -721,12 +721,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                    .append(HighlightParams.USE_PHRASE_HIGHLIGHTER+"=")
                    .append(searchParameters.getHighlight().getUsePhraseHighlighter());
             }
-            if (searchParameters.getHighlight().getUsePhraseHighlighter() != null)
-            {
-                url.append("&")
-                   .append(HighlightParams.USE_PHRASE_HIGHLIGHTER+"=")
-                   .append(searchParameters.getHighlight().getUsePhraseHighlighter());
-            }
             if (searchParameters.getHighlight().getPrefix() != null)
             {
                 url.append("&")

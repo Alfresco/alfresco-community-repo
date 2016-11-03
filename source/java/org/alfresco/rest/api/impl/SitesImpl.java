@@ -78,7 +78,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -91,7 +90,6 @@ import org.alfresco.service.cmr.view.ImporterProgress;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -116,6 +114,17 @@ public class SitesImpl implements Sites
     private static final int SITE_MAXLEN_DESCRIPTION = 512;
 
     private static final String SITE_ID_VALID_CHARS_PARTIAL_REGEX = "A-Za-z0-9\\-";
+    
+    private final static Map<String,QName> SORT_PARAMS_TO_QNAMES;
+    static
+    {
+        Map<String,QName> aMap = new HashMap<>(3);
+        aMap.put(PARAM_SITE_TITLE, ContentModel.PROP_TITLE);
+        aMap.put(PARAM_SITE_ID, ContentModel.PROP_NAME);
+        aMap.put(PARAM_SITE_DESCRIPTION, ContentModel.PROP_DESCRIPTION);
+        SORT_PARAMS_TO_QNAMES = Collections.unmodifiableMap(aMap);
+    }
+
 
     protected Nodes nodes;
     protected People people;
@@ -639,7 +648,7 @@ public class SitesImpl implements Sites
             }
         };
     }
-
+    
     public CollectionWithPagingInfo<Site> getSites(final Parameters parameters)
     {
         final BeanPropertiesFilter filter = parameters.getFilter();
@@ -647,8 +656,27 @@ public class SitesImpl implements Sites
         Paging paging = parameters.getPaging();
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
 //    	pagingRequest.setRequestTotalCountMax(requestTotalCountMax)
+        
         List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>();
-        sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME, Boolean.TRUE));
+        List<SortColumn> sortCols = parameters.getSorting();
+        if ((sortCols != null) && (sortCols.size() > 0))
+        {
+            for (SortColumn sortCol : sortCols)
+            {
+                QName sortPropQName = SORT_PARAMS_TO_QNAMES.get(sortCol.column);
+                if (sortPropQName == null)
+                {
+                    throw new InvalidArgumentException("Invalid sort field: "+sortCol.column);
+                }
+                sortProps.add(new Pair<>(sortPropQName, (sortCol.asc ? Boolean.TRUE : Boolean.FALSE)));
+            }
+        }
+        else
+        {
+            // default sort order
+            sortProps.add(new Pair<>(ContentModel.PROP_NAME, Boolean.TRUE));
+        }
+        
         final PagingResults<SiteInfo> pagingResult = siteService.listSites(null, sortProps, pagingRequest);
         final List<SiteInfo> sites = pagingResult.getPage();
         int totalItems = pagingResult.getTotalResultCount().getFirst();

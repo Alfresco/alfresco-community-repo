@@ -73,4 +73,8 @@ public interface Sites
     String PARAM_PERMANENT = "permanent";
 	String PARAM_SKIP_ADDTOFAVORITES = "skipAddToFavorites";
 	String PARAM_SKIP_SURF_CONFIGURATION = "skipConfiguration";
+	
+	String PARAM_SITE_ID          = "id";
+	String PARAM_SITE_TITLE       = "title";
+	String PARAM_SITE_DESCRIPTION = "description";
 }

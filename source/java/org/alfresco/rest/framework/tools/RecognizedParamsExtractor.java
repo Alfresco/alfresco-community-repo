@@ -315,6 +315,7 @@ public interface RecognizedParamsExtractor
                         {
                             rpeLogger().debug("Invalid sort order definition (" + sortDef + ").  Valid values are " + SortColumn.ASCENDING + " or "
                                         + SortColumn.DESCENDING + ".");
+                            throw new InvalidArgumentException("Unknown sort order direction: "+sortDef+" expected: asc or desc");
                         }
                     }
                     sortedColumns.add(new SortColumn(columnName, SortColumn.ASCENDING.equals(sortOrder)));

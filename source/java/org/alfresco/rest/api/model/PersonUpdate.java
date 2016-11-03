@@ -217,9 +217,6 @@ public class PersonUpdate
         addToMap(properties, ContentModel.PROP_USERNAME, getUserName());
         addToMap(properties, ContentModel.PROP_FIRSTNAME, getFirstName());
         addToMap(properties, ContentModel.PROP_LASTNAME, getLastName());
-        // What's the correct behaviour here? Store it as "content" somehow?
-        // so that it can be 'inlined' by the code in PeopleImpl.processPersonProperties ?
-        addToMap(properties, ContentModel.PROP_PERSONDESC, getDescription());
         addToMap(properties, ContentModel.PROP_EMAIL, getEmail());
         addToMap(properties, ContentModel.PROP_SKYPE, getSkypeId());
         addToMap(properties, ContentModel.PROP_GOOGLEUSERNAME, getGoogleId());

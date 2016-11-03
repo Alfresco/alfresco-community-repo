@@ -42,12 +42,7 @@ import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
@@ -156,7 +151,7 @@ public class PeopleImpl implements People
     	return personId;
 	}
 
-    protected void processPersonProperties(String userName, final Map<QName, Serializable> nodeProps)
+    protected void processPersonProperties(final Map<QName, Serializable> nodeProps)
     {
 		if(!contentUsageService.getEnabled())
 		{
@@ -165,6 +160,9 @@ public class PeopleImpl implements People
 			nodeProps.remove(ContentModel.PROP_SIZE_CURRENT);
 		}
 
+		// The person description is located in a separate content file located at cm:persondescription
+		// "Inline" this data, by removing the cm:persondescription property and adding a temporary property
+		// (Person.PROP_PERSON_DESCRIPTION) containing the actual content as a string.
 		final ContentData personDescription = (ContentData)nodeProps.get(ContentModel.PROP_PERSONDESC);
 		if(personDescription != null)
 		{
@@ -249,7 +247,7 @@ public class PeopleImpl implements People
     	if (personNode != null) 
     	{
     		Map<QName, Serializable> nodeProps = nodeService.getProperties(personNode);
-    		processPersonProperties(personId, nodeProps);
+    		processPersonProperties(nodeProps);
     		// TODO this needs to be run as admin but should we do this here?
     		final String pId = personId;
     		Boolean enabled = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
@@ -298,9 +296,28 @@ public class PeopleImpl implements People
 		}
 		Map<QName, Serializable> props = person.toProperties();
 		NodeRef nodeRef = personService.createPerson(props);
+		
+		// Write the contents of PersonUpdate.getDescription() text to a content file
+		// and store the content URL in ContentModel.PROP_PERSONDESC
+		if (person.getDescription() != null)
+		{
+			AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+			{
+				@Override
+				public Void doWork() throws Exception
+				{
+					ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_PERSONDESC, true);
+					writer.putContent(person.getDescription());
+					return null;
+				}
+			});
+		}
 
 		// Return a fresh retrieval
 		props = nodeService.getProperties(nodeRef);
+		// Do not put this pseudo/temp-property into the bag before creating the person
+		// as it would be created as a residual property.
+		props.put(Person.PROP_PERSON_DESCRIPTION, person.getDescription());
 		final boolean enabled = personService.isEnabled(person.getUserName());
 		return new Person(nodeRef, props, enabled);
 

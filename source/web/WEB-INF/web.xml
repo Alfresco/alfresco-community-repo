@@ -271,11 +271,6 @@
       <listener-class>org.alfresco.repo.webdav.WebDAVSessionListener</listener-class>
    </listener>
 
-   <!-- Web Services context listener for OpenCMIS -->
-   <listener>
-        <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
-   </listener> 
-
    <!-- Enterprise listener placeholder -->
 
    <servlet>

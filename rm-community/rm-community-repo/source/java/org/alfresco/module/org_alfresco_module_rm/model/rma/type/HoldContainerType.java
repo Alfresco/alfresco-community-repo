@@ -64,6 +64,12 @@ public class HoldContainerType extends BaseBehaviourBean
         if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
                     I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
 
+        // ensure we are not trying to put a record folder in the hold container
+        NodeRef parent = childAssocRef.getParentRef();
+        if (isHoldContainer(parent) && isRecordFolder(nodeRef))
+        {
+            throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the hold container.");
+        }
     }
 
     @Override

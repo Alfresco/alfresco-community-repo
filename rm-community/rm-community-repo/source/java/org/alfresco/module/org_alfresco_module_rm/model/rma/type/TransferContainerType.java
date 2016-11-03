@@ -59,10 +59,17 @@ public class TransferContainerType extends BaseBehaviourBean
     @Behaviour(kind = BehaviourKind.ASSOCIATION)
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        // ensure not content to be added in Holdsfolder
+        // ensure not content to be added in transfer container
         NodeRef nodeRef = childAssocRef.getChildRef();
         if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
                     I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
+
+        // ensure we are not trying to put a record folder in the transfer container
+        NodeRef parent = childAssocRef.getParentRef();
+        if (isTransferContainer(parent) && isRecordFolder(nodeRef))
+        {
+            throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the transfer container.");
+        }
     }
 
     @Override

@@ -27,13 +27,10 @@ package org.alfresco.repo.search.impl.lucene;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.search.impl.querymodel.Query;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -265,7 +262,13 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     {
         return wrapped.getFacetQueries();
     }
-    
+
+    @Override
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
+    {
+        return wrapped.getHighlighting();
+    }
+
     @Override
     public SpellCheckResult getSpellCheckResult()
     {

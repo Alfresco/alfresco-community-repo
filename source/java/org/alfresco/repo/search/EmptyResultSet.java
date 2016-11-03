@@ -179,7 +179,13 @@ public class EmptyResultSet implements ResultSet
     {
         return Collections.emptyMap();
     }
-    
+
+    @Override
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
+    {
+        return Collections.emptyMap();
+    }
+
     @Override
     public SpellCheckResult getSpellCheckResult()
     {

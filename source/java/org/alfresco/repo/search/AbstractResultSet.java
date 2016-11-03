@@ -134,8 +134,13 @@ public abstract class AbstractResultSet implements ResultSet
     public Map<String, Integer> getFacetQueries()
     {
         return Collections.emptyMap();
-    }    
-    
+    }
+
+    @Override
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
+    {
+        return Collections.emptyMap();
+    }
     @Override
     public SpellCheckResult getSpellCheckResult()
     {

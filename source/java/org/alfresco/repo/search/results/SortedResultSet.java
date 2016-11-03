@@ -953,7 +953,14 @@ public class SortedResultSet implements ResultSet
     {
         return resultSet.getFacetQueries();
     }
-    
+
+
+    @Override
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
+    {
+        return resultSet.getHighlighting();
+    }
+
     @Override
     public SpellCheckResult getSpellCheckResult()
     {

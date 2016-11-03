@@ -27,7 +27,6 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -365,6 +364,12 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     public Map<String, Integer> getFacetQueries()
     {
         return unfiltered.getFacetQueries();
+    }
+
+    @Override
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
+    {
+        return unfiltered.getHighlighting();
     }
     
     @Override

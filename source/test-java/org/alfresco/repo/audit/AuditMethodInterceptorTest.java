@@ -79,7 +79,7 @@ public class AuditMethodInterceptorTest extends TestCase
     private NodeRef nodeRef;
 
     private static String APPLICATION_NAME_MNT_11072 = "alfresco-mnt-11072";
-    private static String APPLICATION_NAME_MNT_16748 = "alfresco-mnt-16748";
+    private static String APPLICATION_NAME_MNT_16748 = "SearchAudit";
     private static final Log logger = LogFactory.getLog(AuditMethodInterceptorTest.class);
 
     @SuppressWarnings("deprecation")

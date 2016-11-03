@@ -275,7 +275,9 @@ function main()
              //check to see if name is already used in folder
              var existingFile = updateNode.getParent().childByNamePath(filename),
                  newFilename = filename;
-             if (existingFile !== null && existingFile.nodeRef.id  !== updateNodeRef.id)
+             var existingFileNodeRef = (existingFile !== null) ? String(existingFile.nodeRef) : '',
+            	 updateFileNodeRef = String(updateNodeRef);
+             if (existingFile !== null && existingFileNodeRef !== updateFileNodeRef)
              {
                  //name it's already used for other than node to update; create a new one
                  newFilename = createUniqueNameInFolder(filename, updateNode.getParent());

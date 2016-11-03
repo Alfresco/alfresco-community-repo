@@ -759,7 +759,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 }
                 
                 
-                Map<Serializable, Serializable> highlighting = (Map<Serializable, Serializable>)def.get("highlighting");
+                Map<Serializable, Serializable> highlighting = (Map<Serializable, Serializable>)def.get("highlight");
                 if (highlighting != null)
                 {
                    int snippetCount = this.getIntegerValue("snippetCount", 20, highlighting);
@@ -780,13 +780,16 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                    }
                    
                    List<FieldHighlightParameters> fieldHighlightParameters = new ArrayList<FieldHighlightParameters>();
-                   List<Map<Serializable, Serializable>> fields = (List<Map<Serializable, Serializable>>)def.get("fields");
-                   for (Map<Serializable, Serializable> field: fields)
+                   List<Map<Serializable, Serializable>> fields = (List<Map<Serializable, Serializable>>)highlighting.get("fields");
+                   if (fields != null)
                    {
-                      String propertyName = (String) field.get("field");
-                      if (propertyName != null)
+                      for (Map<Serializable, Serializable> field: fields)
                       {
-                    	  fieldHighlightParameters.add(new FieldHighlightParameters(propertyName, snippetCount, fragmentSize, mergeContiguous, prefix, postfix));
+                         String propertyName = (String) field.get("field");
+                         if (propertyName != null)
+                         {
+                       	  fieldHighlightParameters.add(new FieldHighlightParameters(propertyName, snippetCount, fragmentSize, mergeContiguous, prefix, postfix));
+                         }
                       }
                    }
                    

@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
@@ -283,15 +284,66 @@ public class CommentServiceImpl extends AbstractLifecycleBean implements Comment
 	        // Run the canned query
 	        GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_GET_CHILDREN);
 	        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(commentsFolder, null, null, null, null, sort, paging);
-	
-	        // Execute the canned query
-	        CannedQueryResults<NodeRef> results = cq.execute();
-	        return results;
-    	}
-    	else
-    	{
-    		return new EmptyPagingResults<NodeRef>();
-    	}
+            
+            // Execute the canned query
+            final CannedQueryResults<NodeRef> results = cq.execute();
+
+            // Now convert the CannedQueryResults<NodeRef> into a more useful PagingResults<NodeRef>
+            List<NodeRef> comments = Collections.emptyList();
+
+            if (results.getPageCount() > 0)
+            {
+                comments = results.getPages().get(0);
+            }
+
+            // set total count
+            final Pair<Integer, Integer> totalCount;
+            if (paging.getRequestTotalCountMax() > 0)
+            {
+                totalCount = results.getTotalResultCount();
+            }
+            else
+            {
+                totalCount = null;
+            }
+
+            final List<NodeRef> page = new ArrayList<NodeRef>(comments.size());
+            for (NodeRef comment : comments)
+            {
+                page.add(comment);
+            }
+
+            return new PagingResults<NodeRef>()
+            {
+                @Override
+                public String getQueryExecutionId()
+                {
+                    return results.getQueryExecutionId();
+                }
+
+                @Override
+                public List<NodeRef> getPage()
+                {
+                    return page;
+                }
+
+                @Override
+                public boolean hasMoreItems()
+                {
+                    return results.hasMoreItems();
+                }
+
+                @Override
+                public Pair<Integer, Integer> getTotalResultCount()
+                {
+                    return totalCount;
+                }
+            };
+        }
+        else
+        {
+            return new EmptyPagingResults<NodeRef>();
+        }
     }
     
     @Override

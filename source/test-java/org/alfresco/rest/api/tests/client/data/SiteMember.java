@@ -165,22 +165,17 @@ public class SiteMember implements Serializable, ExpectedComparison, Comparable<
 	public JSONObject toJSON()
 	{
 		JSONObject entry = new JSONObject();
-		entry.put("id", getMemberId());
-		if(getRole() != null)
+        
+		if (getMemberId() != null)
 		{
-			entry.put("role", getRole());
+            entry.put("id", getMemberId());
 		}
-
-		return entry;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public JSONObject postJSON()
-	{
-		JSONObject entry = new JSONObject();
-		entry.put("id", getMemberId());
-		entry.put("role", getRole());
-
+        
+		if (getRole() != null) 
+		{
+            entry.put("role", getRole());
+		}
+        
 		return entry;
 	}
 	

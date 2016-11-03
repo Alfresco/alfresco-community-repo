@@ -39,6 +39,7 @@ import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Company;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -124,6 +125,11 @@ public class PeopleImpl implements People
 
 	public String validatePerson(String personId, boolean validateIsCurrentUser)
 	{
+		if(personId == null)
+		{
+			throw new InvalidArgumentException("personId is null.");
+		}
+        
     	if(personId.equalsIgnoreCase(DEFAULT_USER))
     	{
     		personId = AuthenticationUtil.getFullyAuthenticatedUser();

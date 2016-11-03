@@ -41,8 +41,7 @@ import org.junit.Test;
 
 import java.util.Iterator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class TestPeople extends EnterpriseTestApi
 {
@@ -180,38 +179,66 @@ public class TestPeople extends EnterpriseTestApi
 	@Test
 	public void testCreatePerson_canCreateDisabledPerson() throws PublicApiException
 	{
-		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
-
 		// Person disabled
 		{
+			publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+			
 			PersonUpdate person = new PersonUpdate.Builder().
 					id("myUserName04@"+account1.getId()).
 					firstName("Firstname").
 					email("myUserName04@"+account1.getId()).
 					enabled(false).
+					password("hello").
 					build();
 
 			Person p = people.create(person);
 			assertEquals(false, p.isEnabled());
+			// It's very important that the password isn't exposed over the REST API.
+			assertNull(p.getPassword());
 			// Check that a freshly retrieved person exhibits the same result
 			p = people.getPerson(person.getUserName());
 			assertEquals(false, p.isEnabled());
+			assertNull(p.getPassword());
+			
+			// Can the new user account be used?
+			publicApiClient.setRequestContext(new RequestContext(account1.getId(), person.getUserName(), "hello"));
+			try
+			{
+				people.getPerson(person.getUserName());
+				fail("It should not be possible to use a disabled account.");
+			}
+			catch (PublicApiException e)
+			{
+				assertEquals(401, e.getHttpResponse().getStatusCode());
+			}
 		}
 
 		// Person enabled
 		{
+			publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+			
 			PersonUpdate person = new PersonUpdate.Builder().
 					id("myUserName05@"+account1.getId()).
 					firstName("Firstname").
 					email("myUserName05@"+account1.getId()).
 					enabled(true).
+					password("banana").
 					build();
 
 			Person p = people.create(person);
 			assertEquals(true, p.isEnabled());
+			// It's very important that the password isn't exposed over the REST API.
+			assertNull(p.getPassword());
 			// Check that a freshly retrieved person exhibits the same result
 			p = people.getPerson(person.getUserName());
 			assertEquals(true, p.isEnabled());
+			assertNull(p.getPassword());
+
+			// Can the new user account be used?
+			publicApiClient.setRequestContext(new RequestContext(account1.getId(), person.getUserName(), "banana"));
+			p = people.getPerson(person.getUserName());
+			assertNotNull(p);
+			assertNull(p.getPassword());
 		}
 	}
 	
@@ -405,6 +432,7 @@ public class TestPeople extends EnterpriseTestApi
 			personJson.put("userStatus", personUpdate.getUserStatus());
 			personJson.put("enabled", personUpdate.isEnabled());
 			personJson.put("emailNotificationsEnabled", personUpdate.isEmailNotificationsEnabled());
+			personJson.put("password", personUpdate.getPassword());
 
 			return personJson;
 		}

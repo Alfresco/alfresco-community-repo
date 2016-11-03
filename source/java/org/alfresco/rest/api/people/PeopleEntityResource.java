@@ -126,7 +126,9 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
                 .telephone(p.getTelephone())
                 .userStatus(p.getUserStatus())
                 .enabled(p.isEnabled())
-                .emailNotificationsEnabled(p.isEmailNotificationsEnabled()).build();
+                .emailNotificationsEnabled(p.isEmailNotificationsEnabled())
+                .password(p.getPassword()).
+                build();
 
         result.add(people.create(person));
         return result;

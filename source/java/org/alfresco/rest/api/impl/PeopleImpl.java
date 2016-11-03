@@ -297,8 +297,8 @@ public class PeopleImpl implements People
 		Map<QName, Serializable> props = person.toProperties();
 
 		MutableAuthenticationService mas = (MutableAuthenticationService) authenticationService;
-		// TODO: very temporary code, until REPO-1503 (set password) implemented.
-		mas.createAuthentication(person.getUserName(), UUID.randomUUID().toString().toCharArray());
+		String password = person.getPassword() == null ? UUID.randomUUID().toString() : person.getPassword();
+		mas.createAuthentication(person.getUserName(), password.toCharArray());
 		mas.setAuthenticationEnabled(person.getUserName(), person.isEnabled());
 		NodeRef nodeRef = personService.createPerson(props);
 		

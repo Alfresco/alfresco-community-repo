@@ -90,13 +90,13 @@ public class TestSites extends EnterpriseTestApi
 	}
 
 	@Test
-	public void testSites() throws Exception
-	{
-		Sites sitesProxy = publicApiClient.sites();
+	public void testGetSiteAndListSites() throws Exception
+    {
+        Sites sitesProxy = publicApiClient.sites();
 
-		// create & get sites (as person 2)
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
+        // create & get sites (as person 2)
+        {
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
 
             String siteTitle = "site 1 " + System.currentTimeMillis();
             Site site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
@@ -120,36 +120,42 @@ public class TestSites extends EnterpriseTestApi
             site3.expected(ret);
         }
 
-		List<TestSite> expectedSites = TenantUtil.runAsUserTenant(new TenantRunAsWork<List<TestSite>>()
-		{
-			@Override
-			public List<TestSite> doWork() throws Exception
-			{
-				List<TestSite> sites = network1.getSites(person1Id);
-				return sites;
-			}
-		}, person1Id, network1.getId());
+        List<TestSite> expectedSites = TenantUtil.runAsUserTenant(new TenantRunAsWork<List<TestSite>>()
+        {
+            @Override
+            public List<TestSite> doWork() throws Exception
+            {
+                List<TestSite> sites = network1.getSites(person1Id);
+                return sites;
+            }
+        }, person1Id, network1.getId());
 
-		{
+        {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
-			int skipCount = 0;
-			int maxItems = 2;
-			Paging paging = getPaging(skipCount, maxItems, expectedSites.size(), expectedSites.size());
-			ListResponse<Site> resp = sitesProxy.getSites(createParams(paging, null));
-			checkList(expectedSites.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
-		}
+            int skipCount = 0;
+            int maxItems = 2;
+            Paging paging = getPaging(skipCount, maxItems, expectedSites.size(), expectedSites.size());
+            ListResponse<Site> resp = sitesProxy.getSites(createParams(paging, null));
+            checkList(expectedSites.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
+        }
 
-		{
+        {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
-			int skipCount = 2;
-			int maxItems = Integer.MAX_VALUE;
-			Paging paging = getPaging(skipCount, maxItems, expectedSites.size(), expectedSites.size());
-			ListResponse<Site> resp = sitesProxy.getSites(createParams(paging, null));
-			checkList(expectedSites.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
-		}
+            int skipCount = 2;
+            int maxItems = Integer.MAX_VALUE;
+            Paging paging = getPaging(skipCount, maxItems, expectedSites.size(), expectedSites.size());
+            ListResponse<Site> resp = sitesProxy.getSites(createParams(paging, null));
+            checkList(expectedSites.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
+        }
+    }
 
+    @Test
+    public void testCreateAndDeleteSite() throws Exception
+    {
+        Sites sitesProxy = publicApiClient.sites();
+        
 		// test create and delete site
 		{
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
@@ -190,6 +196,8 @@ public class TestSites extends EnterpriseTestApi
             sitesProxy.removeSite(siteId, true, 204);
 
             sitesProxy.createSite(site);
+
+            sitesProxy.removeSite(siteId); // cleanup
         }
 
         // test create using site id = "true" (RA-1101)
@@ -202,28 +210,46 @@ public class TestSites extends EnterpriseTestApi
             Site site = new SiteImpl(null, siteId, null, siteTitle, siteDescription, SiteVisibility.PUBLIC.toString(), null, null);
 
             sitesProxy.createSite(site);
+
+            sitesProxy.removeSite(siteId); // cleanup
         }
 
         // -ve tests
         {
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
+            
+            SiteImpl site = new SiteImpl("a private site", SiteVisibility.PRIVATE.toString());
+            String siteIdOfPrivateSite = sitesProxy.createSite(site, 201).getSiteId();
+
+            site = new SiteImpl("a public site", SiteVisibility.PUBLIC.toString());
+            String siteIdOfPublicSite = sitesProxy.createSite(site, 201).getSiteId();
+            
             // invalid auth
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), GUID.generate(), "password"));
-            sitesProxy.getSite(site1.getSiteId(), 401);
+            sitesProxy.getSite(siteIdOfPrivateSite, 401);
 
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
             // -ve - cannot view or delete a private site
-            sitesProxy.getSite(site1.getSiteId(), 404);
-            sitesProxy.removeSite(site1.getSiteId(), false, 404);
-
+            sitesProxy.getSite(siteIdOfPrivateSite, 404);
+            sitesProxy.removeSite(siteIdOfPrivateSite, false, 404);
+            
             // -ve - test cannot delete a public site (but can view it)
-            sitesProxy.getSite(site2.getSiteId(), 200);
-            sitesProxy.removeSite(site2.getSiteId(), false, 403);
+            sitesProxy.getSite(siteIdOfPublicSite, 200);
+            sitesProxy.removeSite(siteIdOfPublicSite, false, 403);
+
+            // cleanup
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
+            sitesProxy.removeSite(siteIdOfPrivateSite, false, 204);
+            sitesProxy.removeSite(siteIdOfPublicSite, false, 204);
+            
+
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
             // -ve - try to get unknown site
             sitesProxy.getSite(GUID.generate(), 404);
 
-            SiteImpl site = new SiteImpl("my site 123", "invalidsitevisibility");
+            site = new SiteImpl("my site 123", "invalidsitevisibility");
             sitesProxy.createSite(site, 400);
 
             site = new SiteImpl(null, "invalid site id", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);

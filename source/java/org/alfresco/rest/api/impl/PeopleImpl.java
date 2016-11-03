@@ -286,10 +286,7 @@ public class PeopleImpl implements People
 	@Override
 	public Person create(PersonUpdate person)
 	{
-		if (person.getUserName() == null)
-		{
-			throw new InvalidArgumentException("Field 'id' is null, but is required.");
-		}
+		validateCreatePersonData(person);
 
 		// TODO: check, is this transaction safe?
 		// Unfortunately PersonService.createPerson(...) only throws an AlfrescoRuntimeException
@@ -311,6 +308,22 @@ public class PeopleImpl implements People
 //		return getPerson(person.getUserName());
 	}
 
+	private void validateCreatePersonData(PersonUpdate person)
+	{
+		checkRequiredField("id", person.getUserName());
+		checkRequiredField("firstName", person.getFirstName());
+		checkRequiredField("email", person.getEmail());
+		checkRequiredField("enabled", person.isEnabled());
+	}
+	
+	private void checkRequiredField(String fieldName, Object fieldValue)
+	{
+		if (fieldValue == null)
+		{
+			throw new InvalidArgumentException("Field '"+fieldName+"' is null, but is required.");
+		}
+	}
+	
 	/**
 
     public Person updatePerson(String personId, final Person person)

@@ -224,16 +224,19 @@ public class TestPeople extends EnterpriseTestApi
 		// +ve: absolute minimum
 		{
 			PersonUpdate person = new PersonUpdate.Builder().
-					id("joe.bloggs.2@" + account1.getId()).
+					id("joe.bloggs.2@"+account1.getId()).
+					firstName("Joe").
+					email("joe.bloggs.2@example.com").
+					enabled(true).
 					build();
 
 			Person p = people.create(person);
 
 			assertEquals("joe.bloggs.2@" + account1.getId(), p.getId());
-			assertEquals(null, p.getFirstName());
+			assertEquals("Joe", p.getFirstName());
 			assertEquals(null, p.getLastName());
 			assertEquals(null, p.getDescription());
-			assertEquals(null, p.getEmail());
+			assertEquals("joe.bloggs.2@example.com", p.getEmail());
 			assertEquals(null, p.getSkypeId());
 			assertEquals(null, p.getGoogleId());
 			assertEquals(null, p.getInstantMessageId());
@@ -250,7 +253,9 @@ public class TestPeople extends EnterpriseTestApi
 		// -ve: not enough fields!
 		{
 			// Create a person with no fields set.
-			PersonUpdate person = new PersonUpdate.Builder().build();
+			PersonUpdate person = new PersonUpdate.Builder().
+					id("joe.bloggs.2@"+account1.getId()).
+					build();
 			people.create(person, 400);
 		}
 	}
@@ -292,6 +297,9 @@ public class TestPeople extends EnterpriseTestApi
 			publicApiClient.setRequestContext(new RequestContext(account1.getId(), GUID.generate(), "password"));
 			PersonUpdate person = new PersonUpdate.Builder().
 					id("myUserName01@"+account1.getId()).
+					firstName("Caroline").
+					email("caroline.smithson@example.com").
+					enabled(true).
 					build();
 			people.create(person, 401);
 		}
@@ -302,6 +310,9 @@ public class TestPeople extends EnterpriseTestApi
 			publicApiClient.setRequestContext(new RequestContext(account2.getId(), apiUser));
 			PersonUpdate person = new PersonUpdate.Builder().
 					id("myUserName02@"+account2.getId()).
+					firstName("Kieth").
+					email("keith.smith@example.com").
+					enabled(true).
 					build();
 			people.create(person, 403);
 
@@ -315,6 +326,9 @@ public class TestPeople extends EnterpriseTestApi
 			publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 			PersonUpdate person = new PersonUpdate.Builder().
 					id("myUserName03@"+account1.getId()).
+					firstName("Alison").
+					email("alison.smythe@example.com").
+					enabled(true).
 					build();
 			people.create(person);
 

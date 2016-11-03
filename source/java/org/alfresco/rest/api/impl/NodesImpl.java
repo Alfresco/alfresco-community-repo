@@ -2966,7 +2966,7 @@ public class NodesImpl implements Nodes
 
         if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
-            throw new InvalidArgumentException("Node of type cm:content  or a subtype is expected: " + nodeId);
+            throw new InvalidArgumentException("Node of type cm:content or a subtype is expected: " + nodeId);
         }
 
         lockInfo = validateLockInformation(lockInfo);

@@ -25,9 +25,22 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.Pair;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.People;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
@@ -40,30 +53,24 @@ import org.json.simple.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
 public class TestPeople extends EnterpriseTestApi
 {
-	private People people;
-	private Iterator<TestNetwork> accountsIt;
-	private TestNetwork account1;
-	private TestNetwork account2;
+    private People people;
+    private Iterator<TestNetwork> accountsIt;
+    private TestNetwork account1;
+    private TestNetwork account2;
     private TestNetwork account3;
-	private Iterator<String> account1PersonIt;
-	private Iterator<String> account2PersonIt;
+    private TestNetwork account4;
+    private Iterator<String> account1PersonIt;
+    private Iterator<String> account2PersonIt;
     private Iterator<String> account3PersonIt;
-	private String account1Admin;
-	private String account2Admin;
+    private Iterator<String> account4PersonIt;
+    private String account1Admin;
+    private String account2Admin;
     private String account3Admin;
+    private String account4Admin;
+    private Person personAlice;
+    private Person personBen;
 
     @Before
     public void setUp() throws Exception
@@ -73,9 +80,11 @@ public class TestPeople extends EnterpriseTestApi
         account1 = accountsIt.next();
         account2 = accountsIt.next();
         account3 = createNetwork("account3");
+        account4 = createNetwork("account4");
         account1Admin = "admin@" + account1.getId();
         account2Admin = "admin@" + account2.getId();
         account3Admin = "admin@" + account3.getId();
+        account4Admin = "admin@" + account4.getId();
         account1PersonIt = account1.getPersonIds().iterator();
         account2PersonIt = account2.getPersonIds().iterator();
 
@@ -693,5 +702,124 @@ public class TestPeople extends EnterpriseTestApi
             people.update("people", personId, null, null, "{\n" + "\"" + notUpdatableField.getFirst() + "\": \"" + notUpdatableField.getSecond() + "\"\n" + "}", null,
                     "Expected 400 response when updating " + personId, 400);
         }
+    }
+
+    private PublicApiClient.ListResponse<Person> listPeople(final PublicApiClient.Paging paging, String sortColumn, boolean asc) throws Exception
+    {
+        final PublicApiClient.People peopleProxy = publicApiClient.people();
+
+        // sort params
+        final Map<String, String> params = new HashMap<>();
+        if (sortColumn != null)
+        {
+            params.put("orderBy", sortColumn + " " + (asc ? "ASC" : "DESC"));
+        }
+
+        return peopleProxy.getPeople(createParams(paging, params));
+    }
+
+    /**
+     * Tests the capability to sort and paginate the list of people orderBy =
+     * firstName ASC skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPagingAndSortingByFirstNameAsc() throws Exception
+    {
+        initializeContextForGetPeople();
+
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 4;
+        PublicApiClient.Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // orderBy=firstName ASC
+        PublicApiClient.ListResponse<Person> resp = listPeople(paging, "firstName", true);
+
+        List<Person> expectedList = new LinkedList<>();
+        expectedList.add(personAlice);
+        expectedList.add(personBen);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    /**
+     * Tests the capability to sort and paginate the list of people orderBy =
+     * firstName DESC skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPagingAndSortingByFirstNameDesc() throws Exception
+    {
+        initializeContextForGetPeople();
+
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 4;
+        PublicApiClient.Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // orderBy=firstName DESC
+        PublicApiClient.ListResponse<Person> resp = listPeople(paging, "firstName", false);
+
+        List<Person> expectedList = new LinkedList<>();
+        expectedList.add((Person) personBen);
+        expectedList.add((Person) personAlice);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    /**
+     * Tests the capability to sort and paginate the list of people verifies
+     * default sorting, skip = 1, count = 2
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPagingAndDefaultSorting() throws Exception
+    {
+        initializeContextForGetPeople();
+
+        // paging
+        int skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 4;
+        PublicApiClient.Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // orderBy=firstName DESC
+        PublicApiClient.ListResponse<Person> resp = listPeople(paging, null, false);
+
+        List<Person> expectedList = new LinkedList<>();
+        expectedList.add((Person) personAlice);
+        expectedList.add((Person) personBen);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    private void initializeContextForGetPeople() throws PublicApiException
+    {
+        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
+        personAlice = new Person();
+        personAlice.setUserName("alice@" + account4.getId());
+        personAlice.setId("alice@" + account4.getId());
+        personAlice.setFirstName("Alice");
+        personAlice.setLastName("Smith");
+        personAlice.setEmail("alison.smith@example.com");
+        personAlice.setPassword("password");
+        personAlice.setEnabled(true);
+        people.create(personAlice);
+
+        personBen = new Person();
+        personBen.setUserName("ben@" + account4.getId());
+        personBen.setId("ben@" + account4.getId());
+        personBen.setFirstName("Ben");
+        personBen.setLastName("Smythe");
+        personBen.setEmail("ben.smythe@example.com");
+        personBen.setPassword("password");
+        personBen.setEnabled(true);
+        people.create(personBen);
     }
 }

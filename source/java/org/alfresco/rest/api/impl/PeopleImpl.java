@@ -25,7 +25,17 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.io.Serializable;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.api.Nodes;
@@ -35,8 +45,17 @@ import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
@@ -45,11 +64,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import org.alfresco.util.Pair;
 
 /**
  * Centralises access to people services and maps between representations.
@@ -69,6 +84,16 @@ public class PeopleImpl implements People
     protected ContentUsageService contentUsageService;
     protected ContentService contentService;
     protected ThumbnailService thumbnailService;
+
+    private final static Map<String, QName> sort_params_to_qnames;
+    static
+    {
+        Map<String, QName> aMap = new HashMap<>(3);
+        aMap.put(PARAM_FIRST_NAME, ContentModel.PROP_FIRSTNAME);
+        aMap.put(PARAM_LAST_NAME, ContentModel.PROP_LASTNAME);
+        aMap.put(PARAM_USER_NAME, ContentModel.PROP_USERNAME);
+        sort_params_to_qnames = Collections.unmodifiableMap(aMap);
+    }
 
 	public void setSites(Sites sites)
 	{
@@ -236,47 +261,112 @@ public class PeopleImpl implements People
 
     /**
      * 
-     * @throws NoSuchPersonException if personId does not exist
+     * @throws NoSuchPersonException
+     *             if personId does not exist
      */
     public Person getPerson(String personId)
     {
-    	Person person = null;
+        personId = validatePerson(personId);
+        Person person = getPersonWithProperties(personId);
 
-    	personId = validatePerson(personId);
-    	NodeRef personNode = personService.getPerson(personId, false);
-    	if (personNode != null) 
-    	{
-    		Map<QName, Serializable> nodeProps = nodeService.getProperties(personNode);
-    		processPersonProperties(nodeProps);
-    		// TODO this needs to be run as admin but should we do this here?
-    		final String pId = personId;
-    		Boolean enabled = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-			{
-    			public Boolean doWork() throws Exception
-    			{
-    				return authenticationService.getAuthenticationEnabled(pId);
-    			}
-			});
-    		person = new Person(personNode, nodeProps, enabled);
+        return person;
+    }
 
-    		// get avatar information
-    		if(hasAvatar(personNode))
-    		{
-	    		try
-	    		{
-		    		NodeRef avatar = getAvatar(personId);
-		    		person.setAvatarId(avatar);
-	    		}
-	    		catch(EntityNotFoundException e)
-	    		{
-	    			// shouldn't happen, but ok
-	    		}
-    		}
-    	}
-    	else
-    	{
-    		throw new EntityNotFoundException(personId);
-    	}
+    public CollectionWithPagingInfo<Person> getPeople(final Parameters parameters)
+    {
+        Paging paging = parameters.getPaging();
+        PagingRequest pagingRequest = Util.getPagingRequest(paging);
+
+        List<Pair<QName, Boolean>> sortProps = getSortProps(parameters);
+
+        // For now the results are not filtered
+        // please see REPO-555
+        final PagingResults<PersonService.PersonInfo> pagingResult = personService.getPeople(null, null, sortProps, pagingRequest);
+
+        final List<PersonService.PersonInfo> page = pagingResult.getPage();
+        int totalItems = pagingResult.getTotalResultCount().getFirst();
+        final String personId = AuthenticationUtil.getFullyAuthenticatedUser();
+        List<Person> people = new AbstractList<Person>()
+        {
+            @Override
+            public Person get(int index)
+            {
+                PersonService.PersonInfo personInfo = page.get(index);
+                Person person = getPersonWithProperties(personInfo.getUserName());
+                return person;
+            }
+
+            @Override
+            public int size()
+            {
+                return page.size();
+            }
+        };
+
+        return CollectionWithPagingInfo.asPaged(paging, people, pagingResult.hasMoreItems(), totalItems);
+    }
+
+    private List<Pair<QName, Boolean>> getSortProps(Parameters parameters)
+    {
+        List<Pair<QName, Boolean>> sortProps = new ArrayList<>();
+        List<SortColumn> sortCols = parameters.getSorting();
+        if ((sortCols != null) && (sortCols.size() > 0))
+        {
+            for (SortColumn sortCol : sortCols)
+            {
+                QName sortPropQName = sort_params_to_qnames.get(sortCol.column);
+                if (sortPropQName == null)
+                {
+                    throw new InvalidArgumentException("Invalid sort field: " + sortCol.column);
+                }
+                sortProps.add(new Pair<>(sortPropQName, (sortCol.asc ? Boolean.TRUE : Boolean.FALSE)));
+            }
+        }
+        else
+        {
+            // default sort order
+            sortProps.add(new Pair<>(ContentModel.PROP_USERNAME, Boolean.TRUE));
+        }
+        return sortProps;
+    }
+
+    private Person getPersonWithProperties(String personId)
+    {
+        Person person = null;
+        NodeRef personNode = personService.getPerson(personId, false);
+        if (personNode != null)
+        {
+            Map<QName, Serializable> nodeProps = nodeService.getProperties(personNode);
+            processPersonProperties(nodeProps);
+            // TODO this needs to be run as admin but should we do this here?
+            final String pId = personId;
+            Boolean enabled = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
+            {
+                public Boolean doWork() throws Exception
+                {
+                    return authenticationService.getAuthenticationEnabled(pId);
+                }
+            });
+            person = new Person(personNode, nodeProps, enabled);
+
+            // get avatar information
+            if (hasAvatar(personNode))
+            {
+                try
+                {
+                    NodeRef avatar = getAvatar(personId);
+                    person.setAvatarId(avatar);
+                }
+                catch (EntityNotFoundException e)
+                {
+                    // shouldn't happen, but ok
+                }
+            }
+        }
+        else
+        {
+            throw new EntityNotFoundException(personId);
+        }
 
         return person;
     }

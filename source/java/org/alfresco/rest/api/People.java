@@ -26,12 +26,18 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 
 public interface People
 {
 	String DEFAULT_USER = "-me-";
+
+    String PARAM_FIRST_NAME = "firstName";
+    String PARAM_LAST_NAME = "lastName";
+    String PARAM_USER_NAME = "userName";
 
 	String validatePerson(String personId);
 	String validatePerson(String personId, boolean validateIsCurrentUser);
@@ -59,4 +65,11 @@ public interface People
      * @return The updated person details.
      */
     Person update(String personId, Person person);
+
+    /**
+     * Get people list
+     * 
+     * @return CollectionWithPagingInfo<Person>
+     */
+    CollectionWithPagingInfo<Person> getPeople(Parameters parameters);
 }

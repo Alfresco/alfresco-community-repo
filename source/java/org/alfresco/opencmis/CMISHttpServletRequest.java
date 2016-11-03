@@ -30,17 +30,26 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -222,7 +231,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		return httpReq.getLocalPort();
 	}
-
+	
 	@Override
 	public Locale getLocale()
 	{
@@ -550,7 +559,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		return httpReq.isRequestedSessionIdFromURL();
 	}
-
+	
 	@Override
 	public boolean isRequestedSessionIdValid()
 	{
@@ -562,4 +571,77 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		return httpReq.isUserInRole(arg0);
 	}
+
+	@Override
+	public boolean authenticate(HttpServletResponse response) throws IOException, ServletException
+	{
+		return httpReq.authenticate(response);
+	}
+
+	@Override
+	public void login(String username, String password) throws ServletException
+	{
+		httpReq.login(username, password);
+	}
+
+	@Override
+	public void logout() throws ServletException
+	{
+		httpReq.logout();
+	}
+
+	@Override
+	public Collection<Part> getParts() throws IOException, ServletException
+	{
+		return httpReq.getParts();
+	}
+
+	@Override
+	public Part getPart(String name) throws IOException, ServletException
+	{
+		return httpReq.getPart(name);
+	}
+
+	@Override
+	public ServletContext getServletContext()
+	{
+		return httpReq.getServletContext();
+	}
+
+	@Override
+	public AsyncContext startAsync() throws IllegalStateException
+	{
+		return httpReq.startAsync();
+	}
+
+	@Override
+	public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) throws IllegalStateException
+	{
+		return httpReq.startAsync(servletRequest, servletResponse);
+	}
+
+	@Override
+	public boolean isAsyncStarted()
+	{
+		return httpReq.isAsyncStarted();
+	}
+
+	@Override
+	public boolean isAsyncSupported()
+	{
+		return httpReq.isAsyncSupported();
+	}
+
+	@Override
+	public AsyncContext getAsyncContext()
+	{
+		return httpReq.getAsyncContext();
+	}
+
+	@Override
+	public DispatcherType getDispatcherType()
+	{
+		return httpReq.getDispatcherType();
+	}
+
 }

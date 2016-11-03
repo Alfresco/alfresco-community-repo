@@ -29,27 +29,27 @@ import org.json.simple.JSONObject;
 
 public interface Site extends JSONAble
 {
-	Boolean getCreated();
+    Boolean getCreated();
     Site withCreated(Boolean created);
-	String getGuid();
+    String getGuid();
     Site withGuid(String guid);
-	String getNetworkId();
+    String getNetworkId();
     Site withNetworkId(String networkId);
-	Boolean isCreated();
-	String getSiteId();
+    Boolean isCreated();
+    String getSiteId();
     Site withSiteId(String siteId);
-	String getTitle();
+    String getTitle();
     Site withTitle(String title);
-	String getDescription();
+    String getDescription();
     Site withDescription(String description);
-	String getVisibility();
+    String getVisibility();
     Site withVisibility(String visibility);
     String getPreset();
     Site withPreset(String preset);
-	String getType();
+    String getType();
     Site withType(String type);
-	SiteRole getRole();
+    SiteRole getRole();
     Site withRole(SiteRole role);
-	void expected(Object o);
-	JSONObject toJSON();
+    void expected(Object o);
+    JSONObject toJSON();
 }

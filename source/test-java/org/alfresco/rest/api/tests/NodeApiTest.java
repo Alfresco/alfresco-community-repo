@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
@@ -3602,19 +3603,45 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         lockInfo.setLifetime("PERSISTENT");
         HttpResponse response = post(getNodeOperationUrl(folderId, "lock"), toJsonAsStringNonNull(lockInfo), null, 400);
         
-        // create doc d1
+        // create document d1
         String d1Name = "content" + RUNID + "_1l";
         Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
         String d1Id = d1.getId();
+        
+        // lock d1 document
+        lockInfo = new LockInfo();
+        lockInfo.setTimeToExpire(30);
+        lockInfo.setType("FULL");
+        lockInfo.setLifetime("PERSISTENT");
+        response = post(getNodeOperationUrl(d1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        response = getSingle(URL_NODES, d1Id, null, null, 200);
+        assertEquals(d1Name, documentResp.getName());
+        assertEquals(d1Id, documentResp.getId());
+        assertEquals(LockType.READ_ONLY_LOCK.toString(), documentResp.getProperties().get("cm:lockType"));
+        assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
+        assertNull(documentResp.getIsLocked());
+        
+        // invalid test - delete a locked node
+        deleteNode(d1Id, true, 409);
+        
+        // wait for expiration time set to pass and delete node
+		TimeUnit.SECONDS.sleep(30);
+		deleteNode(d1Id, true, 204);
+       
+        // create doc d2
+        String d2Name = "content" + RUNID + "_2l";
+        Document d2 = createTextFile(folderId, d2Name, "The quick brown fox jumps over the lazy dog 2.");
+        String d2Id = d2.getId();
+
+        response = getSingle(URL_NODES, d2Id, null, null, 200);
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNull(node.getProperties().get("cm:lockType"));
         assertNull(node.getProperties().get("cm:lockOwner"));
         assertNull(node.getIsLocked());
 
         Map<String, String> params = Collections.singletonMap("include", "isLocked");
-        response = getSingle(URL_NODES, d1Id, params, null, 200);
+        response = getSingle(URL_NODES, d2Id, params, null, 200);
         node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNull(node.getProperties().get("cm:lockType"));
         assertNull(node.getProperties().get("cm:lockOwner"));
@@ -3625,28 +3652,28 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         lockInfo.setType("FULL");
         lockInfo.setLifetime("PERSISTENT");
 
-        response = post(getNodeOperationUrl(d1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
-        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        response = post(getNodeOperationUrl(d2Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(d1Name, documentResp.getName());
-        assertEquals(d1Id, documentResp.getId());
+        assertEquals(d2Name, documentResp.getName());
+        assertEquals(d2Id, documentResp.getId());
         assertEquals(LockType.READ_ONLY_LOCK.toString(), documentResp.getProperties().get("cm:lockType"));
         assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
         assertNull(documentResp.getIsLocked());
 
-        unlock(d1Id);
+        unlock(d2Id);
         // Empty lock body, the default values are used
-        post(getNodeOperationUrl(d1Id, "lock"), EMPTY_BODY, null, 200);
+        post(getNodeOperationUrl(d2Id, "lock"), EMPTY_BODY, null, 200);
 
         // Lock on already locked node
-        post(getNodeOperationUrl(d1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
+        post(getNodeOperationUrl(d2Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
 
         // Test delete on a folder which contains a locked node - NodeLockedException
         deleteNode(folderId, true, 409);
 
         // Content update on a locked node
-        updateTextFile(d1Id, "Updated text", null, 409);
-        unlock(d1Id);
+        updateTextFile(d2Id, "Updated text", null, 409);
+        unlock(d2Id);
 
         // Test lock file
         // create folder

@@ -520,24 +520,19 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
     }
-
-//    // TODO Having a space in the list discards everything after the space - found in manual testing - is this a framework bug?
-//    @Test
-//    public void testFieldsWithSpace() throws Exception
-//    {
-//        fields = PARAM_FIRSTNAME+", "+PARAM_LASTNAME;
-//        term = LAST_A;
-//        expectedPeople = new String[]
-//        {
-//            "Person ["+                  "lastName=LastA, ]", // USER5
-//            "Person ["+"firstName=FirstA, lastName=LastA, ]", // USER1
-//            "Person ["+"firstName=FirstB, lastName=LastA, ]", // USER3
-//            // But is the following:
-////          "Person ["+                  "]",
-////          "Person ["+"firstName=FirstA, ]",
-////          "Person ["+"firstName=FirstB, ]",
-//        };
-//        
-//        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
-//    }
+    
+    @Test
+    public void testFieldsWithSpace() throws Exception
+    {
+        fields = PARAM_FIRSTNAME+", "+PARAM_LASTNAME;
+        term = LAST_A;
+        expectedPeople = new String[]
+        {
+            "Person ["+                  "lastName=LastA, ]", // USER5
+            "Person ["+"firstName=FirstA, lastName=LastA, ]", // USER1
+            "Person ["+"firstName=FirstB, lastName=LastA, ]" // USER3
+        };
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
 }

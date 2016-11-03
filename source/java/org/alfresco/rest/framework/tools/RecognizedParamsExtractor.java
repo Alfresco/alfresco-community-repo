@@ -150,7 +150,7 @@ public interface RecognizedParamsExtractor
             Set<String> filteredProperties = new HashSet<String>(st.countTokens());
             while (st.hasMoreTokens())
             {
-                filteredProperties.add(st.nextToken());
+                filteredProperties.add(st.nextToken().trim());
             }
 
             // if supplied, the select takes precedence over the filter (fields/properties) for top-level bean properties

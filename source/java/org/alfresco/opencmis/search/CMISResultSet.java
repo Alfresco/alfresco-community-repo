@@ -367,7 +367,13 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     {
         return Collections.emptyMap();
     }
-    
+
+    @Override
+    public Map<NodeRef, List<Pair<String, List<String>>>> getHighlighting()
+    {
+        return Collections.emptyMap();
+    }
+
     @Override
     public SpellCheckResult getSpellCheckResult()
     {

@@ -27,7 +27,6 @@ package org.alfresco.rest.api.people;
 
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Person;
-import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
@@ -110,25 +109,24 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
         }
 
         List<Person> result = new ArrayList<>(1);
-        PersonUpdate person = new PersonUpdate.Builder()
-                .id(p.getUserName())
-                .firstName(p.getFirstName())
-                .lastName(p.getLastName())
-                .description(p.getDescription())
-                .email(p.getEmail())
-                .skypeId(p.getSkypeId())
-                .googleId(p.getGoogleId())
-                .instantMessageId(p.getInstantMessageId())
-                .jobTitle(p.getJobTitle())
-                .location(p.getLocation())
-                .company(p.getCompany())
-                .mobile(p.getMobile())
-                .telephone(p.getTelephone())
-                .userStatus(p.getUserStatus())
-                .enabled(p.isEnabled())
-                .emailNotificationsEnabled(p.isEmailNotificationsEnabled())
-                .password(p.getPassword()).
-                build();
+        Person person = new Person();
+        person.setUserName(p.getUserName());
+        person.setFirstName(p.getFirstName());
+        person.setLastName(p.getLastName());
+        person.setDescription(p.getDescription());
+        person.setEmail(p.getEmail());
+        person.setSkypeId(p.getSkypeId());
+        person.setGoogleId(p.getGoogleId());
+        person.setInstantMessageId(p.getInstantMessageId());
+        person.setJobTitle(p.getJobTitle());
+        person.setLocation(p.getLocation());
+        person.setCompany(p.getCompany());
+        person.setMobile(p.getMobile());
+        person.setTelephone(p.getTelephone());
+        person.setUserStatus(p.getUserStatus());
+        person.setEnabled(p.isEnabled());
+        person.setEmailNotificationsEnabled(p.isEmailNotificationsEnabled());
+        person.setPassword(p.getPassword());
 
         result.add(people.create(person));
         return result;

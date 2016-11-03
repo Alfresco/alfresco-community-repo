@@ -88,7 +88,7 @@ public class SearchMapperTests
         assertEquals("There should be only 1 default store", 1,searchParameters.getStores().size());
         assertEquals("workspaces store is the default", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
-        assertEquals(100, searchParameters.getMaxItems());
+        assertEquals(100, searchParameters.getLimit());
 
         searchParameters = searchMapper.toSearchParameters(helper.searchQueryFromJson());
         assertNotNull(searchParameters);
@@ -158,7 +158,7 @@ public class SearchMapperTests
 
         Paging paging = Paging.DEFAULT;
         searchMapper.fromPaging(searchParameters, paging);
-        assertEquals(searchParameters.getMaxItems(),paging.getMaxItems());
+        assertEquals(searchParameters.getLimit(),paging.getMaxItems());
         assertEquals(searchParameters.getSkipCount(),paging.getSkipCount());
     }
 
@@ -484,16 +484,16 @@ public class SearchMapperTests
         //Doesn't error
         searchMapper.fromLimits(searchParameters, null);
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
-        assertEquals(100, searchParameters.getMaxItems());
+        assertEquals(100, searchParameters.getLimit());
 
         searchMapper.fromLimits(searchParameters, new Limits(null, null));
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
-        assertEquals(100, searchParameters.getMaxItems());
+        assertEquals(100, searchParameters.getLimit());
 
         searchMapper.fromLimits(searchParameters, new Limits(null, 34));
         assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());
         assertEquals(34, searchParameters.getMaxPermissionChecks());
-        assertEquals(-1, searchParameters.getMaxItems());
+        assertEquals(-1, searchParameters.getLimit());
         assertEquals(-1, searchParameters.getMaxPermissionCheckTimeMillis());
 
         searchParameters = new SearchParameters();
@@ -501,7 +501,7 @@ public class SearchMapperTests
         searchMapper.fromLimits(searchParameters, new Limits(1000, null));
         assertEquals(LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS, searchParameters.getLimitBy());
         assertEquals(1000, searchParameters.getMaxPermissionCheckTimeMillis());
-        assertEquals(-1, searchParameters.getMaxItems());
+        assertEquals(-1, searchParameters.getLimit());
         assertEquals(-1, searchParameters.getMaxPermissionChecks());
     }
 

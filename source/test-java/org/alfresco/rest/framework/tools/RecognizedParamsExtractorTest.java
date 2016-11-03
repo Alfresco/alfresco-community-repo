@@ -148,22 +148,32 @@ public class RecognizedParamsExtractorTest implements RecognizedParamsExtractor
         assertEquals("name", theSort.get(1).column);
         assertTrue(theSort.get(1).asc);
         
-        try
-        {
-            getSort("age asc, name des");  // nvalid, should be desc
-            fail("Should throw an InvalidSelectException");
-        }
-        catch (InvalidArgumentException error)
-        {
-            // this is correct
-        }
-
-        theSort  = getSort("name asc,");  // trailing comma is ignored
+        theSort  = getSort("name asc,");  // ok for now, trailing comma is ignored
         assertNotNull(theSort);
         assertTrue("Must have a value for column: NAME", !theSort.isEmpty());
         assertTrue(theSort.size() == 1);
         assertEquals("name", theSort.get(0).column);
         assertTrue(theSort.get(0).asc);
+        
+        try
+        {
+            getSort("age asc, name des");  // invalid, should be desc
+            fail("Should throw an InvalidArgumentException");
+        }
+        catch (InvalidArgumentException error)
+        {
+            // this is correct
+        }
+        
+        try
+        {
+            getSort("age asc name");  // invalid, missing comma
+            fail("Should throw an InvalidArgumentException");
+        }
+        catch (InvalidArgumentException error)
+        {
+            // this is correct
+        }
     }
 
     @Test

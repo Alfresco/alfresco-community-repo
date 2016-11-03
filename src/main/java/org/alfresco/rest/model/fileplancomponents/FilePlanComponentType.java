@@ -9,7 +9,9 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.com.fileplancomponents;
+package org.alfresco.rest.model.fileplancomponents;
+
+import static org.alfresco.rest.util.ParameterCheck.mandatoryString;
 
 /**
  * File plan component type enumeration
@@ -37,27 +39,26 @@ public enum FilePlanComponentType
 
     public static final FilePlanComponentType getFilePlanComponentType(String type)
     {
-        switch (type)
+        mandatoryString("type", type);
+
+        FilePlanComponentType result = null;
+        FilePlanComponentType[] values = values();
+
+        for (FilePlanComponentType filePlanComponentType : values)
         {
-            case "rma:filePlan":
-                return FILE_PLAN_TYPE;
-            case "rma:recordCategory":
-                return RECORD_CATEGORY_TYPE;
-            case "rma:recordFolder":
-                return RECORD_FOLDER_TYPE;
-            case "rma:hold":
-                return HOLD_TYPE;
-            case "rma:unfiledRecordFolder":
-                return UNFILED_RECORD_FOLDER_TYPE;
-            case "rma:holdContainer":
-                return HOLD_CONTAINER_TYPE;
-            case "rma:transferContainer":
-                return TRANSFER_CONTAINER_TYPE;
-            case "rma:unfiledRecordContainer":
-                return UNFILED_CONTAINER_TYPE;
+            if (filePlanComponentType.toString().equals(filePlanComponentType))
+            {
+                result = filePlanComponentType;
+                break;
+            }
         }
 
-        throw new IllegalArgumentException("Invalid file plan component type enum value: '" + type + "'.");
+        if (result == null)
+        {
+            throw new IllegalArgumentException("Invalid file plan component type enum value: '" + type + "'.");
+        }
+
+        return result;
     }
 
     /**

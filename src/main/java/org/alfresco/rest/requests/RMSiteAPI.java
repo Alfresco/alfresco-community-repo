@@ -13,6 +13,7 @@ package org.alfresco.rest.requests;
 
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
+import static org.alfresco.rest.util.ParameterCheck.mandatoryObject;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -34,7 +35,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope (value = "prototype")
-public class RMSiteAPI extends RestAPI
+public class RMSiteAPI extends RestAPI<RMSiteAPI>
 {
     /**
      * Get the RM site
@@ -71,6 +72,8 @@ public class RMSiteAPI extends RestAPI
      */
     public RMSite createRMSite(JsonObject rmSiteProperties) throws Exception
     {
+        mandatoryObject("rmSiteProperties", rmSiteProperties);
+
         return usingRestWrapper().processModel(RMSite.class, requestWithBody(
                 POST,
                 rmSiteProperties.toString(),
@@ -113,11 +116,12 @@ public class RMSiteAPI extends RestAPI
      */
     public RMSite updateRMSite(JsonObject rmSiteProperties) throws Exception
     {
+        mandatoryObject("rmSiteProperties", rmSiteProperties);
+
         return usingRestWrapper().processModel(RMSite.class, requestWithBody(
                 PUT,
                 rmSiteProperties.toString(),
                 "sites/rm"
         ));
     }
-
 }

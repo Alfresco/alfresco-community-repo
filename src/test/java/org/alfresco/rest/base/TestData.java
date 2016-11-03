@@ -9,16 +9,16 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest;
+package org.alfresco.rest.base;
 
-import static org.alfresco.com.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
-import static org.alfresco.com.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 
 import org.testng.annotations.DataProvider;
 
@@ -26,6 +26,7 @@ import org.testng.annotations.DataProvider;
  * Test data used in tests
  *
  * @author Rodica Sutu
+ * @since 1.0
  */
 public interface TestData
 {
@@ -39,6 +40,10 @@ public interface TestData
      * The default password used when creating test users.
      */
     public static final String DEFAULT_PASSWORD = "password";
+
+    /**
+     * The default email address used when creating test users.
+     */
     public static final String DEFAULT_EMAIL = "default@alfresco.com";
 
     /**

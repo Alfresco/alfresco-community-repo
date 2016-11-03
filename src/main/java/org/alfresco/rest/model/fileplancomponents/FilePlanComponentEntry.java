@@ -11,10 +11,11 @@
  */
 package org.alfresco.rest.model.fileplancomponents;
 
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.ENTRY;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.core.RestModels;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
 
 /**
  * POJO for file plan component entry
@@ -24,7 +25,7 @@ import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
  */
 public class FilePlanComponentEntry extends RestModels<FilePlanComponent, FilePlanComponentEntry>
 {
-    @JsonProperty(value = "entry")
+    @JsonProperty(ENTRY)
     FilePlanComponent filePlanComponent;
 
     public FilePlanComponent getFilePlanComponent()

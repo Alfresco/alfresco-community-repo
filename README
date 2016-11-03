@@ -1,3 +1,3 @@
-FIXME: DOCUMENT ME BETTER :)
+FIXME: Add more info to the README file
 
 In order to change the value of a property in "config.properties" create a file called "local.properties" under src/test/resources and redefine the property with the new value.

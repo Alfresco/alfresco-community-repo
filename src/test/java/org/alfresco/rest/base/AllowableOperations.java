@@ -9,17 +9,17 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.fileplancomponents;
-
-import org.alfresco.rest.core.RestModels;
+package org.alfresco.rest.base;
 
 /**
- * Handle collection of FilePlanComponents
+ * List of allowable operations
  *
- * @author Kristijan Conkas
+ * @author Tuna Aksoy
  * @since 1.0
  */
-public class FilePlanComponentsCollection extends RestModels<FilePlanComponentEntry, FilePlanComponentsCollection>
+public class AllowableOperations
 {
-
+    public static final String CREATE = "create";
+    public static final String UPDATE = "update";
+    public static final String DELETE = "delete";
 }

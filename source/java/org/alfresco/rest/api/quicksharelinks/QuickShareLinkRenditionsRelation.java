@@ -47,6 +47,7 @@ import org.springframework.beans.factory.InitializingBean;
 @RelationshipResource(name = "renditions", entityResource = QuickShareLinkEntityResource.class, title = "Node renditions via shared link")
 public class QuickShareLinkRenditionsRelation implements
             RelationshipResourceAction.Read<Rendition>,
+            RelationshipResourceAction.ReadById<Rendition>,
             RelationshipResourceBinaryAction.Read,
             InitializingBean
 {
@@ -78,6 +79,14 @@ public class QuickShareLinkRenditionsRelation implements
     public CollectionWithPagingInfo<Rendition> readAll(String sharedId, Parameters parameters)
     {
         return quickShareLinks.getRenditions(sharedId);
+    }
+
+    @WebApiDescription(title = "Retrieve rendition information", description = "Retrieve (created) rendition information")
+    @WebApiNoAuth
+    @Override
+    public Rendition readById(String entityResourceId, String id, Parameters parameters)
+    {
+        return quickShareLinks.getRendition(entityResourceId, id);
     }
 }
 

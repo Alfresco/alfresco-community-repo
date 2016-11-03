@@ -161,25 +161,11 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         Query query = parameters.getQuery();
         boolean includeCreated = true;
         boolean includeNotCreated = true;
-        if (query != null)
+        String status = getStatus(parameters);
+        if (status != null)
         {
-            // Filtering via "where" clause
-            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(RENDITION_STATUS_COLLECTION_EQUALS_QUERY_PROPERTIES, null);
-            QueryHelper.walk(query, propertyWalker);
-
-            String withStatus = propertyWalker.getProperty(PARAM_STATUS, WhereClauseParser.EQUALS);
-            if (withStatus != null)
-            {
-                try
-                {
-                    includeCreated = RenditionStatus.CREATED.equals(RenditionStatus.valueOf(withStatus));
-                }
-                catch (IllegalArgumentException ex)
-                {
-                    throw new InvalidArgumentException("Invalid status value: " + withStatus);
-                }
-                includeNotCreated = !includeCreated;
-            }
+            includeCreated = RenditionStatus.CREATED.equals(RenditionStatus.valueOf(status));
+            includeNotCreated = !includeCreated;
         }
 
         Map<String, Rendition> apiRenditions = new TreeMap<>();
@@ -226,9 +212,15 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     {
         final NodeRef nodeRef = validateSourceNode(nodeId);
         NodeRef renditionNodeRef = getRenditionByName(nodeRef, renditionId, parameters);
+        boolean includeNotCreated = true;
+        String status = getStatus(parameters);
+        if (status != null)
+        {
+            includeNotCreated = !RenditionStatus.CREATED.equals(RenditionStatus.valueOf(status));
+        }
 
         // if there is no rendition, then try to find the available/registered rendition (yet to be created).
-        if (renditionNodeRef == null)
+        if (renditionNodeRef == null && includeNotCreated)
         {
             ThumbnailDefinition thumbnailDefinition = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(renditionId);
             if (thumbnailDefinition == null)
@@ -256,6 +248,11 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
                 }
             }
             return toApiRendition(thumbnailDefinition);
+        }
+
+        if (renditionNodeRef == null)
+        {
+            throw new NotFoundException("The rendition with id: " + renditionId + " was not found.");
         }
 
         return toApiRendition(renditionNodeRef);
@@ -470,6 +467,21 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     {
         ContentData contentData = getContentData(nodeRef, true);
         return contentData.getMimetype();
+    }
+
+    private String getStatus(Parameters parameters)
+    {
+        Query query = parameters.getQuery();
+        String status = null;
+        if (query != null)
+        {
+            // Filtering via "where" clause
+            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(RENDITION_STATUS_COLLECTION_EQUALS_QUERY_PROPERTIES, null);
+            QueryHelper.walk(query, propertyWalker);
+
+            status = propertyWalker.getProperty(PARAM_STATUS, WhereClauseParser.EQUALS);
+        }
+        return status;
     }
 }
 

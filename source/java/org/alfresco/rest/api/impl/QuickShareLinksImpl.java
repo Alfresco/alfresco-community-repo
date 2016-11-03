@@ -386,6 +386,48 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
         }
     }
 
+    private Parameters getParamsWithCreatedStatus()
+    {
+        String filterStatusCreated = "(" + Renditions.PARAM_STATUS + "='" + Rendition.RenditionStatus.CREATED + "')";
+        Query whereQuery = getWhereClause(filterStatusCreated);
+        Params.RecognizedParams recParams = new Params.RecognizedParams(null, null, null, null, null, null, whereQuery, null, false);
+        Parameters params = Params.valueOf(recParams, null, null, null);
+        return params;
+    }
+
+    @Override
+    public Rendition getRendition(String sharedId, String renditionId)
+    {
+        checkEnabled();
+        checkValidShareId(sharedId);
+
+        try
+        {
+            Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
+
+            String networkTenantDomain = pair.getFirst();
+            final NodeRef nodeRef = pair.getSecond();
+
+            return TenantUtil.runAsSystemTenant(() ->
+            {
+                String nodeId = nodeRef.getId();
+                Parameters params = getParamsWithCreatedStatus();
+                return renditions.getRendition(nodeId, renditionId, params);
+
+            }, networkTenantDomain);
+        }
+        catch (InvalidSharedIdException ex)
+        {
+            logger.warn("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            logger.warn("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
+            throw new EntityNotFoundException(sharedId);
+        }
+    }
+
     @Override
     public CollectionWithPagingInfo<Rendition> getRenditions(String sharedId)
     {
@@ -399,15 +441,10 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             String networkTenantDomain = pair.getFirst();
             final NodeRef nodeRef = pair.getSecond();
 
-            return TenantUtil.runAsSystemTenant(() -> {
+            return TenantUtil.runAsSystemTenant(() ->
+            {
                 String nodeId = nodeRef.getId();
-
-                // hmm ... can we simplify ?
-                String filterStatusCreated = "(" + Renditions.PARAM_STATUS + "='" + Rendition.RenditionStatus.CREATED + "')";
-                Query whereQuery = getWhereClause(filterStatusCreated);
-                Params.RecognizedParams recParams = new Params.RecognizedParams(null, null, null, null, null, null, whereQuery, null, false);
-                Parameters params = Params.valueOf(recParams, null, null, null);
-
+                Parameters params = getParamsWithCreatedStatus();
                 return renditions.getRenditions(nodeId, params);
 
             }, networkTenantDomain);

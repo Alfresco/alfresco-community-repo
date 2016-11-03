@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
-import org.apache.chemistry.opencmis.server.support.CmisServiceWrapper;
+import org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.aop.framework.ProxyFactory;
@@ -167,7 +167,7 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
         proxyFactory.addAdvice(cmisTransactions);
         AlfrescoCmisService cmisService = (AlfrescoCmisService) proxyFactory.getProxy();
 
-        CmisServiceWrapper<CmisService> wrapperService = new CmisServiceWrapper<CmisService>(
+        ConformanceCmisServiceWrapper wrapperService = new ConformanceCmisServiceWrapper(
                 cmisService,
                 connector.getTypesDefaultMaxItems(), connector.getTypesDefaultDepth(),
                 connector.getObjectsDefaultMaxItems(), connector.getObjectsDefaultDepth());

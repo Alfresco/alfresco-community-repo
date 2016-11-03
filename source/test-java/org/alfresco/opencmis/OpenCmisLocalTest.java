@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.TestCase;
 
 import org.alfresco.events.types.ContentEventImpl;
-import org.alfresco.events.types.ContentReadRangeEvent;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.events.EventPublisherForTestingOnly;
@@ -75,8 +74,8 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
-import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStream;
-import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
+import org.apache.chemistry.opencmis.commons.server.TempStoreOutputStream;
+import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContext;
@@ -97,7 +96,7 @@ public class OpenCmisLocalTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
     private static final String BEAN_NAME_AUTHENTICATION_COMPONENT = "authenticationComponent";
     private static final String MIME_PLAIN_TEXT = "text/plain";
-    private ThresholdOutputStreamFactory streamFactory;
+    private TempStoreOutputStreamFactory streamFactory;
     private EventPublisherForTestingOnly eventPublisher;
     
     /**
@@ -150,7 +149,7 @@ public class OpenCmisLocalTest extends TestCase
     public void setUp() throws Exception
     {
         File tempDir = new File(TempFileProvider.getTempDir(), GUID.generate());
-        this.streamFactory = ThresholdOutputStreamFactory.newInstance(tempDir, 1024, 1024, false);
+        this.streamFactory = TempStoreOutputStreamFactory.newInstance(tempDir, 1024, 1024, false);
         this.eventPublisher = (EventPublisherForTestingOnly) ctx.getBean("eventPublisher");
     }
     
@@ -307,10 +306,10 @@ public class OpenCmisLocalTest extends TestCase
 
     private ContentStreamImpl makeContentStream(String filename, String mimetype, String content) throws IOException
     {
-        ThresholdOutputStream tos = streamFactory.newOutputStream();
+        TempStoreOutputStream tos = streamFactory.newOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(tos);
         writer.write(content);
-        ContentStreamImpl contentStream = new ContentStreamImpl(filename, BigInteger.valueOf(tos.getSize()), MimetypeMap.MIMETYPE_TEXT_PLAIN, tos.getInputStream());
+        ContentStreamImpl contentStream = new ContentStreamImpl(filename, BigInteger.valueOf(tos.getLength()), MimetypeMap.MIMETYPE_TEXT_PLAIN, tos.getInputStream());
         return contentStream;
     }
 
@@ -432,8 +431,8 @@ public class OpenCmisLocalTest extends TestCase
         TestStreamTarget proxy = (TestStreamTarget) proxyFactory.getProxy();
 
         File tempDir = new File(TempFileProvider.getTempDir(), GUID.generate());
-        ThresholdOutputStreamFactory streamFactory = ThresholdOutputStreamFactory.newInstance(tempDir, 1024, 1024, false);
-        ThresholdOutputStream tos = streamFactory.newOutputStream();
+        TempStoreOutputStreamFactory streamFactory = TempStoreOutputStreamFactory.newInstance(tempDir, 1024, 1024, false);
+        TempStoreOutputStream tos = streamFactory.newOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(tos);
         writer.write("The cat sat on the mat");
 

@@ -60,6 +60,9 @@
         </property>
     </bean>
        
+   <bean id="defaultFileContentUrlProvider" class="org.alfresco.repo.content.filestore.TimeBasedFileContentUrlProvider">
+       <property name="bucketsPerMinute" value="${dir.contentstore.bucketsPerMinute}"/>
+   </bean>
    <!-- This content limit provider is used above (and can also be overriden, eg. by modules). -->
    <bean id="defaultContentLimitProvider" class="org.alfresco.repo.content.ContentLimitProvider$SimpleFixedLimitProvider">
        <property name="sizeLimitString" value="${system.content.maximumFileSizeLimit}"/>

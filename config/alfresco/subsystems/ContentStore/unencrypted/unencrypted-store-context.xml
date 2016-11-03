@@ -6,6 +6,7 @@
     <bean id="fileContentStore" class="org.alfresco.repo.tenant.TenantRoutingFileContentStore" parent="baseTenantRoutingContentStore">
         <property name="rootLocation" value="${dir.contentstore}" />
         <property name="contentLimitProvider" ref="defaultContentLimitProvider" />
+        <property name="fileContentUrlProvider" ref="defaultFileContentUrlProvider"/>
     </bean>
    
 </beans>

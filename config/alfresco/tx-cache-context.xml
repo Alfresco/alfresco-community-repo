@@ -624,8 +624,21 @@
       <property name="cacheStats" ref="cacheStatistics"/>
       <property name="cacheStatsEnabled" value="${cache.tenantEntitySharedCache.tx.statsEnabled}"/>
    </bean>
-   
-   
+
+   <bean name="openCMISRegistryCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="openCMISRegistrySharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.openCMISRegistryCache</value>
+      </property>
+      <property name="maxCacheSize" value="${cache.openCMISRegistrySharedCache.tx.maxItems}" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="cacheStats" ref="cacheStatistics"/>
+      <property name="cacheStatsEnabled" value="${cache.openCMISRegistrySharedCache.tx.statsEnabled}"/>
+   </bean>
+
    <!-- The transactional cache for immutable (tenant-aware) singletons -->
    
    <bean name="immutableSingletonCache" class="org.alfresco.repo.cache.TransactionalCache">

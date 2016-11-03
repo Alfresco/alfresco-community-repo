@@ -62,8 +62,6 @@ import org.alfresco.repo.audit.AuditComponentImpl;
 import org.alfresco.repo.audit.AuditServiceImpl;
 import org.alfresco.repo.audit.UserAuditFilter;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
-import org.alfresco.repo.batch.BatchProcessWorkProvider;
-import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -652,6 +650,9 @@ public class CMISTest
         // check that workflow types were correctly bootstrapped
         assertNotNull(startTaskTypeDefinition);
         assertNotNull(workflowTaskTypeDefinition);
+
+        // caches are refreshed asynchronously
+        Thread.sleep(5000);
 
         // check that loaded model is available via CMIS API
         CallContext context = new SimpleCallContext("admin", "admin", CmisVersion.CMIS_1_1);
@@ -2433,32 +2434,33 @@ public class CMISTest
 	{
         TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
         {
-			@Override
-			public Void doWork() throws Exception
-			{
-				M2Model customModel = M2Model.createModel(
-						Thread.currentThread().getContextClassLoader().
-						getResourceAsStream("dictionary/dictionarydaotest_model1.xml"));
-				dictionaryDAO.putModel(customModel);
-				assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
-				TypeDefinitionWrapper td = cmisDictionaryService.findType("D:daotest1:type1");
-				assertNotNull(td);
-				return null;
-			}
-		}, "user1", "tenant1");
+            @Override
+            public Void doWork() throws Exception
+            {
+                M2Model customModel = M2Model.createModel(
+                        Thread.currentThread().getContextClassLoader().
+                        getResourceAsStream("dictionary/dictionarydaotest_model1.xml"));
+                dictionaryDAO.putModel(customModel);
+
+                assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
+                TypeDefinitionWrapper td = cmisDictionaryService.findType("D:daotest1:type1");
+                assertNotNull(td);
+                return null;
+            }
+        }, "user1", "tenant1");
 
         TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
         {
-			@Override
-			public Void doWork() throws Exception
-			{
-				assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
-				TypeDefinitionWrapper td = cmisDictionaryService.findType("D:daotest1:type1");
-				assertNull(td);
-				return null;
-			}
-		}, "user2", "tenant2");
-	}
+            @Override
+            public Void doWork() throws Exception
+            {
+                assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
+                TypeDefinitionWrapper td = cmisDictionaryService.findType("D:daotest1:type1");
+                assertNull(td);
+                return null;
+            }
+        }, "user2", "tenant2");
+    }
 
     /**
      * MNT-13529: Just-installed Alfresco does not return a CMIS latestChangeLogToken

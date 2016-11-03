@@ -131,6 +131,12 @@
                <when test="shardPropertyQNameId == -2">
                   node.audit_modified as shard_key
                </when>
+               <when test="shardPropertyQNameId == -3">
+                  node.audit_creator as shard_key
+               </when>
+               <when test="shardPropertyQNameId == -4">
+                  node.audit_modifier as shard_key
+               </when>
                <otherwise>
                   shardkey.string_value as shard_key
                </otherwise>

@@ -213,6 +213,14 @@ public class SOLRDAOImpl implements SOLRDAO
             {
                 params.setShardPropertyQNameId(-2L);
             }
+            else if (shardPropertyQName.equals(ContentModel.PROP_CREATOR))
+            {
+                params.setShardPropertyQNameId(-3L);
+            }
+            else if (shardPropertyQName.equals(ContentModel.PROP_MODIFIER))
+            {
+                params.setShardPropertyQNameId(-4L);
+            }
             else
             {
                 Pair<Long, QName> propertyQNamePair = qnameDAO.getQName(shardPropertyQName);

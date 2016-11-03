@@ -275,20 +275,26 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             
             // convert Paths to Strings
             List<String> paths = new ArrayList<String>();
+            List<String> ancestorPaths = new ArrayList<String>();
             HashSet<String> ancestors = new HashSet<String>();
             if(nodeMetaData.getPaths() != null)
             {
+            	StringBuilder ancestorPath = new StringBuilder();
                 for(Pair<Path, QName> pair : nodeMetaData.getPaths())
                 {
                     JSONObject o = new JSONObject();
                     o.put("path", solrSerializer.serializeValue(String.class, pair.getFirst()));
                     o.put("qname", solrSerializer.serializeValue(String.class, pair.getSecond()));
-                    paths.add(o.toString(3));
+                   
                     
                     for (NodeRef ancestor : getAncestors(pair.getFirst()))
                     {
                         ancestors.add(ancestor.toString());
+                        ancestorPath.insert(0, ancestor.getId()).insert(0, "/");
                     }
+                   
+                    o.put("apath",  ancestorPath);
+                    paths.add(o.toString(3));
                 }
             }
             this.ancestors = ancestors;

@@ -214,15 +214,6 @@ public class MetadataExtracterLimitsTest
     @Test
     public void testUnlimitedTimeout() throws Exception
     {
-        long timeoutMs = -1;
-
-        MetadataExtracterLimits limits = new MetadataExtracterLimits();
-        limits.setTimeoutMs(timeoutMs);
-        HashMap<String, MetadataExtracterLimits> mimetypeLimits =
-                new HashMap<String, MetadataExtracterLimits>(1);
-        mimetypeLimits.put(MimetypeMap.MIMETYPE_IMAGE_JPEG, limits);
-        ((MockDelayedMetadataExtracter) getExtracter()).setMimetypeLimits(mimetypeLimits);
-
         File file = AbstractContentTransformerTest.loadNamedQuickTestFile("quick.txt");
 
         Map<QName, Serializable> properties = extractFromFile(file, MimetypeMap.MIMETYPE_TEXT_PLAIN);

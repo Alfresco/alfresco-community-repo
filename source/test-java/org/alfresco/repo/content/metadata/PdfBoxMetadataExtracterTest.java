@@ -25,12 +25,18 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.apache.pdfbox.util.DateConverter;
@@ -43,6 +49,9 @@ import org.apache.pdfbox.util.DateConverter;
 public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
 {
     private PdfBoxMetadataExtracter extracter;
+    
+    private static final int MAX_CONCURENT_EXTRACTIONS = 5;
+	private static final double MAX_DOC_SIZE_MB = 0.03;
 
     @Override
     public void setUp() throws Exception
@@ -50,6 +59,14 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
         super.setUp();
         extracter = new PdfBoxMetadataExtracter();
         extracter.setDictionaryService(dictionaryService);
+        
+        MetadataExtracterLimits pdfLimit = new MetadataExtracterLimits();
+        pdfLimit.setMaxConcurrentExtractionsCount(MAX_CONCURENT_EXTRACTIONS);
+        pdfLimit.setMaxDocumentSizeMB(MAX_DOC_SIZE_MB);
+        Map<String,MetadataExtracterLimits> limits = new HashMap<>();
+        limits.put(MimetypeMap.MIMETYPE_PDF,pdfLimit);
+        
+        extracter.setMimetypeLimits(limits);
         extracter.register();
     }
 
@@ -107,5 +124,49 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
        assertEquals(52, c.get(Calendar.MINUTE));
        assertEquals(58, c.get(Calendar.SECOND));
        //assertEquals(0, c.get(Calendar.MILLISECOND));
+    }
+    
+    public void testConcurrentExtractions() throws InterruptedException
+    {
+        int threadNum = 10;
+        final CountDownLatch extractionsCountDown = new CountDownLatch(threadNum);
+        for (int i = 0; i < threadNum; i++)
+        {
+            Thread t = new Thread(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        Map<QName, Serializable> properties = extractFromMimetype(MimetypeMap.MIMETYPE_PDF);
+                        if (!properties.isEmpty())
+                        {
+                            extractionsCountDown.countDown();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            t.start();
+        }
+        extractionsCountDown.await(1000, TimeUnit.MILLISECONDS);
+        long rejectedExtractions = extractionsCountDown.getCount();
+        assertTrue("Wrong number of rejected extractions", rejectedExtractions == (threadNum - MAX_CONCURENT_EXTRACTIONS));
+    }
+
+    public void testMaxDocumentSizeLimit() throws Exception
+    {
+        File sourceFile = AbstractContentTransformerTest.loadNamedQuickTestFile("quick-size-limit.pdf");
+        
+        if (sourceFile == null)
+        {
+            throw new FileNotFoundException("No quick-size-limit.pdf file found for test");
+        }
+        Map<QName, Serializable> properties = extractFromFile(sourceFile, MimetypeMap.MIMETYPE_PDF);
+        assertTrue(properties.isEmpty());
     }
 }

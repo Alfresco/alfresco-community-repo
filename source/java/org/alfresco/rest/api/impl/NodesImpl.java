@@ -2038,7 +2038,7 @@ public class NodesImpl implements Nodes
     
     protected NodeRef updateNodeImpl(String nodeId, Node nodeInfo, Parameters parameters)
     {
-        final NodeRef nodeRef = validateNode(nodeId);
+        final NodeRef nodeRef = validateOrLookupNode(nodeId, null);
 
         QName nodeTypeQName = getNodeType(nodeRef);
 

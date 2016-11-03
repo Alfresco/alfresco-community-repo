@@ -359,6 +359,10 @@ public class Person
 		addToMap(properties, ContentModel.PROP_SIZE_QUOTA, getQuota());
 		addToMap(properties, ContentModel.PROP_SIZE_CURRENT, getQuotaUsed());
 		addToMap(properties, ContentModel.PROP_PERSONDESC, getDescription());
+        addToMap(properties, ContentModel.PROP_ENABLED, isEnabled());
+
+        Boolean isEmailNotificationsEnabled = isEmailNotificationsEnabled();
+        addToMap(properties, ContentModel.PROP_EMAIL_FEED_DISABLED, (isEmailNotificationsEnabled == null ? null : !isEmailNotificationsEnabled.booleanValue()));
 	}
 	
 }

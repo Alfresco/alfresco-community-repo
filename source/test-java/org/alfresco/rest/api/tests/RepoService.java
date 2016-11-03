@@ -1371,12 +1371,17 @@ public class RepoService
 			}
 		}
 
-		public TestSite createSite(SiteVisibility siteVisibility)
+		public TestSite createSite(String siteRootName, SiteVisibility siteVisibility)
 		{
-			String shortName = "TESTSITE" + GUID.generate();
+			String shortName = "TESTSITE" + (siteRootName != null ? siteRootName : "") + GUID.generate();
 			SiteInformation siteInfo = new SiteInformation(shortName, shortName, shortName, siteVisibility);
 			return createSite(siteInfo);
 	    }
+
+        public TestSite createSite(SiteVisibility siteVisibility)
+        {
+            return createSite(null, siteVisibility);
+        }
 
 		/**
 		 * @deprecated replace with AbstractBaseApiTest.createSite (or PublicApiClient.sites.createSite)

@@ -562,8 +562,10 @@ public class SitesImpl implements Sites
 
         List<FilterProp> filterProps = getFilterPropListOfSites(parameters);
 
+        int counter;
+        int totalItems = 0;
         Iterator<SiteMembership> it = sortedSiteMembers.iterator();
-        for(int counter = 0; counter < pageDetails.getEnd() && it.hasNext();)
+        for(counter = 0; it.hasNext();)
         {
             SiteMembership siteMember = it.next();
 
@@ -574,22 +576,23 @@ public class SitesImpl implements Sites
 
             if(counter < pageDetails.getSkipCount())
             {
+                totalItems++;
                 counter++;
                 continue;
             }
             
-            if(counter > pageDetails.getEnd() - 1)
+            if (counter <= pageDetails.getEnd() - 1)
             {
-                break;
+                SiteInfo siteInfo = siteMember.getSiteInfo();
+                MemberOfSite memberOfSite = new MemberOfSite(siteInfo.getShortName(), siteInfo.getNodeRef(), siteMember.getRole());
+                ret.add(memberOfSite);
+
+                counter++;
             }
 
-            SiteInfo siteInfo = siteMember.getSiteInfo();
-            MemberOfSite memberOfSite = new MemberOfSite(siteInfo.getShortName(), siteInfo.getNodeRef(), siteMember.getRole());
-            ret.add(memberOfSite);
-
-            counter++;
+            totalItems++;
         }
-        return CollectionWithPagingInfo.asPaged(paging, ret, pageDetails.hasMoreItems(), null);
+        return CollectionWithPagingInfo.asPaged(paging, ret, counter < totalItems, totalItems);
 
     }
 

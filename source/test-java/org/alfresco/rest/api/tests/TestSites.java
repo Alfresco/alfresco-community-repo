@@ -47,6 +47,7 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Site;
 import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
@@ -81,6 +82,15 @@ public class TestSites extends EnterpriseTestApi
     private Site site4;
     private Site site5;
     private Site site6;
+
+    // test network 3
+    private TestNetwork network3;
+    private String person4Id;
+
+    private Site site7;
+    private Site site8;
+    private Site site9;
+    private Site site10;
 
     private String site4_id = "a-" + GUID.generate();
     private String site4_title = "c_" + GUID.generate();
@@ -149,6 +159,41 @@ public class TestSites extends EnterpriseTestApi
 
             site = new SiteImpl(site6_id, site6_title, site6_description, SiteVisibility.PRIVATE.toString());
             site6 = sitesProxy.createSite(site);
+        }
+    }
+
+    private void initializeNetwork3WithSites() throws Exception
+    {
+        if (network3 == null)
+        {
+            network3 = getRepoService().createNetwork(this.getClass().getName().toLowerCase()+"-2-"+RUNID, true);
+            network3.create();
+
+            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    person4Id = network3.createUser().getId();
+                    return null;
+                }
+            }, network3.getId());
+
+            publicApiClient.setRequestContext(new RequestContext(network3.getId(), person4Id));
+
+            Sites sitesProxy = publicApiClient.sites();
+
+            Site site = new SiteImpl("site A" + GUID.generate(), SiteVisibility.PRIVATE.toString());
+            site7 = sitesProxy.createSite(site);
+
+            site = new SiteImpl("site B" + GUID.generate(), SiteVisibility.PUBLIC.toString());
+            site8 = sitesProxy.createSite(site);
+
+            site = new SiteImpl("site C" + GUID.generate(), SiteVisibility.PUBLIC.toString());
+            site9 = sitesProxy.createSite(site);
+
+            site = new SiteImpl("site D" + GUID.generate(), SiteVisibility.MODERATED.toString());
+            site10 = sitesProxy.createSite(site);
         }
     }
 
@@ -930,5 +975,111 @@ public class TestSites extends EnterpriseTestApi
         }
 
        return sitesProxy.getSites(createParams(paging, params));
+    }
+
+    private ListResponse<Site> listSitesWithWhere(final Paging paging, String siteVisibility) throws Exception
+    {
+        final Sites sitesProxy = publicApiClient.sites();
+
+        final Map<String, String> params = new HashMap<>();
+        if (siteVisibility != null)
+        {
+            params.put("where", "(visibility=" + siteVisibility + ")");
+        }
+
+        return sitesProxy.getSites(createParams(paging, params));
+    }
+
+    public void testListSitesWhereSiteVisibilityPrivate() throws Exception
+    {
+        // paging
+        int totalResults = 1;
+        Paging paging = getPaging(null, null, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSitesWithWhere(null, SiteVisibility.PRIVATE.name());
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add((SiteImpl) site7);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    public void testListSitesWhereSiteVisibilityPublic() throws Exception
+    {
+        // paging
+        int totalResults = 2;
+        Paging paging = getPaging(null, null, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSitesWithWhere(null, SiteVisibility.PUBLIC.name());
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add((SiteImpl) site8);
+        expectedList.add((SiteImpl) site9);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    public void testListSitesWhereSiteVisibilityPublicAndSkipCount() throws Exception
+    {
+        // paging
+        Integer skipCount = 1;
+        int maxItems = 2;
+        int totalResults = 2;
+        Paging paging = getPaging(skipCount, maxItems, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSitesWithWhere(paging, SiteVisibility.PUBLIC.name());
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add((SiteImpl) site9);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    public void testListSitesWhereSiteVisibilityModerated() throws Exception
+    {
+        // paging
+        int totalResults = 1;
+        Paging paging = getPaging(null, null, totalResults, totalResults);
+
+        // list sites
+        ListResponse<Site> resp = listSitesWithWhere(null, SiteVisibility.MODERATED.name());
+
+        // check results
+        List<SiteImpl> expectedList = new LinkedList<>();
+        expectedList.add((SiteImpl) site10);
+
+        checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    public void testListSitesWhereSiteVisibilityInvalid() throws Exception
+    {
+        try
+        {
+            listSitesWithWhere(null, "invalidVisibility");
+            fail("");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+        }
+    }
+
+    @Test
+    public void testListSitesWhereExpected() throws Exception
+    {
+        initializeNetwork3WithSites();
+        publicApiClient.setRequestContext(new RequestContext(network3.getId(), person4Id));
+
+        testListSitesWhereSiteVisibilityPrivate();
+        testListSitesWhereSiteVisibilityPublic();
+        testListSitesWhereSiteVisibilityPublicAndSkipCount();
+        testListSitesWhereSiteVisibilityModerated();
+        testListSitesWhereSiteVisibilityInvalid();
     }
 }

@@ -32,7 +32,6 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Person;
-import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -283,7 +282,7 @@ public class PeopleImpl implements People
     }
 
 	@Override
-	public Person create(PersonUpdate person)
+	public Person create(Person person)
 	{
 		validateCreatePersonData(person);
 
@@ -334,7 +333,7 @@ public class PeopleImpl implements People
         });
     }
 
-	private void validateCreatePersonData(PersonUpdate person)
+	private void validateCreatePersonData(Person person)
 	{
 		checkRequiredField("id", person.getUserName());
 		checkRequiredField("firstName", person.getFirstName());

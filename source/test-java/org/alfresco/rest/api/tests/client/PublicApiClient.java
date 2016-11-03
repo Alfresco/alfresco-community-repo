@@ -44,7 +44,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
-import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.api.tests.TestPeople;
 import org.alfresco.rest.api.tests.TestSites;
@@ -75,7 +74,6 @@ import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -1072,14 +1070,14 @@ public class PublicApiClient
 			return retSite;
 		}
 
-		public Person create(PersonUpdate person) throws PublicApiException
+		public Person create(Person person) throws PublicApiException
 		{
 			return create(person, 201);
 		}
 
-		public Person create(PersonUpdate person, int expectedStatus) throws PublicApiException
+		public Person create(Person person, int expectedStatus) throws PublicApiException
 		{
-			TestPeople.PersonUpdateJSONSerializer jsonizer = new TestPeople.PersonUpdateJSONSerializer(person) ;
+			TestPeople.PersonJSONSerializer jsonizer = new TestPeople.PersonJSONSerializer(person) ;
 			HttpResponse response = create("people", null, null, null, jsonizer.toJSON().toString(), "Failed to create person", expectedStatus);
 			if ((response != null) && (response.getJsonResponse() != null))
 			{

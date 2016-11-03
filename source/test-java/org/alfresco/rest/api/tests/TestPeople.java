@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.Pair;
@@ -151,25 +150,24 @@ public class TestPeople extends EnterpriseTestApi
 	{
 		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 
-		PersonUpdate person = new PersonUpdate.Builder().
-				id("myUserName00@"+account1.getId()).
-				firstName("Firstname").
-				lastName("Lastname").
-				description("my description").
-				email("email@example.com").
-				skypeId("my.skype.id").
-				googleId("google").
-				instantMessageId("jabber@im.example.com").
-				jobTitle("International Man of Mystery").
-				location("location").
-				company(new Company("Org", "addr1", "addr2", "addr3", "AB1 1BA", "111 12312123", "222 345345345", "company.email@example.com")).
-				mobile("5657 567567 34543").
-				telephone("1234 5678 9012").
-				userStatus("userStatus").
-				enabled(true).
-				emailNotificationsEnabled(true).
-				password("password").
-			build();
+		Person person = new Person();
+		person.setUserName("myUserName00@"+account1.getId());
+		person.setFirstName("Firstname");
+		person.setLastName("Lastname");
+		person.setDescription("my description");
+		person.setEmail("email@example.com");
+		person.setSkypeId("my.skype.id");
+		person.setGoogleId("google");
+		person.setInstantMessageId("jabber@im.example.com");
+		person.setJobTitle("International Man of Mystery");
+		person.setLocation("location");
+		person.setCompany(new Company("Org", "addr1", "addr2", "addr3", "AB1 1BA", "111 12312123", "222 345345345", "company.email@example.com"));
+		person.setMobile("5657 567567 34543");
+		person.setTelephone("1234 5678 9012");
+		person.setUserStatus("userStatus");
+		person.setEnabled(true);
+		person.setEmailNotificationsEnabled(true);
+		person.setPassword("password");
 
 		Person p = people.create(person);
 
@@ -209,13 +207,12 @@ public class TestPeople extends EnterpriseTestApi
 		{
 			publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 			
-			PersonUpdate person = new PersonUpdate.Builder().
-					id("myUserName04@"+account1.getId()).
-					firstName("Firstname").
-					email("myUserName04@"+account1.getId()).
-					enabled(false).
-					password("hello").
-					build();
+			Person person = new Person();
+			person.setUserName("myUserName04@"+account1.getId());
+			person.setFirstName("Firstname");
+			person.setEmail("myUserName04@"+account1.getId());
+			person.setEnabled(false);
+			person.setPassword("hello");
 
 			Person p = people.create(person);
 			assertEquals(false, p.isEnabled());
@@ -243,13 +240,12 @@ public class TestPeople extends EnterpriseTestApi
 		{
 			publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
 			
-			PersonUpdate person = new PersonUpdate.Builder().
-					id("myUserName05@"+account1.getId()).
-					firstName("Firstname").
-					email("myUserName05@"+account1.getId()).
-					enabled(true).
-					password("banana").
-					build();
+			Person person = new Person();
+			person.setUserName("myUserName05@"+account1.getId());
+			person.setFirstName("Firstname");
+			person.setEmail("myUserName05@"+account1.getId());
+			person.setEnabled(true);
+			person.setPassword("banana");
 
 			Person p = people.create(person);
 			assertEquals(true, p.isEnabled());
@@ -275,17 +271,16 @@ public class TestPeople extends EnterpriseTestApi
 
 		// +ve: a random subset of fields should succeed.
 		{
-			PersonUpdate person = new PersonUpdate.Builder().
-					id("joe.bloggs@" + account1.getId()).
-					firstName("Joe").
-					lastName("Bloggs").
-					email("joe.bloggs@example.com").
-					skypeId("jb.skype.id").
-					telephone("1234 5678 9012").
-					enabled(false).
-					emailNotificationsEnabled(false).
-					password("password123").
-					build();
+			Person person = new Person();
+			person.setUserName("joe.bloggs@" + account1.getId());
+			person.setFirstName("Joe");
+			person.setLastName("Bloggs");
+			person.setEmail("joe.bloggs@example.com");
+			person.setSkypeId("jb.skype.id");
+			person.setTelephone("1234 5678 9012");
+			person.setEnabled(false);
+			person.setEmailNotificationsEnabled(false);
+			person.setPassword("password123");
 
 			Person p = people.create(person);
 
@@ -309,13 +304,12 @@ public class TestPeople extends EnterpriseTestApi
 
 		// +ve: absolute minimum
 		{
-			PersonUpdate person = new PersonUpdate.Builder().
-					id("joe.bloggs.2@"+account1.getId()).
-					firstName("Joe").
-					email("joe.bloggs.2@example.com").
-					enabled(true).
-					password("password-is-secret").
-					build();
+			Person person = new Person();
+			person.setUserName("joe.bloggs.2@"+account1.getId());
+			person.setFirstName("Joe");
+			person.setEmail("joe.bloggs.2@example.com");
+			person.setEnabled(true);
+			person.setPassword("password-is-secret");
 
 			Person p = people.create(person);
 
@@ -340,9 +334,8 @@ public class TestPeople extends EnterpriseTestApi
 		// -ve: not enough fields!
 		{
 			// Create a person with no fields set.
-			PersonUpdate person = new PersonUpdate.Builder().
-					id("joe.bloggs.2@"+account1.getId()).
-					build();
+			Person person = new Person();
+			person.setUserName("joe.bloggs.2@"+account1.getId());
 			people.create(person, 400);
 		}
 	}
@@ -382,12 +375,11 @@ public class TestPeople extends EnterpriseTestApi
 		{
 			// Invalid auth details
 			publicApiClient.setRequestContext(new RequestContext(account1.getId(), GUID.generate(), "password"));
-			PersonUpdate person = new PersonUpdate.Builder().
-					id("myUserName01@"+account1.getId()).
-					firstName("Caroline").
-					email("caroline.smithson@example.com").
-					enabled(true).
-					build();
+			Person person = new Person();
+			person.setUserName("myUserName01@"+account1.getId());
+			person.setFirstName("Caroline");
+			person.setEmail("caroline.smithson@example.com");
+			person.setEnabled(true);
 			people.create(person, 401);
 		}
 
@@ -395,13 +387,12 @@ public class TestPeople extends EnterpriseTestApi
 		{
 			String apiUser = account2PersonIt.next();
 			publicApiClient.setRequestContext(new RequestContext(account2.getId(), apiUser));
-			PersonUpdate person = new PersonUpdate.Builder().
-					id("myUserName02@"+account2.getId()).
-					firstName("Kieth").
-					email("keith.smith@example.com").
-					enabled(true).
-					password("password").
-					build();
+			Person person = new Person();
+			person.setUserName("myUserName02@"+account2.getId());
+			person.setFirstName("Kieth");
+			person.setEmail("keith.smith@example.com");
+			person.setEnabled(true);
+			person.setPassword("password");
 			people.create(person, 403);
 
 			publicApiClient.setRequestContext(new RequestContext(account2.getId(), account2Admin, "admin"));
@@ -412,13 +403,12 @@ public class TestPeople extends EnterpriseTestApi
 		// -ve: person already exists
 		{
 			publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
-			PersonUpdate person = new PersonUpdate.Builder().
-					id("myUserName03@"+account1.getId()).
-					firstName("Alison").
-					email("alison.smythe@example.com").
-					enabled(true).
-					password("secret").
-					build();
+			Person person = new Person();
+			person.setUserName("myUserName03@"+account1.getId());
+			person.setFirstName("Alison");
+			person.setEmail("alison.smythe@example.com");
+			person.setEnabled(true);
+			person.setPassword("secret");
 			people.create(person);
 
 			// Attempt to create the person a second time.
@@ -426,11 +416,11 @@ public class TestPeople extends EnterpriseTestApi
 		}
 	}
 
-	public static class PersonUpdateJSONSerializer implements JSONAble
+	public static class PersonJSONSerializer implements JSONAble
 	{
-		private final PersonUpdate personUpdate;
+		private final Person personUpdate;
 
-		public PersonUpdateJSONSerializer(PersonUpdate personUpdate)
+		public PersonJSONSerializer(Person personUpdate)
 		{
 			this.personUpdate = personUpdate;
 		}

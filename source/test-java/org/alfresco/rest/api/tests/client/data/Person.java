@@ -53,6 +53,11 @@ public class Person
 
     private static Collator collator = Collator.getInstance();
 
+    public Person()
+    {
+        super();
+    }
+    
     public Person(String id, String username, Boolean enabled, String firstName, String lastName,
             Company company, String skype, String location, String tel,
             String mob, String instantmsg, String google, String description)
@@ -209,8 +214,7 @@ public class Person
         String userStatus = (String) jsonObject.get("userStatus");
         Boolean enabled = (Boolean)jsonObject.get("enabled");
         Boolean emailNotificationsEnabled = (Boolean) jsonObject.get("emailNotificationsEnabled");
-
-        // TODO: create a PersonCreate request class.
+        
         Person person = new Person(
                 userId,
                 enabled,

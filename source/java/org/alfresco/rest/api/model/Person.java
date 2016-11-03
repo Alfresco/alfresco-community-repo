@@ -162,9 +162,19 @@ public class Person
 		return company;
 	}
 
+	public void setCompany(Company company)
+	{
+		this.company = company;
+	}
+
 	public String getInstantMessageId()
 	{
 		return instantMessageId;
+	}
+
+	public void setInstantMessageId(String instantMessageId)
+	{
+		this.instantMessageId = instantMessageId;
 	}
 
 	public String getGoogleId()
@@ -172,6 +182,11 @@ public class Person
 		return googleId;
 	}
 
+	public void setGoogleId(String googleId)
+	{
+		this.googleId = googleId;
+	}
+	
 	public Long getQuota()
 	{
 		return quota;
@@ -187,10 +202,20 @@ public class Person
 		return description;
 	}
 
+	public void setDescription(String description)
+	{
+		this.description = description;
+	}
+	
 	@UniqueId
 	public String getUserName() 
 	{
 		return userName;
+	}
+
+	public void setUserName(String userName)
+	{
+		this.userName = userName;
 	}
 
 	public Boolean isEnabled()
@@ -198,6 +223,11 @@ public class Person
 		return enabled;
 	}
 
+	public void setEnabled(Boolean enabled)
+	{
+		this.enabled = enabled;
+	}
+	
 	public void setAvatarId(NodeRef avatarId)
 	{
 		this.avatarId = avatarId;
@@ -238,9 +268,19 @@ public class Person
 		return jobTitle;
 	}
 
+	public void setJobTitle(String jobTitle)
+	{
+		this.jobTitle = jobTitle;
+	}
+
 	public String getLocation()
 	{
 		return location;
+	}
+
+	public void setLocation(String location)
+	{
+		this.location = location;
 	}
 
 	public String getTelephone()
@@ -248,9 +288,19 @@ public class Person
 		return telephone;
 	}
 
+	public void setTelephone(String telephone)
+	{
+		this.telephone = telephone;
+	}
+
 	public String getMobile()
 	{
 		return mobile;
+	}
+
+	public void setMobile(String mobile)
+	{
+		this.mobile = mobile;
 	}
 
 	public String getEmail()
@@ -258,14 +308,29 @@ public class Person
 		return email;
 	}
 
+	public void setEmail(String email)
+	{
+		this.email = email;
+	}
+
 	public String getSkypeId()
 	{
 		return skypeId;
 	}
 
+	public void setSkypeId(String skypeId)
+	{
+		this.skypeId = skypeId;
+	}
+
 	public String getUserStatus()
 	{
 		return userStatus;
+	}
+
+	public void setUserStatus(String userStatus)
+	{
+		this.userStatus = userStatus;
 	}
 
 	public Date getStatusUpdatedAt()
@@ -276,6 +341,11 @@ public class Person
 	public Boolean isEmailNotificationsEnabled()
 	{
 		return emailNotificationsEnabled;
+	}
+
+	public void setEmailNotificationsEnabled(Boolean emailNotificationsEnabled)
+	{
+		this.emailNotificationsEnabled = emailNotificationsEnabled;
 	}
 
 	public String getPassword()
@@ -364,5 +434,4 @@ public class Person
         Boolean isEmailNotificationsEnabled = isEmailNotificationsEnabled();
         addToMap(properties, ContentModel.PROP_EMAIL_FEED_DISABLED, (isEmailNotificationsEnabled == null ? null : !isEmailNotificationsEnabled.booleanValue()));
 	}
-	
 }

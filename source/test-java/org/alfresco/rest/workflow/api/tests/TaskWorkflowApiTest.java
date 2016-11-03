@@ -1182,8 +1182,9 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
                         null,
                         null,
                         "{\"state\":\"completed\",\"variables\":[{\"name\":\"wf_reviewOutcome\",\"value\":\"Approve\",\"scope\":\"local\"},{\"name\":\"bpm_comment\",\"value\":\"approved by me\",\"scope\":\"local\"}]}",
-                        "Failed to update task", params);
-        assertEquals(200, response.getStatusCode());
+                        params,
+                        "Failed to update task",
+                        200);
         HistoricTaskInstance historyTask = activitiProcessEngine.getHistoryService().createHistoricTaskInstanceQuery().taskId(task.getId()).includeProcessVariables().includeTaskLocalVariables().singleResult();
         String outcome = (String) historyTask.getTaskLocalVariables().get("bpm_outcome");
         assertEquals("Approve", outcome);

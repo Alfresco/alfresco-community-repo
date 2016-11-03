@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests.client;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -43,27 +44,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.rest.api.model.SiteUpdate;
+import org.alfresco.rest.api.tests.TestSites;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
-import org.alfresco.rest.api.tests.client.data.Activities;
-import org.alfresco.rest.api.tests.client.data.Activity;
-import org.alfresco.rest.api.tests.client.data.CMISNode;
-import org.alfresco.rest.api.tests.client.data.Comment;
-import org.alfresco.rest.api.tests.client.data.ContentData;
-import org.alfresco.rest.api.tests.client.data.Favourite;
-import org.alfresco.rest.api.tests.client.data.FavouriteSite;
-import org.alfresco.rest.api.tests.client.data.FolderNode;
-import org.alfresco.rest.api.tests.client.data.MemberOfSite;
-import org.alfresco.rest.api.tests.client.data.NodeRating;
-import org.alfresco.rest.api.tests.client.data.Person;
-import org.alfresco.rest.api.tests.client.data.PersonNetwork;
-import org.alfresco.rest.api.tests.client.data.Preference;
-import org.alfresco.rest.api.tests.client.data.Site;
-import org.alfresco.rest.api.tests.client.data.SiteContainer;
-import org.alfresco.rest.api.tests.client.data.SiteImpl;
-import org.alfresco.rest.api.tests.client.data.SiteMember;
-import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
-import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.rest.api.tests.client.data.*;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -88,6 +73,7 @@ import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -698,25 +684,16 @@ public class PublicApiClient
 		
 		public HttpResponse update(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage) throws PublicApiException
 		{
-		    return update(entityCollectionName, entityId, relationCollectionName, relationId, body, errorMessage, null);
+		    return update(entityCollectionName, entityId, relationCollectionName, relationId, body, null, errorMessage, 200);
 	    }
 		
-		public HttpResponse update(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage, Map<String, String> params) throws PublicApiException
+		public HttpResponse update(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, Map<String, String> params, String errorMessage, int expectedStatus) throws PublicApiException
 		{
 	        try
 	        {
 		        HttpResponse response = put("public", entityCollectionName, entityId, relationCollectionName, relationId, body, params);
-
-		        if (HttpServletResponse.SC_OK != response.getStatusCode())
-		        {
-		            String msg = errorMessage + ": \n" +
-		                    "   Response: " + response;
-		            throw new PublicApiException(msg, response);
-		        }
-		        else
-		        {
-		        	return response;
-		        }
+				checkStatus(errorMessage, expectedStatus, response);
+		        return response;
 			}
 			catch(IOException e)
 			{
@@ -859,10 +836,16 @@ public class PublicApiClient
             remove("sites", siteId, null, null, params, "Failed to remove site", expectedStatus);
         }
 
-		public Site updateSite(String siteId, Site update) throws PublicApiException
+		public Site updateSite(String siteId, SiteUpdate update, int expectedStatus) throws PublicApiException
 		{
-			HttpResponse response = update("sites", siteId, null, null, update.toJSON().toString(), "Failed to update site " + update.getTitle());
-			return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
+			JSONAble jsonizer = new TestSites.SiteUpdateJSONSerializer(update);
+			HttpResponse response = update("sites", siteId, null, null, jsonizer.toJSON().toString(), null, "Failed to update site " + update.getTitle(), expectedStatus);
+			if (response.getJsonResponse() != null)
+			{
+				return SiteImpl.parseSite((JSONObject) response.getJsonResponse().get("entry"));
+			}
+			// No JSON response to parse.
+			return null;
 		}
 
 		public ListResponse<SiteContainer> getSiteContainers(String siteId, Map<String, String> params) throws PublicApiException

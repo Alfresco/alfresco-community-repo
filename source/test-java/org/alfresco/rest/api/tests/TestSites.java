@@ -28,14 +28,12 @@ package org.alfresco.rest.api.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
@@ -44,10 +42,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Sites;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
-import org.alfresco.rest.api.tests.client.data.Site;
-import org.alfresco.rest.api.tests.client.data.SiteImpl;
-import org.alfresco.rest.api.tests.client.data.SiteRole;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.api.tests.client.data.*;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
@@ -501,29 +496,14 @@ public class TestSites extends EnterpriseTestApi
         Sites sitesProxy = publicApiClient.sites();
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
-        final String initialTitle = "Initial Title";
-        final String initialDescription = "This is the initial description for the site";
-
-        SiteImpl site = new SiteImpl(initialTitle, SiteVisibility.PRIVATE.toString());
-        site.setRole(SiteRole.SiteManager);
-        site.setDescription(initialDescription);
-
-        Site ret = sitesProxy.createSite(site, 201);
-        final String siteId = ret.getSiteId();
-        ret = sitesProxy.getSite(siteId);
-
-        final String initialSiteId = "initial-title";
-        final Site siteExp = new SiteImpl(null, initialSiteId, ret.getGuid(), initialTitle, initialDescription, SiteVisibility.PRIVATE.toString(), null, null);
-        // Check that the retrieved details match the initially saved details.
-        siteExp.expected(ret);
-
-        // Update the site details
-        final String updatedTitle = "Updated Title";
-        final String updatedDescription = "This is an updated description for the site";
-        final Site expectedUpdate = new SiteImpl(null, initialSiteId, ret.getGuid(), updatedTitle, updatedDescription, SiteVisibility.PUBLIC.toString(), null, SiteRole.SiteManager);
 
         // +ve test: simple happy path with successful update.
         {
+            SiteImpl siteToCreate = new SiteImpl("Initial Title", SiteVisibility.PRIVATE.toString());
+            siteToCreate.setRole(SiteRole.SiteManager);
+            siteToCreate.setDescription("This is the initial description for the site");
+            Site site = sitesProxy.createSite(siteToCreate, 201);
+
             // Testing with the actual JSON reveals more than testing with rich POJOs.
             // It shows us exactly what the input is and is easy to compare to the Open API spec.
             String updateJSON = "{\n" +
@@ -531,226 +511,211 @@ public class TestSites extends EnterpriseTestApi
                     "  \"description\": \"This is an updated description for the site\",\n" +
                     "  \"visibility\": \"PUBLIC\"\n" +
                     "}";
-            HttpResponse response = sitesProxy.update("sites", siteId, null, null, updateJSON, "Failed to update site " + siteId);
+            // Update the site details
+            HttpResponse response = sitesProxy.update("sites", site.getSiteId(), null, null, updateJSON, "Failed to update site " + site.getSiteId());
 
-            final Site updatedSite = SiteImpl.parseSite((JSONObject) response.getJsonResponse().get("entry"));
+            Site updatedSite = SiteImpl.parseSite((JSONObject) response.getJsonResponse().get("entry"));
+            Site expectedUpdate = new SiteImpl(null, "initial-title", site.getGuid(), "Updated Title", "This is an updated description for the site", SiteVisibility.PUBLIC.toString(), null, SiteRole.SiteManager);
+            // Check the updated site is as expected.
             expectedUpdate.expected(updatedSite);
 
             // Double check by do a fresh get of the details, since the details returned by updateSite()
             // aren't necessarily retrieved from the DB.
-            final Site fresh = sitesProxy.getSite(siteId, 200);
+            Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
             expectedUpdate.expected(fresh);
+
+            removeSiteQuietly(site.getSiteId());
         }
 
-        // -ve test: site title too long
+        // +ve test: remove the description.
+        // This is a workaround for being unable to eplicitly null the field (see REPO-1409)
         {
-            // Testing with the actual JSON reveals more than testing with rich POJOs.
-            // It shows us exactly what the input is and is easy to compare to the Open API spec.
+            Site site = sitesProxy.createSite(new SiteImpl("NoDescriptionTest", SiteVisibility.PUBLIC.toString()), 201);
 
-            final String longTitle = new String(new char[257]).replace('\0', 'a');
+            Site updatedSite = sitesProxy.updateSite(
+                    site.getSiteId(),
+                    new SiteUpdate("title", "", SiteVisibility.PUBLIC),
+                    200);
 
-            SiteImpl badUpdate = new SiteImpl(null, siteId, null, longTitle, updatedDescription, null, null, null);
-            try
-            {
-                sitesProxy.updateSite(siteId, badUpdate);
-                fail("Expected an error response.");
-            }
-            catch (PublicApiException e)
-            {
-                assertEquals(400, e.getHttpResponse().getStatusCode());
-            }
+            // Note the null value for description, as the framework
+            // treats empty strings and null as equivalent in responses, and does not return
+            // those fields (as per API guidelines)
+            Site expectedUpdate = new SiteImpl(
+                    null,
+                    "nodescriptiontest",
+                    site.getGuid(),
+                    "title",
+                    null,
+                    SiteVisibility.PUBLIC.toString(),
+                    null,
+                    SiteRole.SiteManager);
+
+            // Check the return from updateSite(...)
+            expectedUpdate.expected(updatedSite);
+
+            // Double check a fresh retrieval matches.
+            Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
+            expectedUpdate.expected(fresh);
+
+            removeSiteQuietly(site.getSiteId());
+        }
+
+        // +ve test: partial updates must be allowed
+        {
+            Site site = sitesProxy.createSite(new SiteImpl(
+                    "partial-updates-test",
+                    "title-v1",
+                    "description-v1",
+                    SiteVisibility.PUBLIC.toString()),
+                    201);
+
+            // Check we can update just the title
+            Site updatedSite = sitesProxy.updateSite(
+                    site.getSiteId(),
+                    new SiteUpdate("title-v2", null, null),
+                    200);
+
+            Site expectedUpdate = new SiteImpl(
+                    null,
+                    "partial-updates-test",
+                    site.getGuid(),
+                    "title-v2",
+                    "description-v1",
+                    SiteVisibility.PUBLIC.toString(),
+                    null,
+                    SiteRole.SiteManager);
+
+            expectedUpdate.expected(updatedSite);
+
+            // Check we can update just the description
+            updatedSite = sitesProxy.updateSite(
+                    site.getSiteId(),
+                    new SiteUpdate(null, "description-v2", null),
+                    200);
+
+            expectedUpdate = new SiteImpl(
+                    null,
+                    "partial-updates-test",
+                    site.getGuid(),
+                    "title-v2",
+                    "description-v2",
+                    SiteVisibility.PUBLIC.toString(),
+                    null,
+                    SiteRole.SiteManager);
+
+            expectedUpdate.expected(updatedSite);
+
+
+            // Check we can update just the visibility
+            updatedSite = sitesProxy.updateSite(
+                    site.getSiteId(),
+                    new SiteUpdate(null, null, SiteVisibility.PRIVATE),
+                    200);
+
+            expectedUpdate = new SiteImpl(
+                    null,
+                    "partial-updates-test",
+                    site.getGuid(),
+                    "title-v2",
+                    "description-v2",
+                    SiteVisibility.PRIVATE.toString(),
+                    null,
+                    SiteRole.SiteManager);
+
+            expectedUpdate.expected(updatedSite);
+
+            removeSiteQuietly(site.getSiteId());
+        }
+
+        // -ve test: 400, bad requests
+        {
+            Site site = sitesProxy.createSite(new SiteImpl("Site Update Bad Request Tests", SiteVisibility.PRIVATE.toString()), 201);
+
+            // long title
+            sitesProxy.updateSite(
+                    site.getSiteId(),
+                    new SiteUpdate(new String(new char[257]).replace('\0', 'a'), "description", SiteVisibility.PUBLIC),
+                    400);
+
+            // long description
+            sitesProxy.updateSite(
+                    site.getSiteId(),
+                    new SiteUpdate("title", new String(new char[513]).replace('\0', 'a'), SiteVisibility.PUBLIC),
+                    400);
+
+            // Invalid visibility
+            sitesProxy.update(
+                    "sites",
+                    site.getSiteId(),
+                    null,
+                    null,
+                    "{\n" +
+                    "  \"title\": \"Updated Title\",\n" +
+                    "  \"description\": \"This is an updated description for the site\",\n" +
+                    "  \"visibility\": \"INVALID_VISIBILITY\"\n" +
+                    "}",
+                    null,
+                    "Expected 400 response when updating "+site.getSiteId(), 400);
 
             // Details should not have changed.
-            final Site fresh = sitesProxy.getSite(siteId, 200);
-            expectedUpdate.expected(fresh);
+            Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
+            site.expected(fresh);
+
+            removeSiteQuietly(site.getSiteId());
         }
 
-        removeSiteQuietly(initialSiteId);
-    }
-
-    @Test
-    public void testUpdateSiteCannotChangeExistingSiteId() throws PublicApiException
-    {
-        Sites sitesProxy = publicApiClient.sites();
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-
-        final String initialTitle = "Initial Title";
-        final String initialDescription = "This is the initial description for the site";
-
-        SiteImpl site = new SiteImpl(initialTitle, SiteVisibility.PRIVATE.toString());
-        site.setDescription(initialDescription);
-
-        Site ret = sitesProxy.createSite(site, 201);
-        final String siteId = ret.getSiteId();
-        ret = sitesProxy.getSite(siteId);
-
-        final String initialSiteId = "initial-title";
-        final Site siteExp = new SiteImpl(null, initialSiteId, ret.getGuid(), initialTitle, initialDescription, SiteVisibility.PRIVATE.toString(), null, null);
-        // Check that the retrieved details match the initially saved details.
-        siteExp.expected(ret);
-
-        // Update the site details
-        final String updatedTitle = "Updated Title";
-        final String updatedDescription = "This is an updated description for the site";
-        final String updatedSiteId = "update-short-name";
-        final Site expectedUpdate = new SiteImpl(null, updatedSiteId, ret.getGuid(), updatedTitle, updatedDescription, SiteVisibility.PUBLIC.toString(), null, null);
-
-        try
+        // -ve test: 404 for non-existent site
         {
-            sitesProxy.updateSite(siteId, expectedUpdate);
-            fail("An HTTP error code should have been returned, but was not.");
+            // Attempt to update site details using an invalid site ID.
+            sitesProxy.updateSite(
+                    UUID.randomUUID().toString(), // Non-existent site.
+                    new SiteUpdate("Updated title", "Updated description", SiteVisibility.PUBLIC),
+                    HttpStatus.SC_NOT_FOUND);
         }
-        catch(PublicApiException e)
+
+        // -ve test: 401 authorization failure
         {
-            assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+            Site site = sitesProxy.createSite(new SiteImpl("SiteUpdate401", SiteVisibility.PRIVATE.toString()), 201);
+
+            // Invalid auth details
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), GUID.generate(), "password"));
+
+            // Update the site details
+            sitesProxy.updateSite(
+                    site.getSiteId(),
+                    new SiteUpdate("Updated Title", "Updated description", SiteVisibility.PUBLIC),
+                    HttpStatus.SC_UNAUTHORIZED);
+
+            // Valid authentication again
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+
+            // Check the details haven't changed.
+            Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
+            site.expected(fresh);
+
+            removeSiteQuietly(site.getSiteId());
         }
 
-        // Check the details haven't changed.
-        final Site fresh = sitesProxy.getSite(siteId, 200);
-        siteExp.expected(fresh);
-
-        removeSiteQuietly(initialSiteId);
-    }
-
-    @Test
-    public void testUpdateSite404ForNonExistentSiteId() throws PublicApiException
-    {
-        Sites sitesProxy = publicApiClient.sites();
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-
-        final String initialTitle = "Initial Title";
-        final String initialDescription = "This is the initial description for the site";
-
-        SiteImpl site = new SiteImpl(initialTitle, SiteVisibility.PRIVATE.toString());
-        site.setDescription(initialDescription);
-
-        Site ret = sitesProxy.createSite(site, 201);
-        final String siteId = ret.getSiteId();
-        ret = sitesProxy.getSite(siteId);
-
-        final String initialSiteId = "initial-title";
-        final Site siteExp = new SiteImpl(null, initialSiteId, ret.getGuid(), initialTitle, initialDescription, SiteVisibility.PRIVATE.toString(), null, null);
-        // Check that the retrieved details match the initially saved details.
-        siteExp.expected(ret);
-
-        // Update the site details
-        final String updatedTitle = "Updated Title";
-        final String updatedDescription = "This is an updated description for the site";
-        final Site expectedUpdate = new SiteImpl(null, initialSiteId, ret.getGuid(), updatedTitle, updatedDescription, SiteVisibility.PUBLIC.toString(), null, null);
-
-        try
+        // -ve test: 403 for incorrect permissions
         {
-            sitesProxy.updateSite("i-do-not-exist", expectedUpdate);
-            fail("An HTTP error code should have been returned, but was not.");
+            Site site = sitesProxy.createSite(new SiteImpl("SiteUpdate403", SiteVisibility.PUBLIC.toString()), 201);
+
+            // Update as person2
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
+
+            // Update the site details
+            sitesProxy.updateSite(
+                    site.getSiteId(),
+                    new SiteUpdate("Updated Title", "Updated description", SiteVisibility.PUBLIC),
+                    HttpStatus.SC_FORBIDDEN);
+
+            // Check details haven't changed as original creator.
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+            Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
+            site.expected(fresh);
+
+            removeSiteQuietly(site.getSiteId());
         }
-        catch(PublicApiException e)
-        {
-            assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
-        }
-
-        // Check the details haven't changed.
-        final Site fresh = sitesProxy.getSite(siteId, 200);
-        siteExp.expected(fresh);
-
-        removeSiteQuietly(initialSiteId);
-    }
-
-    @Test
-    public void testUpdateSite401AuthFailure() throws PublicApiException
-    {
-        Sites sitesProxy = publicApiClient.sites();
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-
-        final String initialTitle = "Initial Title";
-        final String initialDescription = "This is the initial description for the site";
-
-        SiteImpl site = new SiteImpl(initialTitle, SiteVisibility.PUBLIC.toString());
-        site.setDescription(initialDescription);
-
-        Site ret = sitesProxy.createSite(site, 201);
-        final String siteId = ret.getSiteId();
-        ret = sitesProxy.getSite(siteId);
-
-        final String initialSiteId = "initial-title";
-        final Site siteExp = new SiteImpl(null, initialSiteId, ret.getGuid(), initialTitle, initialDescription, SiteVisibility.PUBLIC.toString(), null, null);
-        // Check that the retrieved details match the initially saved details.
-        siteExp.expected(ret);
-
-        // Update the site details
-        final String updatedTitle = "Updated Title";
-        final String updatedDescription = "This is an updated description for the site";
-        final Site expectedUpdate = new SiteImpl(null, initialSiteId, ret.getGuid(), updatedTitle, updatedDescription, SiteVisibility.PUBLIC.toString(), null, null);
-
-        // Invalid auth
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), GUID.generate(), "password"));
-
-        try
-        {
-            sitesProxy.updateSite(initialSiteId, expectedUpdate);
-            fail("An HTTP error code should have been returned, but was not.");
-        }
-        catch(PublicApiException e)
-        {
-            assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
-        }
-
-        // Valid authentication again
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-
-        // Check the details haven't changed.
-        final Site fresh = sitesProxy.getSite(siteId, 200);
-        siteExp.expected(fresh);
-
-        removeSiteQuietly(initialSiteId);
-    }
-
-    @Test
-    public void testUpdateSite403WithIncorrectPermissions() throws PublicApiException
-    {
-        Sites sitesProxy = publicApiClient.sites();
-        // Create the site as person1 but try to update as person2
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-
-        final String initialTitle = "Initial Title";
-        final String initialDescription = "This is the initial description for the site";
-
-        SiteImpl site = new SiteImpl(initialTitle, SiteVisibility.PUBLIC.toString());
-        site.setDescription(initialDescription);
-
-        Site ret = sitesProxy.createSite(site, 201);
-        final String siteId = ret.getSiteId();
-        ret = sitesProxy.getSite(siteId);
-
-        final String initialSiteId = "initial-title";
-        final Site siteExp = new SiteImpl(null, initialSiteId, ret.getGuid(), initialTitle, initialDescription, SiteVisibility.PUBLIC.toString(), null, null);
-        // Check that the retrieved details match the initially saved details.
-        siteExp.expected(ret);
-
-        // Update the site details
-        final String updatedTitle = "Updated Title";
-        final String updatedDescription = "This is an updated description for the site";
-        final Site expectedUpdate = new SiteImpl(null, initialSiteId, ret.getGuid(), updatedTitle, updatedDescription, SiteVisibility.PUBLIC.toString(), null, null);
-
-        // Update as person2
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
-
-        try
-        {
-            sitesProxy.updateSite(siteId, expectedUpdate);
-            fail("An HTTP error code should have been returned, but was not.");
-        }
-        catch(PublicApiException e)
-        {
-            assertEquals(HttpStatus.SC_FORBIDDEN, e.getHttpResponse().getStatusCode());
-        }
-
-        // Check the details haven't changed.
-        final Site fresh = sitesProxy.getSite(siteId, 200);
-        siteExp.expected(fresh);
-
-        // Re-auth to remove site as original creator
-        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        removeSiteQuietly(initialSiteId);
     }
 
     private void removeSiteQuietly(String siteId) throws PublicApiException
@@ -1081,5 +1046,57 @@ public class TestSites extends EnterpriseTestApi
         testListSitesWhereSiteVisibilityPublicAndSkipCount();
         testListSitesWhereSiteVisibilityModerated();
         testListSitesWhereSiteVisibilityInvalid();
+    }
+
+
+    public static class SiteUpdateJSONSerializer implements JSONAble
+    {
+        private SiteUpdate siteUpdate;
+
+        public SiteUpdateJSONSerializer(SiteUpdate siteUpdate)
+        {
+            this.siteUpdate = siteUpdate;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public JSONObject toJSON()
+        {
+            JSONObject json = new JSONObject();
+
+            if (siteUpdate.getTitle() != null)
+            {
+                json.put("title", siteUpdate.getTitle());
+            }
+            if (siteUpdate.getDescription() != null)
+            {
+                json.put("description", siteUpdate.getDescription());
+            }
+            if (siteUpdate.getVisibility() != null)
+            {
+                // JSONObject bug: if we don't toString() the visibility, it won't put quotes around it.
+                json.put("visibility", siteUpdate.getVisibility().toString());
+            }
+
+            return json;
+        }
+
+        public static SiteUpdate parseSiteUpdate(JSONObject jsonObject)
+        {
+            String title = (String) jsonObject.get("title");
+            String description = (String) jsonObject.get("description");
+            SiteVisibility visibility = SiteVisibility.valueOf((String) jsonObject.get("visibility"));
+
+            return new SiteUpdate(title, description, visibility);
+        }
+    }
+
+    public static class SiteUpdateAssertions
+    {
+        public static void assertEquals(SiteUpdate expected, SiteUpdate actual)
+        {
+            // Could separate these out into discreet field assertions.
+            assertEquals(expected, actual);
+        }
     }
 }

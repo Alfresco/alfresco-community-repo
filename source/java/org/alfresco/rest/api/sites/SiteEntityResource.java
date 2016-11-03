@@ -27,6 +27,7 @@ package org.alfresco.rest.api.sites;
 
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Site;
+import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
@@ -35,6 +36,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -131,6 +133,12 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
     @WebApiDescription(title="Update site", description="Update the Share site")
     public Site update(String siteId, Site site, Parameters parameters)
     {
-        return sites.updateSite(siteId, site, parameters);
+        final String title = site.getTitle();
+        final String description = site.getDescription();
+        final SiteVisibility visibility = site.getVisibility();
+
+        SiteUpdate update = new SiteUpdate(title, description, visibility);
+
+        return sites.updateSite(siteId, update, parameters);
     }
 }

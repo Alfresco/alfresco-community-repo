@@ -62,11 +62,7 @@ import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
-import org.alfresco.rest.api.model.FavouriteSite;
-import org.alfresco.rest.api.model.MemberOfSite;
-import org.alfresco.rest.api.model.Site;
-import org.alfresco.rest.api.model.SiteContainer;
-import org.alfresco.rest.api.model.SiteMember;
+import org.alfresco.rest.api.model.*;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -1141,13 +1137,14 @@ public class SitesImpl implements Sites
     }
 
     @Override
-    public Site updateSite(String siteId, Site update, Parameters parameters)
+    public Site updateSite(String siteId, SiteUpdate update, Parameters parameters)
     {
         if (logger.isDebugEnabled())
         {
             logger.debug("Updating site, ID: "+siteId+", site data: "+update+", parameters: "+parameters);
         }
 
+        // Get the site by ID (aka short name)
         SiteInfo siteInfo = validateSite(siteId);
         if (siteInfo == null)
         {
@@ -1155,16 +1152,19 @@ public class SitesImpl implements Sites
             throw new EntityNotFoundException(siteId);
         }
 
-        // Although this method will not update the site ID even if it is provided, we sanity
-        // check that no attempt is being made to alter it.
-        if (update.getId() != null && (!update.getId().equals(siteId)))
+        // Bind any provided values to the site info, allowing for "partial" updates.
+        if (update.getTitle() != null)
         {
-            throw new InvalidArgumentException("Site updates cannot change the site ID");
+            siteInfo.setTitle(update.getTitle());
         }
-
-        siteInfo.setTitle(update.getTitle());
-        siteInfo.setDescription(update.getDescription());
-        siteInfo.setVisibility(update.getVisibility());
+        if (update.getDescription() != null)
+        {
+            siteInfo.setDescription(update.getDescription());
+        }
+        if (update.getVisibility() != null)
+        {
+            siteInfo.setVisibility(update.getVisibility());
+        }
 
         // Validate the new details
         validateSite(new Site(siteInfo, null));

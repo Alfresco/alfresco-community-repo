@@ -28,8 +28,8 @@ package org.alfresco.rest.api.search;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.assertNull;
+import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
@@ -42,11 +42,11 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
+import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
-import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -65,7 +65,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.social.support.ParameterMap;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -140,6 +139,16 @@ public class ResultMapperTests
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
         Node firstNode = collectionWithPage.getCollection().stream().findFirst().get();
         assertNotNull(firstNode.getSearch().getScore());
+        collectionWithPage.getCollection().stream().forEach(aNode -> {
+            List<HighlightEntry> high = aNode.getSearch().getHighlight();
+            if (high != null)
+            {
+                assertEquals(2, high.size());
+                HighlightEntry first = high.get(0);
+                assertNotNull(first.getField());
+                assertNotNull(first.getSnippets());
+            }
+        });
     }
 
     @Test

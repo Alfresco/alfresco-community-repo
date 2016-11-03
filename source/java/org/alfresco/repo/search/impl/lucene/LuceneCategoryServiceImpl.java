@@ -82,6 +82,8 @@ public class LuceneCategoryServiceImpl implements CategoryService
     protected DictionaryService dictionaryService;
 
     protected IndexerAndSearcher indexerAndSearcher;
+    
+    protected int queryFetchSize = 5000;
 
     /**
      * 
@@ -152,18 +154,22 @@ public class LuceneCategoryServiceImpl implements CategoryService
     {
         this.indexerAndSearcher = indexerAndSearcher;
     }
+    
+    public void setQueryFetchSize(int queryFetchSize) {
+		this.queryFetchSize = queryFetchSize;
+	}
 
-    public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth)
+	public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth)
     {
-    	return getChildren(categoryRef, mode, depth, false, null);
+    	return getChildren(categoryRef, mode, depth, false, null, queryFetchSize);
     }
     
     public Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, String filter)
     {
-    	return getChildren(categoryRef, mode, depth, false, filter);
+    	return getChildren(categoryRef, mode, depth, false, filter, queryFetchSize);
     }
 
-    private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName, String filter)
+    private Collection<ChildAssociationRef> getChildren(NodeRef categoryRef, Mode mode, Depth depth, boolean sortByName, String filter, int fetchSize)
     {
         if (categoryRef == null)
         {
@@ -226,8 +232,8 @@ public class LuceneCategoryServiceImpl implements CategoryService
             }
             searchParameters.setQuery(luceneQuery.toString());
             searchParameters.setLimit(-1);
-            searchParameters.setMaxItems(Integer.MAX_VALUE);
-            searchParameters.setLimitBy(LimitBy.UNLIMITED);
+            searchParameters.setMaxItems(fetchSize);
+            searchParameters.setLimitBy(LimitBy.FINAL_SIZE);
             searchParameters.addStore(categoryRef.getStoreRef());
             resultSet = searcher.query(searchParameters);
 
@@ -394,7 +400,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
         OUTER: for(NodeRef nodeRef : nodeRefs)
         {
-        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, filter);
+        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, filter, skipCount + maxItems);
         	for(ChildAssociationRef child : children)
         	{
         		count++;
@@ -454,7 +460,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
         Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
         for (NodeRef nodeRef : nodeRefs)
         {
-            assocs.addAll(getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, false, filter));
+            assocs.addAll(getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, false, filter, queryFetchSize));
         }
         return assocs;
     }

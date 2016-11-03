@@ -307,6 +307,9 @@
         <property name="indexerAndSearcher">
             <ref bean="search.indexerAndSearcherFactory" />
         </property>
+        <property name="queryFetchSize">
+            <value>${category.queryFetchSize}</value>
+        </property>
     </bean>
     
      <bean

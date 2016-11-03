@@ -82,6 +82,7 @@ import org.alfresco.repo.Client;
 import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.coci.CheckOutCheckInServiceImpl;
 import org.alfresco.repo.events.EventPreparator;
 import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.model.filefolder.GetChildrenCannedQuery;
@@ -3158,7 +3159,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         Set<QName> ignore = new HashSet<QName>();
         ignore.add(ContentModel.ASPECT_REFERENCEABLE);
-        ignore.add(ContentModel.ASPECT_LOCALIZED);
+        ignore.add(ContentModel.ASPECT_LOCALIZED); 
+        ignore.add(ContentModel.ASPECT_WORKING_COPY);
 
         // aspects to add == the list of secondary types - existing aspects - ignored aspects
         Set<QName> toAdd = new HashSet<QName>(secondaryTypeAspects);
@@ -3565,34 +3567,49 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
         else
         {
-        	QName propertyQName = propDef.getPropertyAccessor().getMappedProperty();
-        	if (propertyQName == null)
-        	{
-        		throw new CmisConstraintException("Unable to set property " + propertyId + "!");
-        	}
-        
-        	if (propertyId.equals(PropertyIds.NAME))
-        	{
-        		if (!(value instanceof String))
-        		{
-        			throw new CmisInvalidArgumentException("Object name must be a string!");
-        		}
-
-        		try
-        		{
-        			fileFolderService.rename(nodeRef, value.toString());
-        		}
-        		catch (FileExistsException e)
-        		{
-        			throw new CmisContentAlreadyExistsException("An object with this name already exists!", e);
-        		}
-        		catch (FileNotFoundException e)
-        		{
-        			throw new CmisInvalidArgumentException("Object with id " + nodeRef.getId() + " not found!");
-        		}
-        	}
-        	else
+            QName propertyQName = propDef.getPropertyAccessor().getMappedProperty();
+            if (propertyQName == null)
             {
+                throw new CmisConstraintException("Unable to set property " + propertyId + "!");
+            }
+
+            if (propertyId.equals(PropertyIds.NAME))
+            {
+                if (!(value instanceof String))
+                {
+                    throw new CmisInvalidArgumentException("Object name must be a string!");
+                }
+
+                try
+                {
+                    String newName = value.toString();
+                    // If the node is checked out and the name property is set on the working copy, make sure the new name has the working copy format
+                    if (checkOutCheckInService.isWorkingCopy(nodeRef))
+                    {
+                        String wcLabel = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_LABEL);
+                        if (wcLabel == null)
+                        {
+                            wcLabel = CheckOutCheckInServiceImpl.getWorkingCopyLabel();
+                        }
+                        if (!newName.contains(wcLabel))
+                        {
+                            newName = CheckOutCheckInServiceImpl.createWorkingCopyName(newName, wcLabel);
+                        }
+                    }
+                    
+                    fileFolderService.rename(nodeRef, newName);
+                }
+                catch (FileExistsException e)
+                {
+                    throw new CmisContentAlreadyExistsException("An object with this name already exists!", e);
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new CmisInvalidArgumentException("Object with id " + nodeRef.getId() + " not found!");
+                }
+            }
+            else
+        	{
                 // overflow check
                 if (propDef.getPropertyDefinition().getPropertyType() == PropertyType.INTEGER && value instanceof BigInteger)
                 {

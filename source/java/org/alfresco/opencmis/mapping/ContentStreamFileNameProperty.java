@@ -51,7 +51,7 @@ public class ContentStreamFileNameProperty extends DirectProperty
     public Serializable getValueInternal(CMISNodeInfo nodeInfo)
     {
         ContentData contentData = getContentData(nodeInfo);
-        if (contentData != null && contentData.getSize() > 0)
+        if (contentData != null)
         {
             return super.getValueInternal(nodeInfo);
         }

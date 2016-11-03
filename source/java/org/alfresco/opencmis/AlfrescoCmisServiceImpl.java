@@ -1107,6 +1107,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         switch (type.getBaseTypeId())
         {
         case CMIS_DOCUMENT:
+            versioningState = getDocumentDefaultVersioningState(versioningState, type);
             newId = createDocument(repositoryId, properties, folderId, contentStream, versioningState, policies, null,
                     null, extension);
             break;
@@ -1117,8 +1118,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             newId = createPolicy(repositoryId, properties, folderId, policies, null, null, extension);
             break;
         case CMIS_ITEM:
-        	newId = createItem(repositoryId, properties, folderId, policies, null, null, extension);
-            
+            newId = createItem(repositoryId, properties, folderId, policies, null, null, extension);
+            break;
+        default:
+            break;
+
         }
 
         // check new object id
@@ -1247,7 +1251,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     @Override
     public String createDocument(
             String repositoryId, final Properties properties, String folderId,
-            final ContentStream contentStream, final VersioningState versioningState, final List<String> policies,
+            final ContentStream contentStream, VersioningState versioningState, final List<String> policies,
             final Acl addAces, final Acl removeAces, ExtensionsData extension)
     {
         checkRepositoryId(repositoryId);
@@ -1259,7 +1263,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         final String name = connector.getNameProperty(properties, null);
         final String objectTypeId = connector.getObjectTypeIdProperty(properties);
         final TypeDefinitionWrapper type = connector.getTypeForCreate(objectTypeId, BaseTypeId.CMIS_DOCUMENT);
-
+        
         connector.checkChildObjectType(parentInfo, type.getTypeId());
 
         DocumentTypeDefinition docType = (DocumentTypeDefinition) type.getTypeDefinition(false);
@@ -1283,6 +1287,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             throw new CmisConstraintException("This document type is not versionable!");
         }
+        
+        versioningState = getDocumentDefaultVersioningState(versioningState, type);
 
         FileInfo fileInfo = connector.getFileFolderService().create(
                 parentInfo.getNodeRef(), name, type.getAlfrescoClass());
@@ -1334,11 +1340,32 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         return objectId;
     }
+    
+
+
+    /**
+     * Gets default value of <code>VersioningState</code> based on whether document is versionable or not.
+     * 
+     * @param versioningState
+     * @param type
+     * @return <code>VersioningState.MAJOR</code> if versioningState is {@code null} and object is versionable
+     *         <code>VersioningState.NONE</code> if versioningState is {@code null} and object is not versionable
+     *         versioningState if it's value is not {@code null}
+     */
+    private VersioningState getDocumentDefaultVersioningState(VersioningState versioningState, TypeDefinitionWrapper type)
+    {
+        if (versioningState == null)
+        {
+            DocumentTypeDefinition docType = (DocumentTypeDefinition) type.getTypeDefinition(false);
+            versioningState = docType.isVersionable() ? VersioningState.MAJOR : VersioningState.NONE;
+        }
+        return versioningState;
+    }
 
     @Override
     public String createDocumentFromSource(
             String repositoryId, String sourceId, final Properties properties,
-            String folderId, final VersioningState versioningState, final List<String> policies, final Acl addAces,
+            String folderId, VersioningState versioningState, final List<String> policies, final Acl addAces,
             final Acl removeAces, ExtensionsData extension)
     {
         checkRepositoryId(repositoryId);
@@ -1360,12 +1387,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             throw new CmisConstraintException("Source object is not a document!");
         }
-
+        
         // get name and type
         final String name = connector.getNameProperty(properties, info.getName());
 
         final TypeDefinitionWrapper type = info.getType();
         connector.checkChildObjectType(parentInfo, type.getTypeId());
+        
+        versioningState = getDocumentDefaultVersioningState(versioningState, type);
 
         try
         {

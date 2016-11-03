@@ -30,7 +30,7 @@ import java.util.Map;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
-import org.apache.chemistry.opencmis.server.support.CmisServiceWrapper;
+import org.apache.chemistry.opencmis.server.support.wrapper.ConformanceCmisServiceWrapper;
 
 /**
  * Factory for local OpenCMIS service objects.
@@ -39,7 +39,7 @@ import org.apache.chemistry.opencmis.server.support.CmisServiceWrapper;
  */
 public class AlfrescoLocalCmisServiceFactory extends AbstractServiceFactory
 {
-    private static ThreadLocal<CmisServiceWrapper<AlfrescoCmisService>> THREAD_LOCAL_SERVICE = new ThreadLocal<CmisServiceWrapper<AlfrescoCmisService>>();
+    private static ThreadLocal<ConformanceCmisServiceWrapper> THREAD_LOCAL_SERVICE = new ThreadLocal<ConformanceCmisServiceWrapper>();
 
     private static CMISConnector CMIS_CONNECTOR;
 
@@ -65,16 +65,16 @@ public class AlfrescoLocalCmisServiceFactory extends AbstractServiceFactory
     @Override
     public CmisService getService(CallContext context)
     {
-        CmisServiceWrapper<AlfrescoCmisService> wrapperService = THREAD_LOCAL_SERVICE.get();
+        ConformanceCmisServiceWrapper wrapperService = THREAD_LOCAL_SERVICE.get();
         if (wrapperService == null)
         {
             AlfrescoCmisService cmisService = new AlfrescoCmisServiceImpl(CMIS_CONNECTOR);
-            wrapperService = new CmisServiceWrapper<AlfrescoCmisService>(cmisService,
+            wrapperService = new ConformanceCmisServiceWrapper(cmisService,
                     CMIS_CONNECTOR.getTypesDefaultMaxItems(), CMIS_CONNECTOR.getTypesDefaultDepth(),
                     CMIS_CONNECTOR.getObjectsDefaultMaxItems(), CMIS_CONNECTOR.getObjectsDefaultDepth());
             THREAD_LOCAL_SERVICE.set(wrapperService);
         }
-        wrapperService.getWrappedService().open(context);
+        ((AlfrescoCmisService)wrapperService.getWrappedService()).open(context);
         return wrapperService;
     }
 }

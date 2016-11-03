@@ -143,6 +143,7 @@ public class TestPeople extends EnterpriseTestApi
 				userStatus("userStatus").
 				enabled(true).
 				emailNotificationsEnabled(true).
+				password("password").
 			build();
 
 		Person p = people.create(person);
@@ -258,6 +259,7 @@ public class TestPeople extends EnterpriseTestApi
 					telephone("1234 5678 9012").
 					enabled(false).
 					emailNotificationsEnabled(false).
+					password("password123").
 					build();
 
 			Person p = people.create(person);
@@ -287,6 +289,7 @@ public class TestPeople extends EnterpriseTestApi
 					firstName("Joe").
 					email("joe.bloggs.2@example.com").
 					enabled(true).
+					password("password-is-secret").
 					build();
 
 			Person p = people.create(person);
@@ -372,6 +375,7 @@ public class TestPeople extends EnterpriseTestApi
 					firstName("Kieth").
 					email("keith.smith@example.com").
 					enabled(true).
+					password("password").
 					build();
 			people.create(person, 403);
 
@@ -388,6 +392,7 @@ public class TestPeople extends EnterpriseTestApi
 					firstName("Alison").
 					email("alison.smythe@example.com").
 					enabled(true).
+					password("secret").
 					build();
 			people.create(person);
 

@@ -777,6 +777,9 @@ public class TestNodeComments extends EnterpriseTestApi
 		{
 			assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 		}
+		
+        // ACE-5463
+        testSkipCountHighValue(expectedComments, commentsProxy);
 	}
 	
 	@Test
@@ -941,4 +944,21 @@ public class TestNodeComments extends EnterpriseTestApi
 
 		commentsProxy.removeNodeComment(nodeRef1.getId(), commentId);
 	}
+
+    // test for retrieving the list of comments with high value of skipCount(e.g. 10)
+    public void testSkipCountHighValue(List<Comment> expectedComments, Comments commentsProxy) throws PublicApiException
+    {
+        try
+        {
+            int skipCount = 10;
+            int maxItems = 2;
+            Paging paging = getPaging(skipCount, maxItems, expectedComments.size(), expectedComments.size());
+            commentsProxy.getNodeComments(nodeRef1.getId(), createParams(paging, null));
+
+        }
+        catch (IllegalStateException e)
+        {
+            fail();
+        }
+    }
 }

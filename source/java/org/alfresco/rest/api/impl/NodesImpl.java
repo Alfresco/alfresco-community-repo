@@ -2032,9 +2032,16 @@ public class NodesImpl implements Nodes
         }
     }
 
-    // special case: additional node validation (pending common lower-level service support)
-    // for blacklist of system nodes that should not be deleted or locked, eg. Company Home, Sites, Data Dictionary
-    private boolean isSpecialNode(NodeRef nodeRef, QName type)
+
+    /**
+     * Check for special case: additional node validation (pending common lower-level service support)
+     * for blacklist of system nodes that should not be deleted or locked, eg. Company Home, Sites, Data Dictionary
+     *
+     * @param nodeRef
+     * @param type
+     * @return
+     */
+    protected boolean isSpecialNode(NodeRef nodeRef, QName type)
     {
         // Check for Company Home, Sites and Data Dictionary (note: must be tenant-aware)
 

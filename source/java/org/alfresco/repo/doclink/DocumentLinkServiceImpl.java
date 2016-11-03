@@ -32,9 +32,9 @@ import java.util.Map;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -47,10 +47,10 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of the document link service
@@ -66,18 +66,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService
     private DictionaryService dictionaryService;
     private SearchService searchService;
     private NamespaceService namespaceService;
-    private CheckOutCheckInService checkOutCheckInService;
 
     /** Shallow search for nodes with a name pattern */
     private static final String XPATH_QUERY_NODE_NAME_MATCH = "./*[like(@cm:name, $cm:name, false)]";
     
     /** Shallow search for links with a destination pattern */
     private static final String XPATH_QUERY_LINK_DEST_MATCH = ".//*[like(@cm:destination, $cm:destination, false)]";
-
-    private static final String LINK_NODE_EXTENSION = ".url";
-
-    /* I18N labels */
-    private static final String LINK_TO_LABEL = "doclink_service.link_to_label";
 
     @Override
     public NodeRef createDocumentLink(NodeRef source, NodeRef destination)
@@ -106,27 +100,18 @@ public class DocumentLinkServiceImpl implements DocumentLinkService
         {
             throw new IllegalArgumentException("Destination node NodeRef '" + source + "' must be of type " + ContentModel.TYPE_FOLDER);
         }
-        //if file is working copy - create link to the original
-        if (checkOutCheckInService.isWorkingCopy(source))
-        {
-            source = checkOutCheckInService.getCheckedOut(source);
-        }
+
         /* Create link */
         String sourceName = (String) nodeService.getProperty(source, ContentModel.PROP_NAME);
-
-        String newName = sourceName + LINK_NODE_EXTENSION;
-        newName = I18NUtil.getMessage(LINK_TO_LABEL, newName);
-
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        props.put(ContentModel.PROP_NAME, newName);
+        props.put(ContentModel.PROP_NAME, sourceName);
         props.put(ContentModel.PROP_LINK_DESTINATION, source);
-
-        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(newName));
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(sourceName));
 
         // check if the link node already exists
-        if (checkExists(newName, destination))
+        if (checkExists(sourceName, destination))
         {
-            throw new IllegalArgumentException("A file with the name '" + newName + "' already exists in the destination folder");
+            throw new IllegalArgumentException("A file with the name '" + sourceName + "' already exists in the destination folder");
         }
 
         ChildAssociationRef childRef = null;
@@ -253,10 +238,5 @@ public class DocumentLinkServiceImpl implements DocumentLinkService
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
-    }
-
-    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
-    {
-        this.checkOutCheckInService = checkOutCheckInService;
     }
 }

@@ -60,6 +60,4 @@ public interface ActivityType
     public static final String FOLDER_LIKED = "org.alfresco.documentlibrary.folder-liked";
 
     public static final String COMMENT_CREATED = "org.alfresco.comments.comment-created";
-
-    public static final String DOCLINK_CREATED = "org.alfresco.doclink.link-created";
 }

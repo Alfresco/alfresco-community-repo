@@ -33,13 +33,11 @@ import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.DocumentLinkService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -52,13 +50,12 @@ import org.alfresco.util.PropertyCheck;
  * 
  * @author Roy Wetherall
  */
-public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, CopyServicePolicies.OnCopyCompletePolicy, NodeServicePolicies.OnDeleteAssociationPolicy, NodeServicePolicies.BeforeDeleteNodePolicy
+public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, CopyServicePolicies.OnCopyCompletePolicy, NodeServicePolicies.OnDeleteAssociationPolicy
 {
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
     private RuleService ruleService;
     private NodeService nodeService;
-    private DocumentLinkService documentLinkService;
     
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -80,18 +77,12 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
         this.ruleService = ruleService;
     }
     
-    public void setDocumentLinkService(DocumentLinkService documentLinkService)
-    {
-        this.documentLinkService = documentLinkService;
-    }
-    
     public void init()
     {
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
         PropertyCheck.mandatory(this, "ruleService", ruleService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
-        PropertyCheck.mandatory(this, "documentLinkService", documentLinkService);
         
         this.policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.OnDeleteAssociationPolicy.QNAME,
@@ -112,11 +103,6 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"), 
                 ActionModel.ASPECT_ACTIONS, 
                 new JavaBehaviour(this, "onAddAspect"));
-        
-        this.policyComponent.bindClassBehaviour(
-                BeforeDeleteNodePolicy.QNAME, 
-                this, 
-                new JavaBehaviour(this, "beforeDeleteNode"));
     }
     
     @Override
@@ -227,13 +213,5 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
             Map<NodeRef, NodeRef> copyMap)
     {
         behaviourFilter.enableBehaviour(sourceNodeRef, ActionModel.ASPECT_ACTIONS);
-    }
-
-    @Override
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        //delete asociated links
-        documentLinkService.deleteLinksToDocument(nodeRef);
-        
     }
 }

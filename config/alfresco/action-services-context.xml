@@ -151,7 +151,6 @@
       <property name="behaviourFilter" ref="policyBehaviourFilter"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="ruleService" ref="ruleService"/>
-      <property name="documentLinkService" ref="DocumentLinkService"/>
    </bean>   
    
    <!-- I18N -->

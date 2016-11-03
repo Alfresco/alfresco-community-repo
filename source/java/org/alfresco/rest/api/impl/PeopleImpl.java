@@ -38,6 +38,7 @@ import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Company;
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -280,61 +281,29 @@ public class PeopleImpl implements People
 
         return person;
     }
-/**
-    private void addToMap(Map<QName, Serializable> properties, QName name, Serializable value)
-    {
-//    	if(name != null && value != null)
-//    	{
-    		properties.put(name, value);
-//    	}
-    }
+
+	@Override
+	public Person create(PersonUpdate person)
+	{
+		Map<QName, Serializable> props = person.toProperties();
+		NodeRef nodeRef = personService.createPerson(props);
+
+		// Return a fresh retrieval
+		props = nodeService.getProperties(nodeRef);
+		final boolean enabled = personService.isEnabled(person.getUserName());
+		return new Person(nodeRef, props, enabled);
+
+		// ...or
+//		return getPerson(person.getUserName());
+	}
+
+	/**
 
     public Person updatePerson(String personId, final Person person)
     {
     	personId = validatePerson(personId);
 
-    	final Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-//		addToMap(properties, ContentModel.PROP_USERNAME, person.getUserName());
-    	addToMap(properties, ContentModel.PROP_FIRSTNAME, person.getFirstName());
-    	addToMap(properties, ContentModel.PROP_LASTNAME, person.getLastName());
-    	addToMap(properties, ContentModel.PROP_JOBTITLE, person.getJobTitle());
-    	addToMap(properties, ContentModel.PROP_LOCATION, person.getLocation());
-    	addToMap(properties, ContentModel.PROP_TELEPHONE, person.getTelephone());
-    	addToMap(properties, ContentModel.PROP_MOBILE, person.getMobile());
-    	addToMap(properties, ContentModel.PROP_EMAIL, person.getEmail());
-
-		Company company = person.getCompany();
-		if(company != null)
-		{
-			addToMap(properties, ContentModel.PROP_ORGANIZATION, company.getOrganization());
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS1, company.getAddress1());
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS2, company.getAddress2());
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS3, company.getAddress3());
-			addToMap(properties, ContentModel.PROP_COMPANYPOSTCODE, company.getPostcode());
-			addToMap(properties, ContentModel.PROP_COMPANYTELEPHONE, company.getTelephone());
-			addToMap(properties, ContentModel.PROP_COMPANYFAX, company.getFax());
-			addToMap(properties, ContentModel.PROP_COMPANYEMAIL, company.getEmail());
-		}
-		else
-		{
-			addToMap(properties, ContentModel.PROP_ORGANIZATION, null);
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS1, null);
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS2, null);
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS3, null);
-			addToMap(properties, ContentModel.PROP_COMPANYPOSTCODE, null);
-			addToMap(properties, ContentModel.PROP_COMPANYTELEPHONE, null);
-			addToMap(properties, ContentModel.PROP_COMPANYFAX, null);
-			addToMap(properties, ContentModel.PROP_COMPANYEMAIL, null);
-		}
-
-		addToMap(properties, ContentModel.PROP_SKYPE, person.getSkypeId());
-		addToMap(properties, ContentModel.PROP_INSTANTMSG, person.getInstantMessageId());
-		addToMap(properties, ContentModel.PROP_USER_STATUS, person.getUserStatus());
-		addToMap(properties, ContentModel.PROP_USER_STATUS_TIME, person.getStatusUpdatedAt());
-		addToMap(properties, ContentModel.PROP_GOOGLEUSERNAME, person.getGoogleId());
-		addToMap(properties, ContentModel.PROP_SIZE_QUOTA, person.getQuota());
-		addToMap(properties, ContentModel.PROP_SIZE_CURRENT, person.getQuotaUsed());
-		addToMap(properties, ContentModel.PROP_DESCRIPTION, person.getDescription());
+    	final Map<QName, Serializable> properties = toProperties(person);
 
 		final String pId = personId;
 		AuthenticationUtil.runAsSystem(new RunAsWork<Void>()

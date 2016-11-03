@@ -450,7 +450,7 @@ public class RepoService
 						personInfo.getCompany(), network, personInfo.getSkype(), personInfo.getLocation(), personInfo.getTel(),
 						personInfo.getMob(), personInfo.getInstantmsg(), personInfo.getGoogle());
 
-				final Map<QName, Serializable> props = testPerson.getProperties();
+				final Map<QName, Serializable> props = testPerson.toProperties();
 
                 // short-circuit for default/tenant "admin"
                 if (! isDefaultAdmin(username, network))
@@ -1880,7 +1880,7 @@ public class RepoService
 			return defaultAccount == null ? null : defaultAccount.getId();
 		}
 
-		public boolean isEnabled()
+		public Boolean isEnabled()
 		{
 			return enabled;
 		}

@@ -27,6 +27,7 @@ package org.alfresco.rest.api.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -67,6 +68,50 @@ public class Person
 
 	public Person()
     {
+	}
+
+	public Person(
+			String userName,
+			Boolean enabled,
+			NodeRef avatarId,
+			String firstName,
+			String lastName,
+			String jobTitle,
+			String location,
+			String telephone,
+			String mobile,
+			String email,
+			String skypeId,
+			String instantMessageId,
+			String userStatus,
+			Date statusUpdatedAt,
+			String googleId,
+			Long quota,
+			Long quotaUsed,
+			Boolean emailNotificationsEnabled,
+			String description,
+			Company company)
+	{
+		this.userName = userName;
+		this.enabled = enabled;
+		this.avatarId = avatarId;
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.jobTitle = jobTitle;
+		this.location = location;
+		this.telephone = telephone;
+		this.mobile = mobile;
+		this.email = email;
+		this.skypeId = skypeId;
+		this.instantMessageId = instantMessageId;
+		this.userStatus = userStatus;
+		this.statusUpdatedAt = statusUpdatedAt;
+		this.googleId = googleId;
+		this.quota = quota;
+		this.quotaUsed = quotaUsed;
+		this.emailNotificationsEnabled = emailNotificationsEnabled;
+		this.description = description;
+		this.company = company;
 	}
 
 	public Person(NodeRef nodeRef, Map<QName, Serializable> nodeProps, boolean enabled)
@@ -242,6 +287,70 @@ public class Person
 				+ ", quotaUsed=" + quotaUsed + ", emailNotificationsEnabled="
 				+ emailNotificationsEnabled + ", description=" + description
 				+ ", company=" + company + "]";
+	}
+
+	public Map<QName, Serializable> toProperties()
+	{
+		Map<QName, Serializable> props = new HashMap<>();
+		populateProps(props);
+		return props;
+	}
+
+	private void addToMap(Map<QName, Serializable> properties, QName name, Serializable value)
+	{
+		if(name != null && value != null)
+		{
+			properties.put(name, value);
+		}
+	}
+
+	private void populateProps(Map<QName, Serializable> properties)
+	{
+		addToMap(properties, ContentModel.PROP_USERNAME, getUserName());
+		addToMap(properties, ContentModel.PROP_FIRSTNAME, getFirstName());
+		addToMap(properties, ContentModel.PROP_LASTNAME, getLastName());
+		addToMap(properties, ContentModel.PROP_JOBTITLE, getJobTitle());
+		addToMap(properties, ContentModel.PROP_LOCATION, getLocation());
+		addToMap(properties, ContentModel.PROP_TELEPHONE, getTelephone());
+		addToMap(properties, ContentModel.PROP_MOBILE, getMobile());
+		addToMap(properties, ContentModel.PROP_EMAIL, getEmail());
+
+		Company company = getCompany();
+		if(company != null)
+		{
+			addToMap(properties, ContentModel.PROP_ORGANIZATION, company.getOrganization());
+			addToMap(properties, ContentModel.PROP_COMPANYADDRESS1, company.getAddress1());
+			addToMap(properties, ContentModel.PROP_COMPANYADDRESS2, company.getAddress2());
+			addToMap(properties, ContentModel.PROP_COMPANYADDRESS3, company.getAddress3());
+			addToMap(properties, ContentModel.PROP_COMPANYPOSTCODE, company.getPostcode());
+			addToMap(properties, ContentModel.PROP_COMPANYTELEPHONE, company.getTelephone());
+			addToMap(properties, ContentModel.PROP_COMPANYFAX, company.getFax());
+			addToMap(properties, ContentModel.PROP_COMPANYEMAIL, company.getEmail());
+		}
+		else
+		{
+			addToMap(properties, ContentModel.PROP_ORGANIZATION, null);
+			addToMap(properties, ContentModel.PROP_COMPANYADDRESS1, null);
+			addToMap(properties, ContentModel.PROP_COMPANYADDRESS2, null);
+			addToMap(properties, ContentModel.PROP_COMPANYADDRESS3, null);
+			addToMap(properties, ContentModel.PROP_COMPANYPOSTCODE, null);
+			addToMap(properties, ContentModel.PROP_COMPANYTELEPHONE, null);
+			addToMap(properties, ContentModel.PROP_COMPANYFAX, null);
+			addToMap(properties, ContentModel.PROP_COMPANYEMAIL, null);
+		}
+
+//		addToMap(properties, ContentModel.ASSOC_AVATAR, getAvatarId());
+		addToMap(properties, ContentModel.PROP_SKYPE, getSkypeId());
+		addToMap(properties, ContentModel.PROP_INSTANTMSG, getInstantMessageId());
+		addToMap(properties, ContentModel.PROP_USER_STATUS, getUserStatus());
+		addToMap(properties, ContentModel.PROP_USER_STATUS_TIME, getStatusUpdatedAt());
+		addToMap(properties, ContentModel.PROP_GOOGLEUSERNAME, getGoogleId());
+		addToMap(properties, ContentModel.PROP_SIZE_QUOTA, getQuota());
+		addToMap(properties, ContentModel.PROP_SIZE_CURRENT, getQuotaUsed());
+
+		// What's the correct behaviour here? Store it as "content" somehow?
+		// so that it can be 'inlined' by the code in PeopleImpl.processPersonProperties ?
+		addToMap(properties, ContentModel.PROP_PERSONDESC, getDescription());
 	}
 	
 }

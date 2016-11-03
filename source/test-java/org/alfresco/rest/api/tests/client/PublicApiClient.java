@@ -44,7 +44,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.rest.api.model.PersonUpdate;
 import org.alfresco.rest.api.model.SiteUpdate;
+import org.alfresco.rest.api.tests.TestPeople;
 import org.alfresco.rest.api.tests.TestSites;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
@@ -1070,9 +1072,10 @@ public class PublicApiClient
 			return retSite;
 		}
 
-		public Person create(Person person, boolean fullVisibility) throws PublicApiException
+		public Person create(PersonUpdate person, boolean fullVisibility) throws PublicApiException
 		{
-			HttpResponse response = create("people", null, null, null, person.toJSON(fullVisibility).toString(), "Failed to create person");
+			TestPeople.PersonUpdateJSONSerializer jsonizer = new TestPeople.PersonUpdateJSONSerializer(person) ;
+			HttpResponse response = create("people", null, null, null, jsonizer.toJSON(fullVisibility).toString(), "Failed to create person");
 			Person retSite = Person.parsePerson((JSONObject)response.getJsonResponse().get("entry"));
 			return retSite;
 		}

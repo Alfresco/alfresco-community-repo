@@ -549,13 +549,12 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                             {
                                 public Object doWork()
                                 {
-                                    // MNT-16541, MNT-10537 using init instead of destroy.
-                                    // Destroying the dictionary could cause a deadlock since 5.0.3
-                                    dictionaryDAO.init();
+                                    // invalidate - to force lazy re-init
+                                    dictionaryDAO.destroy();
                                     
                                     if (logger.isTraceEnabled())
                                     {
-                                        logger.trace("Workflow deployer afterCommit: Dictionary init ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                                        logger.trace("Workflow deployer afterCommit: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");
                                     }
                                     
                                     return null; 

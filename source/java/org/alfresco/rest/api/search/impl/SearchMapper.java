@@ -40,25 +40,17 @@ import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.resource.content.BasicContentInfo;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
-import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.rest.api.model.Node;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.Operator;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
-import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang.NotImplementedException;
 
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
@@ -66,12 +58,9 @@ import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLINK;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PATH;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
-import static org.alfresco.rest.api.impl.NodesImpl.PARAM_SYNONYMS_QNAME;
 import static org.alfresco.service.cmr.search.SearchService.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -138,9 +127,9 @@ public class SearchMapper
     public void fromQuery(SearchParameters sp, Query q)
     {
         ParameterCheck.mandatoryString("query", q.getQuery());
-        ParameterCheck.mandatoryString("language", q.getLanguage());
+        String lang = q.getLanguage()==null?AFTS:q.getLanguage();
 
-        switch (q.getLanguage().toLowerCase())
+        switch (lang.toLowerCase())
         {
             case AFTS:
                 sp.setLanguage(LANGUAGE_FTS_ALFRESCO);

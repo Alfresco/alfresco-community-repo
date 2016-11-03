@@ -44,12 +44,12 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
     private static final Pattern CMIS_URI_PATTERN = Pattern.compile(".*/cmis/versions/[0-9]+\\.[0-9]+/.*");
     private ApiAssistant apiAssistant;
 
-	public PublicApiTenantWebScriptServletRuntime(RuntimeContainer container, ServletAuthenticatorFactory authFactory, HttpServletRequest req,
-			HttpServletResponse res, ServerProperties serverProperties, ApiAssistant apiAssistant)
-	{
-		super(container, authFactory, req, res, serverProperties);
+    public PublicApiTenantWebScriptServletRuntime(RuntimeContainer container, ServletAuthenticatorFactory authFactory, HttpServletRequest req,
+            HttpServletResponse res, ServerProperties serverProperties, ApiAssistant apiAssistant)
+    {
+        super(container, authFactory, req, res, serverProperties);
         this.apiAssistant = apiAssistant;
-	}
+    }
 
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptRuntime#getScriptUrl()
@@ -81,27 +81,27 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
         // NOTE: must contain at least root / and single character for tenant name
         if (pathInfo.length() < 2 || pathInfo.equals("/"))
         {
-        	// url path has no tenant id -> get networks request 
-        	pathInfo = PublicApiTenantWebScriptServletRequest.NETWORKS_PATH;
+            // url path has no tenant id -> get networks request
+            pathInfo = PublicApiTenantWebScriptServletRequest.NETWORKS_PATH;
         }
         else
         {
-        	if(!pathInfo.substring(0, 6).toLowerCase().equals("/cmis/"))
-        	{
-		        // remove tenant
-		        int idx = pathInfo.indexOf('/', 1);
-		        pathInfo = pathInfo.substring(idx == -1 ? pathInfo.length() : idx);
-		        if(pathInfo.equals("") || pathInfo.equals("/"))
-		        {
-		        	// url path is just a tenant id -> get network request 
-		        	pathInfo = PublicApiTenantWebScriptServletRequest.NETWORK_PATH;
-		        }
-        	}
+            if(!pathInfo.substring(0, 6).toLowerCase().equals("/cmis/") && !pathInfo.equals("/discovery"))
+            {
+                // remove tenant
+                int idx = pathInfo.indexOf('/', 1);
+                pathInfo = pathInfo.substring(idx == -1 ? pathInfo.length() : idx);
+                if(pathInfo.equals("") || pathInfo.equals("/"))
+                {
+                    // url path is just a tenant id -> get network request
+                    pathInfo = PublicApiTenantWebScriptServletRequest.NETWORK_PATH;
+                }
+            }
         }
 
         return pathInfo;
     }
-	
+
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.WebScriptRuntime#createRequest(org.alfresco.web.scripts.WebScriptMatch)
      */
@@ -110,13 +110,13 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
     {
 //    	try
 //    	{
-    		// make the request input stream a BufferedInputStream so that the first x bytes can be reused.
+            // make the request input stream a BufferedInputStream so that the first x bytes can be reused.
 //	    	PublicApiHttpServletRequest wrapped = new PublicApiHttpServletRequest(req);
 
-	        // TODO: construct org.springframework.extensions.webscripts.servlet.WebScriptServletResponse when
-	        //       org.alfresco.web.scripts.WebScriptServletResponse (deprecated) is removed
-	        servletReq = new PublicApiTenantWebScriptServletRequest(this, req, match, serverProperties);
-	        return servletReq;
+            // TODO: construct org.springframework.extensions.webscripts.servlet.WebScriptServletResponse when
+            //       org.alfresco.web.scripts.WebScriptServletResponse (deprecated) is removed
+            servletReq = new PublicApiTenantWebScriptServletRequest(this, req, match, serverProperties);
+            return servletReq;
 //    	}
 //    	catch(IOException e)
 //    	{

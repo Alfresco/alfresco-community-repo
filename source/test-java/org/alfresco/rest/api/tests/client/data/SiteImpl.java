@@ -275,6 +275,11 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 	{
 		return role;
 	}
+
+	public void setRole(SiteRole role)
+	{
+		this.role = role;
+	}
 	
 	@Override
 	public String toString()

@@ -45,6 +45,7 @@ public interface Sites
     Site getSite(String siteId);
 	void deleteSite(String siteId, Parameters parameters);
     Site createSite(Site site, Parameters parameters);
+	Site updateSite(String siteId, Site site, Parameters parameters);
     
 	/**
 	 * people/<personId>/sites/<siteId>

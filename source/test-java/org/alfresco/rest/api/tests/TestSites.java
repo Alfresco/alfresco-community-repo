@@ -706,6 +706,17 @@ public class TestSites extends EnterpriseTestApi
                     null,
                     "Expected 400 response when updating "+site.getSiteId(), 400);
 
+            sitesProxy.update(
+                    "sites",
+                    site.getSiteId(),
+                    null,
+                    null,
+                    "{\n" +
+                            "  \"preset\": \"sitePreset\"" +
+                            "}",
+                    null,
+                    "Expected 400 response when updating "+site.getSiteId(), 400);
+
             // Details should not have changed.
             Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
             site.expected(fresh);

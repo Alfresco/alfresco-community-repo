@@ -150,6 +150,10 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
         {
             throw new InvalidArgumentException("Site update does not support field: role");
         }
+        if (site.getPreset() != null)
+        {
+            throw new InvalidArgumentException("Site update does not support field: preset");
+        }
 
         // Bind valid fields to a SiteUpdate instance.
         final String title = site.getTitle();

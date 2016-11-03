@@ -1102,7 +1102,7 @@ public class SitesImpl implements Sites
         SiteInfo siteInfo = null;
         try
         {
-            siteInfo = siteService.createSite(site.getPreset(), site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
+            siteInfo = siteService.createSite(site.getPreset() != null ? site.getPreset() : "sitePreset", site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
         }
         catch (SiteServiceException sse)
         {

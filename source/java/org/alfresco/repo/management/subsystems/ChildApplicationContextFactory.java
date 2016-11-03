@@ -186,6 +186,8 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      *            the registry of property backed beans
      * @param propertyDefaults
      *            property defaults provided by the installer or System properties
+     * @param encryptedPropertyDefaults
+     *            encrypted property defaults provided by the installer or System properties
      * @param category
      *            the category
      * @param typeName
@@ -196,12 +198,13 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
      *             Signals that an I/O exception has occurred.
      */
     public ChildApplicationContextFactory(ApplicationContext parent, PropertyBackedBeanRegistry registry,
-            Properties propertyDefaults, String category, String typeName, List<String> instancePath)
+            Properties propertyDefaults, Properties encryptedPropertyDefaults, String category, String typeName, List<String> instancePath)
             throws IOException
     {
         setApplicationContext(parent);
         setRegistry(registry);
         setPropertyDefaults(propertyDefaults);
+        setEncryptedPropertyDefaults(encryptedPropertyDefaults);
         setCategory(category);
         setTypeName(typeName);
         setInstancePath(instancePath);

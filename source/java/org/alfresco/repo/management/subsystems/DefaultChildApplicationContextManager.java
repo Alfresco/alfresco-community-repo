@@ -445,7 +445,7 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
                         childId.add("managed");
                         childId.add(id);
                         this.childApplicationContexts.put(id, new ChildApplicationContextFactory(getParent(),
-                                getRegistry(), getPropertyDefaults(), getCategory(), typeName, childId));
+                                getRegistry(), getPropertyDefaults(), getEncryptedPropertyDefaults(), getCategory(), typeName, childId));
                     }
                 }
 

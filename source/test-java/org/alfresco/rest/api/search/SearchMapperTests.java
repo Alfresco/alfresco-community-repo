@@ -443,6 +443,7 @@ public class SearchMapperTests
         assertNull(ff.getLimitOrNull());
         assertEquals(0, ff.getOffset());
         assertEquals(1, ff.getMinCount());
+        assertFalse(ff.isCountDocsMissingFacetField());
         assertEquals(0, ff.getEnumMethodCacheMinDF());
 
 //        assertEquals("{key='myfield'}myfield" ,ff.getField());

@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Public API tests.
+ * Public V1 REST API tests
  * 
  * @author steveglover
  * @author janv
@@ -59,7 +59,6 @@ import org.junit.runners.Suite;
     WherePredicateApiTest.class,
     TestSites.class,
     TestNodeComments.class,
-    TestCMIS.class,
     TestFavouriteSites.class,
     TestSiteContainers.class,
     TestNodeRatings.class,
@@ -72,9 +71,9 @@ import org.junit.runners.Suite;
     TestPersonSites.class,
     TestSiteMembershipRequests.class,
     TestFavourites.class,
-    TestRemovePermissions.class,
     TestPublicApi128.class,
     TestPublicApiCaching.class
+        
 })
 public class ApiTest
 {

@@ -66,8 +66,8 @@ public class JmxDumpUtil
     /** Place holder for nulls. */
     private static final String NULL_VALUE = "<null>";
 
-    /** Place holder for unreadable values. */
-    public static final String UNREADABLE_VALUE = "<not readable>";
+    /** Place holder for protected values (generally passwords). */
+    public static final String PROTECTED_VALUE = "********";
 
     private static final String OS_NAME = "os.name";
 
@@ -147,12 +147,12 @@ public class JmxDumpUtil
                 }
                 catch (Exception e)
                 {
-                    value = JmxDumpUtil.UNREADABLE_VALUE;
+                    value = JmxDumpUtil.PROTECTED_VALUE;
                 }
             }
             else
             {
-                value = JmxDumpUtil.UNREADABLE_VALUE;
+                value = JmxDumpUtil.PROTECTED_VALUE;
             }
             attributes.put(element.getName(), value);
         }
@@ -226,7 +226,7 @@ public class JmxDumpUtil
             }
             catch (Exception e)
             {
-                value = JmxDumpUtil.UNREADABLE_VALUE;
+                value = JmxDumpUtil.PROTECTED_VALUE;
             }
             attributes.put(key, value);
         }

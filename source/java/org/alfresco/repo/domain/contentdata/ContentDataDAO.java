@@ -168,6 +168,13 @@ public interface ContentDataDAO
     ContentUrlEntity getOrCreateContentUrl(String contentUrl);
 
     /**
+     * Get a content URL or create one if it does not exist
+     *
+     * @since 5.1
+     */
+    ContentUrlEntity getOrCreateContentUrl(String contentUrl, long size);
+
+    /**
      * Updates the content key for the given content url
      * 
      * @since 5.0

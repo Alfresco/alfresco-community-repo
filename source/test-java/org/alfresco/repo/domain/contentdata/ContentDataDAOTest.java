@@ -245,6 +245,16 @@ public class ContentDataDAOTest extends TestCase
         contentUrlEntity = contentDataDAO.getContentUrl(contentUrlEntity.getContentUrl());
         assertNotNull(contentUrlEntity);
         assertNotNull(contentDataDAO.getContentUrl(contentUrlEntity.getId()));
+
+        // test with size
+        long size = 100l;
+        String url = "store://" + GUID.generate();
+        contentUrlEntity = contentDataDAO.getOrCreateContentUrl(url, size);
+        contentUrlEntity = contentDataDAO.getContentUrl(contentUrlEntity.getContentUrl());
+        assertNotNull(contentUrlEntity);
+        assertNotNull(contentDataDAO.getContentUrl(contentUrlEntity.getId()));
+        assertEquals("The size does not match.", size, contentUrlEntity.getSize());
+        assertEquals("The content URL does not match.", url, contentUrlEntity.getContentUrl());
     }
     
     /**

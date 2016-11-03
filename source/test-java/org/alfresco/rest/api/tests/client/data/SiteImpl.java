@@ -54,6 +54,7 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 	protected String description;
 	protected SiteRole role;
 	protected String visibility; // one of (PUBLIC,MODERATED,PRIVATE), defaults to PUBLIC
+    protected String preset;
 	protected String type;
 
     public SiteImpl()
@@ -124,6 +125,76 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 		this.guid = guid;
 	}
 
+    @Override
+    public Site withCreated(Boolean created)
+    {
+        this.setCreated(created);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withNetworkId(String networkId)
+    {
+        this.setNetworkId(networkId);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withSiteId(String siteId)
+    {
+        this.setSiteId(siteId);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withGuid(String guid)
+    {
+        this.setGuid(guid);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withTitle(String title)
+    {
+        this.setTitle(title);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withDescription(String description)
+    {
+        this.setDescription(description);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withRole(SiteRole role)
+    {
+        this.setRole(role);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withVisibility(String visibility)
+    {
+        this.setVisibility(visibility);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withPreset(String preset)
+    {
+        this.setPreset(preset);
+        return this;
+    }
+
+    @Override
+    public SiteImpl withType(String type)
+    {
+        this.setType(type);
+        return this;
+    }
+
 	@Override
 	public void expected(Object o)
 	{
@@ -184,7 +255,12 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 	{
 		return visibility;
 	}
-	
+
+    public String getPreset()
+    {
+        return preset;
+    }
+
 	public String getType()
 	{
 		return type;
@@ -219,6 +295,11 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 	{
 		this.visibility = visibility;
 	}
+
+    public void setPreset(String preset)
+    {
+        this.preset = preset;
+    }
 
 	public void setType(String type)
 	{
@@ -313,6 +394,10 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
         if (getVisibility() != null)
         {
             siteJson.put("visibility", getVisibility());
+        }
+        if (getPreset() != null)
+        {
+            siteJson.put("preset", getPreset());
         }
 		return siteJson;
 	}

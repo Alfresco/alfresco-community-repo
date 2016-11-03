@@ -44,30 +44,10 @@ public class Site implements Comparable<Site>
 	protected String guid; // site nodeId
 	protected String title;
 	protected String description;
-
-	public void setTitle(String title)
-	{
-		this.title = title;
-	}
-
-	public void setDescription(String description)
-	{
-		this.description = description;
-	}
-
-	public void setVisibility(SiteVisibility visibility)
-	{
-		this.visibility = visibility;
-	}
-
-	public void setRole(String role)
-	{
-		this.role = role;
-	}
-
 	protected SiteVisibility visibility;
+    protected String preset;
 	protected String role;
-	
+
 	public Site()
 	{
 	}
@@ -83,6 +63,7 @@ public class Site implements Comparable<Site>
 		this.title = siteInfo.getTitle();
 		this.description = siteInfo.getDescription();
 		this.visibility = siteInfo.getVisibility();
+        this.preset = siteInfo.getSitePreset();
 		this.role = role;
 	}
 
@@ -112,15 +93,50 @@ public class Site implements Comparable<Site>
 		return title;
 	}
 
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
 	public String getDescription()
 	{
 		return description;
 	}
 
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
 	public SiteVisibility getVisibility()
 	{
 		return visibility;
 	}
+
+    public void setVisibility(SiteVisibility visibility)
+    {
+        this.visibility = visibility;
+    }
+
+    public String getPreset()
+    {
+        return preset;
+    }
+
+    public void setPreset(String preset)
+    {
+        this.preset = preset;
+    }
+
+    public String getRole()
+    {
+        return role;
+    }
+
+    public void setRole(String role)
+    {
+        this.role = role;
+    }
 
 	@Override
 	public boolean equals(Object obj)
@@ -168,8 +184,4 @@ public class Site implements Comparable<Site>
 				+ "]";
 	}
 
-	public String getRole()
-	{
-		return role;
-	}
 }

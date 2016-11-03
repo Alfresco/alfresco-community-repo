@@ -766,7 +766,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                    int fragmentSize = this.getIntegerValue("fragmentSize", 50, highlighting);
                    int maxAnalyzedChars = this.getIntegerValue("maxAnalyzedChars", 500, highlighting);
                    boolean usePhraseHighlighter = this.getBooleanValue("usePhraseHighlighter", true, highlighting);
-                   boolean mergeContiguous = this.getBooleanValue("mergeContiguous", false, highlighting);
+                   boolean mergeContiguous = this.getBooleanValue("mergeContiguous", true, highlighting);
                    
                    String prefix = (String) highlighting.get("prefix");
                    if (prefix == null)
@@ -1041,7 +1041,25 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
             // results metadata
             meta.put("numberFound", results.getNumberFound());
             meta.put("hasMore", results.hasMore());
-            meta.put("highlighting", results.getHighlighting());
+            
+            Map<String, Map<String, List<String>>> highlightingMeta = new HashMap<>();
+            Map<NodeRef, List<Pair<String, List<String>>>> highlighting = results.getHighlighting();
+            for (Entry<NodeRef, List<Pair<String, List<String>>>> highlight: highlighting.entrySet())
+            {
+               NodeRef nodeRef = highlight.getKey();
+               
+               Map<String, List<String>> scriptProperties = new HashMap<String, List<String>>();
+               List<Pair<String, List<String>>> highlights = highlight.getValue();
+               for (Pair<String, List<String>> propertyHighlight: highlights)
+               {
+                  String property = propertyHighlight.getFirst();
+                  List<String> value = propertyHighlight.getSecond();
+                  scriptProperties.put(property, value);
+               }
+               
+               highlightingMeta.put(nodeRef.toString(), scriptProperties);
+            }
+            meta.put("highlighting", highlightingMeta);
             
             // results facets
             FacetLabelDisplayHandlerRegistry facetLabelDisplayHandlerRegistry = services.getFacetLabelDisplayHandlerRegistry();

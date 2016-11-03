@@ -49,11 +49,11 @@ var Admin = Admin || {};
    
    <#assign CSRF=(config.scoped["CSRFPolicy"]["filter"].getChildren("rule")?size != 0)!false>
    Admin.CSRF = {
-      enabled: ${CSRF?c}<#if CSRF>,
+      enabled: ${CSRF?c},<#if CSRF>
       cookie: "${config.scoped["CSRFPolicy"]["client"].getChildValue("cookie")!""}",
       header: "${config.scoped["CSRFPolicy"]["client"].getChildValue("header")!""}",
-      parameter: "${config.scoped["CSRFPolicy"]["client"].getChildValue("parameter")!""}",
-      properties: {}</#if>
+      parameter: "${config.scoped["CSRFPolicy"]["client"].getChildValue("parameter")!""}",</#if>
+      properties: {}
    };
 <#if config.scoped["CSRFPolicy"]["properties"]??>
 <#assign csrfProperties = (config.scoped["CSRFPolicy"]["properties"].children)![]>

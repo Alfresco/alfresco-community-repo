@@ -442,7 +442,7 @@ public class SearchMapperTests
         //assertEquals(true, ff.getMissing());
         assertNull(ff.getLimitOrNull());
         assertEquals(0, ff.getOffset());
-        assertEquals(0, ff.getMinCount());
+        assertEquals(1, ff.getMinCount());
         assertEquals(0, ff.getEnumMethodCacheMinDF());
 
 //        assertEquals("{key='myfield'}myfield" ,ff.getField());

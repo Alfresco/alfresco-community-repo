@@ -28,14 +28,20 @@ package org.alfresco.repo.search.impl.solr;
 import static org.junit.Assert.*;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.service.cmr.search.FieldHighlightParameters;
+import org.alfresco.service.cmr.search.GeneralHighlightParameters;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsParameters;
+import org.apache.commons.codec.net.URLCodec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -111,6 +117,81 @@ public class SolrQueryHTTPClientTest
         params.addStatsParameter("Test1", StatsParameters.FACET_PREFIX+"author. .u");
         params.addStatsParameter("Test2", StatsParameters.FACET_PREFIX+"creator. .u");
         return params;
+    }
+
+    @Test
+    public void testBuildHighlightQuery() throws UnsupportedEncodingException
+    {
+        SolrQueryHTTPClient client = new SolrQueryHTTPClient();
+        client.setLanguageMappings(languageMappings);
+        URLCodec encoder = new URLCodec();
+        SearchParameters params = new SearchParameters();
+        params.setSearchTerm("bob");
+        StringBuilder urlBuilder = new StringBuilder();
+        client.buildUrlParameters(params, null, encoder, urlBuilder);
+        String url = urlBuilder.toString();
+        assertNotNull(url);
+        assertFalse(url.contains("&hl"));
+
+        urlBuilder = new StringBuilder();
+        GeneralHighlightParameters highlightParameters = new GeneralHighlightParameters(null, null, null, null, null, null, null, null);
+        params.addHightlight(highlightParameters);
+        client.buildUrlParameters(params, null, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertTrue(url.contains("&hl=true"));
+        assertTrue(url.contains("&hl.q=bob"));
+
+        urlBuilder = new StringBuilder();
+        highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, null);
+        params.addHightlight(highlightParameters);
+        client.buildUrlParameters(params, null, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertTrue(url.contains("&hl=true"));
+        assertTrue(url.contains("&hl.q=bob"));
+        assertTrue(url.contains("&hl.snippets=5"));
+        assertTrue(url.contains("&hl.fragsize=10"));
+        assertTrue(url.contains("&hl.maxAnalyzedChars=20"));
+        assertTrue(url.contains("&hl.mergeContiguous=false"));
+        assertTrue(url.contains("&hl.usePhraseHighlighter=true"));
+
+        assertTrue(url.contains("&hl.simple.pre="+encoder.encode("{", "UTF-8")));
+        assertTrue(url.contains("&hl.simple.post="+encoder.encode("}", "UTF-8")));
+
+        List<FieldHighlightParameters> fields = Arrays.asList(new FieldHighlightParameters(null,null,null,null,null,null));
+        urlBuilder = new StringBuilder();
+        highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
+        params.addHightlight(highlightParameters);
+
+        try
+        {
+            client.buildUrlParameters(params, null, encoder, urlBuilder);
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertNotNull("no fieldname specfied so invalid",iae);
+        }
+
+        fields = Arrays.asList(new FieldHighlightParameters("desc",50,100,false,"@","#"), new FieldHighlightParameters("title",55,105,true,"*","¿"));
+        urlBuilder = new StringBuilder();
+        highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
+        params.addHightlight(highlightParameters);
+        client.buildUrlParameters(params, null, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertTrue(url.contains("&hl=true"));
+        assertTrue(url.contains("&hl.fl="+encoder.encode("desc,title", "UTF-8")));
+        assertTrue(url.contains("&f.desc.hl.snippets=50"));
+        assertTrue(url.contains("&f.title.hl.snippets=55"));
+        assertTrue(url.contains("&f.desc.hl.fragsize=100"));
+        assertTrue(url.contains("&f.title.hl.fragsize=105"));
+        assertTrue(url.contains("&f.desc.hl.mergeContiguous=false"));
+        assertTrue(url.contains("&f.title.hl.mergeContiguous=true"));
+        assertTrue(url.contains("&f.desc.hl.simple.pre="+encoder.encode("@", "UTF-8")));
+        assertTrue(url.contains("&f.desc.hl.simple.post="+encoder.encode("#", "UTF-8")));
+        assertTrue(url.contains("&f.title.hl.simple.pre="+encoder.encode("*", "UTF-8")));
+        assertTrue(url.contains("&f.title.hl.simple.post="+encoder.encode("¿", "UTF-8")));
+
+
     }
 
 }

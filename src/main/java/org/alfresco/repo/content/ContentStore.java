@@ -42,7 +42,11 @@ import org.alfresco.service.cmr.repository.ContentWriter;
  * <code>content URL</code>.
  * <p>
  * Content URLs must consist of a prefix or protocol followed by an
- * implementation-specific identifier.  For example, the content URL format
+ * implementation-specific identifier. See
+ * {@link org.alfresco.repo.content.filestore.TimeBasedFileContentUrlProvider TimeBasedFileContentUrlProvider} and
+ * {@link org.alfresco.repo.content.filestore.VolumeAwareContentUrlProvider VolumeAwareContentUrlProvider} implementations of
+ * {@link org.alfresco.repo.content.filestore.FileContentUrlProvider FileContentUrlProvider}  
+ * For example, default content URL format
  * for file stores is <b>store://year/month/day/hour/minute/GUID.bin</b> <br>
  * <ul>
  *   <li> <b>store://</b>: prefix identifying an Alfresco content stores

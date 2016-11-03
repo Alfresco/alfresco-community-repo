@@ -94,8 +94,7 @@ public class OpenOfficeMetadataExtracterTest extends AbstractMetadataExtracterTe
         
         for (String mimetype : OpenOfficeMetadataExtracter.SUPPORTED_MIMETYPES)
         {
-            double reliability = extracter.getReliability(mimetype);
-            assertTrue("Expected above zero reliability", reliability > 0.0);
+            assertTrue("Expected above zero reliability", extracter.isSupported(mimetype));
         }
     }
 

@@ -239,6 +239,10 @@ public class TestSiteMembers extends EnterpriseTestApi
 					return null;
 				}
 			}, network1.getId());
+
+			final TestPerson person1 = people.get(0);
+			final TestPerson person2 = people.get(1);
+			final TestPerson person3 = people.get(2);
 	
 			TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
 			{
@@ -252,9 +256,6 @@ public class TestSiteMembers extends EnterpriseTestApi
 				}
 			}, network2.getId());
 			
-			final TestPerson person1 = people.get(0);
-			final TestPerson person2 = people.get(1);
-			final TestPerson person3 = people.get(2);
 			final TestPerson person4 = people.get(3);
 			
 			// Create site
@@ -451,7 +452,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 			TestPerson person1 = people.get(0);
 			TestPerson person2 = people.get(1);
 			TestPerson person3 = people.get(2);
-	
+			
 			// Create site
 			TestSite site = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
 			{
@@ -462,7 +463,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 					return site;
 				}
 			}, person2.getId(), network1.getId());
-	
+			
 			// remove site membership
 	
 			// for -me- user (PUBLICAPI-90)
@@ -641,19 +642,21 @@ public class TestSiteMembers extends EnterpriseTestApi
 					person1.expected(ret.getMember());
 		
 					// check site membership in GET
-					expectedSiteMembers = site.getMembers();
-					SiteMember toCheck = null;
-					for(SiteMember sm1 : expectedSiteMembers)
-					{
-						if(sm1.getMemberId().equals(person1.getId()))
-						{
-							toCheck = sm1;
-						}
-					}
-					assertNotNull(toCheck); // check that the update site membership is present
-					assertEquals(sm.getRole(), toCheck.getRole()); // check that the role is correct
-		
-			    	int skipCount = 0;
+					SiteMember smToCheck = sitesProxy.getSingleSiteMember(site.getSiteId(), person1.getId());
+					assertNotNull(smToCheck); // check that the update site membership is present
+					assertEquals(sm.getRole(), smToCheck.getRole()); // check that the role is correct
+					
+					
+					expectedSiteMembers = new ArrayList<>();
+					SiteMember sm1 = new SiteMember(person1.getId(), person1, site.getSiteId(), SiteRole.SiteCollaborator.toString());
+					expectedSiteMembers.add(sm1);
+					SiteMember sm2 = new SiteMember(person2.getId(), person2, site.getSiteId(), SiteRole.SiteManager.toString());
+					expectedSiteMembers.add(sm2);
+					SiteMember sm3 = new SiteMember(person3.getId(), person3, site.getSiteId(), SiteRole.SiteCollaborator.toString());
+					expectedSiteMembers.add(sm3);
+					Collections.sort(expectedSiteMembers);
+
+					int skipCount = 0;
 					int maxItems = Integer.MAX_VALUE;
 					Paging paging = getPaging(skipCount, maxItems, expectedSiteMembers.size(), null);
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2.getId()));

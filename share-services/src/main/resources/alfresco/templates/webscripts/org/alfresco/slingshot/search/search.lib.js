@@ -21,6 +21,15 @@ const DEFAULT_MAX_RESULTS = 250;
 const DEFAULT_PAGE_SIZE = 50;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
 
+const DEFAULT_HIGHLIGHT_FIELDS = "cm:name,cm:description,cm:title,content,ia:descriptionEvent,ia:whatEvent,lnk:title";
+const DEFAULT_HIGHLIGHT_PREFIX = "\u0000";
+const DEFAULT_HIGHLIGHT_POSTFIX = "\u0003";
+const DEFAULT_HIGHLIGHT_SNIPPET_COUNT = 20;
+const DEFAULT_HIGHLIGHT_FRAGMENT_SIZE = 50;
+const DEFAULT_HIGHLIGHT_MAX_ANALYZED_CHARS = 500;
+const DEFAULT_HIGHLIGHT_USE_PHRASE_HIGHLIGHTER = true;
+const DEFAULT_HIGHLIGHT_MERGE_CONTIGUOUS = true;
+
 /**
  * Returns site information data structure.
  * { shortName: siteId, title: title }
@@ -86,7 +95,7 @@ function checkProcessedCache(key)
 /**
  * Returns an item outside of a site in the main repository.
  */
-function getRepositoryItem(folderPath, node, populate)
+function getRepositoryItem(folderPath, node, populate, highlighting)
 {
    // check whether we already processed this document
    if (checkProcessedCache("" + node.nodeRef.toString()))
@@ -104,9 +113,9 @@ function getRepositoryItem(folderPath, node, populate)
          nodeRef: node.nodeRef.toString(),
          tags: ((t = node.tags) !== null) ? t : [],
          name: node.name,
-         displayName: node.name,
-         title: node.properties["cm:title"],
-         description: node.properties["cm:description"],
+         displayName: highlighting["cm:name"] ? highlighting["cm:name"].get(0) : node.name,
+         title: highlighting["cm:title"] ? highlighting["cm:title"].get(0) : node.properties["cm:title"],
+         description:highlighting["cm:description"] ? highlighting["cm:description"].get(0) :  node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
          createdOn: node.properties["cm:created"],
@@ -136,7 +145,7 @@ function getRepositoryItem(folderPath, node, populate)
 /**
  * Returns an item of the document library component.
  */
-function getDocumentItem(siteId, containerId, pathParts, node, populate)
+function getDocumentItem(siteId, containerId, pathParts, node, populate, highlighting)
 {
    // PENDING: how to handle comments? the document should
    //          be returned instead
@@ -159,9 +168,9 @@ function getDocumentItem(siteId, containerId, pathParts, node, populate)
          nodeRef: node.nodeRef.toString(),
          tags: ((t = node.tags) !== null) ? t : [],
          name: node.name,
-         displayName: node.name,
-         title: node.properties["cm:title"],
-         description: node.properties["cm:description"],
+         displayName: highlighting["cm:name"] ? highlighting["cm:name"].get(0) : node.name,
+         title: highlighting["cm:title"] ? highlighting["cm:title"].get(0) : node.properties["cm:title"],
+         description: highlighting["cm:description"] ? highlighting["cm:description"].get(0) : node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
          createdOn: node.properties["cm:created"],
@@ -188,7 +197,7 @@ function getDocumentItem(siteId, containerId, pathParts, node, populate)
    return item;
 }
 
-function getBlogPostItem(siteId, containerId, pathParts, node, populate)
+function getBlogPostItem(siteId, containerId, pathParts, node, populate, highlighting)
 {
    /**
     * Investigate the rest of the path. the first item is the blog post, ignore everything that follows
@@ -241,7 +250,7 @@ function getBlogPostItem(siteId, containerId, pathParts, node, populate)
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: child.size,
-      displayName: child.properties["cm:title"],
+      displayName: highlighting["cm:title"] ? highlighting["cm:title"].get(0) : child.properties["cm:title"],
       nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
@@ -250,7 +259,7 @@ function getBlogPostItem(siteId, containerId, pathParts, node, populate)
    return item;
 }
 
-function getForumPostItem(siteId, containerId, pathParts, node, populate)
+function getForumPostItem(siteId, containerId, pathParts, node, populate, highlighting)
 {
    // try to find the first fm:topic node, that's what we return as search result
    var topicNode = node;
@@ -271,7 +280,22 @@ function getForumPostItem(siteId, containerId, pathParts, node, populate)
 
    // find the first post, which contains the post title
    // PENDING: error prone
-   var postNode = topicNode.childAssocs["cm:contains"][0];
+   var title ="";
+   var postNode;
+   try 
+   {
+      var postNode = topicNode.childAssocs["cm:contains"].get(0);
+      title = postNode.properties["cm:title"];
+   }
+   catch(e1)
+   {
+      try 
+      {
+         postNode = topicNode.childAssocs["cm:contains"][0];
+         title = postNode.properties["cm:title"];
+      }
+      catch(e2) {}
+   }
 
    // child is our forum post
    if (!populate) return {};
@@ -284,13 +308,13 @@ function getForumPostItem(siteId, containerId, pathParts, node, populate)
       type: "forumpost",
       tags: ((t = topicNode.tags) !== null) ? t : [],
       name: topicNode.name,
-      description: topicNode.properties["cm:description"],
+      description: highlighting["cm:description"] ? highlighting["cm:description"].get(0) : topicNode.properties["cm:description"],
       modifiedOn: topicNode.properties["cm:modified"],
       modifiedByUser: topicNode.properties["cm:modifier"],
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: topicNode.size,
-      displayName: postNode.properties["cm:title"],
+      displayName: highlighting["cm:title"] ? highlighting["cm:title"].get(0) : title,
       nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
@@ -299,7 +323,7 @@ function getForumPostItem(siteId, containerId, pathParts, node, populate)
    return item;
 }
 
-function getCalendarItem(siteId, containerId, pathParts, node, populate)
+function getCalendarItem(siteId, containerId, pathParts, node, populate, highlighting)
 {
    // only process nodes of the correct type
    if (node.type != "{http://www.alfresco.org/model/calendar}calendarEvent")
@@ -323,14 +347,14 @@ function getCalendarItem(siteId, containerId, pathParts, node, populate)
       type: "calendarevent",
       tags: ((t = node.tags) !== null) ? t : [],
       name: node.name,
-      description: node.properties["ia:descriptionEvent"],
+      description: highlighting["ia:descriptionEvent"] ? highlighting["ia:descriptionEvent"].get(0) : node.properties["ia:descriptionEvent"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       fromDate: node.properties["ia:fromDate"],
       size: -1,
-      displayName: node.properties["ia:whatEvent"],
+      displayName: highlighting["ia:whatEvent"] ? highlighting["ia:whatEvent"].get(0) : node.properties["ia:whatEvent"],
       nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
@@ -339,7 +363,7 @@ function getCalendarItem(siteId, containerId, pathParts, node, populate)
    return item;
 }
 
-function getWikiItem(siteId, containerId, pathParts, node, populate)
+function getWikiItem(siteId, containerId, pathParts, node, populate, highlighting)
 {
    // only process documents
    if (!node.isDocument)
@@ -363,7 +387,7 @@ function getWikiItem(siteId, containerId, pathParts, node, populate)
       type: "wikipage",
       tags: ((t = node.tags) !== null) ? t : [],
       name: node.name,
-      description: node.properties["cm:description"],
+      description: highlighting["cm:description"] ? highlighting["cm:description"].get(0) : node.properties["cm:description"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
       createdOn: node.properties["cm:created"],
@@ -378,7 +402,7 @@ function getWikiItem(siteId, containerId, pathParts, node, populate)
    return item;
 }
 
-function getLinkItem(siteId, containerId, pathParts, node, populate)
+function getLinkItem(siteId, containerId, pathParts, node, populate, highlighting)
 {
    // only process documents
    if (!node.isDocument)
@@ -402,13 +426,13 @@ function getLinkItem(siteId, containerId, pathParts, node, populate)
       type: "link",
       tags: ((t = node.tags) !== null) ? t : [],
       name: node.name,
-      description: node.properties["cm:description"],
+      description: highlighting["cm:description"] ? highlighting["cm:description"].get(0) : node.properties["cm:description"],
       modifiedOn: node.properties["cm:modified"],
       modifiedByUser: node.properties["cm:modifier"],
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: -1,
-      displayName: node.properties["lnk:title"],
+      displayName: highlighting["lnk:title"] ? highlighting["lnk:title"].get(0) : node.properties["lnk:title"],
       nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
@@ -417,7 +441,7 @@ function getLinkItem(siteId, containerId, pathParts, node, populate)
    return item;
 }
 
-function getDataItem(siteId, containerId, pathParts, node, populate)
+function getDataItem(siteId, containerId, pathParts, node, populate, highlighting)
 {
    // make sure we haven't already added this item
    if (checkProcessedCache("" + node.nodeRef.toString()))
@@ -440,13 +464,13 @@ function getDataItem(siteId, containerId, pathParts, node, populate)
          type: "datalist",
          tags: [],
          name: node.name,
-         description: node.properties["cm:description"],
+         description: highlighting["cm:description"] ? highlighting["cm:description"].get(0) : node.properties["cm:description"],
          modifiedOn: node.properties["cm:modified"],
          modifiedByUser: node.properties["cm:modifier"],
          createdOn: node.properties["cm:created"],
          createdByUser: node.properties["cm:creator"],
          size: -1,
-         displayName: node.properties["cm:title"],
+         displayName: highlighting["cm:title"] ? highlighting["cm:title"].get(0) : node.properties["cm:title"],
          nodeJSON: appUtils.toJSON(node, true)
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
@@ -470,7 +494,7 @@ function getDataItem(siteId, containerId, pathParts, node, populate)
          createdByUser: node.properties["cm:creator"],
          size: -1,
          nodeJSON: appUtils.toJSON(node, true),
-         displayName: node.name     // unfortunately does not have a common display name property
+         displayName: highlighting["cm:name"] ? highlighting["cm:name"].get(0) : node.name     // unfortunately does not have a common display name property
       };
       item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
       item.createdBy = getPersonDisplayName(item.createdByUser);
@@ -483,40 +507,52 @@ function getDataItem(siteId, containerId, pathParts, node, populate)
  * Delegates the extraction to the correct extraction function
  * depending on containerId.
  */
-function getItem(siteId, containerId, pathParts, node, populate)
+function getItem(siteId, containerId, pathParts, node, populate, meta)
 {
+   var highlighting = {};
+   if (meta && meta.highlighting && node && node.nodeRef)
+   {
+      highlighting = meta.highlighting[node.nodeRef.toString()] || {};
+   }
+
    var item = null;
    if (siteId == null)
    {
-      item = getRepositoryItem(pathParts, node, populate);
+      item = getRepositoryItem(pathParts, node, populate, highlighting);
    }
    else
    {
       switch ("" + containerId.toLowerCase())
       {
          case "documentlibrary":
-            item = getDocumentItem(siteId, containerId, pathParts, node, populate);
+            item = getDocumentItem(siteId, containerId, pathParts, node, populate, highlighting);
             break;
          case "blog":
-            item = getBlogPostItem(siteId, containerId, pathParts, node, populate);
+            item = getBlogPostItem(siteId, containerId, pathParts, node, populate, highlighting);
             break;
          case "discussions":
-            item = getForumPostItem(siteId, containerId, pathParts, node, populate);
+            item = getForumPostItem(siteId, containerId, pathParts, node, populate, highlighting);
             break;
          case "calendar":
-            item = getCalendarItem(siteId, containerId, pathParts, node, populate);
+            item = getCalendarItem(siteId, containerId, pathParts, node, populate, highlighting);
             break;
          case "wiki":
-            item = getWikiItem(siteId, containerId, pathParts, node, populate);
+            item = getWikiItem(siteId, containerId, pathParts, node, populate, highlighting);
             break;
          case "links":
-            item = getLinkItem(siteId, containerId, pathParts, node, populate);
+            item = getLinkItem(siteId, containerId, pathParts, node, populate, highlighting);
             break;
          case "datalists":
-            item = getDataItem(siteId, containerId, pathParts, node, populate);
+            item = getDataItem(siteId, containerId, pathParts, node, populate, highlighting);
             break;
       }
    }
+
+   if (meta && meta.highlighting)
+   {
+      item.highlighting = highlighting;
+   }
+
    return item;
 }
 
@@ -611,7 +647,7 @@ function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
          // (but don't populate or add to results) each item to correctly calculate the totalRecordsUpper.
          var populate = (processed >= startIndex && added < maxPageResults);
          parts = splitQNamePath(nodes[i], rootNodeDisplayPath, rootNodeQNamePath, !populate);
-         item = getItem(parts[0], parts[1], parts[2], nodes[i], populate);
+         item = getItem(parts[0], parts[1], parts[2], nodes[i], populate, meta);
          if (item !== null)
          {
             processed++;
@@ -652,6 +688,7 @@ function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
          numberFound: meta ? meta.numberFound : -1
       },
       facets: meta ? meta.facets : null,
+      highlighting: meta ? meta.highlighting : null,
       items: results,
       spellcheck: meta ? meta.spellcheck : null
    });
@@ -683,7 +720,7 @@ function processResultsSinglePage(nodes, startIndex, rootNode, meta)
       try
       {
          parts = splitQNamePath(nodes[i], rootNodeDisplayPath, rootNodeQNamePath, false);
-         item = getItem(parts[0], parts[1], parts[2], nodes[i], true);
+         item = getItem(parts[0], parts[1], parts[2], nodes[i], true, meta);
          if (item !== null)
          {
             results.push(item);
@@ -718,6 +755,7 @@ function processResultsSinglePage(nodes, startIndex, rootNode, meta)
          numberFound: meta ? meta.numberFound : -1
       },
       facets: meta ? meta.facets : null,
+      highlighting: meta ? meta.highlighting : null,
       items: results,
       spellcheck: meta ? meta.spellcheck : null
    });
@@ -1207,6 +1245,30 @@ function getSearchResults(params)
          searchTerm: params.term,
          spellCheck: params.spell
       };
+
+      // Configure search term highlighting...
+      if (params.highlightFields)
+      {
+         var fields = [];
+         var highlightFields = params.highlightFields.split(",");
+         for (var i = 0; i < highlightFields.length; i++)
+         {
+            fields.push({
+               field: highlightFields[i]
+            });
+         }
+         queryDef.highlight = {
+            prefix: params.highlightPrefix,
+            postfix: params.highlightPostfix,
+            snippetCount: params.highlightSnippetCount,
+            fragmentSize: params.highlightFragmentSize,
+            maxAnalyzedChars: params.highlightMaxAnalyzedChars,
+            usePhraseHighlighter: params.highlightUsePhraseHighlighter,
+            mergeContiguous: params.highlightMergeContiguous,
+            fields: fields
+         };
+      }
+
       var rs = search.queryResultSet(queryDef);
       nodes = rs.nodes;
    }

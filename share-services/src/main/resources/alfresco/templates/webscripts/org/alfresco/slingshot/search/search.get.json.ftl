@@ -20,6 +20,18 @@
 		]<#if field_has_next>,</#if>
 		</#list></#if>
 	},
+   "highlighting":
+   {
+      <#if data.highlighting??><#list data.highlighting?keys as nodeRef>
+      "${nodeRef}":
+      {
+         <#assign fields=data.highlighting[nodeRef]><#list fields?keys as property>
+         "${property}": "${fields[property][0]}"
+         <#if property_has_next>,</#if>
+         </#list>
+      }<#if nodeRef_has_next>,</#if>
+      </#list></#if>
+   },
 	"items":
 	[
 		<#list data.items as item>
@@ -59,8 +71,15 @@
 			 </#list>
 			 </#if>
 			],
-			"tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>]
-		}<#if item_has_next>,</#if>
+			"tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
+         "highlighting":
+            {
+               <#list item.highlighting?keys as property>
+               "${property}": "${item.highlighting[property][0]}"
+               <#if property_has_next>,</#if>
+               </#list>
+            }
+   		}<#if item_has_next>,</#if>
 		</#list>
 	],
 	"spellcheck":

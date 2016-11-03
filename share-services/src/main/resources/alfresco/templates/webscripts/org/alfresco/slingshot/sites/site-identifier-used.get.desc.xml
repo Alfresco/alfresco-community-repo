@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Site Identifiers In Use</shortname>
+  <description>Determines whether or not the supplied site identifiers (the title and shortName attributes) are already being used or note</description>
+  <url>/slingshot/site-identifier-used?shortName={shortName?}</url>
+  <url>/slingshot/site-identifier-used?title={title?}</url>
+  <format default="json">argument</format>
+  <authentication runas="admin">user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
+</webscript>

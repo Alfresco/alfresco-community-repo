@@ -78,13 +78,15 @@ public class NodeChildrenRelation implements
      * 
      * Optional query parameters:
      *
-     * - select
-     * - properties
+     * - include
+     * - fields
      * - where
      * - orderBy
-     * 
      * - skipCount
      * - maxItems
+     * - ... etc
+     *                        
+     * Please refer to OpenAPI spec for more details !    
      * 
      * If parentFolderNodeId does not exist, EntityNotFoundException (status 404).
      * If parentFolderNodeId does not represent a folder, InvalidArgumentException (status 400).

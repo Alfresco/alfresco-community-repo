@@ -79,4 +79,5 @@ public interface Sites
 	String PARAM_SITE_DESCRIPTION = "description";
 
 	String PARAM_SITE_ROLE = "role";
+    String PARAM_VISIBILITY = "visibility";
 }

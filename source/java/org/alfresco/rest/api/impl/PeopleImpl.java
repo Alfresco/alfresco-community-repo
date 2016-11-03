@@ -39,6 +39,7 @@ import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Company;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.api.model.PersonUpdate;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -285,6 +286,19 @@ public class PeopleImpl implements People
 	@Override
 	public Person create(PersonUpdate person)
 	{
+		if (person.getUserName() == null)
+		{
+			throw new InvalidArgumentException("Field 'id' is null, but is required.");
+		}
+
+		// TODO: check, is this transaction safe?
+		// Unfortunately PersonService.createPerson(...) only throws an AlfrescoRuntimeException
+		// rather than a more specific exception and does not use a message ID either, so there's
+		// no sensible way to know that it was thrown due to the user already existing - hence this check here.
+		if (personService.personExists(person.getUserName()))
+		{
+			throw new ConstraintViolatedException("Person '"+person.getUserName()+"' already exists.");
+		}
 		Map<QName, Serializable> props = person.toProperties();
 		NodeRef nodeRef = personService.createPerson(props);
 

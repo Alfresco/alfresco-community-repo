@@ -35,9 +35,9 @@ public class SearchContext
     private final Consistency consistency;
     private final List<FacetQueryContext> facetQueries;
     private final SpellCheckContext spellCheck;
-    private final FacetFieldContext facetsFields;
+    private final List<FacetFieldContext> facetsFields;
 
-    public SearchContext(long lastTxId, List<FacetQueryContext> facetQueries, FacetFieldContext facetsFields, SpellCheckContext spellCheck)
+    public SearchContext(long lastTxId, List<FacetQueryContext> facetQueries, List<FacetFieldContext> facetsFields, SpellCheckContext spellCheck)
     {
         this.spellCheck = spellCheck;
         if (lastTxId > 0)
@@ -67,7 +67,7 @@ public class SearchContext
         return spellCheck;
     }
 
-    public FacetFieldContext getFacetsFields()
+    public List<FacetFieldContext> getFacetsFields()
     {
         return facetsFields;
     }

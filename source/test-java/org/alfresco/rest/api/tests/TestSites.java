@@ -657,6 +657,44 @@ public class TestSites extends EnterpriseTestApi
                     null,
                     "Expected 400 response when updating "+site.getSiteId(), 400);
 
+            // Invalid fields
+            // Check that id, guid and role are not silently ignored. This is until REPO-110
+            // is implemented, since we currently have to bind to Site rather than SiteUpdate in
+            // SiteEntityResource.update
+            sitesProxy.update(
+                    "sites",
+                    site.getSiteId(),
+                    null,
+                    null,
+                    "{\n" +
+                    "  \"id\": \"a-new-id\"," +
+                    "  \"title\": \"Updated Title\"\n" +
+                    "}",
+                    null,
+                    "Expected 400 response when updating "+site.getSiteId(), 400);
+
+            sitesProxy.update(
+                    "sites",
+                    site.getSiteId(),
+                    null,
+                    null,
+                    "{\n" +
+                    "  \"guid\": \"76ba60c1-f05b-406a-86a4-4eeb1bb49aaa\"" +
+                    "}",
+                    null,
+                    "Expected 400 response when updating "+site.getSiteId(), 400);
+
+            sitesProxy.update(
+                    "sites",
+                    site.getSiteId(),
+                    null,
+                    null,
+                    "{\n" +
+                    "  \"role\": \"SiteConsumer\"" +
+                    "}",
+                    null,
+                    "Expected 400 response when updating "+site.getSiteId(), 400);
+
             // Details should not have changed.
             Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
             site.expected(fresh);

@@ -256,7 +256,7 @@
         
         e.g. 
         
-        update task jbpm$122 bpm:assignee=fred wf:notifyMe=false 
+        update task activiti$122 bpm:assignee=fred wf:notifyMe=false 
     
     ok> end task <taskId> [<transitionName>] 
     

@@ -25,15 +25,6 @@
             </mandatory-aspects>
         </type>
 
-        <type name="imwf:moderatedInvitationReviewTask">
-            <parent>bpm:workflowTask</parent>
-            <mandatory-aspects>
-                <aspect>bpm:groupAssignee</aspect>
-                <aspect>cm:ownable</aspect>
-                <aspect>imwf:moderatedInvitationStats</aspect>
-            </mandatory-aspects>
-        </type>
-
         <type name="imwf:activitiModeratedInvitationReviewTask">
             <parent>bpm:activitiOutcomeTask</parent>
             <properties>

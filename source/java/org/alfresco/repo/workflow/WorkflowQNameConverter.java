@@ -48,10 +48,10 @@ public class WorkflowQNameConverter
     }
 
     /**
-     * Map QName to jBPM variable name
+     * Map QName to workflow variable name
      * 
      * @param qName  QName
-     * @return  jBPM variable name
+     * @return  workflow variable name
      */
     public String mapQNameToName(QName qName)
     {
@@ -66,10 +66,10 @@ public class WorkflowQNameConverter
     }
 
     /**
-     * Map QName to jBPM variable name
+     * Map QName to workflow variable name
      * 
      * @param name  QName
-     * @return  jBPM variable name
+     * @return  workflow variable name
      */
     public QName mapNameToQName(String name)
     {

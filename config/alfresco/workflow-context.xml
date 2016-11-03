@@ -84,12 +84,6 @@
    <bean id="workflowAdminService" class="org.alfresco.repo.workflow.WorkflowAdminServiceImpl" >
        <property name="workflowEngineConfigurations">
            <list>
-               <!-- JbpmEngine configuration -->
-               <props>
-                   <prop key="engineId">jbpm</prop>
-                   <prop key="enabled">false</prop>
-                   <prop key="visible">false</prop>
-              </props>
                <!-- ActivitiWorkflowEngine configuration -->
                <props>
                    <prop key="engineId">activiti</prop>
@@ -131,11 +125,6 @@
       <property name="messageService" ref="messageService"/>
       <property name="dictionaryService" ref="DictionaryService"/>
    </bean>
-
-   <!--                     -->
-   <!-- jBPM Implementation -->
-   <!--                     -->
-    <import resource="classpath:alfresco/jbpm-context.xml" />
 
    <!--                     -->
    <!-- Activiti Implementation -->

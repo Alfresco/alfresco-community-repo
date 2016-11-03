@@ -611,8 +611,8 @@ public class CMISTest
 
         // populate workflow parameters
         java.util.Properties props = new java.util.Properties();
-        props.setProperty(WorkflowDeployer.ENGINE_ID, "jbpm");
-        props.setProperty(WorkflowDeployer.LOCATION, "jbpmresources/test_taskVarScriptAssign.xml");
+        props.setProperty(WorkflowDeployer.ENGINE_ID, "activiti");
+        props.setProperty(WorkflowDeployer.LOCATION, "activiti/testCustomActiviti.bpmn20.xml");
         props.setProperty(WorkflowDeployer.MIMETYPE, "text/xml");
         props.setProperty(WorkflowDeployer.REDEPLOY, Boolean.FALSE.toString());
 
@@ -622,7 +622,7 @@ public class CMISTest
         testWorkflowDeployer.setWorkflowDefinitions(definitions);
 
         List<String> models = new ArrayList<String>(1);
-        models.add("jbpmresources/testWorkflowModel.xml");
+        models.add("activiti/testWorkflowModel.xml");
 
         testWorkflowDeployer.setModels(models);
 

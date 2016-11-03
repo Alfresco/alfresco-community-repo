@@ -57,15 +57,6 @@
          </mandatory-aspects>
       </type>
 
-      <type name="wf:reviewTask">
-         <parent>bpm:workflowTask</parent>
-         <overrides>
-            <property name="bpm:packageItemActionGroup">
-               <default>edit_package_item_actions</default>
-            </property>
-         </overrides>
-      </type>
-
         <type name="wf:activitiReviewTask">
             <parent>bpm:activitiOutcomeTask</parent>
             <properties>
@@ -148,51 +139,6 @@
 
       <type name="wf:completedAdhocTask">
          <parent>bpm:workflowTask</parent>
-         <mandatory-aspects>
-            <aspect>bpm:assignee</aspect>
-         </mandatory-aspects>
-      </type>
-        
-      <!-- Deprecated workflow task from Alfresco 3.0 -->
-      <!-- Needs to be defined for patch.InvitationMigration which gets rid of it.  -->
-      
-      <type name="wf:inviteToSiteTask">
-         <parent>bpm:startTask</parent>
-         <properties>
-            <property name="wf:serverPath">
-               <type>d:text</type>
-            </property>
-            <property name="wf:acceptUrl">
-               <type>d:text</type>
-            </property>
-            <property name="wf:rejectUrl">
-               <type>d:text</type>
-            </property>
-            <property name="wf:inviteTicket">
-               <type>d:text</type>
-            </property>
-            <property name="wf:inviterUserName">
-               <type>d:text</type>
-            </property>
-            <property name="wf:inviteeUserName">
-               <type>d:text</type>
-            </property>
-            <property name="wf:inviteeFirstName">
-               <type>d:text</type>
-            </property>
-            <property name="wf:inviteeLastName">
-               <type>d:text</type>
-            </property>
-            <property name="wf:inviteeGenPassword">
-               <type>d:text</type>
-            </property>
-            <property name="wf:siteShortName">
-               <type>d:text</type>
-            </property>
-            <property name="wf:inviteeSiteRole">
-               <type>d:text</type>
-            </property>
-         </properties>
          <mandatory-aspects>
             <aspect>bpm:assignee</aspect>
          </mandatory-aspects>

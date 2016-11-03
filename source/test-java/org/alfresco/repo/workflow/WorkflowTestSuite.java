@@ -70,7 +70,6 @@ public class WorkflowTestSuite extends TestSuite
         // ActivitiTaskComponentTest
         // ActivitiWorkflowComponentTest
         // ActivitiWorkflowRestApiTest
-        // JbpmWorkflowRestApiTest
         return suite;
     }
 }

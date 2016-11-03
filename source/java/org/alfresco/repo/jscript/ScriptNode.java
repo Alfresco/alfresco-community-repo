@@ -3451,8 +3451,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             if (this.services.getPermissionService().hasPermission(nodeRef, PermissionService.READ_PROPERTIES) == AccessStatus.ALLOWED)
             {
                 // TODO: DC: Allow debug output of property values - for now it's disabled as this could potentially
-                // follow a large network of nodes. Unfortunately, JBPM issues unprotected debug statements
-                // where node.toString is used - will request this is fixed in next release of JBPM.
+                // follow a large network of nodes.
                 return "Node Type: " + getType() + ", Node Aspects: " + getAspectsSet().toString();
             }
             else

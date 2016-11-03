@@ -377,7 +377,6 @@
                 <value>alfresco.messages.webdav-messages</value>
                 <value>alfresco.messages.copy-service</value>
                 <value>alfresco.messages.content-filter-languages</value>
-                <value>alfresco.messages.jbpm-engine-messages</value>
                 <value>alfresco.messages.activiti-engine-messages</value>
                 <value>alfresco.messages.subscription-service</value>
                 <value>alfresco.messages.replication</value>

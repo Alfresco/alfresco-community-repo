@@ -40,13 +40,11 @@ public interface WorkflowModelNominatedInvitation
     public static final QName WF_PROCESS_INVITE = QName.createQName(NAMESPACE_URI, "invitation-nominated");
 
     // workflow definition name
-    public static final String WORKFLOW_DEFINITION_NAME = "jbpm$inwf:invitation-nominated";
     public static final String WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE = "activiti$activitiInvitationNominated";
     public static final String WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT = "activiti$activitiInvitationNominatedAddDirect";
 
     // tasks
     public static final QName WF_TASK_INVITE_TO_SITE = QName.createQName(NAMESPACE_URI, "inviteToSiteTask");
-    public static final QName WF_TASK_INVITE_PENDING = QName.createQName(NAMESPACE_URI, "invitePendingTask");
     public static final QName WF_TASK_ACTIVIT_INVITE_PENDING = QName.createQName(NAMESPACE_URI, "activitiInvitePendingTask");
     public static final QName WF_TASK_ACCEPT_INVITE = QName.createQName(NAMESPACE_URI, "acceptInviteTask");
     public static final QName WF_TASK_REJECT_INVITE = QName.createQName(NAMESPACE_URI, "rejectInviteTask");

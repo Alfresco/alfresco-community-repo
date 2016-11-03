@@ -330,20 +330,13 @@
         </property>
     </bean>
 
-    <bean id="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <!-- noop: JBPM removed in 5.2. See ACE-1659 -->
+    <bean id="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar</value></property>
         <property name="description"><value>patch.alterJBPM331CLOBcolumnsToNvarchar.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>6000</value></property>
         <property name="targetSchema"><value>6001</value></property>
-        <property name="alternatives">
-            <list>
-                <ref bean="patch.db-V3.4-Upgrade-JBPM" />
-            </list>
-        </property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/alter-jBPM331-CLOB-columns-to-nvarchar.sql</value>
-        </property>
     </bean>
     
     <bean id="patch.imapUnsubscribedAspect" class="org.alfresco.repo.admin.patch.impl.ImapUnsubscribedAspectPatch" parent="basePatch">
@@ -487,15 +480,13 @@
         <property name="targetSchema"><value>6010</value></property>
     </bean>
 
-    <bean id="patch.db-V3.4-remove-redundant-jbpm-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <!-- noop: JBPM removed in 5.2. See ACE-1659 -->
+    <bean id="patch.db-V3.4-remove-redundant-jbpm-indexes" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-remove-redundant-jbpm-indexes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>6010</value></property>
         <property name="targetSchema"><value>6011</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/remove-redundant-jbpm-indexes.sql</value>
-        </property>
     </bean>
 
      <bean id="patch.show.audit" class="org.alfresco.repo.admin.patch.impl.UpdateAuditTemplatePatch" parent="basePatch" >
@@ -615,15 +606,13 @@
         </property>
     </bean>
     
-    <bean id="patch.db-V3.4-JBPM-varinst-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <!-- noop: JBPM removed in 5.2. See ACE-1659 -->
+    <bean id="patch.db-V3.4-JBPM-varinst-indexes" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-JBPM-varinst-indexes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>6016</value></property>
         <property name="targetSchema"><value>6017</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-varinst-indexes.sql</value>
-        </property>
     </bean>
     
     <bean id="patch.db-V4.1-remove-column-activiti" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
@@ -1060,19 +1049,13 @@
         </property>
     </bean>
     
-    <bean id="patch.eol-wcmwf" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
+    <!-- noop: JBPM removed in 5.2. See ACE-1659 -->
+    <bean id="patch.eol-wcmwf" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch" >
         <property name="id"><value>patch.eol-wcmwf</value></property>
         <property name="description"><value>patch.eol-wcmwf.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>8007</value></property>
         <property name="targetSchema"><value>8008</value></property>
-        <property name="undeployWorkflowNames">
-            <list>
-                <value>jbpm$wcmwf:submit</value>
-                <value>jbpm$wcmwf:submitdirect</value>
-                <value>jbpm$wcmwf:changerequest</value>
-            </list>
-        </property>
     </bean>
 
     <bean id="patch.db-V5.0-upgrade-to-activiti-5.16.4" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
@@ -1484,4 +1467,16 @@
         </property>
     </bean>
     
+    <bean id="patch.db-V5.2-remove-jbpm-tables-from-db" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V5.2-remove-jbpm-tables-from-db</value></property>
+        <property name="description"><value>patch.db-V5.2-remove-jbpm-tables-from-db.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10004</value></property>
+        <property name="targetSchema"><value>10005</value></property>
+        <property name="ignored"><value>${system.remove-jbpm-tables-from-db.ignored}</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.2/${db.script.dialect}/remove-jbpm-tables-from-db.sql</value>
+        </property>
+    </bean>    
+
 </beans>

@@ -30,6 +30,9 @@ import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * POJO class representing the FacetField
  *
@@ -47,6 +50,7 @@ public class FacetField
     private final Integer offset;
     private final Integer mincount;
     private final Integer facetEnumCacheMinDf;
+    private final List<String> excludeFilters;
 
     @JsonCreator
     public FacetField(@JsonProperty("field") String field,
@@ -58,6 +62,7 @@ public class FacetField
                 @JsonProperty("limit") Integer limit,
                 @JsonProperty("offset") Integer offset,
                 @JsonProperty("mincount") Integer mincount,
+                @JsonProperty("excludeFilters") List<String> excludeFilters,
                 @JsonProperty("facetEnumCacheMinDf") Integer facetEnumCacheMinDf)
     {
         this.field = field;
@@ -69,17 +74,14 @@ public class FacetField
         this.limit = limit; //Can be null
         this.offset = offset == null?0:offset;
         this.mincount = mincount == null?1:mincount;
+        this.excludeFilters = excludeFilters == null? Collections.emptyList():excludeFilters;
         this.facetEnumCacheMinDf = facetEnumCacheMinDf == null?0:facetEnumCacheMinDf;
     }
-    /**
 
-     "excludeFilters": [
-                    "string"
-                    ],
-
-                    "contains": "string",
-                    "containsIgnoreCase": true,
-    **/
+    public List<String> getExcludeFilters()
+    {
+        return excludeFilters;
+    }
 
     public String getField()
     {

@@ -58,10 +58,13 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Tests the SearchMapper class
@@ -304,7 +307,7 @@ public class SearchMapperTests
         //Doesn't error
         searchMapper.fromFilterQuery(searchParameters, null);
 
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null), new FilterQuery("king", Arrays.asList("not", "used"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null), new FilterQuery("king", null)));
         assertEquals(2 ,searchParameters.getFilterQueries().size());
         assertEquals("hedgehog" ,searchParameters.getFilterQueries().get(0));
         assertEquals("king" ,searchParameters.getFilterQueries().get(1));
@@ -321,6 +324,33 @@ public class SearchMapperTests
             //You can't specify FilterQuery when using the CMIS language
             assertNotNull(iae);
         }
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts}description:xyz", Arrays.asList("desc1", "desc2"))));
+        assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts}description:xyz", Arrays.asList("desc1"))));
+        assertEquals("{!afts tag=desc1 }description:xyz" ,searchParameters.getFilterQueries().get(1));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("description:xyz", Arrays.asList("desc1"))));
+        assertEquals("{!afts tag=desc1 }description:xyz" ,searchParameters.getFilterQueries().get(2));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts} description:xyz", Arrays.asList("desc1"))));
+        assertEquals("{!afts tag=desc1 } description:xyz" ,searchParameters.getFilterQueries().get(3));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(" {!afts cake} description:xyz", Arrays.asList("desc1"))));
+        assertEquals("{!afts tag=desc1 cake} description:xyz" ,searchParameters.getFilterQueries().get(4));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts tag=desc1}description:xyz", Arrays.asList("desc1"))));
+        assertEquals("{!afts tag=desc1}description:xyz" ,searchParameters.getFilterQueries().get(5));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("created:2011", Arrays.asList("desc1"))));
+        assertEquals("{!afts tag=desc1 }created:2011" ,searchParameters.getFilterQueries().get(6));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("=cm:name:cabbage", Arrays.asList("desc1"))));
+        assertEquals("{!afts tag=desc1 }=cm:name:cabbage" ,searchParameters.getFilterQueries().get(7));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{http://www.alfresco.org/model/content/1.0}title:workflow", null)));
+        assertEquals("{http://www.alfresco.org/model/content/1.0}title:workflow" ,searchParameters.getFilterQueries().get(8));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{http://www.alfresco.org/model/content/1.0}title:workflow", Arrays.asList("desc1"))));
+        assertEquals("{!afts tag=desc1 }{http://www.alfresco.org/model/content/1.0}title:workflow" ,searchParameters.getFilterQueries().get(9));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts} description:xyz", Arrays.asList("desc1", "desc2"))));
+        assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{ !afts } description:xyz", Arrays.asList("desc1", "desc2"))));
+        assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
+
     }
 
     @Test
@@ -427,14 +457,14 @@ public class SearchMapperTests
 
         try
         {
-            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField(null,null,null,null,null,null,null,null,null,null))));
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField(null,null,null,null,null,null,null,null,null,null,null))));
             fail();
         } catch (IllegalArgumentException iae)
         {
             assertTrue(iae.getLocalizedMessage().contains("facetFields facet field is a mandatory parameter"));
         }
 
-        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,null,null,null,null,null,null,null))));
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,null,null,null,null,null,null,null,null))));
         assertEquals(1 ,searchParameters.getFieldFacets().size());
         FieldFacet ff = searchParameters.getFieldFacets().get(0);
 
@@ -449,7 +479,7 @@ public class SearchMapperTests
 //        assertEquals("{key='myfield'}myfield" ,ff.getField());
 
         searchParameters = new SearchParameters();
-        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield","mylabel","myprefix",null,null,null,null,null,null,null))));
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield","mylabel","myprefix",null,null,null,null,null,null,null,null))));
 
         ff = searchParameters.getFieldFacets().get(0);
 //        assertEquals("{key='mylabel'}myfield" ,ff.getField());
@@ -457,7 +487,7 @@ public class SearchMapperTests
 
         try
         {
-            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"badsort",null,null,null,null,null,null))));
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"badsort",null,null,null,null,null,null,null))));
             fail();
         }
         catch (InvalidArgumentException iae)
@@ -468,7 +498,7 @@ public class SearchMapperTests
 
         try
         {
-            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null, null,"badmethod",null,null,null,null,null))));
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null, null,"badmethod",null,null,null,null,null,null))));
             fail();
         }
         catch (InvalidArgumentException iae)
@@ -478,10 +508,23 @@ public class SearchMapperTests
         }
 
         searchParameters = new SearchParameters();
-        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"INDEX","ENUM",null,null,null,null,null))));
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"INDEX","ENUM",null,null,null,null,null,null))));
         ff = searchParameters.getFieldFacets().get(0);
         assertEquals("INDEX" ,ff.getSort().toString());
         assertEquals("ENUM" ,ff.getMethod().toString());
+    }
+
+    @Test
+    public void fromMultiSelectFacetFields() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"INDEX","ENUM",null,null,null,null,Arrays.asList("tag1"),null))));
+        FieldFacet ff = searchParameters.getFieldFacets().get(0);
+        assertEquals("{!afts ex=tag1}myfield" , ff.getField());
+        searchParameters = new SearchParameters();
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("{!afts}thefield",null,null,null,null,null,null,null,null,Arrays.asList("tag5"),null))));
+        ff = searchParameters.getFieldFacets().get(0);
+        assertEquals("{!afts ex=tag5}thefield" , ff.getField());
     }
 
     @Test

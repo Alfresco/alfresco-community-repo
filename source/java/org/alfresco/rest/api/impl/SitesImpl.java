@@ -683,7 +683,7 @@ public class SitesImpl implements Sites
         else
         {
             // default sort order
-            sortProps.add(new Pair<>(ContentModel.PROP_NAME, Boolean.TRUE));
+            sortProps.add(new Pair<>(ContentModel.PROP_TITLE, Boolean.TRUE));
         }
         
         final PagingResults<SiteInfo> pagingResult = siteService.listSites(null, sortProps, pagingRequest);

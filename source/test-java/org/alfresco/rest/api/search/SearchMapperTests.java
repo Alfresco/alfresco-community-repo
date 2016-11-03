@@ -53,6 +53,8 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.FieldHighlightParameters;
+import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
@@ -60,6 +62,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests the SearchMapper class
@@ -511,10 +514,20 @@ public class SearchMapperTests
         assertEquals(-1, searchParameters.getMaxPermissionChecks());
     }
 
+    @Test
+    public void fromHighlight() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        List<FieldHighlightParameters> fields = Arrays.asList(new FieldHighlightParameters("desc",50,100,false,"@","#"), new FieldHighlightParameters("title",55,105,true,"*","¿"));
+        GeneralHighlightParameters highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
+        searchMapper.fromHighlight(searchParameters,highlightParameters);
+        assertEquals(searchParameters.getHightlight(), highlightParameters);
+    }
+
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null, null, null, null, null);
         return sq;
     }
 }

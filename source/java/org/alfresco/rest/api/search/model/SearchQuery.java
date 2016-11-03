@@ -27,7 +27,7 @@
 package org.alfresco.rest.api.search.model;
 
 import org.alfresco.rest.framework.resource.parameters.Paging;
-import org.apache.solr.common.params.SpellingParams;
+import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -53,8 +53,9 @@ public class SearchQuery
     private final Spelling spellcheck;
     private final Scope scope;
     private final Limits limits;
+    private final GeneralHighlightParameters highlight;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null,null, null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null,null, null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -69,7 +70,8 @@ public class SearchQuery
                 @JsonProperty("facetQueries")  List<FacetQuery> facetQueries,
                 @JsonProperty("spellcheck") Spelling spellcheck,
                 @JsonProperty("scope") Scope scope,
-                @JsonProperty("limits")Limits limits)
+                @JsonProperty("limits")Limits limits,
+                @JsonProperty("highlight")GeneralHighlightParameters highlight)
     {
         this.query = query;
         this.paging = paging;
@@ -84,6 +86,7 @@ public class SearchQuery
         this.scope = scope;
         this.facetFields = facetFields;
         this.limits = limits;
+        this.highlight = highlight;
     }
 
     public Query getQuery()
@@ -145,6 +148,10 @@ public class SearchQuery
         return facetFields;
     }
 
+    public GeneralHighlightParameters getHighlight()
+    {
+        return highlight;
+    }
     public Limits getLimits()
     {
         return limits;

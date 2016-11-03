@@ -39,6 +39,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
+import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -109,6 +110,32 @@ public class SearchQuerySerializerTests
         assertEquals(2, searchQuery.getFields().size());
         assertTrue(searchQuery.getFields().contains("id"));
         assertTrue(searchQuery.getFields().contains("name"));
+
+        //Highlight
+        assertEquals("]", searchQuery.getHighlight().getPostfix());
+        assertEquals("[", searchQuery.getHighlight().getPrefix());
+        assertEquals(20, searchQuery.getHighlight().getSnippetCount().intValue());
+        assertEquals(10, searchQuery.getHighlight().getFragmentSize().intValue());
+        assertEquals(true, searchQuery.getHighlight().getMergeContiguous());
+        assertEquals(40, searchQuery.getHighlight().getMaxAnalyzedChars().intValue());
+        assertEquals(true, searchQuery.getHighlight().getUsePhraseHighlighter());
+
+        assertEquals(2, searchQuery.getHighlight().getFields().size());
+        FieldHighlightParameters high1 = searchQuery.getHighlight().getFields().get(0);
+        assertEquals("my", high1.getField());
+        assertEquals("¡", high1.getPostfix());
+        assertEquals("?", high1.getPrefix());
+        assertEquals(23,  high1.getSnippetCount().intValue());
+        assertEquals(5,  high1.getFragmentSize().intValue());
+        assertEquals(true,high1.getMergeContiguous());
+
+        FieldHighlightParameters high2 = searchQuery.getHighlight().getFields().get(1);
+        assertEquals("your", high2.getField());
+        assertEquals(")", high2.getPostfix());
+        assertEquals("(", high2.getPrefix());
+        assertEquals(3,  high2.getSnippetCount().intValue());
+        assertEquals(15,  high2.getFragmentSize().intValue());
+        assertEquals(false,high2.getMergeContiguous());
     }
 
     @Test

@@ -10,13 +10,13 @@
     <artifactId>alfresco-data-model</artifactId>
     <name>Alfresco Data Model</name>
     <description>Alfresco Data Model classes</description>
-    <version>6.6-SNAPSHOT</version>
+    <version>6.6</version>
 
     <scm>
         <connection>scm:git:https://gitlab.alfresco.com/platform/alfresco-data-model.git</connection>
         <developerConnection>scm:git:https://gitlab.alfresco.com/platform/alfresco-data-model.git</developerConnection>
         <url>https://gitlab.alfresco.com/platform/alfresco-data-model</url>
-        <tag>HEAD</tag>
+        <tag>6.6</tag>
     </scm>
 
     <distributionManagement>

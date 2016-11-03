@@ -56,6 +56,7 @@ import org.junit.runners.Suite;
     DeletedNodesTest.class,
     AuthenticationsTest.class,
     ModulePackagesApiTest.class,
+    WherePredicateApiTest.class,
     TestSites.class,
     TestNodeComments.class,
     TestCMIS.class,

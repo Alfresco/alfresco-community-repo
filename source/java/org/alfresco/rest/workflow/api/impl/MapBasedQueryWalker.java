@@ -261,8 +261,8 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
         }
         else if (negated)
         {
-            // Throw error for the unsupported NOT operator only if the property was valid for comparison, show the more meaningful error first.
-            throw new InvalidArgumentException("NOT operator is not supported for " + WhereClauseParser.tokenNames[type] + " comparison."); 
+            // Throw error for the unsupported negation only if the property was valid for comparison, show the more meaningful error first.
+            throw new InvalidArgumentException("Cannot use NOT for " + WhereClauseParser.tokenNames[type] + " comparison."); 
         }
     }
 

@@ -99,6 +99,7 @@
    	   <property name="dictionaryService" ref="dictionaryService"/>
    	   <property name="searchService" ref="admSearchService"/>
    	   <property name="namespaceService" ref="namespaceService"/>
+   	   <property name="checkOutCheckInService" ref="checkOutCheckInService"/>
    </bean>
 
    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >

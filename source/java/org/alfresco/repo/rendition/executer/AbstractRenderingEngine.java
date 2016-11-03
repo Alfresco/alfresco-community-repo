@@ -36,7 +36,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -54,15 +53,12 @@ import org.alfresco.repo.rendition.RenditionLocation;
 import org.alfresco.repo.rendition.RenditionLocationResolver;
 import org.alfresco.repo.rendition.RenditionNodeManager;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rendition.RenderCallback;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
@@ -75,15 +71,10 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.SerializedTransformationOptionsAccessor;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
-import org.alfresco.util.transaction.TransactionListener;
-import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -98,13 +89,11 @@ import com.sun.star.lang.NullPointerException;
  * @author Nick Smith
  * @since 3.3
  */
-public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase implements TransactionListener
+public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
 {
+
     /** Logger */
     private static Log logger = LogFactory.getLog(AbstractRenderingEngine.class);
-
-    private static final String RENDITIONED_CONTENT = "RENDITIONED_CONTENT";
-    private static final String RENDERING_CONTEXTS = "RenderingEngine.Contexts";
 
     protected static final String CONTENT_READER_NOT_FOUND_MESSAGE = "Cannot find Content Reader for document. Operation can't be performed";
     protected static final String DEFAULT_RUN_AS_NAME = AuthenticationUtil.getSystemUserName();
@@ -156,9 +145,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected ContentService contentService;
     protected MimetypeMap mimetypeMap;
     protected ActionTrackingService actionTrackingService;
-    protected AttributeService attributeService;
-    protected TransactionService transactionService;
-    protected VersionService versionService;
 
     /* Parameter names common to all Rendering Actions */
     /**
@@ -229,21 +215,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     
     private final NodeLocator temporaryParentNodeLocator;
     private final QName temporaryRenditionLinkType;
-
-    public void setVersionService(VersionService versionService)
-    {
-        this.versionService = versionService;
-    }
-
-    public void setAttributeService(AttributeService attributeService)
-    {
-        this.attributeService = attributeService;
-    }
-
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
 
     /**
      * Injects the nodeService bean.
@@ -556,9 +527,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         RenderingContext context = new RenderingContext(sourceNode,
                     renditionDefinition,
                     targetContentProp);
-
         render(context);
-
         // This is a workaround for the fact that actions don't have return
         // values.
         action.getParameterValues().put(PARAM_RESULT, context.getChildAssociationRef());
@@ -791,24 +760,12 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         return result;
     }
 
-    public static String getRenderedContentKey(NodeRef sourceNode, VersionService versionService)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(sourceNode.toString());
-        sb.append(".");
-        Version version = versionService.getCurrentVersion(sourceNode);
-        sb.append(version != null ? version.getVersionLabel() : "1.0");
-        return sb.toString();
-    }
-
     protected class RenderingContext implements SerializedTransformationOptionsAccessor
     {
-        private final String guid = GUID.generate();
-
         private final NodeRef sourceNode;
         private final RenditionDefinition definition;
         private final QName renditionContentProperty;
-        private String renderedContentKey;
+        
         private ChildAssociationRef caNodeRef;
 
         /**
@@ -816,95 +773,13 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
          * @param definition RenditionDefinition
          * @param renditionContentProperty QName
          */
-        RenderingContext(NodeRef sourceNode, RenditionDefinition definition, QName renditionContentProperty)
+        public RenderingContext(NodeRef sourceNode,//
+                    RenditionDefinition definition,//
+                    QName renditionContentProperty)
         {
             this.sourceNode = sourceNode;
             this.definition = definition;
             this.renditionContentProperty = renditionContentProperty;
-            this.renderedContentKey = AbstractRenderingEngine.getRenderedContentKey(sourceNode, versionService);
-        }
-
-        public String getRenderedContentKey()
-        {
-            return renderedContentKey;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + getOuterType().hashCode();
-            result = prime * result + ((guid == null) ? 0 : guid.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            RenderingContext other = (RenderingContext) obj;
-            if (!getOuterType().equals(other.getOuterType()))
-                return false;
-            if (guid == null) {
-                if (other.guid != null)
-                    return false;
-            } else if (!guid.equals(other.guid))
-                return false;
-            return true;
-        }
-
-        /**
-         * Save an existing transformed content url for this rendition and node
-         * 
-         * @param existingTransformedContentUrl
-         */
-        void setExistingTransformedContentUrl(final String existingTransformedContentUrl)
-        {
-            // add the rendering context to the txn listener so that we can clean up
-            // any rendering context data saved using the AttributeService
-            TransactionalResourceHelper.getSet(RENDERING_CONTEXTS).add(this);
-            TransactionSupportUtil.bindListener(AbstractRenderingEngine.this, 0);
-
-            if(logger.isDebugEnabled())
-            {
-                logger.debug("setExistingTransformedContentUrl for renderedContentKey " + renderedContentKey
-                    + ", rendition " + getDefinition().getRenditionName());
-            }
-
-            // make sure this is saved in a new transaction
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    attributeService.setAttribute(existingTransformedContentUrl, RENDITIONED_CONTENT, renderedContentKey,
-                            getDefinition().getRenditionName());
-                    return null;
-                }
-            }, false, true);
-        }
-
-        /**
-         * Get an existing transformed content/rendition url for this rendition and node
-         *  
-         * @return content url of transformed content/rendition
-         */
-        String getExistingTransformedContentUrl()
-        {
-            // add the rendering context to the txn listener so that we can clean up
-            // any rendering context data saved using the AttributeService
-            TransactionalResourceHelper.getSet(RENDERING_CONTEXTS).add(this);
-            TransactionSupportUtil.bindListener(AbstractRenderingEngine.this, 0);
-
-            String contentUrl = (String)attributeService.getAttribute(RENDITIONED_CONTENT, renderedContentKey, 
-                    getDefinition().getRenditionName());
-            return contentUrl;
         }
 
         /**
@@ -914,7 +789,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         {
             return this.sourceNode;
         }
-
+        
         /**
          * Lazily instantiation of the ChildAssociationRef
          * @return ChildAssociationRef
@@ -925,7 +800,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             {
                 this.caNodeRef = createRenditionNodeAssoc(sourceNode, definition);
             }
-
             return this.caNodeRef;
         }
 
@@ -987,23 +861,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                 return number.intValue();
             }
         }
-
-        @Override
-        public String toString()
-        {
-            return "RenderingContext [sourceNode=" + sourceNode + ", renderedContentKey=" + renderedContentKey
-                    + ", definition=" + definition + ", renditionContentProperty=" + renditionContentProperty + ", caNodeRef=" + caNodeRef
-                    + ", actionDefinitionName=" + definition.getActionDefinitionName()
-                    + ", renditionName=" + definition.getRenditionName()
-                    + "]";
-        }
-
-        private AbstractRenderingEngine getOuterType()
-        {
-            return AbstractRenderingEngine.this;
-        }
     }
-
+    
+    
     protected void tagSourceNodeAsRenditioned(final RenditionDefinition renditionDef, final NodeRef actionedUponNodeRef)
     {
         // Adds the 'Renditioned' aspect to the source node if it
@@ -1260,69 +1120,5 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
                     "multiple instances of the same action");
         }
         return executionSummaries.iterator().next();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void beforeCommit(boolean readOnly)
-    {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void beforeCompletion()
-    {
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void afterCommit()
-    {
-        // clear saved rendition data if we are successful
-
-        final Set<RenderingContext> renderingContexts = TransactionalResourceHelper.getSet(RENDERING_CONTEXTS);
-
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("Cleaning up " + renderingContexts.size() + " rendering contexts");
-        }
-
-        if(!renderingContexts.isEmpty())
-        {
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    for(RenderingContext context : renderingContexts)
-                    {
-                        if(logger.isDebugEnabled())
-                        {
-                            logger.debug("Cleaning up rendering context for source node " + context.getSourceNode()
-                                + ", rendition " + context.getDefinition().getRenditionName());
-                        }
-    
-                        attributeService.removeAttributes(RENDITIONED_CONTENT, context.getRenderedContentKey(),
-                                context.getDefinition().getRenditionName());
-                    }
-    
-                    return null;
-                }
-            }, false, true);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void afterRollback()
-    {
     }
 }

@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -62,7 +63,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
@@ -86,11 +86,9 @@ import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.Pair;
@@ -2609,21 +2607,14 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         int rgbAtBottomRight = img.getRGB(img.getWidth() - 1, img.getHeight() - 1);
         assertTrue("lower right should be "+bottomRight, Integer.toHexString(rgbAtBottomRight).endsWith(bottomRight));
     }
-
+    
     /**
      * A dummy rendering engine used in testing
      */
     private static class DummyHelloWorldRenditionEngine extends AbstractRenderingEngine
     {
        private static final String ENGINE_NAME = "helloWorldRenderingEngine";
-
-       public DummyHelloWorldRenditionEngine(ConfigurableApplicationContext ctx)
-       {
-           this.transactionService = (TransactionService)ctx.getBean("transactionService");
-           this.attributeService = (AttributeService)ctx.getBean("attributeService");
-           this.versionService = (VersionService)ctx.getBean("versionService");
-       }
-
+       
        /**
         * Loads this executor into the ApplicationContext, if it
         *  isn't already there
@@ -2633,7 +2624,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
           if(!ctx.containsBean(ENGINE_NAME))
           {
              // Create, and do dependencies
-             DummyHelloWorldRenditionEngine hw = new DummyHelloWorldRenditionEngine(ctx);
+             DummyHelloWorldRenditionEngine hw = new DummyHelloWorldRenditionEngine();
              hw.setRuntimeActionService(
                    (RuntimeActionService)ctx.getBean("actionService")
              );
@@ -2662,8 +2653,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
        }
        
        @Override
-       protected void render(RenderingContext context)
-       {
+       protected void render(RenderingContext context) {
            ContentWriter contentWriter = context.makeContentWriter();
            contentWriter.setMimetype("text/plain");
            contentWriter.putContent( "Hello, world!" );

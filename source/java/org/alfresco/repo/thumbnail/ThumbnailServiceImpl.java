@@ -265,8 +265,8 @@ public class ThumbnailServiceImpl implements ThumbnailService,
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("Thumbnail created " + childAssoc + " for sourceNodeRef " + sourceNodeRef + ", thumbnail "
-                    + thumbnailName + ", thumbnailNodeRef " + thumbnailNodeRef);
+        	logger.debug("Thumbnail created " + childAssoc + " for sourceNodeRef " + sourceNodeRef + ", thumbnail " + thumbnailName
+        			+ ", thumbnailNodeRef " + thumbnailNodeRef);
         }
 
         // MNT-15135: Cache the associations between parent nodes and updated thumbnails,
@@ -382,12 +382,6 @@ public class ThumbnailServiceImpl implements ThumbnailService,
             //We can be in a read-only transaction, so force a new transaction 
             requiresNew = true;
         }
-
-        // Get the name of the thumbnail and add to properties map
-        QName thumbnailQName = getThumbnailQName(thumbnailName);
-        final RenditionDefinition definition = createRenditionDefinition(contentProperty, mimetype,
-                    transformationOptions, thumbnailQName, assocDetails);
-
         return txnHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
 
@@ -398,12 +392,18 @@ public class ThumbnailServiceImpl implements ThumbnailService,
                 {
                     public NodeRef doWork() throws Exception
                     {
-                        return createThumbnailNode(node, definition, thumbnailName);
+                       return createThumbnailNode( node, 
+                                                   contentProperty,
+                                                    mimetype, 
+                                                    transformationOptions, 
+                                                    thumbnailName, 
+                                                    assocDetails);
                     }
                 }, AuthenticationUtil.getSystemUserName());
             }
     
         }, false, requiresNew);
+        
     }
     
     private QName getThumbnailQName(String localThumbnailName)
@@ -717,8 +717,14 @@ public class ThumbnailServiceImpl implements ThumbnailService,
         return definition;
     }
 
-    private NodeRef createThumbnailNode(final NodeRef node, final RenditionDefinition definition, final String thumbnailName)
+    private NodeRef createThumbnailNode(final NodeRef node, final QName contentProperty,
+                final String mimetype, final TransformationOptions transformationOptions, final String thumbnailName,
+                final ThumbnailParentAssociationDetails assocDetails)
     {
+        // Get the name of the thumbnail and add to properties map
+        QName thumbnailQName = getThumbnailQName(thumbnailName);
+        RenditionDefinition definition = createRenditionDefinition(contentProperty, mimetype,
+                    transformationOptions, thumbnailQName, assocDetails);
         try
         {
             ChildAssociationRef thumbnailAssoc = renditionService.render(node, definition);

@@ -129,12 +129,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_CMOBJECT)).thenReturn(true);
         when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_SYSTEM_FOLDER)).thenReturn(false);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
         List<String> includeParamList = new ArrayList<String>();
@@ -158,20 +153,13 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_SYSTEM_FOLDER)).thenReturn(false);
         when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
         List<String> includeParamList = new ArrayList<String>();
         includeParamList.add(RMNodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS);
 
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.DELETE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)).thenReturn(AccessStatus.ALLOWED);
+        setPermissions(nodeRef, AccessStatus.ALLOWED);
 
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(nodeRef);
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
@@ -198,20 +186,13 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_SYSTEM_FOLDER)).thenReturn(false);
         when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
         List<String> includeParamList = new ArrayList<String>();
         includeParamList.add(RMNodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS);
 
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.DENIED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.DELETE)).thenReturn(AccessStatus.DENIED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)).thenReturn(AccessStatus.DENIED);
+        setPermissions(nodeRef, AccessStatus.DENIED);
 
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(nodeRef);
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
@@ -233,36 +214,19 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_CATEGORY);
         when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_RECORD_CATEGORY, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
         includeParamList.add(RMNodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS);
 
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.DELETE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)).thenReturn(AccessStatus.ALLOWED);
+        setPermissions(nodeRef, AccessStatus.ALLOWED);
 
         NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
         when(mockedFilePlanService.getTransferContainer(filePlanNodeRef)).thenReturn(nodeRef);
 
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        assertNotNull(folderOrDocument);
-        assertTrue(RecordCategoryNode.class.isInstance(folderOrDocument));
-
-        RecordCategoryNode resultNode = (RecordCategoryNode) folderOrDocument;
-        assertEquals(false, resultNode.getIsRecordFolder());
-        assertEquals(false, resultNode.getIsFile());
-        assertEquals(true, resultNode.getIsCategory());
-        List<String> allowableOperations = resultNode.getAllowableOperations();
-        assertTrue("Create operation should be available for Transfers container.", allowableOperations.contains(RMNodes.OP_CREATE));
-        assertTrue("Update operation should be available for Transfers container.", allowableOperations.contains(RMNodes.OP_UPDATE));
-        assertFalse("Delete operation should note be available for Transfers container.", allowableOperations.contains(RMNodes.OP_DELETE));
+        checkSpecialContainersAllowedOperations(folderOrDocument);
     }
 
     @Test
@@ -272,19 +236,12 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_CATEGORY);
         when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_RECORD_CATEGORY, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
         includeParamList.add(RMNodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS);
 
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.DELETE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)).thenReturn(AccessStatus.ALLOWED);
+        setPermissions(nodeRef, AccessStatus.ALLOWED);
 
         NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
@@ -295,17 +252,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedFilePlanService.getHoldContainer(filePlanNodeRef)).thenReturn(nodeRef);
 
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        assertNotNull(folderOrDocument);
-        assertTrue(RecordCategoryNode.class.isInstance(folderOrDocument));
-
-        RecordCategoryNode resultNode = (RecordCategoryNode) folderOrDocument;
-        assertEquals(false, resultNode.getIsRecordFolder());
-        assertEquals(false, resultNode.getIsFile());
-        assertEquals(true, resultNode.getIsCategory());
-        List<String> allowableOperations = resultNode.getAllowableOperations();
-        assertTrue("Create operation should be available for Holds container.", allowableOperations.contains(RMNodes.OP_CREATE));
-        assertTrue("Update operation should be available for Holds container.", allowableOperations.contains(RMNodes.OP_UPDATE));
-        assertFalse("Delete operation should note be available for Holds container.", allowableOperations.contains(RMNodes.OP_DELETE));
+        checkSpecialContainersAllowedOperations(folderOrDocument);
     }
 
     @Test
@@ -315,19 +262,12 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_CATEGORY);
         when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_RECORD_CATEGORY, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
         includeParamList.add(RMNodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS);
 
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.DELETE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)).thenReturn(AccessStatus.ALLOWED);
+        setPermissions(nodeRef, AccessStatus.ALLOWED);
 
         NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
@@ -341,17 +281,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedFilePlanService.getUnfiledContainer(filePlanNodeRef)).thenReturn(nodeRef);
 
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        assertNotNull(folderOrDocument);
-        assertTrue(RecordCategoryNode.class.isInstance(folderOrDocument));
-
-        RecordCategoryNode resultNode = (RecordCategoryNode) folderOrDocument;
-        assertEquals(false, resultNode.getIsRecordFolder());
-        assertEquals(false, resultNode.getIsFile());
-        assertEquals(true, resultNode.getIsCategory());
-        List<String> allowableOperations = resultNode.getAllowableOperations();
-        assertTrue("Create operation should be available for Unfiled Records container.", allowableOperations.contains(RMNodes.OP_CREATE));
-        assertTrue("Update operation should be available for Unfiled Records container.", allowableOperations.contains(RMNodes.OP_UPDATE));
-        assertFalse("Delete operation should note be available for Unfiled Records container.", allowableOperations.contains(RMNodes.OP_DELETE));
+        checkSpecialContainersAllowedOperations(folderOrDocument);
     }
 
     @Test
@@ -363,12 +293,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_CMOBJECT)).thenReturn(true);
         when(mockedDictionaryService.isSubClass(mockedType, ContentModel.TYPE_SYSTEM_FOLDER)).thenReturn(false);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(false);
         List<String> includeParamList = new ArrayList<String>();
@@ -390,12 +315,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_CATEGORY);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
@@ -414,12 +334,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_CATEGORY);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
         includeParamList.add(RMNodes.PARAM_INCLUDE_HAS_RETENTION_SCHEDULE);
@@ -456,12 +371,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_FOLDER);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
@@ -480,12 +390,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_FOLDER);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
         includeParamList.add(RMNodes.PARAM_INCLUDE_IS_CLOSED);
@@ -521,12 +426,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getType(nodeRef)).thenReturn(ContentModel.TYPE_CONTENT);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
@@ -545,12 +445,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getType(nodeRef)).thenReturn(ContentModel.TYPE_CONTENT);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         List<String> includeParamList = new ArrayList<String>();
 
@@ -723,12 +618,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         QName mockedType = AlfMock.generateQName();
         when(mockedNodeService.getType(nodeRef)).thenReturn(mockedType);
 
-        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+        setupCompanyHomeAndPrimaryParent(nodeRef);
 
         rmNodesImpl.deleteNode(nodeRef.getId(), mockedParameters);
         verify(mockedFileFolderService, times(1)).delete(nodeRef);
@@ -859,5 +749,37 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(mockedSiteInfo);
         isRMSite = rmNodesImpl.isRMSite(parentNodeRef.getId());
         assertEquals("Should return true.", true, isRMSite);
+    }
+
+    private void setupCompanyHomeAndPrimaryParent(NodeRef nodeRef)
+    {
+        NodeRef companyHomeNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedRepositoryHelper.getCompanyHome()).thenReturn(companyHomeNodeRef);
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getParentRef()).thenReturn(parentNodeRef);
+        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedChildAssoc);
+    }
+
+    private void setPermissions(NodeRef nodeRef, AccessStatus permissionToSet)
+    {
+        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.WRITE)).thenReturn(permissionToSet);
+        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.DELETE)).thenReturn(permissionToSet);
+        when(mockedPermissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)).thenReturn(permissionToSet);
+    }
+
+    private void checkSpecialContainersAllowedOperations(Node containerNode)
+    {
+        assertNotNull(containerNode);
+        assertTrue(RecordCategoryNode.class.isInstance(containerNode));
+
+        RecordCategoryNode resultNode = (RecordCategoryNode) containerNode;
+        assertEquals(false, resultNode.getIsRecordFolder());
+        assertEquals(false, resultNode.getIsFile());
+        assertEquals(true, resultNode.getIsCategory());
+        List<String> allowableOperations = resultNode.getAllowableOperations();
+        assertTrue("Create operation should be available for provided container.", allowableOperations.contains(RMNodes.OP_CREATE));
+        assertTrue("Update operation should be available for provided container.", allowableOperations.contains(RMNodes.OP_UPDATE));
+        assertFalse("Delete operation should note be available for provided container.", allowableOperations.contains(RMNodes.OP_DELETE));
     }
 }

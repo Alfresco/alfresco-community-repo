@@ -857,7 +857,7 @@ public class SiteServiceTest extends AbstractSiteServiceTest
         /*
          * Negative test - site does exist but invitation doesn't
          */
-        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/jbpm$8787487"), 404);
+        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/activiti$8787487"), 404);
         
         /*
          * Negative test - site does exist but invitation engine is wrong

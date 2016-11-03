@@ -65,7 +65,7 @@ public class FacetField
         this.prefix = prefix;
         this.sort = sort;
         this.method = method;
-        this.missing = missing == null?true:missing; //Not set in SolrQueryHTTPClient, bug?
+        this.missing = missing == null?false:missing;
         this.limit = limit; //Can be null
         this.offset = offset == null?0:offset;
         this.mincount = mincount == null?0:mincount;

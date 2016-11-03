@@ -175,91 +175,94 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     }
     
     @Override
-    public void comparison(int type, String propertyName, String propertyValue)
+    public void comparison(int type, String propertyName, String propertyValue, boolean negated)
     {
-        boolean throwError = false;
-        
         if (variablesEnabled && propertyName.startsWith("variables/")) 
         {
             processVariable(propertyName, propertyValue, type);
+            return;
         }
-        else
+        
+        boolean throwError = false;
+        if (type == WhereClauseParser.EQUALS)
         {
-            if (type == WhereClauseParser.EQUALS)
+            if (supportedEqualsParameters != null && supportedEqualsParameters.contains(propertyName))
             {
-                if (supportedEqualsParameters != null && supportedEqualsParameters.contains(propertyName))
-                {
-                    equalsProperties.put(propertyName, propertyValue);
-                }
-                else
-                {
-                    throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
-                }
-            }
-            else if (type == WhereClauseParser.MATCHES)
-            {
-                if (supportedMatchesParameters != null && supportedMatchesParameters.contains(propertyName))
-                {
-                    matchesProperties.put(propertyName, propertyValue);
-                }
-                else
-                {
-                    throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
-                }
-            }
-            else if (type == WhereClauseParser.GREATERTHAN)
-            {
-                if (supportedGreaterThanParameters != null && supportedGreaterThanParameters.contains(propertyName))
-                {
-                    greaterThanProperties.put(propertyName, propertyValue);
-                }
-                else
-                {
-                    throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
-                }
-            }
-            else if (type == WhereClauseParser.GREATERTHANOREQUALS)
-            {
-                if (supportedGreaterThanOrEqualParameters != null && supportedGreaterThanOrEqualParameters.contains(propertyName))
-                {
-                    greaterThanOrEqualProperties.put(propertyName, propertyValue);
-                }
-                else
-                {
-                    throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
-                }
-            }
-            else if (type == WhereClauseParser.LESSTHAN)
-            {
-                if (supportedLessThanParameters != null && supportedLessThanParameters.contains(propertyName))
-                {
-                    lessThanProperties.put(propertyName, propertyValue);
-                }
-                else
-                {
-                    throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
-                }
-            }
-            else if (type == WhereClauseParser.LESSTHANOREQUALS)
-            {
-                if (supportedLessThanOrEqualParameters != null && supportedLessThanOrEqualParameters.contains(propertyName))
-                {
-                    lessThanOrEqualProperties.put(propertyName, propertyValue);
-                }
-                else
-                {
-                    throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
-                }
+                equalsProperties.put(propertyName, propertyValue);
             }
             else
             {
                 throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
             }
         }
+        else if (type == WhereClauseParser.MATCHES)
+        {
+            if (supportedMatchesParameters != null && supportedMatchesParameters.contains(propertyName))
+            {
+                matchesProperties.put(propertyName, propertyValue);
+            }
+            else
+            {
+                throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
+            }
+        }
+        else if (type == WhereClauseParser.GREATERTHAN)
+        {
+            if (supportedGreaterThanParameters != null && supportedGreaterThanParameters.contains(propertyName))
+            {
+                greaterThanProperties.put(propertyName, propertyValue);
+            }
+            else
+            {
+                throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
+            }
+        }
+        else if (type == WhereClauseParser.GREATERTHANOREQUALS)
+        {
+            if (supportedGreaterThanOrEqualParameters != null && supportedGreaterThanOrEqualParameters.contains(propertyName))
+            {
+                greaterThanOrEqualProperties.put(propertyName, propertyValue);
+            }
+            else
+            {
+                throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
+            }
+        }
+        else if (type == WhereClauseParser.LESSTHAN)
+        {
+            if (supportedLessThanParameters != null && supportedLessThanParameters.contains(propertyName))
+            {
+                lessThanProperties.put(propertyName, propertyValue);
+            }
+            else
+            {
+                throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
+            }
+        }
+        else if (type == WhereClauseParser.LESSTHANOREQUALS)
+        {
+            if (supportedLessThanOrEqualParameters != null && supportedLessThanOrEqualParameters.contains(propertyName))
+            {
+                lessThanOrEqualProperties.put(propertyName, propertyValue);
+            }
+            else
+            {
+                throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
+            }
+        }
+        else
+        {
+            throwError = !handleUnmatchedComparison(type, propertyName, propertyValue);
+        }
 
         if (throwError) 
         { 
             throw new InvalidArgumentException("framework.exception.InvalidProperty", new Object[] {propertyName, propertyValue, WhereClauseParser.tokenNames[type]});
+        }
+        else if (negated)
+        {
+            // Throw error for the unsupported NOT operator only if the property was valid for comparison, show the more meaningful error first.
+            throw new InvalidArgumentException("NOT operator is not supported for " + WhereClauseParser.tokenNames[type] + " comparison."); 
         }
     }
 

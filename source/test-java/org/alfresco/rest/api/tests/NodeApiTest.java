@@ -519,6 +519,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // -ve test - list folder children with relative path to unknown node should return 400
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/unknown");
         getAll(getNodeChildrenUrl(content1_Id), paging, params, 400);
+        
+        // filtering, via where clause - negated comparison
+        params = new HashMap<>();
+        params.put("where", "(NOT "+Nodes.PARAM_ISFILE+"=true)");
+        getAll(childrenUrl, paging, params, 400);
+        
     }
 
     /**

@@ -113,6 +113,7 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     {
         if ( (!MimetypeMap.MIMETYPE_TEXT_PLAIN.equals(sourceMimetype) &&
               !MimetypeMap.MIMETYPE_TEXT_CSV.equals(sourceMimetype) &&
+              !MimetypeMap.MIMETYPE_DITA.equals(sourceMimetype) &&
               !MimetypeMap.MIMETYPE_XML.equals(sourceMimetype) ) ||
             !MimetypeMap.MIMETYPE_PDF.equals(targetMimetype))
         {
@@ -129,7 +130,8 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     public String getComments(boolean available)
     {
         return getCommentsOnlySupports(
-                Arrays.asList(new String[] {MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_TEXT_CSV, MimetypeMap.MIMETYPE_XML}),
+                Arrays.asList(new String[] {MimetypeMap.MIMETYPE_TEXT_PLAIN, MimetypeMap.MIMETYPE_TEXT_CSV,
+                                            MimetypeMap.MIMETYPE_DITA, MimetypeMap.MIMETYPE_XML}),
                 Arrays.asList(new String[] {MimetypeMap.MIMETYPE_PDF}), available);
     }
 

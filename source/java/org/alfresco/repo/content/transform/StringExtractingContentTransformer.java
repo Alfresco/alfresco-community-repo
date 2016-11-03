@@ -71,7 +71,8 @@ public class StringExtractingContentTransformer extends AbstractContentTransform
             // conversions from any plain text format are very reliable
             return true;
         }
-        else if (sourceMimetype.startsWith(PREFIX_TEXT))
+        else if (sourceMimetype.startsWith(PREFIX_TEXT) ||
+                 sourceMimetype.equals(MimetypeMap.MIMETYPE_DITA))
         {
             // the source is text, but probably with some kind of markup
             return true;
@@ -88,7 +89,7 @@ public class StringExtractingContentTransformer extends AbstractContentTransform
     {
         StringBuilder sb = new StringBuilder();
         sb.append(super.getComments(available));
-        sb.append("# Only supports transformation of js and mimetypes starting with \"");
+        sb.append("# Only supports transformation of js, dita and mimetypes starting with \"");
         sb.append(PREFIX_TEXT);
         sb.append("\" to txt.\n");
         return sb.toString();

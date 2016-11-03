@@ -53,7 +53,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
-import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
+import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -96,7 +96,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private String tempDirectoryName = null;
     private int memoryThreshold = 4 * 1024 * 1024; // 4mb
     private long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
-    private ThresholdOutputStreamFactory streamFactory = null;
+    private TempStoreOutputStreamFactory streamFactory = null;
 
     private Class<?>[] notPublicExceptions = new Class<?>[] {};
     private Class<?>[] publicExceptions = new Class<?>[] {};
@@ -107,7 +107,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     public void setup()
     {
         File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
-    	this.streamFactory = ThresholdOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
+    	this.streamFactory = TempStoreOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
     }
 
     public void setEncryptTempFiles(Boolean encryptTempFiles)

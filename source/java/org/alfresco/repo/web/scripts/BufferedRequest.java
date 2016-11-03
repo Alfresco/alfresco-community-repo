@@ -31,8 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStream;
-import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
+import org.apache.chemistry.opencmis.commons.server.TempStoreOutputStream;
+import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Description.FormatStyle;
 import org.springframework.extensions.webscripts.Match;
@@ -43,13 +43,13 @@ import org.springframework.util.FileCopyUtils;
 
 public class BufferedRequest implements WrappingWebScriptRequest
 {
-	private ThresholdOutputStreamFactory streamFactory;
+	private TempStoreOutputStreamFactory streamFactory;
     private WebScriptRequest req;
     private File requestBody;
     private InputStream contentStream;
     private BufferedReader contentReader;
     
-    public BufferedRequest(WebScriptRequest req, ThresholdOutputStreamFactory streamFactory)
+    public BufferedRequest(WebScriptRequest req, TempStoreOutputStreamFactory streamFactory)
     {
         this.req = req;
         this.streamFactory = streamFactory;
@@ -57,7 +57,7 @@ public class BufferedRequest implements WrappingWebScriptRequest
 
     private InputStream bufferInputStream() throws IOException
     {
-        ThresholdOutputStream bufferStream = streamFactory.newOutputStream();
+        TempStoreOutputStream bufferStream = streamFactory.newOutputStream();
 
         try
         {
@@ -65,7 +65,7 @@ public class BufferedRequest implements WrappingWebScriptRequest
         }
         catch (IOException e)
         {
-            bufferStream.destroy(); // remove temp file
+            bufferStream.destroy(e); // remove temp file
             throw e;
         }
 

@@ -755,11 +755,10 @@ public class SitesImpl implements Sites
 
     private List<FilterProp> getFilterPropListOfSites(final Parameters parameters)
     {
-        List<FilterProp> filterProps = null;
+        List<FilterProp> filterProps = new ArrayList<FilterProp>();
         Query q = parameters.getQuery();
         if (q != null)
         {
-            filterProps = new ArrayList<FilterProp>();
             MapBasedQueryWalkerOrSupported propertyWalker = new MapBasedQueryWalkerOrSupported(LIST_SITES_EQUALS_QUERY_PROPERTIES, null);
             QueryHelper.walk(q, propertyWalker);
 
@@ -777,7 +776,8 @@ public class SitesImpl implements Sites
             }
         }
 
-        return filterProps;
+        // expected null or non-empty list
+        return filterProps.isEmpty() ? null : filterProps;
     }
 
     private boolean includeFilter(SiteMembership siteMembership, List<FilterProp> filterProps)

@@ -334,7 +334,7 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_AUTO_VERSION_PROPS,
             ContentModel.PROP_AUTO_VERSION);
 
-    private static final List<QName> PROPS_USERLOOKUP = Arrays.asList(
+    public static final List<QName> PROPS_USERLOOKUP = Arrays.asList(
             ContentModel.PROP_CREATOR,
             ContentModel.PROP_MODIFIER,
             ContentModel.PROP_OWNER,

@@ -312,7 +312,18 @@ public class SearchMapperTests
         assertEquals("hedgehog" ,searchParameters.getFilterQueries().get(0));
         assertEquals("king" ,searchParameters.getFilterQueries().get(1));
 
-        //tags aren't used at the moment
+        searchParameters = new SearchParameters();
+        searchParameters.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
+        try
+        {
+            searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null)));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //You can't specify FilterQuery when using the CMIS language
+            assertNotNull(iae);
+        }
     }
 
     @Test

@@ -283,6 +283,12 @@ public class SearchMapper
     {
         if (filterQueries != null && !filterQueries.isEmpty())
         {
+            if (LANGUAGE_CMIS_ALFRESCO.equals(sp.getLanguage()))
+            {
+                throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                            new Object[] { ": filterQueries {} not allowed with cmis language" });
+            }
+
             for (FilterQuery fq:filterQueries)
             {
                 ParameterCheck.mandatoryString("filterQueries query", fq.getQuery());

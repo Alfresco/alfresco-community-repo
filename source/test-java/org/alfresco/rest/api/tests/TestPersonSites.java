@@ -881,7 +881,19 @@ public class TestPersonSites extends EnterpriseTestApi
 
         return getSiteMembershipsForPersonAndNetwork(paging, params, person41, network4, runAsUserTenant);
     }
+    private ListResponse<MemberOfSite> getSiteMembershipsForPerson41NOTWhere(final Paging paging, String siteVisibility, boolean runAsUserTenant) throws Exception
+    {
+        final Map<String, String> params = new HashMap<>();
+        params.put("orderBy", "title" + " " + "ASC");
 
+        if (siteVisibility != null)
+        {
+            params.put("where", "(NOT visibility=" + siteVisibility + ")");
+        }
+
+        return getSiteMembershipsForPersonAndNetwork(paging, params, person41, network4, runAsUserTenant);
+    }
+    
     private ListResponse<MemberOfSite> getSiteMembershipsForPerson41(final Paging paging, String siteVisibility) throws Exception
     {
         return getSiteMembershipsForPerson41(paging, siteVisibility, true);
@@ -962,6 +974,19 @@ public class TestPersonSites extends EnterpriseTestApi
         }
     }
 
+    public void testGetSiteMembershipsWhereSiteVisibilityNOTIncluded() throws Exception
+    {
+        try
+        {
+        	getSiteMembershipsForPerson41NOTWhere(null, SiteVisibility.MODERATED.name(), false);
+            fail("");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+        }
+    }
+    
     @Test
     public void testGetSiteMembershipsWithWhereClause() throws Exception
     {
@@ -973,6 +998,7 @@ public class TestPersonSites extends EnterpriseTestApi
         testGetSiteMembershipsWhereSiteVisibilityPublicAndSkipCount();
         testGetSiteMembershipsWhereSiteVisibilityModerated();
         testGetSiteMembershipsWhereSiteVisibilityInvalid();
+        testGetSiteMembershipsWhereSiteVisibilityNOTIncluded();
     }
 
 }

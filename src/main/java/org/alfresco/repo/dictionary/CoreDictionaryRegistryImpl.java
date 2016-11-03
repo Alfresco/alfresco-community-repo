@@ -59,12 +59,6 @@ public class CoreDictionaryRegistryImpl extends AbstractDictionaryRegistry
             dictionaryDeployer.onDictionaryInit();
         }
 
-        // notify registered listeners that dictionary has been initialised (population is complete)
-        for (DictionaryListener dictionaryListener : dictionaryDAO.getDictionaryListeners())
-        {
-            dictionaryListener.afterDictionaryInit();
-        }
-
         // Done
         if (logger.isInfoEnabled())
         {
@@ -87,33 +81,7 @@ public class CoreDictionaryRegistryImpl extends AbstractDictionaryRegistry
     protected QName putModelImpl(CompiledModel model)
 	{
 		// TODO disallow model overrides for the core dictionary
-
-//		if(compiledModels.get(model.getModelDefinition().getName()) != null)
-//		{
-//			throw new AlfrescoRuntimeException("Cannot override existing model " + model.getModelDefinition().getName());
-//		}
-//
-//		for(M2Namespace namespace : model.getM2Model().getNamespaces())
-//		{
-//			if(uriToModels.get(namespace.getUri()) != null)
-//			{
-//				throw new AlfrescoRuntimeException("Cannot override existing namespace " + namespace.getUri());
-//			}
-//		}
-
 		QName qname = super.putModelImpl(model);
-
-//		if(dictionaryDAO.isContextRefreshed())
-//		{
-//			for(DictionaryListener listener : dictionaryDAO.getDictionaryListeners())
-//			{
-//				if(listener instanceof ExtendedDictionaryListener)
-//				{
-//					((ExtendedDictionaryListener)listener).coreModelAdded(model);
-//				}
-//			}
-//		}
-
         return qname;
 	}
 

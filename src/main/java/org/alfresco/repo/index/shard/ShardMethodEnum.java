@@ -35,10 +35,9 @@ public enum ShardMethodEnum
     MOD_ACL_ID,
     ACL_ID,
     DB_ID,
-    DATE,//Time stamp
-    DATE_YEAR,
-    DATE_MONTH,
-    UNKOWN;
+    DATE,
+    UNKOWN,
+    PROPERTY;
     
     public static ShardMethodEnum getShardMethod(String shardMethod)
     {
@@ -63,11 +62,8 @@ public enum ShardMethodEnum
             case "DATE":
                 shardMethodEnum = DATE;
                 break;
-            case "DATE_YEAR":
-                shardMethodEnum = DATE_YEAR;
-                break;
-            case "DATE_MONTH":
-                shardMethodEnum = DATE_MONTH;
+            case "PROPERTY":
+                shardMethodEnum = PROPERTY;
                 break;
             default:
                 shardMethodEnum = UNKOWN;

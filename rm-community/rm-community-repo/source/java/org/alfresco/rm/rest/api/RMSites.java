@@ -67,6 +67,14 @@ public interface RMSites extends Sites
     RMSite updateRMSite(String siteId, SiteUpdate site, Parameters parameters);
 
     /**
+     * Deletes RM site
+     *
+     * @param siteId
+     * @param parameters
+     */
+    void deleteRMSite(String siteId, Parameters parameters);
+
+    /**
      * TODO Copied from Sites interface because was not available in 5.2.a-EA. To be removed after upgrading.
      *
      * @param siteId

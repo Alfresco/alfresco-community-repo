@@ -859,12 +859,13 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
      */
     public int getIntegerValue(String attribute, int defaultValue, Map<Serializable, Serializable> sourceObject)
     {
-        Integer integer = (Integer) sourceObject.get(attribute);
-        if (integer == null)
+        int intValue = defaultValue;
+        Number configuredInteger = (Number) sourceObject.get(attribute);
+        if (configuredInteger != null)
         {
-           integer = defaultValue;
+           intValue = configuredInteger.intValue();
         }
-        return integer;
+        return intValue;
     }
     
     /**

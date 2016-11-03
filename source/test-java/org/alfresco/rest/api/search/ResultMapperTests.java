@@ -47,6 +47,7 @@ import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.api.search.context.SearchContext;
+import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -63,6 +64,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.social.support.ParameterMap;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -84,6 +87,7 @@ public class ResultMapperTests
                 + "\"facet_fields\":{\"content.size\":[\"Big\",8,\"Brown\",3,\"Fox\",5,\"Jumped\",2,\"somewhere\",3]},\"facet_dates\":{},\"facet_ranges\":{},\"facet_intervals\":{}\n" + "    },"
                 + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
                 + "\"processedDenies\":true, \"lastIndexedTx\":34}";
+    public static final Params EMPTY_PARAMS = Params.valueOf((String)null,(String)null,(WebScriptRequest) null);
 
     @BeforeClass
     public static void setupTests() throws Exception
@@ -115,7 +119,7 @@ public class ResultMapperTests
     @Test
     public void testNoResults() throws Exception
     {
-        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(SearchQuery.EMPTY,new EmptyResultSet());
+        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS,new EmptyResultSet());
         assertNotNull(collection);
         assertFalse(collection.hasMoreItems());
         assertTrue(collection.getTotalItems() < 1);
@@ -126,7 +130,7 @@ public class ResultMapperTests
     public void testToCollectionWithPagingInfo() throws Exception
     {
         ResultSet results = mockResultset(Arrays.asList(514l));
-        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(SearchQuery.EMPTY,results);
+        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS,results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());

@@ -35,7 +35,8 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Gethin James
  */
 @RunWith(Suite.class)
-@SuiteClasses({ SearchMapperTests.class, ResultMapperTests.class,SearchQuerySerializerTests.class})
+@SuiteClasses({ SearchMapperTests.class, ResultMapperTests.class,SearchQuerySerializerTests.class,
+              SearchApiWebscriptTests.class})
 public class AllSearchApiTests
 {
 }

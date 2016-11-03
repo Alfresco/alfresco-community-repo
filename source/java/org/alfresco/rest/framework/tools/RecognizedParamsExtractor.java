@@ -342,10 +342,22 @@ public interface RecognizedParamsExtractor
      */
     default Paging findPaging(WebScriptRequest req)
     {
-        int skipped = Paging.DEFAULT_SKIP_COUNT;
-        int max = Paging.DEFAULT_MAX_ITEMS;
         String skip = req.getParameter(PARAM_PAGING_SKIP);
         String maxItems = req.getParameter(PARAM_PAGING_MAX);
+
+        return getPaging(skip,maxItems);
+    }
+
+    /**
+     * Gets the default paging object
+     * @param skip
+     * @param maxItems
+     * @return
+     */
+    default Paging getPaging(String skip, String maxItems)
+    {
+        int skipped = Paging.DEFAULT_SKIP_COUNT;
+        int max = Paging.DEFAULT_MAX_ITEMS;
 
         try
         {

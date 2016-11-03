@@ -511,15 +511,15 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
     }
     
-//    // TODO Rubbish is taken to be "asc" so returns 200 rather than 400 - is this a framework bug?
-//    @Test
-//    public void testBadOrderByDirection() throws Exception
-//    {
-//        orderBy = "firstName rubbish, lastName asc"; 
-//        expectedStatus = 400;
-//        
-//        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
-//    }
+    @Test
+    public void testBadOrderByDirection() throws Exception
+    {
+        // note: also tested generically in RecognizedParamsExtractorTest
+        orderBy = "firstName rubbish, lastName asc"; 
+        expectedStatus = 400;
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
 
 //    // TODO Having a space in the list discards everything after the space - found in manual testing - is this a framework bug?
 //    @Test

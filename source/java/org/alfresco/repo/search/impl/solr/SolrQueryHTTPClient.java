@@ -682,63 +682,63 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
 
         // end of field facets
 
-        if (searchParameters.getHightlight() != null)
+        if (searchParameters.getHighlight() != null)
         {
             url.append("&").append(HighlightParams.HIGHLIGHT+"=true");
             url.append("&"+HighlightParams.HIGHLIGHT+".q=").append(encoder.encode(searchParameters.getSearchTerm(), "UTF-8"));
 
-            if (searchParameters.getHightlight().getSnippetCount() != null)
+            if (searchParameters.getHighlight().getSnippetCount() != null)
             {
                 url.append("&")
                    .append(HighlightParams.SNIPPETS+"=")
-                   .append(searchParameters.getHightlight().getSnippetCount());
+                   .append(searchParameters.getHighlight().getSnippetCount());
             }
-            if (searchParameters.getHightlight().getFragmentSize() != null)
+            if (searchParameters.getHighlight().getFragmentSize() != null)
             {
                 url.append("&")
                    .append(HighlightParams.FRAGSIZE+"=")
-                   .append(searchParameters.getHightlight().getFragmentSize());
+                   .append(searchParameters.getHighlight().getFragmentSize());
             }
-            if (searchParameters.getHightlight().getMaxAnalyzedChars() != null)
+            if (searchParameters.getHighlight().getMaxAnalyzedChars() != null)
             {
                 url.append("&")
                    .append(HighlightParams.MAX_CHARS+"=")
-                   .append(searchParameters.getHightlight().getMaxAnalyzedChars());
+                   .append(searchParameters.getHighlight().getMaxAnalyzedChars());
             }
-            if (searchParameters.getHightlight().getMergeContiguous() != null)
+            if (searchParameters.getHighlight().getMergeContiguous() != null)
             {
                 url.append("&")
                    .append(HighlightParams.MERGE_CONTIGUOUS_FRAGMENTS+"=")
-                   .append(searchParameters.getHightlight().getMergeContiguous());
+                   .append(searchParameters.getHighlight().getMergeContiguous());
             }
-            if (searchParameters.getHightlight().getUsePhraseHighlighter() != null)
+            if (searchParameters.getHighlight().getUsePhraseHighlighter() != null)
             {
                 url.append("&")
                    .append(HighlightParams.USE_PHRASE_HIGHLIGHTER+"=")
-                   .append(searchParameters.getHightlight().getUsePhraseHighlighter());
+                   .append(searchParameters.getHighlight().getUsePhraseHighlighter());
             }
-            if (searchParameters.getHightlight().getUsePhraseHighlighter() != null)
+            if (searchParameters.getHighlight().getUsePhraseHighlighter() != null)
             {
                 url.append("&")
                    .append(HighlightParams.USE_PHRASE_HIGHLIGHTER+"=")
-                   .append(searchParameters.getHightlight().getUsePhraseHighlighter());
+                   .append(searchParameters.getHighlight().getUsePhraseHighlighter());
             }
-            if (searchParameters.getHightlight().getPrefix() != null)
+            if (searchParameters.getHighlight().getPrefix() != null)
             {
                 url.append("&")
                    .append(HighlightParams.SIMPLE_PRE+"=")
-                   .append(encoder.encode(searchParameters.getHightlight().getPrefix(), "UTF-8"));
+                   .append(encoder.encode(searchParameters.getHighlight().getPrefix(), "UTF-8"));
             }
-            if (searchParameters.getHightlight().getPostfix() != null)
+            if (searchParameters.getHighlight().getPostfix() != null)
             {
                 url.append("&")
                    .append(HighlightParams.SIMPLE_POST+"=")
-                   .append(encoder.encode(searchParameters.getHightlight().getPostfix(), "UTF-8"));
+                   .append(encoder.encode(searchParameters.getHighlight().getPostfix(), "UTF-8"));
             }
-            if (searchParameters.getHightlight().getFields() != null && !searchParameters.getHightlight().getFields().isEmpty())
+            if (searchParameters.getHighlight().getFields() != null && !searchParameters.getHighlight().getFields().isEmpty())
             {
-                List<String> fieldNames = new ArrayList<>(searchParameters.getHightlight().getFields().size());
-                for (FieldHighlightParameters aField:searchParameters.getHightlight().getFields())
+                List<String> fieldNames = new ArrayList<>(searchParameters.getHighlight().getFields().size());
+                for (FieldHighlightParameters aField:searchParameters.getHighlight().getFields())
                 {
                     ParameterCheck.mandatoryString("highlight field", aField.getField());
                     fieldNames.add(aField.getField());

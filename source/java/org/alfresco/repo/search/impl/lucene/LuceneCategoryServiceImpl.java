@@ -400,7 +400,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
         OUTER: for(NodeRef nodeRef : nodeRefs)
         {
-        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, filter, skipCount + maxItems);
+        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, filter, skipCount + maxItems + 1);
         	for(ChildAssociationRef child : children)
         	{
         		count++;

@@ -26,15 +26,22 @@
 package org.alfresco.repo.doclink;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.site.SiteModel;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -47,18 +54,19 @@ import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of the document link service
+ * In addition to the document link service, this class also provides a BeforeDeleteNodePolicy
  * 
  * @author Ana Bozianu
  * @since 5.1
  */
-public class DocumentLinkServiceImpl implements DocumentLinkService
+public class DocumentLinkServiceImpl implements DocumentLinkService, NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private static Log logger = LogFactory.getLog(DocumentLinkServiceImpl.class);
 
@@ -66,12 +74,54 @@ public class DocumentLinkServiceImpl implements DocumentLinkService
     private DictionaryService dictionaryService;
     private SearchService searchService;
     private NamespaceService namespaceService;
+    private CheckOutCheckInService checkOutCheckInService;
+    private PolicyComponent policyComponent;
+    private BehaviourFilter behaviourFilter;
 
     /** Shallow search for nodes with a name pattern */
     private static final String XPATH_QUERY_NODE_NAME_MATCH = "./*[like(@cm:name, $cm:name, false)]";
     
     /** Shallow search for links with a destination pattern */
     private static final String XPATH_QUERY_LINK_DEST_MATCH = ".//*[like(@cm:destination, $cm:destination, false)]";
+
+    private static final String LINK_NODE_EXTENSION = ".url";
+
+    /* I18N labels */
+    private static final String LINK_TO_LABEL = "doclink_service.link_to_label";
+    
+    /**
+     * The initialise method. Register our policies.
+     */
+    public void init()
+    {
+        PropertyCheck.mandatory(this, "nodeService", nodeService);
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "searchService", searchService);
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
+        PropertyCheck.mandatory(this, "checkOutCheckInService", checkOutCheckInService);
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
+
+        // Register interest in the beforeDeleteNode policy 
+
+        //for nodes that have app:linked aspect
+        policyComponent.bindClassBehaviour(
+                BeforeDeleteNodePolicy.QNAME,
+                ApplicationModel.ASPECT_LINKED,
+                new JavaBehaviour(this, "beforeDeleteNode"));
+
+       //for app:filelink node types 
+       policyComponent.bindClassBehaviour(
+                BeforeDeleteNodePolicy.QNAME,
+                ApplicationModel.TYPE_FILELINK,
+                new JavaBehaviour(this, "beforeDeleteLinkNode"));
+
+        //for app:folderlink node types 
+        policyComponent.bindClassBehaviour(
+                BeforeDeleteNodePolicy.QNAME,
+                ApplicationModel.TYPE_FOLDERLINK,
+                new JavaBehaviour(this, "beforeDeleteLinkNode"));
+    }
 
     @Override
     public NodeRef createDocumentLink(NodeRef source, NodeRef destination)
@@ -100,28 +150,39 @@ public class DocumentLinkServiceImpl implements DocumentLinkService
         {
             throw new IllegalArgumentException("Destination node NodeRef '" + source + "' must be of type " + ContentModel.TYPE_FOLDER);
         }
-
+        //if file is working copy - create link to the original
+        if (checkOutCheckInService.isWorkingCopy(source))
+        {
+            source = checkOutCheckInService.getCheckedOut(source);
+        }
         /* Create link */
         String sourceName = (String) nodeService.getProperty(source, ContentModel.PROP_NAME);
+
+        String newName = sourceName + LINK_NODE_EXTENSION;
+        newName = I18NUtil.getMessage(LINK_TO_LABEL, newName);
+
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        props.put(ContentModel.PROP_NAME, sourceName);
+        props.put(ContentModel.PROP_NAME, newName);
         props.put(ContentModel.PROP_LINK_DESTINATION, source);
-        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(sourceName));
+
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(newName));
 
         // check if the link node already exists
-        if (checkExists(sourceName, destination))
+        if (checkExists(newName, destination))
         {
-            throw new IllegalArgumentException("A file with the name '" + sourceName + "' already exists in the destination folder");
+            throw new IllegalArgumentException("A file with the name '" + newName + "' already exists in the destination folder");
         }
 
         ChildAssociationRef childRef = null;
-        if (dictionaryService.isSubClass(nodeService.getType(source), ContentModel.TYPE_CONTENT))
+        QName sourceType = nodeService.getType(source);
+        
+        if (dictionaryService.isSubClass(sourceType, ContentModel.TYPE_CONTENT))
         {
             // create File Link node
             childRef = nodeService.createNode(destination, ContentModel.ASSOC_CONTAINS, assocQName, ApplicationModel.TYPE_FILELINK, props);
 
         }
-        else if (dictionaryService.isSubClass(nodeService.getType(source), ContentModel.TYPE_FOLDER))
+        else if (!dictionaryService.isSubClass(sourceType, SiteModel.TYPE_SITE) && dictionaryService.isSubClass(nodeService.getType(source), ContentModel.TYPE_FOLDER))
         {
             // create Folder link node
             childRef = nodeService.createNode(destination, ContentModel.ASSOC_CONTAINS, assocQName, ApplicationModel.TYPE_FOLDERLINK, props);
@@ -130,6 +191,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService
         {
             throw new IllegalArgumentException("unsupported source node type : " + nodeService.getType(source));
         }
+
+        //add linked aspect to the sourceNode
+        nodeService.addAspect(source, ApplicationModel.ASPECT_LINKED, null);
 
         return childRef.getChildRef();
     }
@@ -175,49 +239,103 @@ public class DocumentLinkServiceImpl implements DocumentLinkService
     }
     
     @Override
-    public DeleteLinksStatusReport deleteLinksToDocument(NodeRef document)
+    public List<NodeRef> getNodeLinks(NodeRef nodeRef)
     {
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("Deleting links of a document. document: " + document);
-        }
-        
         /* Validate input */
-        PropertyCheck.mandatory(this, "document", document);
+        PropertyCheck.mandatory(this, "nodeRef", nodeRef);
         
-        /* Get all links of the given document */
+        /* Get all links of the given nodeRef */
         QueryParameterDefinition[] params = new QueryParameterDefinition[1];
-        params[0] = new QueryParameterDefImpl(ContentModel.PROP_LINK_DESTINATION, dictionaryService.getDataType(DataTypeDefinition.NODE_REF), true, document.toString());
+        params[0] = new QueryParameterDefImpl(ContentModel.PROP_LINK_DESTINATION, dictionaryService.getDataType(DataTypeDefinition.NODE_REF), true, nodeRef.toString());
 
+        List<NodeRef> nodeLinks = new ArrayList<NodeRef>();
+        List<NodeRef> nodeRefs;
         /* Search for links in all stores */
-        DeleteLinksStatusReport report = new DeleteLinksStatusReport();
         for(StoreRef store : nodeService.getStores())
         {
             /* Get the root node */
             NodeRef rootNodeRef = nodeService.getRootNode(store);
-            
+
             /* Execute the query, retrieve links to the document*/
-            List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, XPATH_QUERY_LINK_DEST_MATCH, params, namespaceService, true);
-            report.addTotalLinksFoundCount(nodeRefs.size());
-            
-            /* Delete the found nodes */
-            for(NodeRef linkRef : nodeRefs)
+            nodeRefs = searchService.selectNodes(rootNodeRef, XPATH_QUERY_LINK_DEST_MATCH, params, namespaceService, true);
+            nodeLinks.addAll(nodeRefs);
+        }
+        return nodeLinks;
+    }
+
+    @Override
+    public DeleteLinksStatusReport deleteLinksToDocument(NodeRef document)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Deleting links of a document. document: " + document);
+        }
+
+        /* Validate input */
+        PropertyCheck.mandatory(this, "document", document);
+
+        DeleteLinksStatusReport report = new DeleteLinksStatusReport();
+
+        List<NodeRef> linkNodeRefs = getNodeLinks(document);
+        report.addTotalLinksFoundCount(linkNodeRefs.size());
+
+        for (NodeRef linkRef : linkNodeRefs)
+        {
+            try
             {
-                try{
-                    nodeService.deleteNode(linkRef);
-                    
-                    /* if the node was successfully deleted increment the count */
-                    report.incrementDeletedLinksCount();
-                }
-                catch(AccessDeniedException ex)
-                {
-                    /* if the node could not be deleted add it to the report */
-                    report.addErrorDetail(linkRef, ex);
-                }
+                nodeService.deleteNode(linkRef);
+
+                /* if the node was successfully deleted increment the count */
+                report.incrementDeletedLinksCount();
+            }
+            catch (AccessDeniedException ex)
+            {
+                /* if the node could not be deleted add it to the report */
+                report.addErrorDetail(linkRef, ex);
             }
         }
-        
+
+        // remove also the aspect app:linked
+        nodeService.removeAspect(document, ApplicationModel.ASPECT_LINKED);
+
         return report;
+    }
+
+    @Override
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+        try
+        {
+            deleteLinksToDocument(nodeRef);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
+
+    }
+
+    public void beforeDeleteLinkNode(NodeRef linkNodeRef)
+    {
+        // NodeRef linkNodeRef = childAssocRef.getChildRef();
+        NodeRef nodeRef = getLinkDestination(linkNodeRef);
+
+        List<NodeRef> nodeRefLinks = getNodeLinks(nodeRef);
+
+        if (nodeRefLinks.size() == 1 && nodeRefLinks.contains(linkNodeRef))
+        {
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            try
+            {
+                // remove linked aspect to the sourceNode
+                nodeService.removeAspect(nodeRef, ApplicationModel.ASPECT_LINKED);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
+        }
     }
 
     public void setNodeService(NodeService nodeService)
@@ -238,5 +356,20 @@ public class DocumentLinkServiceImpl implements DocumentLinkService
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+
+    public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
+    {
+        this.checkOutCheckInService = checkOutCheckInService;
+    }
+
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
 }

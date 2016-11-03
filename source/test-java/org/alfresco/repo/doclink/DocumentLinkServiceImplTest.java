@@ -32,8 +32,6 @@ import java.util.Map;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -55,6 +53,9 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
+
+import junit.framework.TestCase;
 
 /**
  * Test cases for {@link DocumentLinkServiceImpl}.
@@ -173,7 +174,8 @@ public class DocumentLinkServiceImplTest extends TestCase
         assertNotNull(linkNodeRef);
 
         // test if the link node is listed as a child of site1Folder2
-        NodeRef linkNodeRef2 = fileFolderService.searchSimple(site1Folder2, site1File1Name);
+        String site1File1LinkName =  I18NUtil.getMessage("doclink_service.link_to_label", (site1File1Name + ".url"));
+        NodeRef linkNodeRef2 = fileFolderService.searchSimple(site1Folder2, site1File1LinkName);
         assertNotNull(linkNodeRef2);
         assertEquals(linkNodeRef, linkNodeRef2);
 
@@ -198,7 +200,8 @@ public class DocumentLinkServiceImplTest extends TestCase
         assertNotNull(linkNodeRef);
 
         // test if the link node is listed as a child of site1Folder2
-        NodeRef linkNodeRef2 = fileFolderService.searchSimple(site1Folder2, site1Folder1Name);
+        String site1Folder1LinkName =  I18NUtil.getMessage("doclink_service.link_to_label", (site1Folder1Name + ".url"));
+        NodeRef linkNodeRef2 = fileFolderService.searchSimple(site1Folder2, site1Folder1LinkName);
         assertNotNull(linkNodeRef2);
         assertEquals(linkNodeRef, linkNodeRef2);
 

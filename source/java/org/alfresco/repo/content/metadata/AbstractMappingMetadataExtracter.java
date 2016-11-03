@@ -315,18 +315,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     }
 
     /**
-     * Set the policy to use when existing values are encountered.  Depending on how the extractor
-     * is called, this may not be relevant, i.e an empty map of existing properties may be passed
-     * in by the client code, which may follow its own overwrite strategy.
-     * 
-     * @param overwritePolicyStr    the policy to apply when there are existing system properties
-     */
-    public void setOverwritePolicy(String overwritePolicyStr)
-    {
-        this.overwritePolicy = OverwritePolicy.valueOf(overwritePolicyStr);
-    }
-
-    /**
      * Set whether the extractor should discard metadata that fails to convert to the target type
      * defined in the data dictionary model.  This is <tt>true</tt> by default i.e. if the data
      * extracted is not compatible with the target model then the extraction will fail.  If this is

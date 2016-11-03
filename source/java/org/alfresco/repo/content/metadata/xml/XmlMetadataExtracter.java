@@ -51,7 +51,7 @@ import org.alfresco.util.PropertyCheck;
  * most appropriate of a given XML document. The chosen extracter is then asked
  * to extract the values, passing through the
  * {@code MetadataExtracter.OverwritePolicy} as
- * {@linkplain #setOverwritePolicy(String)} on this instance. The overwrite
+ * {@linkplain #setOverwritePolicy(org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy)} on this instance. The overwrite
  * policy of the embedded extracters is not relevant unless they are used
  * separately in another context.
  * 

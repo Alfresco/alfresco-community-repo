@@ -431,11 +431,11 @@ public class SearchMapper
     /**
      * Sets the hightlight object on search parameters
      * @param sp SearchParameters
-     * @param hightlight GeneralHighlightParameters
+     * @param highlight GeneralHighlightParameters
      */
-    public void fromHighlight(SearchParameters sp, GeneralHighlightParameters hightlight)
+    public void fromHighlight(SearchParameters sp, GeneralHighlightParameters highlight)
     {
-        sp.setHightlight(hightlight);
+        sp.setHighlight(highlight);
     }
 
     /**

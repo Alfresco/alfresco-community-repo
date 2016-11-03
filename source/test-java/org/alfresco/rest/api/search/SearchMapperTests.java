@@ -51,7 +51,6 @@ import org.alfresco.rest.api.search.model.Spelling;
 import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
-import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
@@ -521,7 +520,7 @@ public class SearchMapperTests
         List<FieldHighlightParameters> fields = Arrays.asList(new FieldHighlightParameters("desc",50,100,false,"@","#"), new FieldHighlightParameters("title",55,105,true,"*","¿"));
         GeneralHighlightParameters highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
         searchMapper.fromHighlight(searchParameters,highlightParameters);
-        assertEquals(searchParameters.getHightlight(), highlightParameters);
+        assertEquals(searchParameters.getHighlight(), highlightParameters);
     }
 
     private SearchQuery minimalQuery()

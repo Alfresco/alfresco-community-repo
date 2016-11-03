@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -391,37 +390,6 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl) throws ContentIOException
     {
         return getWriter(new ContentContext(existingContentReader, newContentUrl));
-    }
-
-    /**
-     * @see #getUrls(Date, Date, ContentUrlHandler)
-     */
-    @SuppressWarnings("deprecation")
-    public void getUrls(ContentUrlHandler handler) throws ContentIOException
-    {
-        getUrls(null, null, handler);
-    }
-
-    /**
-     * Passes the call to each of the stores wrapped by this store
-     * 
-     * @see ContentStore#getUrls(Date, Date, ContentUrlHandler)
-     */
-    @SuppressWarnings("deprecation")
-    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
-    {
-        List<ContentStore> stores = getAllStores();
-        for (ContentStore store : stores)
-        {
-            try
-            {
-                store.getUrls(createdAfter, createdBefore, handler);
-            }
-            catch (UnsupportedOperationException e)
-            {
-                // Support of this is not mandatory
-            }
-        }
     }
 
     /**

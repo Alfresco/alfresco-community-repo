@@ -28,7 +28,9 @@ package org.alfresco.repo.content.filestore;
 import java.io.File;
 
 import org.alfresco.repo.content.AbstractReadOnlyContentStoreTest;
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
 import org.junit.Before;
@@ -46,6 +48,7 @@ import org.junit.experimental.categories.Category;
 public class ReadOnlyFileContentStoreTest extends AbstractReadOnlyContentStoreTest
 {
     private FileContentStore store;
+    private String contentUrl;
     
     @Before
     public void before() throws Exception
@@ -56,6 +59,10 @@ public class ReadOnlyFileContentStoreTest extends AbstractReadOnlyContentStoreTe
                 tempDir.getAbsolutePath() +
                 File.separatorChar +
                 getName());
+        // Put some content into it
+        ContentWriter writer = store.getWriter(new ContentContext(null, null));
+        writer.putContent("Content for getExistingContentUrl");
+        this.contentUrl = writer.getContentUrl();
         // disallow random access
         store.setReadOnly(true);
     }
@@ -64,5 +71,11 @@ public class ReadOnlyFileContentStoreTest extends AbstractReadOnlyContentStoreTe
     protected ContentStore getStore()
     {
         return store;
+    }
+
+    @Override
+    protected String getExistingContentUrl()
+    {
+        return contentUrl;
     }
 }

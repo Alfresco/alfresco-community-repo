@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content.caching;
 
-import java.util.Date;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -333,21 +332,6 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
             // is only ever written to once.
             return backingStore.getWriter(context);
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void getUrls(ContentUrlHandler handler) throws ContentIOException
-    {
-        backingStore.getUrls(handler);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler)
-                throws ContentIOException
-    {
-        backingStore.getUrls(createdAfter, createdBefore, handler);
     }
 
     @Override

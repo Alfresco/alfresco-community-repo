@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content.replication;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -69,16 +68,14 @@ public class AggregatingContentStore extends AbstractContentStore
     private List<ContentStore> secondaryStores;
     
     private Lock readLock;
-    private Lock writeLock;
 
     /**
      * Default constructor 
      */
     public AggregatingContentStore()
-    {       
+    {
         ReadWriteLock storeLock = new ReentrantReadWriteLock();
         readLock = storeLock.readLock();
-        writeLock = storeLock.writeLock();
     }
         
     /**
@@ -151,7 +148,6 @@ public class AggregatingContentStore extends AbstractContentStore
             }
 
             // the content is not in the primary reader so we have to go looking for it
-            ContentReader secondaryContentReader = null;
             for (ContentStore store : secondaryStores)
             {
                 ContentReader reader = store.getReader(contentUrl);
@@ -194,29 +190,5 @@ public class AggregatingContentStore extends AbstractContentStore
             logger.debug("Deleted content for URL: " + contentUrl);
         }
         return deleted;
-    }
-
-    /**
-     * Iterates over results as given by the primary store and all secondary stores.  It is up to the handler to eliminate
-     * duplicates that will occur between the primary and secondary stores.
-     */
-    @SuppressWarnings("deprecation")
-    public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
-    {
-        // add in URLs from primary store
-        primaryStore.getUrls(createdAfter, createdBefore, handler);
-        
-        // add in URLs from secondary stores (they are visible for reads)
-        for (ContentStore secondaryStore : secondaryStores)
-        {
-            secondaryStore.getUrls(createdAfter, createdBefore, handler);
-        }
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Iterated over content URLs: \n" +
-                    "   created after: " + createdAfter + "\n" +
-                    "   created before: " + createdBefore);
-        }
     }
 }

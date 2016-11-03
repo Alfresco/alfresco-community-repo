@@ -41,8 +41,6 @@ import org.alfresco.repo.domain.tenant.TenantAdminDAO;
 import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.BeansException;
@@ -56,8 +54,6 @@ import org.springframework.context.ApplicationContextAware;
  */
 public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingContentStore implements ApplicationContextAware, TenantRoutingContentStore
 {
-    private static Log logger = LogFactory.getLog(AbstractTenantRoutingContentStore.class);
-    
     private String defaultRootDirectory;
     private TenantAdminDAO tenantAdminDAO;
     protected TenantService tenantService;

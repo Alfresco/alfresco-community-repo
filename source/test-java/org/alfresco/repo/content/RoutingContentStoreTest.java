@@ -25,22 +25,14 @@
  */
 package org.alfresco.repo.content;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.filestore.FileContentStore;
-import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -49,6 +41,12 @@ import org.alfresco.util.TempFileProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Ensures that the routing of URLs based on context is working.  A combination
@@ -227,13 +225,6 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         public ContentReader getReader(String contentUrl)
         {
             return fileStore.getReader(contentUrl);
-        }
-
-        @SuppressWarnings("deprecation")
-        @Override
-        public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
-        {
-            fileStore.getUrls(createdAfter, createdBefore, handler);
         }
     }
     

@@ -186,13 +186,11 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
     private class NullContentStore extends AbstractContentStore
     {
         private ThreadLocal<File> hammeredFile;
-        private int count;
         private int deletedCount;
         
         private NullContentStore(int count)
         {
             hammeredFile = new ThreadLocal<File>();
-            this.count = count;
         }
         
         public boolean isWriteSupported()
@@ -214,17 +212,6 @@ public class ContentStoreCleanerScalabilityRunner extends Repository
                 hammeredFile.set(file);
             }
             return new FileContentWriter(file);
-        }
-
-        @Override
-        public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
-        {
-            // Make up it up
-            for (int i = 0; i < count; i++)
-            {
-                String contentUrl = FileContentStore.createNewFileStoreUrl() + "-imaginary";
-                handler.handle(contentUrl);
-            }
         }
 
         public ContentReader getReader(String contentUrl)

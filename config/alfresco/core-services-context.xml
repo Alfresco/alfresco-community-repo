@@ -1030,7 +1030,7 @@
         <constructor-arg value="false" />
         <constructor-arg value="false" />
     </bean>
-
+    <alias name="solr4" alias="solr6"/>
     <bean id="solr4" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>

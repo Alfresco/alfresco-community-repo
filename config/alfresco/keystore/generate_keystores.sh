@@ -7,7 +7,7 @@ ALFRESCO_HOME=/opt/alfresco-4.1
 # The directory containing the alfresco keystores, as referenced by keystoreFile and truststoreFile attributes in tomcat/conf/server.xml
 ALFRESCO_KEYSTORE_HOME=$ALFRESCO_HOME/alf_data/keystore
 # SOLR installation directory
-SOLR_HOME=$ALFRESCO_HOME/alf_data/solr
+SOLR_HOME=$ALFRESCO_HOME/solr4
 # Java installation directory
 JAVA_HOME=$ALFRESCO_HOME/java
 # Location in which new keystore files will be generated

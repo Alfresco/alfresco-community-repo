@@ -327,4 +327,22 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         RMSiteCompliance compliance = getCompliance(siteInfo);
         return new RMSite(site, compliance);
     }
+
+    @Override
+    public void deleteRMSite(String siteId, Parameters parameters)
+    {
+        deleteSite(siteId, parameters);
+        solveRMSiteNodeRefCaching();
+    }
+
+    /**
+     * Method used for solving rm site nodeRef caching problem that affected rm site update and get from rest api, after site deletion from rest api.
+     * See RM-4289 issue for details.
+     *
+     */
+    private void solveRMSiteNodeRefCaching()
+    {
+        //since we do not have access to SiteServiceImpl.getSiteNodeRef(String shortName, boolean enforcePermissions) method we can use hasSite method to solve caching problem
+        siteService.hasSite(RM_SITE_ID);
+    }
 }

@@ -116,7 +116,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
         Params parameters = mock(Params.class);
         when(parameters.getParameter(PERMANENT_PARAMETER)).thenReturn(null);
         rmSiteEntityResource.delete(siteId, parameters);
-        verify(mockedRMSites, times(1)).deleteSite(siteId, parameters);
+        verify(mockedRMSites, times(1)).deleteRMSite(siteId, parameters);
     }
 
     @Test
@@ -134,7 +134,7 @@ public class RMSiteEntityResourceUnitTest extends BaseUnitTest
         {
             assertEquals("The Deletion is supported only for siteId = rm.", ex.getMessage());
         }
-        verify(mockedRMSites, never()).deleteSite(siteId, parameters);
+        verify(mockedRMSites, never()).deleteRMSite(siteId, parameters);
     }
 
     @Test

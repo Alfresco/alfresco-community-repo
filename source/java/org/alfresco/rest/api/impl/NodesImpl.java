@@ -1196,7 +1196,6 @@ public class NodesImpl implements Nodes
         // filters
         Boolean includeFolders = null;
         Boolean includeFiles = null;
-        Boolean isPrimary = null;
         QName assocTypeQNameParam = null;
         QName filterNodeTypeQName = null;
 
@@ -1208,10 +1207,8 @@ public class NodesImpl implements Nodes
         if (q != null)
         {
             // filtering via "where" clause
-            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES, null);
+            MapBasedQueryWalker propertyWalker = createListChildrenQueryWalker();
             QueryHelper.walk(q, propertyWalker);
-
-            isPrimary = propertyWalker.getProperty(PARAM_ISPRIMARY, WhereClauseParser.EQUALS, Boolean.class);
 
             String assocTypeQNameStr = propertyWalker.getProperty(PARAM_ASSOC_TYPE, WhereClauseParser.EQUALS, String.class);
             if (assocTypeQNameStr != null)
@@ -1251,40 +1248,8 @@ public class NodesImpl implements Nodes
             }
         }
 
-        List<SortColumn> sortCols = parameters.getSorting();
-        List<Pair<QName, Boolean>> sortProps = null;
-        if ((sortCols != null) && (sortCols.size() > 0))
-        {
-            // TODO should we allow isFile in sort (and map to reverse of isFolder) ?
-            sortProps = new ArrayList<>(sortCols.size());
-            for (SortColumn sortCol : sortCols)
-            {
-                QName propQname = PARAM_SYNONYMS_QNAME.get(sortCol.column);
-                if (propQname == null)
-                {
-                    propQname = createQName(sortCol.column);
-                }
-
-                if (propQname != null)
-                {
-                    sortProps.add(new Pair<>(propQname, sortCol.asc));
-                }
-            }
-        }
-        else
-        {
-            // default sort order
-            sortProps = new ArrayList<>(Arrays.asList(
-                    new Pair<>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, Boolean.FALSE),
-                    new Pair<>(ContentModel.PROP_NAME, true)));
-        }
-
-        List<FilterProp> filterProps = null;
-        if (isPrimary != null)
-        {
-            filterProps = new ArrayList<>(1);
-            filterProps.add(new FilterPropBoolean(GetChildrenCannedQuery.FILTER_QNAME_NODE_IS_PRIMARY, isPrimary));
-        }
+        List<Pair<QName, Boolean>> sortProps = getListChildrenSortProps(parameters);
+        List<FilterProp> filterProps = getListChildrenFilterProps(parameters);
 
         Paging paging = parameters.getPaging();
 
@@ -1374,6 +1339,100 @@ public class NodesImpl implements Nodes
         }
 
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
+    }
+
+    /**
+     * Create query walker for <code>listChildren</code>.
+     *
+     * @return The  created {@link MapBasedQueryWalker}.
+     */
+    private MapBasedQueryWalker createListChildrenQueryWalker()
+    {
+        return new MapBasedQueryWalker(LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES, null);
+    }
+
+    /**
+     * <p>Returns a List of filter properties specified by request parameters.</p>
+     *
+     * @param parameters The {@link Parameters} object to get the parameters passed into the request
+     *        including:
+     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
+     *        - incFiles, incFolders (both true by default)
+     * @return The list of {@link FilterProp}. Can be null.
+     */
+    protected List<FilterProp> getListChildrenFilterProps(final Parameters parameters)
+    {
+        List<FilterProp> filterProps = null;
+        Query q = parameters.getQuery();
+        if (q != null)
+        {
+            MapBasedQueryWalker propertyWalker = createListChildrenQueryWalker();
+            QueryHelper.walk(q, propertyWalker);
+
+            Boolean isPrimary = propertyWalker.getProperty(PARAM_ISPRIMARY, WhereClauseParser.EQUALS, Boolean.class);
+
+            if (isPrimary != null)
+            {
+                filterProps = new ArrayList<>(1);
+                filterProps.add(new FilterPropBoolean(GetChildrenCannedQuery.FILTER_QNAME_NODE_IS_PRIMARY, isPrimary));
+            }
+        }
+        return filterProps;
+    }
+
+    /**
+     * <p>Returns a List of sort properties specified by the "sorting" request parameter.</p>
+     *
+     * @param parameters The {@link Parameters} object to get the parameters passed into the request
+     *        including:
+     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
+     *        - incFiles, incFolders (both true by default)
+     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort properties. If no sort parameters are
+     *        found defaults to {@link #getListChildrenSortPropsDefault() getListChildrenSortPropsDefault}.
+     */
+    protected List<Pair<QName, Boolean>> getListChildrenSortProps(final Parameters parameters)
+    {
+        List<SortColumn> sortCols = parameters.getSorting();
+        List<Pair<QName, Boolean>> sortProps;
+        if ((sortCols != null) && (sortCols.size() > 0))
+        {
+            // TODO should we allow isFile in sort (and map to reverse of isFolder) ?
+            sortProps = new ArrayList<>(sortCols.size());
+            for (SortColumn sortCol : sortCols)
+            {
+                QName propQname = PARAM_SYNONYMS_QNAME.get(sortCol.column);
+                if (propQname == null)
+                {
+                    propQname = createQName(sortCol.column);
+                }
+
+                if (propQname != null)
+                {
+                    sortProps.add(new Pair<>(propQname, sortCol.asc));
+                }
+            }
+        }
+        else
+        {
+            sortProps = getListChildrenSortPropsDefault();
+        }
+
+        return sortProps;
+    }
+
+    /**
+     * <p>
+     * Returns the default sort order.
+     * </p>
+     *
+     * @return The list of <code>Pair&lt;QName, Boolean&gt;</code> sort
+     *         properties.
+     */
+    protected List<Pair<QName, Boolean>> getListChildrenSortPropsDefault()
+    {
+        List<Pair<QName, Boolean>> sortProps = new ArrayList<>(
+                Arrays.asList(new Pair<>(GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER, Boolean.FALSE), new Pair<>(ContentModel.PROP_NAME, true)));
+        return sortProps;
     }
 
     private Pair<QName,Boolean> parseNodeTypeFilter(String nodeTypeStr)
@@ -3071,5 +3130,110 @@ public class NodesImpl implements Nodes
         }
     }
     */
+
+    protected NodeService getNodeService()
+    {
+        return nodeService;
+    }
+
+    protected DictionaryService getDictionaryService()
+    {
+        return dictionaryService;
+    }
+
+    protected FileFolderService getFileFolderService()
+    {
+        return fileFolderService;
+    }
+
+    protected NamespaceService getNamespaceService()
+    {
+        return namespaceService;
+    }
+
+    protected PermissionService getPermissionService()
+    {
+        return permissionService;
+    }
+
+    protected MimetypeService getMimetypeService()
+    {
+        return mimetypeService;
+    }
+
+    protected ContentService getContentService()
+    {
+        return contentService;
+    }
+
+    protected ActionService getActionService()
+    {
+        return actionService;
+    }
+
+    protected VersionService getVersionService()
+    {
+        return versionService;
+    }
+
+    protected PersonService getPersonService()
+    {
+        return personService;
+    }
+
+    protected OwnableService getOwnableService()
+    {
+        return ownableService;
+    }
+
+    protected AuthorityService getAuthorityService()
+    {
+        return authorityService;
+    }
+
+    protected ThumbnailService getThumbnailService()
+    {
+        return thumbnailService;
+    }
+
+    protected SiteService getSiteService()
+    {
+        return siteService;
+    }
+
+    protected ActivityPoster getPoster()
+    {
+        return poster;
+    }
+
+    protected RetryingTransactionHelper getRetryingTransactionHelper()
+    {
+        return retryingTransactionHelper;
+    }
+
+    protected NodeAssocService getNodeAssocService()
+    {
+        return nodeAssocService;
+    }
+
+    protected LockService getLockService()
+    {
+        return lockService;
+    }
+
+    protected VirtualStore getSmartStore()
+    {
+        return smartStore;
+    }
+
+    protected QuickShareLinks getQuickShareLinks()
+    {
+        return quickShareLinks;
+    }
+
+    protected Repository getRepositoryHelper()
+    {
+        return repositoryHelper;
+    }
 }
 

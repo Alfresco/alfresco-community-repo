@@ -130,41 +130,6 @@ public interface NodeArchiveService
             QName assocQName);
     
     /**
-     * Attempt to restore all archived nodes into their original locations.
-     * <p>
-     * <b>TRANSACTIONS:</b> This method will execute in a new transaction.
-     * 
-     * @param originalStoreRef the store that the items originally came from
-     * @return Returns the results of the each attempted restore operation
-     * 
-     * @deprecated              In 3.4: no longer supported as it seldom works due to missing parents
-     */
-    public List<RestoreNodeReport> restoreAllArchivedNodes(StoreRef originalStoreRef);
-    
-    /**
-     * Attempt to restore all archived nodes into a new location.
-     * <p>
-     * <b>TRANSACTIONS:</b> This method will execute in a new transaction.
-     * 
-     * @param originalStoreRef the store that the items originally came from
-     * @param destinationNodeRef the parent of the restored nodes, or
-     *      <tt>null</tt> to use the original parent node references
-     * @param assocTypeQName the type of the primary associations to link the
-     *      restored node to the destination parent, or <tt>null</tt> to use
-     *      the orginal association types
-     * @param assocQName the name of the primary associations to be created,
-     *      or <tt>null</tt> to use the original association names
-     * @return Returns the results of the each attempted restore operation
-     * 
-     * @deprecated              In 3.4: no longer supported as it seldom works due to missing parents
-     */
-    public List<RestoreNodeReport> restoreAllArchivedNodes(
-            StoreRef originalStoreRef,
-            NodeRef destinationNodeRef,
-            QName assocTypeQName,
-            QName assocQName);
-    
-    /**
      * Permanently delete the archived node.
      * 
      * @param archivedNodeRef the archived node to delete.

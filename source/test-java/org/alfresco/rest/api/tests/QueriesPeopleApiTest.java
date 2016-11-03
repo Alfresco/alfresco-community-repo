@@ -70,7 +70,7 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     //      deleting users is hard from from static methods. For the moment do it
     //      in the first and last tests, but we have to get the TEST count right!
     //      If we don't, a test fails or the users get left behind (not too bad).
-    private static int TEST_COUNT = 21;
+    private static int TEST_COUNT = 22;
     private static int testCounter = 0;
 
     // Test usernames

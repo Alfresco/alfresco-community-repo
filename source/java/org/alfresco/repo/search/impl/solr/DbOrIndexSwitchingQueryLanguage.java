@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.solr.SOLRDAO;
@@ -268,7 +269,15 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             queryBuilder.append("( ").append(sp.getQuery()).append(" )");
             for(String filter : sp.getFilterQueries())
             {
-                queryBuilder.append("AND ( ").append(filter).append(" )");
+                Matcher matcher = LuceneQueryLanguageSPI.AFTS_QUERY.matcher(filter);
+                if (matcher.find())
+                {
+                    queryBuilder.append("AND ( ").append(matcher.group(2)).append(" )");
+                }
+                else
+                {
+                    queryBuilder.append("AND ( ").append(filter).append(" )");
+                }
             }
             flatten.setQuery(queryBuilder.toString());
             // the filter can be left and will be ignored by the DB query

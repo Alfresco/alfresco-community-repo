@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions;
@@ -39,6 +40,8 @@ import org.apache.lucene.search.Searcher;
  */
 public interface LuceneQueryLanguageSPI
 {
+    Pattern AFTS_QUERY = Pattern.compile("\\{\\s?!afts\\s?(.*?)\\}(.*)");
+
     /**
      * The unique name for the query language
      * @return - the unique name

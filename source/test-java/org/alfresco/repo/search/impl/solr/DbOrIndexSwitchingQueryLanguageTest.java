@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -32,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
@@ -164,7 +167,26 @@ public class DbOrIndexSwitchingQueryLanguageTest
         searchParameters.setQueryConsistency(QueryConsistency.HYBRID);
         queryLang.executeQuery(searchParameters, admLuceneSearcher);
     }
-    
+
+
+    @Test
+    public void findAfts() throws Exception
+    {
+        java.util.regex.Matcher matcher = LuceneQueryLanguageSPI.AFTS_QUERY.matcher("{!afts tag=desc1,desc2}description:xyz");
+        assertTrue(matcher.find());
+        assertEquals("description:xyz", matcher.group(2));
+
+        matcher = LuceneQueryLanguageSPI.AFTS_QUERY.matcher("{!afts tag=desc1}{http://www.alfresco.org/model/content/1.0}title:workflow");
+        assertTrue(matcher.find());
+        assertEquals("{http://www.alfresco.org/model/content/1.0}title:workflow", matcher.group(2));
+
+        matcher = LuceneQueryLanguageSPI.AFTS_QUERY.matcher("{http://www.alfresco.org/model/content/1.0}title:workflow");
+        assertFalse(matcher.find());
+
+        matcher = LuceneQueryLanguageSPI.AFTS_QUERY.matcher("description:xyz");
+        assertFalse(matcher.find());
+    }
+
     /**
      * Custom matcher for SearchParameters having a particular value
      * for the property sinceTxId.

@@ -145,7 +145,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>6.5</version>
+            <version>6.8</version>
         </dependency>
         <!--
             | provided dependencies (are not transitive and not included in webapps)

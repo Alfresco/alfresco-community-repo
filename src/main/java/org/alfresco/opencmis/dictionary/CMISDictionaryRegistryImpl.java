@@ -33,7 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISAbstractDictionaryService.DictionaryInitializer;
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.repo.dictionary.CompiledModel;

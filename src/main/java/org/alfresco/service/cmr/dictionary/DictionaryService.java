@@ -33,9 +33,6 @@ import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.QName;
 
-import com.sun.tools.xjc.outline.Aspect;
-
-
 
 /**
  * This interface represents the Repository Data Dictionary.  The

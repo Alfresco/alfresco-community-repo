@@ -29,6 +29,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.util.cache.AbstractAsynchronouslyRefreshedCache;
+import org.alfresco.util.cache.RefreshableCacheEvent;
+import org.alfresco.util.cache.RefreshableCacheListener;
+import org.alfresco.util.cache.RefreshableCacheRefreshedEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -102,5 +105,50 @@ public class CompiledModelsCache extends AbstractAsynchronouslyRefreshedCache<Di
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        super.afterPropertiesSet();
+        // RefreshableCacheListener as anonymous class since CompileModelsCache already
+        // implements this interface, but expects to be invoked in different circumstances.
+        register(new RefreshableCacheListener()
+        {
+            @Override
+            public void onRefreshableCacheEvent(RefreshableCacheEvent event)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Handling "+event.getClass().getSimpleName()+
+                                ", cache="+event.getCacheId()+
+                                ", key="+event.getKey());
+                }
+                
+                if (event instanceof RefreshableCacheRefreshedEvent &&
+                    event.getCacheId().equals(getCacheId()))
+                {
+                    // notify registered listeners that dictionary has been initialised (population is complete).
+                    // Note we do that here to ensure that the dictionary registry has been added to the cache,
+                    // so that any dependencies (like the CMIS dictionary) will use the new dictionary.
+                    for (DictionaryListener dictionaryListener : dictionaryDAO.getDictionaryListeners())
+                    {
+                        logger.debug("Calling afterDIctionaryInit ["+event.getClass().getSimpleName()+
+                                ", cache="+event.getCacheId()+
+                                ", key="+event.getKey()+
+                                "] on "+
+                                dictionaryListener.getClass().getSimpleName());
+
+                        dictionaryListener.afterDictionaryInit();
+                    }
+                }
+            }
+
+            @Override
+            public String getCacheId()
+            {
+                return CompiledModelsCache.this.getCacheId();
+            }
+        }); 
     }
 }

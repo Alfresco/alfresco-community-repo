@@ -549,9 +549,9 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                             {
                                 public Object doWork()
                                 {
-                                    // invalidate - to force lazy re-init
-                                    dictionaryDAO.destroy();
-                                    
+                                    // force refresh of the dictionary
+                                    dictionaryDAO.init();
+
                                     if (logger.isTraceEnabled())
                                     {
                                         logger.trace("Workflow deployer afterCommit: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");

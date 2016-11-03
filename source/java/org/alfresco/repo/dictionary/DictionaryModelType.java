@@ -506,10 +506,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                             {
                                 public Void doWork()
                                 {
-                                    // invalidate - to force lazy re-init
-                                    // note: since afterCommit - need to either clear shared cache or destroy in separate txn
-                                    dictionaryDAO.destroy();
-                                    
+                                    // force refresh of the dictionary
+                                    dictionaryDAO.init();
+
                                     if (logger.isTraceEnabled())
                                     {
                                         logger.trace("afterCommit: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");

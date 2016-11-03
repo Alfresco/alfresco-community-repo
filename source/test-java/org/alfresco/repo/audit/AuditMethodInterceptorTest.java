@@ -215,7 +215,7 @@ public class AuditMethodInterceptorTest extends TestCase
             @Override
             public ResultSet execute() throws Throwable
             {
-                return searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, "/");
+                return searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, "/company_home");
             }
 
         }, true, false);
@@ -262,9 +262,13 @@ public class AuditMethodInterceptorTest extends TestCase
         rowCount.setValue(0);
         auditComponent.auditQuery(callback, params, Integer.MAX_VALUE);
 
-        assertEquals("There should be one audit entry.", 1, rowCount.intValue());
-        assertTrue("The requested language should be in the audit entry.",
+        assertEquals("Incorrect number of audit entries", 2, rowCount.intValue());
+        assertTrue(
+                "The requested language should be in the audit entry.",
                 sb.toString().contains(SearchService.LANGUAGE_XPATH));
+        assertTrue(
+                "The requested language should be in the audit entry.",
+                sb.toString().contains("/company_home"));
         if (logger.isDebugEnabled())
         {
             logger.debug(sb.toString());

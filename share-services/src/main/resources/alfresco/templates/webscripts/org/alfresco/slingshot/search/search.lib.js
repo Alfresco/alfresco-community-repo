@@ -393,7 +393,7 @@ function getWikiItem(siteId, containerId, pathParts, node, populate, highlightin
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
       size: node.size,
-      displayName: ("" + node.name).replace(/_/g, " "),
+      displayName: highlighting["cm:name"] ? highlighting["cm:name"].get(0) : ("" + node.name).replace(/_/g, " "),
       nodeJSON: appUtils.toJSON(node, true)
    };
    item.modifiedBy = getPersonDisplayName(item.modifiedByUser);

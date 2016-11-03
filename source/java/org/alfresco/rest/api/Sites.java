@@ -77,4 +77,6 @@ public interface Sites
 	String PARAM_SITE_ID          = "id";
 	String PARAM_SITE_TITLE       = "title";
 	String PARAM_SITE_DESCRIPTION = "description";
+
+	String PARAM_SITE_ROLE = "role";
 }

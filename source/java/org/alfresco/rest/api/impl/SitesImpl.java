@@ -125,6 +125,16 @@ public class SitesImpl implements Sites
         SORT_PARAMS_TO_QNAMES = Collections.unmodifiableMap(aMap);
     }
 
+    private final static Map<String,SiteService.SortFields> SORT_SITE_MEMBERSHIP;
+    static
+    {
+        Map<String,SiteService.SortFields> aMap = new HashMap<>(3);
+        aMap.put(PARAM_SITE_TITLE, SiteService.SortFields.SiteTitle);
+        aMap.put(PARAM_SITE_ID, SiteService.SortFields.SiteShortName);
+        aMap.put(PARAM_SITE_ROLE, SiteService.SortFields.Role);
+        SORT_SITE_MEMBERSHIP = Collections.unmodifiableMap(aMap);
+    }
+
 
     protected Nodes nodes;
     protected People people;
@@ -500,35 +510,31 @@ public class SitesImpl implements Sites
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
 
         // get the sorting options
-        List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>(parameters.getSorting().size());
-        for (SortColumn sortColumn : parameters.getSorting())
+        List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<>(parameters.getSorting().size());
+
+        List<SortColumn> sortCols = parameters.getSorting();
+        if ((sortCols != null) && (sortCols.size() > 0))
         {
-            SiteService.SortFields sortField;
-            try 
+            for (SortColumn sortCol : sortCols)
             {
-                sortField= SiteService.SortFields.valueOf(sortColumn.column);
-            } 
-            catch (IllegalArgumentException ex)
-            {
-                // invalid sort field
-                continue;
+                SiteService.SortFields sortProp = SORT_SITE_MEMBERSHIP.get(sortCol.column);
+                if (sortProp == null)
+                {
+                    throw new InvalidArgumentException("Invalid sort field: "+sortCol.column);
+                }
+                sortPairs.add(new Pair<>(sortProp, (sortCol.asc ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             }
-            
-            sortPairs.add(new Pair<SiteService.SortFields, SortOrder>(
-                    sortField, 
-                    (sortColumn.asc ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
         }
-        
-        // if no sorting options were specify, sort by title
-        if(sortPairs.size() == 0)
+        else
         {
+            // default sort order
             sortPairs.add(new Pair<SiteService.SortFields, SortOrder>(
                     SiteService.SortFields.SiteTitle,
                     SortOrder.ASCENDING ));
         }
 
         // get the unsorted list of site memberships
-        List<SiteMembership> siteMembers = siteService.listSiteMemberships (personId, 0);
+        List<SiteMembership> siteMembers = siteService.listSiteMemberships(personId, 0);
 
         // sort the list of site memberships
         int totalSize = siteMembers.size();

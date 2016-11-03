@@ -51,8 +51,8 @@ copy /Y "%CERTIFICATE_HOME%\browser.p12" "%ALFRESCO_KEYSTORE_HOME%\browser.p12"
 
 @echo ****************************************
 @echo You must copy the following files to the correct location.
-@echo %ALFRESCO_KEYSTORE_HOME%\ssl.keystore
-@echo %ALFRESCO_KEYSTORE_HOME%\ssl.truststore
+@echo %CERTIFICATE_HOME%\ssl.repo.client.keystore
+@echo %CERTIFICATE_HOME%\ssl.repo.client.truststore
 @echo eg. for Solr 4 the location is SOLR_HOME\workspace-SpacesStore\conf and SOLR_HOME\archive-SpacesStore\conf  
 @echo Please ensure that you set dir.keystore=%ALFRESCO_KEYSTORE_HOME% in alfresco-global.properties
 @echo ****************************************

@@ -25,16 +25,20 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assume.assumeFalse;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.opencmis.OpenCMISClientContext;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.TestParameters;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.dialect.Dialect;
 import org.junit.AfterClass;
 import org.junit.Before;
 
@@ -52,6 +56,10 @@ public class TestPublicApiAtomPub11TCK extends AbstractEnterpriseOpenCMIS11TCKTe
 	@Before
 	public void before() throws Exception
 	{
+        //see REPO-1524	
+        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
+        assumeFalse(dialect instanceof AlfrescoOracle9Dialect); 
+
 		int port = getTestFixture().getJettyComponent().getPort();
 		TestNetwork network = getTestFixture().getRandomNetwork();
     	Map<String, String> cmisParameters = new HashMap<String, String>();

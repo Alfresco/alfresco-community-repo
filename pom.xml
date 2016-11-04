@@ -16,7 +16,7 @@
         <maven.tomcat.uriEncoding>UTF-8</maven.tomcat.uriEncoding>
         <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
         <maven.tomcat.httpsPort>${tomcat.default.alfresco.ssl.port}</maven.tomcat.httpsPort>
-        
+        <runner.share.version>5.1.1</runner.share.version>
     </properties>
 
     <dependencies>
@@ -347,5 +347,48 @@
                 </dependency>
             </dependencies>
        </profile>
+        <profile>
+            <id>withShare</id>
+            <dependencies>
+                <dependency>
+                    <groupId>org.alfresco</groupId>
+                    <artifactId>alfresco-share-services</artifactId>
+                    <version>${runner.share.version}</version>
+                    <type>amp</type>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <overlays>
+                                <overlay>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-share-services</artifactId>
+                                    <type>amp</type>
+                                </overlay>
+                            </overlays>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.tomcat.maven</groupId>
+                        <artifactId>tomcat7-maven-plugin</artifactId>
+                        <configuration>
+                            <webapps combine.children="append">
+                                <webapp>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>share</artifactId>
+                                    <contextPath>/share</contextPath>
+                                    <version>${runner.share.version}</version>
+                                    <type>war</type>
+                                    <asWebapp>true</asWebapp>
+                                </webapp>
+                            </webapps>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

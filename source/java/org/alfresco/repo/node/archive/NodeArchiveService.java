@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -36,6 +37,17 @@ import org.alfresco.service.namespace.QName;
 /**
  * A service interface providing methods that map onto the low-level
  * node restore functionality.
+ * <p>
+ * Node stores <i>may</i> be mapped to an associated archive node store.  For example, Alfresco ships with the mapping<br>
+ * {@link StoreRef#STORE_REF_WORKSPACE_SPACESSTORE workspace://SpacesStore} .. maps to .. {@link StoreRef#STORE_REF_ARCHIVE_SPACESSTORE archive://SpacesStore}.<br>
+ * When a node is {@link NodeService#deleteNode(NodeRef) deleted} from a regular workspace, it is moved to an archive store if there is a mapping.
+ * <p>
+ * This service operates <b>only on nodes that have been archived</b> by either
+ * <ul>
+ *   <li>{@link #getArchivedNode(NodeRef) retrieving archived nodes},</li>
+ *   <li>{@link #purgeArchivedNode(NodeRef) permanently deleting archived nodes},</li>
+ *   <li>or {@link #restoreArchivedNode(NodeRef) restoring archived nodes back to their original location}.</li>
+ * </ul>
  * 
  * @author Derek Hulley
  */
@@ -133,6 +145,8 @@ public interface NodeArchiveService
      * Permanently delete the archived node.
      * 
      * @param archivedNodeRef the archived node to delete.
+     * 
+     * @see NodeService#deleteNode(NodeRef)
      */
     public void purgeArchivedNode(NodeRef archivedNodeRef);
     

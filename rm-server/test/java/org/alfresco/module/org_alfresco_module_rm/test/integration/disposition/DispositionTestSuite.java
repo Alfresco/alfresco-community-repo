@@ -32,7 +32,9 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(
 {
     CutOffTest.class,
-    UpdateDispositionScheduleTest.class
+    MultipleSchedulesTest.class,
+    UpdateDispositionScheduleTest.class,
+    UpdateNextDispositionActionTest.class
 })
 public class DispositionTestSuite
 {

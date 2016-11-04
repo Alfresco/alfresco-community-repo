@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -185,7 +187,8 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         {
             // the change does effect the nextAction for this node
             // so go ahead and determine what needs updating
-            if (changedProps.contains(PROP_DISPOSITION_PERIOD) || changedProps.contains(PROP_DISPOSITION_PERIOD_PROPERTY))
+            if ((changedProps.contains(PROP_DISPOSITION_PERIOD) || changedProps.contains(PROP_DISPOSITION_PERIOD_PROPERTY))
+                    && isNotTrue((Boolean) getNodeService().getProperty(nextAction.getNodeRef(), PROP_MANUALLY_SET_AS_OF)))
             {
                 persistPeriodChanges(dispositionActionDef, nextAction);
             }

@@ -52,7 +52,7 @@ public class TransferContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
 {
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
-    private static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_TRANSFER);
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_TRANSFER);
 
     /**
      * On every event
@@ -65,7 +65,7 @@ public class TransferContainerType extends BaseBehaviourBean
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         // check the created child is of an accepted type
-        validateNewChildAssociationSubTypesIncluded(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     @Override

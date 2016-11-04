@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -511,68 +510,45 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private void updateDispositionActionProperties(NodeRef record, NodeRef dispositionAction)
     {
-        Date recordSearchDispositionActionAsOf = (Date)nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF);
+        Map<QName, Serializable> props = nodeService.getProperties(record);
+
         DispositionAction da = new DispositionActionImpl(recordsManagementServiceRegistry, dispositionAction);
-        // update disposition action as of if it changed
-        // @since 2.3.1
-        // @see https://issues.alfresco.com/jira/browse/RM-4313
-        if (!methodCached("updateDispositionActionProperties", record) 
-                || isDispositionActionAsOfChanged(recordSearchDispositionActionAsOf, da.getAsOfDate()))
+
+        props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
+        props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
+        props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, nodeService.getProperty(dispositionAction, PROP_DISPOSITION_EVENTS_ELIGIBLE));
+
+        DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();
+        if (daDefinition != null)
         {
-            Map<QName, Serializable> props = nodeService.getProperties(record);
-    
-            props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
-            props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
-            props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, nodeService.getProperty(dispositionAction, PROP_DISPOSITION_EVENTS_ELIGIBLE));
-    
-            DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();
-            if (daDefinition != null)
+            Period period = daDefinition.getPeriod();
+            if (period != null)
             {
-                Period period = daDefinition.getPeriod();
-                if (period != null)
-                {
-                    props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
-                    props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());
-                }
-                else
-                {
-                    props.put(PROP_RS_DISPOSITION_PERIOD, null);
-                    props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
-                }
+                props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());
             }
-    
-            nodeService.setProperties(record, props);
-    
-            if (logger.isDebugEnabled())
+            else
             {
-                logger.debug("Set rma:recordSearchDispositionActionName for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_ACTION_NAME));
-                logger.debug("Set rma:recordSearchDispositionActionAsOf for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_ACTION_AS_OF));
-                logger.debug("Set rma:recordSearchDispositionEventsEligible for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));
-                logger.debug("Set rma:recordSearchDispositionPeriod for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_PERIOD));
-                logger.debug("Set rma:recordSearchDispositionPeriodExpression for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
+                props.put(PROP_RS_DISPOSITION_PERIOD, null);
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
             }
         }
-    }
-    
-    /**
-     * Check if recordSearchDispositionActionAsOf property has been changed
-     * 
-     * @param currentDate current as of date value
-     * @param updatedDate new as of date value
-     * @return true if the as of date has been changed
-     */
-    private boolean isDispositionActionAsOfChanged(Date currentDate, Date updatedDate)
-    {
-        if ((currentDate != null && updatedDate == null) || (currentDate == null && updatedDate != null))
+
+        nodeService.setProperties(record, props);
+
+        if (logger.isDebugEnabled())
         {
-            return true;
+            logger.debug("Set rma:recordSearchDispositionActionName for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_ACTION_NAME));
+            logger.debug("Set rma:recordSearchDispositionActionAsOf for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_ACTION_AS_OF));
+            logger.debug("Set rma:recordSearchDispositionEventsEligible for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));
+            logger.debug("Set rma:recordSearchDispositionPeriod for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_PERIOD));
+            logger.debug("Set rma:recordSearchDispositionPeriodExpression for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
         }
-        return currentDate.compareTo(updatedDate) != 0;
     }
 
     /**

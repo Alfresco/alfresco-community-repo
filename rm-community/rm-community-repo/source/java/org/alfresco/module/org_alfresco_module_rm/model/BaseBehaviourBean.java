@@ -27,15 +27,21 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model;
 
+import java.security.InvalidParameterException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.BehaviourRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import com.google.common.collect.Sets;
 
 /**
  * Convenient base class for behaviour beans.
@@ -87,4 +93,28 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
         return behaviours.get(name);
     }
 
+    /**
+     * Helper method that checks if the newly created child association complies with the RM rules
+     * @param parent the parent node
+     * @param childType the child node
+     * @param acceptedUniqueChildType a list of node types that are accepted as children of the provided parent only once
+     * @param acceptedMultipleChildType a list of node types that are accepted as children of the provided parent multiple times
+     * @throws InvalidParameterException if the child association doesn't comply with the RM rules
+     */
+    protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType, List<QName> acceptedMultipleChildType) throws InvalidParameterException
+    {
+        QName childType = getInternalNodeService().getType(child);
+        if(acceptedUniqueChildType.contains(childType))
+        {
+            // check the user is not trying to create multiple children of a type that is only accepted once
+            if(nodeService.getChildAssocs(parent, Sets.newHashSet(childType)).size() > 1)
+            {
+                throw new InvalidParameterException("Operation failed. Multiple children of this type are not allowed.");
+            }
+        }
+        else if(!acceptedMultipleChildType.contains(childType))
+        {
+            throw new InvalidParameterException("Operation failed. Children of type " + childType + " are not allowed");
+        }
+    }
 }

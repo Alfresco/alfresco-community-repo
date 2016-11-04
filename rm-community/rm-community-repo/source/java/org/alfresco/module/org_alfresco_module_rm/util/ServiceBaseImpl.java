@@ -71,9 +71,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** authentication helper */
     protected AuthenticationUtil authenticationUtil;
-
+    
     /** transactional resource helper */
-    protected TransactionalResourceHelper transactionalResourceHelper;
+    protected TransactionalResourceHelper transactionalResourceHelper; 
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -115,7 +115,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         this.authenticationUtil = authenticationUtil;
     }
-
+    
     /**
      * @param transactionalResourceHelper   transactional resource helper
      */

@@ -49,12 +49,12 @@ import org.alfresco.service.namespace.QName;
 public class UnfiledRecordContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-    private static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
     @Override
     @Behaviour(kind = BehaviourKind.ASSOCIATION)
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         // check the created child is of an accepted type
-        validateNewChildAssociationSubTypesIncluded(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 }

@@ -52,7 +52,7 @@ public class HoldContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
 {
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
-    private static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD);
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD);
 
     /**
      * On every event
@@ -65,7 +65,7 @@ public class HoldContainerType extends BaseBehaviourBean
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         // check the created child is of an accepted type
-        validateNewChildAssociationSubTypesIncluded(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     @Override

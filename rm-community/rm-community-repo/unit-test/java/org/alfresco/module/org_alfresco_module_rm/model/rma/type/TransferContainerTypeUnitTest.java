@@ -26,6 +26,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -63,7 +66,17 @@ public class TransferContainerTypeUnitTest extends BaseUnitTest
                     ContentModel.TYPE_CONTENT, record);
 
         transferContainerType.onCreateChildAssociation(childAssoc, true);
+    }
 
+    @Test(expected = AlfrescoRuntimeException.class)
+    public void testAddRecordFolderToTransferContainer()
+    {
+        NodeRef recordFolder = generateNodeRef(TYPE_RECORD_FOLDER, true);
+        NodeRef holdContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getChildRef()).thenReturn(recordFolder);
+        when(mockedChildAssoc.getParentRef()).thenReturn(holdContainer);
+        transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
     /**

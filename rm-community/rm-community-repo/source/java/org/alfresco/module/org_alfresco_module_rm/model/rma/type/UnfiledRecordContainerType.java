@@ -27,14 +27,17 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.util.Arrays;
+import java.util.List;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * rma:unfiledRecordContainer behaviour bean
@@ -46,16 +49,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class UnfiledRecordContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
+    private static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
     @Override
     @Behaviour(kind = BehaviourKind.ASSOCIATION)
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        // ensure we are not trying to put a record folder in the unfiled records container
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        NodeRef parent = childAssocRef.getParentRef();
-        if (isUnfiledRecordsContainer(parent) && isRecordFolder(nodeRef))
-        {
-            throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the unfiled records container.");
-        }
+        // check the created child is of an accepted type
+        validateNewChildAssociationSubTypesIncluded(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 }

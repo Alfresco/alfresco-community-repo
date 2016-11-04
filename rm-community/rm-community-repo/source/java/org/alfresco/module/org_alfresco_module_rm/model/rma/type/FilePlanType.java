@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,8 +47,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-
-import com.google.common.collect.Sets;
 
 /**
  * rma:filePlan behaviour bean
@@ -178,8 +175,8 @@ public class FilePlanType extends    BaseBehaviourBean
             {
                 // ensure rules are not inherited
                 nodeService.addAspect(filePlan, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
-                
-                // set the identifier 
+
+                // set the identifier
                 if (nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
                 {
                     String id = getIdentifierService().generateIdentifier(filePlan);

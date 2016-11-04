@@ -155,16 +155,8 @@ public class FilePlanType extends    BaseBehaviourBean
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        // ensure we only add categories and special containers as fileplan children
-        NodeRef child = childAssocRef.getChildRef();
-        NodeRef parent = childAssocRef.getParentRef();
-        if (!getFilePlanService().isFilePlan(parent))
-        {
-            return;
-        }
-
-        // list of the accepted types of fileplan children 
-        validateNewChildAssociation(parent, child, ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        // check the created child is of an accepted type
+        validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     /**

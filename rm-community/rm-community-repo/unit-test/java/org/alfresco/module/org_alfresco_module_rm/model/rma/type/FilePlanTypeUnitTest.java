@@ -62,7 +62,6 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     public void setup()
     {
         filePlanContainer = generateNodeRef(TYPE_FILE_PLAN, true);
-        when(mockedFilePlanService.isFilePlan(filePlanContainer)).thenReturn(true);
     }
 
     /**

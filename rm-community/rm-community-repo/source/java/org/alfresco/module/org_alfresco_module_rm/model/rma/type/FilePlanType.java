@@ -66,6 +66,9 @@ public class FilePlanType extends    BaseBehaviourBean
                                      NodeServicePolicies.OnCreateNodePolicy,
                                      NodeServicePolicies.OnDeleteNodePolicy
 {
+    private static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
+    private static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
+
     /** file plan service */
     private FilePlanService filePlanService;
 
@@ -155,29 +158,13 @@ public class FilePlanType extends    BaseBehaviourBean
         // ensure we only add categories and special containers as fileplan children
         NodeRef child = childAssocRef.getChildRef();
         NodeRef parent = childAssocRef.getParentRef();
-
         if (!getFilePlanService().isFilePlan(parent))
         {
             return;
         }
 
         // list of the accepted types of fileplan children 
-        List<QName> acceptedUniqueChildType = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
-        List<QName> acceptedMultipleChildType = Arrays.asList(TYPE_RECORD_CATEGORY);
-
-        QName childType = getInternalNodeService().getType(child);
-        if(acceptedUniqueChildType.contains(childType))
-        {
-            // check the user is not trying to create multiple children of a type that is only accepted once
-            if(nodeService.getChildAssocs(parent, Sets.newHashSet(childType)).size() > 1)
-            {
-                throw new InvalidParameterException("Operation failed. The fileplan already has a child of type " + childType + ". Multiple children of this type are not allowed.");
-            }
-        }
-        else if(!acceptedMultipleChildType.contains(childType))
-        {
-            throw new InvalidParameterException("Operation failed. You can only place categories and special containers in the root of the file plan.");
-        }
+        validateNewChildAssociation(parent, child, ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     /**

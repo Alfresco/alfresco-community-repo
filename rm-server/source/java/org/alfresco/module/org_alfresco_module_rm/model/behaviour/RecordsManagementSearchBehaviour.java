@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.behaviour;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -510,11 +511,15 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private void updateDispositionActionProperties(NodeRef record, NodeRef dispositionAction)
     {
-        if (!methodCached("updateDispositionActionProperties", record))
+        Date recordSearchDispositionActionAsOf = (Date)nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF);
+        DispositionAction da = new DispositionActionImpl(recordsManagementServiceRegistry, dispositionAction);
+        // update disposition action as of if it changed
+        // @since 2.3.1
+        // @see https://issues.alfresco.com/jira/browse/RM-4313
+        if (!methodCached("updateDispositionActionProperties", record) 
+                || isDispositionActionAsOfChanged(recordSearchDispositionActionAsOf, da.getAsOfDate()))
         {
             Map<QName, Serializable> props = nodeService.getProperties(record);
-    
-            DispositionAction da = new DispositionActionImpl(recordsManagementServiceRegistry, dispositionAction);
     
             props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
             props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
@@ -552,6 +557,22 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                             props.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
             }
         }
+    }
+    
+    /**
+     * Check if recordSearchDispositionActionAsOf property has been changed
+     * 
+     * @param currentDate current as of date value
+     * @param updatedDate new as of date value
+     * @return true if the as of date has been changed
+     */
+    private boolean isDispositionActionAsOfChanged(Date currentDate, Date updatedDate)
+    {
+        if ((currentDate != null && updatedDate == null) || (currentDate == null && updatedDate != null))
+        {
+            return true;
+        }
+        return currentDate.compareTo(updatedDate) != 0;
     }
 
     /**

@@ -29,11 +29,13 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
+import java.security.InvalidParameterException;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 
@@ -48,47 +50,31 @@ public class HoldContainerTypeUnitTest extends BaseUnitTest
     /** test object */
     private @InjectMocks HoldContainerType holdContainerType;
 
-    /**
-     * Having the Unfilled Record container and a folder having the aspect ASPECT_HIDDEN When adding a child association
-     * between the folder and the container Then the folder type shouldn't be renamed
-     */
-    @Test (expected = AlfrescoRuntimeException.class)
-    public void testAddContentToHoldContainer()
+    @Test (expected = InvalidParameterException.class)
+    public void testAddNonHoldTypeToHoldContainer()
     {
+        QName type = AlfMock.generateQName();
+        when(mockedDictionaryService.isSubClass(type, TYPE_HOLD)).thenReturn(false);
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
 
-        NodeRef holdContainer = createHoldContainer();
-
-        /*
-         * When adding a child association between the folder and the container
-         */
-        NodeRef record = generateNodeRef(ContentModel.TYPE_CONTENT);
-        ChildAssociationRef childAssoc = new ChildAssociationRef( ContentModel.TYPE_CONTENT, holdContainer,
-                    ContentModel.TYPE_CONTENT, record);
-
-        holdContainerType.onCreateChildAssociation(childAssoc, true);
-    }
-
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void testAddRecordFolderToHoldContainer()
-    {
-        NodeRef recordFolder = generateNodeRef(TYPE_RECORD_FOLDER, true);
-        NodeRef holdContainer = createHoldContainer();
+        NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(recordFolder);
+        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
         when(mockedChildAssoc.getParentRef()).thenReturn(holdContainer);
         holdContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
-    /**
-     * Generates a record management container
-     *
-     * @return reference to the generated container
-     */
-    private NodeRef createHoldContainer()
+    @Test
+    public void testAddHoldTypeToHoldContainer()
     {
+        QName type = AlfMock.generateQName();
+        when(mockedDictionaryService.isSubClass(type, TYPE_HOLD)).thenReturn(true);
+        NodeRef holdFolder= AlfMock.generateNodeRef(mockedNodeService, type);
+
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
-
-        return holdContainer;
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getChildRef()).thenReturn(holdFolder);
+        when(mockedChildAssoc.getParentRef()).thenReturn(holdContainer);
+        holdContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
-
 }

@@ -30,10 +30,14 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.security.InvalidParameterException;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 
@@ -48,14 +52,71 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
     @InjectMocks
     private UnfiledRecordContainerType unfiledRecordContainerType;
 
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void testAddRecordFolderToTransferContainer()
+    @Test(expected = InvalidParameterException.class)
+    public void testAddNonAcceptedTypeToUnfiledRecordContainer()
     {
-        NodeRef recordFolder = generateNodeRef(TYPE_RECORD_FOLDER, true);
-        NodeRef holdContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER, true);
+        QName type = AlfMock.generateQName();
+        when(mockedDictionaryService.isSubClass(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
+        when(mockedDictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedDictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+
+        NodeRef unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER, true);
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(recordFolder);
-        when(mockedChildAssoc.getParentRef()).thenReturn(holdContainer);
+        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+        when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordContainer);
+        unfiledRecordContainerType.onCreateChildAssociation(mockedChildAssoc, true);
+    }
+
+    @Test
+    public void testAddUnfiledRecordFolderTypeToUnfiledRecordContainer()
+    {
+        QName type = AlfMock.generateQName();
+        when(mockedDictionaryService.isSubClass(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(true);
+        when(mockedDictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedDictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+
+        NodeRef unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER, true);
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+        when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordContainer);
+        unfiledRecordContainerType.onCreateChildAssociation(mockedChildAssoc, true);
+    }
+
+    @Test
+    public void testAddContentTypeToUnfiledRecordContainer()
+    {
+        QName type = AlfMock.generateQName();
+        when(mockedDictionaryService.isSubClass(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
+        when(mockedDictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedDictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+
+        NodeRef unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER, true);
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+        when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordContainer);
+        unfiledRecordContainerType.onCreateChildAssociation(mockedChildAssoc, true);
+    }
+
+    @Test
+    public void testNonElectronicDocumentTypeToUnfiledRecordContainer()
+    {
+        QName type = AlfMock.generateQName();
+        when(mockedDictionaryService.isSubClass(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
+        when(mockedDictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
+        when(mockedDictionaryService.isSubClass(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(true);
+
+        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+
+        NodeRef unfiledRecordContainer = generateNodeRef(TYPE_UNFILED_RECORD_CONTAINER, true);
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+        when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordContainer);
         unfiledRecordContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 }

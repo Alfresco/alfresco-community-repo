@@ -384,32 +384,6 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     }
 
     /**
-     * Indicates whether the given node reference is a transfers container or not.
-     *
-     * @param nodeRef node reference
-     * @return boolean true if rma:transferContainer or sub-type, false otherwise
-     */
-    public boolean isTransferContainer(NodeRef nodeRef)
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-
-        return instanceOf(nodeRef, TYPE_TRANSFER_CONTAINER);
-    }
-
-    /**
-     * Indicates whether the given node reference is a hold container or not.
-     *
-     * @param nodeRef node reference
-     * @return boolean true if rma:holdContainer or sub-type, false otherwise
-     */
-    public boolean isHoldContainer(NodeRef nodeRef)
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-
-        return instanceOf(nodeRef, TYPE_HOLD_CONTAINER);
-    }
-
-    /**
      * Indicates whether a record is complete or not.
      *
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isDeclared(org.alfresco.service.cmr.repository.NodeRef)

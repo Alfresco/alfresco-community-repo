@@ -316,6 +316,16 @@ public interface NodeService
      * All associations (both children and regular node associations)
      * will be deleted, and where the given node is the primary parent,
      * the children will also be cascade deleted.
+     * <p>
+     * Node stores <i>may</i> be mapped to an associated archive node store.  For example, Alfresco ships with the mapping<br>
+     * {@link StoreRef#STORE_REF_WORKSPACE_SPACESSTORE workspace://SpacesStore} .. maps to .. {@link StoreRef#STORE_REF_ARCHIVE_SPACESSTORE archive://SpacesStore}.<br>
+     * When a node is deleted:
+     * <ul>
+     *   <li>If there *is a mapping* from the node's current store to an archive store, the node is first copied to the archive store</li>
+     *   <li>If there *is no mapping* from the node's current store, then the node is permanently deleted</li>
+     * </ul>
+     * When nodes have been archived, they contain all the details of the original location.  Use the {@link #restoreNode(NodeRef, NodeRef, QName, QName) restore}
+     * feature to return a node back to its original store.
      * 
      * @param nodeRef reference to a node within a store
      * @throws InvalidNodeRefException if the reference given is invalid
@@ -852,7 +862,7 @@ public interface NodeService
     /**
      * Restore an individual node (along with its sub-tree nodes) to the target location.
      * The archived node must have the {@link org.alfresco.model.ContentModel#ASPECT_ARCHIVED archived aspect}
-     * set against it.
+     * set against it.  This would have been applied when a node was originally {@link #deleteNode(NodeRef) deleted}.
      * 
      * @param archivedNodeRef the archived node
      * @param destinationParentNodeRef the parent to move the node into

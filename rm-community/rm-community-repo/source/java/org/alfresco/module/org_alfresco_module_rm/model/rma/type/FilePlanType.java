@@ -27,8 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
+import java.security.InvalidParameterException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -45,6 +47,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+
+import com.google.common.collect.Sets;
 
 /**
  * rma:filePlan behaviour bean
@@ -61,6 +66,9 @@ public class FilePlanType extends    BaseBehaviourBean
                                      NodeServicePolicies.OnCreateNodePolicy,
                                      NodeServicePolicies.OnDeleteNodePolicy
 {
+    private static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
+    private static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
+
     /** file plan service */
     private FilePlanService filePlanService;
 
@@ -147,20 +155,8 @@ public class FilePlanType extends    BaseBehaviourBean
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        // ensure we are not trying to put content in the file plan root node
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
-        {
-            throw new AlfrescoRuntimeException("Operation failed, because you can't place content in the root of the file plan.");
-        }
-
-        // ensure we are not trying to put a record folder in the root of the file plan
-        NodeRef parent = childAssocRef.getParentRef();
-        if (getFilePlanService().isFilePlan(parent) && getRecordFolderService().isRecordFolder(nodeRef))
-        {
-            throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the root of the file plan.");
-        }
-
+        // check the created child is of an accepted type
+        validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     /**

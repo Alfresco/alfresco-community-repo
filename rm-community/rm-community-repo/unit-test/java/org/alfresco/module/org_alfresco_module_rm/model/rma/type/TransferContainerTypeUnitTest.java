@@ -50,6 +50,10 @@ public class TransferContainerTypeUnitTest extends BaseUnitTest
     /** test object */
     private @InjectMocks TransferContainerType transferContainerType;
 
+    /**
+     * Given that we try to add a non "rma:transfer" type to transfer container,
+     * Then InvalidParameterException is thrown.
+     */
     @Test(expected = InvalidParameterException.class)
     public void testAddNonTransferTypeToTransferContainerTest()
     {
@@ -65,6 +69,10 @@ public class TransferContainerTypeUnitTest extends BaseUnitTest
         transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
+    /**
+     * Given that we try to add "rma:transfer" type to transfer container,
+     * Then the operation is successful.
+     */
     @Test
     public void testAddTransferFolderToTransferContainer()
     {

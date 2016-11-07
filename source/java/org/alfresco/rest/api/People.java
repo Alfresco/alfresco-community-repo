@@ -37,7 +37,7 @@ public interface People
 
     String PARAM_FIRST_NAME = "firstName";
     String PARAM_LAST_NAME = "lastName";
-    String PARAM_USER_NAME = "userName";
+    String PARAM_ID = "id";
 
 	String validatePerson(String personId);
 	String validatePerson(String personId, boolean validateIsCurrentUser);

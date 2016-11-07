@@ -94,7 +94,7 @@ public class PeopleImpl implements People
         Map<String, QName> aMap = new HashMap<>(3);
         aMap.put(PARAM_FIRST_NAME, ContentModel.PROP_FIRSTNAME);
         aMap.put(PARAM_LAST_NAME, ContentModel.PROP_LASTNAME);
-        aMap.put(PARAM_USER_NAME, ContentModel.PROP_USERNAME);
+        aMap.put(PARAM_ID, ContentModel.PROP_USERNAME);
         sort_params_to_qnames = Collections.unmodifiableMap(aMap);
     }
 

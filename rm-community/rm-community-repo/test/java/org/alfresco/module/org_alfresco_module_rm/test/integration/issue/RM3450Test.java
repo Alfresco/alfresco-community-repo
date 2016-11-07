@@ -26,7 +26,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.security.InvalidParameterException;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -48,8 +49,8 @@ public class RM3450Test extends BaseRMTestCase
     {
         doTestInTransaction(new FailureTest
                 (
-                        I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE), 
-                        AlfrescoRuntimeException.class
+                        I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE),
+                        InvalidParameterException.class
                 )
         {
             @Override
@@ -64,7 +65,7 @@ public class RM3450Test extends BaseRMTestCase
                     }
                 }, false, true);
             }
-        }, ADMIN_USER); 
+        }, ADMIN_USER);
     }
 
 }

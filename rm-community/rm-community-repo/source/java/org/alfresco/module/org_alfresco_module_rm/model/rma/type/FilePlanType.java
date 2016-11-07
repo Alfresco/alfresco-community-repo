@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,8 +48,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-import com.google.common.collect.Sets;
-
 /**
  * rma:filePlan behaviour bean
  *
@@ -66,8 +63,8 @@ public class FilePlanType extends    BaseBehaviourBean
                                      NodeServicePolicies.OnCreateNodePolicy,
                                      NodeServicePolicies.OnDeleteNodePolicy
 {
-    private static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
-    private static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
+    private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
 
     /** file plan service */
     private FilePlanService filePlanService;
@@ -178,8 +175,8 @@ public class FilePlanType extends    BaseBehaviourBean
             {
                 // ensure rules are not inherited
                 nodeService.addAspect(filePlan, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
-                
-                // set the identifier 
+
+                // set the identifier
                 if (nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
                 {
                     String id = getIdentifierService().generateIdentifier(filePlan);

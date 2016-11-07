@@ -24,12 +24,12 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -37,42 +37,24 @@ import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * rma:transferContainer behaviour bean
+ * rma:unfiledRecordContainer behaviour bean
  *
- * @author Mihai Cozma
- * @since 2.4
+ * @author Silviu Dinuta
+ * @since 2.6
  */
-@BehaviourBean(defaultType = "rma:transferContainer")
-public class TransferContainerType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
+@BehaviourBean(defaultType = "rma:unfiledRecordContainer")
+public class UnfiledRecordContainerType extends BaseBehaviourBean
+            implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-    private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
-    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_TRANSFER);
-
-    /**
-     * On every event
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef,
-     *      boolean)
-     */
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
     @Override
     @Behaviour(kind = BehaviourKind.ASSOCIATION)
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         // check the created child is of an accepted type
         validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
-    }
-
-    @Override
-    public void onCreateNode(ChildAssociationRef childAssocRef)
-    {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
-                    I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
     }
 }

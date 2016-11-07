@@ -79,6 +79,9 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         return new RMSite(site, compliance);
     }
 
+    /**
+     * TODO remove when upgrading to 5.2.N. We'll need to only extend the extended method createSite(Site) and use the siteService method that gets site type as parameter
+     */
     @Override
     public Site createSite(Site site, Parameters parameters)
     {
@@ -125,6 +128,8 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     /**
      * Copied from SitesImpl since we didn't had access to it.
      *
+     * TODO to remove when upgrading to 5.2.N
+     *
      * @param siteInfo
      * @param includeRole
      * @return
@@ -142,7 +147,9 @@ public class RMSitesImpl extends SitesImpl implements RMSites
     }
 
     /**
-     * Copied from SitesImpl since we didn't had access to it
+     * Copied from SitesImpl since we didn't had access to it.
+     *
+     * TODO to be removed when upgrading to 5.2.N
      *
      * @param siteId
      * @param siteNodeRef
@@ -192,6 +199,8 @@ public class RMSitesImpl extends SitesImpl implements RMSites
 
     /**
      * This method is copied from SitesImpl since we could not access it since it is private.
+     *
+     * TODO change this to protected and override validate method from core when upgrading to 5.2.N
      *
      * Even if the method it will be protected in core, we still need to override since we don't need to check if the visibility is set since for RM site it is always PUBLIC.
      * We also don't need to generate the id from title, or to check the id, since the id is always rm.

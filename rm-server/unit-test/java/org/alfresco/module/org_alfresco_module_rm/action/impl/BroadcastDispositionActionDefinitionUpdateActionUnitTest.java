@@ -125,8 +125,8 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
         NodeRef scheduleNode = new NodeRef("schedule://node/");
         ChildAssociationRef scheduleDefinitionRelationship = new ChildAssociationRef(null, scheduleNode, null, definitionNode);
         when(mockNodeService.getPrimaryParent(definitionNode)).thenReturn(scheduleDefinitionRelationship);
-        ChildAssociationRef catergoryScheduleRelationship = new ChildAssociationRef(null, categoryNode, null, scheduleNode);
-        when(mockNodeService.getPrimaryParent(scheduleNode)).thenReturn(catergoryScheduleRelationship);
+        ChildAssociationRef categoryScheduleRelationship = new ChildAssociationRef(null, categoryNode, null, scheduleNode);
+        when(mockNodeService.getPrimaryParent(scheduleNode)).thenReturn(categoryScheduleRelationship);
         // Set up the record/step relationship.
         NodeRef recordNode = new NodeRef("record://node/");
         NodeRef stepNode = new NodeRef("step://node/");

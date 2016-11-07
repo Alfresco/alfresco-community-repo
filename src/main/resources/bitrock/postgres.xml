@@ -676,6 +676,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                             </actionList>
                             <ruleList>
                                 <userTest logic="not_exists" username="postgres"/>
+                                <isTrue value="${installer_root_install}"/>
                             </ruleList>
                         </actionGroup>
                         <createDirectory path="${postgres_data_directory}"/>

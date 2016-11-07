@@ -5,3 +5,4 @@
 /src/test/resources/local.properties
 /.idea/
 *.iml
+/test-output/

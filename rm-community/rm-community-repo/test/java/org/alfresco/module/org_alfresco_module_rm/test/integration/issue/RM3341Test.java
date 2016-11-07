@@ -27,14 +27,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.security.InvalidParameterException;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Unit test for RM-3341 .. can copy to hold and transfer folder
@@ -43,9 +42,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RM3341Test extends BaseRMTestCase
 {
-
-    private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
-
     public void testCopyingContentsInHoldandTransfer() throws Exception
     {
         doTestInTransaction(new Test<Void>()
@@ -79,13 +75,12 @@ public class RM3341Test extends BaseRMTestCase
 
                 try
                 {
-                    FileInfo copyInfo = fileFolderService.create(holdContainer, "test file", ContentModel.TYPE_CONTENT);
+                    fileFolderService.create(holdContainer, "test file", ContentModel.TYPE_CONTENT);
                     fail("This should have thrown an exception");
                 }
-                catch (AlfrescoRuntimeException e)
+                catch (InvalidParameterException e)
                 {
-                    // ("Content can't be added to a record container. Use record folders to file content.")
-                    assertEquals(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER), e.getMsgId());
+                    // ("Content can't be added to a hold container. Use record folders to file content.")
                 }
                 return null;
             }
@@ -109,10 +104,9 @@ public class RM3341Test extends BaseRMTestCase
                     fail("This should have thrown an exception");
 
                 }
-                catch (AlfrescoRuntimeException e)
+                catch (InvalidParameterException e)
                 {
-                    // ("Content can't be added to a record container. Use record folders to file content.")
-                    assertEquals(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER), e.getMsgId());
+                    // ("Content can't be added to a transfer container. Use record folders to file content.")
                 }
                 return null;
             }

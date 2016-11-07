@@ -117,4 +117,24 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
             throw new InvalidParameterException("Operation failed. Children of type " + childType + " are not allowed");
         }
     }
+
+    /**
+     * Helper method that checks if the newly created child association is between the sub-types of accepted types.
+     * @param childType the child node
+     * @param acceptedMultipleChildType a list of node types that are accepted as children of the provided parent multiple times
+     * @throws InvalidParameterException if the child association isn't between the sub-types of accepted types
+     */
+    protected void validateNewChildAssociationSubTypesIncluded(NodeRef child, List<QName> acceptedMultipleChildType) throws InvalidParameterException
+    {
+        QName childType = getInternalNodeService().getType(child);
+        for(QName type :  acceptedMultipleChildType)
+        {
+            if(instanceOf(childType, type))
+            {
+                return;
+            }
+        }
+        //no match was found in sub-types of permitted types list
+        throw new InvalidParameterException("Operation failed. Children of type " + childType + " are not allowed");
+    }
 }

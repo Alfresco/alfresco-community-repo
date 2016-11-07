@@ -26,16 +26,21 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.security.InvalidParameterException;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 
 /**
- * Unit test for TransferContainerTypeTest
+ * Unit test for TransferContainerType
  *
  * @author Mihai Cozma
  * @since 2.4
@@ -46,36 +51,39 @@ public class TransferContainerTypeUnitTest extends BaseUnitTest
     private @InjectMocks TransferContainerType transferContainerType;
 
     /**
-     * Having the Unfilled Record container and a folder having the aspect ASPECT_HIDDEN When adding a child association
-     * between the folder and the container Then the folder type shouldn't be renamed
+     * Given that we try to add a non "rma:transfer" type to transfer container,
+     * Then InvalidParameterException is thrown.
      */
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void testAddContentToTransferContainerTest()
+    @Test(expected = InvalidParameterException.class)
+    public void testAddNonTransferTypeToTransferContainerTest()
     {
+        NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
 
-        NodeRef transferContainer = createTransferContainer();
+        QName type = AlfMock.generateQName();
+        when(mockedDictionaryService.isSubClass(type, TYPE_TRANSFER)).thenReturn(false);
+        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
-        /*
-         * When adding a child association between the folder and the container
-         */
-        NodeRef record = generateNodeRef(ContentModel.TYPE_CONTENT);
-        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.TYPE_CONTENT, transferContainer,
-                    ContentModel.TYPE_CONTENT, record);
-
-        transferContainerType.onCreateChildAssociation(childAssoc, true);
-
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+        when(mockedChildAssoc.getParentRef()).thenReturn(transferContainer);
+        transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
     /**
-     * Generates a record management container
-     *
-     * @return reference to the generated container
+     * Given that we try to add "rma:transfer" type to transfer container,
+     * Then the operation is successful.
      */
-    private NodeRef createTransferContainer()
+    @Test
+    public void testAddTransferFolderToTransferContainer()
     {
-        NodeRef holdContainer = generateNodeRef(TYPE_TRANSFER, true);
+        QName type = AlfMock.generateQName();
+        when(mockedDictionaryService.isSubClass(type, TYPE_TRANSFER)).thenReturn(true);
+        NodeRef transferFolder= AlfMock.generateNodeRef(mockedNodeService, type);
 
-        return holdContainer;
+        NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getChildRef()).thenReturn(transferFolder);
+        when(mockedChildAssoc.getParentRef()).thenReturn(transferContainer);
+        transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
-
 }

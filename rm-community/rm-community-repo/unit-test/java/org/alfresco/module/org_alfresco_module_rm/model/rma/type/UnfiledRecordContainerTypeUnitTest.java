@@ -52,6 +52,10 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
     @InjectMocks
     private UnfiledRecordContainerType unfiledRecordContainerType;
 
+    /**
+     * Given that we try to add a type that is not one of "rma:unfiledRecordFolder", "cm:content" or "rma:nonElectronicDocument" types to unfiled record container,
+     * Then InvalidParameterException is thrown.
+     */
     @Test(expected = InvalidParameterException.class)
     public void testAddNonAcceptedTypeToUnfiledRecordContainer()
     {
@@ -69,6 +73,10 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
         unfiledRecordContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
+    /**
+     * Given that we try to add "rma:unfiledRecordFolder" sub-type to unfiled record container,
+     * Then the operation is successful.
+     */
     @Test
     public void testAddUnfiledRecordFolderTypeToUnfiledRecordContainer()
     {
@@ -86,6 +94,10 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
         unfiledRecordContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
+    /**
+     * Given that we try to add "cm:content" sub-type to unfiled record container,
+     * Then the operation is successful.
+     */
     @Test
     public void testAddContentTypeToUnfiledRecordContainer()
     {
@@ -103,6 +115,10 @@ public class UnfiledRecordContainerTypeUnitTest extends BaseUnitTest
         unfiledRecordContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
+    /**
+     * Given that we try to add "rma:nonElectronicDocument" sub-type to unfiled record container,
+     * Then the operation is successful.
+     */
     @Test
     public void testNonElectronicDocumentTypeToUnfiledRecordContainer()
     {

@@ -50,6 +50,10 @@ public class HoldContainerTypeUnitTest extends BaseUnitTest
     /** test object */
     private @InjectMocks HoldContainerType holdContainerType;
 
+    /**
+     * Given that we try to add a non "rma:hold" type to hold container,
+     * Then InvalidParameterException is thrown.
+     */
     @Test (expected = InvalidParameterException.class)
     public void testAddNonHoldTypeToHoldContainer()
     {
@@ -64,6 +68,10 @@ public class HoldContainerTypeUnitTest extends BaseUnitTest
         holdContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
+    /**
+     * Given that we try to add "rma:hold" type to hold container,
+     * Then the operation is successful.
+     */
     @Test
     public void testAddHoldTypeToHoldContainer()
     {

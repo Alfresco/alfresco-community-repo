@@ -63,8 +63,8 @@ public class FilePlanType extends    BaseBehaviourBean
                                      NodeServicePolicies.OnCreateNodePolicy,
                                      NodeServicePolicies.OnDeleteNodePolicy
 {
-    private static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
-    private static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
+    private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
 
     /** file plan service */
     private FilePlanService filePlanService;

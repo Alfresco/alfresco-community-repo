@@ -756,22 +756,6 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testCheckPostPermissionForHoldFolder() throws Exception
-    {
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedNodeService.getType(parentNodeRef)).thenReturn(RecordsManagementModel.TYPE_HOLD);
-        try
-        {
-            rmNodesImpl.checkPostPermission(parentNodeRef.getId());
-            fail("Expected ecxeption as post should not be permitted on the Hold Folder");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("POST request not allowed in Hold Folder.", ex.getMsgId());
-        }
-    }
-
-    @Test
     public void testCheckPostPermission() throws Exception
     {
         NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);

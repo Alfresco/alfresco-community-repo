@@ -36,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.web.scripts.WebScriptUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 import org.json.simple.JSONArray;
@@ -99,7 +100,7 @@ public class DocLinkPost extends AbstractDocLink
         /* Parse the destination NodeRef parameter */
         String destinationNodeParam = (String) json.get(PARAM_DESTINATION_NODE);
         ParameterCheck.mandatoryString("destinationNodeParam", destinationNodeParam);
-        destinationNodeRef = new NodeRef(destinationNodeParam);
+        destinationNodeRef = WebScriptUtil.resolveNodeReference(destinationNodeParam, serviceRegistry.getNodeLocatorService());
 
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
         if (json.containsKey(PARAM_MULTIPLE_FILES))

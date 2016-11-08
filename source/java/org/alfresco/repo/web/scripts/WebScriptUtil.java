@@ -36,6 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
+import org.alfresco.repo.nodelocator.NodeLocatorService;
+import org.alfresco.repo.nodelocator.SharedHomeNodeLocator;
+import org.alfresco.repo.nodelocator.SitesHomeNodeLocator;
+import org.alfresco.repo.nodelocator.UserHomeNodeLocator;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ISO8601DateFormat;
 import org.json.JSONObject;
@@ -150,5 +155,30 @@ public class WebScriptUtil
         return new NodeRef(protocol, storeId, nodeId);
     }
 
+
+    public static NodeRef resolveNodeReference(String reference, NodeLocatorService nodeLocatorService)
+    {
+        NodeRef nodeRef = null;
+        switch (reference)
+        {
+        case "alfresco://company/home":
+            nodeRef = nodeLocatorService.getNode(CompanyHomeNodeLocator.NAME, null, null);
+            break;
+        case "alfresco://user/home":
+            nodeRef = nodeLocatorService.getNode(UserHomeNodeLocator.NAME, null, null);
+            break;
+        case "alfresco://company/shared":
+            nodeRef = nodeLocatorService.getNode(SharedHomeNodeLocator.NAME, null, null);
+            break;
+        case "alfresco://sites/home":
+            nodeRef = nodeLocatorService.getNode(SitesHomeNodeLocator.NAME, null, null);
+            break;
+        default:
+            nodeRef = new NodeRef(reference);
+            break;
+        }
+
+        return nodeRef;
+    }
 
 }

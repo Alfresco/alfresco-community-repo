@@ -30,9 +30,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.web.scripts.links.AbstractLinksWebScript;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.activities.ActivityService;
-import org.alfresco.service.cmr.links.LinkInfo;
 import org.alfresco.service.cmr.repository.DocumentLinkService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -42,12 +41,9 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONStringer;
-import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.json.JSONWriter;
 
 /**
@@ -71,6 +67,7 @@ public abstract class AbstractDocLink extends DeclarativeWebScript
     protected SiteService siteService;
     protected DocumentLinkService documentLinkService;
     protected ActivityService activityService;
+    protected ServiceRegistry serviceRegistry;
 
     private static Log logger = LogFactory.getLog(AbstractDocLink.class);
 
@@ -190,4 +187,10 @@ public abstract class AbstractDocLink extends DeclarativeWebScript
     {
         this.activityService = activityService;
     }
+
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+
 }

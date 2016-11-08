@@ -1847,6 +1847,7 @@
         <property name="siteService" ref="SiteService" />
         <property name="documentLinkService" ref="DocumentLinkService" />
         <property name="activityService" ref="activityService"/>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
    </bean>
 
    <bean id="webscript.org.alfresco.repository.doclink.doclinks.delete"

@@ -86,6 +86,8 @@
 
    <bean id="rma.transfer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.TransferType" parent="rm.baseBehaviour" />
 
+   <bean id="rma.hold" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.HoldType" parent="rm.baseBehaviour" />
+
    <bean id="rma.unfiledRecordsContainer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.UnfiledRecordContainerType" parent="rm.baseBehaviour">
    </bean>
 

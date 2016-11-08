@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;

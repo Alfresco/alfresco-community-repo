@@ -51,6 +51,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.HoldType;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,6 +62,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -81,6 +83,9 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef holdContainer;
     protected NodeRef hold;
     protected NodeRef hold2;
+
+    @Mock
+    private HoldType mockedHoldType;
 
     @Spy @InjectMocks HoldServiceImpl holdService;
 

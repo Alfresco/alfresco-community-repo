@@ -44,6 +44,7 @@ import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.HoldType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
@@ -102,6 +103,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
     /** records management audit service */
     private RecordsManagementAuditService recordsManagementAuditService;
 
+    private HoldType holdType;
+
     /**
      * Set the file plan service
      *
@@ -158,6 +161,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
         this.recordsManagementAuditService = recordsManagementAuditService;
+    }
+
+    public void setHoldType(HoldType holdType)
+    {
+        this.holdType = holdType;
     }
 
     /**
@@ -594,7 +602,15 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         }
 
                         // Link the record to the hold
-                        nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+                        holdType.disable();
+                        try
+                        {
+                            nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+                        }
+                        finally
+                        {
+                            holdType.enable();
+                        }
 
                         // audit item being added to the hold
                         recordsManagementAuditService.auditEvent(nodeRef, AUDIT_ADD_TO_HOLD);

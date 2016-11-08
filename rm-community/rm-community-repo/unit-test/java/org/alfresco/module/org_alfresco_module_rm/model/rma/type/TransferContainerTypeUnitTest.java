@@ -51,16 +51,15 @@ public class TransferContainerTypeUnitTest extends BaseUnitTest
     private @InjectMocks TransferContainerType transferContainerType;
 
     /**
-     * Given that we try to add a non "rma:transfer" type to transfer container,
+     * Given that we try to add to transfer container,
      * Then InvalidParameterException is thrown.
      */
     @Test(expected = InvalidParameterException.class)
-    public void testAddNonTransferTypeToTransferContainerTest()
+    public void testAddToTransferContainerTest()
     {
         NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
 
         QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_TRANSFER)).thenReturn(false);
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);

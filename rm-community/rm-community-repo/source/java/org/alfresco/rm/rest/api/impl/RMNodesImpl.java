@@ -409,11 +409,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         NodeRef parentNodeRef = validateOrLookupNode(nodeId, null);
         QName parentNodeRefType = nodeService.getType(parentNodeRef);
 
-        if(RecordsManagementModel.TYPE_TRANSFER.equals(parentNodeRefType))
-        {
-            throw new PermissionDeniedException("POST request not allowed in Transfer Folder.");
-        }
-        else if(RecordsManagementModel.TYPE_HOLD.equals(parentNodeRefType))
+        if(RecordsManagementModel.TYPE_HOLD.equals(parentNodeRefType))
         {
             throw new PermissionDeniedException("POST request not allowed in Hold Folder.");
         }

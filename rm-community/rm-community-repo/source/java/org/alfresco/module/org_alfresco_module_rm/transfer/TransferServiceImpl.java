@@ -42,6 +42,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.rma.type.TransferContainerType;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.TransferType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
@@ -90,6 +91,8 @@ public class TransferServiceImpl extends ServiceBaseImpl
 
     protected TransferContainerType transferContainerType;
 
+    protected TransferType transferType;
+
     /**
      * @param filePlanService file plan service
      */
@@ -133,6 +136,11 @@ public class TransferServiceImpl extends ServiceBaseImpl
     public void setTransferContainerType(TransferContainerType transferContainerType)
     {
         this.transferContainerType = transferContainerType;
+    }
+
+    public void setTransferType(TransferType transferType)
+    {
+        this.transferType = transferType;
     }
 
     /**
@@ -205,10 +213,18 @@ public class TransferServiceImpl extends ServiceBaseImpl
         }
 
         // Link the record to the trasnfer object
-        nodeService.addChild(transferNodeRef,
-                                  nodeRef,
-                                  ASSOC_TRANSFERRED,
-                                  ASSOC_TRANSFERRED);
+        transferType.disable();
+        try
+        {
+            nodeService.addChild(transferNodeRef,
+                        nodeRef,
+                        ASSOC_TRANSFERRED,
+                        ASSOC_TRANSFERRED);
+        }
+        finally
+        {
+            transferType.enable();
+        }
 
         // Set PDF indicator flag
         setPDFIndicationFlag(transferNodeRef, nodeRef);

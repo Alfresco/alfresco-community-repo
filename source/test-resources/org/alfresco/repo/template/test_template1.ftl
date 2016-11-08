@@ -51,4 +51,18 @@ ${root.icon32}<br>
    ${child.name}
 </#list>
 
+<#-- Test childByNamePath -->
+root.childByNamePath["subFolder"].name=${root.childByNamePath["subFolder"].name}
+root.childByNamePath["/subFolder"].name=${root.childByNamePath["/subFolder"].name}
+root.childByNamePath["subFolder/"].name=${root.childByNamePath["subFolder/"].name}
+root.childByNamePath["/subFolder/"].name=${root.childByNamePath["/subFolder/"].name}
+root.childByNamePath["subFolder/subSubFolder"].name=${root.childByNamePath["subFolder/subSubFolder"].name}
+root.childByNamePath["/subFolder/subSubFolder"].name=${root.childByNamePath["/subFolder/subSubFolder"].name}
+root.childByNamePath["subFolder/subSubFolder/"].name=${root.childByNamePath["subFolder/subSubFolder/"].name}
+root.childByNamePath["/subFolder/subSubFolder/"].name=${root.childByNamePath["/subFolder/subSubFolder/"].name}
+root.childByNamePath["subFolder/subSubFolder/subSubSubFolder"].name=${root.childByNamePath["subFolder/subSubFolder/subSubSubFolder"].name}
+root.childByNamePath["subFolder"].childByNamePath["subSubFolder"].name=${root.childByNamePath["subFolder"].childByNamePath["subSubFolder"].name}
+root.childByNamePath["subFolder"].childByNamePath["subSubFolder/subSubSubFolder"].name=${root.childByNamePath["subFolder"].childByNamePath["subSubFolder/subSubSubFolder"].name}
+root.childByNamePath["subFolder/subSubFolder"].childByNamePath["subSubSubFolder"].name=${root.childByNamePath["subFolder/subSubFolder"].childByNamePath["subSubSubFolder"].name}
+
 <h6>End Test Template 1</h6>

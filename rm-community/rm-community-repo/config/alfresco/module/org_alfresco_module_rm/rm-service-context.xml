@@ -374,10 +374,10 @@
 
     <!--  File Plan Service -->
 
-  <bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+	<bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
 
-  <bean id="filePlanService"
-        parent="baseService"
+	<bean id="filePlanService"
+	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
         <property name="rootContainerCache" ref="rootContainerCache" />
     </bean>
@@ -567,9 +567,9 @@
           parent="baseService">
         <property name="nodeService" ref="nodeService"/>
         <property name="filePlanService" ref="filePlanService" />
-        <property name="filePlanRoleService" ref="filePlanRoleService" />
-        <property name="authorityService" ref="authorityService"/>
-        <property name="permissionService" ref="permissionService"/>
+        <property name="filePlanRoleService" ref="filePlanRoleService" />        
+        <property name="authorityService" ref="authorityService"/>        
+        <property name="permissionService" ref="permissionService"/>   
         <property name="transactionService" ref="transactionService"/>
     </bean>
 
@@ -1061,8 +1061,8 @@
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
-      <property name="recordService" ref="recordService"/>
-      <property name="namespaceService" ref="namespaceService"/>
+    	<property name="recordService" ref="recordService"/>
+    	<property name="namespaceService" ref="namespaceService"/>
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1523,20 +1523,20 @@
       <property name="objectDefinitionSource">
          <value>
             <![CDATA[
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.isHold=RM_ALLOW
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHolds=RM.Read.0,AFTER_RM.FilterNode
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHold=RM.Read.0,AFTER_RM.FilterNode
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.heldBy=RM.Read.0,AFTER_RM.FilterNode
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHeld=RM.Read.0,AFTER_RM.FilterNode
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.createHold=RM_CAP.0.rma:filePlanComponent.CreateHold
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHoldReason=RM.Read.0
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.setHoldReason=RM_CAP.0.rma:filePlanComponent.EditHold
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.deleteHold=RM_CAP.0.rma:filePlanComponent.DeleteHold
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHold=RM_CAP.0.rma:filePlanComponent.AddToHold
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHolds=RM_ALLOW
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHold=RM_CAP.0.rma:filePlanComponent.RemoveFromHold
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHolds=RM_ALLOW
-         org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromAllHolds=RM_ALLOW
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.isHold=RM_ALLOW
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHolds=RM.Read.0,AFTER_RM.FilterNode
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHold=RM.Read.0,AFTER_RM.FilterNode
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.heldBy=RM.Read.0,AFTER_RM.FilterNode
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHeld=RM.Read.0,AFTER_RM.FilterNode
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.createHold=RM_CAP.0.rma:filePlanComponent.CreateHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHoldReason=RM.Read.0
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.setHoldReason=RM_CAP.0.rma:filePlanComponent.EditHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.deleteHold=RM_CAP.0.rma:filePlanComponent.DeleteHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHold=RM_CAP.0.rma:filePlanComponent.AddToHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHolds=RM_ALLOW
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHold=RM_CAP.0.rma:filePlanComponent.RemoveFromHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHolds=RM_ALLOW
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromAllHolds=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.hold.HoldService.*=RM_DENY
             ]]>
          </value>

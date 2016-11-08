@@ -756,22 +756,6 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testCheckPostPermissionForTransferContainer() throws Exception
-    {
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedNodeService.getType(parentNodeRef)).thenReturn(RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
-        try
-        {
-            rmNodesImpl.checkPostPermission(parentNodeRef.getId());
-            fail("Expected ecxeption as post should not be permitted on the Transfer Container");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("POST request not allowed in Transfer Container.", ex.getMsgId());
-        }
-    }
-
-    @Test
     public void testCheckPostPermissionForTransferFolder() throws Exception
     {
         NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);

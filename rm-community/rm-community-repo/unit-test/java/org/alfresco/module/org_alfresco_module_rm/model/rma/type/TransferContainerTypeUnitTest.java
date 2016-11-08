@@ -68,22 +68,4 @@ public class TransferContainerTypeUnitTest extends BaseUnitTest
         when(mockedChildAssoc.getParentRef()).thenReturn(transferContainer);
         transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
-
-    /**
-     * Given that we try to add "rma:transfer" type to transfer container,
-     * Then the operation is successful.
-     */
-    @Test
-    public void testAddTransferFolderToTransferContainer()
-    {
-        QName type = AlfMock.generateQName();
-        when(mockedDictionaryService.isSubClass(type, TYPE_TRANSFER)).thenReturn(true);
-        NodeRef transferFolder= AlfMock.generateNodeRef(mockedNodeService, type);
-
-        NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(transferFolder);
-        when(mockedChildAssoc.getParentRef()).thenReturn(transferContainer);
-        transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
 }

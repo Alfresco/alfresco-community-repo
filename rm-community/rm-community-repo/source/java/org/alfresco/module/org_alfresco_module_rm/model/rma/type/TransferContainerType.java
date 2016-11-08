@@ -26,8 +26,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import java.util.Arrays;
-import java.util.List;
+import java.security.InvalidParameterException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -38,7 +37,6 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -52,7 +50,25 @@ public class TransferContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
 {
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
-    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_TRANSFER);
+    private static final String BEHAVIOUR_NAME = "onCreateChildAssocsForTransferContainer";
+
+    /**
+     * Disable the behaviours for this transaction
+     *
+     */
+    public void disable()
+    {
+        getBehaviour(BEHAVIOUR_NAME).disable();
+    }
+
+    /**
+     * Enable behaviours for this transaction
+     *
+     */
+    public void enable()
+    {
+        getBehaviour(BEHAVIOUR_NAME).enable();
+    }
 
     /**
      * On every event
@@ -61,11 +77,14 @@ public class TransferContainerType extends BaseBehaviourBean
      *      boolean)
      */
     @Override
-    @Behaviour(kind = BehaviourKind.ASSOCIATION)
+    @Behaviour
+    (
+                kind = BehaviourKind.ASSOCIATION,
+                name = BEHAVIOUR_NAME
+    )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        // check the created child is of an accepted type
-        validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        throw new InvalidParameterException("Operation failed. Creation is not allowed in Transfer Container");
     }
 
     @Override

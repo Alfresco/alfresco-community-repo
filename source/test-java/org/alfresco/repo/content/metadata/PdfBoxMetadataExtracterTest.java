@@ -127,8 +127,8 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
     
     public void testConcurrentExtractions() throws InterruptedException
     {
-        int threadNum = 11;
-        Map<String, Boolean> threadResults = new ConcurrentHashMap<>();
+        final int threadNum = 11;
+        final Map<String, Boolean> threadResults = new ConcurrentHashMap<>();
         for (int i = 0; i < threadNum; i++)
         {
             new Thread(new Runnable()

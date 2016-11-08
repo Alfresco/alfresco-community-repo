@@ -142,8 +142,13 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
                 {
                     try
                     {
-                        threadResults.put(Thread.currentThread().getName(),
-                                !extractFromMimetype(MimetypeMap.MIMETYPE_PDF).isEmpty());
+                        Map<QName, Serializable> results = extractFromMimetype(MimetypeMap.MIMETYPE_PDF);
+                        if(!results.isEmpty())
+                        {
+                            // delay successful transformations to help all threads to start in time
+                            Thread.sleep(5*threadNum);
+                        }
+                        threadResults.put(Thread.currentThread().getName(), !results.isEmpty());
                     }
                     catch (Exception e)
                     {

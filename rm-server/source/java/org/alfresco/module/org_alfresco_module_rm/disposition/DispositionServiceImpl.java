@@ -1094,6 +1094,32 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         }
         return null;
     }
+    
+    public void recalculateNextDispositionStep(NodeRef record)
+    {
+        List<NodeRef> recordFolders = recordFolderService.getRecordFolders(record);
+        
+        DispositionAction nextDispositionAction = getNextDispositionAction(record);
+        
+        if (nextDispositionAction != null)
+        {
+            NextActionFromDisposition dsNextAction = getNextDispositionAction(record, recordFolders, nextDispositionAction);
+            if (dsNextAction != null)
+            {
+                final NodeRef action = dsNextAction.getNextActionNodeRef();
+                final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork()
+                    {
+                        nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                        return null;
+                    }
+                });
+            }
+        }
+    }
 
     /**
      * Helper method to determine if a node is frozen or has frozen children

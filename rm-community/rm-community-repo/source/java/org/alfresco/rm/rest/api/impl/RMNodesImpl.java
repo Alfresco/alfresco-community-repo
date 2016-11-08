@@ -404,19 +404,34 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     }
 
     @Override
-    public boolean isRMSite(String nodeId)
+    public void checkPostPermission(String nodeId)
     {
-        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+        NodeRef parentNodeRef = validateOrLookupNode(nodeId, null);
+        QName parentNodeRefType = nodeService.getType(parentNodeRef);
 
-        SiteInfo siteInfo = siteService.getSite(FilePlanService.DEFAULT_RM_SITE_ID);
-        if(siteInfo !=null)
+        if(RecordsManagementModel.TYPE_TRANSFER.equals(parentNodeRefType))
         {
-            NodeRef rmNodeRef = siteInfo.getNodeRef();
-            if(rmNodeRef.equals(nodeRef))
+            throw new PermissionDeniedException("POST request not allowed in Transfer Folder.");
+        }
+        else if(RecordsManagementModel.TYPE_TRANSFER_CONTAINER.equals(parentNodeRefType))
+        {
+            throw new PermissionDeniedException("POST request not allowed in Transfer Container.");
+        }
+        else if(RecordsManagementModel.TYPE_HOLD.equals(parentNodeRefType))
+        {
+            throw new PermissionDeniedException("POST request not allowed in Hold Folder.");
+        }
+        else
+        {
+            SiteInfo siteInfo = siteService.getSite(FilePlanService.DEFAULT_RM_SITE_ID);
+            if(siteInfo !=null)
             {
-                return true;
+                NodeRef rmNodeRef = siteInfo.getNodeRef();
+                if(rmNodeRef.equals(parentNodeRef))
+                {
+                    throw new PermissionDeniedException("POST request not allowed in RM site.");
+                }
             }
         }
-        return false;
     }
 }

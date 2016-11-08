@@ -34,7 +34,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +50,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
@@ -109,7 +109,7 @@ public class FileplanComponentChildrenRelationUnitTest extends BaseUnitTest
         Node mokedNodeInfo = mock(Node.class);
         nodeInfos.add(mokedNodeInfo);
 
-        when(mockedRMNodes.isRMSite(parentNodeRef.getId())).thenReturn(true);
+        Mockito.doThrow(new PermissionDeniedException("POST request not allowed in RM site.")).when(mockedRMNodes).checkPostPermission(parentNodeRef.getId());
         try
         {
             filePlanComponentChildrenRelation.create(parentNodeRef.getId(), nodeInfos, mockedParameters);
@@ -122,6 +122,76 @@ public class FileplanComponentChildrenRelationUnitTest extends BaseUnitTest
         verify(mockedRMNodes, never()).createNode(parentNodeRef.getId(), nodeInfos.get(0), mockedParameters);
     }
 
+    @Test
+    public void testCreateOnTransferContainer() throws Exception
+    {
+        Parameters mockedParameters = mock(Parameters.class);
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+
+        List<Node> nodeInfos = new ArrayList<Node>();
+        Node mokedNodeInfo = mock(Node.class);
+        nodeInfos.add(mokedNodeInfo);
+
+        Mockito.doThrow(new PermissionDeniedException("POST request not allowed in Transfer Container.")).when(mockedRMNodes).checkPostPermission(parentNodeRef.getId());
+        try
+        {
+            filePlanComponentChildrenRelation.create(parentNodeRef.getId(), nodeInfos, mockedParameters);
+            fail("Expected ecxeption as POST request is not allowed in Transfer Container.");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Transfer Container.", ex.getMsgId());
+        }
+        verify(mockedRMNodes, never()).createNode(parentNodeRef.getId(), nodeInfos.get(0), mockedParameters);
+    }
+
+    @Test
+    public void testCreateOnHoldFolder() throws Exception
+    {
+        Parameters mockedParameters = mock(Parameters.class);
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+
+        List<Node> nodeInfos = new ArrayList<Node>();
+        Node mokedNodeInfo = mock(Node.class);
+        nodeInfos.add(mokedNodeInfo);
+
+        Mockito.doThrow(new PermissionDeniedException("POST request not allowed in Hold Folder.")).when(mockedRMNodes).checkPostPermission(parentNodeRef.getId());
+        try
+        {
+            filePlanComponentChildrenRelation.create(parentNodeRef.getId(), nodeInfos, mockedParameters);
+            fail("Expected ecxeption as POST request is not allowed in Hold Folder.");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Hold Folder.", ex.getMsgId());
+        }
+        verify(mockedRMNodes, never()).createNode(parentNodeRef.getId(), nodeInfos.get(0), mockedParameters);
+    }
+
+    @Test
+    public void testCreateOnTransferFolder() throws Exception
+    {
+        Parameters mockedParameters = mock(Parameters.class);
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+
+        List<Node> nodeInfos = new ArrayList<Node>();
+        Node mokedNodeInfo = mock(Node.class);
+        nodeInfos.add(mokedNodeInfo);
+
+        Mockito.doThrow(new PermissionDeniedException("POST request not allowed in Transfer Folder.")).when(mockedRMNodes).checkPostPermission(parentNodeRef.getId());
+        try
+        {
+            filePlanComponentChildrenRelation.create(parentNodeRef.getId(), nodeInfos, mockedParameters);
+            fail("Expected ecxeption as POST request is not allowed in Transfer Folder.");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Transfer Folder.", ex.getMsgId());
+        }
+        verify(mockedRMNodes, never()).createNode(parentNodeRef.getId(), nodeInfos.get(0), mockedParameters);
+    }
+
+    @Test
     public void testUpload() throws Exception
     {
         Parameters mockedParameters = mock(Parameters.class);
@@ -132,6 +202,7 @@ public class FileplanComponentChildrenRelationUnitTest extends BaseUnitTest
         verify(mockedRMNodes, times(1)).upload(parentNodeRef.getId(), mockedFormData, mockedParameters);
     }
 
+    @Test
     public void testUploadOnRMSite() throws Exception
     {
         Parameters mockedParameters = mock(Parameters.class);
@@ -139,7 +210,7 @@ public class FileplanComponentChildrenRelationUnitTest extends BaseUnitTest
         FormData mockedFormData = mock(FormData.class);
         WithResponse mockedWithResponse = mock(WithResponse.class);
 
-        when(mockedRMNodes.isRMSite(parentNodeRef.getId())).thenReturn(true);
+        Mockito.doThrow(new PermissionDeniedException("POST request not allowed in RM site.")).when(mockedRMNodes).checkPostPermission(parentNodeRef.getId());
         try
         {
             filePlanComponentChildrenRelation.create(parentNodeRef.getId(), mockedFormData, mockedParameters, mockedWithResponse);
@@ -148,6 +219,69 @@ public class FileplanComponentChildrenRelationUnitTest extends BaseUnitTest
         catch(PermissionDeniedException ex)
         {
             assertEquals("POST request not allowed in RM site.", ex.getMsgId());
+        }
+        verify(mockedRMNodes, never()).upload(parentNodeRef.getId(), mockedFormData, mockedParameters);
+    }
+
+    @Test
+    public void testUploadOnTransferContainer() throws Exception
+    {
+        Parameters mockedParameters = mock(Parameters.class);
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        FormData mockedFormData = mock(FormData.class);
+        WithResponse mockedWithResponse = mock(WithResponse.class);
+
+        Mockito.doThrow(new PermissionDeniedException("POST request not allowed in Transfer Container.")).when(mockedRMNodes).checkPostPermission(parentNodeRef.getId());
+        try
+        {
+            filePlanComponentChildrenRelation.create(parentNodeRef.getId(), mockedFormData, mockedParameters, mockedWithResponse);
+            fail("Expected ecxeption as POST request is not allowed in Transfer Container.");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Transfer Container.", ex.getMsgId());
+        }
+        verify(mockedRMNodes, never()).upload(parentNodeRef.getId(), mockedFormData, mockedParameters);
+    }
+
+    @Test
+    public void testUploadOnHoldFolder() throws Exception
+    {
+        Parameters mockedParameters = mock(Parameters.class);
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        FormData mockedFormData = mock(FormData.class);
+        WithResponse mockedWithResponse = mock(WithResponse.class);
+
+        Mockito.doThrow(new PermissionDeniedException("POST request not allowed in Hold Folder.")).when(mockedRMNodes).checkPostPermission(parentNodeRef.getId());
+        try
+        {
+            filePlanComponentChildrenRelation.create(parentNodeRef.getId(), mockedFormData, mockedParameters, mockedWithResponse);
+            fail("Expected ecxeption as POST request is not allowed in Hold Folder.");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Hold Folder.", ex.getMsgId());
+        }
+        verify(mockedRMNodes, never()).upload(parentNodeRef.getId(), mockedFormData, mockedParameters);
+    }
+
+    @Test
+    public void testUploadOnTransferFolder() throws Exception
+    {
+        Parameters mockedParameters = mock(Parameters.class);
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        FormData mockedFormData = mock(FormData.class);
+        WithResponse mockedWithResponse = mock(WithResponse.class);
+
+        Mockito.doThrow(new PermissionDeniedException("POST request not allowed in Transfer Folder.")).when(mockedRMNodes).checkPostPermission(parentNodeRef.getId());
+        try
+        {
+            filePlanComponentChildrenRelation.create(parentNodeRef.getId(), mockedFormData, mockedParameters, mockedWithResponse);
+            fail("Expected ecxeption as POST request is not allowed in Transfer Folder.");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Transfer Folder.", ex.getMsgId());
         }
         verify(mockedRMNodes, never()).upload(parentNodeRef.getId(), mockedFormData, mockedParameters);
     }

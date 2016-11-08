@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.thumbnail;
 
+import static org.junit.Assume.assumeFalse;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -46,6 +48,8 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -82,6 +86,8 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.dialect.DB2Dialect;
+import org.hibernate.dialect.Dialect;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -344,6 +350,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testCreateFailingThumbnail() throws Exception
     {
+        //see REPO-1528
+        if(shouldTestBeSkippedForCurrentDB())
+        {
+            return;
+        }
         logger.debug("Starting testCreateFailingThumbnail");
 
         final NodeRef corruptNode = this.createCorruptedContent(folder);
@@ -1145,6 +1156,11 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testUpdatePropertyDuringLongRunningThumbnail() throws Exception
     {
+        //see REPO-1528
+        if(shouldTestBeSkippedForCurrentDB())
+        {
+            return;
+        }
         logger.debug("Starting testUpdatePropertyDuringLongRunningThumbnail");
         LongRunningConcurrentWork updatePropertyWork = new LongRunningConcurrentWork()
         {
@@ -1285,5 +1301,13 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         public void run(NodeRef source) throws Exception { }
         @Override
         public void verify(NodeRef source) throws Exception { }
+    }
+
+    private boolean shouldTestBeSkippedForCurrentDB()
+    {
+        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
+        return dialect instanceof AlfrescoOracle9Dialect 
+                || dialect instanceof AlfrescoSQLServerDialect 
+                || dialect instanceof DB2Dialect;
     }
 }

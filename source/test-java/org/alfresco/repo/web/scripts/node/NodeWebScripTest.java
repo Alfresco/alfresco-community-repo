@@ -636,6 +636,77 @@ public class NodeWebScripTest extends BaseWebScriptTest
         assertEquals(false, nodeService.hasAspect(testFile4, ApplicationModel.ASPECT_LINKED));
 
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+
+        //you should not be able to create links for locked nodes but you can delete links
+        final NodeRef testFile5 = createNode(testFolder1, "testingLinkCreationFileWithLock", ContentModel.TYPE_CONTENT,
+                AuthenticationUtil.getAdminUserName());
+
+        req = new Request("POST", CREATE_LINK_API + testFile5.getStoreRef().getProtocol() + "/"
+                + testFile5.getStoreRef().getIdentifier() + "/" + testFile5.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put(DESTINATION_NODE_REF_PARAM, testFolder1.toString());
+
+        jsonArray = new JSONArray();
+        jsonArray.add(testFile5.toString());
+        jsonReq.put(MULTIPLE_FILES_PARAM, jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_OK));
+        jsonLinkNodes = (JSONArray) json.get("linkNodes");
+        assertNotNull(jsonLinkNodes);
+        assertEquals(1, jsonLinkNodes.size());
+        assertEquals("true", json.get("overallSuccess"));
+        assertEquals("1", json.get("successCount"));
+        assertEquals("0", json.get("failureCount"));
+
+        jsonLinkNode = (JSONObject) jsonLinkNodes.get(0);
+        nodeRef = (String) jsonLinkNode.get("nodeRef");
+        NodeRef file5Link = new NodeRef(nodeRef);
+
+        assertEquals(true, nodeService.hasAspect(testFile5, ApplicationModel.ASPECT_LINKED));
+        assertEquals(true, nodeService.exists(file5Link));
+
+        //checkout the node testFile5
+        final NodeRef workingCopy = retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Exception
+            {
+                return checkOutCheckInService.checkout(testFile5);
+            }
+        });
+        assertNotNull(workingCopy);
+
+        //try to create link for working copy
+        req = new Request("POST", CREATE_LINK_API + workingCopy.getStoreRef().getProtocol() + "/"
+                + workingCopy.getStoreRef().getIdentifier() + "/" + workingCopy.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put(DESTINATION_NODE_REF_PARAM, testFolder1.toString());
+
+        jsonArray = new JSONArray();
+        jsonArray.add(workingCopy.toString());
+        jsonReq.put(MULTIPLE_FILES_PARAM, jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        //should fail since source node is working copy
+        json = asJSON(sendRequest(req, Status.STATUS_BAD_REQUEST));
+
+        //delete the link when source node is locked
+        nodeService.deleteNode(file5Link);
+        assertEquals(false, nodeService.hasAspect(testFile5, ApplicationModel.ASPECT_LINKED));
+
+        //release the lock
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {
+                checkOutCheckInService.checkin(workingCopy, new HashMap<String, Serializable>());
+                return null;
+            }
+        });
+
+        assertEquals(false, nodeService.hasAspect(testFile5, ContentModel.ASPECT_LOCKABLE));
     }
 
     private NodeRef createNode(NodeRef parentNode, String nodeCmName, QName nodeType, String ownerUserName)

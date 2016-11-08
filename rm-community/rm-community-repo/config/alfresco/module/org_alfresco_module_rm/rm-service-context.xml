@@ -1062,8 +1062,8 @@
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
-      <property name="recordService" ref="recordService"/>
-      <property name="namespaceService" ref="namespaceService"/>
+    	<property name="recordService" ref="recordService"/>
+    	<property name="namespaceService" ref="namespaceService"/>
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

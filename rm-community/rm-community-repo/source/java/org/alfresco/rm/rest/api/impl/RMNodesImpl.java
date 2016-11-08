@@ -413,10 +413,6 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         {
             throw new PermissionDeniedException("POST request not allowed in Transfer Folder.");
         }
-        else if(RecordsManagementModel.TYPE_TRANSFER_CONTAINER.equals(parentNodeRefType))
-        {
-            throw new PermissionDeniedException("POST request not allowed in Transfer Container.");
-        }
         else if(RecordsManagementModel.TYPE_HOLD.equals(parentNodeRefType))
         {
             throw new PermissionDeniedException("POST request not allowed in Hold Folder.");

@@ -22,6 +22,12 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
+            <artifactId>alfresco-trashcan-cleaner</artifactId>
+            <version>${dependency.alfresco-trashcan-cleaner.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.groupId}</groupId>
             <artifactId>alfresco-remote-api</artifactId>
             <version>${project.version}</version>
         </dependency>

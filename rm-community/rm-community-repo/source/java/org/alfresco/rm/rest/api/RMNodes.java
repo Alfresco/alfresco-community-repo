@@ -47,10 +47,9 @@ public interface RMNodes extends Nodes
     public static String PARAM_INCLUDE_IS_COMPLETED = "isCompleted";
 
     /**
-     * Identifies if one node is RM site node.
+     * Verifies if the post request is allowed for nodeId received as parameter.
      *
      * @param nodeId
-     * @return
      */
-    boolean isRMSite(String nodeId);
+    void checkPostPermission(String nodeId);
 }

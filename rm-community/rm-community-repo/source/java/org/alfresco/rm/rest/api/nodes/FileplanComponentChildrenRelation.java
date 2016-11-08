@@ -68,10 +68,7 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     @Override
     public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
     {
-        if(nodes.isRMSite(parentFolderNodeId))
-        {
-            throw new PermissionDeniedException("POST request not allowed in RM site.");
-        }
+        nodes.checkPostPermission(parentFolderNodeId);
         List<Node> result = new ArrayList<>(nodeInfos.size());
 
         for (Node nodeInfo : nodeInfos)
@@ -85,10 +82,7 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     @Override
     public Node create(String parentFolderNodeId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
-        if(nodes.isRMSite(parentFolderNodeId))
-        {
-            throw new PermissionDeniedException("POST request not allowed in RM site.");
-        }
+        nodes.checkPostPermission(parentFolderNodeId);
         return nodes.upload(parentFolderNodeId, formData, parameters);
     }
 }

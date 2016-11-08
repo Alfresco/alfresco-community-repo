@@ -726,29 +726,90 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testIsRMSite() throws Exception
+    public void testCheckPostPermissionForRMSite() throws Exception
     {
-        //test when rm site exists and we do not check the rm site
         NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        SiteInfo mockedSiteInfo = mock(SiteInfo.class);
+        when(mockedSiteInfo.getNodeRef()).thenReturn(parentNodeRef);
+        when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(mockedSiteInfo);
 
+        try
+        {
+            rmNodesImpl.checkPostPermission(parentNodeRef.getId());
+            fail("Expected ecxeption as post should not be permitted on the RM site");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in RM site.", ex.getMsgId());
+        }
+    }
+
+    @Test
+    public void testCheckPostPermissionForNormalNodeRefWhenRMSiteExists() throws Exception
+    {
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         NodeRef rmSiteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteInfo.getNodeRef()).thenReturn(rmSiteNodeRef);
         when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(mockedSiteInfo);
+        rmNodesImpl.checkPostPermission(parentNodeRef.getId());
+    }
 
-        boolean isRMSite = rmNodesImpl.isRMSite(parentNodeRef.getId());
-        assertEquals("Should return false.", false, isRMSite);
+    @Test
+    public void testCheckPostPermissionForTransferContainer() throws Exception
+    {
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedNodeService.getType(parentNodeRef)).thenReturn(RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
+        try
+        {
+            rmNodesImpl.checkPostPermission(parentNodeRef.getId());
+            fail("Expected ecxeption as post should not be permitted on the Transfer Container");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Transfer Container.", ex.getMsgId());
+        }
+    }
 
-        //check when rm site does not exist
-        when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(null);
-        isRMSite = rmNodesImpl.isRMSite(parentNodeRef.getId());
-        assertEquals("Should return false.", false, isRMSite);
+    @Test
+    public void testCheckPostPermissionForTransferFolder() throws Exception
+    {
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedNodeService.getType(parentNodeRef)).thenReturn(RecordsManagementModel.TYPE_TRANSFER);
+        try
+        {
+            rmNodesImpl.checkPostPermission(parentNodeRef.getId());
+            fail("Expected ecxeption as post should not be permitted on the Transfer Folder");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Transfer Folder.", ex.getMsgId());
+        }
+    }
 
-        //check when rm site exists and we check with rm site node ref id
-        when(mockedSiteInfo.getNodeRef()).thenReturn(parentNodeRef);
-        when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(mockedSiteInfo);
-        isRMSite = rmNodesImpl.isRMSite(parentNodeRef.getId());
-        assertEquals("Should return true.", true, isRMSite);
+    @Test
+    public void testCheckPostPermissionForHoldFolder() throws Exception
+    {
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedNodeService.getType(parentNodeRef)).thenReturn(RecordsManagementModel.TYPE_HOLD);
+        try
+        {
+            rmNodesImpl.checkPostPermission(parentNodeRef.getId());
+            fail("Expected ecxeption as post should not be permitted on the Hold Folder");
+        }
+        catch(PermissionDeniedException ex)
+        {
+            assertEquals("POST request not allowed in Hold Folder.", ex.getMsgId());
+        }
+    }
+
+    @Test
+    public void testCheckPostPermission() throws Exception
+    {
+        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        QName type = AlfMock.generateQName();
+        when(mockedNodeService.getType(parentNodeRef)).thenReturn(type);
+        rmNodesImpl.checkPostPermission(parentNodeRef.getId());
     }
 
     private void setupCompanyHomeAndPrimaryParent(NodeRef nodeRef)

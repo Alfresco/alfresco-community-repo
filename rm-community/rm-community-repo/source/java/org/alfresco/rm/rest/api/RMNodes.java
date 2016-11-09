@@ -45,11 +45,4 @@ public interface RMNodes extends Nodes
     public static String PARAM_INCLUDE_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
     public static String PARAM_INCLUDE_IS_CLOSED = "isClosed";
     public static String PARAM_INCLUDE_IS_COMPLETED = "isCompleted";
-
-    /**
-     * Verifies if the post request is allowed for nodeId received as parameter.
-     *
-     * @param nodeId
-     */
-    void checkPostPermission(String nodeId);
 }

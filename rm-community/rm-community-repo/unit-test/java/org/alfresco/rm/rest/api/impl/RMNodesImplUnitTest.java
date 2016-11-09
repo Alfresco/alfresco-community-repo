@@ -65,7 +65,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -723,45 +722,6 @@ public class RMNodesImplUnitTest extends BaseUnitTest
             assertEquals("Cannot delete: " + nodeRef.getId(), ex.getMsgId());
         }
         verify(mockedFileFolderService, never()).delete(nodeRef);
-    }
-
-    @Test
-    public void testCheckPostPermissionForRMSite() throws Exception
-    {
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        SiteInfo mockedSiteInfo = mock(SiteInfo.class);
-        when(mockedSiteInfo.getNodeRef()).thenReturn(parentNodeRef);
-        when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(mockedSiteInfo);
-
-        try
-        {
-            rmNodesImpl.checkPostPermission(parentNodeRef.getId());
-            fail("Expected ecxeption as post should not be permitted on the RM site");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("POST request not allowed in RM site.", ex.getMsgId());
-        }
-    }
-
-    @Test
-    public void testCheckPostPermissionForNormalNodeRefWhenRMSiteExists() throws Exception
-    {
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        NodeRef rmSiteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        SiteInfo mockedSiteInfo = mock(SiteInfo.class);
-        when(mockedSiteInfo.getNodeRef()).thenReturn(rmSiteNodeRef);
-        when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(mockedSiteInfo);
-        rmNodesImpl.checkPostPermission(parentNodeRef.getId());
-    }
-
-    @Test
-    public void testCheckPostPermission() throws Exception
-    {
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeService.getType(parentNodeRef)).thenReturn(type);
-        rmNodesImpl.checkPostPermission(parentNodeRef.getId());
     }
 
     private void setupCompanyHomeAndPrimaryParent(NodeRef nodeRef)

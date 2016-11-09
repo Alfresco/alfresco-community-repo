@@ -516,7 +516,7 @@ public class RepoService
      */
 	public TestSite createSite(TestNetwork network, final SiteInformation siteInfoIn)
     {
-		SiteInfo siteInfoOut = siteService.createSite(TEST_SITE_PRESET, siteInfoIn.getShortName(), siteInfoIn.getTitle(), siteInfoIn.getDescription(), siteInfoIn.getSiteVisibility());
+		SiteInfo siteInfoOut = siteService.createSite(siteInfoIn.getSitePreset() != null ? siteInfoIn.getSitePreset() : TEST_SITE_PRESET, siteInfoIn.getShortName(), siteInfoIn.getTitle(), siteInfoIn.getDescription(), siteInfoIn.getSiteVisibility());
     	siteService.createContainer(siteInfoIn.getShortName(), "documentLibrary", ContentModel.TYPE_FOLDER, null);
 		
     	final TestSite testSite = new TestSite(network, siteInfoOut);
@@ -1378,6 +1378,13 @@ public class RepoService
 			return createSite(siteInfo);
 	    }
 
+        public TestSite createSite(String id, String title, String description, String sitePreset, SiteVisibility visibility)
+        {
+            SiteInformation siteInfo = new SiteInformation(id, title, description, sitePreset, visibility);
+            // Used deprecated createSite method until will be allowed creating a site with sitePreset
+            return createSite(siteInfo);
+        }
+
         public TestSite createSite(SiteVisibility siteVisibility)
         {
             return createSite(null, siteVisibility);
@@ -1953,6 +1960,12 @@ public class RepoService
 			this.description = description;
 			this.siteVisibility = siteVisibility;
 		}
+
+        public SiteInformation(String shortName, String title, String description, String sitePreset, SiteVisibility siteVisibility)
+        {
+            this(shortName, title, description, siteVisibility);
+            this.sitePreset = sitePreset;
+        }
 
 		public String getShortName()
 		{

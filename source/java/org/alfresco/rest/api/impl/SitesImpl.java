@@ -119,7 +119,9 @@ public class SitesImpl implements Sites
     private static final int SITE_MAXLEN_DESCRIPTION = 512;
 
     private static final String SITE_ID_VALID_CHARS_PARTIAL_REGEX = "A-Za-z0-9\\-";
-    
+
+    private static final String DEFAULT_SITE_PRESET = "site-dashboard";
+
     private final static Map<String,QName> SORT_PARAMS_TO_QNAMES;
     static
     {
@@ -1102,7 +1104,7 @@ public class SitesImpl implements Sites
         SiteInfo siteInfo = null;
         try
         {
-            siteInfo = siteService.createSite(site.getPreset() != null ? site.getPreset() : "sitePreset", site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
+            siteInfo = siteService.createSite(DEFAULT_SITE_PRESET, site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
         }
         catch (SiteServiceException sse)
         {

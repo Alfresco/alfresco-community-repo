@@ -27,16 +27,25 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import static java.util.Arrays.asList;
+import static org.alfresco.module.org_alfresco_module_rm.action.impl.BroadcastDispositionActionDefinitionUpdateAction.CHANGED_PROPERTIES;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_AS_OF;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -63,6 +72,7 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
 
     private NodeService mockNodeService = mock(NodeService.class);
     private DispositionService mockDispositionService = mock(DispositionService.class);
+    private BehaviourFilter mockBehaviourFilter = mock(BehaviourFilter.class);
 
     /** Inject the mock services into the class under test and link the content and next action nodes. */
     @Before
@@ -70,6 +80,7 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
     {
         action.setNodeService(mockNodeService);
         action.setDispositionService(mockDispositionService);
+        action.setBehaviourFilter(mockBehaviourFilter);
 
         ChildAssociationRef mockAssocRef = mock(ChildAssociationRef.class);
         when(mockNodeService.getPrimaryParent(NEXT_ACTION_NODE_REF)).thenReturn(mockAssocRef);
@@ -99,5 +110,62 @@ public class BroadcastDispositionActionDefinitionUpdateActionUnitTest
 
         // Check that the "disposition as of" date has been set on the next action.
         verify(mockNodeService).setProperty(NEXT_ACTION_NODE_REF, PROP_DISPOSITION_AS_OF, asOfDate);
+    }
+
+    /**
+     * Check that changing the period property triggers a recalculation of the "disposition as of" date.
+     * <p>
+     * Set up a disposition action definition node under a schedule defintion node, under a category node. Create a
+     * record whose next action is an instance of the action definition. Check that if the "period property" of the
+     * action definition changes then the "disposition as of" date is recalculated and persisted against the node of the
+     * next action.
+     */
+    @Test
+    public void testChangePeriodProperty()
+    {
+        // Set up the action definition node.
+        String definitionNodeId = "definitionNodeId";
+        NodeRef definitionNode = new NodeRef("definition://node/" + definitionNodeId);
+        DispositionSchedule mockDispositionSchedule = mock(DispositionSchedule.class);
+        when(mockDispositionSchedule.getNodeRef()).thenReturn(definitionNode);
+        when(mockNodeService.getType(definitionNode)).thenReturn(TYPE_DISPOSITION_ACTION_DEFINITION);
+        // Set up the schedule definition node hierarchy.
+        NodeRef categoryNode = new NodeRef("category://node/");
+        NodeRef scheduleNode = new NodeRef("schedule://node/");
+        ChildAssociationRef scheduleDefinitionRelationship = new ChildAssociationRef(null, scheduleNode, null, definitionNode);
+        when(mockNodeService.getPrimaryParent(definitionNode)).thenReturn(scheduleDefinitionRelationship);
+        ChildAssociationRef categoryScheduleRelationship = new ChildAssociationRef(null, categoryNode, null, scheduleNode);
+        when(mockNodeService.getPrimaryParent(scheduleNode)).thenReturn(categoryScheduleRelationship);
+        // Set up the record/step relationship.
+        NodeRef recordNode = new NodeRef("record://node/");
+        NodeRef stepNode = new NodeRef("step://node/");
+        ChildAssociationRef recordStepRelationship = new ChildAssociationRef(null, recordNode, null, stepNode);
+        when(mockNodeService.getPrimaryParent(stepNode)).thenReturn(recordStepRelationship);
+        // Set up the disposition schedule.
+        when(mockDispositionService.getAssociatedDispositionSchedule(categoryNode)).thenReturn(mockDispositionSchedule);
+        when(mockDispositionService.getDisposableItems(mockDispositionSchedule)).thenReturn(asList(recordNode));
+        when(mockDispositionService.getDispositionSchedule(recordNode)).thenReturn(mockDispositionSchedule);
+        // Set up the record.
+        when(mockNodeService.hasAspect(recordNode, ASPECT_DISPOSITION_LIFECYCLE)).thenReturn(true);
+        // Set up the next disposition action.
+        DispositionAction nextAction = mock(DispositionAction.class);
+        when(nextAction.getId()).thenReturn(definitionNodeId);
+        when(nextAction.getNodeRef()).thenReturn(stepNode);
+        when(mockDispositionService.getNextDispositionAction(recordNode)).thenReturn(nextAction);
+        DispositionActionDefinition mockActionDefinition = mock(DispositionActionDefinition.class);
+        when(nextAction.getDispositionActionDefinition()).thenReturn(mockActionDefinition);
+
+        // Set up the action so that it looks like the period property has been changed.
+        Action mockAction = mock(Action.class);
+        when(mockAction.getParameterValue(CHANGED_PROPERTIES)).thenReturn((Serializable) asList(PROP_DISPOSITION_PERIOD_PROPERTY));
+        // Set up the expected "as of" date.
+        Date newAsOfDate = new Date(123456789000L);
+        when(mockDispositionService.calculateAsOfDate(recordNode, mockActionDefinition, false)).thenReturn(newAsOfDate);
+
+        // Call the method under test.
+        action.executeImpl(mockAction, definitionNode);
+
+        // Check that the "as of" date is updated.
+        verify(mockNodeService).setProperty(stepNode, PROP_DISPOSITION_AS_OF, newAsOfDate);
     }
 }

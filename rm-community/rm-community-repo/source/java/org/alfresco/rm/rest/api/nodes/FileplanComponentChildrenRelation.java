@@ -67,7 +67,6 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     @Override
     public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
     {
-        nodes.checkPostPermission(parentFolderNodeId);
         List<Node> result = new ArrayList<>(nodeInfos.size());
 
         for (Node nodeInfo : nodeInfos)
@@ -81,7 +80,6 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     @Override
     public Node create(String parentFolderNodeId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
-        nodes.checkPostPermission(parentFolderNodeId);
         return nodes.upload(parentFolderNodeId, formData, parameters);
     }
 }

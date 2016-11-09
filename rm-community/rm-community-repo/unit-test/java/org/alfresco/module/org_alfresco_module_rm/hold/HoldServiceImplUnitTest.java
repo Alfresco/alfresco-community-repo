@@ -61,7 +61,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -82,9 +81,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     protected NodeRef holdContainer;
     protected NodeRef hold;
     protected NodeRef hold2;
-
-    @Mock
-    private HoldType mockedHoldType;
 
     @Spy @InjectMocks HoldServiceImpl holdService;
 

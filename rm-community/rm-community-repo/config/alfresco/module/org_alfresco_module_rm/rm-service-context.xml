@@ -375,10 +375,10 @@
 
     <!--  File Plan Service -->
 
-  <bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+	<bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
 
-  <bean id="filePlanService"
-        parent="baseService"
+	<bean id="filePlanService"
+	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
         <property name="rootContainerCache" ref="rootContainerCache" />
     </bean>
@@ -568,9 +568,9 @@
           parent="baseService">
         <property name="nodeService" ref="nodeService"/>
         <property name="filePlanService" ref="filePlanService" />
-        <property name="filePlanRoleService" ref="filePlanRoleService" />
-        <property name="authorityService" ref="authorityService"/>
-        <property name="permissionService" ref="permissionService"/>
+        <property name="filePlanRoleService" ref="filePlanRoleService" />        
+        <property name="authorityService" ref="authorityService"/>        
+        <property name="permissionService" ref="permissionService"/>   
         <property name="transactionService" ref="transactionService"/>
     </bean>
 
@@ -1062,8 +1062,8 @@
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
-      <property name="recordService" ref="recordService"/>
-      <property name="namespaceService" ref="namespaceService"/>
+    	<property name="recordService" ref="recordService"/>
+    	<property name="namespaceService" ref="namespaceService"/>
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -82,7 +82,7 @@ public class RmSiteType extends    BaseBehaviourBean
 	public static final String COMPONENT_DOCUMENT_LIBRARY = "documentLibrary";
     public static final String DEFAULT_SITE_NAME = "rm";
     public static final QName DEFAULT_FILE_PLAN_TYPE = TYPE_FILE_PLAN;
-    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(ContentModel.TYPE_FOLDER);
 
     /** Site service */
     protected SiteService siteService;

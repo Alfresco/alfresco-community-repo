@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import java.io.Serializable;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,7 @@ public class RmSiteType extends    BaseBehaviourBean
 	public static final String COMPONENT_DOCUMENT_LIBRARY = "documentLibrary";
     public static final String DEFAULT_SITE_NAME = "rm";
     public static final QName DEFAULT_FILE_PLAN_TYPE = TYPE_FILE_PLAN;
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
 
     /** Site service */
     protected SiteService siteService;
@@ -321,10 +323,8 @@ public class RmSiteType extends    BaseBehaviourBean
                 List<QName> acceptedUniqueChildTypes = new ArrayList<QName>();
                 SiteInfo siteInfo = siteService.getSite(parent);
                 acceptedUniqueChildTypes.add(getFilePlanType(siteInfo));
-                List<QName> acceptedNonUniqueChildTypes = new ArrayList<QName>();
-                acceptedNonUniqueChildTypes.add(ContentModel.TYPE_FOLDER);
                 // check the created child is of an accepted type
-                validateNewChildAssociation(parent, child, acceptedUniqueChildTypes, acceptedNonUniqueChildTypes);
+                validateNewChildAssociation(parent, child, acceptedUniqueChildTypes, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
                 return null;
             }
         });

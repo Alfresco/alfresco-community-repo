@@ -403,8 +403,49 @@ public class TestCustomProperty extends BaseCustomModelApiTest
             put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropTwoTypeQS, 404); //Not found
         }
 
-        // Note: at the time of writing, we can't delete a property of an active model, as ModelValidatorImpl.validateIndexedProperty depends on Solr
+        /*
+         * APPSREPO-59: delete the last property of a Type / Aspect for an active model
+         */
+        // Activate the model
+        CustomModel statusPayload = new CustomModel();
+        statusPayload.setStatus(ModelStatus.ACTIVE);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(statusPayload), SELECT_STATUS_QS, 200);
 
+        // Delete aspect's property two - model is active
+        {
+            setRequestContext(customModelAdmin);
+            final String deletePropTwoAspectQS = getPropDeleteUpdateQS(aspectPropNameTwo, true);
+            CustomAspect deletePropAspectPayload = new CustomAspect();
+            deletePropAspectPayload.setName(aspectName);
+
+            // Delete as a Model Administrator
+            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(deletePropAspectPayload), deletePropTwoAspectQS, 200);
+
+            // Check the property has been deleted
+            response = getSingle("cmm/" + modelName + "/aspects", aspectName, 200);
+            returnedAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
+            assertEquals("Property two should have been deleted.", 0, returnedAspect.getProperties().size());
+
+            put("cmm/" + modelName + "/aspects", aspectName, RestApiUtil.toJsonAsString(deletePropAspectPayload), deletePropTwoAspectQS, 404); //Not found
+        }
+
+        // Delete type's property one - model is active
+        {
+            final String deletePropOneTypeQS = getPropDeleteUpdateQS(typePropNameOne, true);
+
+            CustomType deletePropTypePayload = new CustomType();
+            deletePropTypePayload.setName(typeName);
+
+            // Delete as a Model Administrator
+            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropOneTypeQS, 200);
+
+            // Check the property has been deleted
+            response = getSingle("cmm/" + modelName + "/types", typeName, 200);
+            returnedType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
+            assertEquals("Property one should have been deleted.", 0, returnedType.getProperties().size());
+
+            put("cmm/" + modelName + "/types", typeName, RestApiUtil.toJsonAsString(deletePropTypePayload), deletePropOneTypeQS, 404); //Not found
+        }
     }
 
     @Test

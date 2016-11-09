@@ -52,13 +52,13 @@ import org.mockito.MockitoAnnotations;
 import com.google.common.collect.Sets;
 
 /**
- * Unit test for RmSyteType
+ * Unit test for RmSiteType
  *
  * @author Silviu Dinuta
  * @since 2.6
  *
  */
-public class RmSyteTypeUnitTest extends BaseUnitTest
+public class RmSiteTypeUnitTest extends BaseUnitTest
 {
     @Mock
     private AuthenticationUtil mockAuthenticationUtil;

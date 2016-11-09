@@ -37,6 +37,7 @@ import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -50,6 +51,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -100,6 +102,12 @@ public class ModelValidatorTest
 
         this.modelName = "modelvalidatortest" + System.currentTimeMillis();
         addModel();
+    }
+
+    @AfterClass
+    public static void cleanUp()
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
 
     private QName addModel()
@@ -448,5 +456,55 @@ public class ModelValidatorTest
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(deleteModelAgainCallback, false, true);
+    }
+
+    /**
+     * Tests that an unused imported namespace can be deleted.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDeleteNamespace() throws Exception
+    {
+        // authenticate
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        // Remove the only property (created in setup method)
+        this.type.removeProperty(this.property.getName());
+        // We don't have any property that references the imported dictionary namespace, so remove it.
+        this.model.removeImport(NamespaceService.DICTIONARY_MODEL_1_0_URI);
+
+        // Check that it compiles
+        CompiledModel compiledModel = model.compile(dictionaryDAO, namespaceDAO, true);
+        modelValidator.validateModel(compiledModel);
+
+        // Remove the imported content model namespace
+        this.model.removeImport(NamespaceService.CONTENT_MODEL_1_0_URI);
+        try
+        {
+            model.compile(dictionaryDAO, namespaceDAO, true);
+            fail("Should have failed as the model's type references the content model (cm:folder).");
+        }
+        catch (DictionaryException dx)
+        {
+            //expected
+        }
+
+        // Add the content model namespace back
+        model.createImport(NamespaceService.CONTENT_MODEL_1_0_URI, NamespaceService.CONTENT_MODEL_PREFIX);
+        model.compile(dictionaryDAO, namespaceDAO, true);
+
+        // Remove the defined namespace
+        this.model.removeNamespace(testNamespace);
+        try
+        {
+            model.compile(dictionaryDAO, namespaceDAO, true);
+            fail("Should have failed as the type's name references the namespace.");
+        }
+        catch (DictionaryException dx)
+        {
+            //expected
+        }
     }
 }

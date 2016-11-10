@@ -39,6 +39,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.DeleteLinksStatusReport;
 import org.alfresco.service.cmr.repository.DocumentLinkService;
@@ -79,8 +80,10 @@ public class DocumentLinkServiceImplTest extends TestCase
     private SiteService siteService;
     private FileFolderService fileFolderService;
     private NodeService nodeService;
+    private CheckOutCheckInService cociService;
 
     // nodes the test user has read/write permission to
+    private NodeRef site1;
     private NodeRef site1File1;
     private NodeRef site1File2; // do not create links of this file
     private NodeRef site1Folder1;
@@ -108,6 +111,7 @@ public class DocumentLinkServiceImplTest extends TestCase
         siteService = serviceRegistry.getSiteService();
         fileFolderService = serviceRegistry.getFileFolderService();
         nodeService = serviceRegistry.getNodeService();
+        cociService = serviceRegistry.getCheckOutCheckInService();
 
         // Start the transaction
         txn = transactionService.getUserTransaction();
@@ -125,7 +129,7 @@ public class DocumentLinkServiceImplTest extends TestCase
          * Create the working test root 1 to which the user has read/write
          * permission
          */
-        NodeRef site1 = siteService.createSite("site1", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC).getNodeRef();
+        site1 = siteService.createSite("site1", GUID.generate(), "myTitle", "myDescription", SiteVisibility.PUBLIC).getNodeRef();
         permissionService.setPermission(site1, TEST_USER, PermissionService.ALL_PERMISSIONS, true);
         site1Folder1 = fileFolderService.create(site1, site1Folder1Name, ContentModel.TYPE_FOLDER).getNodeRef();
         site1File1 = fileFolderService.create(site1Folder1, site1File1Name, ContentModel.TYPE_CONTENT).getNodeRef();
@@ -334,6 +338,59 @@ public class DocumentLinkServiceImplTest extends TestCase
         Throwable ex = report.getErrorDetails().get(linkOfFile1Site2);
         assertNotNull(ex);
         assertEquals(ex.getClass(), AccessDeniedException.class);
+    }
+
+    /**
+     * Tests the creation of a Site link, an locked node or a checked out node
+     * 
+     * @throws Exception
+     */
+    public void testCreateLinksNotAllowed() throws Exception
+    {
+        NodeRef invalidLinkNodeRef;
+
+        // Create link for Site
+        try
+        {
+            invalidLinkNodeRef = documentLinkService.createDocumentLink(site1, site2Folder1);
+            fail("unsupported source node type : " + nodeService.getType(site1));
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+
+        NodeRef firstLinkNodeRef = documentLinkService.createDocumentLink(site1File1, site1Folder1);
+        assertEquals(true, nodeService.hasAspect(site1File1, ApplicationModel.ASPECT_LINKED));
+
+        // Create link for working copy
+        NodeRef workingCopyNodeRef = cociService.checkout(site1File1);
+        try
+        {
+            invalidLinkNodeRef = documentLinkService.createDocumentLink(workingCopyNodeRef, site1Folder1);
+            fail("Cannot perform operation since the node (id:" + workingCopyNodeRef.getId() + ") is locked.");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+
+        // Create link for locked node (original)
+        try
+        {
+            invalidLinkNodeRef = documentLinkService.createDocumentLink(site1File1, site1Folder1);
+            fail("Cannot perform operation since the node (id:" + site1File1.getId() + ") is locked.");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected
+        }
+
+        // Even the node is locked, user can delete previous created links
+        nodeService.deleteNode(firstLinkNodeRef);
+        assertEquals(false, nodeService.hasAspect(site1File1, ApplicationModel.ASPECT_LINKED));
+
+        cociService.cancelCheckout(workingCopyNodeRef);
     }
 
 }

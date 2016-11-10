@@ -71,7 +71,7 @@ public class TransferContainerType extends BaseBehaviourBean
     }
 
     /**
-     * On every event
+     * Prevent creating a node inside transfer container, this will be possible only through internal services in a controlled manner.
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef,
      *      boolean)

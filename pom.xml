@@ -27,7 +27,7 @@
         <!-- Versions of binaries packaged in the installer -->
         <installer.common.version>5.1-20151118</installer.common.version>
         <installer.tomcat.version>7.0.59-alfresco-distribution</installer.tomcat.version>
-        <installer.java.version>1.8.0_65</installer.java.version>
+        <installer.java.version>1.8.0_111</installer.java.version>
         <installer.postgresql.version>9.4.4-20151016</installer.postgresql.version>
         <installer.libreoffice.version>5.2.1-alfresco</installer.libreoffice.version>
         <installer.ghostscript.version>8.64</installer.ghostscript.version>

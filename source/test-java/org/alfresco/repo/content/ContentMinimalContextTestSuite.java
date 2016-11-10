@@ -29,18 +29,7 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-import org.alfresco.repo.content.metadata.DWGMetadataExtracterTest;
-import org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest;
-import org.alfresco.repo.content.metadata.MP3MetadataExtracterTest;
-import org.alfresco.repo.content.metadata.MailMetadataExtracterTest;
-import org.alfresco.repo.content.metadata.MetadataExtracterLimitsTest;
-import org.alfresco.repo.content.metadata.OfficeMetadataExtracterTest;
-import org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracterTest;
-import org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracterTest;
-import org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest;
-import org.alfresco.repo.content.metadata.PoiMetadataExtracterTest;
-import org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest;
-import org.alfresco.repo.content.metadata.TikaAutoMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.*;
 import org.alfresco.repo.content.transform.AbstractContentTransformerLimitsTest;
 import org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
@@ -121,6 +110,7 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTestSuite( OpenDocumentMetadataExtracterTest.class );
        suite.addTestSuite( OpenOfficeMetadataExtracterTest.class );
        suite.addTestSuite( PdfBoxMetadataExtracterTest.class );
+       suite.addTestSuite( ConcurrencyPdfBoxMetadataExtracterTest.class );
        suite.addTestSuite( PoiMetadataExtracterTest.class );
        suite.addTestSuite( RFC822MetadataExtracterTest.class );
        suite.addTestSuite( TikaAutoMetadataExtracterTest.class );

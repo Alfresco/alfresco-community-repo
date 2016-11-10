@@ -31,7 +31,6 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -123,60 +122,6 @@ public class PdfBoxMetadataExtracterTest extends AbstractMetadataExtracterTest
        assertEquals(52, c.get(Calendar.MINUTE));
        assertEquals(58, c.get(Calendar.SECOND));
        //assertEquals(0, c.get(Calendar.MILLISECOND));
-    }
-    
-    public void testConcurrentExtractions() throws InterruptedException
-    {
-        final int threadNum = 11;
-        final Map<String, Boolean> threadResults = new ConcurrentHashMap<>();
-        for (int i = 0; i < threadNum; i++)
-        {
-            new Thread(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        Map<QName, Serializable> results = extractFromMimetype(MimetypeMap.MIMETYPE_PDF);
-                        if(!results.isEmpty())
-                        {
-                            // delay successful transformations to help all threads to start in time
-                            Thread.sleep(5*threadNum);
-                        }
-                        threadResults.put(Thread.currentThread().getName(), !results.isEmpty());
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-
-            }).start();
-        }
-        int numWaits = 100;
-        while (numWaits > 0)
-        {
-            Thread.sleep(50);
-            if (threadResults.size() == threadNum)
-            {
-                break;
-            }
-            numWaits--;
-        }
-        Map<Boolean, Integer> counted = new HashMap<>();
-        counted.put(Boolean.FALSE, 0);
-        counted.put(Boolean.TRUE, 0);
-        for (Boolean result : threadResults.values())
-        {
-            counted.put(result, counted.get(result)+1);
-        }
-        assertEquals("Wrong number of failed extractions.",
-                new Integer(threadNum - MAX_CONCURENT_EXTRACTIONS),
-                counted.get(Boolean.FALSE));
-        assertEquals("Wrong number of successful extractions.",
-                new Integer(MAX_CONCURENT_EXTRACTIONS),
-                counted.get(Boolean.TRUE));
     }
 
     public void testMaxDocumentSizeLimit() throws Exception

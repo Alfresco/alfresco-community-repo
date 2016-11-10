@@ -28,10 +28,15 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import java.io.Serializable;
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
@@ -55,6 +60,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 
+import com.google.common.collect.Sets;
+
 /**
  * Behaviour associated with the RM Site type
  *
@@ -68,12 +75,14 @@ import org.alfresco.util.PropertyMap;
 public class RmSiteType extends    BaseBehaviourBean
                         implements NodeServicePolicies.OnCreateNodePolicy,
                                    NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                   NodeServicePolicies.BeforeDeleteNodePolicy
+                                   NodeServicePolicies.BeforeDeleteNodePolicy,
+                                   NodeServicePolicies.OnCreateChildAssociationPolicy
 {
 	/** Constant values */
 	public static final String COMPONENT_DOCUMENT_LIBRARY = "documentLibrary";
     public static final String DEFAULT_SITE_NAME = "rm";
     public static final QName DEFAULT_FILE_PLAN_TYPE = TYPE_FILE_PLAN;
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(ContentModel.TYPE_FOLDER);
 
     /** Site service */
     protected SiteService siteService;
@@ -293,6 +302,55 @@ public class RmSiteType extends    BaseBehaviourBean
                     }
                 });
             }
+        }
+    }
+
+    /**
+     * Add the limitation of creating only one rma:filePlan or one dod:filePlan depending on the type of rm site.
+     * Also added the limitation of crating two cm:folder type under rm site.
+     *
+     * Other than this nothing can be created under rm site nodeRef
+     *
+     * @author Silviu Dinuta
+     * @since 2.6
+     */
+    @Override
+    @Behaviour(kind = BehaviourKind.ASSOCIATION)
+    public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                final NodeRef child = childAssocRef.getChildRef();
+                final NodeRef parent = childAssocRef.getParentRef();
+                List<QName> acceptedUniqueChildTypes = new ArrayList<QName>();
+                SiteInfo siteInfo = siteService.getSite(parent);
+                acceptedUniqueChildTypes.add(getFilePlanType(siteInfo));
+                // check the created child is of an accepted type
+                validateNewChildAssociation(parent, child, acceptedUniqueChildTypes, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+                return null;
+            }
+        });
+    }
+
+    /**
+     * Overridden this because in this case we need to have multiple cm:folder types but not more than two of them.
+     * The two mentioned folders are created when rm site is created and one of them is Saved Searches and the other surf-config folder.
+       After that creation of cm:folder should not be allowed under rm site node
+     *
+     */
+    @Override
+    protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType,
+                List<QName> acceptedMultipleChildType) throws InvalidParameterException
+    {
+        super.validateNewChildAssociation(parent, child, acceptedUniqueChildType, acceptedMultipleChildType);
+
+        // check the user is not trying to create more than 2 folders that are created by default.
+        if(nodeService.getChildAssocs(parent, Sets.newHashSet(ContentModel.TYPE_FOLDER)).size() > 2)
+        {
+            throw new InvalidParameterException("Operation failed. Children of type " + ContentModel.TYPE_FOLDER + " are not allowed");
         }
     }
 }

@@ -28,13 +28,9 @@
 package org.alfresco.rm.rest.api.nodes;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +38,6 @@ import java.util.List;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.RMNodesImpl;
@@ -100,28 +95,6 @@ public class FileplanComponentChildrenRelationUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testCreateOnRMSite() throws Exception
-    {
-        Parameters mockedParameters = mock(Parameters.class);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-
-        List<Node> nodeInfos = new ArrayList<Node>();
-        Node mokedNodeInfo = mock(Node.class);
-        nodeInfos.add(mokedNodeInfo);
-
-        when(mockedRMNodes.isRMSite(parentNodeRef.getId())).thenReturn(true);
-        try
-        {
-            filePlanComponentChildrenRelation.create(parentNodeRef.getId(), nodeInfos, mockedParameters);
-            fail("Expected ecxeption as POST request is not allowed in RM site.");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("POST request not allowed in RM site.", ex.getMsgId());
-        }
-        verify(mockedRMNodes, never()).createNode(parentNodeRef.getId(), nodeInfos.get(0), mockedParameters);
-    }
-
     public void testUpload() throws Exception
     {
         Parameters mockedParameters = mock(Parameters.class);
@@ -130,25 +103,5 @@ public class FileplanComponentChildrenRelationUnitTest extends BaseUnitTest
         WithResponse mockedWithResponse = mock(WithResponse.class);
         filePlanComponentChildrenRelation.create(parentNodeRef.getId(), mockedFormData, mockedParameters, mockedWithResponse);
         verify(mockedRMNodes, times(1)).upload(parentNodeRef.getId(), mockedFormData, mockedParameters);
-    }
-
-    public void testUploadOnRMSite() throws Exception
-    {
-        Parameters mockedParameters = mock(Parameters.class);
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        FormData mockedFormData = mock(FormData.class);
-        WithResponse mockedWithResponse = mock(WithResponse.class);
-
-        when(mockedRMNodes.isRMSite(parentNodeRef.getId())).thenReturn(true);
-        try
-        {
-            filePlanComponentChildrenRelation.create(parentNodeRef.getId(), mockedFormData, mockedParameters, mockedWithResponse);
-            fail("Expected ecxeption as POST request is not allowed in RM site.");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("POST request not allowed in RM site.", ex.getMsgId());
-        }
-        verify(mockedRMNodes, never()).upload(parentNodeRef.getId(), mockedFormData, mockedParameters);
     }
 }

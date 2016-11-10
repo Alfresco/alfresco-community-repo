@@ -30,18 +30,18 @@
 // Additional properties will also need rendering in rmsearch.get.json.ftl.
 var getOriginalDocumentItem = getDocumentItem,
    getOriginalRepositoryItem = getRepositoryItem;
-getDocumentItem = function(siteId, containerId, pathParts, node, populate){
+getDocumentItem = function(siteId, containerId, pathParts, node, populate, highlighting){
    // Get original Document item.
-   var item = getOriginalDocumentItem(siteId, containerId, pathParts, node, populate);
+   var item = getOriginalDocumentItem(siteId, containerId, pathParts, node, populate, highlighting);
 
    item.nodeJSON = appUtils.toJSON(node, true);
 
    return item;
 };
 
-getRepositoryItem = function(folderPath, node, populate){
+getRepositoryItem = function(folderPath, node, populate, highlighting){
    // Get Original Repo item
-   var item = getOriginalRepositoryItem(folderPath, node, populate);
+   var item = getOriginalRepositoryItem(folderPath, node, populate, highlighting);
 
    if (item.type === "document") {
       item.nodeJSON = appUtils.toJSON(node, true);

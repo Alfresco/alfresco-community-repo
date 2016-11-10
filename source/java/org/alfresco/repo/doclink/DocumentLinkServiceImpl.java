@@ -150,11 +150,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         {
             throw new IllegalArgumentException("Destination node NodeRef '" + source + "' must be of type " + ContentModel.TYPE_FOLDER);
         }
-        //if file is working copy - create link to the original
-        if (checkOutCheckInService.isWorkingCopy(source))
-        {
-            source = checkOutCheckInService.getCheckedOut(source);
-        }
+
         /* Create link */
         String sourceName = (String) nodeService.getProperty(source, ContentModel.PROP_NAME);
 
@@ -175,7 +171,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
 
         ChildAssociationRef childRef = null;
         QName sourceType = nodeService.getType(source);
-        
+
+        if( checkOutCheckInService.isWorkingCopy(source) || nodeService.hasAspect(source, ContentModel.ASPECT_LOCKABLE))
+        {
+            throw new IllegalArgumentException( "Cannot perform operation since the node (id:" + source.getId() + ") is locked.");
+        }
+
         if (dictionaryService.isSubClass(sourceType, ContentModel.TYPE_CONTENT))
         {
             // create File Link node
@@ -193,7 +194,15 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         }
 
         //add linked aspect to the sourceNode
-        nodeService.addAspect(source, ApplicationModel.ASPECT_LINKED, null);
+        behaviourFilter.disableBehaviour(source, ContentModel.ASPECT_AUDITABLE);
+        try
+        {
+            nodeService.addAspect(source, ApplicationModel.ASPECT_LINKED, null);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(source, ContentModel.ASPECT_AUDITABLE);
+        }
 
         return childRef.getChildRef();
     }
@@ -296,7 +305,17 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         }
 
         // remove also the aspect app:linked
-        nodeService.removeAspect(document, ApplicationModel.ASPECT_LINKED);
+        behaviourFilter.disableBehaviour(document, ContentModel.ASPECT_AUDITABLE);
+        behaviourFilter.disableBehaviour(document, ContentModel.ASPECT_LOCKABLE);
+        try
+        {
+            nodeService.removeAspect(document, ApplicationModel.ASPECT_LINKED);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(document, ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.enableBehaviour(document, ContentModel.ASPECT_LOCKABLE);
+        }
 
         return report;
     }
@@ -326,6 +345,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         if (nodeRefLinks.size() == 1 && nodeRefLinks.contains(linkNodeRef))
         {
             behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_LOCKABLE);
             try
             {
                 // remove linked aspect to the sourceNode
@@ -334,6 +354,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
             finally
             {
                 behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_LOCKABLE);
             }
         }
     }

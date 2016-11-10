@@ -45,7 +45,9 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -86,6 +88,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
     private NodeService nodeService;
     private NodeArchiveService nodeArchiveService;
     private CheckOutCheckInService checkOutCheckInService;
+    private PermissionService permissionService;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
@@ -105,6 +108,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
         this.nodeService = (NodeService)ctx.getBean("NodeService");
         this.nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
         this.checkOutCheckInService = (CheckOutCheckInService)ctx.getBean("checkOutCheckInService");
+        this.permissionService = (PermissionService)ctx.getBean("permissionService");
         
         // Do the setup as admin
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
@@ -410,7 +414,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
         JSONArray jsonLinkNodes = null;
         JSONObject jsonLinkNode = null;
 
-        //Create files in the testFolder1
+        // Create files in the testFolder1
         NodeRef testFile1 = createNode(testFolder1, "testingLinkCreationFile1", ContentModel.TYPE_CONTENT,
                 AuthenticationUtil.getAdminUserName());
         NodeRef testFile2 = createNode(testFolder1, "testingLinkCreationFile2", ContentModel.TYPE_CONTENT,
@@ -418,7 +422,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
         NodeRef testFile3 = createNode(testFolder1, "testingLinkCreationFile3", ContentModel.TYPE_CONTENT,
                 AuthenticationUtil.getAdminUserName());
 
-        //Create testFolder2 in the testFolder1
+        // Create testFolder2 in the testFolder1
         String testFolder2Name = "testingLinkCreationFolder2";
         testFolderProps = new HashMap<QName, Serializable>();
         testFolderProps.put(ContentModel.PROP_NAME, testFolder2Name);
@@ -448,13 +452,13 @@ public class NodeWebScripTest extends BaseWebScriptTest
         String nodeRef = (String) jsonLinkNode.get("nodeRef");
         NodeRef file1Link = new NodeRef(nodeRef);
 
-        //Check that app:linked aspect is added on sourceNode
+        // Check that app:linked aspect is added on sourceNode
         assertEquals(true, nodeService.hasAspect(testFile1, ApplicationModel.ASPECT_LINKED));
         assertEquals(true, nodeService.exists(file1Link));
         nodeService.deleteNode(file1Link);
         assertEquals(false, nodeService.hasAspect(testFile1, ApplicationModel.ASPECT_LINKED));
 
-        //Create link to testFolder2 in same folder (testFolder1)
+        // Create link to testFolder2 in same folder (testFolder1)
         req = new Request("POST", CREATE_LINK_API + testFolder2.getStoreRef().getProtocol() + "/"
                 + testFolder2.getStoreRef().getIdentifier() + "/" + testFolder2.getId());
         jsonReq = new JSONObject();
@@ -563,7 +567,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
             assertEquals(false, nodeService.exists(linkNodeRef));
         }
 
-        //try create a link to a site - shouldn't be possible
+        // try create a link to a site - shouldn't be possible
         SiteInfo site2 = createSite("Site2TestingNodeCreateLink");
         NodeRef siteNodeRef = site2.getNodeRef();
 
@@ -582,11 +586,11 @@ public class NodeWebScripTest extends BaseWebScriptTest
         siteService.deleteSite(site2.getShortName());
         nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteNodeRef));
 
-        //Links can be created in Shared Files, My Files and Repository
+        // Links can be created in Shared Files, My Files and Repository
         NodeRef testFile4 = createNode(testFolder1, "testingLinkCreationFile4", ContentModel.TYPE_CONTENT,
                 AuthenticationUtil.getAdminUserName());
-        req = new Request("POST", CREATE_LINK_API + testFile4.getStoreRef().getProtocol() + "/"
-                + testFile4.getStoreRef().getIdentifier() + "/" + testFile4.getId());
+        req = new Request("POST", CREATE_LINK_API + testFile4.getStoreRef().getProtocol() + "/" + testFile4.getStoreRef().getIdentifier()
+                + "/" + testFile4.getId());
         jsonReq = new JSONObject();
         jsonReq.put(DESTINATION_NODE_REF_PARAM, "alfresco://company/shared");
 
@@ -598,8 +602,8 @@ public class NodeWebScripTest extends BaseWebScriptTest
 
         json = asJSON(sendRequest(req, Status.STATUS_OK));
 
-        req = new Request("POST", CREATE_LINK_API + testFile4.getStoreRef().getProtocol() + "/"
-                + testFile4.getStoreRef().getIdentifier() + "/" + testFile4.getId());
+        req = new Request("POST", CREATE_LINK_API + testFile4.getStoreRef().getProtocol() + "/" + testFile4.getStoreRef().getIdentifier()
+                + "/" + testFile4.getId());
         jsonReq = new JSONObject();
         jsonReq.put(DESTINATION_NODE_REF_PARAM, "alfresco://user/home");
 
@@ -611,10 +615,10 @@ public class NodeWebScripTest extends BaseWebScriptTest
 
         json = asJSON(sendRequest(req, Status.STATUS_OK));
 
-        //create link in Repository as Admin
+        // create link in Repository as Admin
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        req = new Request("POST", CREATE_LINK_API + testFile4.getStoreRef().getProtocol() + "/"
-                + testFile4.getStoreRef().getIdentifier() + "/" + testFile4.getId());
+        req = new Request("POST", CREATE_LINK_API + testFile4.getStoreRef().getProtocol() + "/" + testFile4.getStoreRef().getIdentifier()
+                + "/" + testFile4.getId());
         jsonReq = new JSONObject();
         jsonReq.put(DESTINATION_NODE_REF_PARAM, "alfresco://company/home");
 
@@ -626,9 +630,9 @@ public class NodeWebScripTest extends BaseWebScriptTest
 
         json = asJSON(sendRequest(req, Status.STATUS_OK));
 
-        //all 3 links are created with success, delete all links
-        req = new Request("DELETE", CREATE_LINK_API + testFile4.getStoreRef().getProtocol() + "/"
-                + testFile4.getStoreRef().getIdentifier() + "/" + testFile4.getId() + "/delete");
+        // all 3 links are created with success, delete all links
+        req = new Request("DELETE", CREATE_LINK_API + testFile4.getStoreRef().getProtocol() + "/" + testFile4.getStoreRef().getIdentifier()
+                + "/" + testFile4.getId() + "/delete");
         req.setType(MimetypeMap.MIMETYPE_JSON);
         json = asJSON(sendRequest(req, Status.STATUS_OK));
 
@@ -641,8 +645,8 @@ public class NodeWebScripTest extends BaseWebScriptTest
         final NodeRef testFile5 = createNode(testFolder1, "testingLinkCreationFileWithLock", ContentModel.TYPE_CONTENT,
                 AuthenticationUtil.getAdminUserName());
 
-        req = new Request("POST", CREATE_LINK_API + testFile5.getStoreRef().getProtocol() + "/"
-                + testFile5.getStoreRef().getIdentifier() + "/" + testFile5.getId());
+        req = new Request("POST", CREATE_LINK_API + testFile5.getStoreRef().getProtocol() + "/" + testFile5.getStoreRef().getIdentifier()
+                + "/" + testFile5.getId());
         jsonReq = new JSONObject();
         jsonReq.put(DESTINATION_NODE_REF_PARAM, testFolder1.toString());
 
@@ -667,7 +671,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
         assertEquals(true, nodeService.hasAspect(testFile5, ApplicationModel.ASPECT_LINKED));
         assertEquals(true, nodeService.exists(file5Link));
 
-        //checkout the node testFile5
+        // checkout the node testFile5
         final NodeRef workingCopy = retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Exception
@@ -677,7 +681,7 @@ public class NodeWebScripTest extends BaseWebScriptTest
         });
         assertNotNull(workingCopy);
 
-        //try to create link for working copy
+        // try to create link for working copy
         req = new Request("POST", CREATE_LINK_API + workingCopy.getStoreRef().getProtocol() + "/"
                 + workingCopy.getStoreRef().getIdentifier() + "/" + workingCopy.getId());
         jsonReq = new JSONObject();
@@ -689,14 +693,14 @@ public class NodeWebScripTest extends BaseWebScriptTest
         req.setBody(jsonReq.toString().getBytes());
         req.setType(MimetypeMap.MIMETYPE_JSON);
 
-        //should fail since source node is working copy
+        // should fail since source node is working copy
         json = asJSON(sendRequest(req, Status.STATUS_BAD_REQUEST));
 
-        //delete the link when source node is locked
+        // delete the link when source node is locked
         nodeService.deleteNode(file5Link);
         assertEquals(false, nodeService.hasAspect(testFile5, ApplicationModel.ASPECT_LINKED));
 
-        //release the lock
+        // release the lock
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
@@ -707,6 +711,41 @@ public class NodeWebScripTest extends BaseWebScriptTest
         });
 
         assertEquals(false, nodeService.hasAspect(testFile5, ContentModel.ASPECT_LOCKABLE));
+
+        // test that Consumers can create and delete links if they have only read permission
+        NodeRef testFile6 = createNode(testFolder1, "testingLinkCreationFile6", ContentModel.TYPE_CONTENT,
+                AuthenticationUtil.getAdminUserName());
+
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+        assertTrue(permissionService.hasPermission(testFile6, PermissionService.READ) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(testFile6, PermissionService.WRITE) == AccessStatus.DENIED);
+
+        // create another link of testFile1 in MyFiles
+        req = new Request("POST", CREATE_LINK_API + testFile6.getStoreRef().getProtocol() + "/"
+                + testFile6.getStoreRef().getIdentifier() + "/" + testFile6.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put(DESTINATION_NODE_REF_PARAM, "alfresco://user/home");
+        jsonArray = new JSONArray();
+        jsonArray.add(testFile6.toString());
+        jsonReq.put(MULTIPLE_FILES_PARAM, jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_OK));
+        jsonLinkNodes = (JSONArray) json.get("linkNodes");
+        assertNotNull(jsonLinkNodes);
+        assertEquals(1, jsonLinkNodes.size());
+        assertEquals("true", json.get("overallSuccess"));
+        assertEquals("1", json.get("successCount"));
+        assertEquals("0", json.get("failureCount"));
+
+        jsonLinkNode = (JSONObject) jsonLinkNodes.get(0);
+        nodeRef = (String) jsonLinkNode.get("nodeRef");
+        NodeRef testFileSite3Link = new NodeRef(nodeRef);
+        nodeService.exists(testFileSite3Link);
+        assertEquals(true, nodeService.hasAspect(testFile6, ApplicationModel.ASPECT_LINKED));
+
+        nodeService.deleteNode(testFileSite3Link);
     }
 
     private NodeRef createNode(NodeRef parentNode, String nodeCmName, QName nodeType, String ownerUserName)

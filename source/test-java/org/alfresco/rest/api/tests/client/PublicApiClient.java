@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.tests.client;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -49,7 +48,26 @@ import org.alfresco.rest.api.tests.TestPeople;
 import org.alfresco.rest.api.tests.TestSites;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
-import org.alfresco.rest.api.tests.client.data.*;
+import org.alfresco.rest.api.tests.client.data.Activities;
+import org.alfresco.rest.api.tests.client.data.Activity;
+import org.alfresco.rest.api.tests.client.data.CMISNode;
+import org.alfresco.rest.api.tests.client.data.Comment;
+import org.alfresco.rest.api.tests.client.data.ContentData;
+import org.alfresco.rest.api.tests.client.data.Favourite;
+import org.alfresco.rest.api.tests.client.data.FavouriteSite;
+import org.alfresco.rest.api.tests.client.data.FolderNode;
+import org.alfresco.rest.api.tests.client.data.JSONAble;
+import org.alfresco.rest.api.tests.client.data.MemberOfSite;
+import org.alfresco.rest.api.tests.client.data.NodeRating;
+import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.rest.api.tests.client.data.PersonNetwork;
+import org.alfresco.rest.api.tests.client.data.Preference;
+import org.alfresco.rest.api.tests.client.data.Site;
+import org.alfresco.rest.api.tests.client.data.SiteContainer;
+import org.alfresco.rest.api.tests.client.data.SiteImpl;
+import org.alfresco.rest.api.tests.client.data.SiteMember;
+import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
+import org.alfresco.rest.api.tests.client.data.Tag;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -640,28 +658,26 @@ public class PublicApiClient
 
 	public class AbstractProxy
 	{
-		public HttpResponse getAll(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params, String errorMessage) throws PublicApiException
-		{
-	        try
-	        {
-		        HttpResponse response = get("public", entityCollectionName, entityId, relationCollectionName, relationId, params);
+        public HttpResponse getAll(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params, String errorMessage)
+                throws PublicApiException
+        {
+            return getAll(entityCollectionName, entityId, relationCollectionName, relationId, params, errorMessage, HttpServletResponse.SC_OK);
+        }
 
-		        if (HttpServletResponse.SC_OK != response.getStatusCode())
-		        {
-		            String msg = errorMessage + ": \n" +
-		                    "   Response: " + response;
-		            throw new PublicApiException(msg, response);
-		        }
-		        else
-		        {
-		        	return response;
-		        }
-			}
-			catch(IOException e)
-			{
-		        throw new PublicApiException(e);
-			}
-		}
+        public HttpResponse getAll(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params, String errorMessage,
+                int expectedStatus) throws PublicApiException
+        {
+            try
+            {
+                HttpResponse response = get("public", entityCollectionName, entityId, relationCollectionName, relationId, params);
+                checkStatus(errorMessage, expectedStatus, response);
+                return response;
+            }
+            catch (IOException e)
+            {
+                throw new PublicApiException(e);
+            }
+        }
 
         public HttpResponse getSingle(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage) throws PublicApiException
         {

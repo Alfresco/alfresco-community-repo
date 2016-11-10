@@ -29,9 +29,13 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -60,8 +64,37 @@ public class NamePathResultsMap extends BasePathResultsMap
     public Object get(Object key)
     {
         String path = key.toString();
+        final StringTokenizer t = new StringTokenizer(path, "/");
+
+        // optimization
+        if (this.services.getDictionaryService().isSubClass(parent.getType(), org.alfresco.model.ContentModel.TYPE_FOLDER))
+        {
+            NodeRef result = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    NodeRef child = parent.nodeRef;
+                    while (t.hasMoreTokens() && child != null)
+                    {
+                        String name = t.nextToken();
+                        child = services.getNodeService().getChildByName(child, org.alfresco.model.ContentModel.ASSOC_CONTAINS, name);
+                    }
+                    return child;
+                }
+            }, AuthenticationUtil.getSystemUserName());
+
+            // final node must be accessible to the user via the usual ACL permission checks
+            if (result != null
+                    && services.getPublicServiceAccessService().hasAccess("NodeService", "getProperties", result) != AccessStatus.ALLOWED)
+            {
+                result = null;
+            }
+
+            return (result != null ? new TemplateNode(result, this.services, this.parent.getImageResolver()) : null);
+        }
+
         StringBuilder xpath = new StringBuilder(path.length() << 1);
-        StringTokenizer t = new StringTokenizer(path, "/");
         int count = 0;
         QueryParameterDefinition[] params = new QueryParameterDefinition[t.countTokens()];
         DataTypeDefinition ddText =

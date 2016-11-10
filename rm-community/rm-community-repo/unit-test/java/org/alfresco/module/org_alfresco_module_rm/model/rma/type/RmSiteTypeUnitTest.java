@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
@@ -38,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -77,9 +77,9 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
 
     /**
      * Given that we try to add non allowed type to rm site,
-     * Then InvalidParameterException is thrown.
+     * Then IntegrityException is thrown.
      */
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IntegrityException.class)
     public void testAddNonAcceptedTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
@@ -149,9 +149,9 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
 
     /**
      * Given that we try to add more than two cm:folder to rm site,
-     * Then InvalidParameterException is thrown.
+     * Then IntegrityException is thrown.
      */
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IntegrityException.class)
     public void testAddMoreThanTwhoFolderTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
@@ -208,9 +208,9 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
 
     /**
      * Given that we try to add one dod:filePlan to standard rm site,
-     * Then InvalidParameterException is thrown.
+     * Then IntegrityException is thrown.
      */
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IntegrityException.class)
     public void testAddDODFilePlanTypeToStandardRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
@@ -225,9 +225,9 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
 
     /**
      * Given that we try to add more than one rma:filePlan to rm site,
-     * Then InvalidParameterException is thrown.
+     * Then IntegrityException is thrown.
      */
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IntegrityException.class)
     public void testAddMoreThanOneFilePlanTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
@@ -281,9 +281,9 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
 
     /**
      * Given that we try to add more than one dod:filePlan to rm site,
-     * Then InvalidParameterException is thrown.
+     * Then IntegrityException is thrown.
      */
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IntegrityException.class)
     public void testAddMoreThanOneDODFilePlanTypeToRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_DOD_5015_SITE, true);
@@ -315,9 +315,9 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
 
     /**
      * Given that we try to add one rma:filePlan to DOD rm site,
-     * Then InvalidParameterException is thrown.
+     * Then IntegrityException is thrown.
      */
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IntegrityException.class)
     public void testAddStandardFilePlanTypeToDODRmSite()
     {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_DOD_5015_SITE, true);

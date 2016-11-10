@@ -646,6 +646,17 @@ public class TestPeople extends EnterpriseTestApi
     }
 
     @Test
+    public void testUpdatePersonDisableAdminNotAllowed() throws PublicApiException
+    {
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+
+        Map<String, String> params = new HashMap<>();
+        params.put("fields", "enabled");
+
+        people.update("people", account3Admin, null, null, "{\n" + "  \"enabled\": \"" + false + "\"\n" + "}", params, "Expected 403 response when updating " + account3Admin, 403);
+    }
+
+    @Test
     public void testUpdatePersonPasswordNonAdminNotAllowed() throws PublicApiException
     {
         final String personId = account3PersonIt.next();

@@ -453,8 +453,7 @@ public class PeopleImpl implements People
     {
         MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
 
-        boolean isAdmin = authorityService.hasAdminAuthority();
-        if (!isAdmin)
+        if (!isAdminAuthority())
         {
             throw new PermissionDeniedException();
         }
@@ -471,6 +470,11 @@ public class PeopleImpl implements People
 
         if (person.isEnabled() != null)
         {
+            if (isAdminAuthority(personIdToUpdate))
+            {
+                throw new PermissionDeniedException("Admin authority cannot be disabled.");
+            }
+
             mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
         }
         
@@ -487,5 +491,15 @@ public class PeopleImpl implements People
         personService.setPersonProperties(personIdToUpdate, properties, false);
 
         return getPerson(personId);
+    }
+
+    private boolean isAdminAuthority()
+    {
+        return authorityService.hasAdminAuthority();
+    }
+
+    private boolean isAdminAuthority(String authorityName)
+    {
+        return authorityService.isAdminAuthority(authorityName);
     }
 }

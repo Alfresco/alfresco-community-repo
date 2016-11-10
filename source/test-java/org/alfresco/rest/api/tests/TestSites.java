@@ -181,25 +181,20 @@ public class TestSites extends EnterpriseTestApi
                 }
             }, network3.getId());
 
-            publicApiClient.setRequestContext(new RequestContext(network3.getId(), person4Id));
-
-            Sites sitesProxy = publicApiClient.sites();
-
-            Site site = new SiteImpl().withSiteId("a-" + GUID.generate()).withTitle("site A" + GUID.generate()).withDescription(siteDescription)
-                    .withVisibility(SiteVisibility.PRIVATE.toString()).withPreset(preset);
-            site7 = sitesProxy.createSite(site);
-
-            site = new SiteImpl().withSiteId("b-" + GUID.generate()).withTitle("site B" + GUID.generate()).withDescription(siteDescription)
-                    .withVisibility(SiteVisibility.PUBLIC.toString()).withPreset(preset);
-            site8 = sitesProxy.createSite(site);
-
-            site = new SiteImpl().withSiteId("c-" + GUID.generate()).withTitle("site C" + GUID.generate()).withDescription(siteDescription)
-                    .withVisibility(SiteVisibility.PUBLIC.toString()).withPreset(preset);
-            site9 = sitesProxy.createSite(site);
-
-            site = new SiteImpl().withSiteId("d-" + GUID.generate()).withTitle("site D" + GUID.generate()).withDescription(siteDescription)
-                    .withVisibility(SiteVisibility.MODERATED.toString()).withPreset("site-dashboard");
-            site10 = sitesProxy.createSite(site);
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    // Temporary solution for testing as for now creating a site
+                    // with site preset is not allowed (please see REPO-194)
+                    site7 = network3.createSite("a-" + GUID.generate(), "site A" + GUID.generate(), siteDescription, preset, SiteVisibility.PRIVATE);
+                    site8 = network3.createSite("b-" + GUID.generate(), "site B" + GUID.generate(), siteDescription, preset, SiteVisibility.PUBLIC);
+                    site9 = network3.createSite("c-" + GUID.generate(), "site C" + GUID.generate(), siteDescription, preset, SiteVisibility.PUBLIC);
+                    site10 = network3.createSite("d-" + GUID.generate(), "site D" + GUID.generate(), siteDescription, "site-dashboard", SiteVisibility.MODERATED);
+                    return null;
+                }
+            }, person4Id, network3.getId());
         }
     }
 

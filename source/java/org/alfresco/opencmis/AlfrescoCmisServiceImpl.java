@@ -1548,7 +1548,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         if (!info.isVariant(CMISObjectVariant.CURRENT_VERSION) && !info.isVariant(CMISObjectVariant.PWC))
         {
-            throw new CmisStreamNotSupportedException("Content can only be set ondocuments!");
+            throw new CmisStreamNotSupportedException("Content can only be set on private working copies or current versions.");
         }
 
         final NodeRef nodeRef = info.getNodeRef();

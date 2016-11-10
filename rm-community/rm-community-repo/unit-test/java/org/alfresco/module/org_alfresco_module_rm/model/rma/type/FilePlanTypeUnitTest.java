@@ -29,11 +29,11 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import static org.mockito.Mockito.when;
 
-import java.security.InvalidParameterException;
 import java.util.Arrays;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -69,7 +69,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
      * When adding a child of type TYPE_FILE_PLAN
      * Then an error should be thrown
      */
-    @Test (expected = InvalidParameterException.class)
+    @Test (expected = IntegrityException.class)
     public void testAddFileplanToFileplan()
     {
         ChildAssociationRef childAssoc = createFileplanContainerChild(TYPE_FILE_PLAN);
@@ -112,7 +112,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
      * When adding another child of type TYPE_HOLD_CONTAINER
      * Then an error should be thrown
      */
-    @Test (expected = InvalidParameterException.class)
+    @Test (expected = IntegrityException.class)
     public void testCreateMultipleHoldContainers()
     {
         ChildAssociationRef existingHoldAssoc = createFileplanContainerChild(TYPE_HOLD_CONTAINER);
@@ -141,7 +141,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
      * When adding another child of type TYPE_TRANSFER_CONTAINER
      * Then an error should be thrown
      */
-    @Test (expected = InvalidParameterException.class)
+    @Test (expected = IntegrityException.class)
     public void testCreateMultipleTransferContainers()
     {
         ChildAssociationRef existingHoldAssoc = createFileplanContainerChild(TYPE_TRANSFER_CONTAINER);
@@ -170,7 +170,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
      * When adding another child of type TYPE_UNFILED_RECORD_CONTAINER
      * Then an error should be thrown
      */
-    @Test (expected = InvalidParameterException.class)
+    @Test (expected = IntegrityException.class)
     public void testCreateMultipleUnfiledRecordsContainers()
     {
         ChildAssociationRef existingHoldAssoc = createFileplanContainerChild(TYPE_UNFILED_RECORD_CONTAINER);

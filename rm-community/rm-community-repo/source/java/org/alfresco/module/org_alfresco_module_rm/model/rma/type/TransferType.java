@@ -27,10 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import java.security.InvalidParameterException;
-
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -76,6 +75,6 @@ public class TransferType extends BaseBehaviourBean implements NodeServicePolici
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        throw new InvalidParameterException("Operation failed. Creation is not allowed in Transfer Folders");
+        throw new IntegrityException("Operation failed. Creation is not allowed in Transfer Folders", null);
     }
 }

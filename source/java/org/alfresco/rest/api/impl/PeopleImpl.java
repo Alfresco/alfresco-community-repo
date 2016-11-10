@@ -153,8 +153,9 @@ public class PeopleImpl implements People
 		return validatePerson(personId, false);
 	}
 
-	public String validatePerson(String personId, boolean validateIsCurrentUser)
+	public String validatePerson(final String requestedPersonId, boolean validateIsCurrentUser)
 	{
+        String personId = requestedPersonId;
 		if(personId == null)
 		{
 			throw new InvalidArgumentException("personId is null.");
@@ -168,8 +169,8 @@ public class PeopleImpl implements People
     	personId = personService.getUserIdentifier(personId);
 		if(personId == null)
 		{
-            // "User " + personId + " does not exist"
-            throw new EntityNotFoundException("personId is null.");
+            // Could not find canonical user ID by case-sensitive ID.
+            throw new EntityNotFoundException(requestedPersonId);
 		}
 
 		if(validateIsCurrentUser)

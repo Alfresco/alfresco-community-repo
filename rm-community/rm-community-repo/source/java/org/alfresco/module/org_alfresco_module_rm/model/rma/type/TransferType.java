@@ -65,6 +65,9 @@ public class TransferType extends BaseBehaviourBean implements NodeServicePolici
         getBehaviour(BEHAVIOUR_NAME).enable();
     }
 
+    /**
+     * Prevent creating a node inside transfer folder, this will be possible only through internal services in a controlled manner.
+     */
     @Override
     @Behaviour
     (

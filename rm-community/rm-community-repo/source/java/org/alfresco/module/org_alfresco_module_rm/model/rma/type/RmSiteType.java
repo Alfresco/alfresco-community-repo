@@ -306,6 +306,11 @@ public class RmSiteType extends    BaseBehaviourBean
     }
 
     /**
+     * Add the limitation of creating only one rma:filePlan or one dod:filePlan depending on the type of rm site.
+     * Also added the limitation of crating two cm:folder type under rm site.
+     *
+     * Other than this nothing can be created under rm site nodeRef
+     *
      * @author Silviu Dinuta
      * @since 2.6
      */
@@ -330,13 +335,19 @@ public class RmSiteType extends    BaseBehaviourBean
         });
     }
 
+    /**
+     * Overridden this because in this case we need to have multiple cm:folder types but not more than two of them.
+     * The two mentioned folders are created when rm site is created and one of them is Saved Searches and the other surf-config folder.
+       After that creation of cm:folder should not be allowed under rm site node
+     *
+     */
     @Override
     protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType,
                 List<QName> acceptedMultipleChildType) throws InvalidParameterException
     {
         super.validateNewChildAssociation(parent, child, acceptedUniqueChildType, acceptedMultipleChildType);
 
-        // check the user is not trying to create more than 2 folders that are created by default
+        // check the user is not trying to create more than 2 folders that are created by default.
         if(nodeService.getChildAssocs(parent, Sets.newHashSet(ContentModel.TYPE_FOLDER)).size() > 2)
         {
             throw new InvalidParameterException("Operation failed. Children of type " + ContentModel.TYPE_FOLDER + " are not allowed");

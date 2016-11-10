@@ -26,12 +26,14 @@
 package org.alfresco.repo.template;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -39,11 +41,14 @@ import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
@@ -109,6 +114,28 @@ public class TemplateServiceImplTest extends TestCase
                     {
                         StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "template_" + System.currentTimeMillis());
                         root_node = nodeService.getRootNode(store);
+                        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
+                        properties.put(ContentModel.PROP_NAME, (Serializable) "subFolder");
+                        NodeRef subFolderRef = nodeService.createNode(
+                        		root_node,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,QName.createValidLocalName("subFolder")),
+                                ContentModel.TYPE_FOLDER,
+                                properties).getChildRef();
+                        properties.put(ContentModel.PROP_NAME, (Serializable) "subSubFolder");
+                        NodeRef subSubFolderRef =nodeService.createNode(
+                        		subFolderRef,
+                                ContentModel.ASSOC_CONTAINS,
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,QName.createValidLocalName("subSubFolder")),
+                                ContentModel.TYPE_FOLDER,
+                                properties).getChildRef();
+                        properties.put(ContentModel.PROP_NAME, (Serializable) "subSubSubFolder");
+                        nodeService.createNode(
+                        		subSubFolderRef,
+                                ContentModel.ASSOC_CONTAINS,
+                                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,QName.createValidLocalName("subSubSubFolder")),
+                                ContentModel.TYPE_FOLDER,
+                                properties);
                         BaseNodeServiceTest.buildNodeGraph(nodeService, root_node);
                         return null;
                     }
@@ -139,7 +166,11 @@ public class TemplateServiceImplTest extends TestCase
                     String output = templateService.processTemplate("freemarker", TEMPLATE_1, model);
                     
                     // check template contains the expected output
-                    assertTrue( (output.indexOf(root_node.getId()) != -1) );
+                    assertTrue("Cannot find root-node-id", (output.indexOf(root_node.getId()) != -1) );
+                    assertTrue("Cannot resolve subFolder properly", (output.indexOf("root.childByNamePath[\"subFolder\"].name=subFolder") != -1) );
+                    assertTrue("Cannot resolve subSubFolder properly", (output.indexOf("root.childByNamePath[\"subFolder/subSubFolder\"].name=subSubFolder") != -1) );
+                    assertTrue("Cannot resolve subSubSubFolder properly", (output.indexOf("root.childByNamePath[\"subFolder/subSubFolder/subSubSubFolder\"].name=subSubSubFolder") != -1) );
+                    assertTrue("Cannot resolve subSubSubFolder with enhancement properly", (output.indexOf("root.childByNamePath[\"subFolder\"].childByNamePath[\"subSubFolder/subSubSubFolder\"].name=subSubSubFolder") != -1) );
 
                     return null;
                 }                

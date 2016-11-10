@@ -153,7 +153,8 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
 
         if (person.getUserName() != null)
         {
-            throw new InvalidArgumentException("Unsupported field: userName");
+            // REPO-1537
+            throw new InvalidArgumentException("Unsupported field: id");
         }
 
         if (person.getStatusUpdatedAt() != null)

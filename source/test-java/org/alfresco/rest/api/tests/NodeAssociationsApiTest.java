@@ -645,7 +645,6 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         finally
         {
             // some cleanup
-            AuthenticationUtil.clearCurrentSecurityContext();
             setRequestContext(user1);
             deleteNode(u1f1Id, true, 204);
             deleteNode(sf1Id, true, 204);

@@ -45,6 +45,7 @@ import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -57,6 +58,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
@@ -81,6 +83,7 @@ public class PeopleImpl implements People
 	protected NodeService nodeService;
     protected PersonService personService;
     protected AuthenticationService authenticationService;
+    protected AuthorityService authorityService;
     protected ContentUsageService contentUsageService;
     protected ContentService contentService;
     protected ThumbnailService thumbnailService;
@@ -125,7 +128,12 @@ public class PeopleImpl implements People
 		this.authenticationService = authenticationService;
 	}
 
-	public void setContentUsageService(ContentUsageService contentUsageService)
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    public void setContentUsageService(ContentUsageService contentUsageService)
     {
 		this.contentUsageService = contentUsageService;
 	}
@@ -443,6 +451,12 @@ public class PeopleImpl implements People
     public Person update(String personId, final Person person)
     {
         MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+
+        boolean isAdmin = authorityService.hasAdminAuthority();
+        if (!isAdmin)
+        {
+            throw new PermissionDeniedException();
+        }
 
         final String personIdToUpdate = validatePerson(personId);
         final Map<QName, Serializable> properties = person.toProperties();

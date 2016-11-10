@@ -199,7 +199,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         }
         
         users.clear();
-
+        AuthenticationUtil.clearCurrentSecurityContext();
         setRequestContext(null);
     }
 

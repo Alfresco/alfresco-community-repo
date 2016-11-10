@@ -39,6 +39,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.QueryParameterDefImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -60,8 +61,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * Implementation of the document link service
- * In addition to the document link service, this class also provides a BeforeDeleteNodePolicy
+ * Implementation of the document link service In addition to the document link
+ * service, this class also provides a BeforeDeleteNodePolicy
  * 
  * @author Ana Bozianu
  * @since 5.1
@@ -80,7 +81,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
 
     /** Shallow search for nodes with a name pattern */
     private static final String XPATH_QUERY_NODE_NAME_MATCH = "./*[like(@cm:name, $cm:name, false)]";
-    
+
     /** Shallow search for links with a destination pattern */
     private static final String XPATH_QUERY_LINK_DEST_MATCH = ".//*[like(@cm:destination, $cm:destination, false)]";
 
@@ -88,7 +89,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
 
     /* I18N labels */
     private static final String LINK_TO_LABEL = "doclink_service.link_to_label";
-    
+
     /**
      * The initialise method. Register our policies.
      */
@@ -124,13 +125,13 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
     }
 
     @Override
-    public NodeRef createDocumentLink(NodeRef source, NodeRef destination)
+    public NodeRef createDocumentLink(final NodeRef source, NodeRef destination)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug("Creating document link. source: " + source + ", destination: " + destination);
         }
-  
+
         /* Validate input */
         PropertyCheck.mandatory(this, "source", source);
         PropertyCheck.mandatory(this, "destination", destination);
@@ -172,9 +173,9 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         ChildAssociationRef childRef = null;
         QName sourceType = nodeService.getType(source);
 
-        if( checkOutCheckInService.isWorkingCopy(source) || nodeService.hasAspect(source, ContentModel.ASPECT_LOCKABLE))
+        if (checkOutCheckInService.isWorkingCopy(source) || nodeService.hasAspect(source, ContentModel.ASPECT_LOCKABLE))
         {
-            throw new IllegalArgumentException( "Cannot perform operation since the node (id:" + source.getId() + ") is locked.");
+            throw new IllegalArgumentException("Cannot perform operation since the node (id:" + source.getId() + ") is locked.");
         }
 
         if (dictionaryService.isSubClass(sourceType, ContentModel.TYPE_CONTENT))
@@ -183,7 +184,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
             childRef = nodeService.createNode(destination, ContentModel.ASSOC_CONTAINS, assocQName, ApplicationModel.TYPE_FILELINK, props);
 
         }
-        else if (!dictionaryService.isSubClass(sourceType, SiteModel.TYPE_SITE) && dictionaryService.isSubClass(nodeService.getType(source), ContentModel.TYPE_FOLDER))
+        else if (!dictionaryService.isSubClass(sourceType, SiteModel.TYPE_SITE)
+                && dictionaryService.isSubClass(nodeService.getType(source), ContentModel.TYPE_FOLDER))
         {
             // create Folder link node
             childRef = nodeService.createNode(destination, ContentModel.ASSOC_CONTAINS, assocQName, ApplicationModel.TYPE_FOLDERLINK, props);
@@ -193,16 +195,24 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
             throw new IllegalArgumentException("unsupported source node type : " + nodeService.getType(source));
         }
 
-        //add linked aspect to the sourceNode
-        behaviourFilter.disableBehaviour(source, ContentModel.ASPECT_AUDITABLE);
-        try
+        // add linked aspect to the sourceNode - run as System
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            nodeService.addAspect(source, ApplicationModel.ASPECT_LINKED, null);
-        }
-        finally
-        {
-            behaviourFilter.enableBehaviour(source, ContentModel.ASPECT_AUDITABLE);
-        }
+            public Void doWork() throws Exception
+            {
+                behaviourFilter.disableBehaviour(source, ContentModel.ASPECT_AUDITABLE);
+                try
+                {
+                    nodeService.addAspect(source, ApplicationModel.ASPECT_LINKED, null);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(source, ContentModel.ASPECT_AUDITABLE);
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
 
         return childRef.getChildRef();
     }
@@ -246,13 +256,13 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
 
         return (NodeRef) nodeService.getProperty(linkNodeRef, ContentModel.PROP_LINK_DESTINATION);
     }
-    
+
     @Override
     public List<NodeRef> getNodeLinks(NodeRef nodeRef)
     {
         /* Validate input */
         PropertyCheck.mandatory(this, "nodeRef", nodeRef);
-        
+
         /* Get all links of the given nodeRef */
         QueryParameterDefinition[] params = new QueryParameterDefinition[1];
         params[0] = new QueryParameterDefImpl(ContentModel.PROP_LINK_DESTINATION, dictionaryService.getDataType(DataTypeDefinition.NODE_REF), true, nodeRef.toString());
@@ -260,12 +270,12 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         List<NodeRef> nodeLinks = new ArrayList<NodeRef>();
         List<NodeRef> nodeRefs;
         /* Search for links in all stores */
-        for(StoreRef store : nodeService.getStores())
+        for (StoreRef store : nodeService.getStores())
         {
             /* Get the root node */
             NodeRef rootNodeRef = nodeService.getRootNode(store);
 
-            /* Execute the query, retrieve links to the document*/
+            /* Execute the query, retrieve links to the document */
             nodeRefs = searchService.selectNodes(rootNodeRef, XPATH_QUERY_LINK_DEST_MATCH, params, namespaceService, true);
             nodeLinks.addAll(nodeRefs);
         }
@@ -337,25 +347,31 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
 
     public void beforeDeleteLinkNode(NodeRef linkNodeRef)
     {
-        // NodeRef linkNodeRef = childAssocRef.getChildRef();
-        NodeRef nodeRef = getLinkDestination(linkNodeRef);
+        final NodeRef nodeRef = getLinkDestination(linkNodeRef);
 
         List<NodeRef> nodeRefLinks = getNodeLinks(nodeRef);
 
         if (nodeRefLinks.size() == 1 && nodeRefLinks.contains(linkNodeRef))
         {
-            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
-            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_LOCKABLE);
-            try
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
-                // remove linked aspect to the sourceNode
-                nodeService.removeAspect(nodeRef, ApplicationModel.ASPECT_LINKED);
-            }
-            finally
-            {
-                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
-                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_LOCKABLE);
-            }
+                public Void doWork() throws Exception
+                {
+                    behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                    behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_LOCKABLE);
+                    try
+                    {
+                        nodeService.removeAspect(nodeRef, ApplicationModel.ASPECT_LINKED);
+                    }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                        behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_LOCKABLE);
+                    }
+
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
         }
     }
 

@@ -1091,6 +1091,25 @@ public class SitesImpl implements Sites
 
 
     /**
+     * Uses site service for creating site info
+     *
+     * Extracted this call in a separate method because it might be needed to
+     * call different site service method when creating site info (e.g.
+     * siteService.createSite(String, String, String, String, SiteVisibility, QName))
+     * 
+     * @param site
+     * @return
+     */
+    protected SiteInfo createSite(Site site)
+    {
+        if (site.getPreset() != null)
+        {
+            throw new InvalidArgumentException("Site preset should not be set");
+        }
+        return siteService.createSite(DEFAULT_SITE_PRESET, site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
+    }
+        
+    /**
      * Create default/fixed preset (Share) site - with DocLib container/component
      *
      * @param site
@@ -1104,7 +1123,7 @@ public class SitesImpl implements Sites
         SiteInfo siteInfo = null;
         try
         {
-            siteInfo = siteService.createSite(DEFAULT_SITE_PRESET, site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
+            siteInfo = createSite(site);
         }
         catch (SiteServiceException sse)
         {
@@ -1182,7 +1201,7 @@ public class SitesImpl implements Sites
         return getSite(siteId);
     }
 
-    private Site validateSite(Site site)
+    protected Site validateSite(Site site)
     {
         // site title - mandatory
         String siteTitle = site.getTitle();

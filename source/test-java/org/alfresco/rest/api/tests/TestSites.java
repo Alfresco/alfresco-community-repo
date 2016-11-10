@@ -490,6 +490,13 @@ public class TestSites extends EnterpriseTestApi
             }
         }
 
+        // -ve test - create site with a given preset (REPO-194 and REPO-1523)
+        {
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+
+            Site site = new SiteImpl().withPreset("testSitePreset");
+            sitesProxy.createSite(site, 400);
+        }
         // Test Case cloud-1478
 		// Test Case cloud-1479
 		// user invited to network and user invited to site

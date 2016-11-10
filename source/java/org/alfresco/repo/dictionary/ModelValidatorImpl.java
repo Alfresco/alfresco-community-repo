@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.dictionary;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -477,7 +476,16 @@ public class ModelValidatorImpl implements ModelValidator
                 }
                 else
                 {
-                    throw new AlfrescoRuntimeException("Failed to validate model update - found deleted " + modelDiff.getElementType() + " '" + modelDiff.getElementName() + "'");
+                    /*
+                     * As the M2Model#compile method will detect and throw exception for any missing namespace which
+                     * is required to define any Type, Aspect or Property, we can safely add this extra check.
+                     * See APPSREPO-59 comment for details.
+                     */
+                    if (!modelDiff.getElementType().equals(M2ModelDiff.TYPE_NAMESPACE))
+                    {
+                        throw new AlfrescoRuntimeException("Failed to validate model update - found deleted " + modelDiff.getElementType() + " '" + modelDiff
+                                                .getElementName() + "'");
+                    }
                 }
             }
 

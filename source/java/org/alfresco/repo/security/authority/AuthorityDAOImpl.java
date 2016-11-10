@@ -799,6 +799,8 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         childAuthorityCache.remove(parentRef);
         if (AuthorityType.getAuthorityType(childName) == AuthorityType.USER)
         {
+            // Normalize the user name
+            childName = (String) nodeService.getProperty(childRef, ContentModel.PROP_USERNAME);
             userAuthorityCache.remove(childName);
         }
         else
@@ -858,6 +860,17 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         {
             // Get the unfiltered set of authorities from the cache or generate it
             Set<String> authorities = userAuthorityCache.get(name);
+            // if not in the cache, normalize the user name and try again
+            if (authorities == null)
+            {
+            	NodeRef personRef = getAuthorityOrNull(name);
+            	if (personRef == null)
+            	{
+            		return new TreeSet<String>(); // don't worry about missing person nodes. Just return an empty set
+            	}
+                name = (String) nodeService.getProperty(personRef, ContentModel.PROP_USERNAME);
+                authorities = userAuthorityCache.get(name);
+            }
             if (authorities == null)
             {
                 authorities = new TreeSet<String>();
@@ -869,7 +882,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                 {
                     listAuthorities(null, name, authorities, true, true);
                 }
-                // Add the set back to the cache.  If the value is locked then nothing will happen.
+                // Add the set back to the cache. Name has already been normalized. If the value is locked then nothing will happen.
                 userAuthorityCache.put(name, Collections.unmodifiableSet(authorities));
             }
             // If we wanted the unfiltered set we are done

@@ -161,6 +161,8 @@
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="nodeService" ref="nodeService"/>
         <property name="freezeService" ref="FreezeService"/>
+        <property name="transferContainerType" ref="rma.transferContainer"/>
+        <property name="transferType" ref="rma.transfer"/>
     </bean>
 
     <bean id="RmTransferService" class="org.springframework.aop.framework.ProxyFactoryBean">

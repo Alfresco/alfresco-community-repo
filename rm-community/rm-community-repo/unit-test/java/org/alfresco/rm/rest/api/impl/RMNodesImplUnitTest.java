@@ -65,7 +65,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -723,32 +722,6 @@ public class RMNodesImplUnitTest extends BaseUnitTest
             assertEquals("Cannot delete: " + nodeRef.getId(), ex.getMsgId());
         }
         verify(mockedFileFolderService, never()).delete(nodeRef);
-    }
-
-    @Test
-    public void testIsRMSite() throws Exception
-    {
-        //test when rm site exists and we do not check the rm site
-        NodeRef parentNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-
-        NodeRef rmSiteNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        SiteInfo mockedSiteInfo = mock(SiteInfo.class);
-        when(mockedSiteInfo.getNodeRef()).thenReturn(rmSiteNodeRef);
-        when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(mockedSiteInfo);
-
-        boolean isRMSite = rmNodesImpl.isRMSite(parentNodeRef.getId());
-        assertEquals("Should return false.", false, isRMSite);
-
-        //check when rm site does not exist
-        when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(null);
-        isRMSite = rmNodesImpl.isRMSite(parentNodeRef.getId());
-        assertEquals("Should return false.", false, isRMSite);
-
-        //check when rm site exists and we check with rm site node ref id
-        when(mockedSiteInfo.getNodeRef()).thenReturn(parentNodeRef);
-        when(mockedSiteService.getSite(RM_SITE_ID)).thenReturn(mockedSiteInfo);
-        isRMSite = rmNodesImpl.isRMSite(parentNodeRef.getId());
-        assertEquals("Should return true.", true, isRMSite);
     }
 
     private void setupCompanyHomeAndPrimaryParent(NodeRef nodeRef)

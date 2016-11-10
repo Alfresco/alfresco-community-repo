@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import static org.mockito.Mockito.mock;
@@ -40,31 +41,31 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 
 /**
- * Unit test for TransferContainerType
+ * Unit test for TransferType
  *
- * @author Mihai Cozma
- * @since 2.4
+ * @author Silviu Dinuta
+ * @since 2.6
  */
-public class TransferContainerTypeUnitTest extends BaseUnitTest
+public class TransferTypeUnitTest extends BaseUnitTest
 {
     /** test object */
-    private @InjectMocks TransferContainerType transferContainerType;
+    private @InjectMocks TransferType transferType;
 
     /**
-     * Given that we try to add to transfer container,
+     * Given that we try to add to transfer type folder,
      * Then InvalidParameterException is thrown.
      */
     @Test(expected = InvalidParameterException.class)
-    public void testAddToTransferContainerTest()
+    public void testAddToTransferFolderTest()
     {
-        NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
+        NodeRef transferFolder = generateNodeRef(TYPE_TRANSFER, true);
 
         QName type = AlfMock.generateQName();
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
         when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
-        when(mockedChildAssoc.getParentRef()).thenReturn(transferContainer);
-        transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
+        when(mockedChildAssoc.getParentRef()).thenReturn(transferFolder);
+        transferType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 }

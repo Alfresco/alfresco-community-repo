@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<!--
+  This jboss-deployment-structure.xml file is for a Share and Platform install.
+  The is another version for a Platform only install.  
+-->
 <jboss-deployment-structure>
     <sub-deployment name="alfresco.war">
         <dependencies>

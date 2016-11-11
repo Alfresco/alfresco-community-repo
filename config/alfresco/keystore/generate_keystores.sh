@@ -6,7 +6,6 @@
 if [ -z "$ALFRESCO_HOME" ]; then
     ALFRESCO_HOME=/opt/alfresco-5.2
     echo "Setting ALFRESCO_HOME to $ALFRESCO_HOME"
-    exit 1
 fi
 
 # The directory containing the alfresco keystores, as referenced by keystoreFile and truststoreFile attributes in tomcat/conf/server.xml

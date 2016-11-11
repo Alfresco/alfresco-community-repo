@@ -1488,45 +1488,45 @@ public class AuthorityServiceTest extends TestCase
     
     public void testMNT16991()
     {
-    	// Make sure User "andy" exists
+        // Make sure User "andy" exists
         personService.getPerson("andy");
         // create a group
         String GROUP_NAME = "testMNT16991";
         String GROUP_FULL_NAME = "GROUP_" + GROUP_NAME;
         if(pubAuthorityService.authorityExists(GROUP_FULL_NAME))
         {
-        	pubAuthorityService.deleteAuthority(GROUP_FULL_NAME);
+            pubAuthorityService.deleteAuthority(GROUP_FULL_NAME);
         }
         pubAuthorityService.createAuthority(AuthorityType.GROUP, GROUP_NAME);
         assertNotNull(authorityService.getAuthorityNodeRef(GROUP_FULL_NAME));
         try
         {
-        	assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy", false).contains(GROUP_FULL_NAME));
-        	assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
-        	
+            assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy", false).contains(GROUP_FULL_NAME));
+            assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
+            
             pubAuthorityService.addAuthority(GROUP_FULL_NAME, "andy");
 
             assertTrue(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy", false).contains(GROUP_FULL_NAME));
-        	assertTrue(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
-        	
+            assertTrue(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
+            
             pubAuthorityService.removeAuthority(GROUP_FULL_NAME, "andy");
-        	
-        	assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy", false).contains(GROUP_FULL_NAME));
-        	assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
-        	
+            
+            assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy", false).contains(GROUP_FULL_NAME));
+            assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
+            
             pubAuthorityService.addAuthority(GROUP_FULL_NAME, "Andy");
 
             assertTrue(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy", false).contains(GROUP_FULL_NAME));
-        	assertTrue(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
-        	
+            assertTrue(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
+            
             pubAuthorityService.removeAuthority(GROUP_FULL_NAME, "Andy");
-        	
-        	assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy", false).contains(GROUP_FULL_NAME));
-        	assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
+            
+            assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "andy", false).contains(GROUP_FULL_NAME));
+            assertFalse(pubAuthorityService.getContainingAuthorities(AuthorityType.GROUP, "Andy", false).contains(GROUP_FULL_NAME));
         }
         finally
         {
-        	pubAuthorityService.deleteAuthority(GROUP_FULL_NAME);
+            pubAuthorityService.deleteAuthority(GROUP_FULL_NAME);
         }
     }
 

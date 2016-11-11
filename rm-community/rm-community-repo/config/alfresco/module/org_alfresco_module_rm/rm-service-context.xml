@@ -142,6 +142,7 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.updateDispositionActionDefinition=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isNextDispositionActionEligible=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getNextDispositionAction=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.recalculateNextDispositionStep=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getCompletedDispositionActions=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isDisposableItemCutoff=RM.Read.0
@@ -161,6 +162,8 @@
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="nodeService" ref="nodeService"/>
         <property name="freezeService" ref="FreezeService"/>
+        <property name="transferContainerType" ref="rma.transferContainer"/>
+        <property name="transferType" ref="rma.transfer"/>
     </bean>
 
     <bean id="RmTransferService" class="org.springframework.aop.framework.ProxyFactoryBean">

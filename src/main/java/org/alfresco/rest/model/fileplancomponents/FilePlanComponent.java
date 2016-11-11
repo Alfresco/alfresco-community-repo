@@ -43,7 +43,8 @@ public class FilePlanComponent
     private FilePlanComponentProperties properties;
     @JsonProperty (ALLOWABLE_OPERATIONS)
     private List<String> allowableOperations;
-
+    private FilePlanComponentPath path;
+    
     /**
      * @return the id
      */
@@ -226,5 +227,21 @@ public class FilePlanComponent
     public List<String> getAllowableOperations()
     {
         return this.allowableOperations;
+    }
+
+    /**
+     * @return the path
+     */
+    public FilePlanComponentPath getPath()
+    {
+        return this.path;
+    }
+
+    /**
+     * @param path the path to set
+     */
+    public void setPath(FilePlanComponentPath path)
+    {
+        this.path = path;
     }
 }

@@ -17,7 +17,7 @@ package org.alfresco.rest.model.fileplancomponents;
  * @author Kristijan Conkas
  * @since 1.0
  */
-public class FilePlanComponentCreatedByUser
+public class FilePlanComponentUserInfo
 {
     private String id;
     private String displayName;

@@ -13,8 +13,13 @@ package org.alfresco.rest.model.fileplancomponents;
 
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_LOCATION;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_PERIOD;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SUPPLEMENTAL_MARKING_LIST;
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,9 +31,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 1.0
  */
 //FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties (ignoreUnknown = true)
 public class FilePlanComponentProperties
 {
+
     @JsonProperty(PROPERTIES_VITAL_RECORD_INDICATOR)
     private boolean vitalRecord;
 
@@ -40,6 +46,16 @@ public class FilePlanComponentProperties
 
     @JsonProperty(PROPERTIES_DESCRIPTION)
     private String description;
+
+    @JsonProperty(PROPERTIES_SUPPLEMENTAL_MARKING_LIST)
+    private List<String> supplementalMarkingList;
+
+    @JsonProperty(PROPERTIES_REVIEW_PERIOD)
+    private ReviewPeriod reviewPeriod;
+
+    @JsonProperty(PROPERTIES_LOCATION)
+    private String location;
+
 
     /**
      * @return the vitalRecord
@@ -103,5 +119,35 @@ public class FilePlanComponentProperties
     public String getDescription()
     {
         return this.description;
+    }
+
+    public List<String> getSupplementalMarkingList()
+    {
+        return this.supplementalMarkingList;
+    }
+
+    public void setSupplementalMarkingList(List<String> supplementalMarkingList)
+    {
+        this.supplementalMarkingList = supplementalMarkingList;
+    }
+
+    public ReviewPeriod getReviewPeriod()
+    {
+        return reviewPeriod;
+    }
+
+    public void setReviewPeriod(ReviewPeriod reviewPeriod)
+    {
+        this.reviewPeriod = reviewPeriod;
+    }
+
+    public String getLocation()
+    {
+        return location;
+    }
+
+    public void setLocation(String location)
+    {
+        this.location = location;
     }
 }

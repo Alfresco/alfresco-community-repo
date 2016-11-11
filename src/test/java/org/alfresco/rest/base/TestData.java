@@ -19,6 +19,7 @@ import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.F
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 
 import org.testng.annotations.DataProvider;
 
@@ -77,4 +78,24 @@ public interface TestData
                 { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE },
         };
     }
+
+    /**
+     * The default CATEGORY name used when creating categories
+     */
+    public static String CATEGORY_NAME = "CATEGORY NAME"+ getRandomAlphanumeric();
+
+    /**
+     * The default CATEGORY title used when creating categories
+     */
+    public static String CATEGORY_TITLE = "CATEGORY TITLE" + getRandomAlphanumeric();
+
+    /**
+     * The default FOLDER name used when creating categories
+     */
+    public static String FOLDER_NAME = "FOLDER NAME" + getRandomAlphanumeric();
+
+    /**
+     * The default FOLDER title used when creating categories
+     */
+    public static  String FOLDER_TITLE = "FOLDER TITLE" + getRandomAlphanumeric();
 }

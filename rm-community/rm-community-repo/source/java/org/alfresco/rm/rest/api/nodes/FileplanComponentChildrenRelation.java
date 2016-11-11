@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -68,10 +67,6 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     @Override
     public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
     {
-        if(nodes.isRMSite(parentFolderNodeId))
-        {
-            throw new PermissionDeniedException("POST request not allowed in RM site.");
-        }
         List<Node> result = new ArrayList<>(nodeInfos.size());
 
         for (Node nodeInfo : nodeInfos)
@@ -85,10 +80,6 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     @Override
     public Node create(String parentFolderNodeId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
-        if(nodes.isRMSite(parentFolderNodeId))
-        {
-            throw new PermissionDeniedException("POST request not allowed in RM site.");
-        }
         return nodes.upload(parentFolderNodeId, formData, parameters);
     }
 }

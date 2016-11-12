@@ -9,9 +9,9 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.fileplancomponents;
+package org.alfresco.rest.rm.model.fileplancomponents;
 
-import static org.alfresco.rest.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.util.ParameterCheck.mandatoryString;
 
 /**
  * File plan component type enumeration

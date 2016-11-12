@@ -9,10 +9,10 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.fileplancomponents;
+package org.alfresco.rest.rm.model.fileplancomponents;
 
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
 
 import java.util.List;
 

@@ -9,14 +9,14 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.base;
+package org.alfresco.rest.rm.base;
 
 import static java.lang.Integer.parseInt;
 
-import static org.alfresco.rest.model.site.RMSiteCompliance.STANDARD;
-import static org.alfresco.rest.model.site.RMSiteFields.COMPLIANCE;
-import static org.alfresco.rest.model.site.RMSiteFields.DESCRIPTION;
-import static org.alfresco.rest.model.site.RMSiteFields.TITLE;
+import static org.alfresco.rest.rm.model.site.RMSiteCompliance.STANDARD;
+import static org.alfresco.rest.rm.model.site.RMSiteFields.COMPLIANCE;
+import static org.alfresco.rest.rm.model.site.RMSiteFields.DESCRIPTION;
+import static org.alfresco.rest.rm.model.site.RMSiteFields.TITLE;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -26,7 +26,7 @@ import com.jayway.restassured.RestAssured;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.requests.RMSiteAPI;
+import org.alfresco.rest.rm.requests.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

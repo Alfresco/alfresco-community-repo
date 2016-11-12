@@ -9,12 +9,12 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.fileplancomponents;
+package org.alfresco.rest.rm.model.fileplancomponents;
 
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

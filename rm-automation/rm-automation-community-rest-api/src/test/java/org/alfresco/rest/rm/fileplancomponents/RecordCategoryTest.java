@@ -9,15 +9,15 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.fileplancomponents;
+package org.alfresco.rest.rm.fileplancomponents;
 
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.NAME;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NAME;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -35,13 +35,13 @@ import java.util.NoSuchElementException;
 
 import com.google.gson.JsonObject;
 
-import org.alfresco.rest.base.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponentProperties;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponentType;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponentsCollection;
-import org.alfresco.rest.requests.FilePlanComponentAPI;
+import org.alfresco.rest.rm.base.BaseRestTest;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;

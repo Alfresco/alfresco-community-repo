@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.fileplancomponents;
+package org.alfresco.rest.rm.model.fileplancomponents;
 
 /**
  * File plan component field names constants

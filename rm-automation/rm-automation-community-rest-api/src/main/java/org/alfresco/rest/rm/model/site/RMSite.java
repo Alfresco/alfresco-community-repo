@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.site;
+package org.alfresco.rest.rm.model.site;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

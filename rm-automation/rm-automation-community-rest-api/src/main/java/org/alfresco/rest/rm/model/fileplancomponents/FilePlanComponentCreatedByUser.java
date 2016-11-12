@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.fileplancomponents;
+package org.alfresco.rest.rm.model.fileplancomponents;
 
 /**
  * POJO for file plan component created by object

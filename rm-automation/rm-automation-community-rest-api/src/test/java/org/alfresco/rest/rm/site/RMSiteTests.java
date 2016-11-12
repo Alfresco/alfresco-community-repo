@@ -9,16 +9,16 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.site;
+package org.alfresco.rest.rm.site;
 
-import static org.alfresco.rest.base.TestData.ANOTHER_ADMIN;
-import static org.alfresco.rest.base.TestData.DEFAULT_EMAIL;
-import static org.alfresco.rest.base.TestData.DEFAULT_PASSWORD;
-import static org.alfresco.rest.model.site.RMSiteCompliance.DOD5015;
-import static org.alfresco.rest.model.site.RMSiteCompliance.STANDARD;
-import static org.alfresco.rest.model.site.RMSiteFields.COMPLIANCE;
-import static org.alfresco.rest.model.site.RMSiteFields.DESCRIPTION;
-import static org.alfresco.rest.model.site.RMSiteFields.TITLE;
+import static org.alfresco.rest.rm.base.TestData.ANOTHER_ADMIN;
+import static org.alfresco.rest.rm.base.TestData.DEFAULT_EMAIL;
+import static org.alfresco.rest.rm.base.TestData.DEFAULT_PASSWORD;
+import static org.alfresco.rest.rm.model.site.RMSiteCompliance.DOD5015;
+import static org.alfresco.rest.rm.model.site.RMSiteCompliance.STANDARD;
+import static org.alfresco.rest.rm.model.site.RMSiteFields.COMPLIANCE;
+import static org.alfresco.rest.rm.model.site.RMSiteFields.DESCRIPTION;
+import static org.alfresco.rest.rm.model.site.RMSiteFields.TITLE;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
@@ -34,10 +34,10 @@ import static org.testng.Assert.assertNotNull;
 import com.google.gson.JsonObject;
 
 import org.alfresco.dataprep.UserService;
-import org.alfresco.rest.base.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.rest.model.site.RMSite;
-import org.alfresco.rest.requests.RMSiteAPI;
+import org.alfresco.rest.rm.base.BaseRestTest;
+import org.alfresco.rest.rm.model.site.RMSite;
+import org.alfresco.rest.rm.requests.RMSiteAPI;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;

@@ -9,12 +9,12 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.requests;
+package org.alfresco.rest.rm.requests;
 
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
-import static org.alfresco.rest.util.ParameterCheck.mandatoryObject;
-import static org.alfresco.rest.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.util.ParameterCheck.mandatoryObject;
+import static org.alfresco.rest.rm.util.ParameterCheck.mandatoryString;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -23,8 +23,8 @@ import static org.springframework.http.HttpMethod.PUT;
 import com.google.gson.JsonObject;
 
 import org.alfresco.rest.core.RestAPI;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentsCollection;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 

@@ -9,16 +9,16 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.base;
+package org.alfresco.rest.rm.base;
 
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 
 import org.testng.annotations.DataProvider;
 

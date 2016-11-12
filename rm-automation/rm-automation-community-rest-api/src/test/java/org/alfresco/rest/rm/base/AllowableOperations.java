@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.base;
+package org.alfresco.rest.rm.base;
 
 /**
  * List of allowable operations

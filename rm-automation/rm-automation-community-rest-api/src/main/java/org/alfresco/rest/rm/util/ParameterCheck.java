@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.util;
+package org.alfresco.rest.rm.util;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 

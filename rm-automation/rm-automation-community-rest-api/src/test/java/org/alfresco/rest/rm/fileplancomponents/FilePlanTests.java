@@ -9,19 +9,19 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.fileplancomponents;
+package org.alfresco.rest.rm.fileplancomponents;
 
 import static java.util.Arrays.asList;
 
-import static org.alfresco.rest.base.AllowableOperations.CREATE;
-import static org.alfresco.rest.base.AllowableOperations.DELETE;
-import static org.alfresco.rest.base.AllowableOperations.UPDATE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.NAME;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.rest.rm.base.AllowableOperations.CREATE;
+import static org.alfresco.rest.rm.base.AllowableOperations.DELETE;
+import static org.alfresco.rest.rm.base.AllowableOperations.UPDATE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NAME;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -33,13 +33,13 @@ import static org.testng.Assert.assertTrue;
 
 import com.google.gson.JsonObject;
 
-import org.alfresco.rest.base.BaseRestTest;
-import org.alfresco.rest.base.TestData;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponentAlias;
-import org.alfresco.rest.model.fileplancomponents.FilePlanComponentType;
-import org.alfresco.rest.requests.FilePlanComponentAPI;
-import org.alfresco.rest.requests.RMSiteAPI;
+import org.alfresco.rest.rm.base.BaseRestTest;
+import org.alfresco.rest.rm.base.TestData;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType;
+import org.alfresco.rest.rm.requests.FilePlanComponentAPI;
+import org.alfresco.rest.rm.requests.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;

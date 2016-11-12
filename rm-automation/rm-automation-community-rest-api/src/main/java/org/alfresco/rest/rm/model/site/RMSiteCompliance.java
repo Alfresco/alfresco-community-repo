@@ -9,7 +9,7 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.site;
+package org.alfresco.rest.rm.model.site;
 
 /**
  * RM Site compliance

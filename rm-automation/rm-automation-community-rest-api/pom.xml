@@ -14,6 +14,8 @@
    <properties>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
+      <suiteXmlFile>testng.xml</suiteXmlFile>
+      <skip.automationtests>true</skip.automationtests>
    </properties>
 
    <dependencies>
@@ -34,4 +36,19 @@
          <version>2.0.0</version>
       </dependency>
    </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <redirectTestOutputToFile>false</redirectTestOutputToFile>
+               <suiteXmlFiles>
+                  <suiteXmlFile>${project.build.testOutputDirectory}/${suiteXmlFile}</suiteXmlFile>
+               </suiteXmlFiles>
+               <skipTests>${skip.automationtests}</skipTests>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
 </project>

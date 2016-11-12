@@ -9,9 +9,9 @@
  * agreement is prohibited.
  * #L%
  */
-package org.alfresco.rest.model.fileplancomponents;
+package org.alfresco.rest.rm.model.fileplancomponents;
 
-import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.ENTRY;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.ENTRY;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

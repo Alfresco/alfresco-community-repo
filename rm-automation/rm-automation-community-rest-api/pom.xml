@@ -16,6 +16,8 @@
       <maven.compiler.target>1.8</maven.compiler.target>
       <suiteXmlFile>testng.xml</suiteXmlFile>
       <skip.automationtests>true</skip.automationtests>
+      <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
+      <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
    </properties>
 
    <dependencies>

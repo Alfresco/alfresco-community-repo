@@ -12,11 +12,11 @@
 package org.alfresco.rest.model.fileplancomponents;
 
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
+import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.IS_CLOSED;
 import static org.alfresco.rest.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -25,26 +25,62 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Tuna Aksoy
  * @since 1.0
  */
-//FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class FilePlanComponent
 {
+    @JsonProperty (required = true)
     private String id;
+
+    @JsonProperty (required = true)
     private String parentId;
+
+    @JsonProperty (required = true)
     private String name;
+
+    @JsonProperty (required = true)
     private String nodeType;
+
+    @JsonProperty (required = true)
     private boolean isCategory;
+
+    @JsonProperty (required = true)
     private boolean isRecordFolder;
+
+    @JsonProperty (required = true)
     private boolean isFile;
+
+    @JsonProperty
     private boolean hasRetentionSchedule;
+
+    @JsonProperty(value = IS_CLOSED)
+    private boolean isClosed;
+
+    @JsonProperty
+    private boolean isCompleted;
+
+    @JsonProperty (required = true)
     private List<String> aspectNames;
-    private FilePlanComponentCreatedByUser createdByUser;
-    @JsonProperty(PROPERTIES)
+
+    @JsonProperty (required = true)
+    private FilePlanComponentUserInfo createdByUser;
+
+    @JsonProperty(value = PROPERTIES, required = true)
     private FilePlanComponentProperties properties;
-    @JsonProperty (ALLOWABLE_OPERATIONS)
+
+    @JsonProperty (value = ALLOWABLE_OPERATIONS)
     private List<String> allowableOperations;
     private FilePlanComponentPath path;
     
+    @JsonProperty (required = true)
+    private String modifiedAt;
+
+
+    @JsonProperty (required = true)
+    private String createdAt;
+
+    @JsonProperty (required = true)
+    private FilePlanComponentUserInfo modifiedByUser;
+
+
     /**
      * @return the id
      */
@@ -208,7 +244,7 @@ public class FilePlanComponent
     /**
      * @return the createdByUser
      */
-    public FilePlanComponentCreatedByUser getCreatedByUser()
+    public FilePlanComponentUserInfo getCreatedByUser()
     {
         return this.createdByUser;
     }
@@ -216,7 +252,7 @@ public class FilePlanComponent
     /**
      * @param createdByUser the createdByUser to set
      */
-    public void setCreatedByUser(FilePlanComponentCreatedByUser createdByUser)
+    public void setCreatedByUser(FilePlanComponentUserInfo createdByUser)
     {
         this.createdByUser = createdByUser;
     }
@@ -243,5 +279,85 @@ public class FilePlanComponent
     public void setPath(FilePlanComponentPath path)
     {
         this.path = path;
+    }
+
+    /**
+     * @param modifiedAt the modifiedAt to set
+     */
+    public void setModifiedAt(String modifiedAt)
+    {
+        this.modifiedAt = modifiedAt;
+    }
+
+    /**
+     * @param createdAt the createdAt to set
+     */
+    public void setCreatedAt(String createdAt)
+    {
+        this.createdAt = createdAt;
+    }
+
+    /**
+     * @param modifiedByUser the modifiedByUser to set
+     */
+    public void setModifiedByUser(FilePlanComponentUserInfo modifiedByUser)
+    {
+        this.modifiedByUser = modifiedByUser;
+    }
+
+    /**
+     * @return the modifiedAt
+     */
+    public String getModifiedAt()
+    {
+        return this.modifiedAt;
+    }
+
+    /**
+     * @return the createdAt
+     */
+    public String getCreatedAt()
+    {
+        return this.createdAt;
+    }
+
+    /**
+     * @return the modifiedByUser
+     */
+    public FilePlanComponentUserInfo getModifiedByUser()
+    {
+        return this.modifiedByUser;
+    }
+
+    /**
+     * @return the isClosed
+     */
+    public boolean isClosed()
+    {
+        return this.isClosed;
+    }
+
+    /**
+     * @param closed the isClosed to set
+     */
+    public void setClosed(boolean closed)
+    {
+        this.isClosed = closed;
+    }
+
+    /**
+     * @return the isCompleted
+     */
+    public boolean isCompleted()
+    {
+        return this.isCompleted;
+    }
+
+    /**
+     * @param completed the isCompleted to set
+     */
+    public void setCompleted(boolean completed)
+    {
+        this.isCompleted = completed;
     }
 }

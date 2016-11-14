@@ -341,7 +341,7 @@ public class RecordCategoryTest extends BaseRestTest
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
-    private FilePlanComponent createCategory(String parentCategoryId, String categoryName) throws Exception
+    public FilePlanComponent createCategory(String parentCategoryId, String categoryName) throws Exception
     {
         return createComponent(parentCategoryId, categoryName, RECORD_CATEGORY_TYPE);
     }

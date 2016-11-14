@@ -34,6 +34,7 @@ import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:transfer behaviour bean
@@ -44,6 +45,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 @BehaviourBean(defaultType = "rma:transfer")
 public class TransferType extends BaseBehaviourBean implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
+    private final static String MSG_ERROR_ADD_CHILD_TO_TRANSFER = "rm.action.create.transfer.child-error-message";
     private static final String BEHAVIOUR_NAME = "onCreateChildAssocsForTransferType";
 
     /**
@@ -75,6 +77,6 @@ public class TransferType extends BaseBehaviourBean implements NodeServicePolici
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        throw new IntegrityException("Operation failed. Creation is not allowed in Transfer Folders", null);
+        throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_ADD_CHILD_TO_TRANSFER), null);
     }
 }

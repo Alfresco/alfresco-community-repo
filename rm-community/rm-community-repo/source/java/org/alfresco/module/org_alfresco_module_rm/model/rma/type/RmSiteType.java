@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import com.google.common.collect.Sets;
 
@@ -350,7 +351,7 @@ public class RmSiteType extends    BaseBehaviourBean
         // check the user is not trying to create more than 2 folders that are created by default.
         if(nodeService.getChildAssocs(parent, Sets.newHashSet(ContentModel.TYPE_FOLDER)).size() > 2)
         {
-            throw new IntegrityException("Operation failed. Children of type " + ContentModel.TYPE_FOLDER + " are not allowed", null);
+            throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, ContentModel.TYPE_FOLDER), null);
         }
     }
 }

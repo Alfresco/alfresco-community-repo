@@ -27,6 +27,7 @@ import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -254,15 +255,15 @@ public class FilePlanTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         // Create the special containers into RM site - parent folder
         filePlanComponentAPI.createFilePlanComponent(componentProperties, rmSiteId);
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(FORBIDDEN);
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
 
         // Create the special containers into RM site - parent folder
         filePlanComponentAPI.createFilePlanComponent(componentProperties, FILE_PLAN_ALIAS.toString());
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(FORBIDDEN);
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
 
         // Create the special containers into the root of special containers containers
         filePlanComponentAPI.createFilePlanComponent(componentProperties, filePlanAlias.toString());
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(FORBIDDEN);
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }
 
     /**

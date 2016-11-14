@@ -27,19 +27,20 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model;
 
-import java.security.InvalidParameterException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.BehaviourRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import com.google.common.collect.Sets;
 
@@ -55,6 +56,10 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
 {
     /** Logger */
     protected static final Log LOGGER = LogFactory.getLog(BaseBehaviourBean.class);
+
+    /** I18N */
+    protected static final String UNIQUE_CHILD_TYPE_ERROR = "rm.action.unique.child.type-error-message";
+    protected static final String MULTIPLE_CHILDREN_TYPE_ERROR = "rm.action.multiple.children.type-error-message";
 
     /** behaviour filter */
     protected BehaviourFilter behaviourFilter;
@@ -99,9 +104,9 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
      * @param childType the child node
      * @param acceptedUniqueChildType a list of node types that are accepted as children of the provided parent only once
      * @param acceptedMultipleChildType a list of node types that are accepted as children of the provided parent multiple times
-     * @throws InvalidParameterException if the child association doesn't comply with the RM rules
+     * @throws IntegrityException if the child association doesn't comply with the RM rules
      */
-    protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType, List<QName> acceptedMultipleChildType) throws InvalidParameterException
+    protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType, List<QName> acceptedMultipleChildType) throws IntegrityException
     {
         QName childType = getInternalNodeService().getType(child);
         if(acceptedUniqueChildType.contains(childType))
@@ -109,12 +114,12 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
             // check the user is not trying to create multiple children of a type that is only accepted once
             if(nodeService.getChildAssocs(parent, Sets.newHashSet(childType)).size() > 1)
             {
-                throw new InvalidParameterException("Operation failed. Multiple children of this type are not allowed.");
+                throw new IntegrityException(I18NUtil.getMessage(UNIQUE_CHILD_TYPE_ERROR), null);
             }
         }
         else if(!acceptedMultipleChildType.contains(childType))
         {
-            throw new InvalidParameterException("Operation failed. Children of type " + childType + " are not allowed");
+            throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, childType), null);
         }
     }
 
@@ -122,9 +127,9 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
      * Helper method that checks if the newly created child association is between the sub-types of accepted types.
      * @param childType the child node
      * @param acceptedMultipleChildType a list of node types that are accepted as children of the provided parent multiple times
-     * @throws InvalidParameterException if the child association isn't between the sub-types of accepted types
+     * @throws IntegrityException if the child association isn't between the sub-types of accepted types
      */
-    protected void validateNewChildAssociationSubTypesIncluded(NodeRef child, List<QName> acceptedMultipleChildType) throws InvalidParameterException
+    protected void validateNewChildAssociationSubTypesIncluded(NodeRef child, List<QName> acceptedMultipleChildType) throws IntegrityException
     {
         QName childType = getInternalNodeService().getType(child);
         for(QName type :  acceptedMultipleChildType)
@@ -135,6 +140,6 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
             }
         }
         //no match was found in sub-types of permitted types list
-        throw new InvalidParameterException("Operation failed. Children of type " + childType + " are not allowed");
+        throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, childType), null);
     }
 }

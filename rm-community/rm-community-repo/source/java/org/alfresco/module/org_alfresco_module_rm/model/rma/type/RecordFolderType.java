@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -40,6 +41,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -76,7 +78,7 @@ public class RecordFolderType extends    AbstractDisposableItem
     protected VitalRecordService vitalRecordService;
 
     /** I18N */
-    private static final String MSG_CANNOT_CREATE_RECORD_FOLDER = "rm.action.record-folder-create";
+    private static final String MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD = "rm.action.create.record.folder.child-error-message";
 
     /**
      * @param recordService record service
@@ -219,6 +221,15 @@ public class RecordFolderType extends    AbstractDisposableItem
 
         if (nodeService.exists(nodeRef))
         {
+            boolean notFolderOrRmFolderSubType = !instanceOf(nodeRef, ContentModel.TYPE_FOLDER) ||
+                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_RECORDS_MANAGEMENT_CONTAINER) ||
+                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_RECORD_FOLDER) ||
+                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_TRANSFER);
+
+            if (!instanceOf(nodeRef, ContentModel.TYPE_CONTENT) && notFolderOrRmFolderSubType)
+            {
+                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(nodeRef)), null);
+            }
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
             Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
@@ -245,9 +256,9 @@ public class RecordFolderType extends    AbstractDisposableItem
         final NodeRef recordFolder = childAssocRef.getChildRef();
 
         // only records can be added in a record folder or hidden folders(is the case of e-mail attachments)
-        if (!instanceOf(recordFolder, ContentModel.TYPE_CONTENT) && !nodeService.hasAspect(recordFolder, ContentModel.ASPECT_HIDDEN))
+        if (instanceOf(recordFolder, ContentModel.TYPE_FOLDER) && !nodeService.hasAspect(recordFolder, ContentModel.ASPECT_HIDDEN))
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER));
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(recordFolder)), null);
         }
 
         behaviourFilter.disableBehaviour();

@@ -218,7 +218,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         if(type != RMNodeType.FILE &&  
                 !isFilePlan && 
                 !isTransferContainer &&
-                capabilityService.getCapability("Create").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
+                capabilityService.getCapability("FillingPermissionOnly").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             allowableOperations.add(OP_CREATE);
         }

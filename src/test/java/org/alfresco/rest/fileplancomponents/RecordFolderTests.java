@@ -51,6 +51,7 @@ import org.alfresco.rest.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
@@ -126,6 +127,7 @@ public class RecordFolderTests extends BaseRestTest
         dataProviderClass = TestData.class,
         dataProvider = "getContainers"
     )
+    @Bug(id="RM-4327")
     public void createFolderIntoSpecialContainers(String filePlanComponent) throws Exception
     {
         // Authenticate with admin user

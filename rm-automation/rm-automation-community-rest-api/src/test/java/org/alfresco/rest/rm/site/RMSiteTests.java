@@ -34,8 +34,8 @@ import static org.testng.Assert.assertNotNull;
 import com.google.gson.JsonObject;
 
 import org.alfresco.dataprep.UserService;
-import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.base.BaseRestTest;
+import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.model.site.RMSite;
 import org.alfresco.rest.rm.requests.RMSiteAPI;
 import org.alfresco.utility.constants.UserRole;

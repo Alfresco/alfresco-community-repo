@@ -35,8 +35,8 @@ import java.util.NoSuchElementException;
 
 import com.google.gson.JsonObject;
 
-import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.base.BaseRestTest;
+import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType;
@@ -341,7 +341,7 @@ public class RecordCategoryTest extends BaseRestTest
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
-    private FilePlanComponent createCategory(String parentCategoryId, String categoryName) throws Exception
+    public FilePlanComponent createCategory(String parentCategoryId, String categoryName) throws Exception
     {
         return createComponent(parentCategoryId, categoryName, RECORD_CATEGORY_TYPE);
     }

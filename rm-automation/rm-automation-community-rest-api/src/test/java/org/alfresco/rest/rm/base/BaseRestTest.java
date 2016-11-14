@@ -13,6 +13,14 @@ package org.alfresco.rest.rm.base;
 
 import static java.lang.Integer.parseInt;
 
+import static org.alfresco.rest.rm.base.TestData.CATEGORY_TITLE;
+import static org.alfresco.rest.rm.base.TestData.FOLDER_TITLE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NAME;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.model.site.RMSiteCompliance.STANDARD;
 import static org.alfresco.rest.rm.model.site.RMSiteFields.COMPLIANCE;
 import static org.alfresco.rest.rm.model.site.RMSiteFields.DESCRIPTION;
@@ -26,6 +34,9 @@ import com.jayway.restassured.RestAssured;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType;
+import org.alfresco.rest.rm.requests.FilePlanComponentAPI;
 import org.alfresco.rest.rm.requests.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,11 +69,17 @@ public class BaseRestTest extends RestTest
     @Value ("${rest.rmPath}")
     private String restRmPath;
 
+    @Value ("${rest.basePath}")
+    private String restCorePath;
+
     @Autowired
     private RMSiteAPI rmSiteAPI;
 
     @Autowired
     private DataUser dataUser;
+
+    @Autowired
+    public FilePlanComponentAPI filePlanComponentAPI;
 
     // Constants
     public static final String RM_ID = "rm";
@@ -73,7 +90,7 @@ public class BaseRestTest extends RestTest
      * @see org.alfresco.rest.RestTest#checkServerHealth()
      */
     @Override
-    @BeforeClass(alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
         RestAssured.baseURI = scheme + "://" + server;
@@ -119,4 +136,57 @@ public class BaseRestTest extends RestTest
         rmSiteAPI.getSite();
         return restWrapper.getStatusCode().equals(OK.toString());
     }
+
+    /**
+     * Helper method to create child category
+     *
+     * @param parentCategoryId The id of the parent category
+     * @param categoryName     The name of the category
+     * @return The created category
+     * @throws Exception on unsuccessful component creation
+     */
+    public FilePlanComponent createCategory(String parentCategoryId, String categoryName) throws Exception
+    {
+        return createComponent(parentCategoryId, categoryName, RECORD_CATEGORY_TYPE, CATEGORY_TITLE);
+    }
+
+    /**
+     * Helper method to create child folder
+     *
+     * @param parentCategoryId The id of the parent category
+     * @param folderName       The name of the category
+     * @return The created category
+     * @throws Exception on unsuccessful component creation
+     */
+    public FilePlanComponent createFolder(String parentCategoryId, String folderName) throws Exception
+    {
+        return createComponent(parentCategoryId, folderName, RECORD_FOLDER_TYPE, FOLDER_TITLE);
+    }
+
+    /**
+     * Helper method to create generic child component
+     *
+     * @param parentComponentId The id of the parent file plan component
+     * @param componentName     The name of the file plan component
+     * @param componentType     The name of the file plan component
+     * @param componentTitle
+     * @return The created file plan component
+     * @throws Exception
+     */
+    private FilePlanComponent createComponent(String parentComponentId, String componentName, FilePlanComponentType componentType, String componentTitle) throws Exception
+    {
+        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
+        JsonObject componentProperties = buildObject().add(NAME, componentName)
+                                                      .add(NODE_TYPE, componentType.toString())
+                                                      .addObject(PROPERTIES)
+                                                      .add(PROPERTIES_TITLE, componentTitle)
+                                                      .end()
+                                                      .getJson();
+
+        FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(componentProperties, parentComponentId);
+        restWrapper.assertStatusCodeIs(CREATED);
+        return fpc;
+    }
+
 }

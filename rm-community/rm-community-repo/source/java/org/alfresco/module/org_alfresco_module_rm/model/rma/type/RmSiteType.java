@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import java.io.Serializable;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -41,6 +40,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import com.google.common.collect.Sets;
 
@@ -343,14 +344,14 @@ public class RmSiteType extends    BaseBehaviourBean
      */
     @Override
     protected void validateNewChildAssociation(NodeRef parent, NodeRef child, List<QName> acceptedUniqueChildType,
-                List<QName> acceptedMultipleChildType) throws InvalidParameterException
+                List<QName> acceptedMultipleChildType) throws IntegrityException
     {
         super.validateNewChildAssociation(parent, child, acceptedUniqueChildType, acceptedMultipleChildType);
 
         // check the user is not trying to create more than 2 folders that are created by default.
         if(nodeService.getChildAssocs(parent, Sets.newHashSet(ContentModel.TYPE_FOLDER)).size() > 2)
         {
-            throw new InvalidParameterException("Operation failed. Children of type " + ContentModel.TYPE_FOLDER + " are not allowed");
+            throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, ContentModel.TYPE_FOLDER), null);
         }
     }
 }

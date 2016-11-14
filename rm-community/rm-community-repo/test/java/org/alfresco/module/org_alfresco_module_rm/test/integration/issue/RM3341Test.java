@@ -27,11 +27,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
-import java.security.InvalidParameterException;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 
@@ -78,7 +77,7 @@ public class RM3341Test extends BaseRMTestCase
                     fileFolderService.create(holdContainer, "test file", ContentModel.TYPE_CONTENT);
                     fail("This should have thrown an exception");
                 }
-                catch (InvalidParameterException e)
+                catch (IntegrityException e)
                 {
                     // ("Content can't be added to a hold container. Use record folders to file content.")
                 }
@@ -104,7 +103,7 @@ public class RM3341Test extends BaseRMTestCase
                     fail("This should have thrown an exception");
 
                 }
-                catch (InvalidParameterException e)
+                catch (IntegrityException e)
                 {
                     // ("Content can't be added to a transfer container. Use record folders to file content.")
                 }

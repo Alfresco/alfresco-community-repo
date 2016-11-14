@@ -46,7 +46,7 @@ import org.alfresco.rm.rest.api.model.SiteUpdate;
  * @since 2.6
  *
  */
-@EntityResource(name = "sites", title = "IG Sites")
+@EntityResource(name = "ig-sites", title = "IG Sites")
 public class RMSiteEntityResource implements EntityResourceAction.Delete, EntityResourceAction.Create<RMSite>,
             EntityResourceAction.Update<RMSite>, EntityResourceAction.ReadById<RMSite>
 {

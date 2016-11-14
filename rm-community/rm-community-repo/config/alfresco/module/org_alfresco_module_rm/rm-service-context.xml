@@ -142,6 +142,7 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.updateDispositionActionDefinition=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isNextDispositionActionEligible=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getNextDispositionAction=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.recalculateNextDispositionStep=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getCompletedDispositionActions=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isDisposableItemCutoff=RM.Read.0

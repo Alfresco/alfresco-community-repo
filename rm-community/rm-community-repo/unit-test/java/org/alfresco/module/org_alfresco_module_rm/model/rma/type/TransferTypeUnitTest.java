@@ -30,10 +30,9 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.security.InvalidParameterException;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -53,9 +52,9 @@ public class TransferTypeUnitTest extends BaseUnitTest
 
     /**
      * Given that we try to add to transfer type folder,
-     * Then InvalidParameterException is thrown.
+     * Then IntegrityException is thrown.
      */
-    @Test(expected = InvalidParameterException.class)
+    @Test(expected = IntegrityException.class)
     public void testAddToTransferFolderTest()
     {
         NodeRef transferFolder = generateNodeRef(TYPE_TRANSFER, true);

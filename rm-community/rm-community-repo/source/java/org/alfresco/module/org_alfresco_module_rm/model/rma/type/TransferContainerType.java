@@ -26,12 +26,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import java.security.InvalidParameterException;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -50,6 +49,7 @@ public class TransferContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
 {
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
+    private final static String MSG_ERROR_ADD_CHILD_TO_TRANSFER_CONTAINER = "rm.action.create.transfer.container.child-error-message";
     private static final String BEHAVIOUR_NAME = "onCreateChildAssocsForTransferContainer";
 
     /**
@@ -84,7 +84,7 @@ public class TransferContainerType extends BaseBehaviourBean
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        throw new InvalidParameterException("Operation failed. Creation is not allowed in Transfer Container");
+        throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_ADD_CHILD_TO_TRANSFER_CONTAINER), null);
     }
 
     @Override

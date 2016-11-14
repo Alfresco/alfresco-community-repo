@@ -78,7 +78,7 @@ public class RecordFolderType extends    AbstractDisposableItem
     protected VitalRecordService vitalRecordService;
 
     /** I18N */
-    private static final String MSG_CANNOT_CREATE_RECORD_FOLDER = "rm.action.record-folder-create";
+    private static final String MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD = "rm.action.create.record.folder.child-error-message";
 
     /**
      * @param recordService record service
@@ -228,7 +228,7 @@ public class RecordFolderType extends    AbstractDisposableItem
 
             if (!instanceOf(nodeRef, ContentModel.TYPE_CONTENT) && notFolderOrRmFolderSubType)
             {
-                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER), null);
+                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(nodeRef)), null);
             }
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
@@ -258,7 +258,7 @@ public class RecordFolderType extends    AbstractDisposableItem
         // only records can be added in a record folder or hidden folders(is the case of e-mail attachments)
         if (instanceOf(recordFolder, ContentModel.TYPE_FOLDER) && !nodeService.hasAspect(recordFolder, ContentModel.ASPECT_HIDDEN))
         {
-            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER), null);
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(recordFolder)), null);
         }
 
         behaviourFilter.disableBehaviour();

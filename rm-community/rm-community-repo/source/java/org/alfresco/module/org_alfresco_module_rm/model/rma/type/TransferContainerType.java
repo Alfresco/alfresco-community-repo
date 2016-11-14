@@ -49,6 +49,7 @@ public class TransferContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
 {
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
+    private final static String MSG_ERROR_ADD_CHILD_TO_TRANSFER_CONTAINER = "rm.action.create.transfer.container.child-error-message";
     private static final String BEHAVIOUR_NAME = "onCreateChildAssocsForTransferContainer";
 
     /**
@@ -83,7 +84,7 @@ public class TransferContainerType extends BaseBehaviourBean
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        throw new IntegrityException("Operation failed. Creation is not allowed in Transfer Container", null);
+        throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_ADD_CHILD_TO_TRANSFER_CONTAINER), null);
     }
 
     @Override

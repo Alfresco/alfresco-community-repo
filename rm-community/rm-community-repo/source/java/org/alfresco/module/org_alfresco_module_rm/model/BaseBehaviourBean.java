@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import com.google.common.collect.Sets;
 
@@ -55,6 +56,10 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
 {
     /** Logger */
     protected static final Log LOGGER = LogFactory.getLog(BaseBehaviourBean.class);
+
+    /** I18N */
+    protected static final String UNIQUE_CHILD_TYPE_ERROR = "rm.action.unique.child.type-error-message";
+    protected static final String MULTIPLE_CHILDREN_TYPE_ERROR = "rm.action.multiple.children.type-error-message";
 
     /** behaviour filter */
     protected BehaviourFilter behaviourFilter;
@@ -109,12 +114,12 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
             // check the user is not trying to create multiple children of a type that is only accepted once
             if(nodeService.getChildAssocs(parent, Sets.newHashSet(childType)).size() > 1)
             {
-                throw new IntegrityException("Operation failed. Multiple children of this type are not allowed.", null);
+                throw new IntegrityException(I18NUtil.getMessage(UNIQUE_CHILD_TYPE_ERROR), null);
             }
         }
         else if(!acceptedMultipleChildType.contains(childType))
         {
-            throw new IntegrityException("Operation failed. Children of type " + childType + " are not allowed", null);
+            throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, childType), null);
         }
     }
 
@@ -135,6 +140,6 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
             }
         }
         //no match was found in sub-types of permitted types list
-        throw new IntegrityException("Operation failed. Children of type " + childType + " are not allowed", null);
+        throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, childType), null);
     }
 }

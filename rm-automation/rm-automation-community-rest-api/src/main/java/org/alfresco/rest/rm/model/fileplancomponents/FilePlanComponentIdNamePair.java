@@ -12,15 +12,15 @@
 package org.alfresco.rest.rm.model.fileplancomponents;
 
 /**
- * POJO for file plan component created by object
+ * POJO for id/name pair
  *
  * @author Kristijan Conkas
  * @since 1.0
  */
-public class FilePlanComponentCreatedByUser
+public class FilePlanComponentIdNamePair
 {
-    private String id;
-    private String displayName;
+    public String id;
+    public String name;
 
     /**
      * @return the id
@@ -39,18 +39,18 @@ public class FilePlanComponentCreatedByUser
     }
 
     /**
-     * @return the displayName
+     * @return the name
      */
-    public String getDisplayName()
+    public String getName()
     {
-        return this.displayName;
+        return this.name;
     }
 
     /**
-     * @param displayName the displayName to set
+     * @param name the name to set
      */
-    public void setDisplayName(String displayName)
+    public void setName(String name)
     {
-        this.displayName = displayName;
+        this.name = name;
     }
 }

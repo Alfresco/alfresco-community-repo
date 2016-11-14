@@ -25,8 +25,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Tuna Aksoy
  * @since 1.0
  */
-//FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
-
 public class FilePlanComponent
 {
     @JsonProperty (required = true)

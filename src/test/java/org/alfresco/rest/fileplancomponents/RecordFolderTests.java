@@ -71,7 +71,7 @@ public class RecordFolderTests extends BaseRestTest
     @Autowired
     public DataUser dataUser;
 
-    private static final int NUMBER_OF_FOLDER= 5;
+    private static final int NUMBER_OF_FOLDERS= 5;
     /**
      * Given that a record category exists
      * When I use the API to create a new record folder
@@ -290,7 +290,7 @@ public class RecordFolderTests extends BaseRestTest
 
         // Add child olders
         ArrayList<FilePlanComponent> children = new ArrayList<FilePlanComponent>();
-        for (int i = 0; i < NUMBER_OF_FOLDER; i++)
+        for (int i = 0; i < NUMBER_OF_FOLDERS; i++)
         {
             // Create a child
             FilePlanComponent child = createFolder(category.getId(),
@@ -337,7 +337,8 @@ public class RecordFolderTests extends BaseRestTest
                         assertEquals(createdComponent.getName(), filePlanComponent.getName());
                         assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
 
-                    } catch (NoSuchElementException e)
+                    }
+                    catch (NoSuchElementException e)
                     {
                         fail("No child element for " + filePlanComponent.getId());
                     }
@@ -354,7 +355,8 @@ public class RecordFolderTests extends BaseRestTest
             try
             {
                 filePlanComponentAPI.deleteFilePlanComponent(filePlanComponentEntry.getFilePlanComponent().getId());
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 e.printStackTrace();
             }

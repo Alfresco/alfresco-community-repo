@@ -161,6 +161,8 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, newName);
         props.put(ContentModel.PROP_LINK_DESTINATION, source);
+        props.put(ContentModel.PROP_TITLE, newName);
+        props.put(ContentModel.PROP_DESCRIPTION, newName);
 
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(newName));
 
@@ -188,6 +190,7 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
                 && dictionaryService.isSubClass(nodeService.getType(source), ContentModel.TYPE_FOLDER))
         {
             // create Folder link node
+            props.put(ApplicationModel.PROP_ICON, "space-icon-link");
             childRef = nodeService.createNode(destination, ContentModel.ASSOC_CONTAINS, assocQName, ApplicationModel.TYPE_FOLDERLINK, props);
         }
         else

@@ -53,7 +53,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
     {
         return usingRestWrapper().processModel(RMSite.class, simpleRequest(
                 GET,
-                "sites/rm"
+                "ig-sites/rm"
         ));
     }
 
@@ -77,7 +77,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
         return usingRestWrapper().processModel(RMSite.class, requestWithBody(
                 POST,
                 rmSiteProperties.toString(),
-                "sites"
+                "ig-sites"
         ));
     }
 
@@ -96,7 +96,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
     {
         usingRestWrapper().processEmptyModel(simpleRequest(
                 DELETE,
-                "sites/rm"
+                "ig-sites/rm"
         ));
     }
 
@@ -121,7 +121,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
         return usingRestWrapper().processModel(RMSite.class, requestWithBody(
                 PUT,
                 rmSiteProperties.toString(),
-                "sites/rm"
+                "ig-sites/rm"
         ));
     }
 }

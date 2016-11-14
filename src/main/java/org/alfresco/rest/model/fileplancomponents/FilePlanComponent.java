@@ -266,66 +266,81 @@ public class FilePlanComponent
         return this.allowableOperations;
     }
 
+    /**
+     * @param modifiedAt the modifiedAt to set
+     */
     public void setModifiedAt(String modifiedAt)
     {
         this.modifiedAt = modifiedAt;
     }
 
+    /**
+     * @param createdAt the createdAt to set
+     */
     public void setCreatedAt(String createdAt)
     {
         this.createdAt = createdAt;
     }
 
+    /**
+     * @param modifiedByUser the modifiedByUser to set
+     */
     public void setModifiedByUser(FilePlanComponentUserInfo modifiedByUser)
     {
         this.modifiedByUser = modifiedByUser;
     }
 
-    public boolean isCategory()
-    {
-        return this.isCategory;
-    }
-
-    public boolean isRecordFolder()
-    {
-        return this.isRecordFolder;
-    }
-
-    public boolean isFile()
-    {
-        return this.isFile;
-    }
-
+    /**
+     * @return the modifiedAt
+     */
     public String getModifiedAt()
     {
         return this.modifiedAt;
     }
 
+    /**
+     * @return the createdAt
+     */
     public String getCreatedAt()
     {
         return this.createdAt;
     }
 
+    /**
+     * @return the modifiedByUser
+     */
     public FilePlanComponentUserInfo getModifiedByUser()
     {
         return this.modifiedByUser;
     }
 
+    /**
+     * @return the isClosed
+     */
     public boolean isClosed()
     {
         return this.isClosed;
     }
 
+    /**
+     * @param closed the isClosed to set
+     */
     public void setClosed(boolean closed)
     {
         this.isClosed = closed;
     }
 
+    /**
+     * @return the isCompleted
+     */
     public boolean isCompleted()
     {
         return this.isCompleted;
     }
 
+    /**
+     * @param completed the isCompleted to set
+     */
     public void setCompleted(boolean completed)
     {
         this.isCompleted = completed;

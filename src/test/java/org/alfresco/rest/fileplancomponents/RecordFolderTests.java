@@ -101,7 +101,7 @@ public class RecordFolderTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
         // Check folder has been created  within the category created
         assertEquals(filePlanComponent.getId(),folder.getParentId());
-        // Verify the returned properties for the file plan component
+        // Verify the returned properties for the file plan component - record folder
         assertFalse(folder.isIsCategory());
         assertFalse(folder.isIsFile());
         assertTrue(folder.isIsRecordFolder());
@@ -167,10 +167,12 @@ public class RecordFolderTests extends BaseRestTest
         FilePlanComponent folder =createFolder(category.getId(),FOLDER_NAME);
 
         FilePlanComponent folderDetails=filePlanComponentAPI.withParams("include="+IS_CLOSED).getFilePlanComponent(folder.getId());
+
+        // Verify the returned properties for the file plan component - record folder
         assertEquals(RECORD_FOLDER_TYPE.toString(),folderDetails.getNodeType());
         assertTrue(folderDetails.isIsRecordFolder());
-        assertFalse(folderDetails.isCategory());
-        assertFalse(folderDetails.isFile());
+        assertFalse(folderDetails.isIsCategory());
+        assertFalse(folderDetails.isIsFile());
         assertFalse(folderDetails.isClosed());
 
         assertEquals(FOLDER_NAME,folderDetails.getName());
@@ -204,22 +206,37 @@ public class RecordFolderTests extends BaseRestTest
         String folderDescription = "The folder description is updated" + getRandomAlphanumeric();
         String folderName= "The folder name is updated" + getRandomAlphanumeric();
         String folderTitle = "Update title " + getRandomAlphanumeric();
+        String location="Location"+getRandomAlphanumeric();
+        String review_period="month|1";
+
         // Build the file plan root properties
         JsonObject folderProperties = buildObject()
                 .add(NAME, folderName)
                 .addObject(PROPERTIES)
                 .add(PROPERTIES_TITLE, folderTitle)
                 .add(PROPERTIES_DESCRIPTION, folderDescription)
-                //.addArray(PROPERTIES_SUPPLEMENTAL_MARKING_LIST).add("list1").end()
                 .add(PROPERTIES_VITAL_RECORD_INDICATOR,true)
-                .add(PROPERTIES_REVIEW_PERIOD,"month|1")
-                .add(PROPERTIES_LOCATION,"Location")
+                .add(PROPERTIES_REVIEW_PERIOD, review_period)
+                .add(PROPERTIES_LOCATION, location)
                 .end()
-
                 .getJson();
 
         // Update the record category
         FilePlanComponent folderUpdated = filePlanComponentAPI.updateFilePlanComponent(folderProperties, folder.getId());
+
+        // Check the Response Status Code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
+
+        // Verify the returned properties for the file plan component - record folder
+        assertEquals(folderName, folderUpdated.getName());
+        assertEquals(folderDescription, folderUpdated.getProperties().getDescription());
+        assertEquals(folderTitle, folderUpdated.getProperties().getTitle());
+        assertTrue(folderUpdated.getProperties().isVitalRecord());
+        assertEquals(location, folderUpdated.getProperties().getLocation());
+        assertNotNull(folderUpdated.getProperties().getReviewPeriod().getPeriodType());
+        assertNotNull(folderUpdated.getProperties().getReviewPeriod().getExpression());
+
+
     }
 
     /**
@@ -309,15 +326,12 @@ public class RecordFolderTests extends BaseRestTest
 
                         // Is parent Id set correctly
                         assertEquals(filePlanComponent.getParentId(), category.getId());
-
-                        // Only categories or folders have been created
                         assertFalse(filePlanComponent.isIsFile());
 
                         // Boolean properties related to node type
-                        // Only RECORD_FOLDER_TYPE have been created
                         assertTrue(filePlanComponent.isIsRecordFolder());
                         assertFalse(filePlanComponent.isIsCategory());
-                        // Does returned object have the same contents as the created one?
+
                         assertEquals(createdComponent.getName(), filePlanComponent.getName());
                         assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
 

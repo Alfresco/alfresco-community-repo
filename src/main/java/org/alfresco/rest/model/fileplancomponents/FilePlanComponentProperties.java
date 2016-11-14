@@ -121,31 +121,49 @@ public class FilePlanComponentProperties
         return this.description;
     }
 
+    /**
+     * @return the supplementalMarkingList
+     */
     public List<String> getSupplementalMarkingList()
     {
         return this.supplementalMarkingList;
     }
 
+    /**
+     * @param supplementalMarkingList the supplementalMarkingList to set
+     */
     public void setSupplementalMarkingList(List<String> supplementalMarkingList)
     {
         this.supplementalMarkingList = supplementalMarkingList;
     }
 
+    /**
+     * @return the reviewPeriod
+     */
     public ReviewPeriod getReviewPeriod()
     {
         return reviewPeriod;
     }
 
+    /**
+     * @param reviewPeriod the reviewPeriod to set
+     */
     public void setReviewPeriod(ReviewPeriod reviewPeriod)
     {
         this.reviewPeriod = reviewPeriod;
     }
 
+    /**
+     * @return the location
+     */
     public String getLocation()
     {
         return location;
     }
 
+    /**
+     * @param location the location to set
+     */
     public void setLocation(String location)
     {
         this.location = location;

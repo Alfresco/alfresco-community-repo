@@ -246,7 +246,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
      * 
      * @throws Exception
      */
-    @Test(description = "Child unfiled records folder can be created in a parent unfiled records folder")
+    @Test(description = "Unfiled record folder")
     public void editUnfiledRecordsFolder() throws Exception
     {
         RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
@@ -267,11 +267,12 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
             .getJson();
 
         // Update the unfiled records folder
-        FilePlanComponent renamedFolder = filePlanComponentAPI.updateFilePlanComponent(updateFolderProperties, 
-            folderToModify.getId());
-
+        filePlanComponentAPI.updateFilePlanComponent(updateFolderProperties, folderToModify.getId());
         // Verify the status code
         restWrapper.assertStatusCodeIs(OK);
+        
+        // this is to ensure the change was actually applied, rather than simply trusting the object returned by PUT
+        FilePlanComponent renamedFolder = filePlanComponentAPI.getFilePlanComponent(folderToModify.getId());
 
         // Verify the returned file plan component
         assertEquals(modified + folderToModify.getName(), renamedFolder.getName());

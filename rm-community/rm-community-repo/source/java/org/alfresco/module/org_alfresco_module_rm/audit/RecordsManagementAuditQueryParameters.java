@@ -40,7 +40,7 @@ import org.alfresco.service.namespace.QName;
  */
 public final class RecordsManagementAuditQueryParameters
 {
-    private int maxEntries = -1;
+    private int maxEntries = Integer.MAX_VALUE;
     private String user;
     private NodeRef nodeRef;
     private Date dateFrom;

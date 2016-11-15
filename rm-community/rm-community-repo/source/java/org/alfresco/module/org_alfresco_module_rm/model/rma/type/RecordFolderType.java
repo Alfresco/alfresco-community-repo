@@ -229,7 +229,7 @@ public class RecordFolderType extends    AbstractDisposableItem
         }
     }
 
-    /**
+    /**   
      * On transaction commit
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)

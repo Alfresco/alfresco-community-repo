@@ -83,7 +83,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
      * Given the unfiled record container root
      * When I create an unfiled record folder via the ReST API
      * Then a root unfiled record folder is created
-     * <br>
+     * 
      * @throws Exception if folder couldn't be created
      */
     @Test(description = "Create root unfiled records folder")
@@ -237,5 +237,45 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         
         // there is only one child
         assertEquals(1, childIds.size()); 
+    }
+    
+    /**
+     * Given an unfiled record folder
+     * When I modify the unfiled record folder details via the ReST API
+     * Then the details of the unfiled record folder are modified
+     * 
+     * @throws Exception
+     */
+    @Test(description = "Child unfiled records folder can be created in a parent unfiled records folder")
+    public void editUnfiledRecordsFolder() throws Exception
+    {
+        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        String modified = "Modified ";
+        String folderName = "Folder To Modify" + getRandomAlphanumeric();
+        
+        // no need for fine control, create it using utility function
+        FilePlanComponent folderToModify = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), folderName);
+        assertEquals(folderName, folderToModify.getName());
+        
+        // Build the properties which will be updated
+        JsonObject updateFolderProperties = buildObject()
+            .add(NAME, modified + folderToModify.getName())
+            .addObject(PROPERTIES)
+                .add(PROPERTIES_TITLE, modified + folderToModify.getProperties().getTitle())
+                .add(PROPERTIES_DESCRIPTION, modified + folderToModify.getProperties().getDescription())
+                .end()
+            .getJson();
+
+        // Update the unfiled records folder
+        FilePlanComponent renamedFolder = filePlanComponentAPI.updateFilePlanComponent(updateFolderProperties, 
+            folderToModify.getId());
+
+        // Verify the status code
+        restWrapper.assertStatusCodeIs(OK);
+
+        // Verify the returned file plan component
+        assertEquals(modified + folderToModify.getName(), renamedFolder.getName());
+        assertEquals(modified + folderToModify.getProperties().getTitle(), renamedFolder.getProperties().getTitle());
+        assertEquals(modified + folderToModify.getProperties().getDescription(), renamedFolder.getProperties().getDescription());
     }
 }

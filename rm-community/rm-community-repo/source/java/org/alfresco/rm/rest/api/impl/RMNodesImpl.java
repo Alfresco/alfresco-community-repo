@@ -224,7 +224,8 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         }
 
         // UPDATE
-        if (capabilityService.getCapability("Update").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
+        if ( !isTransferContainer && !isUnfiledContainer && !isHoldsContainer &&
+                capabilityService.getCapability("Update").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             allowableOperations.add(OP_UPDATE);
         }

@@ -4,7 +4,7 @@
 <beans>
 
    <!--  Public Capabilities -->
-   
+
    <bean id="rmCreateHoldCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateHold"/>
@@ -30,6 +30,7 @@
       <property name="permission" value="EditHold"/>
       <property name="kinds">
          <list>
+            <value>HOLD_CONTAINER</value>
             <value>HOLD</value>
          </list>
       </property>

@@ -94,4 +94,23 @@
       </property>
    </bean>
 
+   <bean id="rmDeleteTransferContainerCapability"
+         parent="declarativeCapability">
+      <property name="name" value="DeleteTransferContainer"/>
+      <property name="kinds">
+         <list>
+            <value>TRANSFER_CONTAINER</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="rmDeleteHoldContainerCapability"
+         parent="declarativeCapability">
+      <property name="name" value="DeleteHoldContainer"/>
+      <property name="kinds">
+         <list>
+            <value>HOLD_CONTAINER</value>
+         </list>
+      </property>
+   </bean>
 </beans>

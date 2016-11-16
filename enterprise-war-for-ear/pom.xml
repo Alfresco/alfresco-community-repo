@@ -68,6 +68,12 @@
                             <type>amp</type>
                         </overlay>
                     </overlays>
+                    <archive>
+                        <manifestEntries>
+                            <!-- WebSphere property -->
+                            <DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
                 <executions>
                     <execution>

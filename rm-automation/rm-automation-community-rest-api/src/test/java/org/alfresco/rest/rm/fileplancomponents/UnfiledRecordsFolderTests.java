@@ -57,7 +57,7 @@ import org.testng.annotations.Test;
  * Unfiled Records folder CRUD API tests
  *
  * @author Kristijan Conkas
- * @since 1.0
+ * @since 2.6
  */
 public class UnfiledRecordsFolderTests extends BaseRestTest
 {
@@ -67,7 +67,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     @Autowired
     private DataUser dataUser;
 
-    /** invalid root level types, at root level these shouldn't be possible to create */
+    /** invalid root level types, at unfiled records root level these shouldn't be possible to create */
     private static final List<FilePlanComponentType> INVALID_ROOT_TYPES = Arrays.asList(
         FILE_PLAN_TYPE,
         RECORD_CATEGORY_TYPE,
@@ -181,7 +181,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String childFolderTitle = childFolderName + " Title";
         String childFolderDescription = childFolderName + " Description";
         
-        // no need for fine control, create it using utility function
+        // No need for fine control, create it using utility function
         FilePlanComponent parentFolder = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), parentFolderName);
         assertEquals(parentFolderName, parentFolder.getName());
      
@@ -195,7 +195,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
                 .end()
                 .getJson();
         
-        // create it as a child of parentFolder
+        // Create it as a child of parentFolder
         FilePlanComponent childFolder = filePlanComponentAPI.createFilePlanComponent(unfiledFolderProperties, 
             parentFolder.getId());
 
@@ -218,11 +218,11 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         assertEquals(childProperties.getTitle(), childFolderTitle);
         assertEquals(childProperties.getDescription(), childFolderDescription);
         
-        // does this child point to its parent?
+        // Does this child point to its parent?
         assertEquals(childFolder.getParentId(), parentFolder.getId());
       
-        // does child's parent point to it? 
-        // perform another call as our parentFolder was executed before childFolder existed
+        // Does child's parent point to it? 
+        // Perform another call as our parentFolder had been executed before childFolder existed
         FilePlanComponentsCollection parentsChildren = filePlanComponentAPI.listChildComponents(parentFolder.getId());
         restWrapper.assertStatusCodeIs(OK);
         List<String> childIds = parentsChildren.getEntries()
@@ -230,10 +230,10 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
             .map(c -> c.getFilePlanComponent().getId())
             .collect(Collectors.toList());
         
-        // child folder is listed in parent
+        // Child folder is listed in parent
         assertTrue(childIds.contains(childFolder.getId()));
         
-        // there is only one child
+        // There should be only one child
         assertEquals(1, childIds.size()); 
     }
     
@@ -251,7 +251,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String modified = "Modified ";
         String folderName = "Folder To Modify" + getRandomAlphanumeric();
         
-        // no need for fine control, create it using utility function
+        // No need for fine control, create it using utility function
         FilePlanComponent folderToModify = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), folderName);
         assertEquals(folderName, folderToModify.getName());
         
@@ -269,7 +269,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         // Verify the status code
         restWrapper.assertStatusCodeIs(OK);
         
-        // this is to ensure the change was actually applied, rather than simply trusting the object returned by PUT
+        // This is to ensure the change was actually applied, rather than simply trusting the object returned by PUT
         FilePlanComponent renamedFolder = filePlanComponentAPI.getFilePlanComponent(folderToModify.getId());
 
         // Verify the returned file plan component
@@ -291,18 +291,18 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         String folderName = "Folder To Delete" + getRandomAlphanumeric();
         
-        // no need for fine control, create it using utility function
-        FilePlanComponent folderToModify = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), folderName);
-        assertEquals(folderName, folderToModify.getName());
+        // Create folderToDelete
+        FilePlanComponent folderToDelete = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), folderName);
+        assertEquals(folderName, folderToDelete.getName());
         
-        // delete folderToModify
-        filePlanComponentAPI.deleteFilePlanComponent(folderToModify.getId());
+        // Delete folderToDelete
+        filePlanComponentAPI.deleteFilePlanComponent(folderToDelete.getId());
 
         // Verify the status code
         restWrapper.assertStatusCodeIs(NO_CONTENT);
 
         // Deleted component should no longer be retrievable
-        filePlanComponentAPI.getFilePlanComponent(folderToModify.getId());
+        filePlanComponentAPI.getFilePlanComponent(folderToDelete.getId());
         restWrapper.assertStatusCodeIs(NOT_FOUND);
     }
 }

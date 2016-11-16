@@ -83,6 +83,10 @@ public class FilePlanType extends    BaseBehaviourBean
 
     private UnfiledRecordContainerType unfilerRecordContainerType;
 
+    private TransferContainerType transferContainerType;
+
+    private HoldContainerType holdContainerType;
+
     /**
      * @return File plan service
      */
@@ -152,6 +156,15 @@ public class FilePlanType extends    BaseBehaviourBean
         this.unfilerRecordContainerType = unfilerRecordContainerType;
     }
 
+    public void setTransferContainerType(TransferContainerType transferContainerType)
+    {
+        this.transferContainerType = transferContainerType;
+    }
+
+    public void setHoldContainerType(HoldContainerType holdContainerType)
+    {
+        this.holdContainerType = holdContainerType;
+    }
 
     /**
      * Disable the behaviours for this transaction
@@ -234,6 +247,8 @@ public class FilePlanType extends    BaseBehaviourBean
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean archived)
     {
         unfilerRecordContainerType.enable();
+        transferContainerType.enable();
+        holdContainerType.enable();
         throw new IntegrityException("Operation failed. Deletion of File Plan is not allowed.", null);
     }
 
@@ -249,6 +264,8 @@ public class FilePlanType extends    BaseBehaviourBean
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         unfilerRecordContainerType.disable();
+        transferContainerType.disable();
+        holdContainerType.disable();
     }
 
     @Behaviour
@@ -262,5 +279,7 @@ public class FilePlanType extends    BaseBehaviourBean
         // tear down the file plan roles
         getFilePlanRoleService().tearDownFilePlanRoles(childAssocRef.getChildRef());
         unfilerRecordContainerType.enable();
+        transferContainerType.enable();
+        holdContainerType.enable();
     }
 }

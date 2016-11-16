@@ -129,7 +129,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     )
     public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()
@@ -141,7 +141,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
 
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        });
     }
 
     /**

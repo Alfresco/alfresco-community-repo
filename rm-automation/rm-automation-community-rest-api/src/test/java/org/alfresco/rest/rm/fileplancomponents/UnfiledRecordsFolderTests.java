@@ -11,14 +11,20 @@
  */
 package org.alfresco.rest.rm.fileplancomponents;
 
-import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NAME;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
-import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
-import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.*;
-import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.HOLD_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -28,22 +34,17 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import com.google.gson.JsonObject;
 
-import org.alfresco.rest.rm.base.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.rm.base.BaseRestTest;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentEntry;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentsCollection;
@@ -76,9 +77,6 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         TRANSFER_CONTAINER_TYPE,
         UNFILED_CONTAINER_TYPE);
     
-    // Number of children (for children creation test)
-    private static final int NUMBER_OF_CHILDREN = 10;
-
     /**
      * Given the unfiled record container root
      * When I create an unfiled record folder via the ReST API
@@ -142,28 +140,28 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String folderDescription = folderName + " Description";
 
         INVALID_ROOT_TYPES.stream()
-        .peek(a -> logger.info("creating " + a.toString()))
-        .forEach(t -> {
-            JsonObject unfiledFolderProperties = buildObject()
-                .add(NAME, folderName)
-                .add(NODE_TYPE, t.toString())
-                .addObject(PROPERTIES)
-                .add(PROPERTIES_TITLE, folderTitle)
-                .add(PROPERTIES_DESCRIPTION, folderDescription)
-                .end()
-                .getJson();
-            try
-            {
-                filePlanComponentAPI.createFilePlanComponent(unfiledFolderProperties, 
-                    UNFILED_RECORDS_CONTAINER_ALIAS.toString());
-            }
-            catch (Exception error)
-            {
-            }
-
-            // Verify the status code
-            restWrapper.assertStatusCodeIs(UNPROCESSABLE_ENTITY);
-        });
+            .peek(a -> logger.info("creating " + a.toString()))
+            .forEach(t -> {
+                JsonObject unfiledFolderProperties = buildObject()
+                    .add(NAME, folderName)
+                    .add(NODE_TYPE, t.toString())
+                    .addObject(PROPERTIES)
+                    .add(PROPERTIES_TITLE, folderTitle)
+                    .add(PROPERTIES_DESCRIPTION, folderDescription)
+                    .end()
+                    .getJson();
+                try
+                {
+                    filePlanComponentAPI.createFilePlanComponent(unfiledFolderProperties, 
+                        UNFILED_RECORDS_CONTAINER_ALIAS.toString());
+                }
+                catch (Exception error)
+                {
+                }
+    
+                // Verify the status code
+                restWrapper.assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+            });
     }
     
     /**
@@ -171,7 +169,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
      * When I create an unfiled record folder via the ReST API
      * Then an unfiled record folder is created within the unfiled record folder
      * 
-     * @throws Exception
+     * @throws Exception for failed actions
      */
     @Test(description = "Child unfiled records folder can be created in a parent unfiled records folder")
     public void childUnfiledRecordsFolderCanBeCreated() throws Exception
@@ -244,7 +242,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
      * When I modify the unfiled record folder details via the ReST API
      * Then the details of the unfiled record folder are modified
      * 
-     * @throws Exception
+     * @throws Exception for failed actions
      */
     @Test(description = "Unfiled record folder")
     public void editUnfiledRecordsFolder() throws Exception
@@ -278,5 +276,33 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         assertEquals(modified + folderToModify.getName(), renamedFolder.getName());
         assertEquals(modified + folderToModify.getProperties().getTitle(), renamedFolder.getProperties().getTitle());
         assertEquals(modified + folderToModify.getProperties().getDescription(), renamedFolder.getProperties().getDescription());
+    }
+    
+    /**
+     * Given an unfiled record folder
+     * When I delete the unfiled record folder via the ReST API
+     * Then the unfiled record folder is deleted
+     * 
+     * @throws Exception for failed actions
+     */
+    @Test(description = "Delete unfiled record folder")
+    public void deleteUnfiledRecordsFolder() throws Exception
+    {
+        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        String folderName = "Folder To Delete" + getRandomAlphanumeric();
+        
+        // no need for fine control, create it using utility function
+        FilePlanComponent folderToModify = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), folderName);
+        assertEquals(folderName, folderToModify.getName());
+        
+        // delete folderToModify
+        filePlanComponentAPI.deleteFilePlanComponent(folderToModify.getId());
+
+        // Verify the status code
+        restWrapper.assertStatusCodeIs(NO_CONTENT);
+
+        // Deleted component should no longer be retrievable
+        filePlanComponentAPI.getFilePlanComponent(folderToModify.getId());
+        restWrapper.assertStatusCodeIs(NOT_FOUND);
     }
 }

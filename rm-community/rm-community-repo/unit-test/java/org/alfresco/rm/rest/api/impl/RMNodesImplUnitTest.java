@@ -236,12 +236,12 @@ public class RMNodesImplUnitTest extends BaseUnitTest
 
         when(deleteCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
         when(createCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_DENIED);
+        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
 
         when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
 
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        checksAllowedOperations(folderOrDocument, false, false, false);
+        checksAllowedOperations(folderOrDocument, false, true, false);
     }
 
     @Test
@@ -268,12 +268,12 @@ public class RMNodesImplUnitTest extends BaseUnitTest
 
         when(deleteCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
         when(createCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_DENIED);
+        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
 
         when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
 
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        checksAllowedOperations(folderOrDocument, true, false, false);
+        checksAllowedOperations(folderOrDocument, true, true, false);
     }
 
     @Test
@@ -303,12 +303,12 @@ public class RMNodesImplUnitTest extends BaseUnitTest
 
         when(deleteCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
         when(createCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_DENIED);
+        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
 
         when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
 
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        checksAllowedOperations(folderOrDocument, true, false, false);
+        checksAllowedOperations(folderOrDocument, true, true, false);
     }
 
     @Test

@@ -104,5 +104,10 @@
             <value>TRANSFER</value>
          </list>
       </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
    </bean>
 </beans>

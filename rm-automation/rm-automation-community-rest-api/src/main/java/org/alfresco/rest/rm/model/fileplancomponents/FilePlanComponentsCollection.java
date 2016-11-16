@@ -17,7 +17,7 @@ import org.alfresco.rest.core.RestModels;
  * Handle collection of FilePlanComponents
  *
  * @author Kristijan Conkas
- * @since 1.0
+ * @since 2.6
  */
 public class FilePlanComponentsCollection extends RestModels<FilePlanComponentEntry, FilePlanComponentsCollection>
 {

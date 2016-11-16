@@ -61,7 +61,7 @@ import org.testng.annotations.Test;
  * the Record Folder CRUD API
  *
  * @author Rodica Sutu
- * @since 1.0
+ * @since 2.6
  */
 public class RecordFolderTests extends BaseRestTest
 {

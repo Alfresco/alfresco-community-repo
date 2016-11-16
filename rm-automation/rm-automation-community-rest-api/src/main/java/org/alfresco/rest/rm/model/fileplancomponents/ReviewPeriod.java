@@ -4,7 +4,7 @@ package org.alfresco.rest.rm.model.fileplancomponents;
  * POJO for the review period
  *
  * @author Rodica Sutu
- * @since 1.0
+ * @since 2.6
  */
 public class ReviewPeriod
 {

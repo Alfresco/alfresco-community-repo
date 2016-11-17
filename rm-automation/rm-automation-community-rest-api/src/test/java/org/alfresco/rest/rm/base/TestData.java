@@ -30,10 +30,15 @@ import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAli
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.FOLDER_TYPE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.HOLD_TYPE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.TRANSFER_TYPE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 
 import org.testng.annotations.DataProvider;
@@ -113,4 +118,28 @@ public interface TestData
      * The default FOLDER title used when creating categories
      */
     public static  String FOLDER_TITLE = "FOLDER TITLE" + getRandomAlphanumeric();
+
+
+    /**
+     * Data Provider with:
+     * with the object types not allowed as children for a record category
+     *
+     * @return file plan component alias
+     */
+    @DataProvider
+    public static Object[][] childrenNotAllowedForCategory()
+    {
+        return new Object[][] {
+            { FILE_PLAN_TYPE.toString() },
+            { TRANSFER_CONTAINER_TYPE.toString() },
+            { HOLD_CONTAINER_TYPE.toString() },
+            { UNFILED_CONTAINER_TYPE.toString() },
+            { UNFILED_RECORD_FOLDER_TYPE.toString()},
+            { HOLD_TYPE.toString()},
+            { TRANSFER_TYPE.toString()},
+            { FOLDER_TYPE.toString()},
+            { CONTENT_TYPE.toString()}
+        };
+    }
+
 }

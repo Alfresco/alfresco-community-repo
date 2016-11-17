@@ -42,8 +42,11 @@ public enum FilePlanComponentType
     HOLD_TYPE("rma:hold"),
     UNFILED_RECORD_FOLDER_TYPE("rma:unfiledRecordFolder"),
     HOLD_CONTAINER_TYPE("rma:holdContainer"),
+    TRANSFER_TYPE("rma:transfer"),
     TRANSFER_CONTAINER_TYPE("rma:transferContainer"),
-    UNFILED_CONTAINER_TYPE("rma:unfiledRecordContainer");
+    UNFILED_CONTAINER_TYPE("rma:unfiledRecordContainer"),
+    FOLDER_TYPE("cm:folder"),
+    CONTENT_TYPE("cm:content");
 
     private String type;
 

@@ -336,18 +336,17 @@ public class RecordCategoryTest extends BaseRestTest
     }
 
     /**
-     * <pre>
      * Given that a record category exists
      * When I ask to create a  object type which is not  a record category or a record folder as a child
      * Then the children are not created  and the 422 response code is returned
      */
     @Test
-        (
-            description = "Create object types not allowed inside a category",
-            dataProviderClass = TestData.class,
-            dataProvider = "childrenNotAllowedForCategory"
+    (
+        description = "Create node types not allowed inside a category",
+        dataProviderClass = TestData.class,
+        dataProvider = "childrenNotAllowedForCategory"
 
-        )
+    )
     public void createTypesNotAllowedInCategory(String nodeType) throws Exception
     {
         String COMPONENT_NAME="Component"+getRandomAlphanumeric();
@@ -355,6 +354,7 @@ public class RecordCategoryTest extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         FilePlanComponent category = createCategory(FILE_PLAN_ALIAS.toString(), COMPONENT_NAME);
 
+        //Build node  properties
         JsonObject componentProperties = buildObject()
             .add(NAME, COMPONENT_NAME)
             .add(NODE_TYPE, nodeType)
@@ -363,6 +363,7 @@ public class RecordCategoryTest extends BaseRestTest
             .end()
             .getJson();
 
+        //create the invalid node type
         FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(componentProperties, category.getId());
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }

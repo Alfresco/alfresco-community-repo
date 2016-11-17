@@ -27,8 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
@@ -61,6 +63,9 @@ public class RecordCategoryType extends    BaseBehaviourBean
                                 implements NodeServicePolicies.OnCreateChildAssociationPolicy,
                                            NodeServicePolicies.OnCreateNodePolicy
 {
+    private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = new ArrayList<QName>();
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, TYPE_RECORD_FOLDER);
+
     /** vital record service */
     protected VitalRecordService vitalRecordService;
 
@@ -106,13 +111,9 @@ public class RecordCategoryType extends    BaseBehaviourBean
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        // ensure content is not placed directly into a record category
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
-        {
-            throw new AlfrescoRuntimeException("Operation failed, because you can't place content directly into a record category.");
-        }
-
+        NodeRef parentRef = childAssocRef.getParentRef();
+        validateNewChildAssociation(parentRef, nodeRef, ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
         if (bNew)
         {
             // setup the record folder

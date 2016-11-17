@@ -30,6 +30,7 @@ package org.alfresco.rm.rest.api.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -44,8 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
-import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
@@ -74,8 +73,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Unit Test class for RMNodesImpl.
@@ -106,16 +103,9 @@ public class RMNodesImplUnitTest extends BaseUnitTest
 
     @Mock
     private ServiceRegistry mockedServiceRegistry;
-    
-    @Mock
-    private CapabilityService mockedCapabilityService;
 
     @InjectMocks
     private RMNodesImpl rmNodesImpl;
-
-    private Capability deleteCapability;
-    private Capability createCapability;
-    private Capability updateCapability;
 
     @Before
     public void before()
@@ -127,12 +117,6 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedNamespaceService.getPrefixes(any(String.class))).thenReturn(prefixes);
         when(mockedNamespaceService.getNamespaceURI(any(String.class))).thenReturn(RM_URI);
 
-        deleteCapability = mock(Capability.class);
-        when(mockedCapabilityService.getCapability("Delete")).thenReturn(deleteCapability);
-        createCapability = mock(Capability.class);
-        when(mockedCapabilityService.getCapability("FillingPermissionOnly")).thenReturn(createCapability);
-        updateCapability = mock(Capability.class);
-        when(mockedCapabilityService.getCapability("Update")).thenReturn(updateCapability);
     }
 
     @Test
@@ -176,13 +160,19 @@ public class RMNodesImplUnitTest extends BaseUnitTest
 
         setPermissions(nodeRef, AccessStatus.ALLOWED);
 
-        when(deleteCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(createCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(nodeRef);
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        checksAllowedOperations(folderOrDocument, false, true, false);
+        assertNotNull(folderOrDocument);
+        assertTrue(FileplanComponentNode.class.isInstance(folderOrDocument));
+
+        FileplanComponentNode resultNode = (FileplanComponentNode) folderOrDocument;
+        assertEquals(false, resultNode.getIsRecordFolder());
+        assertEquals(false, resultNode.getIsFile());
+        assertEquals(false, resultNode.getIsCategory());
+        List<String> allowableOperations = resultNode.getAllowableOperations();
+        assertTrue("Create operation should be available for FilePlan.", allowableOperations.contains(RMNodes.OP_CREATE));
+        assertTrue("Update operation should be available for FilePlan.", allowableOperations.contains(RMNodes.OP_UPDATE));
+        assertFalse("Delete operation should note be available for FilePlan.", allowableOperations.contains(RMNodes.OP_DELETE));
     }
 
     @Test
@@ -213,15 +203,15 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         assertEquals(false, resultNode.getIsFile());
         assertEquals(false, resultNode.getIsCategory());
         List<String> allowableOperations = resultNode.getAllowableOperations();
-        assertEquals(0, allowableOperations.size());
+        assertNull(allowableOperations);
     }
 
     @Test
     public void testGetTransferContainerAllowableOperations() throws Exception
     {
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
-        when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_TRANSFER_CONTAINER, ContentModel.TYPE_FOLDER)).thenReturn(true);
+        when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_CATEGORY);
+        when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_RECORD_CATEGORY, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
         setupCompanyHomeAndPrimaryParent(nodeRef);
 
@@ -234,22 +224,16 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
         when(mockedFilePlanService.getTransferContainer(filePlanNodeRef)).thenReturn(nodeRef);
 
-        when(deleteCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(createCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-
-        when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
-
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        checksAllowedOperations(folderOrDocument, false, true, false);
+        checkSpecialContainersAllowedOperations(folderOrDocument);
     }
 
     @Test
     public void testGetHoldContainerAllowableOperations() throws Exception
     {
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_HOLD_CONTAINER);
-        when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_HOLD_CONTAINER, ContentModel.TYPE_FOLDER)).thenReturn(true);
+        when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_CATEGORY);
+        when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_RECORD_CATEGORY, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
         setupCompanyHomeAndPrimaryParent(nodeRef);
 
@@ -266,22 +250,16 @@ public class RMNodesImplUnitTest extends BaseUnitTest
 
         when(mockedFilePlanService.getHoldContainer(filePlanNodeRef)).thenReturn(nodeRef);
 
-        when(deleteCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(createCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-
-        when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
-
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        checksAllowedOperations(folderOrDocument, true, true, false);
+        checkSpecialContainersAllowedOperations(folderOrDocument);
     }
 
     @Test
     public void testGetUnfiledContainerAllowableOperations() throws Exception
     {
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-        when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER, ContentModel.TYPE_FOLDER)).thenReturn(true);
+        when(mockedNodeService.getType(nodeRef)).thenReturn(RecordsManagementModel.TYPE_RECORD_CATEGORY);
+        when(mockedDictionaryService.isSubClass(RecordsManagementModel.TYPE_RECORD_CATEGORY, ContentModel.TYPE_FOLDER)).thenReturn(true);
 
         setupCompanyHomeAndPrimaryParent(nodeRef);
 
@@ -301,14 +279,8 @@ public class RMNodesImplUnitTest extends BaseUnitTest
 
         when(mockedFilePlanService.getUnfiledContainer(filePlanNodeRef)).thenReturn(nodeRef);
 
-        when(deleteCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(createCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-        when(updateCapability.evaluate(nodeRef)).thenReturn(AccessDecisionVoter.ACCESS_GRANTED);
-
-        when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
-
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        checksAllowedOperations(folderOrDocument, true, true, false);
+        checkSpecialContainersAllowedOperations(folderOrDocument);
     }
 
     @Test
@@ -769,23 +741,18 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         when(mockedPermissionService.hasPermission(nodeRef, PermissionService.ADD_CHILDREN)).thenReturn(permissionToSet);
     }
 
-    private void checksAllowedOperations(Node containerNode, boolean allowCreate, boolean allowUpdate, boolean allowDelete)
+    private void checkSpecialContainersAllowedOperations(Node containerNode)
     {
         assertNotNull(containerNode);
-        assertTrue(FileplanComponentNode.class.isInstance(containerNode));
-        FileplanComponentNode resultNode = (FileplanComponentNode) containerNode;
+        assertTrue(RecordCategoryNode.class.isInstance(containerNode));
+
+        RecordCategoryNode resultNode = (RecordCategoryNode) containerNode;
+        assertEquals(false, resultNode.getIsRecordFolder());
+        assertEquals(false, resultNode.getIsFile());
+        assertEquals(true, resultNode.getIsCategory());
         List<String> allowableOperations = resultNode.getAllowableOperations();
-
-        assertEquals("Create operation should " + (allowCreate?"":"not ") + "be available for provided container.", 
-                allowCreate, 
-                allowableOperations.contains(RMNodes.OP_CREATE));
-  
-        assertEquals("Update operation should " + (allowCreate?"":"not ") + "be available for provided container.", 
-                allowUpdate, 
-                allowableOperations.contains(RMNodes.OP_UPDATE));
-
-        assertEquals("Delete operation should " + (allowCreate?"":"not ") + "be available for provided container.", 
-                allowDelete, 
-                allowableOperations.contains(RMNodes.OP_DELETE));
+        assertTrue("Create operation should be available for provided container.", allowableOperations.contains(RMNodes.OP_CREATE));
+        assertTrue("Update operation should be available for provided container.", allowableOperations.contains(RMNodes.OP_UPDATE));
+        assertFalse("Delete operation should note be available for provided container.", allowableOperations.contains(RMNodes.OP_DELETE));
     }
 }

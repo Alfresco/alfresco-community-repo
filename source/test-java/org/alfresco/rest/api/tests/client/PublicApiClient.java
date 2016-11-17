@@ -1079,9 +1079,14 @@ public class PublicApiClient
 			return site;
 		}
 
-		public Person update(String personId, Person person, boolean fullVisibility) throws PublicApiException
+		public Person update(String personId, Person person) throws PublicApiException
 		{
-			HttpResponse response = update("people", person.getId(), null, null, person.toJSON(fullVisibility).toString(), "Failed to update person");
+			return update(personId, person, 200);
+		}
+		
+		public Person update(String personId, Person person, int expectedStatus) throws PublicApiException
+		{
+			HttpResponse response = update("people", personId, null, null, person.toJSON(true).toString(), null, "Failed to update person", expectedStatus);
 			Person retSite = Person.parsePerson((JSONObject)response.getJsonResponse().get("entry"));
 			return retSite;
 		}

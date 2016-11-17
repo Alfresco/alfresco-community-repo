@@ -25,15 +25,16 @@
  */
 package org.alfresco.rest.api.model;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a user of the system.
@@ -66,6 +67,8 @@ public class Person
 	protected String description;
 	protected Company company;
 	protected String password;
+	protected Map<String, Object> properties;
+	protected List<String> aspectNames;
 
 	public Person()
     {
@@ -352,7 +355,27 @@ public class Person
 	{
 		return this.password;
 	}
-	
+
+	public Map<String, Object> getProperties()
+	{
+		return properties;
+	}
+
+	public void setProperties(Map<String, Object> properties)
+	{
+		this.properties = properties;
+	}
+
+	public List<String> getAspectNames()
+	{
+		return aspectNames;
+	}
+
+	public void setAspectNames(List<String> aspectNames)
+	{
+		this.aspectNames = aspectNames;
+	}
+
 	@Override
 	public String toString()
 	{

@@ -888,7 +888,7 @@ public class NodesImpl implements Nodes
 
         if (includeParam.size() > 0)
         {
-            node.setProperties(mapFromNodeProperties(properties, includeParam, mapUserInfo));
+            node.setProperties(mapFromNodeProperties(properties, includeParam, mapUserInfo, EXCLUDED_PROPS));
         }
 
         Set<QName> aspects = null;
@@ -1076,7 +1076,7 @@ public class NodesImpl implements Nodes
         return nodeAspects;
     }
 
-    protected Map<QName, Serializable> mapToNodeProperties(Map<String, Object> props)
+    public Map<QName, Serializable> mapToNodeProperties(Map<String, Object> props)
     {
         Map<QName, Serializable> nodeProps = new HashMap<>(props.size());
 
@@ -1115,8 +1115,8 @@ public class NodesImpl implements Nodes
 
         return nodeProps;
     }
-
-    protected Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
+    
+    public Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<QName> excludedProps)
     {
         List<QName> selectedProperties;
 
@@ -1126,7 +1126,7 @@ public class NodesImpl implements Nodes
             selectedProperties = new ArrayList<>(nodeProps.size());
             for (QName propQName : nodeProps.keySet())
             {
-                if ((! EXCLUDED_NS.contains(propQName.getNamespaceURI())) && (! EXCLUDED_PROPS.contains(propQName)))
+                if ((! EXCLUDED_NS.contains(propQName.getNamespaceURI())) && (! excludedProps.contains(propQName)))
                 {
                     selectedProperties.add(propQName);
                 }
@@ -1164,7 +1164,7 @@ public class NodesImpl implements Nodes
         return props;
     }
 
-    protected List<String> mapFromNodeAspects(Set<QName> nodeAspects)
+    public List<String> mapFromNodeAspects(Set<QName> nodeAspects)
     {
         List<String> aspectNames = new ArrayList<>(nodeAspects.size());
 
@@ -1738,22 +1738,8 @@ public class NodesImpl implements Nodes
             nodeRef = createNodeImpl(parentNodeRef, nodeName, nodeTypeQName, props, assocTypeQName);
         }
 
-        List<String> aspectNames = nodeInfo.getAspectNames();
-        if (aspectNames != null)
-        {
-            // node aspects - set any additional aspects
-            Set<QName> aspectQNames = mapToNodeAspects(aspectNames);
-            for (QName aspectQName : aspectQNames)
-            {
-                if (EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
-                {
-                    continue; // ignore
-                }
+        addCustomAspects(nodeRef, nodeInfo.getAspectNames(), EXCLUDED_ASPECTS);
 
-                nodeService.addAspect(nodeRef, aspectQName, null);
-            }
-        }
-        
         // eg. to create mandatory assoc(s)
 
         if (nodeInfo.getTargets() != null)
@@ -1773,6 +1759,25 @@ public class NodesImpl implements Nodes
         */
 
         return newNode;
+    }
+
+    public void addCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> exclusions)
+    {
+        if (aspectNames == null)
+        {
+            return;
+        }
+        // node aspects - set any additional aspects
+        Set<QName> aspectQNames = mapToNodeAspects(aspectNames);
+        for (QName aspectQName : aspectQNames)
+        {
+            if (exclusions.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
+            {
+                continue; // ignore
+            }
+
+            nodeService.addAspect(nodeRef, aspectQName, null);
+        }
     }
 
     private NodeRef getOrCreatePath(NodeRef parentNodeRef, String relativePath)

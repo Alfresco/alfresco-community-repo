@@ -25,18 +25,7 @@
  */
 package org.alfresco.rest.api;
 
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.alfresco.rest.api.model.AssocChild;
-import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.Document;
-import org.alfresco.rest.api.model.Folder;
-import org.alfresco.rest.api.model.LockInfo;
-import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.model.*;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -45,6 +34,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.servlet.FormData;
+
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * File Folder (Nodes) API
@@ -263,6 +258,49 @@ public interface Nodes
      */
     Node unlock(String nodeId, Parameters parameters);
 
+
+    /**
+     * Convert from node properties (map of QName to Serializable) retrieved from
+     * the respository to a map of String to Object that can be formatted/expressed
+     * as required by the API JSON response for get nodes, get person etc.
+     * 
+     * @param nodeProps
+     * @param selectParam
+     * @param mapUserInfo
+     * @param excludedProps
+     * @return
+     */
+    Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<QName> excludedProps);
+
+    /**
+     * Map from the JSON API format of properties (String to Object) to
+     * the typical node properties map used by the repository (QName to Serializable).
+     * 
+     * @param props
+     * @return
+     */
+    Map<QName, Serializable> mapToNodeProperties(Map<String, Object> props);
+
+    /**
+     * Map from aspects (Set of QName) retrieved from the repository to a
+     * map List of String required that can be formatted/expressed as required
+     * by the API JSON response for get nodes, get person etc.
+     * 
+     * @param nodeAspects
+     * @return
+     */
+    List<String> mapFromNodeAspects(Set<QName> nodeAspects);
+
+    /**
+     * Add aspects to the specified NodeRef. Aspects that appear in the exclusions list
+     * will be ignored.
+     * 
+     * @param nodeRef
+     * @param aspectNames
+     * @param exclusions
+     */
+    void addCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> exclusions);
+    
     /**
      * API Constants - query parameters, etc
      */

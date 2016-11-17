@@ -110,26 +110,7 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
         }
 
         List<Person> result = new ArrayList<>(1);
-        Person person = new Person();
-        person.setUserName(p.getUserName());
-        person.setFirstName(p.getFirstName());
-        person.setLastName(p.getLastName());
-        person.setDescription(p.getDescription());
-        person.setEmail(p.getEmail());
-        person.setSkypeId(p.getSkypeId());
-        person.setGoogleId(p.getGoogleId());
-        person.setInstantMessageId(p.getInstantMessageId());
-        person.setJobTitle(p.getJobTitle());
-        person.setLocation(p.getLocation());
-        person.setCompany(p.getCompany());
-        person.setMobile(p.getMobile());
-        person.setTelephone(p.getTelephone());
-        person.setUserStatus(p.getUserStatus());
-        person.setEnabled(p.isEnabled());
-        person.setEmailNotificationsEnabled(p.isEmailNotificationsEnabled());
-        person.setPassword(p.getPassword());
-
-        result.add(people.create(person));
+        result.add(people.create(p));
         return result;
     }
 

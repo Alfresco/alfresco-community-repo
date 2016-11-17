@@ -94,7 +94,7 @@ public class FilePlanTests extends BaseRestTest
     public void getFilePlanComponentWhenRMIsNotCreated(String filePlanAlias) throws Exception
     {
         // Check RM Site Exist
-        if (siteRMExists())
+        if (rmSiteAPI.existsRMSite())
         {
             // Delete RM Site
             rmSiteAPI.deleteRMSite();

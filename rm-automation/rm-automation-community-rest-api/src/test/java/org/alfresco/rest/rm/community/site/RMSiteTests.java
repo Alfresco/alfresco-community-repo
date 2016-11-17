@@ -94,7 +94,7 @@ public class RMSiteTests extends BaseRestTest
         rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Check if the RM site exists
-        if (siteRMExists())
+        if (rmSiteAPI.existsRMSite())
         {
             // Delete the RM site
             rmSiteAPI.deleteRMSite();
@@ -192,9 +192,8 @@ public class RMSiteTests extends BaseRestTest
         // Authenticate with admin user
         RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        // Get the RM site
-        RMSite rmSite = rmSiteAPI.getSite();
-        if (!siteRMExists())
+        // Check if RM site exists
+        if (!rmSiteAPI.existsRMSite())
         {
             // Verify the status code when RM site  doesn't exist
             restWrapper.assertStatusCodeIs(NOT_FOUND);
@@ -202,6 +201,9 @@ public class RMSiteTests extends BaseRestTest
         }
         else
         {
+            // Get the RM site
+            RMSite rmSite = rmSiteAPI.getSite();
+
             // Verify the status code
             restWrapper.assertStatusCodeIs(OK);
             assertEquals(rmSite.getId(), RM_ID);
@@ -227,7 +229,7 @@ public class RMSiteTests extends BaseRestTest
         rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Check if the RM site exists
-        if (siteRMExists())
+        if (rmSiteAPI.existsRMSite())
         {
             // Delete the RM site
             rmSiteAPI.deleteRMSite();

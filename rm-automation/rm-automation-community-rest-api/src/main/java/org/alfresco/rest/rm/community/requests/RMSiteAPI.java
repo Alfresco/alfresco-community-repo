@@ -33,11 +33,14 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
+import static org.springframework.http.HttpStatus.OK;
 
 import com.google.gson.JsonObject;
 
 import org.alfresco.rest.core.RestAPI;
 import org.alfresco.rest.rm.community.model.site.RMSite;
+import org.alfresco.utility.data.DataUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -52,6 +55,9 @@ import org.springframework.stereotype.Component;
 @Scope (value = "prototype")
 public class RMSiteAPI extends RestAPI<RMSiteAPI>
 {
+    @Autowired
+    private DataUser dataUser;
+
     /**
      * Get the RM site
      *
@@ -138,5 +144,24 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
                 rmSiteProperties.toString(),
                 "ig-sites/rm"
         ));
+    }
+
+    /**
+     * Checks if the RM site exists or not
+     *
+     * @return <code>true</code> if the RM site exists, <code>false</code> otherwise
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM site</li>
+     *  <li>Api Response code 401 If authentication failed</li>
+     *  <li>Api Response code 409 If RM Site does not exist</li>
+     *  <li>Api Response code default Unexpected error</li>
+     * </ul>
+     */
+    public boolean existsRMSite() throws Exception
+    {
+        usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        getSite();
+        return usingRestWrapper().getStatusCode().equals(OK.toString());
     }
 }

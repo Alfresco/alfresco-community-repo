@@ -3923,7 +3923,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             InputStream is = null;
             if (applyMimetype)
             {
-                writer.setMimetype(content.getMimetype());
+                writer.setMimetype(content.getMimetype().toLowerCase());
             }
             if (guessEncoding)
             {

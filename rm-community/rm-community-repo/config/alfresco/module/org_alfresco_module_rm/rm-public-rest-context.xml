@@ -27,6 +27,7 @@
         <property name="quickShareLinks" ref="rm.QuickShareLinks"/>
         <property name="filePlanService" ref="FilePlanService"/>
         <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
+        <property name="capabilityService" ref="CapabilityService"/>
     </bean>
 
     <bean id="rm.Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">

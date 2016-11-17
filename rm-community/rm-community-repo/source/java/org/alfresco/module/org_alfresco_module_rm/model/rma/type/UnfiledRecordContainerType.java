@@ -33,6 +33,7 @@ import java.util.List;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -47,14 +48,46 @@ import org.alfresco.service.namespace.QName;
  */
 @BehaviourBean(defaultType = "rma:unfiledRecordContainer")
 public class UnfiledRecordContainerType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy
+            implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                       NodeServicePolicies.OnDeleteNodePolicy
 {
+    private static final String BEHAVIOUR_NAME = "onDeleteUnfiledRecordContainer";
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
+
+    /**
+     * Disable the behaviours for this transaction
+     *
+     */
+    public void disable()
+    {
+        getBehaviour(BEHAVIOUR_NAME).disable();
+    }
+
+    /**
+     * Enable behaviours for this transaction
+     *
+     */
+    public void enable()
+    {
+        getBehaviour(BEHAVIOUR_NAME).enable();
+    }
+
     @Override
     @Behaviour(kind = BehaviourKind.ASSOCIATION)
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         // check the created child is of an accepted type
         validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+    }
+
+    @Override
+    @Behaviour
+    (
+                kind = BehaviourKind.CLASS,
+                name = BEHAVIOUR_NAME
+    )
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
+    {
+        throw new IntegrityException("Operation failed. Deletion of Unfiled Record Container is not allowed.", null);
     }
 }

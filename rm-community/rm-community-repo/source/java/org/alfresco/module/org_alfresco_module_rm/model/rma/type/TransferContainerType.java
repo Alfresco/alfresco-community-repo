@@ -46,11 +46,15 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 @BehaviourBean(defaultType = "rma:transferContainer")
 public class TransferContainerType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
+            implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                       NodeServicePolicies.OnCreateNodePolicy,
+                       NodeServicePolicies.OnDeleteNodePolicy
+
 {
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
     private final static String MSG_ERROR_ADD_CHILD_TO_TRANSFER_CONTAINER = "rm.action.create.transfer.container.child-error-message";
     private static final String BEHAVIOUR_NAME = "onCreateChildAssocsForTransferContainer";
+    private static final String DELETE_BEHAVIOUR_NAME = "onDeleteTransferContainer";
 
     /**
      * Disable the behaviours for this transaction
@@ -59,6 +63,7 @@ public class TransferContainerType extends BaseBehaviourBean
     public void disable()
     {
         getBehaviour(BEHAVIOUR_NAME).disable();
+        getBehaviour(DELETE_BEHAVIOUR_NAME).disable();
     }
 
     /**
@@ -68,6 +73,7 @@ public class TransferContainerType extends BaseBehaviourBean
     public void enable()
     {
         getBehaviour(BEHAVIOUR_NAME).enable();
+        getBehaviour(DELETE_BEHAVIOUR_NAME).enable();
     }
 
     /**
@@ -93,5 +99,16 @@ public class TransferContainerType extends BaseBehaviourBean
         NodeRef nodeRef = childAssocRef.getChildRef();
         if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
                     I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
+    }
+
+    @Override
+    @Behaviour
+    (
+                kind = BehaviourKind.CLASS,
+                name = DELETE_BEHAVIOUR_NAME
+    )
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
+    {
+        throw new IntegrityException("Operation failed. Deletion of Transfer Container is not allowed.", null);
     }
 }

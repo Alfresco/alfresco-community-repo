@@ -17,7 +17,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * Utility class for checking parameters
  *
  * @author Tuna Aksoy
- * @since 1.0
+ * @since 2.6
  */
 public class ParameterCheck
 {

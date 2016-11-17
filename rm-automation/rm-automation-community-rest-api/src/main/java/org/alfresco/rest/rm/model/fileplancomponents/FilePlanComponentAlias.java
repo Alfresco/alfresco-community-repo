@@ -17,7 +17,7 @@ import static org.alfresco.rest.rm.util.ParameterCheck.mandatoryString;
  * File plan component alias enumeration
  *
  * @author Tuna Aksoy
- * @since 1.0
+ * @since 2.6
  */
 public enum FilePlanComponentAlias
 {

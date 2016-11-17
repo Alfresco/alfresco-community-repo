@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * POJO for file plan component properties
  *
  * @author Kristijan Conkas
- * @since 1.0
+ * @since 2.6
  */
 //FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
 @JsonIgnoreProperties (ignoreUnknown = true)

@@ -519,47 +519,44 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private void updateDispositionActionProperties(NodeRef record, NodeRef dispositionAction)
     {
-        if (!methodCached("updateDispositionActionProperties", record))
+        Map<QName, Serializable> props = nodeService.getProperties(record);
+
+        DispositionAction da = new DispositionActionImpl(recordsManagementServiceRegistry, dispositionAction);
+
+        props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
+        props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
+        props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, nodeService.getProperty(dispositionAction, PROP_DISPOSITION_EVENTS_ELIGIBLE));
+
+        DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();
+        if (daDefinition != null)
         {
-            Map<QName, Serializable> props = nodeService.getProperties(record);
-    
-            DispositionAction da = new DispositionActionImpl(recordsManagementServiceRegistry, dispositionAction);
-    
-            props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
-            props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
-            props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, nodeService.getProperty(dispositionAction, PROP_DISPOSITION_EVENTS_ELIGIBLE));
-    
-            DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();
-            if (daDefinition != null)
+            Period period = daDefinition.getPeriod();
+            if (period != null)
             {
-                Period period = daDefinition.getPeriod();
-                if (period != null)
-                {
-                    props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
-                    props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());
-                }
-                else
-                {
-                    props.put(PROP_RS_DISPOSITION_PERIOD, null);
-                    props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
-                }
+                props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());
             }
-    
-            nodeService.setProperties(record, props);
-    
-            if (logger.isDebugEnabled())
+            else
             {
-                logger.debug("Set rma:recordSearchDispositionActionName for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_ACTION_NAME));
-                logger.debug("Set rma:recordSearchDispositionActionAsOf for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_ACTION_AS_OF));
-                logger.debug("Set rma:recordSearchDispositionEventsEligible for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));
-                logger.debug("Set rma:recordSearchDispositionPeriod for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_PERIOD));
-                logger.debug("Set rma:recordSearchDispositionPeriodExpression for node " + record + " to: " +
-                            props.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
+                props.put(PROP_RS_DISPOSITION_PERIOD, null);
+                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
             }
+        }
+
+        nodeService.setProperties(record, props);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Set rma:recordSearchDispositionActionName for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_ACTION_NAME));
+            logger.debug("Set rma:recordSearchDispositionActionAsOf for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_ACTION_AS_OF));
+            logger.debug("Set rma:recordSearchDispositionEventsEligible for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));
+            logger.debug("Set rma:recordSearchDispositionPeriod for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_PERIOD));
+            logger.debug("Set rma:recordSearchDispositionPeriodExpression for node " + record + " to: " +
+                        props.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
         }
     }
 

@@ -27,7 +27,7 @@ import org.testng.annotations.DataProvider;
  * Test data used in tests
  *
  * @author Rodica Sutu
- * @since 1.0
+ * @since 2.6
  */
 public interface TestData
 {

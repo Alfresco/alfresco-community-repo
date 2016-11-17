@@ -177,7 +177,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
 
         when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(nodeRef);
         Node folderOrDocument = rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
-        checksAllowedOperations(folderOrDocument, false, true, false);
+        checksAllowedOperations(folderOrDocument, true, true, false);
     }
 
     @Test

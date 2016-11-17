@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * POJO for file plan component
  *
  * @author Tuna Aksoy
- * @since 1.0
+ * @since 2.6
  */
 public class FilePlanComponent
 {

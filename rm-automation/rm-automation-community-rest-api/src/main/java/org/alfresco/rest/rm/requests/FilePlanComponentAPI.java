@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Tuna Aksoy
  * @author Kristijan Conkas
- * @since 1.0
+ * @since 2.6
  */
 @Component
 @Scope(value = "prototype")

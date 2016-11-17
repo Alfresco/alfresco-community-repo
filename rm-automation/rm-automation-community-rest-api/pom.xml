@@ -16,6 +16,20 @@
       <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
    </properties>
 
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <configuration>
+               <licenseName>alfresco_community</licenseName>
+               <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+               <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
    <dependencies>
       <dependency>
          <groupId>org.alfresco.tas</groupId>

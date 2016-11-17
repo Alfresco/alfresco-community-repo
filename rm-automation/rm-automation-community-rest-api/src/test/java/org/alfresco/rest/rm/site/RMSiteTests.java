@@ -51,7 +51,7 @@ import org.testng.annotations.Test;
  * the RM site CRUD API
  *
  * @author Rodica Sutu
- * @since 1.0
+ * @since 2.6
  */
 public class RMSiteTests extends BaseRestTest
 {

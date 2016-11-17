@@ -76,6 +76,9 @@
         <property name="filePlanService" ref="FilePlanService" />
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
+        <property name="unfilerRecordContainerType" ref="rma.unfiledRecordsContainer" />
+        <property name="transferContainerType" ref="rma.transferContainer" />
+        <property name="holdContainerType" ref="rma.holdContainer" />
    </bean>
 
    <bean id="rma.holdContainer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.HoldContainerType" parent="rm.baseBehaviour">
@@ -112,6 +115,7 @@
       <property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
       <property name="capabilityService" ref="CapabilityService" />
       <property name="authorityService" ref="AuthorityService" />
+      <property name="filePlanType" ref="rma.filePlan" />
    </bean>
 
    <!-- rma model aspects -->

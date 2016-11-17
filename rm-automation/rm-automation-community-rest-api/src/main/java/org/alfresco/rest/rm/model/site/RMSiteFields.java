@@ -24,7 +24,7 @@ package org.alfresco.rest.rm.model.site;
  *}
  * @author Tuna Aksoy
  * @author Rodica Sutu
- * @since 1.0
+ * @since 2.6
  */
 public class RMSiteFields
 {

@@ -52,7 +52,7 @@ import org.testng.annotations.Test;
  * the File Plan CRUD API
  *
  * @author Rodica Sutu
- * @since 1.0
+ * @since 2.6
  */
 public class FilePlanTests extends BaseRestTest
 {

@@ -19,7 +19,7 @@ import org.alfresco.rest.model.RestSiteModel;
  * POJO for RM Site component
  *
  * @author Rodica Sutu
- * @since 1.0
+ * @since 2.6
  */
 public class RMSite extends RestSiteModel
 {

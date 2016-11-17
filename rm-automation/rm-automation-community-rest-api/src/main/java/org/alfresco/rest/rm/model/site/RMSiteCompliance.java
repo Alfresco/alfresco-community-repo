@@ -15,7 +15,7 @@ package org.alfresco.rest.rm.model.site;
  * RM Site compliance
  *
  * @author Tuna Aksoy
- * @since 1.0
+ * @since 2.6
  */
 public enum RMSiteCompliance
 {

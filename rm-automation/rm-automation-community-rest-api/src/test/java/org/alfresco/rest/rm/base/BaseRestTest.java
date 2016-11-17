@@ -51,7 +51,7 @@ import org.testng.annotations.BeforeClass;
  *
  * @author Kristijan Conkas
  * @author Tuna Aksoy
- * @since 1.0
+ * @since 2.6
  */
 @Configuration
 @PropertySource("classpath:default.properties")

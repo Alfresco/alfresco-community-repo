@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * POJO for FilePlanComponent path parameter
  * <br>
  * @author Kristijan Conkas
- * @since 1.0
+ * @since 2.6
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FilePlanComponentPath

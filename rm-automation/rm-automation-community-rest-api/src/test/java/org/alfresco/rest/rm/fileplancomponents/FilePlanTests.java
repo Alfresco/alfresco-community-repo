@@ -17,6 +17,7 @@ import static org.alfresco.rest.rm.base.AllowableOperations.CREATE;
 import static org.alfresco.rest.rm.base.AllowableOperations.DELETE;
 import static org.alfresco.rest.rm.base.AllowableOperations.UPDATE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NAME;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
@@ -147,8 +148,16 @@ public class FilePlanTests extends BaseRestTest
         FilePlanComponent filePlanComponent = filePlanComponentAPI.withParams("include=allowableOperations").getFilePlanComponent(specialContainerAlias);
 
         // Check the list of allowableOperations returned
-        assertTrue(filePlanComponent.getAllowableOperations().containsAll(asList(UPDATE, CREATE)),
+        if(specialContainerAlias.equals(TRANSFERS_ALIAS.toString()))
+        {
+            assertTrue(filePlanComponent.getAllowableOperations().containsAll(asList(UPDATE)),
+                    "Wrong list of the allowable operations is return" + filePlanComponent.getAllowableOperations().toString());
+        }
+        else
+        {
+            assertTrue(filePlanComponent.getAllowableOperations().containsAll(asList(UPDATE, CREATE)),
                 "Wrong list of the allowable operations is return" + filePlanComponent.getAllowableOperations().toString());
+        }
 
         // Check the list of allowableOperations doesn't contains DELETE operation
         assertFalse(filePlanComponent.getAllowableOperations().contains(DELETE),

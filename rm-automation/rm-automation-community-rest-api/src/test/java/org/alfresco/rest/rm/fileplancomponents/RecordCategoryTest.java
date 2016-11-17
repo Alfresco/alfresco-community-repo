@@ -24,6 +24,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
@@ -35,14 +36,16 @@ import java.util.NoSuchElementException;
 
 import com.google.gson.JsonObject;
 
-import org.alfresco.rest.rm.base.BaseRestTest;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.rm.base.BaseRestTest;
+import org.alfresco.rest.rm.base.TestData;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.rm.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -332,6 +335,41 @@ public class RecordCategoryTest extends BaseRestTest
             }
         });
     }
+
+    /**
+     * Given that a record category exists
+     * When I ask to create a  object type which is not  a record category or a record folder as a child
+     * Then the children are not created  and the 422 response code is returned
+     */
+    @Test
+    (
+        description = "Create node types not allowed inside a category",
+        dataProviderClass = TestData.class,
+        dataProvider = "childrenNotAllowedForCategory"
+
+    )
+    @Bug (id="RM-4367")
+    public void createTypesNotAllowedInCategory(String nodeType) throws Exception
+    {
+        String COMPONENT_NAME="Component"+getRandomAlphanumeric();
+        // Authenticate with admin user
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        FilePlanComponent category = createCategory(FILE_PLAN_ALIAS.toString(), COMPONENT_NAME);
+
+        //Build node  properties
+        JsonObject componentProperties = buildObject()
+            .add(NAME, COMPONENT_NAME)
+            .add(NODE_TYPE, nodeType)
+            .addObject(PROPERTIES)
+            .add(PROPERTIES_TITLE, "Title for " + COMPONENT_NAME)
+            .end()
+            .getJson();
+
+        //create the invalid node type
+        FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(componentProperties, category.getId());
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+    }
+
 
     /**
      * Helper method to create child category

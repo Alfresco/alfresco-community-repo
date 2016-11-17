@@ -182,6 +182,7 @@ public class TransferServiceImpl extends ServiceBaseImpl
             NodeRef transferContainer = filePlanService.getTransferContainer(root);
 
             transferContainerType.disable();
+            transferType.disable();
             try
             {
                 transferNodeRef = nodeService.createNode(transferContainer,
@@ -194,6 +195,7 @@ public class TransferServiceImpl extends ServiceBaseImpl
             finally
             {
                 transferContainerType.enable();
+                transferType.enable();
             }
             // Bind the hold node reference to the transaction
             AlfrescoTransactionSupport.bindResource(KEY_TRANSFER_NODEREF, transferNodeRef);

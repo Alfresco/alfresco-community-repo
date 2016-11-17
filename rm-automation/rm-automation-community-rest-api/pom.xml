@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-rm-automation-community-rest-api</artifactId>
+   <name>Alfresco Records Management Automation Community REST API</name>
+
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-rm-automation</artifactId>
+      <version>2.6-SNAPSHOT</version>
+   </parent>
+
+   <properties>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
+      <suiteXmlFile>testng.xml</suiteXmlFile>
+      <skip.automationtests>true</skip.automationtests>
+      <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
+      <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
+   </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>restapi-test</artifactId>
+         <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>restapi-test</artifactId>
+         <version>1.0-SNAPSHOT</version>
+         <type>test-jar</type>
+      </dependency>
+      <dependency>
+         <groupId>org.jglue.fluent-json</groupId>
+         <artifactId>fluent-json</artifactId>
+         <version>2.0.0</version>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <redirectTestOutputToFile>false</redirectTestOutputToFile>
+               <suiteXmlFiles>
+                  <suiteXmlFile>${project.build.testOutputDirectory}/${suiteXmlFile}</suiteXmlFile>
+               </suiteXmlFiles>
+               <skipTests>${skip.automationtests}</skipTests>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+</project>

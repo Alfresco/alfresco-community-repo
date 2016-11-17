@@ -43,7 +43,6 @@ import static org.alfresco.rest.rm.community.model.site.RMSiteFields.DESCRIPTION
 import static org.alfresco.rest.rm.community.model.site.RMSiteFields.TITLE;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.OK;
 
 import com.google.gson.JsonObject;
 import com.jayway.restassured.RestAssured;
@@ -124,7 +123,7 @@ public class BaseRestTest extends RestTest
     public void createRMSiteIfNotExists() throws Exception
     {
         // Check RM site doesn't exist
-        if (!siteRMExists())
+        if (!rmSiteAPI.existsRMSite())
         {
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
@@ -141,16 +140,6 @@ public class BaseRestTest extends RestTest
             // Verify the status code
             rmSiteAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
         }
-    }
-
-    /**
-     * Check if the RM site exists via the GET request
-     */
-    public boolean siteRMExists() throws Exception
-    {
-        RestWrapper restWrapper = rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        rmSiteAPI.getSite();
-        return restWrapper.getStatusCode().equals(OK.toString());
     }
 
     /**
@@ -191,7 +180,7 @@ public class BaseRestTest extends RestTest
     {
         return createComponent(parentId, folderName, UNFILED_RECORD_FOLDER_TYPE, FOLDER_TITLE);
     }
-    
+
     /**
      * Helper method to create generic child component
      *

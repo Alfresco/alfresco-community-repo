@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
@@ -42,9 +41,6 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
@@ -55,10 +51,8 @@ import org.alfresco.rm.rest.api.model.RecordCategoryNode;
 import org.alfresco.rm.rest.api.model.RecordFolderNode;
 import org.alfresco.rm.rest.api.model.RecordNode;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -82,15 +76,10 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     private FilePlanService filePlanService;
     private NodeService nodeService;
     private RecordsManagementServiceRegistry serviceRegistry;
-    private Repository repositoryHelper;
     private DictionaryService dictionaryService;
     private DispositionService dispositionService;
     private CapabilityService capabilityService;
 
-    /**
-     * TODO to remove this after isSpecialNode is made protected in core implementation(REPO-1459)
-     */
-    private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
     public void init()
     {
         super.init();
@@ -102,12 +91,6 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
-    }
-
-    public void setRepositoryHelper(Repository repositoryHelper)
-    {
-        super.setRepositoryHelper(repositoryHelper);
-        this.repositoryHelper = repositoryHelper;
     }
 
     public void setFilePlanService(FilePlanService filePlanService)
@@ -182,7 +165,9 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
 
         if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
         {
-            node.setAllowableOperations(getAllowableOperations(nodeRef, type));
+            // If the user does not have any of the mapped permissions then "allowableOperations" is not returned (rather than an empty array)
+            List<String> allowableOperations = getAllowableOperations(nodeRef, type);
+            node.setAllowableOperations((allowableOperations.size() > 0 )? allowableOperations : null);
         }
 
         return node;

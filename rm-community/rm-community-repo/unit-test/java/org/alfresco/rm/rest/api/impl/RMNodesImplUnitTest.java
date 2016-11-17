@@ -28,8 +28,8 @@
 package org.alfresco.rm.rest.api.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -208,7 +208,7 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         assertEquals(false, resultNode.getIsFile());
         assertEquals(false, resultNode.getIsCategory());
         List<String> allowableOperations = resultNode.getAllowableOperations();
-        assertEquals(0, allowableOperations.size());
+        assertNull(allowableOperations);
     }
 
     @Test

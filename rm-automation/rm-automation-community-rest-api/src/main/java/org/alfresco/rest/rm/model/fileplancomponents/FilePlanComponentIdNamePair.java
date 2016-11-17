@@ -15,7 +15,7 @@ package org.alfresco.rest.rm.model.fileplancomponents;
  * POJO for id/name pair
  *
  * @author Kristijan Conkas
- * @since 1.0
+ * @since 2.6
  */
 public class FilePlanComponentIdNamePair
 {

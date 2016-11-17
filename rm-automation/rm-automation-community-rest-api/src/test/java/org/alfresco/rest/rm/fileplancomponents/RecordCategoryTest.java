@@ -51,7 +51,7 @@ import org.testng.annotations.Test;
  *
  * @author Kristijan Conkas
  * @author Tuna Aksoy
- * @since 1.0
+ * @since 2.6
  */
 public class RecordCategoryTest extends BaseRestTest
 {

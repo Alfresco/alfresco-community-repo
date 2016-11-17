@@ -110,4 +110,36 @@
          </map>
       </property>
    </bean>
+   
+   <bean id="rmDeleteTransferContainerCapability"
+         parent="declarativeCapability">
+      <property name="name" value="DeleteTransferContainer"/>
+      <property name="kinds">
+         <list>
+            <value>TRANSFER_CONTAINER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+      <property name="private" value="true"/>
+   </bean>
+
+   <bean id="rmDeleteHoldContainerCapability"
+         parent="declarativeCapability">
+      <property name="name" value="DeleteHoldContainer"/>
+      <property name="kinds">
+         <list>
+            <value>HOLD_CONTAINER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+      <property name="private" value="true"/>
+   </bean>
 </beans>

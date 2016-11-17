@@ -34,9 +34,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.security.InvalidParameterException;
@@ -53,8 +50,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
 import org.alfresco.rm.rest.api.model.FileplanComponentNode;
 import org.alfresco.rm.rest.api.model.RecordCategoryNode;
@@ -635,121 +630,6 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
         NodeRef validateOrLookupNode = rmNodesImpl.validateNode(nodeRef.getId());
         assertEquals(nodeRef, validateOrLookupNode);
-    }
-
-    @Test
-    public void testDeleteNode() throws Exception
-    {
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        Parameters mockedParameters = mock(Parameters.class);
-        QName mockedType = AlfMock.generateQName();
-        when(mockedNodeService.getType(nodeRef)).thenReturn(mockedType);
-
-        setupCompanyHomeAndPrimaryParent(nodeRef);
-
-        rmNodesImpl.deleteNode(nodeRef.getId(), mockedParameters);
-        verify(mockedFileFolderService, times(1)).delete(nodeRef);
-    }
-
-    @Test
-    public void testDeleteFileplanNode() throws Exception
-    {
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        Parameters mockedParameters = mock(Parameters.class);
-        QName mockedType = AlfMock.generateQName();
-        when(mockedNodeService.getType(nodeRef)).thenReturn(mockedType);
-
-        when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(nodeRef);
-        try
-        {
-            rmNodesImpl.deleteNode(nodeRef.getId(), mockedParameters);
-            fail("Expected ecxeption as filePlan can't be deleted.");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("Cannot delete: " + nodeRef.getId(), ex.getMsgId());
-        }
-        verify(mockedFileFolderService, never()).delete(nodeRef);
-    }
-
-    @Test
-    public void testDeleteTransfersContainerNode() throws Exception
-    {
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        Parameters mockedParameters = mock(Parameters.class);
-        QName mockedType = AlfMock.generateQName();
-        when(mockedNodeService.getType(nodeRef)).thenReturn(mockedType);
-
-        NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
-        when(mockedFilePlanService.getTransferContainer(filePlanNodeRef)).thenReturn(nodeRef);
-        try
-        {
-            rmNodesImpl.deleteNode(nodeRef.getId(), mockedParameters);
-            fail("Expected ecxeption as Trnsfers container can't be deleted.");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("Cannot delete: " + nodeRef.getId(), ex.getMsgId());
-        }
-        verify(mockedFileFolderService, never()).delete(nodeRef);
-    }
-
-    @Test
-    public void testDeleteHoldsContainerNode() throws Exception
-    {
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        Parameters mockedParameters = mock(Parameters.class);
-        QName mockedType = AlfMock.generateQName();
-        when(mockedNodeService.getType(nodeRef)).thenReturn(mockedType);
-
-        NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
-
-        NodeRef transferContainerNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.getTransferContainer(filePlanNodeRef)).thenReturn(transferContainerNodeRef);
-
-        when(mockedFilePlanService.getHoldContainer(filePlanNodeRef)).thenReturn(nodeRef);
-        try
-        {
-            rmNodesImpl.deleteNode(nodeRef.getId(), mockedParameters);
-            fail("Expected ecxeption as Holds container can't be deleted.");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("Cannot delete: " + nodeRef.getId(), ex.getMsgId());
-        }
-        verify(mockedFileFolderService, never()).delete(nodeRef);
-    }
-
-    @Test
-    public void testDeleteUnfiledRecordsContainerNode() throws Exception
-    {
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        Parameters mockedParameters = mock(Parameters.class);
-        QName mockedType = AlfMock.generateQName();
-        when(mockedNodeService.getType(nodeRef)).thenReturn(mockedType);
-
-        NodeRef filePlanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.getFilePlanBySiteId(RM_SITE_ID)).thenReturn(filePlanNodeRef);
-
-        NodeRef transferContainerNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.getTransferContainer(filePlanNodeRef)).thenReturn(transferContainerNodeRef);
-
-        NodeRef holdContainerNodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.getHoldContainer(filePlanNodeRef)).thenReturn(holdContainerNodeRef);
-
-        when(mockedFilePlanService.getUnfiledContainer(filePlanNodeRef)).thenReturn(nodeRef);
-        try
-        {
-            rmNodesImpl.deleteNode(nodeRef.getId(), mockedParameters);
-            fail("Expected ecxeption as Unfiled Records container can't be deleted.");
-        }
-        catch(PermissionDeniedException ex)
-        {
-            assertEquals("Cannot delete: " + nodeRef.getId(), ex.getMsgId());
-        }
-        verify(mockedFileFolderService, never()).delete(nodeRef);
     }
 
     private void setupCompanyHomeAndPrimaryParent(NodeRef nodeRef)

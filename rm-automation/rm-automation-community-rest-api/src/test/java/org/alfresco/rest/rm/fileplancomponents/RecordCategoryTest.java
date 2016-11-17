@@ -381,7 +381,7 @@ public class RecordCategoryTest extends BaseRestTest
             .getJson();
 
         //create the invalid node type
-        FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(componentProperties, category.getId());
+        filePlanComponentAPI.createFilePlanComponent(componentProperties, category.getId());
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }
 

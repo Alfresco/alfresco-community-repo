@@ -389,7 +389,7 @@ public class PeopleImpl implements People
             person.setProperties(custProps);
             // Expose aspect names
             Set<QName> aspects = nodeService.getAspects(personNode);
-            person.setAspectNames(nodes.mapFromNodeAspects(aspects));
+            person.setAspectNames(nodes.mapFromNodeAspects(aspects, EXCLUDED_ASPECTS));
             
             // get avatar information
             if (hasAvatar(personNode))
@@ -547,8 +547,8 @@ public class PeopleImpl implements People
 		
         personService.setPersonProperties(personIdToUpdate, properties, false);
 
-		// Add custom aspects
-		nodes.addCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
+		// Update custom aspects
+		nodes.updateCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
 		
         return getPerson(personId);
     }

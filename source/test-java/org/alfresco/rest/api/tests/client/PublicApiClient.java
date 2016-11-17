@@ -1086,11 +1086,16 @@ public class PublicApiClient
 		
 		public Person update(String personId, Person person, int expectedStatus) throws PublicApiException
 		{
-			HttpResponse response = update("people", personId, null, null, person.toJSON(true).toString(), null, "Failed to update person", expectedStatus);
+			return update(personId, person.toJSON(true).toString(), expectedStatus);
+		}
+
+		public Person update(String personId, String json, int expectedStatus) throws PublicApiException
+		{
+			HttpResponse response = update("people", personId, null, null, json, null, "Failed to update person", expectedStatus);
 			Person retSite = Person.parsePerson((JSONObject)response.getJsonResponse().get("entry"));
 			return retSite;
 		}
-
+		
 		public Person create(Person person) throws PublicApiException
 		{
 			return create(person, 201);

@@ -287,9 +287,10 @@ public interface Nodes
      * by the API JSON response for get nodes, get person etc.
      * 
      * @param nodeAspects
+     * @param excludedAspects
      * @return
      */
-    List<String> mapFromNodeAspects(Set<QName> nodeAspects);
+    List<String> mapFromNodeAspects(Set<QName> nodeAspects, List<QName> excludedAspects);
 
     /**
      * Add aspects to the specified NodeRef. Aspects that appear in the exclusions list
@@ -300,6 +301,16 @@ public interface Nodes
      * @param exclusions
      */
     void addCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> exclusions);
+
+    /**
+     * Update aspects for the specified NodeRef. An empty list will result in
+     * aspects being <strong>removed</strong>.
+     * 
+     * @param nodeRef
+     * @param aspectNames
+     * @param exclusions
+     */
+    void updateCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> exclusions);
     
     /**
      * API Constants - query parameters, etc

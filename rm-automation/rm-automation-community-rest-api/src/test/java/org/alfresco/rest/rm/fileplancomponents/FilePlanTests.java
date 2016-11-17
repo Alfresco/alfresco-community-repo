@@ -52,7 +52,7 @@ import org.testng.annotations.Test;
  * the File Plan CRUD API
  *
  * @author Rodica Sutu
- * @since 1.0
+ * @since 2.6
  */
 public class FilePlanTests extends BaseRestTest
 {
@@ -198,7 +198,7 @@ public class FilePlanTests extends BaseRestTest
     /**
      * Given that a file plan exists
      * When I ask the API to delete the file plan
-     * Then the 403 response code is returned.
+     * Then the 422 response code is returned.
      */
     @Test
     (
@@ -213,6 +213,40 @@ public class FilePlanTests extends BaseRestTest
 
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
+        // Delete the file plan component
+        filePlanComponentAPI.deleteFilePlanComponent(filePlanAlias.toString());
+
+        // Check the DELETE response status code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * Given that a file plan exists and I am a non RM user
+     * When I ask the API to delete the file plan
+     * Then the 403 response code is returned.
+     */
+    @Test
+    (
+                description = "Check the response code when deleting the special file plan components with non RM user",
+                dataProviderClass = TestData.class,
+                dataProvider = "getContainers"
+                )
+    public void deleteFilePlanSpecialComponentsNonRMUser(String filePlanAlias) throws Exception
+    {
+        // Create RM Site if doesn't exist
+        createRMSiteIfNotExists();
+
+        // Disconnect the current user from the API session
+        rmSiteAPI.usingRestWrapper().disconnect();
+        // Authenticate admin user to Alfresco REST API
+        restClient.authenticateUser(dataUser.getAdminUser());
+
+        // Create a random user
+        UserModel nonRMuser = dataUser.createRandomTestUser("testUser");
+
+        // Authenticate using the random user
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(nonRMuser);
 
         // Delete the file plan component
         filePlanComponentAPI.deleteFilePlanComponent(filePlanAlias.toString());

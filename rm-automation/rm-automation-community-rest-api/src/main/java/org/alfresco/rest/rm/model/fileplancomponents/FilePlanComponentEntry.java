@@ -21,7 +21,7 @@ import org.alfresco.rest.core.RestModels;
  * POJO for file plan component entry
  *
  * @author Tuna Aksoy
- * @since 1.0
+ * @since 2.6
  */
 public class FilePlanComponentEntry extends RestModels<FilePlanComponent, FilePlanComponentEntry>
 {

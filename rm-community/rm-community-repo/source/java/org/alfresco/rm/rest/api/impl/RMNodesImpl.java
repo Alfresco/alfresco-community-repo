@@ -48,8 +48,6 @@ import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
 import org.alfresco.rm.rest.api.model.FileplanComponentNode;
 import org.alfresco.rm.rest.api.model.RecordCategoryNode;
@@ -379,23 +377,5 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         }
 
         return false;
-    }
-
-    /**
-     * Overridden this method just in order to use our isSpecialNode method since core method could not be overridden.
-     *
-     * TODO remove this after isSpecialNode will be made protected in core(REPO-1459).
-     */
-    @Override
-    public void deleteNode(String nodeId, Parameters parameters)
-    {
-        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
-        QName nodeType = nodeService.getType(nodeRef);
-
-        if (isSpecialNode(nodeRef, nodeType))
-        {
-            throw new PermissionDeniedException("Cannot delete: " + nodeId);
-        }
-        super.deleteNode(nodeId, parameters);
     }
 }

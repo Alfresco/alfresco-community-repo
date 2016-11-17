@@ -33,6 +33,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -49,10 +50,31 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 @BehaviourBean(defaultType = "rma:holdContainer")
 public class HoldContainerType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
+            implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                       NodeServicePolicies.OnCreateNodePolicy,
+                       NodeServicePolicies.OnDeleteNodePolicy
 {
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
     private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD);
+    private static final String DELETE_BEHAVIOUR_NAME = "onDeleteHoldContainer";
+
+    /**
+     * Disable the behaviours for this transaction
+     *
+     */
+    public void disable()
+    {
+        getBehaviour(DELETE_BEHAVIOUR_NAME).disable();
+    }
+
+    /**
+     * Enable behaviours for this transaction
+     *
+     */
+    public void enable()
+    {
+        getBehaviour(DELETE_BEHAVIOUR_NAME).enable();
+    }
 
     /**
      * On every event
@@ -74,6 +96,16 @@ public class HoldContainerType extends BaseBehaviourBean
         NodeRef nodeRef = childAssocRef.getChildRef();
         if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
                     I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
+    }
 
+    @Override
+    @Behaviour
+    (
+                kind = BehaviourKind.CLASS,
+                name = DELETE_BEHAVIOUR_NAME
+    )
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
+    {
+        throw new IntegrityException("Operation failed. Deletion of Hold Container is not allowed.", null);
     }
 }

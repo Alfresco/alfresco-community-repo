@@ -97,6 +97,8 @@ public class RmSiteType extends    BaseBehaviourBean
     /** Authority service */
     private AuthorityService authorityService;
 
+    private FilePlanType filePlanType;
+
     /** Map of file plan type's key'ed by corresponding site types */
     protected Map<QName, QName> mapFilePlanType = new HashMap<QName, QName>(3);
 
@@ -131,6 +133,11 @@ public class RmSiteType extends    BaseBehaviourBean
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    public void setFilePlanType(FilePlanType filePlanType)
+    {
+        this.filePlanType = filePlanType;
     }
 
     /**
@@ -302,6 +309,7 @@ public class RmSiteType extends    BaseBehaviourBean
                         return null;
                     }
                 });
+                filePlanType.disable();
             }
         }
     }
@@ -353,5 +361,16 @@ public class RmSiteType extends    BaseBehaviourBean
         {
             throw new IntegrityException(I18NUtil.getMessage(MULTIPLE_CHILDREN_TYPE_ERROR, ContentModel.TYPE_FOLDER), null);
         }
+    }
+
+    @Behaviour
+    (
+                kind = BehaviourKind.CLASS,
+                policy = "alf:onDeleteNode",
+                notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onDeleteNodeOnCommit(ChildAssociationRef childAssocRef, boolean isNodeArchived)
+    {
+        filePlanType.enable();
     }
 }

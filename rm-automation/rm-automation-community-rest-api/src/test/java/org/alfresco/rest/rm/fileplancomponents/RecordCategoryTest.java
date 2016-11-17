@@ -45,6 +45,7 @@ import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.rm.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -347,6 +348,7 @@ public class RecordCategoryTest extends BaseRestTest
         dataProvider = "childrenNotAllowedForCategory"
 
     )
+    @Bug (id="RM-4367")
     public void createTypesNotAllowedInCategory(String nodeType) throws Exception
     {
         String COMPONENT_NAME="Component"+getRandomAlphanumeric();

@@ -36,7 +36,6 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,6 +50,7 @@ import org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentsCollectio
 import org.alfresco.rest.rm.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -68,14 +68,18 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     private DataUser dataUser;
 
     /** invalid root level types, at unfiled records root level these shouldn't be possible to create */
-    private static final List<FilePlanComponentType> INVALID_ROOT_TYPES = Arrays.asList(
-        FILE_PLAN_TYPE,
-        RECORD_CATEGORY_TYPE,
-        RECORD_FOLDER_TYPE,
-        HOLD_TYPE,
-        HOLD_CONTAINER_TYPE,
-        TRANSFER_CONTAINER_TYPE,
-        UNFILED_CONTAINER_TYPE);
+    @DataProvider(name = "invalidRootTypes")
+    public Object[][] createData1() {
+     return new Object[][] {
+       { FILE_PLAN_TYPE },
+       { RECORD_CATEGORY_TYPE },
+       { RECORD_FOLDER_TYPE },
+       { HOLD_TYPE },
+       { HOLD_CONTAINER_TYPE },
+       { TRANSFER_CONTAINER_TYPE },
+       { UNFILED_CONTAINER_TYPE }
+     };
+    }
     
     /**
      * Given the unfiled record container root
@@ -94,7 +98,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String folderTitle = folderName + " Title";
         String folderDescription = folderName + " Description";
         
-        // Build the record category properties
+        // Build unfiled records folder properties
         JsonObject unfiledFolderProperties = buildObject()
             .add(NAME, folderName)
             .add(NODE_TYPE, UNFILED_RECORD_FOLDER_TYPE.toString())
@@ -130,8 +134,12 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     /**
      * Negative test to verify only unfiled record folders can be created at root level
      */
-    @Test(description = "Only unfiled records folders can be created at unfiled records root level")
-    public void onlyRecordFoldersCanBeCreatedAtUnfiledRecordsRoot()
+    @Test
+    (
+        dataProvider = "invalidRootTypes",
+        description = "Only unfiled records folders can be created at unfiled records root level"
+    )
+    public void onlyRecordFoldersCanBeCreatedAtUnfiledRecordsRoot(FilePlanComponentType componentType)
     {
         RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
@@ -139,29 +147,27 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String folderTitle = folderName + " Title";
         String folderDescription = folderName + " Description";
 
-        INVALID_ROOT_TYPES.stream()
-            .peek(a -> logger.info("creating " + a.toString()))
-            .forEach(t -> {
-                JsonObject unfiledFolderProperties = buildObject()
-                    .add(NAME, folderName)
-                    .add(NODE_TYPE, t.toString())
-                    .addObject(PROPERTIES)
-                    .add(PROPERTIES_TITLE, folderTitle)
-                    .add(PROPERTIES_DESCRIPTION, folderDescription)
-                    .end()
-                    .getJson();
-                try
-                {
-                    filePlanComponentAPI.createFilePlanComponent(unfiledFolderProperties, 
-                        UNFILED_RECORDS_CONTAINER_ALIAS.toString());
-                }
-                catch (Exception error)
-                {
-                }
-    
-                // Verify the status code
-                restWrapper.assertStatusCodeIs(UNPROCESSABLE_ENTITY);
-            });
+        logger.info("creating " + componentType.toString());
+        
+        JsonObject unfiledFolderProperties = buildObject()
+            .add(NAME, folderName)
+            .add(NODE_TYPE, componentType.toString())
+            .addObject(PROPERTIES)
+            .add(PROPERTIES_TITLE, folderTitle)
+            .add(PROPERTIES_DESCRIPTION, folderDescription)
+            .end()
+            .getJson();
+        try
+        {
+            filePlanComponentAPI.createFilePlanComponent(unfiledFolderProperties, 
+                UNFILED_RECORDS_CONTAINER_ALIAS.toString());
+        }
+        catch (Exception error)
+        {
+        }
+
+        // Verify the status code
+        restWrapper.assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }
     
     /**
@@ -185,7 +191,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         FilePlanComponent parentFolder = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), parentFolderName);
         assertEquals(parentFolderName, parentFolder.getName());
      
-        // Build the record category properties
+        // Build the unfiled records folder properties
         JsonObject unfiledFolderProperties = buildObject()
             .add(NAME, childFolderName)
             .add(NODE_TYPE, UNFILED_RECORD_FOLDER_TYPE.toString())

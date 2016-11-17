@@ -81,10 +81,19 @@ public class FilePlanType extends    BaseBehaviourBean
     /** file plan role service */
     private FilePlanRoleService filePlanRoleService;
 
+    /**
+     * Unfiled Record Container Type behaviour bean
+     */
     private UnfiledRecordContainerType unfilerRecordContainerType;
 
+    /**
+     * Transfer Container Type behaviour bean
+     */
     private TransferContainerType transferContainerType;
 
+    /**
+     * Hold Container Type behaviour bean
+     */
     private HoldContainerType holdContainerType;
 
     /**
@@ -151,16 +160,25 @@ public class FilePlanType extends    BaseBehaviourBean
         this.filePlanRoleService = filePlanRoleService;
     }
 
+    /**
+     * @param unfilerRecordContainerType - unfiled record container type behaviour bean
+     */
     public void setUnfilerRecordContainerType(UnfiledRecordContainerType unfilerRecordContainerType)
     {
         this.unfilerRecordContainerType = unfilerRecordContainerType;
     }
 
+    /**
+     * @param transferContainerType - transfer container type behaviour bean
+     */
     public void setTransferContainerType(TransferContainerType transferContainerType)
     {
         this.transferContainerType = transferContainerType;
     }
 
+    /**
+     * @param holdContainerType - hold container type behaviour bean
+     */
     public void setHoldContainerType(HoldContainerType holdContainerType)
     {
         this.holdContainerType = holdContainerType;

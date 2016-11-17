@@ -107,6 +107,7 @@
             <entry key="capabilityCondition.filling" value="true"/>
          </map>
       </property>
+      <property name="private" value="true"/>
    </bean>
 
    <bean id="rmDeleteHoldContainerCapability"
@@ -122,5 +123,6 @@
             <entry key="capabilityCondition.filling" value="true"/>
          </map>
       </property>
+      <property name="private" value="true"/>
    </bean>
 </beans>

@@ -36,6 +36,7 @@ import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFie
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.model.site.RMSiteCompliance.STANDARD;
 import static org.alfresco.rest.rm.model.site.RMSiteFields.COMPLIANCE;
 import static org.alfresco.rest.rm.model.site.RMSiteFields.DESCRIPTION;
@@ -167,6 +168,19 @@ public class BaseRestTest extends RestTest
         return createComponent(parentCategoryId, folderName, RECORD_FOLDER_TYPE, FOLDER_TITLE);
     }
 
+    /**
+     * Helper method to create child unfiled record folder
+     *
+     * @param parentId The id of the parent folder
+     * @param folderName       The name of the folder
+     * @return The created folder
+     * @throws Exception on unsuccessful component creation
+     */
+    public FilePlanComponent createUnfiledRecordsFolder(String parentId, String folderName) throws Exception
+    {
+        return createComponent(parentId, folderName, UNFILED_RECORD_FOLDER_TYPE, FOLDER_TITLE);
+    }
+    
     /**
      * Helper method to create generic child component
      *

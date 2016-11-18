@@ -12,13 +12,23 @@
    </parent>
 
    <properties>
-      <maven.compiler.source>1.8</maven.compiler.source>
-      <maven.compiler.target>1.8</maven.compiler.target>
-      <suiteXmlFile>testng.xml</suiteXmlFile>
-      <skip.automationtests>true</skip.automationtests>
       <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
       <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
    </properties>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <configuration>
+               <licenseName>alfresco_community</licenseName>
+               <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+               <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
 
    <dependencies>
       <dependency>
@@ -38,19 +48,4 @@
          <version>2.0.0</version>
       </dependency>
    </dependencies>
-
-   <build>
-      <plugins>
-         <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-               <redirectTestOutputToFile>false</redirectTestOutputToFile>
-               <suiteXmlFiles>
-                  <suiteXmlFile>${project.build.testOutputDirectory}/${suiteXmlFile}</suiteXmlFile>
-               </suiteXmlFiles>
-               <skipTests>${skip.automationtests}</skipTests>
-            </configuration>
-         </plugin>
-      </plugins>
-   </build>
 </project>

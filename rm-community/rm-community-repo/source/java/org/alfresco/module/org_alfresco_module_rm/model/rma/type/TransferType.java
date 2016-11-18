@@ -27,6 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import java.io.Serializable;
+import java.util.Map;
+
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -34,6 +37,8 @@ import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -43,10 +48,15 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.6
  */
 @BehaviourBean(defaultType = "rma:transfer")
-public class TransferType extends BaseBehaviourBean implements NodeServicePolicies.OnCreateChildAssociationPolicy
+public class TransferType extends BaseBehaviourBean 
+                          implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                                     NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     private final static String MSG_ERROR_ADD_CHILD_TO_TRANSFER = "rm.action.create.transfer.child-error-message";
-    private static final String BEHAVIOUR_NAME = "onCreateChildAssocsForTransferType";
+    private final static String MSG_ERROR_EDIT_TRANSFER_PROPERTIES = "rm.action.transfer-non-editable";
+
+    private static final String CREATE_CHILD_BEHAVIOUR_NAME = "onCreateChildAssocsForTransferType";
+    private static final String EDIT_PROPERTIES_BEHAVIOUR_NAME = "onEditTransferProperties";
 
     /**
      * Disable the behaviours for this transaction
@@ -54,7 +64,8 @@ public class TransferType extends BaseBehaviourBean implements NodeServicePolici
      */
     public void disable()
     {
-        getBehaviour(BEHAVIOUR_NAME).disable();
+        getBehaviour(CREATE_CHILD_BEHAVIOUR_NAME).disable();
+        getBehaviour(EDIT_PROPERTIES_BEHAVIOUR_NAME).disable();
     }
 
     /**
@@ -63,7 +74,8 @@ public class TransferType extends BaseBehaviourBean implements NodeServicePolici
      */
     public void enable()
     {
-        getBehaviour(BEHAVIOUR_NAME).enable();
+        getBehaviour(CREATE_CHILD_BEHAVIOUR_NAME).enable();
+        getBehaviour(EDIT_PROPERTIES_BEHAVIOUR_NAME).enable();
     }
 
     /**
@@ -73,10 +85,24 @@ public class TransferType extends BaseBehaviourBean implements NodeServicePolici
     @Behaviour
     (
                 kind = BehaviourKind.ASSOCIATION,
-                name = BEHAVIOUR_NAME
+                name = CREATE_CHILD_BEHAVIOUR_NAME
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
         throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_ADD_CHILD_TO_TRANSFER), null);
+    }
+
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS, 
+            name = EDIT_PROPERTIES_BEHAVIOUR_NAME
+    )
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        if(!authenticationUtil.isRunAsUserTheSystemUser())
+        {
+            throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_EDIT_TRANSFER_PROPERTIES), null);
+        }
     }
 }

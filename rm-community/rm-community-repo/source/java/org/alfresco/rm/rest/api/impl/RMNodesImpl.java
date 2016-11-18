@@ -33,17 +33,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
@@ -54,13 +51,13 @@ import org.alfresco.rm.rest.api.model.RecordCategoryNode;
 import org.alfresco.rm.rest.api.model.RecordFolderNode;
 import org.alfresco.rm.rest.api.model.RecordNode;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Centralizes access to the repository.
@@ -79,14 +76,10 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     private FilePlanService filePlanService;
     private NodeService nodeService;
     private RecordsManagementServiceRegistry serviceRegistry;
-    private Repository repositoryHelper;
     private DictionaryService dictionaryService;
     private DispositionService dispositionService;
+    private CapabilityService capabilityService;
 
-    /**
-     * TODO to remove this after isSpecialNode is made protected in core implementation(REPO-1459)
-     */
-    private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
     public void init()
     {
         super.init();
@@ -100,15 +93,14 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         this.serviceRegistry = serviceRegistry;
     }
 
-    public void setRepositoryHelper(Repository repositoryHelper)
-    {
-        super.setRepositoryHelper(repositoryHelper);
-        this.repositoryHelper = repositoryHelper;
-    }
-
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
+    }
+
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
     }
 
     @Override
@@ -120,26 +112,6 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         {
             nodeTypeQName = nodeService.getType(nodeRef);
         }
-
-        //TODO to remove this part of code after isSpecialNode will be made protected on core, will not need this anymore since the right allowed operations will be returned from core(REPO-1459).
-        if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS) && originalNode.getAllowableOperations() != null)
-        {
-            List<String> allowableOperations = originalNode.getAllowableOperations();
-            List<String> modifiedAllowableOperations = new ArrayList<>();
-            modifiedAllowableOperations.addAll(allowableOperations);
-
-            for (String op : allowableOperations)
-            {
-                if (op.equals(OP_DELETE) && (isSpecialNode(nodeRef, nodeTypeQName)))
-                {
-                    // special case: do not return "delete" (as an allowable op) for specific system nodes
-                    modifiedAllowableOperations.remove(op);
-                }
-            }
-
-            originalNode.setAllowableOperations((modifiedAllowableOperations.size() > 0 )? modifiedAllowableOperations : null);
-        }
-
 
         RMNodeType type = getType(nodeTypeQName, nodeRef);
         FileplanComponentNode node = null;
@@ -191,7 +163,55 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
             }
         }
 
+        if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
+        {
+            // If the user does not have any of the mapped permissions then "allowableOperations" is not returned (rather than an empty array)
+            List<String> allowableOperations = getAllowableOperations(nodeRef, type);
+            node.setAllowableOperations((allowableOperations.size() > 0 )? allowableOperations : null);
+        }
+
         return node;
+    }
+
+    /**
+     * Helper method that generates allowable operation for the provided node
+     * @param nodeRef the node to get the allowable operations for
+     * @param type the type of the provided nodeRef
+     * @return a sublist of [{@link Nodes.OP_DELETE}, {@link Nodes.OP_CREATE}, {@link Nodes.OP_UPDATE}] representing the allowable operations for the provided node
+     */
+    private List<String> getAllowableOperations(NodeRef nodeRef, RMNodeType type)
+    {
+        List<String> allowableOperations = new ArrayList<>();
+
+        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+        boolean isFilePlan = nodeRef.equals(filePlan);
+        boolean isTransferContainer = nodeRef.equals(filePlanService.getTransferContainer(filePlan));
+        boolean isUnfiledContainer = nodeRef.equals(filePlanService.getUnfiledContainer(filePlan));
+        boolean isHoldsContainer = nodeRef.equals(filePlanService.getHoldContainer(filePlan)) ;
+        boolean isSpecialContainer = isFilePlan || isTransferContainer || isUnfiledContainer || isHoldsContainer;
+
+        // DELETE
+        if(!isSpecialContainer && 
+                capabilityService.getCapability("Delete").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
+        {
+            allowableOperations.add(OP_DELETE);
+        }
+
+        // CREATE
+        if(type != RMNodeType.FILE &&  
+                !isTransferContainer &&
+                capabilityService.getCapability("FillingPermissionOnly").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
+        {
+            allowableOperations.add(OP_CREATE);
+        }
+
+        // UPDATE
+        if (capabilityService.getCapability("Update").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
+        {
+            allowableOperations.add(OP_UPDATE);
+        }
+
+        return allowableOperations;
     }
 
     @Override
@@ -296,86 +316,5 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         searchTypeQNames.remove(RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION);
 
         return new Pair<>(searchTypeQNames, ignoreAspectQNames);
-    }
-
-    /**
-     * TODO only override core method when will be made protected in core(REPO-1459).
-     *
-     * @param nodeRef
-     * @param type
-     * @return
-     */
-    private boolean isSpecialNode(NodeRef nodeRef, QName type)
-    {
-        // Check for File Plan, Transfers Container, Holds Container, Unfiled Records Container
-        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        if(filePlan != null)
-        {
-            if(filePlan.equals(nodeRef))
-            {
-                return true;
-            }
-            else if(filePlanService.getTransferContainer(filePlan).equals(nodeRef))
-            {
-                return true;
-            }
-            else if(filePlanService.getHoldContainer(filePlan).equals(nodeRef))
-            {
-                return true;
-            }
-            else if(filePlanService.getUnfiledContainer(filePlan).equals(nodeRef))
-            {
-                return true;
-            }
-        }
-        //TODO just run super after method after it will be made protected on core(REPO-1459)
-        return isCoreSpecialNode(nodeRef, type);
-    }
-
-    /**
-     * Copied from core implementation, because it is protected and we can't extend it with our special nodes.
-     *
-     * TODO to remove when isSpecialNode method will be made protected in core (REPO-1459).
-     *
-     * @param nodeRef
-     * @param type
-     * @return
-     */
-    private boolean isCoreSpecialNode(NodeRef nodeRef, QName type)
-    {
-        // Check for Company Home, Sites and Data Dictionary (note: must be tenant-aware)
-        if (nodeRef.equals(repositoryHelper.getCompanyHome()))
-        {
-            return true;
-        }
-        else if (type.equals(SiteModel.TYPE_SITES) || type.equals(SiteModel.TYPE_SITE))
-        {
-            // note: alternatively, we could inject SiteServiceInternal and use getSitesRoot (or indirectly via node locator)
-            return true;
-        }
-        else
-        {
-            String tenantDomain = TenantUtil.getCurrentDomain();
-            NodeRef ddNodeRef = ddCache.get(tenantDomain);
-            if (ddNodeRef == null)
-            {
-                List<ChildAssociationRef> ddAssocs = nodeService.getChildAssocs(
-                        repositoryHelper.getCompanyHome(),
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary"));
-                if (ddAssocs.size() == 1)
-                {
-                    ddNodeRef = ddAssocs.get(0).getChildRef();
-                    ddCache.put(tenantDomain, ddNodeRef);
-                }
-            }
-
-            if (nodeRef.equals(ddNodeRef))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

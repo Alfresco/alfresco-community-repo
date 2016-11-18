@@ -94,6 +94,23 @@
       </property>
    </bean>
 
+   <bean id="rmEditTransferCapability"
+      parent="declarativeCapability">
+      <property name="name" value="EditTransfer"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>TRANSFER_CONTAINER</value>
+            <value>TRANSFER</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+   </bean>
+   
    <bean id="rmDeleteTransferContainerCapability"
          parent="declarativeCapability">
       <property name="name" value="DeleteTransferContainer"/>

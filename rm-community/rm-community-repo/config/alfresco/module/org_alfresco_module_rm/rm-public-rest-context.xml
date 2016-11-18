@@ -77,4 +77,17 @@
    <bean class="org.alfresco.rm.rest.api.sites.RMSiteEntityResource">
        <property name="sites" ref="rm.Sites" />
    </bean>
+
+   <!-- Map RM exceptions to HTML status codes -->
+   <bean id="rm.simpleMappingExceptionResolver" abstract="true" parent="simpleMappingExceptionResolver">
+       <property name="exceptionMappings">
+            <map merge="true">
+                <entry key="org.alfresco.service.cmr.attributes.DuplicateAttributeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+            </map>
+        </property>
+   </bean>
+   <bean class="org.alfresco.util.BeanExtender">
+      <property name="beanName" value="simpleMappingExceptionResolver"/>
+      <property name="extendingBeanName" value="rm.simpleMappingExceptionResolver"/>
+    </bean> 
 </beans>

@@ -287,7 +287,6 @@ paths:
         ```
 
         Any missing aspects are applied automatically. You can set aspects explicitly, if needed, using an **aspectNames** field.
-        This field replaces the existing aspects, it doesn't add aspects to the existing list.
 
         **Note:** You can create more than one child by 
         specifying a list of nodes in the JSON body. For example, the following JSON

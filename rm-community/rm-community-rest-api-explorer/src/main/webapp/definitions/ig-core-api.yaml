@@ -220,6 +220,8 @@ paths:
 
         This API method also supports node creation using application/json.
 
+        You must specify at least a **name** and **nodeType**. 
+
         You can create a category like this:
         ```JSON
         {
@@ -259,6 +261,76 @@ paths:
         }
         ```
 
+        You can create a fileplan component inside a container hierarchy:
+        ```JSON
+        {
+          "name":"My Fileplan Component",
+          "nodeType":"rma:recordFolder",
+          "relativePath":"X/Y/Z"
+        }
+        ```
+        The **relativePath** specifies the container structure to create relative to the node **nodeId**. Containers in the
+        **relativePath** that do not exist are created before the node is created. The container type is decided considering 
+        the type of the parent container and the type of the node to be created.
+
+        You can set properties when creating a new fileplan component:
+        ```JSON
+        {
+          "name":"My Record Category",
+          "nodeType":"rma:recordCategory",
+          "properties":
+          {
+            "rma:vitalRecordIndicator":"true",
+            "rma:reviewPeriod":"month|1"
+          }
+        }
+        ```
+
+        Any missing aspects are applied automatically. You can set aspects explicitly, if needed, using an **aspectNames** field.
+
+        **Note:** You can create more than one child by 
+        specifying a list of nodes in the JSON body. For example, the following JSON
+        body creates two folders inside the specified **nodeId**, if the **nodeId** identifies
+        a folder:
+        ```JSON
+        [
+          {
+            "name":"My Record Category",
+            "nodeType":"rma:recordCategory"
+          },
+          {
+            "name":"My Record Folder",
+            "nodeType":"rma:recordFolder"
+          }
+        ]
+        ```
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+        
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
       operationId: createFileplanComponent
       parameters:
         - $ref: '#/parameters/fileplanComponentIdWithAliasParam'
@@ -274,7 +346,7 @@ paths:
           description: The node information to create.
           required: true
           schema:
-            $ref: '#/definitions/NodeBodyCreate'
+            $ref: '#/definitions/RMNodeBodyCreate'
       consumes:
         - application/json
         - multipart/form-data
@@ -827,8 +899,7 @@ definitions:
         type: string
       isComplete:
         type: boolean
-  ## Core definition
-  NodeBodyCreate:
+  RMNodeBodyCreate:
     type: object
     required:
       - name
@@ -851,41 +922,6 @@ definitions:
         additionalProperties:
           type: string
       relativePath:
-        type: string
-      association:
-        type: object
-        properties:
-          assocType:
-            type: string
-      secondaryChildren:
-        type: array
-        items:
-          $ref: '#/definitions/ChildAssociationBody'
-      targets:
-        type: array
-        items:
-          $ref: '#/definitions/AssociationBody'
-  ## Core definition
-  ChildAssociationBody:
-    type: object
-    required:
-    - childId
-    - assocType
-    properties:
-      childId:
-        type: string
-      assocType:
-        type: string
-  ## Core definition
-  AssociationBody:
-    type: object
-    required:
-    - targetId
-    - assocType
-    properties:
-      targetId:
-        type: string
-      assocType:
         type: string
   RMSiteBodyCreate:
     type: object

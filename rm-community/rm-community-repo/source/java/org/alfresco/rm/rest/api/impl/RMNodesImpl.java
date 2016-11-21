@@ -30,9 +30,11 @@ package org.alfresco.rm.rest.api.impl;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
@@ -41,16 +43,22 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
 import org.alfresco.rm.rest.api.model.FileplanComponentNode;
 import org.alfresco.rm.rest.api.model.RecordCategoryNode;
 import org.alfresco.rm.rest.api.model.RecordFolderNode;
 import org.alfresco.rm.rest.api.model.RecordNode;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -79,6 +87,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     private DictionaryService dictionaryService;
     private DispositionService dispositionService;
     private CapabilityService capabilityService;
+    private FileFolderService fileFolderService;
 
     public void init()
     {
@@ -101,6 +110,11 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
+    }
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
     }
 
     @Override
@@ -317,4 +331,138 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
 
         return new Pair<>(searchTypeQNames, ignoreAspectQNames);
     }
+
+    @Override
+    public Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters)
+    {
+        // create RM path if needed and call the super method with the last element of the created path
+        NodeRef parentNodeRef = getOrCreatePath(parentFolderNodeId, nodeInfo);
+        nodeInfo.setRelativePath(null); 
+
+        return super.createNode(parentNodeRef.getId(), nodeInfo, parameters);
+    }
+
+    /**
+     * Gets or creates the relative path specified in nodeInfo.relativePath 
+     * starting from the provided parent folder.
+     * The method decides the type of the created elements considering the 
+     * parent container's type and the type of the node to be created.
+     * @param parentFolderNodeId the parent folder to start from
+     * @param nodeInfo information about the node to be created
+     * @return reference to the last element of the created path
+     */
+    protected NodeRef getOrCreatePath(String parentFolderNodeId, Node nodeInfo)
+    {
+        NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        String relativePath = nodeInfo.getRelativePath();
+        if (relativePath == null)
+        {
+            return parentNodeRef;
+        }
+        List<String> pathElements = getPathElements(relativePath);
+        if (pathElements.isEmpty())
+        {
+            return parentNodeRef;
+        }
+
+        /*
+         * Get the latest existing path element
+         */
+        int i = 0;
+        for (; i < pathElements.size(); i++)
+        {
+            final String pathElement = pathElements.get(i);
+            final NodeRef contextParentNodeRef = parentNodeRef;
+            // Navigation should not check permissions
+            NodeRef child = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    return nodeService.getChildByName(contextParentNodeRef, ContentModel.ASSOC_CONTAINS, pathElement);
+                }
+            });
+
+            if(child == null)
+            {
+                break;
+            }
+            parentNodeRef = child;
+        }
+        if(i == pathElements.size())
+        {
+            return parentNodeRef;
+        }
+        else
+        {
+            pathElements = pathElements.subList(i, pathElements.size());
+        }
+
+        /*
+         * Starting from the latest existing element create the rest of the elements
+         */
+        QName parentNodeType = nodeService.getType(parentNodeRef);
+        if(dictionaryService.isSubClass(parentNodeType, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER) || 
+           dictionaryService.isSubClass(parentNodeType, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER))
+        {
+            for (String pathElement : pathElements)
+            {
+                // Create unfiled record folder
+                parentNodeRef = fileFolderService.create(parentNodeRef, pathElement, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
+            }
+        }
+        else 
+        {
+            // Get the type of the node to be created
+            String nodeType = nodeInfo.getNodeType();
+            if ((nodeType == null) || nodeType.isEmpty())
+            {
+                throw new InvalidArgumentException("Node type is expected: "+parentFolderNodeId+","+nodeInfo.getName());
+            }
+            QName nodeTypeQName = createQName(nodeType);
+
+            /* Outside the unfiled record container the path elements are record categories 
+             * except the last element which is a record folder if the created node is of type content
+             */
+            Iterator<String> iterator = pathElements.iterator();
+            while(iterator.hasNext())
+            {
+                String pathElement = iterator.next();
+
+                if(!iterator.hasNext() && dictionaryService.isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT))
+                {
+                    // last element, create record folder if the node to be created is content
+                    parentNodeRef = fileFolderService.create(parentNodeRef, pathElement, RecordsManagementModel.TYPE_RECORD_FOLDER).getNodeRef();
+                }
+                else
+                {
+                    // create record category
+                    parentNodeRef = filePlanService.createRecordCategory(parentNodeRef, pathElement);
+                }
+            }
+        }
+
+        return parentNodeRef;
+    }
+
+    /**
+     * Helper method that parses a string representing a file path and returns a list of element names
+     * @param path the file path represented as a string
+     * @return a list of file path element names
+     */
+    private List<String> getPathElements(String path)
+    {
+        final List<String> pathElements = new ArrayList<>();
+        if (path != null && path.trim().length() > 0)
+        {
+            // There is no need to check for leading and trailing "/"
+            final StringTokenizer tokenizer = new StringTokenizer(path, "/");
+            while (tokenizer.hasMoreTokens())
+            {
+                pathElements.add(tokenizer.nextToken().trim());
+            }
+        }
+        return pathElements;
+    }
+
 }

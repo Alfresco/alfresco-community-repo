@@ -18,6 +18,7 @@
    </licenses>
 
    <modules>
+      <module>rm-community-rest-api-explorer</module>
       <module>rm-community-repo</module>
       <module>rm-community-share</module>
    </modules>

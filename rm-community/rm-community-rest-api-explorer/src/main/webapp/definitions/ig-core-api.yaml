@@ -1,0 +1,953 @@
+swagger: '2.0'
+info:
+  description: Provides access to Information Governance specific features
+  version: '1'
+  title: IG Core REST API
+basePath: /alfresco/api/-default-/public/ig/versions/1
+securityDefinitions:
+  basicAuth:
+    type: basic
+    description: HTTP Basic Authentication
+security:
+  - basicAuth: []
+consumes:
+  - application/json
+produces:
+  - application/json
+tags:
+  - name: fileplan-components
+    description: Retrieve and manage fileplan components
+  - name: ig-sites
+    description: Retrieve and manage the RM site
+paths:
+  '/fileplan-components/{fileplanComponentId}':
+    get:
+      tags:
+        - fileplan-components
+      summary: Get a fileplan component
+      description: |
+        Get information for fileplan component **fileplanComponentId**
+
+        Besides mandatory fields the node's aspects and properties are returned by default.
+      operationId: getFileplanComponent
+      parameters:
+        - $ref: '#/parameters/fileplanComponentIdWithAliasParam'
+        - $ref: '#/parameters/IGNodeEntryIncludeParam'
+        - $ref: '#/parameters/relativePathParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/IGNodeEntry'
+        '400':
+          description: |
+            Invalid parameter: **fileplanComponentId** is not a valid format
+        '401':
+          description: If authentication fails
+        '404':
+          description: If **fileplanComponentId** does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - fileplan-components
+      summary : Update fileplan component
+      description: |
+        Updates the fileplan component node **fileplanComponentId**. For example, you can rename a file or folder:
+        ```JSON
+        {
+          "name":"My new name"
+        }
+        ```
+        You can also set or update one or more properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "rma:vitalRecordIndicator": true,
+               "rma:reviewPeriod":"month|6"
+            }
+        }
+        ```
+        **Note:** if you want to add or remove aspects, then you must use **GET /fileplan-components/{fileplanComponentId}** first to get the complete set of *aspectNames*.
+
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateFileplanComponent
+      parameters:
+        - $ref: '#/parameters/fileplanComponentIdWithAliasParam'
+        - $ref: '#/parameters/IGNodeEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyUpdate
+          description: The node information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/IGNodeBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/IGNodeEntry'
+        '400':
+          description: |
+            Invalid parameter: the update request is invalid or **fileplanComponentId** is not a valid format or **nodeBody** is invalid
+        '401':
+          description: If authentication fails
+        '403':
+          description: If current user does not have permission to update **fileplanComponentId**
+        '404':
+          description: If **fileplanComponentId** does not exist
+        '409':
+          description: If the updated name clashes with an existing node in the current parent folder
+        '422':
+          description: Model integrity exception, including file name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - fileplan-components
+      summary : Delete fileplan component
+      description: |
+        Deletes the fileplan component node **fileplanComponentId**.
+      operationId: deleteFileplanComponent
+      parameters:
+        - $ref: '#/parameters/fileplanComponentIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **fileplanComponentId** is not a valid format
+        '401':
+          description: If authentication fails
+        '403':
+          description: If the current user does not have permission to delete **fileplanComponentId**
+        '404':
+          description: If **fileplanComponentId** does not exist
+        '409':
+          description: If **fileplanComponentId** is locked and cannot be deleted
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  '/fileplan-components/{fileplanComponentId}/children':
+    get:
+      tags:
+        - fileplan-components
+      summary: List fileplan component's children
+      description: |
+        Returns a list of records and record containers.
+
+        **Note:** Special containers and retention schedules will not be retrieved.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter to return addtional information.
+
+        The list of child nodes includes primary children and secondary children, if there are any.
+
+        You can use the **include** parameter (include=association) to return child association details
+        for each child, including the **assocTyp**e and the **isPrimary** flag.
+      operationId: listFileplanComponentChildren
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/fileplanComponentIdWithAliasParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/orderByParam'
+        - $ref: '#/parameters/whereParam'
+        - $ref: '#/parameters/IGNodeEntryIncludeParam'
+        - $ref: '#/parameters/relativePathParam'
+        - $ref: '#/parameters/includeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/IGNodeAssociationPaging'
+        '401':
+          description: If authentication fails
+        '404':
+          description: If **fileplanComponentId** does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - fileplan-components
+      summary: Create an IG node
+      description: |
+        Create a fileplan component as a primary child of node **fileplanComponentId**.
+
+        This API method supports file upload using multipart/form-data.
+
+        Use the **filedata** field to represent the content to upload.
+        You can use a **name** field to give an alternative name for the new file.
+
+        For multipart/form-data upload you can use the **renditions** field to create renditions (e.g. doclib) asynchronously upon upload.
+        Note that currently only one rendition can be requested. Also, as requesting rendition is a background process,
+        any rendition failure (e.g. No transformer is currently available) will not fail the whole upload and has the potential to silently fail.
+
+        Use **overwrite** to overwrite an existing file, matched by name. If the file is versionable,
+        the existing content is replaced.
+
+        When you overwrite existing content, you can set the **majorVersion** boolean field to **true** to indicate a major version
+        should be created. The default for **majorVersion** is **false**.
+        Setting  **majorVersion** enables versioning of the node, if it is not already versioned.
+
+        When you overwrite existing content, you can use the **comment** field to add a version comment that appears in the
+        version history. This also enables versioning of this node, if it is not already versioned.
+
+        You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
+        the API method tries to create
+        a unique name using an integer suffix.
+
+        Any field in the JSON body defined below can also be passed as a form-data field.
+
+        This API method also supports node creation using application/json.
+
+        You can create a category like this:
+        ```JSON
+        {
+          "name":"My Category",
+          "nodeType":"rma:recordCategory"
+        }
+        ```
+
+        You can create a record folder like this:
+        ```JSON
+        {
+          "name":"My Record Folder",
+          "nodeType":"rma:recordFolder"
+        }
+        ```
+
+        You can create a hold folder like this:
+        ```JSON
+        {
+          "name": "My Hold Folder",
+          "nodeType": "rma:hold",
+          "properties":
+          {
+            "rma:holdReason": "My Hold Reason"
+          }
+        }
+        ```
+        You can create an unfiled record folder like this:
+        ```JSON
+        {
+          "name": "My Unfiled Record Folder",
+          "nodeType": "rma:unfiledRecordFolder",
+          "properties":
+          {
+            "cm:title": "My Unfiled Record Folder Title"
+          }
+        }
+        ```
+
+      operationId: createFileplanComponent
+      parameters:
+        - $ref: '#/parameters/fileplanComponentIdWithAliasParam'
+        - name: autoRename
+          in: query
+          description: If true, then  a name clash will cause an attempt to auto rename by finding a unique name using an integer suffix.
+          required: false
+          type: boolean
+        - $ref: '#/parameters/IGNodeEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyCreate
+          description: The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/NodeBodyCreate'
+      consumes:
+        - application/json
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/IGNodeEntry'
+        '400':
+          description: |
+            Invalid parameter: **fileplanComponentId** is not a valid format or **nodeBodyCreate** is invalid
+        '401':
+          description: If authentication fails
+        '403':
+          description: If current user does not have permission to add children to **fileplanComponentId**
+        '404':
+          description: If **fileplanComponentId** does not exist
+        '409':
+          description: If new name clashes with an existing node in the current parent container
+        '422':
+          description: Model integrity exception, including node name with invalid characters
+  /ig-sites:
+    post:
+      tags:
+        - ig-sites
+      summary: Create the RM site
+      description: |
+        **Note:** this endpoint is available in RM 2.6 and newer versions.
+
+        Creates the RM site with the given details.
+
+        **Note:** the id of a site cannot be updated once the site has been created.
+
+        For example, to create the RM site named "Records Management Title" with "Records Management Description" as description, the following body could be used:
+        ```JSON
+        {
+          "title": "Records Management Title",
+          "description": "Records Management Description"
+        }
+        ```
+
+        The creator will be added as a member with Site Manager role.
+
+        When you create the RM site, the **filePlan** structure is also created.
+
+      operationId: createRMSite
+      produces:
+        - application/json
+      parameters:
+        - name: skipAddToFavorites
+          in: query
+          description: Flag to indicate whether the RM site should not be added to the user's site favorites.
+          type: boolean
+          default: false
+        - in: body
+          name: siteBodyCreate
+          description: The site details
+          required: true
+          schema:
+            $ref: '#/definitions/RMSiteBodyCreate'
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RMSiteEntry'
+        '400':
+          description: |
+            Invalid parameter: **title**, or **description** exceed the maximum length;
+            or **siteBodyCreate** invalid
+        '401':
+          description: Authentication failed
+        '409':
+          description: Site with the given identifier already exists
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/ig-sites/rm':
+    get:
+      tags:
+        - ig-sites
+      summary: Get the RM site
+      description: |
+        **Note:** this endpoint is available in RM 2.6 and newer versions.
+
+        Gets information for RM site.
+
+      operationId: getRMSite
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RMSiteEntry'
+        '400':
+          description: |
+            Invalid parameter: GET request is suported only for the RM site
+        '401':
+          description: Authentication failed
+        '404':
+          description: |
+            RM site does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - ig-sites
+      summary: Delete the RM site
+      description: |
+        **Note:** this endpoint is available in RM 2.6 and newer versions.
+
+        Deletes the RM site.
+      operationId: deleteRMSite
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: DELETE request is suported only for the RM site
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete the site that is visible to them.
+        '404':
+          description: |
+            RM site does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - ig-sites
+      summary: Update the RM site
+      description: |
+        **Note:** this endpoint is available in RM 2.6 and newer versions.
+
+        Update the details for the RM site. Site Manager or otherwise a
+        (site) admin can update title or description.
+
+        **Note**: the id, site visibility or compliance of the RM site cannot be updated once the RM site has been created.
+
+      operationId: updateRMSite
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: siteBodyUpdate
+          description: The RM site information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/RMSiteBodyUpdate'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RMSiteEntry'
+        '400':
+          description: |
+            Invalid parameter: PUT request is suported only for the RM site, or **siteBodyUpdate** invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update the RM site that is visible to them.
+        '404':
+          description: |
+            RM site does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+parameters:
+  fileplanComponentIdWithAliasParam:
+    name: fileplanComponentId
+    in: path
+    description: |
+      The identifier of a node. You can also use one of these well-known aliases:
+      * -filePlan-
+      * -transfers-
+      * -unfiled-
+      * -holds-
+    required: true
+    type: string
+  whereParam:
+    name: where
+    in: query
+    description: |
+      Optionally filter the list. Here are some examples:
+
+      *   ```where=(isFile=true)```
+
+      *   ```where=(nodeType='my:specialNodeType')```
+
+      *   ```where=(nodeType='my:specialNodeType' INCLUDESUBTYPES)```
+
+      *   ```where=(isPrimary=true)```
+
+      *   ```where=(assocType='my:specialAssocType')```
+
+    required: false
+    type: string
+  includeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** in addition to **entries** with folder information on the parent node – either the specified parent **fileplanComponentId**, or as resolved by **relativePath**.
+    required: false
+    type: boolean
+  relativePathParam:
+    name: relativePath
+    in: query
+    description: |
+      A path relative to the **fileplanComponentId**. If you set this,
+      information is returned on the node resolved by this path.
+    required: false
+    type: string
+  IGNodeEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the fileplan component. Any optional field from the response model can be requested. For example:
+      * properties
+      * aspectNames
+      * hasRetentionSchedule
+      * isClosed
+      * isCompleted
+      * content
+      * allowableOperations
+      * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  ## Core definition
+  fileplanComponentIdParam:
+    name: fileplanComponentId
+    in: path
+    description: The identifier of a fileplan compoment.
+    required: true
+    type: string
+  ## Core definition
+  fieldsParam:
+    name: fields
+    in: query
+    description: |
+      A list of field names.
+
+      You can use this parameter to restrict the fields
+      returned within a response if, for example, you want to save on overall bandwidth.
+
+      The list applies to a returned individual
+      entity or entries within a collection.
+
+      If the API method also supports the **include**
+      parameter, then the fields specified in the **include**
+      parameter are returned in addition to those specified in the **fields** parameter.
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  ## Core definition
+  skipCountParam:
+    name: skipCount
+    in: query
+    description: The number of entities that exist in the collection before those included in this list.
+    required: false
+    type: integer
+    minimum: 0
+  ## Core definition
+  maxItemsParam:
+    name: maxItems
+    in: query
+    description: The maximum number of items to return in the list.
+    required: false
+    type: integer
+    minimum: 1
+  ## Core parameter
+  orderByParam:
+    name: orderBy
+    in: query
+    description: |
+      A string to control the order of the entities returned in a list. You can use the **orderBy** parameter to
+      sort the list by one or more fields.
+
+      Each field has a default sort order, which is normally acending order. Read the API method implementation notes
+      above to check if any fields used in this method have a descending default search order.
+
+      To sort the entities in a specific order, you can use the **ASC** and **DESC** keywords for any field.
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+definitions:
+  IGNodeEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/IGNode'
+  IGNode:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - isCategory
+    - isRecordFolder
+    - isFile
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isCategory:
+        type: boolean
+      isRecordFolder:
+        type: boolean
+        default: false
+      isFile:
+        type: boolean
+        default: false
+      hasRetentionSchedule:
+        type: boolean
+        default: false
+        description: Present only for category nodes. Indicates if the category has a retention schedule defined
+      isClosed:
+        type: boolean
+        default: false
+        description: Present only for record folder nodes. Indicates if the record folder is closed
+      isCompleted:
+        type: boolean
+        default: false
+        description: Present only for record nodes. Indicates if the record has a retention schedule defined
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      content:
+        $ref: '#/definitions/ContentInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  IGNodeAssociationPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/IGNodeChildAssociationEntry'
+          source:
+            $ref: '#/definitions/IGNode'
+  IGNodeChildAssociationEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/IGNodeChildAssociation'
+  IGNodeChildAssociation:
+    allOf:
+      - $ref: '#/definitions/IGNode'
+      - type: object
+        properties:
+          association:
+            $ref: '#/definitions/ChildAssociationInfo'
+  IGNodeBodyUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+  ## Core definition
+  ChildAssociationInfo:
+    type: object
+    required:
+      - assocType
+      - isPrimary
+    properties:
+      assocType:
+        type: string
+      isPrimary:
+        type: boolean
+  ## Core definition
+  Pagination:
+    type: object
+    required:
+      - count
+      - hasMoreItems
+      - skipCount
+      - maxItems
+    properties:
+      count:
+        type: integer
+        format: int64
+        description: |
+          The number of objects in the entries array.
+      hasMoreItems:
+        type: boolean
+        description: |
+          A boolean value which is **true** if there are more entities in the collection
+          beyond those in this response. A true value means a request with a larger value
+          for the **skipCount** or the **maxItems** parameter will return more entities.
+      totalItems:
+        type: integer
+        format: int64
+        description: |
+          An integer describing the total number of entities in the collection.
+          The API might not be able to determine this value,
+          in which case this property will not be present.
+      skipCount:
+        type: integer
+        format: int64
+        description: |
+          An integer describing how many entities exist in the collection before
+          those included in this list.
+      maxItems:
+        type: integer
+        format: int64
+        description: |
+          The value of the **maxItems** parameter used to generate this list,
+          or if there was no **maxItems** parameter the default value is 100
+  ## Core definition
+  Error:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: object
+        required:
+          - statusCode
+          - briefSummary
+          - stackTrace
+          - descriptionURL
+        properties:
+          errorKey:
+            type: string
+          statusCode:
+            type: integer
+            format: int32
+          briefSummary:
+            type: string
+          stackTrace:
+            type: string
+          descriptionURL:
+            type: string
+          logId:
+            type: string
+  ## Core definition
+  UserInfo:
+    type: object
+    required:
+      - displayName
+      - id
+    properties:
+      displayName:
+        type: string
+      id:
+        type: string
+  ## Core definition
+  ContentInfo:
+    type: object
+    required:
+      - mimeType
+      - mimeTypeName
+      - sizeInBytes
+    properties:
+      mimeType:
+        type: string
+      mimeTypeName:
+        type: string
+      sizeInBytes:
+        type: integer
+      encoding:
+        type: string
+  ## Core definition
+  PathElement:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+  ## Core definition
+  PathInfo:
+    type: object
+    properties:
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/PathElement'
+      name:
+        type: string
+      isComplete:
+        type: boolean
+  ## Core definition
+  NodeBodyCreate:
+    type: object
+    required:
+      - name
+      - nodeType
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+      relativePath:
+        type: string
+      association:
+        type: object
+        properties:
+          assocType:
+            type: string
+      secondaryChildren:
+        type: array
+        items:
+          $ref: '#/definitions/ChildAssociationBody'
+      targets:
+        type: array
+        items:
+          $ref: '#/definitions/AssociationBody'
+  ## Core definition
+  ChildAssociationBody:
+    type: object
+    required:
+    - childId
+    - assocType
+    properties:
+      childId:
+        type: string
+      assocType:
+        type: string
+  ## Core definition
+  AssociationBody:
+    type: object
+    required:
+    - targetId
+    - assocType
+    properties:
+      targetId:
+        type: string
+      assocType:
+        type: string
+  RMSiteBodyCreate:
+    type: object
+    required:
+      - title
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+      compliance:
+        type: string
+        default: STANDARD
+        enum:
+          - STANDARD
+          - DOD5015
+  RMSiteBodyUpdate:
+    type: object
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+  RMSiteEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RMSite'
+  RMSite:
+    type: object
+    required:
+      - id
+      - guid
+      - title
+      - visibility
+      - compliance
+    properties:
+      id:
+        type: string
+      guid:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      visibility:
+        type: string
+        enum:
+          - PRIVATE
+          - MODERATED
+          - PUBLIC
+      compliance:
+        type: string
+        enum:
+          - STANDARD
+          - DOD5015
+      role:
+        type: string
+        enum:
+          - SiteConsumer
+          - SiteCollaborator
+          - SiteContributor
+          - SiteManager

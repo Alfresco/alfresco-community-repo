@@ -297,7 +297,10 @@ public class PeopleImpl implements People
     public Person getPerson(String personId)
     {
         personId = validatePerson(personId);
-        Person person = getPersonWithProperties(personId);
+        List<String> include = Arrays.asList(
+                PARAM_INCLUDE_ASPECTNAMES,
+                PARAM_INCLUDE_PROPERTIES);
+        Person person = getPersonWithProperties(personId, include);
 
         return person;
     }
@@ -322,7 +325,7 @@ public class PeopleImpl implements People
             public Person get(int index)
             {
                 PersonService.PersonInfo personInfo = page.get(index);
-                Person person = getPersonWithProperties(personInfo.getUserName());
+                Person person = getPersonWithProperties(personInfo.getUserName(), parameters.getInclude());
                 return person;
             }
 
@@ -360,7 +363,7 @@ public class PeopleImpl implements People
         return sortProps;
     }
 
-    private Person getPersonWithProperties(String personId)
+    private Person getPersonWithProperties(String personId, List<String> include)
     {
         Person person = null;
         NodeRef personNode = personService.getPerson(personId, false);
@@ -384,12 +387,18 @@ public class PeopleImpl implements People
             nodeProps.remove(Person.PROP_PERSON_DESCRIPTION);
 
             // Expose properties
-            Map<String, Object> custProps = new HashMap<>();
-            custProps.putAll(nodes.mapFromNodeProperties(nodeProps, new ArrayList<>(), new HashMap<>(), EXCLUDED_PROPS));
-            person.setProperties(custProps);
-            // Expose aspect names
-            Set<QName> aspects = nodeService.getAspects(personNode);
-            person.setAspectNames(nodes.mapFromNodeAspects(aspects, EXCLUDED_ASPECTS));
+            if (include.contains(PARAM_INCLUDE_PROPERTIES))
+            {
+                Map<String, Object> custProps = new HashMap<>();
+                custProps.putAll(nodes.mapFromNodeProperties(nodeProps, new ArrayList<>(), new HashMap<>(), EXCLUDED_PROPS));
+                person.setProperties(custProps);
+            }
+            if (include.contains(PARAM_INCLUDE_ASPECTNAMES))
+            {
+                // Expose aspect names
+                Set<QName> aspects = nodeService.getAspects(personNode);
+                person.setAspectNames(nodes.mapFromNodeAspects(aspects, EXCLUDED_ASPECTS));
+            }
             
             // get avatar information
             if (hasAvatar(personNode))

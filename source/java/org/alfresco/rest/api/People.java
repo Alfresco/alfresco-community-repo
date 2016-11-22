@@ -34,7 +34,8 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
 public interface People
 {
 	String DEFAULT_USER = "-me-";
-
+    String PARAM_INCLUDE_ASPECTNAMES = "aspectNames";
+    String PARAM_INCLUDE_PROPERTIES = "properties";
     String PARAM_FIRST_NAME = "firstName";
     String PARAM_LAST_NAME = "lastName";
     String PARAM_ID = "id";

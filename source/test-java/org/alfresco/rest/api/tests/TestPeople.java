@@ -120,12 +120,12 @@ public class TestPeople extends EnterpriseTestApi
         return network;
     }
 
-	@Test
-	public void testPeople() throws Exception
-	{
-		final String person1 = account1PersonIt.next();
-    	final String person2 = account1PersonIt.next();
-		final String person3 = account2PersonIt.next();
+    @Test
+    public void testGetPerson() throws Exception
+    {
+        final String person1 = account1PersonIt.next();
+        final String person2 = account1PersonIt.next();
+        final String person3 = account2PersonIt.next();
 
     	// Test Case cloud-2192
     	// should be able to see oneself
@@ -1022,8 +1022,13 @@ public class TestPeople extends EnterpriseTestApi
         {
             params.put("orderBy", sortColumn + " " + (asc ? "ASC" : "DESC"));
         }
+        
+        return listPeople(createParams(paging, params), statusCode);
+    }
 
-        HttpResponse response = people.getAll("people", null, null, null, createParams(paging, params), "Failed to get people", statusCode);
+    private PublicApiClient.ListResponse<Person> listPeople(Map<String, String> parameters, int expectedStatusCode) throws PublicApiException
+    {
+        HttpResponse response = people.getAll("people", null, null, null, parameters, "Failed to get people", expectedStatusCode);
         JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
         if (jsonList == null)
         {
@@ -1033,6 +1038,32 @@ public class TestPeople extends EnterpriseTestApi
         return Person.parsePeople(response.getJsonResponse());
     }
 
+    @Test
+    public void testListPeopleWithAspectNamesAndProperties() throws PublicApiException
+    {
+        initializeContextForGetPeople();
+        
+        // Are aspectNames and properties left absent when not required?
+        {
+            PublicApiClient.ListResponse<Person> resp = listPeople(Collections.emptyMap(), 200);
+            assertNull(resp.getList().get(0).getAspectNames());
+            assertNull(resp.getList().get(0).getProperties());
+        }
+        
+        // Are aspectNames and properties populated when requested?
+        {
+            Map<String, String> parameters = Collections.singletonMap("include", "aspectNames,properties");
+            PublicApiClient.ListResponse<Person> resp = listPeople(parameters, 200);
+            Person alice = resp.getList().stream().
+                    filter(p -> p.getUserName().equals("alice@"+account4.getId()))
+                    .findFirst().get();
+            assertNotNull(alice.getAspectNames());
+            assertTrue(alice.getAspectNames().contains("cm:titled"));
+            assertNotNull(alice.getProperties());
+            assertEquals("Alice through the REST API", alice.getProperties().get("cm:title"));
+        }
+    }
+    
     /**
      * Tests the capability to sort and paginate the list of people orderBy =
      * firstName ASC skip = 1, count = 3
@@ -1232,6 +1263,7 @@ public class TestPeople extends EnterpriseTestApi
         personAlice.setEmail("alison.smith@example.com");
         personAlice.setPassword("password");
         personAlice.setEnabled(true);
+        personAlice.setProperties(Collections.singletonMap("cm:title", "Alice through the REST API"));
         people.create(personAlice);
 
         publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));

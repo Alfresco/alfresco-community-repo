@@ -542,7 +542,7 @@ public class PeopleImpl implements People
                 // Non-admin users can update their own password, but must provide their current password.
                 if (person.getOldPassword() == null)
                 {
-                    throw new PermissionDeniedException();
+                    throw new PermissionDeniedException("Existing password is required, but missing (filed 'oldPassword').");
                 }
                 char[] oldPassword = person.getOldPassword().toCharArray();
                 try

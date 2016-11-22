@@ -20,7 +20,7 @@
    </properties>
 
    <properties>
-      <alfresco.installer.host>nightlybuilds</alfresco.installer.host>
+      <alfresco.installer.host>releases</alfresco.installer.host>
    </properties>
 
    <build>

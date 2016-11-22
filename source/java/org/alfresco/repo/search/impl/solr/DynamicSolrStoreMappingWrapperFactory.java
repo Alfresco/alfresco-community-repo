@@ -114,6 +114,9 @@ public class DynamicSolrStoreMappingWrapperFactory
                     {
                         builder.append(',');
                     }
+                    Pair<String, Integer> key = new Pair<String, Integer>(instance.getHostName(), instance.getPort());
+                    HttpClient client = clients.get(key);
+                    builder.append(encoder.encode(client.getHostConfiguration().getProtocol().getScheme() +  "://", "UTF-8"));
                     builder.append(encoder.encode(instance.getHostName(), "UTF-8"));
                     builder.append(':');
                     builder.append(encoder.encode("" + instance.getPort(), "UTF-8"));

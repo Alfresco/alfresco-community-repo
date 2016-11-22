@@ -126,7 +126,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     private String rootGroupName = null;
     private String groupA = null;
     private String groupB = null;
-    private String groupC = null;
 
     @Before
     public void setup() throws Exception
@@ -3505,10 +3504,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = getSingle(NodesEntityResource.class, getMyNodeId(), params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(3, nodeResp.getAllowableOperations().size());
+        assertEquals(4, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // create folder
         nodeResp = createFolder(sharedNodeId, "folder 1 - "+RUNID);
@@ -3522,10 +3522,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = getSingle(NodesEntityResource.class, folderId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(3, nodeResp.getAllowableOperations().size());
+        assertEquals(4, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // create file
         nodeResp = createTextFile(folderId, "my file - "+RUNID+".txt", "The quick brown fox jumps over the lazy dog");
@@ -3540,9 +3541,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = getSingle(NodesEntityResource.class, fileId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertEquals(3, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
 
         // as user2 ...
@@ -3570,34 +3572,38 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = publicApiClient.get(NodesEntityResource.class, folderId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(3, nodeResp.getAllowableOperations().size());
+        assertEquals(4, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // a file - no create
         response = publicApiClient.get(NodesEntityResource.class, fileId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertEquals(3, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         response = publicApiClient.get(NodesEntityResource.class, sharedNodeId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(3, nodeResp.getAllowableOperations().size());
+        assertEquals(4, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // Company Home - no delete
         response = publicApiClient.get(NodesEntityResource.class, rootNodeId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertEquals(3, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // -ve
         deleteNode(rootNodeId, 403);
@@ -3606,9 +3612,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = publicApiClient.get(NodesEntityResource.class, sitesNodeId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertEquals(3, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // -ve
         deleteNode(sitesNodeId, 403);
@@ -3617,9 +3624,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = publicApiClient.get(NodesEntityResource.class, ddNodeId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertEquals(3, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // -ve
         deleteNode(ddNodeId, 403);
@@ -3638,9 +3646,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertEquals(userId, nodeResp.getCreatedByUser().getId());
         assertNotNull(nodeResp.getAllowableOperations());
-        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertEquals(3, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE_PERMISSIONS));
 
         // -ve
         deleteNode(siteNodeId, 403);
@@ -3943,7 +3952,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
      * @param user
      * @return
      */
-    private String createAuthorityContext(String user)
+    private void createAuthorityContext(String user)
     {
         AuthenticationUtil.setRunAsUser(user);
         if (rootGroupName == null)
@@ -3959,11 +3968,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             authorityService.addAuthority(rootGroupName, groupA);
             groupB = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupB");
             authorityService.addAuthority(rootGroupName, groupB);
-            groupC = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupC");
-            authorityService.addAuthority(rootGroupName, groupC);
         }
-
-        return rootGroupName;
     }
 
     /**

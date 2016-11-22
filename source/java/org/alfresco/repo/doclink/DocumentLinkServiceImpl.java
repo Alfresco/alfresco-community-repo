@@ -305,10 +305,13 @@ public class DocumentLinkServiceImpl implements DocumentLinkService, NodeService
         {
             try
             {
-                nodeService.deleteNode(linkRef);
+                if (!nodeService.hasAspect(linkRef, ContentModel.ASPECT_PENDING_DELETE))
+                {
+                    nodeService.deleteNode(linkRef);
 
-                /* if the node was successfully deleted increment the count */
-                report.incrementDeletedLinksCount();
+                    /* if the node was successfully deleted increment the count */
+                    report.incrementDeletedLinksCount();
+                }
             }
             catch (AccessDeniedException ex)
             {

@@ -27,6 +27,7 @@ package org.alfresco.rest.api.tests.client.data;
 
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
+import org.alfresco.rest.api.model.NodePermissions;
 
 import java.util.Date;
 import java.util.List;
@@ -77,6 +78,7 @@ public class Node
     protected ContentInfo contentInfo;
 
     protected List<String> allowableOperations;
+    protected NodePermissions nodePermissions;
 
     // please note: these are currently only used (optionally) for node create request
     protected String relativePath;
@@ -279,6 +281,15 @@ public class Node
         this.allowableOperations = allowableOperations;
     }
 
+    public NodePermissions getPermissions()
+    {
+        return nodePermissions;
+    }
+
+    public void setPermissions(NodePermissions nodePermissions)
+    {
+        this.nodePermissions = nodePermissions;
+    }
 
     public String getRelativePath()
     {

@@ -91,6 +91,7 @@ public class Node implements Comparable<Node>
     protected Map<String, Object> properties;
 
     protected List<String> allowableOperations;
+    protected NodePermissions nodePermissions;
 
     //optional SearchEntry (only ever returned from a search)
     protected SearchEntry search = null;
@@ -334,6 +335,16 @@ public class Node implements Comparable<Node>
     public void setAllowableOperations(List<String> allowableOperations)
     {
         this.allowableOperations = allowableOperations;
+    }
+
+    public NodePermissions getPermissions()
+    {
+        return nodePermissions;
+    }
+
+    public void setPermissions(NodePermissions nodePermissions)
+    {
+        this.nodePermissions = nodePermissions;
     }
 
     public List<AssocTarget> getTargets()

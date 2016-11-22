@@ -59,6 +59,7 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.LockInfo;
+import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -83,11 +84,14 @@ import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.apache.http.HttpStatus;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
@@ -117,14 +121,20 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     private static final String EMPTY_BODY = "{}";
 
     protected PermissionService permissionService;
+    protected AuthorityService authorityService;
 
-    
+    private String rootGroupName = null;
+    private String groupA = null;
+    private String groupB = null;
+    private String groupC = null;
+
     @Before
     public void setup() throws Exception
     {
         super.setup();
 
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
+        authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
     }
     
     @After
@@ -3872,65 +3882,417 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
 
-   /**
-    * Tests unlock of a node
-    * <p>POST:</p>
-    * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/unlock}
-    */
-   @Test
-   public void testUnlock() throws Exception
-   {
-       setRequestContext(user1);
+    /**
+     * Tests unlock of a node
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/unlock}
+     */
+    @Test
+    public void testUnlock() throws Exception
+    {
+        setRequestContext(user1);
 
-       // create folder
-       Folder folderResp = createFolder(Nodes.PATH_MY, "folder" + RUNID);
-       String folderId = folderResp.getId();
-       
-       // create doc d1
-       String d1Name = "content" + RUNID + "_1l";
-       Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
-       String d1Id = d1.getId();
+        // create folder
+        Folder folderResp = createFolder(Nodes.PATH_MY, "folder" + RUNID);
+        String folderId = folderResp.getId();
 
-       lock(d1Id, EMPTY_BODY);
+        // create doc d1
+        String d1Name = "content" + RUNID + "_1l";
+        Document d1 = createTextFile(folderId, d1Name, "The quick brown fox jumps over the lazy dog 1.");
+        String d1Id = d1.getId();
 
-       HttpResponse response = post(getNodeOperationUrl(d1Id, "unlock"), null, null, 200);
-       Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        lock(d1Id, EMPTY_BODY);
 
-       assertEquals(d1Name, documentResp.getName());
-       assertEquals(d1Id, documentResp.getId());
-       assertNull(documentResp.getProperties().get("cm:lockType"));
-       assertNull(documentResp.getProperties().get("cm:lockOwner"));
+        HttpResponse response = post(getNodeOperationUrl(d1Id, "unlock"), null, null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-       lock(d1Id, EMPTY_BODY);
-       // Users with admin rights can unlock nodes locked by other users.
-       setRequestContext(networkAdmin);
-       post(getNodeOperationUrl(d1Id, "unlock"), null, null, 200);
+        assertEquals(d1Name, documentResp.getName());
+        assertEquals(d1Id, documentResp.getId());
+        assertNull(documentResp.getProperties().get("cm:lockType"));
+        assertNull(documentResp.getProperties().get("cm:lockOwner"));
 
-       // -ve
-       // Missing target node
-       post(getNodeOperationUrl("fakeId", "unlock"), null, null, 404);
+        lock(d1Id, EMPTY_BODY);
+        // Users with admin rights can unlock nodes locked by other users.
+        setRequestContext(networkAdmin);
+        post(getNodeOperationUrl(d1Id, "unlock"), null, null, 200);
 
-       // Unlock by a user without permission
-       lock(d1Id, EMPTY_BODY);
-       setRequestContext(user2);
-       post(getNodeOperationUrl(d1Id, "unlock"), null, null, 403);
+        // -ve
+        // Missing target node
+        post(getNodeOperationUrl("fakeId", "unlock"), null, null, 404);
 
-       setRequestContext(user1);
-       
-       //Unlock on a not locked node
-       post(getNodeOperationUrl(folderId, "unlock"), null, null, 422);
+        // Unlock by a user without permission
+        lock(d1Id, EMPTY_BODY);
+        setRequestContext(user2);
+        post(getNodeOperationUrl(d1Id, "unlock"), null, null, 403);
 
-       // clean up
-       setRequestContext(user1); // all locks were made by user1
+        setRequestContext(user1);
 
-       unlock(d1Id);
-       deleteNode(folderId);
-   }
+        //Unlock on a not locked node
+        post(getNodeOperationUrl(folderId, "unlock"), null, null, 422);
 
-   @Override
-   public String getScope()
-   {
-       return "public";
-   }
+        // clean up
+        setRequestContext(user1); // all locks were made by user1
+
+        unlock(d1Id);
+        deleteNode(folderId);
+    }
+
+    /**
+     * Creates authority context
+     *
+     * @param user
+     * @return
+     */
+    private String createAuthorityContext(String user)
+    {
+        AuthenticationUtil.setRunAsUser(user);
+        if (rootGroupName == null)
+        {
+            rootGroupName = authorityService.getName(AuthorityType.GROUP, "GroupsTest_ROOT");
+        }
+
+        if (!authorityService.authorityExists(rootGroupName))
+        {
+            AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+            rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, "GroupsTest_ROOT");
+            groupA = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupA");
+            authorityService.addAuthority(rootGroupName, groupA);
+            groupB = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupB");
+            authorityService.addAuthority(rootGroupName, groupB);
+            groupC = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupC");
+            authorityService.addAuthority(rootGroupName, groupC);
+        }
+
+        return rootGroupName;
+    }
+
+    /**
+     * Clears authority context: removes root group and all child groups
+     */
+    private void clearAuthorityContext()
+    {
+        if (authorityService.authorityExists(rootGroupName))
+        {
+            AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+            authorityService.deleteAuthority(rootGroupName, true);
+        }
+    }
+
+    /**
+     * Tests set permissions on an existing node
+     *
+     * @throws Exception
+     */
+    //@Test
+    public void testUpdateNodePermissions() throws Exception
+    {
+        try
+        {
+            createAuthorityContext(networkAdmin);
+
+            setRequestContext(user1);
+            // +ve tests
+            testUpdatePermissionsOnNode();
+
+            // -ve tests
+            // invalid permission tests (authority, name or access level)
+            testUpdatePermissionInvalidAuthority();
+            testUpdatePermissionInvalidName();
+            testUpdatePermissionInvalidAccessStatus();
+
+            // 'Permission Denied' tests
+            testUpdatePermissionsPermissionDeniedUser();
+            testUpdatePermissionsOnCompanyHome();
+
+            // Inherit from parent tests
+            testUpdatePermissionsDefaultInheritFromParent();
+            testUpdatePermissionsSetFalseInheritFromParent();
+        }
+        finally
+        {
+            clearAuthorityContext();
+        }
+    }
+
+    /**
+     * Test update permission on a node
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionsOnNode() throws Exception
+    {
+        // create folder with an empty document
+        String postUrl = createFolder();
+        String docId = createDocument(postUrl);
+
+        // update permissions
+        Document dUpdate = new Document();
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Consumer", AccessStatus.ALLOWED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupB, "Editor", AccessStatus.DENIED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // update node
+        HttpResponse response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        validatePermissionsAfterUpdate(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), locallySetPermissions);
+    }
+
+    /**
+     * Test attempt to set permission with an invalid authority
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionInvalidAuthority() throws Exception
+    {
+        // create folder containing an empty document
+        String postUrl = createFolder();
+        String dId = createDocument(postUrl);
+
+        // update permissions
+        Document dUpdate = new Document();
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission("NonExistingAuthority", "Consumer", AccessStatus.DENIED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // "Cannot set permissions on this node - unknown authority:
+        // NonExistingAuthority"
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+    }
+
+    /**
+     * Test attempt to set permission with an invalid name
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionInvalidName() throws Exception
+    {
+        // create folder with an empty document
+        String postUrl = createFolder();
+        String dId = createDocument(postUrl);
+
+        // update permissions
+        Document dUpdate = new Document();
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "InvalidName", AccessStatus.DENIED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // "Cannot set permissions on this node - unknown permission name:
+        // InvalidName"
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+    }
+
+    /**
+     * Test attempt to set permission with an invalid access status
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionInvalidAccessStatus() throws Exception
+    {
+        // create folder with an empty document
+        String postUrl = createFolder();
+        String dId = createDocument(postUrl);
+
+        // update permissions
+        Document dUpdate = new Document();
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Consumer", "InvalidAccessLevel"));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // "Cannot set permissions on this node - unknown access status:
+        // InvalidName"
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+    }
+
+    /**
+     * Tests updating permissions on a node that user doesn't have permission for
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionsPermissionDeniedUser() throws Exception
+    {
+        // create folder with an empty document
+        String postUrl = createFolder();
+        String dId = createDocument(postUrl);
+
+        // update permissions
+        Document dUpdate = new Document();
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Consumer", AccessStatus.DENIED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        setRequestContext(user2);
+        // "Permission Denied" expected
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 403);
+    }
+
+    /**
+     * Test update permissions on 'Company Home'
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionsOnCompanyHome() throws Exception
+    {
+        HttpResponse response = getSingle(NodesEntityResource.class, Nodes.PATH_ROOT, null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Editor", AccessStatus.ALLOWED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        node.setPermissions(nodePermissions);
+
+        // "Permission Denied" expected
+        put(URL_NODES, node.getId(), toJsonAsStringNonNull(node), null, 403);
+    }
+
+    /**
+     * Test default inherit from parent
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionsDefaultInheritFromParent() throws Exception
+    {
+        // create folder
+        Folder folder = new Folder();
+        folder.setName("testFolder" + GUID.generate());
+        folder.setNodeType(TYPE_CM_FOLDER);
+
+        // set permissions on previously created folder
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Editor", AccessStatus.DENIED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        folder.setPermissions(nodePermissions);
+
+        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), RestApiUtil.toJsonAsStringNonNull(folder), 201);
+        Folder f = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+
+        // create a new document in testFolder
+        String docId = createDocument(getNodeChildrenUrl(f.getId()));
+
+        Map params = new HashMap<>();
+        params.put("include", "permissions");
+
+        response = getSingle(NodesEntityResource.class, docId, params, 200);
+        Document docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertTrue("Inheritance hasn't been enabled!", docResp.getPermissions().isInheritanceEnabled());
+        assertTrue("Permissions were not inherited from parent!", docResp.getPermissions().getInherited().size() > 0);
+    }
+
+    /**
+     * Test set inherit from parent to false
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionsSetFalseInheritFromParent() throws Exception
+    {
+        // create folder
+        String testFolderUrl = createFolder();
+        String testDocId = createDocument(testFolderUrl);
+
+        // create a new document in testFolder and set inherit to false
+        Document dUpdate = new Document();
+        NodePermissions nodePermissionsUpdate = new NodePermissions();
+        nodePermissionsUpdate.setInheritanceEnabled(false);
+        dUpdate.setPermissions(nodePermissionsUpdate);
+
+        HttpResponse response = put(URL_NODES, testDocId, toJsonAsStringNonNull(dUpdate), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        Map params = new HashMap<>();
+        params.put("include", "permissions");
+
+        response = getSingle(NodesEntityResource.class, documentResp.getId(), params, 200);
+        Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+
+        assertFalse("Inheritance hasn't been disabled!" + nodeResp.getPermissions().isInheritanceEnabled(), nodeResp.getPermissions().isInheritanceEnabled());
+        assertNull("Permissions were inherited from parent!", nodeResp.getPermissions().getInherited());
+
+    }
+
+    private String createFolder() throws Exception
+    {
+        String folderName = "testPermissionsFolder-" + GUID.generate();
+        String folderId = createFolder(Nodes.PATH_MY, folderName).getId();
+        return getNodeChildrenUrl(folderId);
+    }
+
+    /**
+     * Created an empty document in the given url path
+     * 
+     * @param url
+     * @return
+     * @throws Exception
+     */
+    private String createDocument(String url) throws Exception
+    {
+        Document d1 = new Document();
+        d1.setName("testDoc" + GUID.generate());
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        HttpResponse response = post(url, toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        return documentResp.getId();
+    }
+
+    private void validatePermissionsAfterUpdate(NodeRef nodeRef, List<NodePermissions.NodePermission> expectedPermissions)
+    {
+        Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
+
+        for (NodePermissions.NodePermission permission : expectedPermissions)
+        {
+            String authority = permission.getAuthorityId();
+            AccessPermission ap = getPermission(permissions, authority);
+            assertNotNull("Permission " + authority + " missing", ap);
+
+            assertEquals(authority, ap.getAuthority());
+            comparePermissions(authority, permission, ap);
+        }
+    }
+
+    private void comparePermissions(String authority, NodePermissions.NodePermission permission, AccessPermission ap)
+    {
+        assertEquals("Wrong permission for " + authority, permission.getAuthorityId(), ap.getAuthority());
+        assertEquals("Wrong permission for " + authority, permission.getName(), ap.getPermission());
+        assertEquals("Wrong access status for " + authority, permission.getAccessStatus(), ap.getAccessStatus().toString());
+    }
+
+    /**
+     * Searches through actual set of permissions
+     *
+     * @param permissions
+     * @param expectedAuthority
+     * @return
+     */
+    private AccessPermission getPermission(Set<AccessPermission> permissions, String expectedAuthority)
+    {
+        AccessPermission result = null;
+        for (AccessPermission ap : permissions)
+        {
+            if (expectedAuthority.equals(ap.getAuthority()))
+            {
+                result = ap;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public String getScope()
+    {
+        return "public";
+    }
 }
 

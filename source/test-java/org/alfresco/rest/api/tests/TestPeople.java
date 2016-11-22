@@ -775,15 +775,15 @@ public class TestPeople extends EnterpriseTestApi
 
         people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 401 response when updating " + personId, 401);
     }
-
-    @Test
-    public  void testUpdatePersonNonAdminNotAllowed() throws PublicApiException
-    {
-        final String personId = account3PersonIt.next();
-        publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
-
-        people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 403 response when updating " + personId, 403);
-    }
+	
+//    @Test
+//    public  void testUpdatePersonNonSelfAndNonAdminDisallowed() throws PublicApiException
+//    {
+//        final String personId = account3PersonIt.next();
+//        publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
+//
+//        people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 403 response when updating " + personId, 403);
+//    }
 
     @Test
     public  void testUpdatePersonNonexistentPerson() throws PublicApiException
@@ -955,17 +955,39 @@ public class TestPeople extends EnterpriseTestApi
         people.update("people", account3Admin, null, null, "{\n" + "  \"enabled\": \"" + false + "\"\n" + "}", params, "Expected 403 response when updating " + account3Admin, 403);
     }
 
-    @Test
-    public void testUpdatePersonPasswordNonAdminNotAllowed() throws PublicApiException
-    {
-        final String personId = account3PersonIt.next();
-        publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
+	@Test
+	public void testUpdatePersonPasswordByThemself() throws PublicApiException
+	{
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+		Person me = new Person();
+		me.setId(UUID.randomUUID().toString()+"@"+account1.getId());
+		me.setUserName(me.getId());
+		me.setFirstName("Jo");
+		me.setEmail(me.getId());
+		me.setEnabled(true);
+		me.setPassword("password123");
+		me = people.create(me);
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), me.getId(), "password123"));
 
-        people.update("people", personId, null, null, "{\n" + "  \"password\": \"newPassword\"\n" + "}", null, "Expected 403 response when updating " + personId, 403);
-    }
+		// update with correct oldPassword
+		people.update(me.getId(), qjson("{ `oldPassword`:`password123`, `password`:`newpassword456` }"), 200);
+
+		// The old password should no longer work - therefore they are "unauthorized".
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), me.getId(), "password123"));
+		people.getPerson(me.getId(), 401);
+		// The new password should work.
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), me.getId(), "newpassword456"));
+		people.getPerson(me.getId());
+
+		// update with wrong oldPassword
+		people.update(me.getId(), qjson("{ `oldPassword`:`password123`, `password`:`newpassword456` }"), 403);
+
+		// update with no oldPassword
+		people.update(me.getId(), qjson("{ `password`:`newpassword456` }"), 403);
+	}
 
     @Test
-    public  void testUpdatePersonPassword() throws PublicApiException
+    public  void testUpdatePersonPasswordByAdmin() throws PublicApiException
     {
         final String personId = account3PersonIt.next();
         final String networkId = account3.getId();

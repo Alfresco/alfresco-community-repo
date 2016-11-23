@@ -80,6 +80,8 @@ public class RecordFolderType extends    AbstractDisposableItem
     /** I18N */
     private static final String MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD = "rm.action.create.record.folder.child-error-message";
 
+    private static final String MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER = "rm.service.add-children-to-closed-record-folder";
+
     /**
      * @param recordService record service
      */
@@ -235,7 +237,7 @@ public class RecordFolderType extends    AbstractDisposableItem
             Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
             if (isClosed != null && isClosed)
             {
-                throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
+                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER), null);
             }
         }
     }

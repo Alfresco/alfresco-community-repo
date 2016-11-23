@@ -261,6 +261,25 @@ paths:
         }
         ```
 
+        You can create a non-electronic record like this:
+        ```JSON
+        {
+          "name":"My Non-electronic Record",
+          "nodeType":"rma:nonElectronicDocument",
+          "properties":
+            {
+              "cm:description":"My Non-electronic Record Description",
+              "cm:title":"My Non-electronic Record Title",
+              "rma:box":"My Non-electronic Record Box",
+              "rma:file":"My Non-electronic Record File",
+              "rma:numberOfCopies":1,
+              "rma:physicalSize":30,
+              "rma:shelf":"My Non-electronic Record Shelf",
+              "rma:storageLocation":"My Non-electronic Record Location"
+            }
+        }
+        ```
+
         You can create a fileplan component inside a container hierarchy:
         ```JSON
         {

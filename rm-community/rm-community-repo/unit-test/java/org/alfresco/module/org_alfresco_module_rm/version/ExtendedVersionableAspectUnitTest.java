@@ -208,7 +208,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verify(mockedLockService).isLockedAndReadOnly(nodeRef);
 
         // assert the version was not created
         verify(mockedVersionService, never()).createVersion(eq(nodeRef), any(Map.class));
@@ -247,7 +247,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verify(mockedLockService).isLockedAndReadOnly(nodeRef);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
 
         // assert the version was not created
@@ -291,7 +291,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verify(mockedLockService).isLockedAndReadOnly(nodeRef);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
 
@@ -340,7 +340,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verify(mockedLockService).isLockedAndReadOnly(nodeRef);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
         verify(mockedAlfrescoTransactionSupport).getResource(KEY_VERSIONED_NODEREFS);
@@ -396,7 +396,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verify(mockedLockService).isLockedAndReadOnly(nodeRef);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
         verify(mockedAlfrescoTransactionSupport, times(2)).getResource(KEY_VERSIONED_NODEREFS);

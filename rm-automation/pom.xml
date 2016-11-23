@@ -29,6 +29,7 @@
       <maven.compiler.target>1.8</maven.compiler.target>
       <suiteXmlFile>testng.xml</suiteXmlFile>
       <skip.automationtests>true</skip.automationtests>
+      <alfresco.installer.host>releases</alfresco.installer.host>
    </properties>
 
    <build>

@@ -70,7 +70,7 @@ cp "$CERTIFICATE_HOME/browser.p12" "$ALFRESCO_KEYSTORE_HOME/browser.p12"
 
 echo " "
 echo "*******************************************"
-echo "You must sure copy the following files to the correct location."
+echo "You must copy the following files to the correct location."
 echo " "
 echo " $CERTIFICATE_HOME/ssl.repo.client.keystore"
 echo " $CERTIFICATE_HOME/ssl.repo.client.truststore"

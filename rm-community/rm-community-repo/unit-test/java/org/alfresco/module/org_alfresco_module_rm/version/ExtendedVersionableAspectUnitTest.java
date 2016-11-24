@@ -35,6 +35,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +58,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.exceptions.verification.WantedButNotInvoked;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.extensions.webscripts.GUID;
@@ -208,7 +211,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verifyLockServiceInteraction();
 
         // assert the version was not created
         verify(mockedVersionService, never()).createVersion(eq(nodeRef), any(Map.class));
@@ -247,7 +250,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verifyLockServiceInteraction();
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
 
         // assert the version was not created
@@ -291,7 +294,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verifyLockServiceInteraction();
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
 
@@ -340,7 +343,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verifyLockServiceInteraction();
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
         verify(mockedAlfrescoTransactionSupport).getResource(KEY_VERSIONED_NODEREFS);
@@ -396,7 +399,7 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
         // verify other
         verify(mockedNodeService).exists(nodeRef);
-        verify(mockedLockService).getLockStatus(nodeRef);
+        verifyLockServiceInteraction();
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         verify(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY);
         verify(mockedAlfrescoTransactionSupport, times(2)).getResource(KEY_VERSIONED_NODEREFS);
@@ -406,4 +409,35 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
         verify(mockedVersionService).createVersion(eq(nodeRef), any(Map.class));
     }
 
+    /** Check the lock service had the correct interaction, which is different for different versions of Alfresco. */
+    private void verifyLockServiceInteraction()
+    {
+        try
+        {
+            // This check should pass for Alfresco 5.1.1.
+            verify(mockedLockService).getLockStatus(nodeRef);
+        }
+        catch(AssertionError e)
+        {
+            // Use reflection to determine whether a method has been called on the mock (and make sure the code still
+            // compiles against 5.1.1).
+            try
+            {
+                // If we're using Alfresco 5.2 then isLockedAndReadOnly should have been called.
+                Method method = LockService.class.getDeclaredMethod("isLockedAndReadOnly", NodeRef.class);
+                method.invoke(verify(mockedLockService), nodeRef);
+            }
+            catch (Exception someError)
+            {
+                if (someError instanceof InvocationTargetException &&
+                    someError.getCause() instanceof WantedButNotInvoked)
+                {
+                    // Re-throw the original Mockito exception.
+                    throw (WantedButNotInvoked) someError.getCause();
+                }
+                // This should never happen if the test is written correctly.
+                throw new RuntimeException("Unexpected exception - please check test.", someError);
+            }
+        }
+    }
 }

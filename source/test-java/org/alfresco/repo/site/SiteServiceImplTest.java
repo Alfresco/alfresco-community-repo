@@ -1229,7 +1229,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             }, AuthenticationUtil.getAdminUserName());
 
         // Create a test site
-        String siteShortName = "testDeleteSite-" + GUID.generate();
+        String siteShortName = "testUpdateSite";
         this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
         SiteInfo siteInfo = this.siteService.getSite(siteShortName);
         assertNotNull(siteInfo);
@@ -1256,122 +1256,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         // Ensure that the added "normal" groups have not been deleted
         assertTrue(authorityService.authorityExists(testGroup));
-    }    
-    
-    @SuppressWarnings("deprecation")
-    public void testPurgeSiteSimple()
-    {
-        SiteService smallSiteService = (SiteService)this.applicationContext.getBean("siteService");
-        // Create a test group
-        final String testGroupName = "siteServiceImplTestGroup_" + GUID.generate();
-        String testGroup = AuthenticationUtil.runAs(        
-                new AuthenticationUtil.RunAsWork<String>()
-                {
-                    public String doWork() throws Exception
-                    {
-                        return authorityService.createAuthority(AuthorityType.GROUP, testGroupName);
-                    }
-                }, AuthenticationUtil.getAdminUserName());
-        
-        // Create a test site
-        String siteShortName = "testPurgeSite-" + GUID.generate();
-        this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        SiteInfo siteInfo = this.siteService.getSite(siteShortName);
-        assertNotNull(siteInfo);
-        
-        // Add the test group as a member of the site
-        this.siteService.setMembership(siteShortName, testGroup, SiteModel.SITE_CONTRIBUTOR);
-        
-        // Delete the site
-        this.siteService.deleteSite(siteShortName);
-        assertNull(this.siteService.getSite(siteShortName));
-        NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(siteInfo.getNodeRef());
-        assertTrue("Deleted sites can be recovered from the Trash.", nodeService.exists(archivedNodeRef));
-        
-        // Commit these site structures
-        setComplete();
-        endTransaction();
-        
-        // We now do two transactions that will be thrown away to handle the purge use cases
-        
-        // Now purge the site.
-        RetryingTransactionCallback<Void> purgeWork = new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                // We already check that the authorities remain alive.
-                nodeArchiveService.purgeArchivedNode(archivedNodeRef);      // service call starts a new txn
-                
-                // Site-related groups should be wiped
-                assertFalse(authorityService.authorityExists(((SiteServiceImpl)smallSiteService).getSiteGroup(siteShortName, true)));
-                assertFalse(authorityService.authorityExists(((SiteServiceImpl) smallSiteService).getSiteGroup(siteShortName)));
-                Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
-                for (String permission : permissions)
-                {
-                    String siteRoleGroup = ((SiteServiceImpl)smallSiteService).getSiteRoleGroup(siteShortName, permission, true);
-                    assertFalse(authorityService.authorityExists(siteRoleGroup));
-                }
-                
-                // Ensure that the added "normal" groups have not been deleted
-                assertTrue(authorityService.authorityExists(testGroup));
-                
-                throw new RuntimeException("Expected $$");
-            }
-        };
-        try
-        {
-            transactionService.getRetryingTransactionHelper().doInTransaction(purgeWork);
-        }
-        catch (Exception e)
-        {
-            if (!e.getMessage().contains("$$"))
-            {
-                throw e;
-            }
-        }
-        
-        // Create a new site and ensure that the purge does NOT wipe out the authorities ... but still works otherwise (MNT-16271)
-        RetryingTransactionCallback<Void> purgeWithExistingWork = new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-
-                // We already check that the authorities remain alive.
-                nodeArchiveService.purgeArchivedNode(archivedNodeRef);      // service call starts a new txn
-                
-                // Site-related groups should still exist
-                assertTrue(authorityService.authorityExists(((SiteServiceImpl)smallSiteService).getSiteGroup(siteShortName, true)));
-                assertTrue(authorityService.authorityExists(((SiteServiceImpl) smallSiteService).getSiteGroup(siteShortName)));
-                Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
-                for (String permission : permissions)
-                {
-                    String siteRoleGroup = ((SiteServiceImpl)smallSiteService).getSiteRoleGroup(siteShortName, permission, true);
-                    assertTrue(authorityService.authorityExists(siteRoleGroup));
-                }
-                
-                // Ensure that the added "normal" groups have not been deleted
-                assertTrue(authorityService.authorityExists(testGroup));
-                
-                throw new RuntimeException("Expected $$");
-            }
-        };
-        try
-        {
-            transactionService.getRetryingTransactionHelper().doInTransaction(purgeWithExistingWork);
-        }
-        catch (Exception e)
-        {
-            if (!e.getMessage().contains("$$"))
-            {
-                throw e;
-            }
-        }
-
-        // Start a new transaction to keep Spring's sequencing happy
-        startNewTransaction();
     }    
     
     public void testIsPublic()

@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -3968,6 +3969,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             authorityService.addAuthority(rootGroupName, groupA);
             groupB = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupB");
             authorityService.addAuthority(rootGroupName, groupB);
+            authorityService.addAuthority(groupA, user1);
+            authorityService.addAuthority(groupB, user2);
         }
     }
 
@@ -3983,12 +3986,177 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         }
     }
 
+    @Test
+    public void testRetrievePermissions() throws Exception
+    {
+        try
+        {
+            createAuthorityContext(user1);
+            testRetrieveNodePermissionsSpecialNodes();
+            testRetrieveNodePermissions();
+        }
+        finally
+        {
+            clearAuthorityContext();
+        }
+    }
+
+    /**
+     * Test retrieve node permissions for special nodes like:
+     * 'Company Home', 'Data Dictionary', 'Shared', 'Sites', 'User Home'
+     *
+     * @throws Exception
+     */
+    private void testRetrieveNodePermissionsSpecialNodes() throws Exception
+    {
+        setRequestContext(user1);
+        String rootNodeId = getRootNodeId();
+        String userHome = getMyNodeId();
+        String sharedFolder = getSharedNodeId();
+        String sitesNodeId = getSitesNodeId();
+        String ddNodeId = getDataDictionaryNodeId();
+
+        Map params = new HashMap<>();
+        params.put("include", "permissions");
+
+        // Test permissions for node 'Company Home'
+        HttpResponse response = getSingle(NodesEntityResource.class, rootNodeId, params, 200);
+        Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(nodeResp.getPermissions());
+
+        // Test permissions for node 'Sites'
+        response = getSingle(NodesEntityResource.class, sitesNodeId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(nodeResp.getPermissions());
+
+        // Test permissions for node 'Data Dictionary'
+        response = getSingle(NodesEntityResource.class, ddNodeId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(nodeResp.getPermissions());
+
+        // Test permissions for node 'Shared Folder'
+        response = getSingle(NodesEntityResource.class, sharedFolder, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNotNull(nodeResp.getPermissions());
+
+        Set<String> expectedSettable = new HashSet<>(Arrays.asList("Coordinator", "Collaborator", "Contributor", "Consumer", "Editor"));
+
+        // Test permissions for node 'User Home'
+        response = getSingle(NodesEntityResource.class, userHome, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNotNull(nodeResp.getPermissions());
+        assertNotNull(nodeResp.getPermissions().getSettable());
+        assertTrue("Incorrect list of settable permissions returned!", nodeResp.getPermissions().getSettable().containsAll(expectedSettable));
+        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+
+        // Try as admin
+        setRequestContext(networkAdmin);
+
+        // Test permissions for node 'Company Home'
+        response = getSingle(NodesEntityResource.class, rootNodeId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertNull(nodeResp.getPermissions().getInherited());
+        assertNotNull(nodeResp.getPermissions().getLocallySet());
+        assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission("GROUP_EVERYONE", PermissionService.CONSUMER, AccessStatus.ALLOWED.toString())));
+        assertNotNull(nodeResp.getPermissions().getSettable());
+        assertTrue("Incorrect list of settable permissions returned!", nodeResp.getPermissions().getSettable().containsAll(expectedSettable));
+
+        // Test permissions for node 'Sites'
+        response = getSingle(NodesEntityResource.class, sitesNodeId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertTrue(nodeResp.getPermissions().isInheritanceEnabled());
+        assertNotNull(nodeResp.getPermissions().getInherited());
+        assertTrue(nodeResp.getPermissions().getInherited().contains(new NodePermissions.NodePermission("GROUP_EVERYONE", PermissionService.CONSUMER, AccessStatus.ALLOWED.toString())));
+        assertNull(nodeResp.getPermissions().getLocallySet());
+        assertNotNull(nodeResp.getPermissions().getSettable());
+        assertTrue("Incorrect list of settable permissions returned!", nodeResp.getPermissions().getSettable().containsAll(expectedSettable));
+
+        // Test permissions for node 'Data Dictionary'
+        response = getSingle(NodesEntityResource.class, ddNodeId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertNull(nodeResp.getPermissions().getInherited());
+        assertNotNull(nodeResp.getPermissions().getLocallySet());
+        assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission("GROUP_EVERYONE", PermissionService.CONSUMER, AccessStatus.ALLOWED.toString())));
+        assertNotNull(nodeResp.getPermissions().getSettable());
+        assertTrue("Incorrect list of settable permissions returned!", nodeResp.getPermissions().getSettable().containsAll(expectedSettable));
+
+        // Test permissions for node 'Shared Folder'
+        response = getSingle(NodesEntityResource.class, sharedFolder, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertNull(nodeResp.getPermissions().getInherited());
+        assertNotNull(nodeResp.getPermissions().getLocallySet());
+        assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission("GROUP_EVERYONE", PermissionService.CONTRIBUTOR, AccessStatus.ALLOWED.toString())));
+        assertNotNull(nodeResp.getPermissions().getSettable());
+        assertTrue("Incorrect list of settable permissions returned!", nodeResp.getPermissions().getSettable().containsAll(expectedSettable));
+
+        // Test permissions for node 'User Home'
+        response = getSingle(NodesEntityResource.class, userHome, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertNull(nodeResp.getPermissions().getInherited());
+        assertNotNull(nodeResp.getPermissions().getLocallySet());
+        assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission("ROLE_OWNER", "All", AccessStatus.ALLOWED.toString())));
+        assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission(user1, "All", AccessStatus.ALLOWED.toString())));
+        assertNotNull(nodeResp.getPermissions().getSettable());
+        assertTrue("Incorrect list of settable permissions returned!", nodeResp.getPermissions().getSettable().containsAll(expectedSettable));
+
+    }
+
+    private void testRetrieveNodePermissions() throws Exception
+    {
+        setRequestContext(user1);
+        // create folder with an empty document
+        String postUrl = createFolder();
+        String docId = createDocument(postUrl);
+
+        Map params = new HashMap<>();
+        params.put("include", "permissions");
+
+        // update permissions
+        Document dUpdate = new Document();
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupB, PermissionService.CONSUMER, AccessStatus.DENIED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // update node
+        HttpResponse response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // Check if permission are retrieved if 'include=permissions' is not
+        // sent in the request
+        response = getSingle(NodesEntityResource.class, documentResp.getId(), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertNull("Permissions should not be retrieved unless included!", documentResp.getPermissions());
+
+        // Call again with 'include=permissions'
+        response = getSingle(NodesEntityResource.class, documentResp.getId(), params, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        // Check that all permissions are retrieved
+        assertNotNull(documentResp.getPermissions());
+        assertTrue("Locally set permissions were not set properly!", documentResp.getPermissions().getLocallySet().size() == 2);
+        // Check inherit default true
+        assertTrue("Inheritance flag was not retrieved!", documentResp.getPermissions().isInheritanceEnabled());
+        // Check inherited permissions (for ROLE_OWNER and user1)
+        assertNotNull(documentResp.getPermissions().getInherited());
+        assertTrue(documentResp.getPermissions().getInherited().size() == 2);
+        assertNotNull(documentResp.getPermissions().getSettable());
+        assertTrue(documentResp.getPermissions().getSettable().size() == 5);
+        Set<String> expectedSettable = new HashSet<>(Arrays.asList("Coordinator", "Collaborator", "Contributor", "Consumer", "Editor"));
+        assertTrue("Incorrect list of settable permissions returned!", documentResp.getPermissions().getSettable().containsAll(expectedSettable));
+    }
+
     /**
      * Tests set permissions on an existing node
      *
      * @throws Exception
      */
-    //@Test
+    @Test
     public void testUpdateNodePermissions() throws Exception
     {
         try
@@ -4004,10 +4172,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             testUpdatePermissionInvalidAuthority();
             testUpdatePermissionInvalidName();
             testUpdatePermissionInvalidAccessStatus();
+            testUpdatePermissionAddDuplicate();
 
             // 'Permission Denied' tests
             testUpdatePermissionsPermissionDeniedUser();
-            testUpdatePermissionsOnCompanyHome();
+            testUpdatePermissionsOnSpecialNodes();
 
             // Inherit from parent tests
             testUpdatePermissionsDefaultInheritFromParent();
@@ -4028,22 +4197,55 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     {
         // create folder with an empty document
         String postUrl = createFolder();
-        String docId = createDocument(postUrl);
+        String dId = createDocument(postUrl);
 
         // update permissions
         Document dUpdate = new Document();
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Consumer", AccessStatus.ALLOWED.toString()));
-        locallySetPermissions.add(new NodePermissions.NodePermission(groupB, "Editor", AccessStatus.DENIED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
         nodePermissions.setLocallySet(locallySetPermissions);
         dUpdate.setPermissions(nodePermissions);
 
         // update node
-        HttpResponse response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        HttpResponse response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         validatePermissionsAfterUpdate(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), locallySetPermissions);
+
+        // Check permissions on node for user2 (part of groupB)
+        AuthenticationUtil.setRunAsUser(user2);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.CONSUMER) == AccessStatus.DENIED);
+
+        // Check permissions on node for user1 (part of groupA)
+        AuthenticationUtil.setRunAsUser(user1);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.CONSUMER) == AccessStatus.ALLOWED);
+
+        // add two groups with different permissions for each
+        locallySetPermissions.clear();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.EDITOR, AccessStatus.ALLOWED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupB, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // update node
+        response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        validatePermissionsAfterUpdate(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), locallySetPermissions);
+
+        // Check permissions on node for user2 (part of groupB)
+        AuthenticationUtil.setRunAsUser(user2);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.CONSUMER) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.EDITOR) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.WRITE) == AccessStatus.DENIED);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.READ) == AccessStatus.ALLOWED);
+
+        // Check permissions on node for user1 (part of groupA)
+        AuthenticationUtil.setRunAsUser(user1);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.EDITOR) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.WRITE) == AccessStatus.ALLOWED);
+        assertTrue(permissionService.hasPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, documentResp.getId()), PermissionService.READ) == AccessStatus.ALLOWED);
     }
 
     /**
@@ -4061,7 +4263,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Document dUpdate = new Document();
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission("NonExistingAuthority", "Consumer", AccessStatus.DENIED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission("NonExistingAuthority", PermissionService.CONSUMER, AccessStatus.DENIED.toString()));
         nodePermissions.setLocallySet(locallySetPermissions);
         dUpdate.setPermissions(nodePermissions);
 
@@ -4109,12 +4311,49 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Document dUpdate = new Document();
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Consumer", "InvalidAccessLevel"));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, "InvalidAccessLevel"));
         nodePermissions.setLocallySet(locallySetPermissions);
         dUpdate.setPermissions(nodePermissions);
 
         // "Cannot set permissions on this node - unknown access status:
         // InvalidName"
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+    }
+
+    /**
+     * Test add duplicate permissions
+     *
+     * @throws Exception
+     */
+    private void testUpdatePermissionAddDuplicate() throws Exception
+    {
+        // create folder with an empty document
+        String postUrl = createFolder();
+        String dId = createDocument(postUrl);
+
+        // update permissions
+        Document dUpdate = new Document();
+        // Add same permission with different access status
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, AccessStatus.DENIED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // "Duplicate node permissions, there is more than one permission with
+        // the same authority and name!"
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+
+        // Add the same permission with same access status
+        locallySetPermissions.clear();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // "Duplicate node permissions, there is more than one permission with
+        // the same authority and name!"
         put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
     }
 
@@ -4133,7 +4372,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Document dUpdate = new Document();
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Consumer", AccessStatus.DENIED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.CONSUMER, AccessStatus.DENIED.toString()));
         nodePermissions.setLocallySet(locallySetPermissions);
         dUpdate.setPermissions(nodePermissions);
 
@@ -4143,21 +4382,46 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * Test update permissions on 'Company Home'
+     * Test update permissions on special nodes like
+     * 'Company Home', 'Sites', 'Shared', 'User Home', 'Data Dictionary'
      *
      * @throws Exception
      */
-    private void testUpdatePermissionsOnCompanyHome() throws Exception
+    private void testUpdatePermissionsOnSpecialNodes() throws Exception
     {
-        HttpResponse response = getSingle(NodesEntityResource.class, Nodes.PATH_ROOT, null, 200);
-        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Editor", AccessStatus.ALLOWED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.EDITOR, AccessStatus.ALLOWED.toString()));
         nodePermissions.setLocallySet(locallySetPermissions);
-        node.setPermissions(nodePermissions);
 
-        // "Permission Denied" expected
+        // 'Company Home'
+        HttpResponse response = getSingle(NodesEntityResource.class, getRootNodeId(), null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        node.setPermissions(nodePermissions);
+        put(URL_NODES, node.getId(), toJsonAsStringNonNull(node), null, 403);
+
+        // 'Sites' folder
+        response = getSingle(NodesEntityResource.class, getSharedNodeId(), null, 200);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        node.setPermissions(nodePermissions);
+        put(URL_NODES, node.getId(), toJsonAsStringNonNull(node), null, 403);
+
+        // 'Data Dictionary' folder
+        response = getSingle(NodesEntityResource.class, getDataDictionaryNodeId(), null, 200);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        node.setPermissions(nodePermissions);
+        put(URL_NODES, node.getId(), toJsonAsStringNonNull(node), null, 403);
+
+        // 'Shared' folder
+        response = getSingle(NodesEntityResource.class, getSharedNodeId(), null, 200);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        node.setPermissions(nodePermissions);
+        put(URL_NODES, node.getId(), toJsonAsStringNonNull(node), null, 403);
+
+        // 'User Home' folder
+        HttpResponse responseUserHome = getSingle(NodesEntityResource.class, getMyNodeId(), null, 200);
+        Node nodeUserHome = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        node.setPermissions(nodePermissions);
         put(URL_NODES, node.getId(), toJsonAsStringNonNull(node), null, 403);
     }
 
@@ -4176,7 +4440,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // set permissions on previously created folder
         NodePermissions nodePermissions = new NodePermissions();
         List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
-        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "Editor", AccessStatus.DENIED.toString()));
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, PermissionService.EDITOR, AccessStatus.DENIED.toString()));
         nodePermissions.setLocallySet(locallySetPermissions);
         folder.setPermissions(nodePermissions);
 
@@ -4205,7 +4469,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     {
         // create folder
         String testFolderUrl = createFolder();
-        String testDocId = createDocument(testFolderUrl);
+        String dId = createDocument(testFolderUrl);
 
         // create a new document in testFolder and set inherit to false
         Document dUpdate = new Document();
@@ -4213,7 +4477,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         nodePermissionsUpdate.setInheritanceEnabled(false);
         dUpdate.setPermissions(nodePermissionsUpdate);
 
-        HttpResponse response = put(URL_NODES, testDocId, toJsonAsStringNonNull(dUpdate), null, 200);
+        HttpResponse response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         Map params = new HashMap<>();
@@ -4222,9 +4486,27 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = getSingle(NodesEntityResource.class, documentResp.getId(), params, 200);
         Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
-        assertFalse("Inheritance hasn't been disabled!" + nodeResp.getPermissions().isInheritanceEnabled(), nodeResp.getPermissions().isInheritanceEnabled());
+        assertFalse("Inheritance hasn't been disabled!", nodeResp.getPermissions().isInheritanceEnabled());
         assertNull("Permissions were inherited from parent!", nodeResp.getPermissions().getInherited());
 
+    }
+
+    private String getDataDictionaryNodeId() throws Exception
+    {
+        Map params = new HashMap<>();
+        params.put(Nodes.PARAM_RELATIVE_PATH, "/Data Dictionary");
+        HttpResponse response = getSingle(NodesEntityResource.class, getRootNodeId(), params, 200);
+        Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        return nodeResp.getId();
+    }
+
+    private String getSitesNodeId() throws Exception
+    {
+        Map params = new HashMap<>();
+        params.put(Nodes.PARAM_RELATIVE_PATH, "/Sites");
+        HttpResponse response = getSingle(NodesEntityResource.class, getRootNodeId(), params, 200);
+        Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        return nodeResp.getId();
     }
 
     private String createFolder() throws Exception

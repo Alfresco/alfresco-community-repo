@@ -954,6 +954,7 @@ public class NodesImpl implements Nodes
             List<NodePermissions.NodePermission> inheritedPerms = new ArrayList<>(5);
             List<NodePermissions.NodePermission> setDirectlyPerms = new ArrayList<>(5);
             Set<String> settablePerms = null;
+            boolean allowRetrievePermission = true;
 
             try
             {
@@ -974,10 +975,17 @@ public class NodesImpl implements Nodes
             catch (AccessDeniedException ade)
             {
                 // ignore - ie. denied access to retrieve permissions, eg. non-admin on root (Company Home)
+                allowRetrievePermission = false;
             }
 
-            NodePermissions nodePerms = new NodePermissions(inherit, inheritedPerms, setDirectlyPerms, settablePerms);
-            node.setPermissions(nodePerms);
+            // If the user does not have read permissions at
+            // least on a special node then do not include permissions and
+            // returned only node info that he's allowed to see
+            if (allowRetrievePermission)
+            {
+                NodePermissions nodePerms = new NodePermissions(inherit, inheritedPerms, setDirectlyPerms, settablePerms);
+                node.setPermissions(nodePerms);
+            }
         }
 
         if (includeParam.contains(PARAM_INCLUDE_ASSOCIATION))
@@ -3258,7 +3266,7 @@ public class NodesImpl implements Nodes
         boolean duplicate = false;
         if (locallySetPermissions != null)
         {
-            HashSet<NodePermissions.NodePermission> temp = new HashSet<NodePermissions.NodePermission>(locallySetPermissions.size());
+            HashSet<NodePermissions.NodePermission> temp = new HashSet<>(locallySetPermissions.size());
             for (NodePermissions.NodePermission permission : locallySetPermissions)
             {
                 temp.add(permission);

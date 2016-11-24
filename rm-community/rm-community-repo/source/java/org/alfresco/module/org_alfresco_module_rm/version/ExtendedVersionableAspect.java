@@ -34,7 +34,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
-import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -151,9 +150,9 @@ public class ExtendedVersionableAspect implements NodeServicePolicies.OnSetNodeT
     public void onSetNodeType(NodeRef nodeRef, QName oldType, QName newType)
     {
         if (isAutoVersionOnTypeChange &&
-            nodeService.exists(nodeRef) && 
-            !LockUtils.isLockedAndReadOnly(nodeRef, lockService) &&
-            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) && 
+            nodeService.exists(nodeRef) &&
+            !lockService.isLockedAndReadOnly(nodeRef) &&
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) &&
             !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY))
         {
             Map<NodeRef, NodeRef> versionedNodeRefs = (Map)alfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);

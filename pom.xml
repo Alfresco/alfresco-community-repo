@@ -7,7 +7,7 @@
       <version>6</version>
    </parent>   
    <artifactId>alfresco-core</artifactId>
-   <version>6.9-SNAPSHOT</version>
+   <version>6.9</version>
    <name>Alfresco Core</name>
    <description>Alfresco core libraries and utils</description>
 
@@ -15,7 +15,7 @@
       <connection>scm:git:https://gitlab.alfresco.com/platform/alfresco-core.git</connection>
       <developerConnection>scm:git:https://gitlab.alfresco.com/platform/alfresco-core.git</developerConnection>
       <url>https://gitlab.alfresco.com/platform/alfresco-core</url>
-     <tag>HEAD</tag>
+     <tag>6.9</tag>
   </scm>
 
    <distributionManagement>

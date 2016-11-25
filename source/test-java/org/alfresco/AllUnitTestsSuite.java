@@ -132,5 +132,6 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.security.authentication.PasswordHashingTest.class));
         suite.addTest(org.alfresco.traitextender.TraitExtenderUnitTestSuite.suite());
         suite.addTest(org.alfresco.repo.virtual.VirtualizationUnitTestSuite.suite());
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.security.authentication.AuthenticationServiceImplTest.class));
     }
 }

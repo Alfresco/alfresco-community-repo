@@ -28,14 +28,18 @@ package org.alfresco.repo.security.authentication;
 import java.util.Collections;
 import java.util.Set;
 
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class AuthenticationServiceImpl extends AbstractAuthenticationService implements ActivateableBean
 {
+    private Log logger = LogFactory.getLog(AuthenticationServiceImpl.class);
     AuthenticationComponent authenticationComponent;
     TicketComponent ticketComponent;
     
@@ -44,7 +48,33 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private boolean allowsUserDeletion = true;
     private boolean allowsUserPasswordChange = true;
 
+    private static final String AUTHENTICATION_UNSUCCESSFUL = "Authentication was not successful.";
+    private int protectionPeriodSeconds;
+    private boolean protectionEnabled;
+    private int protectionLimit;
+    private SimpleCache<String, ProtectedUser> protectedUsersCache;
+
     private PersonService personService;
+
+    public void setProtectionPeriodSeconds(int protectionPeriodSeconds)
+    {
+        this.protectionPeriodSeconds = protectionPeriodSeconds;
+    }
+
+    public void setProtectionEnabled(boolean protectionEnabled)
+    {
+        this.protectionEnabled = protectionEnabled;
+    }
+
+    public void setProtectionLimit(int protectionLimit)
+    {
+        this.protectionLimit = protectionLimit;
+    }
+
+    public void setProtectedUsersCache(SimpleCache<String, ProtectedUser> protectedUsersCache)
+    {
+        this.protectedUsersCache = protectedUsersCache;
+    }
 
     public void setPersonService(PersonService personService)
     {
@@ -80,6 +110,14 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
             clearCurrentSecurityContext();
             preAuthenticationCheck(userName);
+            if (protectionEnabled)
+            {
+                ProtectedUser protectedUser = protectedUsersCache.get(userName);
+                if (protectedUser != null && protectedUser.isProtected())
+                {
+                    throw new AuthenticationException(AUTHENTICATION_UNSUCCESSFUL);
+                }
+            }
             authenticationComponent.authenticate(userName, password);
             if (tenant == null)
             {
@@ -87,10 +125,30 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
                 tenant = userTenant.getSecond();
             }
             TenantContextHolder.setTenantDomain(tenant);
+            if (protectionEnabled)
+            {
+                if (protectedUsersCache.get(userName) != null)
+                {
+                     protectedUsersCache.remove(userName);
+                }
+            }
         }
         catch(AuthenticationException ae)
         {
             clearCurrentSecurityContext();
+            if (protectionEnabled)
+            {
+                ProtectedUser protectedUser = protectedUsersCache.get(userName);
+                if (protectedUser == null)
+                {
+                    protectedUser = new ProtectedUser(userName);
+                }
+                else
+                {
+                    protectedUser.recordUnsuccessfulLogin();
+                }
+                protectedUsersCache.put(userName, protectedUser);
+            }
             throw ae;
         }
         ticketComponent.clearCurrentTicket();
@@ -350,5 +408,75 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         }
 
         return true;
-    }        
+    }
+
+    /**
+     * An object to hold information about unsuccessful logins
+     */
+    /*package*/ class ProtectedUser
+    {
+        private String userId;
+        /** number of consecutive unsuccessful login attempts */
+        private long numLogins;
+        /** time stamp of last unsuccessful login attempt */
+        private long timeStamp;
+
+        public ProtectedUser(String userId)
+        {
+            this.userId = userId;
+            this.numLogins = 1;
+            this.timeStamp = System.currentTimeMillis();
+        }
+
+        public void recordUnsuccessfulLogin()
+        {
+            this.numLogins+=1;
+            this.timeStamp = System.currentTimeMillis();
+            if (numLogins == protectionLimit && logger.isWarnEnabled())
+            {
+                // Shows only first 2 symbols of the username and masks all other character with '*'
+                logger.warn("Brute force attack was detected for user " +
+                        userId.substring(0,2) + new String(new char[(userId.length() - 2)]).replace("\0", "*"));
+            }
+        }
+
+        public boolean isProtected()
+        {
+            long currentTimeStamp = System.currentTimeMillis();
+            return numLogins >= protectionLimit &&
+                    currentTimeStamp - timeStamp < protectionPeriodSeconds * 1000;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "ProtectedUser{" +
+                    "userId='" + userId + '\'' +
+                    ", numLogins=" + numLogins +
+                    ", timeStamp=" + timeStamp +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ProtectedUser that = (ProtectedUser) o;
+
+            if (numLogins != that.numLogins) return false;
+            if (timeStamp != that.timeStamp) return false;
+            return userId.equals(that.userId);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result = userId.hashCode();
+            result = 31 * result + (int) (numLogins ^ (numLogins >>> 32));
+            result = 31 * result + (int) (timeStamp ^ (timeStamp >>> 32));
+            return result;
+        }
+    }
 }

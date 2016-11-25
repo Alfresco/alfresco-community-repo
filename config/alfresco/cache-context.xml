@@ -489,5 +489,11 @@
    <bean name="shardToGuidSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.shardToGuidSharedCache"/>
    </bean>
-   
+
+   <!-- The cross-transaction shared cache for In-Memory protected users -->
+
+   <bean name="protectedUsersCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.protectedUsersCache"/>
+   </bean>
+
 </beans>

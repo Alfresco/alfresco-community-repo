@@ -4049,7 +4049,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(nodeResp.getPermissions());
         assertNotNull(nodeResp.getPermissions().getSettable());
         assertTrue("Incorrect list of settable permissions returned!", nodeResp.getPermissions().getSettable().containsAll(expectedSettable));
-        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertFalse(nodeResp.getPermissions().getIsInheritanceEnabled());
 
         // Try as admin
         setRequestContext(networkAdmin);
@@ -4057,7 +4057,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Test permissions for node 'Company Home'
         response = getSingle(NodesEntityResource.class, rootNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertFalse(nodeResp.getPermissions().getIsInheritanceEnabled());
         assertNull(nodeResp.getPermissions().getInherited());
         assertNotNull(nodeResp.getPermissions().getLocallySet());
         assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission("GROUP_EVERYONE", PermissionService.CONSUMER, AccessStatus.ALLOWED.toString())));
@@ -4067,7 +4067,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Test permissions for node 'Sites'
         response = getSingle(NodesEntityResource.class, sitesNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        assertTrue(nodeResp.getPermissions().isInheritanceEnabled());
+        assertTrue(nodeResp.getPermissions().getIsInheritanceEnabled());
         assertNotNull(nodeResp.getPermissions().getInherited());
         assertTrue(nodeResp.getPermissions().getInherited().contains(new NodePermissions.NodePermission("GROUP_EVERYONE", PermissionService.CONSUMER, AccessStatus.ALLOWED.toString())));
         assertNull(nodeResp.getPermissions().getLocallySet());
@@ -4077,7 +4077,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Test permissions for node 'Data Dictionary'
         response = getSingle(NodesEntityResource.class, ddNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertFalse(nodeResp.getPermissions().getIsInheritanceEnabled());
         assertNull(nodeResp.getPermissions().getInherited());
         assertNotNull(nodeResp.getPermissions().getLocallySet());
         assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission("GROUP_EVERYONE", PermissionService.CONSUMER, AccessStatus.ALLOWED.toString())));
@@ -4087,7 +4087,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Test permissions for node 'Shared Folder'
         response = getSingle(NodesEntityResource.class, sharedFolder, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertFalse(nodeResp.getPermissions().getIsInheritanceEnabled());
         assertNull(nodeResp.getPermissions().getInherited());
         assertNotNull(nodeResp.getPermissions().getLocallySet());
         assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission("GROUP_EVERYONE", PermissionService.CONTRIBUTOR, AccessStatus.ALLOWED.toString())));
@@ -4097,7 +4097,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Test permissions for node 'User Home'
         response = getSingle(NodesEntityResource.class, userHome, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        assertFalse(nodeResp.getPermissions().isInheritanceEnabled());
+        assertFalse(nodeResp.getPermissions().getIsInheritanceEnabled());
         assertNull(nodeResp.getPermissions().getInherited());
         assertNotNull(nodeResp.getPermissions().getLocallySet());
         assertTrue(nodeResp.getPermissions().getLocallySet().contains(new NodePermissions.NodePermission("ROLE_OWNER", "All", AccessStatus.ALLOWED.toString())));
@@ -4143,7 +4143,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(documentResp.getPermissions());
         assertTrue("Locally set permissions were not set properly!", documentResp.getPermissions().getLocallySet().size() == 2);
         // Check inherit default true
-        assertTrue("Inheritance flag was not retrieved!", documentResp.getPermissions().isInheritanceEnabled());
+        assertTrue("Inheritance flag was not retrieved!", documentResp.getPermissions().getIsInheritanceEnabled());
         // Check inherited permissions (for ROLE_OWNER and user1)
         assertNotNull(documentResp.getPermissions().getInherited());
         assertTrue(documentResp.getPermissions().getInherited().size() == 2);
@@ -4458,7 +4458,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = getSingle(NodesEntityResource.class, docId, params, 200);
         Document docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        assertTrue("Inheritance hasn't been enabled!", docResp.getPermissions().isInheritanceEnabled());
+        assertTrue("Inheritance hasn't been enabled!", docResp.getPermissions().getIsInheritanceEnabled());
         assertTrue("Permissions were not inherited from parent!", docResp.getPermissions().getInherited().size() > 0);
     }
 
@@ -4476,7 +4476,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // create a new document in testFolder and set inherit to false
         Document dUpdate = new Document();
         NodePermissions nodePermissionsUpdate = new NodePermissions();
-        nodePermissionsUpdate.setInheritanceEnabled(false);
+        nodePermissionsUpdate.setIsInheritanceEnabled(false);
         dUpdate.setPermissions(nodePermissionsUpdate);
 
         HttpResponse response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
@@ -4488,7 +4488,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         response = getSingle(NodesEntityResource.class, documentResp.getId(), params, 200);
         Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
-        assertFalse("Inheritance hasn't been disabled!", nodeResp.getPermissions().isInheritanceEnabled());
+        assertFalse("Inheritance hasn't been disabled!", nodeResp.getPermissions().getIsInheritanceEnabled());
         assertNull("Permissions were inherited from parent!", nodeResp.getPermissions().getInherited());
 
     }

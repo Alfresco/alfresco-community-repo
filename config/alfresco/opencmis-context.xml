@@ -132,6 +132,7 @@
         <property name="typesDefaultDepth"      value="${opencmis.connector.default.typesDefaultDepth}" />
         <property name="objectsDefaultMaxItems" value="${opencmis.connector.default.objectsDefaultMaxItems}" />
         <property name="objectsDefaultDepth"    value="${opencmis.connector.default.objectsDefaultDepth}" />
+        <property name="contentChangesDefaultMaxItems"    value="${opencmis.connector.default.contentChangesDefaultMaxItems}" />
         <property name="renditionKindMapping">
             <map>
                 <entry key="cmis:thumbnail">

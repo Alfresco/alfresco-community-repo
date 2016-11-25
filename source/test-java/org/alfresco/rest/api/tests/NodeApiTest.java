@@ -3955,16 +3955,18 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
      */
     private void createAuthorityContext(String user)
     {
+        String groupName = "Group_ROOT" + GUID.generate();
+
         AuthenticationUtil.setRunAsUser(user);
         if (rootGroupName == null)
         {
-            rootGroupName = authorityService.getName(AuthorityType.GROUP, "GroupsTest_ROOT");
+            rootGroupName = authorityService.getName(AuthorityType.GROUP, groupName);
         }
 
         if (!authorityService.authorityExists(rootGroupName))
         {
             AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-            rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, "GroupsTest_ROOT");
+            rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, groupName);
             groupA = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupA");
             authorityService.addAuthority(rootGroupName, groupA);
             groupB = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupB");

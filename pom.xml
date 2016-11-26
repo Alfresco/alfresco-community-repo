@@ -154,8 +154,8 @@
                         <regexPropertySetting>
                            <name>rm.module.repo.version.min</name>
                            <value>${alfresco.version}</value>
--                           <regex>(\d+)\.(\d+).*</regex>
--                           <replacement>$1.$2</replacement>
+                           <regex>(\d+)\.(\d+).*</regex>
+                           <replacement>$1.$2</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
                         </regexPropertySetting>
                         <regexPropertySetting>

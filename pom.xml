@@ -4,7 +4,7 @@
    <parent>   
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-super-pom</artifactId>
-      <version>6</version>
+      <version>8</version>
    </parent>   
    <artifactId>alfresco-core</artifactId>
    <version>6.10-SNAPSHOT</version>
@@ -236,25 +236,5 @@
          </plugin>
       </plugins>
    </build>
-
-   <profiles>
-      <profile>
-         <id>doclint-java8-max</id>
-         <activation>
-            <jdk>[1.8,)</jdk>
-         </activation>
-         <build>
-            <plugins>
-               <plugin>
-                  <artifactId>maven-javadoc-plugin</artifactId>
-                  <configuration>
-                     <!-- <additionalparam>-Xmaxwarns 10000 -Xmaxerrs 10000</additionalparam> to detect more than 100 error -->
-                     <additionalparam>-Xdoclint:none</additionalparam>
-                  </configuration>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-   </profiles>
 
 </project>

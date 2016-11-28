@@ -31,7 +31,7 @@
         </bitrock.arguments>
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
-        <alfresco.package.name>alfresco-one</alfresco.package.name>
+        <alfresco.package.name>alfresco-content-services</alfresco.package.name>
         <alfresco.distribution.name>alfresco-content-services-distribution</alfresco.distribution.name>
 
         <!-- 

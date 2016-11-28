@@ -58,13 +58,16 @@ public class PojoUtility
             //return the json object
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
 
-        } catch (JsonGenerationException e)
+        }
+        catch (JsonGenerationException e)
         {
             return e.toString();
-        } catch (JsonMappingException e)
+        }
+        catch (JsonMappingException e)
         {
             return e.toString();
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             return e.toString();
         }

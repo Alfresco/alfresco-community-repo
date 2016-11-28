@@ -290,7 +290,7 @@ public class FilePlanTests extends BaseRestTest
         dataProviderClass = TestData.class,
         dataProvider = "getContainersAndTypes"
     )
-    @Bug(id="RM-4296")
+    @Bug(id = "RM-4296")
     public void createFilePlanSpecialContainerWhenExists(FilePlanComponentAlias filePlanAlias, FilePlanComponentType rmType) throws Exception
     {
         // Create RM Site if doesn't exist

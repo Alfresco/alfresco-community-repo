@@ -96,7 +96,7 @@ public class RMSiteTests extends BaseRestTest
 
         // Create the RM site
         RMSite rmSite = new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
-        RMSite rmSiteResponse=rmSiteAPI.createRMSite(rmSite);
+        RMSite rmSiteResponse = rmSiteAPI.createRMSite(rmSite);
 
         // Verify the status code
         rmSiteAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
@@ -262,7 +262,7 @@ public class RMSiteTests extends BaseRestTest
     public void updateRMSiteDetails()throws Exception
     {
         String NEW_TITLE = RM_TITLE + RandomData.getRandomAlphanumeric();
-        String NEW_DESCRIPTION=RM_DESCRIPTION+ RandomData.getRandomAlphanumeric();
+        String NEW_DESCRIPTION = RM_DESCRIPTION+ RandomData.getRandomAlphanumeric();
 
         // Authenticate with admin user
         rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
@@ -271,7 +271,7 @@ public class RMSiteTests extends BaseRestTest
         createRMSiteIfNotExists();
 
         //Create RM site model
-        RMSite rmSiteToUpdate=new RMSite();
+        RMSite rmSiteToUpdate = new RMSite();
         rmSiteToUpdate.setTitle(NEW_TITLE);
         rmSiteToUpdate.setDescription(NEW_DESCRIPTION);
 

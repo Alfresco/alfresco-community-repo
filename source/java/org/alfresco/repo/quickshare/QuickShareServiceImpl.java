@@ -1217,8 +1217,6 @@ public class QuickShareServiceImpl implements QuickShareService,
         // first set the scheduledAction so we can set the other information
         expiryAction.setSchedule(schedule);
         expiryAction.setScheduleStart(expiryDate);
-        expiryAction.setScheduleIntervalCount(2);
-        expiryAction.setScheduleIntervalPeriod(IntervalPeriod.Minute);
 
         try
         {

@@ -199,9 +199,12 @@ public class FilePlanTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Build object for updating the filePlan
-        FilePlanComponent filePlanComponent= new FilePlanComponent();
-        FilePlanComponentProperties filePlanComponentProperties=new FilePlanComponentProperties(FILE_PLAN_TITLE, FILE_PLAN_DESCRIPTION);
-        filePlanComponent.setProperties(filePlanComponentProperties);
+        FilePlanComponent filePlanComponent = FilePlanComponent.builder()
+            .properties(FilePlanComponentProperties.builder()
+                            .title(FILE_PLAN_TITLE)
+                            .description(FILE_PLAN_DESCRIPTION)
+                            .build())
+            .build();
 
         // Update the record category
         FilePlanComponent renamedFilePlanComponent = filePlanComponentAPI.updateFilePlanComponent(filePlanComponent,FILE_PLAN_ALIAS.toString());
@@ -301,7 +304,12 @@ public class FilePlanTests extends BaseRestTest
         String name = filePlanAlias + getRandomAlphanumeric();
 
         // Build the file plan root properties
-        FilePlanComponent filePlanComponent=new FilePlanComponent(name,rmType.toString(),new FilePlanComponentProperties());
+        FilePlanComponent filePlanComponent = FilePlanComponent.builder()
+                .name(name)
+                .nodeType(rmType.toString())
+                .properties(FilePlanComponentProperties.builder()
+                                .build())
+                .build();
 
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());

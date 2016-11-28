@@ -42,6 +42,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * POJO for file plan component properties
  *
@@ -50,6 +55,10 @@ import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
  */
 //FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
 @JsonIgnoreProperties (ignoreUnknown = true)
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FilePlanComponentProperties
 {
 
@@ -74,133 +83,4 @@ public class FilePlanComponentProperties
 
     @JsonProperty(PROPERTIES_LOCATION)
     private String location;
-
-    public FilePlanComponentProperties(String title, String description)
-    {
-        this.title = title;
-        this.description = description;
-    }
-
-    public FilePlanComponentProperties(String title)
-    {
-        this.title = title;
-    }
-
-    public FilePlanComponentProperties()
-    {
-    }
-
-
-    /**
-     * @return the vitalRecord
-     */
-    public Boolean isVitalRecord()
-    {
-        return this.vitalRecord;
-    }
-
-    /**
-     * @param vitalRecord the vitalRecord to set
-     */
-    public void setVitalRecord(Boolean vitalRecord)
-    {
-        this.vitalRecord = vitalRecord;
-    }
-
-    /**
-     * @return the title
-     */
-    public String getTitle()
-    {
-        return this.title;
-    }
-
-    /**
-     * @param title the title to set
-     */
-    public void setTitle(String title)
-    {
-        this.title = title;
-    }
-
-    /**
-     * @return the holdReason
-     */
-    public String getHoldReason()
-    {
-        return this.holdReason;
-    }
-
-    /**
-     * @param holdReason the holdReason to set
-     */
-    public void setHoldReason(String holdReason)
-    {
-        this.holdReason = holdReason;
-    }
-
-    /**
-     * @param description the description to set
-     */
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
-
-    /**
-     * @return the description
-     */
-    public String getDescription()
-    {
-        return this.description;
-    }
-
-    /**
-     * @return the supplementalMarkingList
-     */
-    public List<String> getSupplementalMarkingList()
-    {
-        return this.supplementalMarkingList;
-    }
-
-    /**
-     * @param supplementalMarkingList the supplementalMarkingList to set
-     */
-    public void setSupplementalMarkingList(List<String> supplementalMarkingList)
-    {
-        this.supplementalMarkingList = supplementalMarkingList;
-    }
-
-    /**
-     * @return the reviewPeriod
-     */
-    public ReviewPeriod getReviewPeriod()
-    {
-        return reviewPeriod;
-    }
-
-    /**
-     * @param reviewPeriod the reviewPeriod to set
-     */
-    public void setReviewPeriod(ReviewPeriod reviewPeriod)
-    {
-        this.reviewPeriod = reviewPeriod;
-    }
-
-    /**
-     * @return the location
-     */
-    public String getLocation()
-    {
-        return location;
-    }
-
-    /**
-     * @param location the location to set
-     */
-    public void setLocation(String location)
-    {
-        this.location = location;
-    }
-
 }

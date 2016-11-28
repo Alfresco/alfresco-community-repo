@@ -182,7 +182,13 @@ public class BaseRestTest extends RestTest
     {
         RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        FilePlanComponent filePlanComponent=new FilePlanComponent(componentName, componentType.toString(),new FilePlanComponentProperties(componentTitle));
+        FilePlanComponent filePlanComponent = FilePlanComponent.builder()
+            .name(componentName)
+            .nodeType(componentType.toString())
+            .properties(FilePlanComponentProperties.builder()
+                            .title(componentTitle)
+                            .build())
+            .build();
 
         FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(filePlanComponent, parentComponentId);
         restWrapper.assertStatusCodeIs(CREATED);

@@ -14,6 +14,8 @@
    <properties>
       <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
       <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
+      <tas.restapi.version>5.2.0-0</tas.restapi.version>
+      <fluent.json.version>2.0.0</fluent.json.version>
    </properties>
 
    <build>
@@ -34,18 +36,18 @@
       <dependency>
          <groupId>org.alfresco.tas</groupId>
          <artifactId>restapi-test</artifactId>
-         <version>2.0.0</version>
+         <version>${tas.restapi.version}</version>
       </dependency>
       <dependency>
          <groupId>org.alfresco.tas</groupId>
          <artifactId>restapi-test</artifactId>
-         <version>2.0.0</version>
+         <version>${tas.restapi.version}</version>
          <type>test-jar</type>
       </dependency>
       <dependency>
          <groupId>org.jglue.fluent-json</groupId>
          <artifactId>fluent-json</artifactId>
-         <version>2.0.0</version>
+         <version>${fluent.json.version}</version>
       </dependency>
    </dependencies>
 </project>

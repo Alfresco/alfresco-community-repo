@@ -61,7 +61,8 @@ import org.testng.annotations.BeforeClass;
  * @since 2.6
  */
 @Configuration
-@PropertySource("classpath:default.properties")
+@PropertySource(value = {"classpath:default.properties", "classpath:config.properties"})
+@PropertySource(value = "classpath:module.properties", ignoreResourceNotFound = true)
 @PropertySource(value = "classpath:local.properties", ignoreResourceNotFound = true)
 public class BaseRestTest extends RestTest
 {

@@ -1,7 +1,7 @@
 <component>
     <name>alfrescosolr</name>
     <description>Solr1</description>
-    <detailedDescription>Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions.</detailedDescription>
+    <detailedDescription>Solr - Install Solr 1.4 only for upgrading from earlier Alfresco Content Services versions.</detailedDescription>
     <canBeEdited>1</canBeEdited>
     <selected>0</selected>
     <show>1</show>

@@ -1,5 +1,5 @@
-msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
-msgstr "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
+msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco Content Services for test or production purposes. Alfresco Content Services might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
+msgstr "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco Content Services for test or production purposes. Alfresco Content Services might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
 
 msgid "${product_fullname} LibreOffice Service"
 msgstr "${product_fullname} LibreOffice Service"
@@ -25,8 +25,8 @@ msgstr "Admin Password:"
 msgid "Advanced - Configure server ports and service properties."
 msgstr "Advanced - Configure server ports and service properties."
 
-msgid "Alfresco"
-msgstr "Alfresco"
+msgid "Alfresco Content Services"
+msgstr "Alfresco Content Services"
 
 msgid "Alfresco Community Edition"
 msgstr "Alfresco Community Edition"
@@ -34,29 +34,29 @@ msgstr "Alfresco Community Edition"
 msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
 msgstr "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
 
-msgid "Alfresco FTP Port"
-msgstr "Alfresco FTP Port"
+msgid "FTP Port"
+msgstr "FTP Port"
 
 msgid "Alfresco Module Packages"
 msgstr "Alfresco Module Packages"
 
-msgid "Alfresco RMI Port"
-msgstr "Alfresco RMI Port"
+msgid "RMI Port"
+msgstr "RMI Port"
 
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco Shortcuts"
-msgstr "Alfresco Shortcuts"
+msgid "Shortcuts"
+msgstr "Shortcuts"
 
-msgid "Alfresco Validations"
-msgstr "Alfresco Validations"
+msgid "Validations"
+msgstr "Validations"
 
 msgid "Alfresco Website"
 msgstr "Alfresco Website"
 
-msgid "Alfresco Data Directory"
-msgstr "Alfresco Data Directory"
+msgid "Data Directory"
+msgstr "Data Directory"
 
 msgid "Choose optional components to install."
 msgstr "Choose optional components to install."
@@ -106,8 +106,8 @@ msgstr "Database Name"
 msgid "Database Name:"
 msgstr "Database Name:"
 
-msgid "Deploying Alfresco... This can take up to five minutes."
-msgstr "Deploying Alfresco... This can take up to five minutes."
+msgid "Deploying Alfresco Content Services... This can take up to five minutes."
+msgstr "Deploying Alfresco Content Services... This can take up to five minutes."
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Do you want to install PostgreSQL as a Windows service?"
@@ -223,8 +223,8 @@ msgstr "Java"
 msgid "Java Component required to run ${product_fullname}."
 msgstr "Java Component required to run ${product_fullname}."
 
-msgid "Java Home path contains spaces. Alfresco might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
-msgstr "Java Home path contains spaces. Alfresco might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgid "Java Home path contains spaces. Alfresco Content Services might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgstr "Java Home path contains spaces. Alfresco Content Services might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
 
 msgid "This module requires Java, and no Java instance can be found."
 msgstr "This module requires Java, and no Java instance can be found."
@@ -277,11 +277,11 @@ msgstr "Password:"
 msgid "Choose a folder to install ${product_fullname}."
 msgstr "Choose a folder to install ${product_fullname}."
 
-msgid "Choose a port number for Alfresco to use to execute remote commands."
-msgstr "Choose a port number for Alfresco to use to execute remote commands."
+msgid "Choose a port number for Alfresco Content Services to use to execute remote commands."
+msgstr "Choose a port number for Alfresco Content Services to use to execute remote commands."
 
-msgid "Choose a port number for the integrated Alfresco FTP server."
-msgstr "Choose a port number for the integrated Alfresco FTP server."
+msgid "Choose a port number for the integrated FTP server."
+msgstr "Choose a port number for the integrated FTP server."
 
 msgid "Enter a valid IP address or hostname."
 msgstr "Enter a valid IP address or hostname."
@@ -301,8 +301,8 @@ msgstr "Enter the port that the LibreOffice Server will listen to."
 msgid "Enter your database 'postgres' user password."
 msgstr "Enter your database 'postgres' user password."
 
-msgid "Specify a password for the Alfresco administrator account."
-msgstr "Specify a password for the Alfresco administrator account."
+msgid "Specify a password for the Alfresco Content Services administrator account."
+msgstr "Specify a password for the Alfresco Content Services administrator account."
 
 msgid "Select a different installation directory. The installation directory cannot contain symbolic links."
 msgstr "Select a different installation directory. The installation directory cannot contain symbolic links."
@@ -316,11 +316,11 @@ msgstr "Select a Tomcat configuration"
 msgid "Select a database configuration."
 msgstr "Select a database configuration."
 
-msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
-msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation."
+msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation."
 
-msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
-msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services  installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services  installation&#xa;(proprietary module licensed under the Alfresco Component License)."
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Specify the directory where Tomcat is located."
@@ -442,8 +442,8 @@ msgstr "Stopping services"
 msgid "The ${product_shortname} service script file exists. Use a different name for the service script."
 msgstr "The ${product_shortname} service script file exists. Use a different name for the service script."
 
-msgid "The Alfresco data directory increases in size over time. Choose where you want to store it."
-msgstr "The Alfresco data directory increases in size over time. Choose where you want to store it."
+msgid "The data directory increases in size over time. Choose where you want to store it."
+msgstr "The data directory increases in size over time. Choose where you want to store it."
 
 msgid "The current installation directory cannot be accessed by non-root users. Select a different installation directory or change the permissions to 755 for this folder."
 msgstr "The current installation directory cannot be accessed by non-root users. Select a different installation directory or change the permissions to 755 for this folder."
@@ -481,14 +481,14 @@ msgstr "The selected folder is not empty. Specify a different folder."
 msgid "The service script file exists. Insert a different name for the service script."
 msgstr "The service script file exists. Insert a different name for the service script."
 
-msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
-msgstr "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
+msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco Content Services. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
+msgstr "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco Content Services. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
 
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 msgstr "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 
-msgid "This environment is not configured optimally for Alfresco - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco from functioning, some product features might not be available, or the system might not perform optimally."
-msgstr "This environment is not configured optimally for Alfresco - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco from functioning, some product features might not be available, or the system might not perform optimally."
+msgid "This environment is not configured optimally for Alfresco Content Services - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco Content Services from functioning, some product features might not be available, or the system might not perform optimally."
+msgstr "This environment is not configured optimally for Alfresco Content Services - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco Content Services from functioning, some product features might not be available, or the system might not perform optimally."
 
 msgid "This installer is for Windows 64 bit.  Download the Windows 32 bit version."
 msgstr "This installer is for Windows 64 bit.  Download the Windows 32 bit version."
@@ -637,14 +637,14 @@ msgstr "Use ASCII characters only when setting the password in the installer. If
 msgid "Connect Alfresco Share to the repository"
 msgstr "Connect Alfresco Share to the repository"
 
-msgid "Enter the location of your Alfresco repository."
-msgstr "Enter the location of your Alfresco repository."
+msgid "Enter the location of your Alfresco Content Services repository."
+msgstr "Enter the location of your Alfresco Content Services repository."
 
 msgid "Repository location: "
 msgstr "Repository location: "
 
-msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
-msgstr "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco Content Services versions."
+msgstr "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco Content Services versions."
 
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
@@ -658,8 +658,8 @@ msgstr "Unable to bind to the given port number. This port is already in use by 
 msgid "Remote Solr configuration"
 msgstr "Remote Solr configuration"
 
-msgid "Enter the Solr host and port to connect to Alfresco:"
-msgstr "Enter the Solr host and port to connect to Alfresco:"
+msgid "Enter the Solr host and port to connect to Alfresco Content Services:"
+msgstr "Enter the Solr host and port to connect to Alfresco Content Services:"
 
 msgid "Solr host:"
 msgstr "Solr host:"

@@ -122,7 +122,7 @@ public class BaseRestTest extends RestTest
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
             // Create the RM site
-            RMSite rmSite= new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
+            RMSite rmSite = new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
             rmSiteAPI.createRMSite(rmSite);
 
             // Verify the status code
@@ -183,7 +183,7 @@ public class BaseRestTest extends RestTest
     {
         RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        FilePlanComponent filePlanComponent=new FilePlanComponent(componentName, componentType.toString(),new FilePlanComponentProperties(componentTitle));
+        FilePlanComponent filePlanComponent = new FilePlanComponent(componentName, componentType.toString(),new FilePlanComponentProperties(componentTitle));
 
         FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(filePlanComponent, parentComponentId);
         restWrapper.assertStatusCodeIs(CREATED);

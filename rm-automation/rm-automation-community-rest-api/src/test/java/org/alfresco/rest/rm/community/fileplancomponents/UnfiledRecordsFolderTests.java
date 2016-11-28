@@ -117,9 +117,9 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
 
         // Verify the returned file plan component
-        assertFalse(filePlanComponent.isIsCategory());
-        assertFalse(filePlanComponent.isIsFile());
-        assertFalse(filePlanComponent.isIsRecordFolder()); // it is not a _normal_ record folder!
+        assertFalse(filePlanComponent.isCategory());
+        assertFalse(filePlanComponent.isFile());
+        assertFalse(filePlanComponent.isRecordFolder()); // it is not a _normal_ record folder!
 
         assertEquals(filePlanComponent.getName(), folderName);
         assertEquals(filePlanComponent.getNodeType(), UNFILED_RECORD_FOLDER_TYPE.toString());
@@ -200,9 +200,9 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         restWrapper.assertStatusCodeIs(CREATED);
 
         // Verify the returned file plan component
-        assertFalse(childFolder.isIsCategory());
-        assertFalse(childFolder.isIsFile());
-        assertFalse(childFolder.isIsRecordFolder()); // it is not a _normal_ record folder!
+        assertFalse(childFolder.isCategory());
+        assertFalse(childFolder.isFile());
+        assertFalse(childFolder.isRecordFolder()); // it is not a _normal_ record folder!
 
         assertEquals(childFolder.getName(), childFolderName);
         assertEquals(childFolder.getNodeType(), UNFILED_RECORD_FOLDER_TYPE.toString());
@@ -251,7 +251,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         assertEquals(folderName, folderToModify.getName());
 
         // Build the properties which will be updated
-        FilePlanComponent folderToUpdate=new FilePlanComponent(modified + folderToModify.getName(),
+        FilePlanComponent folderToUpdate = new FilePlanComponent(modified + folderToModify.getName(),
                                                     new FilePlanComponentProperties(modified + folderToModify.getProperties().getTitle(),
                                                                                     modified + folderToModify.getProperties().getDescription()));
         // Update the unfiled records folder

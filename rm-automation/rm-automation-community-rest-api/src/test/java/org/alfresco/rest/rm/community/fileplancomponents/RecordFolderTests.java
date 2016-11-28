@@ -91,7 +91,7 @@ public class RecordFolderTests extends BaseRestTest
         String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        FilePlanComponent filePlanComponent=createCategory(FILE_PLAN_ALIAS.toString(), CATEGORY);
+        FilePlanComponent filePlanComponent = createCategory(FILE_PLAN_ALIAS.toString(), CATEGORY);
 
         FilePlanComponentProperties filePlanComponentProperties = new FilePlanComponentProperties(FOLDER_TITLE);
         FilePlanComponent recordFolder = new FilePlanComponent(FOLDER_NAME,RECORD_FOLDER_TYPE.toString(), filePlanComponentProperties);
@@ -99,15 +99,15 @@ public class RecordFolderTests extends BaseRestTest
         // Create the record folder
         FilePlanComponent folder = filePlanComponentAPI.createFilePlanComponent(recordFolder, filePlanComponent.getId());
 
-        //filePlanComponentAPI.createFilePlanComponent(recordFolderProperties, filePlanComponent.getId());
+
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
 
         // Check folder has been created  within the category created
         assertEquals(filePlanComponent.getId(),folder.getParentId());
         // Verify the returned properties for the file plan component - record folder
-        assertFalse(folder.isIsCategory());
-        assertFalse(folder.isIsFile());
-        assertTrue(folder.isIsRecordFolder());
+        assertFalse(folder.isCategory());
+        assertFalse(folder.isFile());
+        assertTrue(folder.isRecordFolder());
 
         assertEquals(folder.getName(), FOLDER_NAME);
         assertEquals(folder.getNodeType(), RECORD_FOLDER_TYPE.toString());
@@ -138,7 +138,7 @@ public class RecordFolderTests extends BaseRestTest
         String componentID = filePlanComponentAPI.getFilePlanComponent(filePlanComponent).getId();
 
         // Build the record category properties
-        FilePlanComponent recordFolder= new FilePlanComponent(FOLDER_NAME,RECORD_FOLDER_TYPE.toString(),
+        FilePlanComponent recordFolder = new FilePlanComponent(FOLDER_NAME,RECORD_FOLDER_TYPE.toString(),
                                              new FilePlanComponentProperties(FOLDER_TITLE));
         // Create a record folder
         filePlanComponentAPI.createFilePlanComponent(recordFolder, componentID);
@@ -158,19 +158,19 @@ public class RecordFolderTests extends BaseRestTest
     )
     public void checkTheRecordFolderProperties() throws Exception
     {
-        String CATEGORY=CATEGORY_NAME + getRandomAlphanumeric();
+        String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         FilePlanComponent category = createCategory(FILE_PLAN_ALIAS.toString(), CATEGORY);
-        FilePlanComponent folder =createFolder(category.getId(),FOLDER_NAME);
+        FilePlanComponent folder = createFolder(category.getId(),FOLDER_NAME);
 
-        FilePlanComponent folderDetails=filePlanComponentAPI.withParams("include="+IS_CLOSED).getFilePlanComponent(folder.getId());
+        FilePlanComponent folderDetails = filePlanComponentAPI.withParams("include="+IS_CLOSED).getFilePlanComponent(folder.getId());
 
         // Verify the returned properties for the file plan component - record folder
         assertEquals(RECORD_FOLDER_TYPE.toString(),folderDetails.getNodeType());
-        assertTrue(folderDetails.isIsRecordFolder());
-        assertFalse(folderDetails.isIsCategory());
-        assertFalse(folderDetails.isIsFile());
+        assertTrue(folderDetails.isRecordFolder());
+        assertFalse(folderDetails.isCategory());
+        assertFalse(folderDetails.isFile());
         assertFalse(folderDetails.isClosed());
 
         assertEquals(FOLDER_NAME,folderDetails.getName());
@@ -205,12 +205,12 @@ public class RecordFolderTests extends BaseRestTest
 
         // Create record category first
         String folderDescription = "The folder description is updated" + getRandomAlphanumeric();
-        String folderName= "The folder name is updated" + getRandomAlphanumeric();
+        String folderName = "The folder name is updated" + getRandomAlphanumeric();
         String folderTitle = "Update title " + getRandomAlphanumeric();
-        String location="Location"+getRandomAlphanumeric();
+        String location = "Location"+getRandomAlphanumeric();
 
         //Create the file plan component properties to update
-        FilePlanComponentProperties filePlanComponentProperties= new FilePlanComponentProperties(folderTitle, folderDescription);
+        FilePlanComponentProperties filePlanComponentProperties = new FilePlanComponentProperties(folderTitle, folderDescription);
         filePlanComponentProperties.setVitalRecord(true);
         filePlanComponentProperties.setReviewPeriod( new ReviewPeriod("month","1"));
         filePlanComponentProperties.setLocation(location);
@@ -230,7 +230,6 @@ public class RecordFolderTests extends BaseRestTest
         assertEquals(location, folderUpdated.getProperties().getLocation());
         assertNotNull(folderUpdated.getProperties().getReviewPeriod().getPeriodType());
         assertNotNull(folderUpdated.getProperties().getReviewPeriod().getExpression());
-
 
     }
 
@@ -325,11 +324,11 @@ public class RecordFolderTests extends BaseRestTest
 
                         // Is parent Id set correctly
                         assertEquals(filePlanComponent.getParentId(), category.getId());
-                        assertFalse(filePlanComponent.isIsFile());
+                        assertFalse(filePlanComponent.isFile());
 
                         // Boolean properties related to node type
-                        assertTrue(filePlanComponent.isIsRecordFolder());
-                        assertFalse(filePlanComponent.isIsCategory());
+                        assertTrue(filePlanComponent.isRecordFolder());
+                        assertFalse(filePlanComponent.isCategory());
 
                         assertEquals(createdComponent.getName(), filePlanComponent.getName());
                         assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());

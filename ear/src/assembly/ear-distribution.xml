@@ -8,14 +8,14 @@
 
     <fileSets>
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-one-platform-distributionzip-${alfresco.platform.version}</directory>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-platform-distributionzip-${alfresco.platform.version}</directory>
             <outputDirectory/>
             <excludes>
                 <exclude>web-server/shared/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-one-platform-distributionzip-${alfresco.platform.version}/web-server/shared/classes</directory>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-platform-distributionzip-${alfresco.platform.version}/web-server/shared/classes</directory>
             <outputDirectory>web-server/classpath</outputDirectory>
         </fileSet>
         <fileSet>
@@ -30,7 +30,7 @@
         </file>
         <file>
             <source>${project.build.directory}/alfresco-ear-distribution-${project.version}.ear</source>
-            <destName>alfresco-one-${project.version}.ear</destName>
+            <destName>alfresco-content-services-${project.version}.ear</destName>
         </file>
     </files>
 </assembly>

@@ -6,7 +6,7 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.2.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-one-installer</artifactId>
+    <artifactId>alfresco-content-services-installer</artifactId>
     <packaging>pom</packaging>
     <name>Alfresco Enterprise Full Installers</name>
 
@@ -32,7 +32,7 @@
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
         <alfresco.package.name>alfresco-one</alfresco.package.name>
-        <alfresco.distribution.name>alfresco-one-distribution</alfresco.distribution.name>
+        <alfresco.distribution.name>alfresco-content-services-distribution</alfresco.distribution.name>
 
         <!-- 
         Override alfresco.installer.name for the Enterprise installer that is still using 
@@ -45,7 +45,7 @@
         <!-- Import the dependencies from the Community installer -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-community-installer</artifactId>
+            <artifactId>alfresco-content-services-community-installer</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>
@@ -73,13 +73,13 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-one-installer-resources</artifactId>
+                                    <artifactId>alfresco-content-services-installer-resources</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-one-distribution</artifactId>
+                                    <artifactId>alfresco-content-services-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>

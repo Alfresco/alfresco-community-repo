@@ -26,7 +26,10 @@
  */
 package org.alfresco.rest.rm.community.model.site;
 
+import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.Gson;
 
 import org.alfresco.rest.model.RestSiteModel;
 
@@ -38,8 +41,23 @@ import org.alfresco.rest.model.RestSiteModel;
  */
 public class RMSite extends RestSiteModel
 {
-    @JsonProperty (required = true)
+    @JsonProperty (value = COMPLIANCE,required = true)
     private RMSiteCompliance compliance;
+
+    public RMSite(String title, String description, RMSiteCompliance compliance)
+    {
+        this.title=title;
+        this.description=description;
+        this.compliance=compliance;
+    }
+
+    public RMSite() { }
+
+    public RMSite(RMSiteCompliance compliance)
+    {
+        super();
+        this.compliance = compliance;
+    }
 
     /**
      * Helper method to set RM site compliance
@@ -60,4 +78,5 @@ public class RMSite extends RestSiteModel
     {
         return compliance;
     }
+
 }

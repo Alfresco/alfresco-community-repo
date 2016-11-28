@@ -24,59 +24,43 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.fileplancomponents;
+package org.alfresco.rest.rm.community.util;
+
+import java.io.IOException;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * POJO for the review period
+ * Utility class for creating the json object
  *
  * @author Rodica Sutu
  * @since 2.6
  */
-
-public class ReviewPeriod
+public class PojoUtility
 {
-    private String periodType;
-    private String expression;
 
-    public ReviewPeriod(String periodType, String expression)
+    public static String toJson(Object rmModel) throws JsonProcessingException
     {
-        this.periodType = periodType;
-        this.expression = expression;
-    }
-
-    public ReviewPeriod()
-    {
-    }
-
-    /**
-     * @return the periodType
-     */
-    public String getPeriodType()
-    {
-        return this.periodType;
-    }
-
-    /**
-     * @param periodType the periodType to set
-     */
-    public void setPeriodType(String periodType)
-    {
-        this.periodType = periodType;
-    }
-
-    /**
-     * @return the expression
-     */
-    public String getExpression()
-    {
-        return this.expression;
-    }
-
-    /**
-     * @param expression the expression to set
-     */
-    public void setExpression(String expression)
-    {
-        this.expression = expression;
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(Include.NON_DEFAULT);
+        try
+        {
+            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rmModel);
+            System.out.println("Json object generated is :" + json);
+            return json;
+        } catch (JsonGenerationException e)
+        {
+            return e.toString();
+        } catch (JsonMappingException e)
+        {
+            return e.toString();
+        } catch (IOException e)
+        {
+            return e.toString();
+        }
     }
 }

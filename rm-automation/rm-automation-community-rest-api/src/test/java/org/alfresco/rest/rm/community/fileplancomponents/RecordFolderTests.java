@@ -31,17 +31,8 @@ import static org.alfresco.rest.rm.community.base.TestData.FOLDER_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_CLOSED;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.NAME;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_LOCATION;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_PERIOD;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -56,19 +47,17 @@ import static org.testng.AssertJUnit.assertTrue;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
-import com.google.gson.JsonObject;
-
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.community.model.fileplancomponents.ReviewPeriod;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 /**
@@ -103,18 +92,15 @@ public class RecordFolderTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         FilePlanComponent filePlanComponent=createCategory(FILE_PLAN_ALIAS.toString(), CATEGORY);
 
-        // Build the record category properties
-        JsonObject recordFolderProperties = buildObject()
-                .add(NAME, FOLDER_NAME)
-                .add(NODE_TYPE, RECORD_FOLDER_TYPE.toString())
-                .addObject(PROPERTIES)
-                .add(PROPERTIES_TITLE, FOLDER_TITLE)
-                .end()
-                .getJson();
+        FilePlanComponentProperties filePlanComponentProperties = new FilePlanComponentProperties(FOLDER_TITLE);
+        FilePlanComponent recordFolder = new FilePlanComponent(FOLDER_NAME,RECORD_FOLDER_TYPE.toString(), filePlanComponentProperties);
 
         // Create the record folder
-        FilePlanComponent folder = filePlanComponentAPI.createFilePlanComponent(recordFolderProperties, filePlanComponent.getId());
+        FilePlanComponent folder = filePlanComponentAPI.createFilePlanComponent(recordFolder, filePlanComponent.getId());
+
+        //filePlanComponentAPI.createFilePlanComponent(recordFolderProperties, filePlanComponent.getId());
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+
         // Check folder has been created  within the category created
         assertEquals(filePlanComponent.getId(),folder.getParentId());
         // Verify the returned properties for the file plan component - record folder
@@ -151,16 +137,10 @@ public class RecordFolderTests extends BaseRestTest
         String componentID = filePlanComponentAPI.getFilePlanComponent(filePlanComponent).getId();
 
         // Build the record category properties
-        JsonObject recordFolderProperties = buildObject()
-                .add(NAME, FOLDER_NAME)
-                .add(NODE_TYPE, RECORD_FOLDER_TYPE.toString())
-                .addObject(PROPERTIES)
-                .add(PROPERTIES_TITLE, FOLDER_TITLE)
-                .end()
-                .getJson();
-
+        FilePlanComponent recordFolder= new FilePlanComponent(FOLDER_NAME,RECORD_FOLDER_TYPE.toString(),
+                                             new FilePlanComponentProperties(FOLDER_TITLE));
         // Create a record folder
-        filePlanComponentAPI.createFilePlanComponent(recordFolderProperties, componentID);
+        filePlanComponentAPI.createFilePlanComponent(recordFolder, componentID);
 
         // Check the API Response code
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
@@ -224,22 +204,16 @@ public class RecordFolderTests extends BaseRestTest
         String folderName= "The folder name is updated" + getRandomAlphanumeric();
         String folderTitle = "Update title " + getRandomAlphanumeric();
         String location="Location"+getRandomAlphanumeric();
+
         String review_period="month|1";
 
-        // Build the file plan root properties
-        JsonObject folderProperties = buildObject()
-                .add(NAME, folderName)
-                .addObject(PROPERTIES)
-                .add(PROPERTIES_TITLE, folderTitle)
-                .add(PROPERTIES_DESCRIPTION, folderDescription)
-                .add(PROPERTIES_VITAL_RECORD_INDICATOR,true)
-                .add(PROPERTIES_REVIEW_PERIOD, review_period)
-                .add(PROPERTIES_LOCATION, location)
-                .end()
-                .getJson();
-
+        FilePlanComponentProperties filePlanComponentProperties= new FilePlanComponentProperties(folderTitle, folderDescription);
+        filePlanComponentProperties.setVitalRecord(true);
+        filePlanComponentProperties.setReviewPeriod( new ReviewPeriod("month","1"));
+        filePlanComponentProperties.setLocation(location);
+        FilePlanComponent recordFolder = new FilePlanComponent(folderName,filePlanComponentProperties);
         // Update the record category
-        FilePlanComponent folderUpdated = filePlanComponentAPI.updateFilePlanComponent(folderProperties, folder.getId());
+        FilePlanComponent folderUpdated = filePlanComponentAPI.updateFilePlanComponent(recordFolder, folder.getId());
 
         // Check the Response Status Code
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
@@ -361,7 +335,7 @@ public class RecordFolderTests extends BaseRestTest
             );
 
     }
-    @AfterClass (alwaysRun = true)
+    //@AfterClass (alwaysRun = true)
     public void tearDown() throws Exception
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());

@@ -30,27 +30,20 @@ import static java.lang.Integer.parseInt;
 
 import static org.alfresco.rest.rm.community.base.TestData.CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.NAME;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.DESCRIPTION;
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.TITLE;
-import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
 
-import com.google.gson.JsonObject;
 import com.jayway.restassured.RestAssured;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
+import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
@@ -127,15 +120,9 @@ public class BaseRestTest extends RestTest
         {
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-            // Build the RM site properties
-            JsonObject rmSiteProperties = buildObject()
-                    .add(TITLE, RM_TITLE)
-                    .add(DESCRIPTION, RM_DESCRIPTION)
-                    .add(COMPLIANCE, STANDARD.toString())
-                    .getJson();
-
             // Create the RM site
-            rmSiteAPI.createRMSite(rmSiteProperties);
+            RMSite rmSite= new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
+            rmSiteAPI.createRMSite(rmSite);
 
             // Verify the status code
             rmSiteAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
@@ -195,14 +182,9 @@ public class BaseRestTest extends RestTest
     {
         RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        JsonObject componentProperties = buildObject().add(NAME, componentName)
-                                                      .add(NODE_TYPE, componentType.toString())
-                                                      .addObject(PROPERTIES)
-                                                      .add(PROPERTIES_TITLE, componentTitle)
-                                                      .end()
-                                                      .getJson();
+        FilePlanComponent filePlanComponent=new FilePlanComponent(componentName, componentType.toString(),new FilePlanComponentProperties(componentTitle));
 
-        FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(componentProperties, parentComponentId);
+        FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(filePlanComponent, parentComponentId);
         restWrapper.assertStatusCodeIs(CREATED);
         return fpc;
     }

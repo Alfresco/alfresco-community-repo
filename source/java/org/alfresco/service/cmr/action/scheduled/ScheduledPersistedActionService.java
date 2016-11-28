@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.action.scheduled;
 import java.util.List;
 
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * A service which handles the scheduling of the
@@ -64,6 +65,12 @@ public interface ScheduledPersistedActionService
     *  null if it isn't currently scheduled. 
     */
    public ScheduledPersistedAction getSchedule(Action persistedAction);
+
+   /**
+    * Returns the schedule for the specified action nodeRef, or
+    * null if it isn't currently scheduled.
+    */
+   public ScheduledPersistedAction getSchedule(NodeRef persistedActionNodeRef);
    
    /**
     * Returns all currently scheduled actions.

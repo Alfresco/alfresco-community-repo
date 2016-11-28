@@ -34,7 +34,9 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
@@ -47,10 +49,14 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
+import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryAction;
+import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryActionPersister;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -64,6 +70,7 @@ import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporaryModels;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.apache.commons.codec.binary.Base64;
+import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -118,11 +125,15 @@ public class QuickShareServiceIntegrationTest
     private static CopyService copyService;
     private static NodeService nodeService;
     private static QuickShareService quickShareService;
-    private static DictionaryService dictionaryService;
+    private static QuickShareService directDuickShareService;
     private static Repository repository;
     private static AttributeService attributeService;
     private static PermissionService permissionService;
     private static NodeArchiveService nodeArchiveService;
+    private static ScheduledPersistedActionService scheduledPersistedActionService;
+    private static QuickShareLinkExpiryActionPersister quickShareLinkExpiryActionPersister;
+    private static RetryingTransactionHelper transactionHelper;
+    private static Properties globalProperties;
     
     private static AlfrescoPerson user1 = new AlfrescoPerson(testContext, "UserOne");
     private static AlfrescoPerson user2 = new AlfrescoPerson(testContext, "UserTwo");
@@ -151,13 +162,17 @@ public class QuickShareServiceIntegrationTest
         ApplicationContext ctx = testContext.getApplicationContext();
         
         copyService = ctx.getBean("CopyService", CopyService.class);
-        dictionaryService = ctx.getBean("dictionaryService", DictionaryService.class);
         nodeService = ctx.getBean("NodeService", NodeService.class);
+        directDuickShareService = ctx.getBean("quickShareService", QuickShareService.class);
         quickShareService = ctx.getBean("QuickShareService", QuickShareService.class);
         repository = ctx.getBean("repositoryHelper", Repository.class);
         attributeService = ctx.getBean("AttributeService", AttributeService.class);
         permissionService = ctx.getBean("PermissionService", PermissionService.class);
         nodeArchiveService = ctx.getBean("nodeArchiveService", NodeArchiveService.class);
+        scheduledPersistedActionService = ctx.getBean("scheduledPersistedActionService", ScheduledPersistedActionService.class);
+        quickShareLinkExpiryActionPersister = ctx.getBean("quickShareLinkExpiryActionPersister", QuickShareLinkExpiryActionPersister.class);
+        transactionHelper = ctx.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        globalProperties = ctx.getBean("global-properties", Properties.class);
     }
     
     @Before public void createTestData()
@@ -219,7 +234,7 @@ public class QuickShareServiceIntegrationTest
     }
     
     @Test public void unshare() {
-		final QuickShareDTO dto = share(testNode, user1.getUsername());
+        final QuickShareDTO dto = share(testNode, user1.getUsername());
         unshare(dto.getId(), user1.getUsername());
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>(){
 
@@ -359,18 +374,16 @@ public class QuickShareServiceIntegrationTest
         }, userName);
     }
 
-    private QuickShareDTO share(final NodeRef nodeRef, String username)
+    private QuickShareDTO share(final NodeRef nodeRef, final String username)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<QuickShareDTO>()
-        {
-            @Override
-            public QuickShareDTO doWork() throws Exception
-            {
-                return quickShareService.shareContent(nodeRef);
-            }
-        }, username);
+        return share(nodeRef, username, null);
     }
-    
+
+    private QuickShareDTO share(final NodeRef nodeRef, final String username, final Date expiryDate)
+    {
+        return AuthenticationUtil.runAs(() -> quickShareService.shareContent(nodeRef, expiryDate), username);
+    }
+
     @Test public void getMetadataFromShareId()
     {
         QuickShareDTO dto = share(testNode, user1.getUsername());
@@ -587,4 +600,317 @@ public class QuickShareServiceIntegrationTest
         assertEquals("The modifier has changed after sharing.", user1.getUsername(), modifier);
     }
 
+    /**
+     * Test the quick share link expiry date action.
+     */
+    @Test
+    public void testSharedLinkExpiryScheduling() throws  Exception
+    {
+        // First record the number of available schedules
+        final int numOfSchedules = listSchedules();
+
+        // 1 day from now
+        Date expiryDate = DateTime.now().plusDays(1).toDate();
+        QuickShareDTO quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+        assertTrue(hasQuickShareAspect(testNode));
+        assertEquals(quickShareDTO.getId(), getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDID));
+        assertNotNull(quickShareDTO.getExpiresAt());
+        assertEquals(expiryDate, quickShareDTO.getExpiresAt());
+        // Check that the expiry action is persisted
+        QuickShareLinkExpiryAction expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+        assertEquals(quickShareDTO.getId(), expiryAction.getSharedId());
+        assertEquals(quickShareDTO.getExpiresAt(), expiryAction.getScheduleStart());
+       // assertNull("We haven't set interval count.", expiryAction.getScheduleIntervalCount());
+        //assertNull("We haven't set interval period.", expiryAction.getScheduleIntervalPeriod());
+
+        // Try to share the already shared node with a different expiry date.
+        // This basically will update the expiry action start time
+        expiryDate = DateTime.now().plusDays(7).toDate();
+        quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+        assertEquals(expiryDate, quickShareDTO.getExpiresAt());
+        assertEquals(expiryDate, getProperty(testNode, QuickShareModel.PROP_QSHARE_EXPIRY_DATE));
+        assertTrue(hasQuickShareAspect(testNode));
+        assertEquals(quickShareDTO.getId(), getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDID));
+        // Check that the expiry action is persisted
+        expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+        assertEquals(quickShareDTO.getId(), expiryAction.getSharedId());
+        assertEquals(quickShareDTO.getExpiresAt(), expiryAction.getScheduleStart());
+        //assertNull("We haven't set interval count.", expiryAction.getScheduleIntervalCount());
+       // assertNull("We haven't set interval period.", expiryAction.getScheduleIntervalPeriod());
+
+        // Delete the expiry action
+        deleteExpiryAction(expiryAction);
+
+        // Check that the expiry action has been deleted
+        QuickShareLinkExpiryAction deletedExpiryAction = getExpiryAction(quickShareDTO.getId());
+        assertNull(deletedExpiryAction);
+        assertNull(getProperty(testNode, QuickShareModel.PROP_QSHARE_EXPIRY_DATE));
+        // Unshare
+        unshare(quickShareDTO.getId(), user1.getUsername());
+
+        // Share the testNode, with expiry date of 1 day from now
+        expiryDate = DateTime.now().plusDays(1).toDate();
+        quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+        assertTrue(hasQuickShareAspect(testNode));
+        expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+        assertEquals(expiryDate, expiryAction.getScheduleStart());
+        assertEquals(numOfSchedules + 1, listSchedules());
+        // Now update the schedule to be executed in 5 seconds.
+        expiryAction.setScheduleStart(DateTime.now().plusSeconds(5).toDate());
+        // Here we'll bypass the QuickShareService in order to force the new time.
+        // As the QuickShareService by default will enforce the expiry date to not be less than 24 hours.
+        forceSaveNewExpiryTime(expiryAction);
+
+        // wait 10 seconds
+        Thread.sleep(10000L);
+        // Check that the expiry action was successful and it removed the shared link
+        assertFalse(hasQuickShareAspect(testNode));
+        // Also check the expiry date property is removed
+        assertNull(getProperty(testNode, QuickShareModel.PROP_QSHARE_EXPIRY_DATE));
+        // Check that the persisted expiry action is removed
+        assertNull(getExpiryAction(quickShareDTO.getId()));
+        // Check that the persisted schedule is removed as well
+        assertEquals(numOfSchedules, listSchedules());
+
+        // Share the testNode, with expiry date of 1 day from now
+        expiryDate = DateTime.now().plusDays(1).toDate();
+        quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+        assertTrue(hasQuickShareAspect(testNode));
+        expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+        assertEquals(expiryDate, expiryAction.getScheduleStart());
+
+        // Delete the shared testNode as user1
+        AuthenticationUtil.runAs(() -> {
+            nodeService.deleteNode(testNode);
+
+            return null;
+        }, user1.getUsername());
+
+        // Check that the persisted expiry action is removed, as we have deleted the source node
+        assertNull(getExpiryAction(quickShareDTO.getId()));
+        // Check that the persisted schedule is removed as well
+        assertEquals(numOfSchedules, listSchedules());
+
+        // Restore the testNode as user1
+        AuthenticationUtil.runAs(() -> {
+            final NodeRef archivedNode = nodeArchiveService.getArchivedNode(testNode);
+            RestoreNodeReport restoreNodeReport = nodeArchiveService.restoreArchivedNode(archivedNode);
+            assertNotNull(restoreNodeReport);
+            assertTrue(restoreNodeReport.getStatus() == RestoreStatus.SUCCESS);
+            testNode = restoreNodeReport.getRestoredNodeRef();
+
+            return null;
+        }, user1.getUsername());
+
+        // Check that restoring the node hasn't brought back the shared aspect or the persisted expiry action
+        assertFalse(hasQuickShareAspect(testNode));
+        assertNull(getExpiryAction(quickShareDTO.getId()));
+        assertEquals(numOfSchedules, listSchedules());
+    }
+
+    /**
+     * Test date validator for the quick share link expiry date action.
+     */
+    @Test
+    public void testSharedLinkExpiryDateValidator() throws  Exception
+    {
+        // Try to share with invalid time - passed time
+        try
+        {
+            share(testNode, user1.getUsername(), DateTime.now().minusDays(1).toDate());
+            fail("Should have failed as the expiry date is invalid (passed time).");
+        }
+        catch (QuickShareLinkExpiryActionException.InvalidExpiryDateException ex)
+        {
+            // Expected
+        }
+
+        final String defaultExpiryDatePeriod = globalProperties.getProperty("system.quickshare.expiry_date.enforce.period");
+
+        // Test expiry date period enforcement
+        try
+        {
+            /*
+             * Set the expiry date period enforcement to Days
+             */
+            {
+                ((QuickShareServiceImpl) directDuickShareService).setExpiryDatePeriod("DAYS");
+
+                try
+                {
+                    // Try to share with invalid time - less than 1 day
+                    share(testNode, user1.getUsername(), DateTime.now().plusHours(1).toDate());
+                    fail("Should have failed as the expiry date is invalid (less than 1 day).");
+                }
+                catch (QuickShareLinkExpiryActionException.InvalidExpiryDateException ex)
+                {
+                    // Expected
+                }
+                try
+                {
+                    // Try to share with invalid time - less than 1 day
+                    share(testNode, user1.getUsername(), DateTime.now().plusMinutes(30).toDate());
+                    fail("Should have failed as the expiry date is invalid (less than 1 day).");
+                }
+                catch (QuickShareLinkExpiryActionException.InvalidExpiryDateException ex)
+                {
+                    // Expected
+                }
+                // Set the expiry date to be in 24 hours
+                Date expiryDate = DateTime.now().plusHours(24).toDate();
+                QuickShareDTO quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+                assertTrue(hasQuickShareAspect(testNode));
+                QuickShareLinkExpiryAction expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+                assertEquals(expiryDate, expiryAction.getScheduleStart());
+                // Unshare
+                quickShareService.unshareContent(quickShareDTO.getId());
+
+                // Set the expiry date to be next year
+                expiryDate = DateTime.now().plusYears(1).toDate();
+                quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+                assertTrue(hasQuickShareAspect(testNode));
+                expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+                assertEquals(expiryDate, expiryAction.getScheduleStart());
+                // Unshare
+                quickShareService.unshareContent(quickShareDTO.getId());
+            }
+            /*
+             * Set the expiry date period enforcement to Hours
+             */
+            {
+                ((QuickShareServiceImpl) directDuickShareService).setExpiryDatePeriod("HOURS");
+
+                try
+                {
+                    // Try to share with invalid time - less than 1 hour
+                    share(testNode, user1.getUsername(), DateTime.now().plusMinutes(30).toDate());
+                    fail("Should have failed as the expiry date is invalid (less than 1 hour).");
+                }
+                catch (QuickShareLinkExpiryActionException.InvalidExpiryDateException ex)
+                {
+                    // Expected
+                }
+                // Set the expiry date to be in the next hour
+                Date expiryDate = DateTime.now().plusHours(1).toDate();
+                QuickShareDTO quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+                assertTrue(hasQuickShareAspect(testNode));
+                QuickShareLinkExpiryAction expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+                assertEquals(expiryDate, expiryAction.getScheduleStart());
+                // Unshare
+                quickShareService.unshareContent(quickShareDTO.getId());
+
+                // Set the expiry date to be in the next 2 days, even though we did set the date period to HOURS.
+                expiryDate = DateTime.now().plusDays(2).toDate();
+                quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+                assertTrue(hasQuickShareAspect(testNode));
+                expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+                assertEquals(expiryDate, expiryAction.getScheduleStart());
+                // Unshare
+                quickShareService.unshareContent(quickShareDTO.getId());
+            }
+            /*
+             * Set the expiry date period enforcement to Minutes
+             */
+            {
+                ((QuickShareServiceImpl) directDuickShareService).setExpiryDatePeriod("MINUTES");
+
+                try
+                {
+                    // Try to share with invalid time - less than 1 minute
+                    share(testNode, user1.getUsername(), DateTime.now().plusSeconds(10).toDate());
+                    fail("Should have failed as the expiry date is invalid (less than 1 minute).");
+                }
+                catch (QuickShareLinkExpiryActionException.InvalidExpiryDateException ex)
+                {
+                    // Expected
+                }
+                // Set the expiry date to be in 5 minutes time
+                Date expiryDate = DateTime.now().plusMinutes(5).toDate();
+                QuickShareDTO quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+                assertTrue(hasQuickShareAspect(testNode));
+                QuickShareLinkExpiryAction expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+                assertEquals(expiryDate, expiryAction.getScheduleStart());
+                // Unshare
+                quickShareService.unshareContent(quickShareDTO.getId());
+
+                // Set the expiry date to be in 60 days
+                expiryDate = DateTime.now().plusDays(60).toDate();
+                quickShareDTO = share(testNode, user1.getUsername(), expiryDate);
+                assertTrue(hasQuickShareAspect(testNode));
+                expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
+                assertEquals(expiryDate, expiryAction.getScheduleStart());
+                // Unshare
+                quickShareService.unshareContent(quickShareDTO.getId());
+            }
+        }
+        finally
+        {
+            ((QuickShareServiceImpl) directDuickShareService).setExpiryDatePeriod(defaultExpiryDatePeriod);
+        }
+    }
+
+    private QuickShareLinkExpiryAction getExpiryActionAndAttachSchedule(String sharedId)
+    {
+
+            // Check that the expiry action is persisted
+            QuickShareLinkExpiryAction expiryAction = getExpiryAction(sharedId);
+            assertNotNull(expiryAction);
+            assertNotNull("Expiry action should have been persisted.", expiryAction.getNodeRef());
+            assertNull("The schedule hasn't been attached yet.", expiryAction.getSchedule());
+            ScheduledPersistedAction scheduledPersistedAction = getSchedule(expiryAction);
+            assertNotNull("Scheduled action should have been persisted.", scheduledPersistedAction);
+            //Attach the schedule
+            expiryAction.setSchedule(scheduledPersistedAction);
+
+            return expiryAction;
+
+    }
+
+    private QuickShareLinkExpiryAction getExpiryAction(final String sharedId)
+    {
+        return AuthenticationUtil.runAsSystem(
+                    () -> quickShareLinkExpiryActionPersister.loadQuickShareLinkExpiryAction(QuickShareLinkExpiryActionImpl.createQName(sharedId)));
+    }
+
+    private ScheduledPersistedAction getSchedule(final QuickShareLinkExpiryAction linkExpiryAction)
+    {
+        return AuthenticationUtil.runAsSystem(
+                    () -> scheduledPersistedActionService.getSchedule(linkExpiryAction));
+    }
+
+    private int listSchedules()
+    {
+        return AuthenticationUtil.runAsSystem(() -> scheduledPersistedActionService.listSchedules().size());
+
+    }
+
+    private void deleteExpiryAction(final QuickShareLinkExpiryAction linkExpiryAction)
+    {
+        transactionHelper.doInTransaction(() -> {
+            quickShareService.deleteQuickShareLinkExpiryAction(linkExpiryAction);
+            return null;
+        });
+    }
+
+    private boolean hasQuickShareAspect(NodeRef nodeRef)
+    {
+        return AuthenticationUtil.runAsSystem(() -> nodeService.hasAspect(nodeRef, QuickShareModel.ASPECT_QSHARE));
+    }
+
+    private Serializable getProperty(NodeRef nodeRef, QName property)
+    {
+        return AuthenticationUtil.runAsSystem(() -> nodeService.getProperty(nodeRef, property));
+    }
+
+    private void forceSaveNewExpiryTime(final QuickShareLinkExpiryAction linkExpiryAction)
+    {
+        transactionHelper.doInTransaction(() -> {
+            AuthenticationUtil.runAsSystem(() -> {
+                quickShareLinkExpiryActionPersister.saveQuickShareLinkExpiryAction(linkExpiryAction);
+                scheduledPersistedActionService.saveSchedule(linkExpiryAction.getSchedule());
+                return null;
+            });
+            return null;
+        });
+    }
 }

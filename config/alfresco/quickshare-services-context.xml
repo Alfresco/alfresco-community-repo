@@ -84,6 +84,9 @@
         <property name="searchService" ref="SearchService" />
         <property name="siteService" ref="SiteService" />
         <property name="authorityService" ref="AuthorityService" />
+        <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
+        <property name="quickShareLinkExpiryActionPersister" ref="quickShareLinkExpiryActionPersister" />
+        <property name="expiryDatePeriod" value="${system.quickshare.expiry_date.enforce.period}" />
     </bean>
 
     <bean id="quickShareResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
@@ -91,6 +94,26 @@
             <list>
                 <value>alfresco.messages.quickshare-service</value>
             </list>
+        </property>
+    </bean>
+
+    <bean id="quickShareLinkExpiryActionExecutor" parent="action-executer"
+          class="org.alfresco.repo.quickshare.QuickShareLinkExpiryActionExecutor">
+        <property name="quickShareService" ref="quickShareService"/>
+    </bean>
+
+    <bean id="quickShareLinkExpiryActionPersister" class="org.alfresco.repo.quickshare.QuickShareLinkExpiryActionPersisterImpl" >
+        <property name="nodeService" ref="nodeService" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="runtimeActionService" ref="actionService" />
+        <!-- Properties for bootstrapping the Link Expiry Actions root folder -->
+        <property name="importerBootstrap" ref="spacesBootstrap" />
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/quickShareLinkExpiryActionSpace.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
         </property>
     </bean>
 

@@ -25,6 +25,7 @@
  */
 package org.alfresco.service.cmr.quickshare;
 
+import java.util.Date;
 import java.util.Map;
 
 import org.alfresco.repo.quickshare.QuickShareServiceImpl.QuickShareEmailRequest;
@@ -49,6 +50,15 @@ public interface QuickShareService
      * @return QuickDTO with details of the share
      */
     public QuickShareDTO shareContent(NodeRef nodeRef) throws QuickShareDisabledException, InvalidNodeRefException;
+
+    /**
+     * Share content identified by nodeRef and optionally set an expiry date for the shared link.
+     *
+     * @param nodeRef The NodeRef of the content to share
+     * @param expiryDate The expiry date of the shared link
+     * @return QuickDTO with details of the share
+     */
+    QuickShareDTO shareContent(NodeRef nodeRef, Date expiryDate) throws QuickShareDisabledException, InvalidNodeRefException;
 
     /**
      * Get QuickShare related metadata for the given node.
@@ -105,4 +115,12 @@ public interface QuickShareService
      * @since 5.2
      */
     boolean isQuickShareEnabled();
+
+    /**
+     * Removes (hard deletes) the previously persisted {@link QuickShareLinkExpiryAction} and its related
+     * schedule {@link org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction} from the repository.
+     *
+     * @param quickShareLinkExpiryAction The {@link QuickShareLinkExpiryAction} to be deleted.
+     */
+    void deleteQuickShareLinkExpiryAction(QuickShareLinkExpiryAction quickShareLinkExpiryAction);
 }

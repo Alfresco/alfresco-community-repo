@@ -44,4 +44,6 @@ public interface QuickShareModel
     // Properties
     static final QName PROP_QSHARE_SHAREDID = QName.createQName(QSHARE_MODEL_1_0_URI, "sharedId");
     static final QName PROP_QSHARE_SHAREDBY = QName.createQName(QSHARE_MODEL_1_0_URI, "sharedBy");
+    static final QName PROP_QSHARE_EXPIRY_DATE = QName.createQName(QSHARE_MODEL_1_0_URI, "expiryDate");
+
 }

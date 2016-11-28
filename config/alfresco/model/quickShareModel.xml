@@ -35,6 +35,16 @@
             <tokenised>false</tokenised>
           </index>
         </property>
+        <property name="qshare:expiryDate">
+          <title>Shared Link Expiry Date</title>
+          <type>d:datetime</type>
+          <protected>true</protected>
+          <mandatory>false</mandatory>
+          <multiple>false</multiple>
+          <index enabled="true">
+            <tokenised>false</tokenised>
+          </index>
+        </property>
       </properties>
     </aspect>
   </aspects>

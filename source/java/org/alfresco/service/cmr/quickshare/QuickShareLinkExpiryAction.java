@@ -23,58 +23,40 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.service.cmr.quickshare;
 
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
+import org.alfresco.service.namespace.QName;
+
 import java.io.Serializable;
-import java.util.Date;
 
 /**
- * Data transfer object for holding quick share information.
+ * This interface defines the details for a quick share link expiry action.
  *
- * @author Alex Miller
- * @since Cloud/4.2
+ * @author Jamal Kaabi-Mofrad
  */
-public class QuickShareDTO implements Serializable
+public interface QuickShareLinkExpiryAction extends Action, SchedulableAction, Serializable
 {
-    private static final long serialVersionUID = -2163618127531335360L;
-
-    private String sharedId;
-    private Date expiresAt;
+    /**
+     * Gets the quick share sharedId.
+     */
+    String getSharedId();
 
     /**
-     * Default constructor
-     * 
-     * @param sharedId The quick share id
+     * Gets the qualified name which uniquely identifies this quick share link expiry action.
      */
-    public QuickShareDTO(String sharedId)
-    {
-        this(sharedId, null);
-    }
-
-    public QuickShareDTO(String sharedId, Date expiresAt)
-    {
-        this.sharedId = sharedId;
-        this.expiresAt = expiresAt;
-    }
+    QName getActionQName();
 
     /**
-     * Copy constructor
+     * Gets the schedule ({@link ScheduledPersistedAction} used to get the trigger details.
      */
-    public QuickShareDTO(QuickShareDTO from) 
-    {
-        this(from.getId(), from.getExpiresAt());
-    }
-    
-    /**
-     * @return The share id
-     */
-    public String getId()
-    {
-        return this.sharedId;
-    }
+    ScheduledPersistedAction getSchedule();
 
-    public Date getExpiresAt()
-    {
-        return expiresAt;
-    }
+    /**
+     * Sets the schedule ({@link ScheduledPersistedAction} used to set the trigger details.
+     */
+    void setSchedule(ScheduledPersistedAction schedule);
 }

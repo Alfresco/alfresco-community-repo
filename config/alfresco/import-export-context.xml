@@ -376,6 +376,7 @@
                 <prop key="spaces.solr_facets.root.childname">${spaces.solr_facets.root.childname}</prop>
                 <prop key="spaces.smartfolders.childname">${spaces.smartfolders.childname}</prop>
                 <prop key="spaces.smartdownloads.childname">${spaces.smartdownloads.childname}</prop>
+                <prop key="spaces.quickshare.link_expiry_actions.childname">${spaces.quickshare.link_expiry_actions.childname}</prop>
             </props>
         </property>
     </bean>

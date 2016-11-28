@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * POJO for file plan component
  *
  * @author Tuna Aksoy
+ * @author Rodica Sutu
  * @since 2.6
  */
 public class FilePlanComponent
@@ -94,6 +95,13 @@ public class FilePlanComponent
     @JsonProperty (required = true)
     private FilePlanComponentUserInfo modifiedByUser;
 
+
+    /**Helper constructor for creating the file plan component using
+     *
+     * @param name File Plan Component name
+     * @param nodeType File Plan Component node type
+     * @param properties File Plan Component properties
+     */
     public FilePlanComponent(String name, String nodeType, FilePlanComponentProperties properties)
     {
         this.name = name;
@@ -101,14 +109,27 @@ public class FilePlanComponent
         this.properties = properties;
     }
 
-    public FilePlanComponent()
-    {
-    }
+    /**
+     * Helper constructor to create empty  file plan component
+     */
+    public FilePlanComponent() { }
 
+    /**
+     * Helper constructor for creating the file plan component using
+     *
+     * @param name       File Plan Component name
+     */
     public FilePlanComponent(String name)
     {
         this.name = name;
     }
+
+    /**
+     * Helper constructor for creating the file plan component using
+     *
+     * @param name       File Plan Component name
+     * @param properties File Plan Component properties
+     */
     public FilePlanComponent(String name, FilePlanComponentProperties properties)
     {
         this.name = name;

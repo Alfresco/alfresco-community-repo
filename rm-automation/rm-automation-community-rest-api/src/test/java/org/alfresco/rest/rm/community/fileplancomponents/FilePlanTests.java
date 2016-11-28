@@ -198,7 +198,7 @@ public class FilePlanTests extends BaseRestTest
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        // Build the file plan root properties
+        // Build object for updating the filePlan
         FilePlanComponent filePlanComponent= new FilePlanComponent();
         FilePlanComponentProperties filePlanComponentProperties=new FilePlanComponentProperties(FILE_PLAN_TITLE, FILE_PLAN_DESCRIPTION);
         filePlanComponent.setProperties(filePlanComponentProperties);
@@ -295,9 +295,9 @@ public class FilePlanTests extends BaseRestTest
 
         // Authenticate with admin user
         rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
         // Get the RM site ID
         String rmSiteId = rmSiteAPI.getSite().getGuid();
-
         String name = filePlanAlias + getRandomAlphanumeric();
 
         // Build the file plan root properties
@@ -305,6 +305,7 @@ public class FilePlanTests extends BaseRestTest
 
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
         // Create the special containers into RM site - parent folder
         filePlanComponentAPI.createFilePlanComponent(filePlanComponent, rmSiteId);
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);

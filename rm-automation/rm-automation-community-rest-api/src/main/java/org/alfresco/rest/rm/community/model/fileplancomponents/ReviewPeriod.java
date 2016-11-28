@@ -38,12 +38,21 @@ public class ReviewPeriod
     private String periodType;
     private String expression;
 
+    /**
+     * Helper constructor with
+     *
+     * @param periodType
+     * @param expression
+     */
     public ReviewPeriod(String periodType, String expression)
     {
         this.periodType = periodType;
         this.expression = expression;
     }
 
+    /**
+     * Helper constructor
+     */
     public ReviewPeriod()
     {
     }

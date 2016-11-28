@@ -45,10 +45,18 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.ReviewPeriod;
 public class ReviewPeriodSerializer extends JsonSerializer<ReviewPeriod>
 {
 
+    /**
+     * @param value The Review Period value that is being serialized.
+     * @param gen Jackson utility is responsible for writing JSON
+     * @param serializers Provider for getting access to other serializers and configurations registered with the ObjectMapper.
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
     @Override
     public void serialize(ReviewPeriod value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException
     {
-       gen.writeString(String.valueOf(new StringBuilder().append(value.getPeriodType()).append("|").append(value.getExpression())));
+        //create the custom  string value for the Review Period type
+       gen.writeString(new StringBuilder().append(value.getPeriodType()).append("|").append(value.getExpression()).toString());
 
     }
 }

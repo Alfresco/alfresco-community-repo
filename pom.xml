@@ -6,7 +6,7 @@
         <artifactId>alfresco-enterprise-packaging</artifactId>
         <version>5.2.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-one-installer-resources</artifactId>
+    <artifactId>alfresco-content-services-installer-resources</artifactId>
     <packaging>jar</packaging>
     <name>Alfresco One Installer Resources + Platform Installers</name>
 
@@ -305,7 +305,7 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-one-platform-distributionzip</artifactId>
+                                    <artifactId>alfresco-content-services-platform-distributionzip</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>

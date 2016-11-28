@@ -93,6 +93,7 @@ public class FilePlanComponent
 
     @JsonProperty (value = ALLOWABLE_OPERATIONS)
     private List<String> allowableOperations;
+
     private FilePlanComponentPath path;
 
     @JsonProperty (required = true)

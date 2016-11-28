@@ -61,7 +61,8 @@ import org.testng.annotations.BeforeClass;
  * @since 2.6
  */
 @Configuration
-@PropertySource("classpath:default.properties")
+@PropertySource(value = {"classpath:default.properties", "classpath:config.properties"})
+@PropertySource(value = "classpath:module.properties", ignoreResourceNotFound = true)
 @PropertySource(value = "classpath:local.properties", ignoreResourceNotFound = true)
 public class BaseRestTest extends RestTest
 {
@@ -121,7 +122,7 @@ public class BaseRestTest extends RestTest
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
             // Create the RM site
-            RMSite rmSite= new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
+            RMSite rmSite = new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
             rmSiteAPI.createRMSite(rmSite);
 
             // Verify the status code

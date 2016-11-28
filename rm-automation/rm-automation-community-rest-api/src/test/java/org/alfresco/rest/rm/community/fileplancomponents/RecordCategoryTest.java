@@ -359,7 +359,7 @@ public class RecordCategoryTest extends BaseRestTest
     @Bug (id="RM-4367")
     public void createTypesNotAllowedInCategory(String nodeType) throws Exception
     {
-        String COMPONENT_NAME="Component"+getRandomAlphanumeric();
+        String COMPONENT_NAME = "Component"+getRandomAlphanumeric();
 
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());

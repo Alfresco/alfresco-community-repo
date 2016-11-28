@@ -86,7 +86,7 @@
         <property name="authorityService" ref="AuthorityService" />
         <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
         <property name="quickShareLinkExpiryActionPersister" ref="quickShareLinkExpiryActionPersister" />
-        <property name="expiryDatePeriod" value="${system.quickshare.expiry_date.enforce.period}" />
+        <property name="expiryDatePeriod" value="${system.quickshare.expiry_date.enforce.minimum.period}" />
     </bean>
 
     <bean id="quickShareResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">

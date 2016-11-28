@@ -725,7 +725,7 @@ public class QuickShareServiceIntegrationTest
             // Expected
         }
 
-        final String defaultExpiryDatePeriod = globalProperties.getProperty("system.quickshare.expiry_date.enforce.period");
+        final String defaultExpiryDatePeriod = globalProperties.getProperty("system.quickshare.expiry_date.enforce.minimum.period");
 
         // Test expiry date period enforcement
         try

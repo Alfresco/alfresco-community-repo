@@ -763,7 +763,7 @@ public class QuickShareServiceIntegrationTest
                 QuickShareLinkExpiryAction expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
                 assertEquals(expiryDate, expiryAction.getScheduleStart());
                 // Unshare
-                quickShareService.unshareContent(quickShareDTO.getId());
+                unshare(quickShareDTO.getId(), user1.getUsername());
 
                 // Set the expiry date to be next year
                 expiryDate = DateTime.now().plusYears(1).toDate();
@@ -772,7 +772,7 @@ public class QuickShareServiceIntegrationTest
                 expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
                 assertEquals(expiryDate, expiryAction.getScheduleStart());
                 // Unshare
-                quickShareService.unshareContent(quickShareDTO.getId());
+                unshare(quickShareDTO.getId(), user1.getUsername());
             }
             /*
              * Set the expiry date period enforcement to Hours
@@ -797,7 +797,7 @@ public class QuickShareServiceIntegrationTest
                 QuickShareLinkExpiryAction expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
                 assertEquals(expiryDate, expiryAction.getScheduleStart());
                 // Unshare
-                quickShareService.unshareContent(quickShareDTO.getId());
+                unshare(quickShareDTO.getId(), user1.getUsername());
 
                 // Set the expiry date to be in the next 2 days, even though we did set the date period to HOURS.
                 expiryDate = DateTime.now().plusDays(2).toDate();
@@ -806,7 +806,7 @@ public class QuickShareServiceIntegrationTest
                 expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
                 assertEquals(expiryDate, expiryAction.getScheduleStart());
                 // Unshare
-                quickShareService.unshareContent(quickShareDTO.getId());
+                unshare(quickShareDTO.getId(), user1.getUsername());
             }
             /*
              * Set the expiry date period enforcement to Minutes
@@ -831,7 +831,7 @@ public class QuickShareServiceIntegrationTest
                 QuickShareLinkExpiryAction expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
                 assertEquals(expiryDate, expiryAction.getScheduleStart());
                 // Unshare
-                quickShareService.unshareContent(quickShareDTO.getId());
+                unshare(quickShareDTO.getId(), user1.getUsername());
 
                 // Set the expiry date to be in 60 days
                 expiryDate = DateTime.now().plusDays(60).toDate();
@@ -840,7 +840,7 @@ public class QuickShareServiceIntegrationTest
                 expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
                 assertEquals(expiryDate, expiryAction.getScheduleStart());
                 // Unshare
-                quickShareService.unshareContent(quickShareDTO.getId());
+                unshare(quickShareDTO.getId(), user1.getUsername());
             }
         }
         finally

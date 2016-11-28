@@ -206,9 +206,6 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
 
         assertEquals(childFolder.getName(), childFolderName);
         assertEquals(childFolder.getNodeType(), UNFILED_RECORD_FOLDER_TYPE.toString());
-        // FIXME: TO DO investigate. Has Retention schedule is not returned!!
-        //assertFalse(childFolder.isHasRetentionSchedule());
-
         assertEquals(childFolder.getCreatedByUser().getId(), dataUser.getAdminUser().getUsername());
 
         // Verify the returned file plan component properties

@@ -70,8 +70,6 @@
                                              <p>Si desea rechazar la invitación de ${inviterPerson.properties["cm:firstName"]?html!""}, haga clic en este enlace:<br />
                                              <br /><a href="${args["rejectLink"]}">${args["rejectLink"]}</a></p>
                                              
-                                             <p>Atentamente,<br />
-                                             Alfresco ${productName!""}</p>
                                           </div>
                                        </td>
                                     </tr>

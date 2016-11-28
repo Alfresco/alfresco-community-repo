@@ -70,8 +70,6 @@
                                              <p>${inviterPerson.properties["cm:firstName"]?html!""} さんの招待を辞退する場合は、次のリンクをクリックしてください。<br />
                                              <br /><a href="${args["rejectLink"]}">${args["rejectLink"]}</a></p>
                                              
-                                             <p>ご利用ありがとうございます。<br />
-                                             Alfresco ${productName!""}</p>
                                           </div>
                                        </td>
                                     </tr>

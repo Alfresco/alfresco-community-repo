@@ -143,6 +143,7 @@
                 <entry key="org.alfresco.service.cmr.repository.CyclicChildRelationshipException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.InvalidArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.service.cmr.version.VersionServiceException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
+                <entry key="org.alfresco.service.cmr.repository.datatype.TypeConversionException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.NotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.EntityNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.service.cmr.repository.InvalidNodeRefException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />

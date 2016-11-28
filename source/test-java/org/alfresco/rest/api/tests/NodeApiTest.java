@@ -3058,6 +3058,22 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         fUpdate.setProperties(props);
         put(URL_NODES, f2Id, toJsonAsStringNonNull(fUpdate), null, 400);
 
+        // -ve test - minor: error code if trying to update property with invalid format (REPO-1635)
+        props = new HashMap<>();
+        props.put("exif:dateTimeOriginal", "25-11-2016");
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+        put(URL_NODES, f2Id, toJsonAsStringNonNull(fUpdate), null, 400);
+        
+        // +ve test - try again with valid formats (REPO-473, REPO-1635)
+        props = new HashMap<>();
+        props.put("exif:pixelYDimension", "123");
+        props.put("exif:dateTimeOriginal", "2016-11-21T16:26:19.037+0000");
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+        put(URL_NODES, f2Id, toJsonAsStringNonNull(fUpdate), null, 200);
+        
+        
         // -ve test - non-admin cannot modify root (Company Home) folder
         props = new HashMap<>();
         props.put("cm:description", "my folder description");

@@ -8,7 +8,7 @@
     </parent>
     <artifactId>alfresco-content-services-installer-resources</artifactId>
     <packaging>jar</packaging>
-    <name>Alfresco One Installer Resources + Platform Installers</name>
+    <name>Alfresco Content Services Installer Resources + Platform Installers</name>
 
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
@@ -18,7 +18,7 @@
         <bitrock.arguments>
            project.outputDirectory=${project.build.directory} 
            project.version=${project.version} 
-           project.fullName='Alfresco One Platform' 
+           project.fullName='Alfresco Content Services Platform' 
            project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
            project.osxSigningPkcs12Password=${p12Password} 
            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 

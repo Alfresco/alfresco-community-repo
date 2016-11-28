@@ -340,14 +340,17 @@ public class RecordCategoryTest extends BaseRestTest
     public void createTypesNotAllowedInCategory(String nodeType) throws Exception
     {
         String COMPONENT_NAME="Component"+getRandomAlphanumeric();
-        // Authenticate with admin user
 
+        // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
+        //Create the category
         FilePlanComponent category = createCategory(FILE_PLAN_ALIAS.toString(), COMPONENT_NAME);
 
         //Build node  properties
         FilePlanComponent recordCategory = new FilePlanComponent(COMPONENT_NAME,nodeType,
-                                                    new FilePlanComponentProperties("Title for " + COMPONENT_NAME));
+            new FilePlanComponentProperties("Title for " + COMPONENT_NAME));
+
         //create the invalid node type
         filePlanComponentAPI.createFilePlanComponent(recordCategory, category.getId());
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);

@@ -42,16 +42,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class PojoUtility
 {
-
-    public static String toJson(Object rmModel) throws JsonProcessingException
+    /**
+     * Converting object to JSON string
+     *
+     * @param model  The java object model to convert
+     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
+     */
+    public static String toJson(Object model) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
+        //include only values that differ from default settings to be included
         mapper.setSerializationInclusion(Include.NON_DEFAULT);
         try
         {
-            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(rmModel);
-            System.out.println("Json object generated is :" + json);
-            return json;
+            //return the json object
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
+
         } catch (JsonGenerationException e)
         {
             return e.toString();

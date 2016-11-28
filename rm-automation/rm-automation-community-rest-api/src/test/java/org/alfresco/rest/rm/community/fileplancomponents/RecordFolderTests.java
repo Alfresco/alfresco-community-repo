@@ -197,7 +197,10 @@ public class RecordFolderTests extends BaseRestTest
         String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        //Create a record category
         FilePlanComponent category = createCategory(FILE_PLAN_ALIAS.toString(), CATEGORY);
+
+        //Create a record folder
         FilePlanComponent folder = createFolder(category.getId(), FOLDER_NAME);
 
         // Create record category first
@@ -206,13 +209,13 @@ public class RecordFolderTests extends BaseRestTest
         String folderTitle = "Update title " + getRandomAlphanumeric();
         String location="Location"+getRandomAlphanumeric();
 
-        String review_period="month|1";
-
+        //Create the file plan component properties to update
         FilePlanComponentProperties filePlanComponentProperties= new FilePlanComponentProperties(folderTitle, folderDescription);
         filePlanComponentProperties.setVitalRecord(true);
         filePlanComponentProperties.setReviewPeriod( new ReviewPeriod("month","1"));
         filePlanComponentProperties.setLocation(location);
         FilePlanComponent recordFolder = new FilePlanComponent(folderName,filePlanComponentProperties);
+
         // Update the record category
         FilePlanComponent folderUpdated = filePlanComponentAPI.updateFilePlanComponent(recordFolder, folder.getId());
 
@@ -246,8 +249,12 @@ public class RecordFolderTests extends BaseRestTest
 
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        // Create the record category
         FilePlanComponent category = createCategory(FILE_PLAN_ALIAS.toString(), CATEGORY);
+
+        // Create the record folder
         FilePlanComponent folder = createFolder(category.getId(), FOLDER_NAME);
+
         // Delete the Record folder
         filePlanComponentAPI.deleteFilePlanComponent(folder.getId());
         // Check the Response Status Code

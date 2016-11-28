@@ -58,6 +58,7 @@ import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 /**
@@ -335,7 +336,7 @@ public class RecordFolderTests extends BaseRestTest
             );
 
     }
-    //@AfterClass (alwaysRun = true)
+    @AfterClass (alwaysRun = true)
     public void tearDown() throws Exception
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());

@@ -29,6 +29,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.quickshare.QuickShareClientNotFoundException;
+import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionException;
 import org.alfresco.repo.quickshare.QuickShareServiceImpl.QuickShareEmailRequest;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -329,12 +330,16 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
                 // Note: since we already check node exists above, we can assume that InvalidNodeRefException (=> 404) here means not content (see type check)
                 try
                 {
-                    QuickShareDTO qsDto = quickShareService.shareContent(nodeRef);
+                    QuickShareDTO qsDto = quickShareService.shareContent(nodeRef, qs.getExpiresAt());
                     result.add(getQuickShareInfo(qsDto.getId(), false, includeParam));
                 }
                 catch (InvalidNodeRefException inre)
                 {
                     throw new InvalidArgumentException("Unable to create shared link to non-file content: " + nodeId);
+                }
+                catch (QuickShareLinkExpiryActionException ex)
+                {
+                    throw new InvalidArgumentException(ex.getMessage());
                 }
             }
             catch (AccessDeniedException ade)
@@ -576,6 +581,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             qs.setModifiedAt((Date) map.get("modified"));
             qs.setModifiedByUser(modifiedByUser);
             qs.setSharedByUser(sharedByUser);
+            qs.setExpiresAt((Date) map.get("expiryDate"));
 
             // note: if noAuth mode then do not return allowable operations (eg. but can be optionally returned when finding shared links)
             if ((! noAuth) && includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))

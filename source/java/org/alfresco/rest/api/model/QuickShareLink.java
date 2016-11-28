@@ -48,6 +48,8 @@ public class QuickShareLink
 	// unique short id (ie. shorter than a guid, 22 vs 36 chars)
 	private String sharedId;
 
+    private Date expiresAt;
+
 	private String nodeId;
 
 	private String name;
@@ -79,7 +81,17 @@ public class QuickShareLink
 		this.sharedId = sharedId;
 	}
 
-	public String getNodeId() {
+    public Date getExpiresAt()
+    {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(Date expiresAt)
+    {
+        this.expiresAt = expiresAt;
+    }
+
+    public String getNodeId() {
 		return nodeId;
 	}
 
@@ -160,6 +172,7 @@ public class QuickShareLink
 		sb.append(", sharedByUser=").append(getSharedByUser());
 		sb.append(", content=").append(getContent());
 		sb.append(", allowableOperations=").append(getAllowableOperations());
+        sb.append(", expiresAt=").append(getExpiresAt());
 		sb.append("]");
 		return sb.toString();
 	}

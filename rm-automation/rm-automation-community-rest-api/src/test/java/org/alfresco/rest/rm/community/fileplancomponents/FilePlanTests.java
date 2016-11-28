@@ -33,13 +33,8 @@ import static org.alfresco.rest.rm.community.base.AllowableOperations.DELETE;
 import static org.alfresco.rest.rm.community.base.AllowableOperations.UPDATE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.NAME;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.NODE_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
@@ -48,12 +43,12 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import com.google.gson.JsonObject;
-
+import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.RMSiteAPI;
@@ -74,6 +69,9 @@ public class FilePlanTests extends BaseRestTest
 {
     @Autowired
     private FilePlanComponentAPI filePlanComponentAPI;
+
+    @Autowired
+    protected RestWrapper restWrapper;
 
     @Autowired
     private RMSiteAPI rmSiteAPI;
@@ -110,6 +108,8 @@ public class FilePlanTests extends BaseRestTest
         //check the response code is NOT_FOUND
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(NOT_FOUND);
     }
+
+
 
     /**
      * Given that a file plan exists
@@ -160,7 +160,7 @@ public class FilePlanTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Get the file plan special containers with the optional parameter allowableOperations
-        FilePlanComponent filePlanComponent = filePlanComponentAPI.withParams("include=allowableOperations").getFilePlanComponent(specialContainerAlias);
+        FilePlanComponent filePlanComponent = filePlanComponentAPI.withParams("include="+ ALLOWABLE_OPERATIONS).getFilePlanComponent(specialContainerAlias);
 
         // Check the list of allowableOperations returned
         if(specialContainerAlias.equals(TRANSFERS_ALIAS.toString()))
@@ -199,15 +199,12 @@ public class FilePlanTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Build the file plan root properties
-        JsonObject filePlanProperties = buildObject()
-                .addObject(PROPERTIES)
-                    .add(PROPERTIES_TITLE, FILE_PLAN_TITLE)
-                    .add(PROPERTIES_DESCRIPTION, FILE_PLAN_DESCRIPTION)
-                    .end()
-                .getJson();
+        FilePlanComponent filePlanComponent= new FilePlanComponent();
+        FilePlanComponentProperties filePlanComponentProperties=new FilePlanComponentProperties(FILE_PLAN_TITLE, FILE_PLAN_DESCRIPTION);
+        filePlanComponent.setProperties(filePlanComponentProperties);
 
         // Update the record category
-        FilePlanComponent renamedFilePlanComponent = filePlanComponentAPI.updateFilePlanComponent(filePlanProperties,FILE_PLAN_ALIAS.toString());
+        FilePlanComponent renamedFilePlanComponent = filePlanComponentAPI.updateFilePlanComponent(filePlanComponent,FILE_PLAN_ALIAS.toString());
 
         // Verify the response status code
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
@@ -252,10 +249,10 @@ public class FilePlanTests extends BaseRestTest
      */
     @Test
     (
-                description = "Check the response code when deleting the special file plan components with non RM user",
-                dataProviderClass = TestData.class,
-                dataProvider = "getContainers"
-                )
+        description = "Check the response code when deleting the special file plan components with non RM user",
+        dataProviderClass = TestData.class,
+        dataProvider = "getContainers"
+    )
     public void deleteFilePlanSpecialComponentsNonRMUser(String filePlanAlias) throws Exception
     {
         // Create RM Site if doesn't exist
@@ -304,23 +301,20 @@ public class FilePlanTests extends BaseRestTest
         String name = filePlanAlias + getRandomAlphanumeric();
 
         // Build the file plan root properties
-        JsonObject componentProperties = buildObject()
-                .add(NAME, name)
-                .add(NODE_TYPE, rmType.toString())
-                .getJson();
+        FilePlanComponent filePlanComponent=new FilePlanComponent(name,rmType.toString(),new FilePlanComponentProperties());
 
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         // Create the special containers into RM site - parent folder
-        filePlanComponentAPI.createFilePlanComponent(componentProperties, rmSiteId);
+        filePlanComponentAPI.createFilePlanComponent(filePlanComponent, rmSiteId);
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
 
         // Create the special containers into RM site - parent folder
-        filePlanComponentAPI.createFilePlanComponent(componentProperties, FILE_PLAN_ALIAS.toString());
+        filePlanComponentAPI.createFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS.toString());
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
 
         // Create the special containers into the root of special containers containers
-        filePlanComponentAPI.createFilePlanComponent(componentProperties, filePlanAlias.toString());
+        filePlanComponentAPI.createFilePlanComponent(filePlanComponent, filePlanAlias.toString());
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }
 

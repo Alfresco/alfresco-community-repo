@@ -40,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class FilePlanComponentPath
 {
     private String name;
-    private boolean isComplete;
+    private Boolean isComplete;
     private List<FilePlanComponentIdNamePair> elements;
 
     /**
@@ -62,7 +62,7 @@ public class FilePlanComponentPath
     /**
      * @return the isComplete
      */
-    public boolean isComplete()
+    public Boolean isComplete()
     {
         return this.isComplete;
     }
@@ -70,7 +70,7 @@ public class FilePlanComponentPath
     /**
      * @param isComplete the isComplete to set
      */
-    public void setComplete(boolean isComplete)
+    public void setComplete(Boolean isComplete)
     {
         this.isComplete = isComplete;
     }

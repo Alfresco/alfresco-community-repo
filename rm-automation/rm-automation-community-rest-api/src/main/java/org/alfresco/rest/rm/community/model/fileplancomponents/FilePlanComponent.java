@@ -55,22 +55,22 @@ public class FilePlanComponent
     private String nodeType;
 
     @JsonProperty (required = true)
-    private boolean isCategory;
+    private Boolean isCategory;
 
     @JsonProperty (required = true)
-    private boolean isRecordFolder;
+    private Boolean isRecordFolder;
 
     @JsonProperty (required = true)
-    private boolean isFile;
+    private Boolean isFile;
 
     @JsonProperty
-    private boolean hasRetentionSchedule;
+    private Boolean hasRetentionSchedule;
 
     @JsonProperty(value = IS_CLOSED)
-    private boolean isClosed;
+    private Boolean isClosed;
 
     @JsonProperty
-    private boolean isCompleted;
+    private Boolean isCompleted;
 
     @JsonProperty (required = true)
     private List<String> aspectNames;
@@ -88,13 +88,32 @@ public class FilePlanComponent
     @JsonProperty (required = true)
     private String modifiedAt;
 
-
     @JsonProperty (required = true)
     private String createdAt;
 
     @JsonProperty (required = true)
     private FilePlanComponentUserInfo modifiedByUser;
 
+    public FilePlanComponent(String name, String nodeType, FilePlanComponentProperties properties)
+    {
+        this.name = name;
+        this.nodeType = nodeType;
+        this.properties = properties;
+    }
+
+    public FilePlanComponent()
+    {
+    }
+
+    public FilePlanComponent(String name)
+    {
+        this.name = name;
+    }
+    public FilePlanComponent(String name, FilePlanComponentProperties properties)
+    {
+        this.name = name;
+        this.properties = properties;
+    }
 
     /**
      * @return the id
@@ -163,7 +182,7 @@ public class FilePlanComponent
     /**
      * @return the isCategory
      */
-    public boolean isIsCategory()
+    public Boolean isIsCategory()
     {
         return this.isCategory;
     }
@@ -171,7 +190,7 @@ public class FilePlanComponent
     /**
      * @param isCategory the isCategory to set
      */
-    public void setCategory(boolean isCategory)
+    public void setCategory(Boolean isCategory)
     {
         this.isCategory = isCategory;
     }
@@ -179,7 +198,7 @@ public class FilePlanComponent
     /**
      * @return the isRecordFolder
      */
-    public boolean isIsRecordFolder()
+    public Boolean isIsRecordFolder()
     {
         return this.isRecordFolder;
     }
@@ -187,7 +206,7 @@ public class FilePlanComponent
     /**
      * @param isRecordFolder the isRecordFolder to set
      */
-    public void setRecordFolder(boolean isRecordFolder)
+    public void setRecordFolder(Boolean isRecordFolder)
     {
         this.isRecordFolder = isRecordFolder;
     }
@@ -195,7 +214,7 @@ public class FilePlanComponent
     /**
      * @return the isFile
      */
-    public boolean isIsFile()
+    public Boolean isIsFile()
     {
         return this.isFile;
     }
@@ -203,7 +222,7 @@ public class FilePlanComponent
     /**
      * @param isFile the isFile to set
      */
-    public void setFile(boolean isFile)
+    public void setFile(Boolean isFile)
     {
         this.isFile = isFile;
     }
@@ -211,7 +230,7 @@ public class FilePlanComponent
     /**
      * @return the hasRetentionSchedule
      */
-    public boolean isHasRetentionSchedule()
+    public Boolean isHasRetentionSchedule()
     {
         return this.hasRetentionSchedule;
     }
@@ -219,7 +238,7 @@ public class FilePlanComponent
     /**
      * @param hasRetentionSchedule the hasRetentionSchedule to set
      */
-    public void setHasRetentionSchedule(boolean hasRetentionSchedule)
+    public void setHasRetentionSchedule(Boolean hasRetentionSchedule)
     {
         this.hasRetentionSchedule = hasRetentionSchedule;
     }
@@ -347,7 +366,7 @@ public class FilePlanComponent
     /**
      * @return the isClosed
      */
-    public boolean isClosed()
+    public Boolean isClosed()
     {
         return this.isClosed;
     }
@@ -355,7 +374,7 @@ public class FilePlanComponent
     /**
      * @param closed the isClosed to set
      */
-    public void setClosed(boolean closed)
+    public void setClosed(Boolean closed)
     {
         this.isClosed = closed;
     }
@@ -363,7 +382,7 @@ public class FilePlanComponent
     /**
      * @return the isCompleted
      */
-    public boolean isCompleted()
+    public Boolean isCompleted()
     {
         return this.isCompleted;
     }
@@ -371,7 +390,7 @@ public class FilePlanComponent
     /**
      * @param completed the isCompleted to set
      */
-    public void setCompleted(boolean completed)
+    public void setCompleted(Boolean completed)
     {
         this.isCompleted = completed;
     }

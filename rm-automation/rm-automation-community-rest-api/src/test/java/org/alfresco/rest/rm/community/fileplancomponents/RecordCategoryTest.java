@@ -94,7 +94,7 @@ public class RecordCategoryTest extends BaseRestTest
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
         // Build the record category properties
-        FilePlanComponent recordCategory= new FilePlanComponent(categoryName,RECORD_CATEGORY_TYPE.toString(),
+        FilePlanComponent recordCategory = new FilePlanComponent(categoryName,RECORD_CATEGORY_TYPE.toString(),
                                                         new FilePlanComponentProperties(categoryTitle));
         // Create the record category
         FilePlanComponent filePlanComponent = filePlanComponentAPI.createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS.toString());
@@ -103,9 +103,9 @@ public class RecordCategoryTest extends BaseRestTest
         restWrapper.assertStatusCodeIs(CREATED);
 
         // Verify the returned file plan component
-        assertTrue(filePlanComponent.isIsCategory());
-        assertFalse(filePlanComponent.isIsFile());
-        assertFalse(filePlanComponent.isIsRecordFolder());
+        assertTrue(filePlanComponent.isCategory());
+        assertFalse(filePlanComponent.isFile());
+        assertFalse(filePlanComponent.isRecordFolder());
 
         assertEquals(filePlanComponent.getName(), categoryName);
         assertEquals(filePlanComponent.getNodeType(), RECORD_CATEGORY_TYPE.toString());
@@ -226,9 +226,9 @@ public class RecordCategoryTest extends BaseRestTest
 
         // Verify child category
         assertEquals(childCategory.getParentId(), rootCategory.getId());
-        assertTrue(childCategory.isIsCategory());
-        assertFalse(childCategory.isIsFile());
-        assertFalse(childCategory.isIsRecordFolder());
+        assertTrue(childCategory.isCategory());
+        assertFalse(childCategory.isFile());
+        assertFalse(childCategory.isRecordFolder());
         assertEquals(childCategory.getNodeType(), RECORD_CATEGORY_TYPE.toString());
     }
 
@@ -295,19 +295,19 @@ public class RecordCategoryTest extends BaseRestTest
                 assertEquals(filePlanComponent.getParentId(), rootCategory.getId());
 
                 // Only categories or folders have been created
-                assertFalse(filePlanComponent.isIsFile());
+                assertFalse(filePlanComponent.isFile());
 
                 // Boolean properties related to node type
                 // Only RECORD_CATEGORY_TYPE and RECORD_FOLDER_TYPE have been created
                 if (filePlanComponent.getNodeType().equals(RECORD_CATEGORY_TYPE.toString()))
                 {
-                    assertTrue(filePlanComponent.isIsCategory());
-                    assertFalse(filePlanComponent.isIsRecordFolder());
+                    assertTrue(filePlanComponent.isCategory());
+                    assertFalse(filePlanComponent.isRecordFolder());
                 }
                 else
                 {
-                    assertTrue(filePlanComponent.isIsRecordFolder());
-                    assertFalse(filePlanComponent.isIsCategory());
+                    assertTrue(filePlanComponent.isRecordFolder());
+                    assertFalse(filePlanComponent.isCategory());
                 }
 
                 // Does returned object have the same contents as the created one?
@@ -339,7 +339,7 @@ public class RecordCategoryTest extends BaseRestTest
     @Bug (id="RM-4367")
     public void createTypesNotAllowedInCategory(String nodeType) throws Exception
     {
-        String COMPONENT_NAME="Component"+getRandomAlphanumeric();
+        String COMPONENT_NAME = "Component"+getRandomAlphanumeric();
 
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());

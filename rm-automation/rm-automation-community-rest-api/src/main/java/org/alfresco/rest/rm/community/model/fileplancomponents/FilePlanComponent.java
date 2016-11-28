@@ -84,6 +84,7 @@ public class FilePlanComponent
 
     @JsonProperty (value = ALLOWABLE_OPERATIONS)
     private List<String> allowableOperations;
+    
     private FilePlanComponentPath path;
 
     @JsonProperty (required = true)
@@ -203,7 +204,7 @@ public class FilePlanComponent
     /**
      * @return the isCategory
      */
-    public Boolean isIsCategory()
+    public Boolean isCategory()
     {
         return this.isCategory;
     }
@@ -219,7 +220,7 @@ public class FilePlanComponent
     /**
      * @return the isRecordFolder
      */
-    public Boolean isIsRecordFolder()
+    public Boolean isRecordFolder()
     {
         return this.isRecordFolder;
     }
@@ -235,7 +236,7 @@ public class FilePlanComponent
     /**
      * @return the isFile
      */
-    public Boolean isIsFile()
+    public Boolean isFile()
     {
         return this.isFile;
     }
@@ -251,7 +252,7 @@ public class FilePlanComponent
     /**
      * @return the hasRetentionSchedule
      */
-    public Boolean isHasRetentionSchedule()
+    public Boolean hasRetentionSchedule()
     {
         return this.hasRetentionSchedule;
     }

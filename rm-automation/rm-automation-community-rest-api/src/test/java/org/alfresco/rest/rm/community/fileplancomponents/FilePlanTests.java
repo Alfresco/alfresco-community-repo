@@ -199,7 +199,7 @@ public class FilePlanTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         // Build object for updating the filePlan
-        FilePlanComponent filePlanComponent= new FilePlanComponent();
+        FilePlanComponent filePlanComponent = new FilePlanComponent();
         FilePlanComponentProperties filePlanComponentProperties=new FilePlanComponentProperties(FILE_PLAN_TITLE, FILE_PLAN_DESCRIPTION);
         filePlanComponent.setProperties(filePlanComponentProperties);
 
@@ -287,7 +287,7 @@ public class FilePlanTests extends BaseRestTest
         dataProviderClass = TestData.class,
         dataProvider = "getContainersAndTypes"
     )
-    @Bug(id="RM-4296")
+    @Bug(id = "RM-4296")
     public void createFilePlanSpecialContainerWhenExists(FilePlanComponentAlias filePlanAlias, FilePlanComponentType rmType) throws Exception
     {
         // Create RM Site if doesn't exist
@@ -301,7 +301,7 @@ public class FilePlanTests extends BaseRestTest
         String name = filePlanAlias + getRandomAlphanumeric();
 
         // Build the file plan root properties
-        FilePlanComponent filePlanComponent=new FilePlanComponent(name,rmType.toString(),new FilePlanComponentProperties());
+        FilePlanComponent filePlanComponent = new FilePlanComponent(name,rmType.toString(),new FilePlanComponentProperties());
 
         // Authenticate with admin user
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());

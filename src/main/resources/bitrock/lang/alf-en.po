@@ -31,8 +31,8 @@ msgstr "Alfresco Content Services"
 msgid "Alfresco Community Edition"
 msgstr "Alfresco Community Edition"
 
-msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
-msgstr "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
+msgid "Alfresco Content Services Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
+msgstr "Alfresco Content Services Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
 
 msgid "FTP Port"
 msgstr "FTP Port"

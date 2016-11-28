@@ -1,7 +1,7 @@
 <component>
     <name>alfresco</name>
     <description>${product_fullname}</description>
-    <detailedDescription>Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management.</detailedDescription>
+    <detailedDescription>Alfresco Content Services Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management.</detailedDescription>
     <canBeEdited>0</canBeEdited>
     <selected>1</selected>
     <show>1</show>

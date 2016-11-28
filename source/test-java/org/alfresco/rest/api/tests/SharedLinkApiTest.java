@@ -33,6 +33,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.QuickShareLinks;
@@ -883,6 +884,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     @Test
     public void testSharedLinkWithExpiryDate() throws Exception
     {
+        // Clear any hanging security context from other tests.
+        // We add it here as getSchedules method will throw an exception.
+        AuthenticationUtil.clearCurrentSecurityContext();
         final int numOfSchedules = getSchedules();
         setRequestContext(user1);
 

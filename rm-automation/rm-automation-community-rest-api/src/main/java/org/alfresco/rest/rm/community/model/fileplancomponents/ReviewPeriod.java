@@ -32,10 +32,30 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
  * @author Rodica Sutu
  * @since 2.6
  */
+
 public class ReviewPeriod
 {
     private String periodType;
     private String expression;
+
+    /**
+     * Helper constructor with
+     *
+     * @param periodType
+     * @param expression
+     */
+    public ReviewPeriod(String periodType, String expression)
+    {
+        this.periodType = periodType;
+        this.expression = expression;
+    }
+
+    /**
+     * Helper constructor
+     */
+    public ReviewPeriod()
+    {
+    }
 
     /**
      * @return the periodType

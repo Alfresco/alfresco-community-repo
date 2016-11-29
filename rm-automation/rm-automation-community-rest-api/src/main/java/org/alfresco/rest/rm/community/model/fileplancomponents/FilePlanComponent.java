@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * POJO for file plan component
  *
  * @author Tuna Aksoy
+ * @author Rodica Sutu
  * @since 2.6
  */
 public class FilePlanComponent
@@ -55,22 +56,22 @@ public class FilePlanComponent
     private String nodeType;
 
     @JsonProperty (required = true)
-    private boolean isCategory;
+    private Boolean isCategory;
 
     @JsonProperty (required = true)
-    private boolean isRecordFolder;
+    private Boolean isRecordFolder;
 
     @JsonProperty (required = true)
-    private boolean isFile;
+    private Boolean isFile;
 
     @JsonProperty
-    private boolean hasRetentionSchedule;
+    private Boolean hasRetentionSchedule;
 
     @JsonProperty(value = IS_CLOSED)
-    private boolean isClosed;
+    private Boolean isClosed;
 
     @JsonProperty
-    private boolean isCompleted;
+    private Boolean isCompleted;
 
     @JsonProperty (required = true)
     private List<String> aspectNames;
@@ -83,11 +84,11 @@ public class FilePlanComponent
 
     @JsonProperty (value = ALLOWABLE_OPERATIONS)
     private List<String> allowableOperations;
+    
     private FilePlanComponentPath path;
 
     @JsonProperty (required = true)
     private String modifiedAt;
-
 
     @JsonProperty (required = true)
     private String createdAt;
@@ -95,6 +96,46 @@ public class FilePlanComponent
     @JsonProperty (required = true)
     private FilePlanComponentUserInfo modifiedByUser;
 
+
+    /**Helper constructor for creating the file plan component using
+     *
+     * @param name File Plan Component name
+     * @param nodeType File Plan Component node type
+     * @param properties File Plan Component properties
+     */
+    public FilePlanComponent(String name, String nodeType, FilePlanComponentProperties properties)
+    {
+        this.name = name;
+        this.nodeType = nodeType;
+        this.properties = properties;
+    }
+
+    /**
+     * Helper constructor to create empty  file plan component
+     */
+    public FilePlanComponent() { }
+
+    /**
+     * Helper constructor for creating the file plan component using
+     *
+     * @param name       File Plan Component name
+     */
+    public FilePlanComponent(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Helper constructor for creating the file plan component using
+     *
+     * @param name       File Plan Component name
+     * @param properties File Plan Component properties
+     */
+    public FilePlanComponent(String name, FilePlanComponentProperties properties)
+    {
+        this.name = name;
+        this.properties = properties;
+    }
 
     /**
      * @return the id
@@ -163,7 +204,7 @@ public class FilePlanComponent
     /**
      * @return the isCategory
      */
-    public boolean isIsCategory()
+    public Boolean isCategory()
     {
         return this.isCategory;
     }
@@ -171,7 +212,7 @@ public class FilePlanComponent
     /**
      * @param isCategory the isCategory to set
      */
-    public void setCategory(boolean isCategory)
+    public void setCategory(Boolean isCategory)
     {
         this.isCategory = isCategory;
     }
@@ -179,7 +220,7 @@ public class FilePlanComponent
     /**
      * @return the isRecordFolder
      */
-    public boolean isIsRecordFolder()
+    public Boolean isRecordFolder()
     {
         return this.isRecordFolder;
     }
@@ -187,7 +228,7 @@ public class FilePlanComponent
     /**
      * @param isRecordFolder the isRecordFolder to set
      */
-    public void setRecordFolder(boolean isRecordFolder)
+    public void setRecordFolder(Boolean isRecordFolder)
     {
         this.isRecordFolder = isRecordFolder;
     }
@@ -195,7 +236,7 @@ public class FilePlanComponent
     /**
      * @return the isFile
      */
-    public boolean isIsFile()
+    public Boolean isFile()
     {
         return this.isFile;
     }
@@ -203,7 +244,7 @@ public class FilePlanComponent
     /**
      * @param isFile the isFile to set
      */
-    public void setFile(boolean isFile)
+    public void setFile(Boolean isFile)
     {
         this.isFile = isFile;
     }
@@ -211,7 +252,7 @@ public class FilePlanComponent
     /**
      * @return the hasRetentionSchedule
      */
-    public boolean isHasRetentionSchedule()
+    public Boolean hasRetentionSchedule()
     {
         return this.hasRetentionSchedule;
     }
@@ -219,7 +260,7 @@ public class FilePlanComponent
     /**
      * @param hasRetentionSchedule the hasRetentionSchedule to set
      */
-    public void setHasRetentionSchedule(boolean hasRetentionSchedule)
+    public void setHasRetentionSchedule(Boolean hasRetentionSchedule)
     {
         this.hasRetentionSchedule = hasRetentionSchedule;
     }
@@ -347,7 +388,7 @@ public class FilePlanComponent
     /**
      * @return the isClosed
      */
-    public boolean isClosed()
+    public Boolean isClosed()
     {
         return this.isClosed;
     }
@@ -355,7 +396,7 @@ public class FilePlanComponent
     /**
      * @param closed the isClosed to set
      */
-    public void setClosed(boolean closed)
+    public void setClosed(Boolean closed)
     {
         this.isClosed = closed;
     }
@@ -363,7 +404,7 @@ public class FilePlanComponent
     /**
      * @return the isCompleted
      */
-    public boolean isCompleted()
+    public Boolean isCompleted()
     {
         return this.isCompleted;
     }
@@ -371,7 +412,7 @@ public class FilePlanComponent
     /**
      * @param completed the isCompleted to set
      */
-    public void setCompleted(boolean completed)
+    public void setCompleted(Boolean completed)
     {
         this.isCompleted = completed;
     }

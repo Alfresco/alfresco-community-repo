@@ -19,7 +19,7 @@
             <outputDirectory>web-server/classpath</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}/web-extension-samples</directory>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-share-distribution-${alfresco.share.version}/web-extension-samples</directory>
             <outputDirectory>web-server/classpath/alfresco/web-extension</outputDirectory>
         </fileSet>
     </fileSets>

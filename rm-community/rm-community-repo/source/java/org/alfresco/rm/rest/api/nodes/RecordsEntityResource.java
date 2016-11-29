@@ -39,6 +39,7 @@ import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
+import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -63,23 +64,23 @@ public class RecordsEntityResource implements BinaryResourceAction.Update<Node>,
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        
+        ParameterCheck.mandatory("nodes", this.nodes);
     }
 
     /**
      * Download content
      * 
-     * @param entityId
+     * @param recordId the id of the record to get the content from
      * @param parameters {@link Parameters}
-     * @return
+     * @return binary content resource
      * @throws EntityNotFoundException
      */
     @Override
     @WebApiDescription(title = "Download content", description = "Download content")
     @BinaryProperties({"content"})
-    public BinaryResource readProperty(String entityId, Parameters parameters) throws EntityNotFoundException
+    public BinaryResource readProperty(String recordId, Parameters parameters) throws EntityNotFoundException
     {
-        return nodes.getContent(entityId, parameters, true);
+        return nodes.getContent(recordId, parameters, true);
     }
 
     /**
@@ -89,17 +90,17 @@ public class RecordsEntityResource implements BinaryResourceAction.Update<Node>,
      * 
      * Note: alternatively, can upload via POST (multipart/form-data) with existing file name and form "overwrite=true".
      * 
-     * @param entityId
+     * @param recordId the id of the record to set the content for
      * @param contentInfo Basic information about the content stream
-     * @param stream An inputstream
-     * @param parameters
-     * @return
+     * @param stream an inputstream representing the new content of the node
+     * @param parameters {@link Parameters}
+     * @return information about the record that has been updated
      */
     @Override
     @WebApiDescription(title = "Upload content", description = "Upload content")
     @BinaryProperties({"content"})
-    public Node updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
+    public Node updateProperty(String recordId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
     {
-        return nodes.updateContent(entityId, contentInfo, stream, parameters);
+        return nodes.updateContent(recordId, contentInfo, stream, parameters);
     }
 }

@@ -38,6 +38,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
 
 /**
  * POJO for file plan component properties
@@ -51,7 +54,7 @@ public class FilePlanComponentProperties
 {
 
     @JsonProperty(PROPERTIES_VITAL_RECORD_INDICATOR)
-    private boolean vitalRecord;
+    private Boolean vitalRecord;
 
     @JsonProperty(PROPERTIES_TITLE)
     private String title;
@@ -66,16 +69,32 @@ public class FilePlanComponentProperties
     private List<String> supplementalMarkingList;
 
     @JsonProperty(PROPERTIES_REVIEW_PERIOD)
+    @JsonSerialize (using = ReviewPeriodSerializer.class)
     private ReviewPeriod reviewPeriod;
 
     @JsonProperty(PROPERTIES_LOCATION)
     private String location;
 
+    public FilePlanComponentProperties(String title, String description)
+    {
+        this.title = title;
+        this.description = description;
+    }
+
+    public FilePlanComponentProperties(String title)
+    {
+        this.title = title;
+    }
+
+    public FilePlanComponentProperties()
+    {
+    }
+
 
     /**
      * @return the vitalRecord
      */
-    public boolean isVitalRecord()
+    public Boolean isVitalRecord()
     {
         return this.vitalRecord;
     }
@@ -83,7 +102,7 @@ public class FilePlanComponentProperties
     /**
      * @param vitalRecord the vitalRecord to set
      */
-    public void setVitalRecord(boolean vitalRecord)
+    public void setVitalRecord(Boolean vitalRecord)
     {
         this.vitalRecord = vitalRecord;
     }
@@ -183,4 +202,5 @@ public class FilePlanComponentProperties
     {
         this.location = location;
     }
+
 }

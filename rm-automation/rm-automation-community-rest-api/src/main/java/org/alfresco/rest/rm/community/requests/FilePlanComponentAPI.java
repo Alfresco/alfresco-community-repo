@@ -30,12 +30,11 @@ import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
-
-import com.google.gson.JsonObject;
 
 import org.alfresco.rest.core.RestAPI;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
@@ -103,7 +102,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     /**
      * Creates a file plan component with the given properties under the parent node with the given id
      *
-     * @param filePlanComponentProperties The properties of the file plan component to be created
+     * @param filePlanComponentModel The properties of the file plan component to be created
      * @param parentId The id of the parent where the new file plan component should be created
      * @return The {@link FilePlanComponent} with the given properties
      * @throws Exception for the following cases:
@@ -116,14 +115,14 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public FilePlanComponent createFilePlanComponent(JsonObject filePlanComponentProperties, String parentId) throws Exception
+    public FilePlanComponent createFilePlanComponent(FilePlanComponent filePlanComponentModel, String parentId) throws Exception
     {
-        mandatoryObject("filePlanComponentProperties", filePlanComponentProperties);
+        mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
         mandatoryString("parentId", parentId);
 
         return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
                 POST,
-                filePlanComponentProperties.toString(),
+                toJson(filePlanComponentModel),
                 "fileplan-components/{fileplanComponentId}/children",
                 parentId
         ));
@@ -132,7 +131,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     /**
      * Updates a file plan component
      *
-     * @param filePlanComponentProperties The properties to be updated
+     * @param filePlanComponent The properties to be updated
      * @param filePlanComponentId The id of the file plan component which will be updated
      * @param returns The updated {@link FilePlanComponent}
      * @throws Exception for the following cases:
@@ -145,14 +144,14 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public FilePlanComponent updateFilePlanComponent(JsonObject filePlanComponentProperties, String filePlanComponentId) throws Exception
+    public FilePlanComponent updateFilePlanComponent(FilePlanComponent filePlanComponent, String filePlanComponentId) throws Exception
     {
-        mandatoryObject("filePlanComponentProperties", filePlanComponentProperties);
+        mandatoryObject("filePlanComponentProperties", filePlanComponent);
         mandatoryString("filePlanComponentId", filePlanComponentId);
 
         return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
                 PUT,
-                filePlanComponentProperties.toString(),
+                toJson(filePlanComponent),
                 "fileplan-components/{fileplanComponentId}",
                 filePlanComponentId
         ));
@@ -181,4 +180,5 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
                 filePlanComponentId
         ));
     }
+
 }

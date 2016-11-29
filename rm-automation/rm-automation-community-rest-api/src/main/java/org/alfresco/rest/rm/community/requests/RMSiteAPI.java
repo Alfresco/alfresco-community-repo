@@ -29,13 +29,12 @@ package org.alfresco.rest.rm.community.requests;
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.OK;
-
-import com.google.gson.JsonObject;
 
 import org.alfresco.rest.core.RestAPI;
 import org.alfresco.rest.rm.community.model.site.RMSite;
@@ -81,7 +80,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
     /**
      * Create the RM site
      *
-     * @param rmSiteProperties The properties of the rm site to be created
+     * @param rmSite The properties of the rm site to be created
      * @return The {@link RMSite} with the given properties
      * @throws Exception for the following cases:
      * <ul>
@@ -91,13 +90,13 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public RMSite createRMSite(JsonObject rmSiteProperties) throws Exception
+    public RMSite createRMSite(RMSite rmSite) throws Exception
     {
-        mandatoryObject("rmSiteProperties", rmSiteProperties);
+        mandatoryObject("rmSiteProperties", rmSite);
 
         return usingRestWrapper().processModel(RMSite.class, requestWithBody(
                 POST,
-                rmSiteProperties.toString(),
+                toJson(rmSite),
                 "ig-sites"
         ));
     }
@@ -135,13 +134,13 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      *  <li>Api Response code default Unexpected error,model integrity exception</li>
      * </ul>
      */
-    public RMSite updateRMSite(JsonObject rmSiteProperties) throws Exception
+    public RMSite updateRMSite(RMSite rmSiteProperties) throws Exception
     {
         mandatoryObject("rmSiteProperties", rmSiteProperties);
 
         return usingRestWrapper().processModel(RMSite.class, requestWithBody(
                 PUT,
-                rmSiteProperties.toString(),
+            toJson(rmSiteProperties),
                 "ig-sites/rm"
         ));
     }

@@ -45,7 +45,7 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_DESCRIPTION = "cm:description";
     public static final String PROPERTIES_SUPPLEMENTAL_MARKING_LIST = "rmc:supplementalMarkingList";
     public static final String ALLOWABLE_OPERATIONS = "allowableOperations";
-    public static final String IS_CLOSED="isclosed";
+    public static final String IS_CLOSED="isClosed";
     public static final String PROPERTIES_REVIEW_PERIOD="rma:reviewPeriod";
     public static final String PROPERTIES_LOCATION="rma:location";
 }

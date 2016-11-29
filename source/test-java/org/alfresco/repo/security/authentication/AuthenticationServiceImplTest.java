@@ -156,6 +156,32 @@ public class AuthenticationServiceImplTest
                 cache.get(USERNAME));
     }
 
+    @Test
+    public void testProtectionDisabledBadPassword()
+    {
+        int attempts = 5;
+        authService.setProtectionPeriodSeconds(99999);
+        authService.setProtectionLimit(attempts - 2);
+        authService.setProtectionEnabled(false);
+
+        Exception spoofedAE = new AuthenticationException("Bad password");
+        doThrow(spoofedAE).when(authenticationComponent).authenticate(USERNAME, PASSWORD);
+        for (int i = 0; i < attempts; i++)
+        {
+            try
+            {
+                authService.authenticate(USERNAME, PASSWORD);
+                fail("The " + AuthenticationException.class.getName() + " should have been thrown.");
+            }
+            catch (AuthenticationException ae)
+            {
+                assertTrue("Expected failure from AuthenticationComponent", ae == spoofedAE);
+            }
+        }
+        verify(authenticationComponent, times(attempts)).authenticate(USERNAME, PASSWORD);
+        assertNull("The user should not be in the cache.", cache.get(USERNAME));
+    }
+
     private class MockCache<K extends Serializable, V> implements SimpleCache<K,V>
     {
         private Map<K,V> internalCache;

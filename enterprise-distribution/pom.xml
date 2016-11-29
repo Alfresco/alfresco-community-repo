@@ -47,7 +47,7 @@
         <!-- Share Distribution -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-share-distribution</artifactId>
+            <artifactId>alfresco-content-services-share-distribution</artifactId>
             <version>${alfresco.share.version}</version>
             <type>zip</type>
             <exclusions>
@@ -94,7 +94,7 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-share-distribution</artifactId>
+                                    <artifactId>alfresco-content-services-share-distribution</artifactId>
                                     <version>${alfresco.share.version}</version>
                                     <type>zip</type>
                                 </artifactItem>

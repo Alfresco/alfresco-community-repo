@@ -49,6 +49,10 @@
        <property name="nodes" ref="rm.Nodes" />
     </bean>
 
+    <bean class="org.alfresco.rm.rest.api.nodes.RecordsEntityResource">
+       <property name="nodes" ref="rm.Nodes" />
+    </bean>
+
     <bean class="org.alfresco.rm.rest.api.nodes.FileplanComponentChildrenRelation">
        <property name="nodes" ref="rm.Nodes" />
     </bean>

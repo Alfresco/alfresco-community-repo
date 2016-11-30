@@ -304,10 +304,16 @@
                <mandatory>false</mandatory>
                <default>1</default>
                <index enabled="true">
-		          <atomic>true</atomic>
-		          <stored>false</stored>
-		          <tokenised>false</tokenised>
-		       </index>
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+               <constraints>
+                  <constraint type="MINMAX">
+                     <parameter name="minValue"><value>0</value></parameter>
+                     <parameter name="maxValue"><value>2147483647</value></parameter> <!--MAX_INT -->
+                  </constraint>
+               </constraints>
             </property>
 
             <property name="rma:storageLocation">

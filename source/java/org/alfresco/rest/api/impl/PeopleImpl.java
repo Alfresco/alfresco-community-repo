@@ -486,8 +486,15 @@ public class PeopleImpl implements People
             @Override
             public Void doWork() throws Exception
             {
-                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_PERSONDESC, true);
-                writer.putContent(description);
+                if (description != null)
+                {
+                    ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_PERSONDESC, true);
+                    writer.putContent(description);
+                }
+                else
+                {
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_PERSONDESC, null);
+                }
                 return null;
             }
         });
@@ -566,7 +573,7 @@ public class PeopleImpl implements People
         }
 
 		NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
-		if (person.getDescription() != null)
+		if (person.wasSet(Person.PROP_PERSON_DESCRIPTION))
         {
 			// Remove person description from saved properties
 			properties.remove(ContentModel.PROP_PERSONDESC);

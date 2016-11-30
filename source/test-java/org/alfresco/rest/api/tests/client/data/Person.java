@@ -219,6 +219,10 @@ public class Person
             {
                 company = new Company(organization, address1, address2, address3, postcode, companyTelephone, fax, companyEmail);
             }
+            else
+            {
+                company = new Company();
+            }
         }
 
         String mobile = (String)jsonObject.get("mobile");

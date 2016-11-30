@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.people;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -89,25 +90,7 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     {
         Person p = persons.get(0);
 
-        // Until REPO-110 is solved, we need to explicitly test for the presence of fields
-        // that are present on Person but not PersonUpdate
-        // see also, SiteEntityResource.update(String, Site, Parameters)
-        if (p.getStatusUpdatedAt() != null)
-        {
-            throw new InvalidArgumentException("Unsupported field: statusUpdatedAt");
-        }
-        if (p.getAvatarId() != null)
-        {
-            throw new InvalidArgumentException("Unsupported field: avatarId");
-        }
-        if (p.getQuota() != null)
-        {
-            throw new InvalidArgumentException("Unsupported field: quota");
-        }
-        if (p.getQuotaUsed() != null)
-        {
-            throw new InvalidArgumentException("Unsupported field: quotaUsed");
-        }
+        validateDerivedFieldsExistence(p);
 
         List<Person> result = new ArrayList<>(1);
         result.add(people.create(p));
@@ -118,42 +101,40 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     @WebApiDescription(title="Update person", description="Update the given person's details")
     public Person update(String personId, Person person, Parameters parameters)
     {
-        validateNonUpdatableFieldsExistence(person);
-
-        return people.update(personId, person);
-    }
-
-    /**
-     * Explicitly test for the presence of fields that are present on Person but
-     * shouldn't be updatable (until REPO-110 is solved).
-     * 
-     * @param person
-     */
-    private void validateNonUpdatableFieldsExistence(Person person)
-    {
-
-        if (person.getUserName() != null)
+        if (person.wasSet(ContentModel.PROP_USERNAME))
         {
             // REPO-1537
             throw new InvalidArgumentException("Unsupported field: id");
         }
 
-        if (person.getStatusUpdatedAt() != null)
+        validateDerivedFieldsExistence(person);
+
+        return people.update(personId, person);
+    }
+
+    /**
+     * Explicitly test for the presence of system-maintained (derived) fields that are settable on Person (see also REPO-110).
+     * 
+     * @param person
+     */
+    private void validateDerivedFieldsExistence(Person person)
+    {
+        if (person.wasSet(ContentModel.PROP_USER_STATUS_TIME))
         {
             throw new InvalidArgumentException("Unsupported field: statusUpdatedAt");
         }
 
-        if (person.getAvatarId() != null)
+        if (person.wasSet(Person.PROP_PERSON_AVATAR_ID))
         {
             throw new InvalidArgumentException("Unsupported field: avatarId");
         }
 
-        if (person.getQuota() != null)
+        if (person.wasSet(ContentModel.PROP_SIZE_QUOTA))
         {
             throw new InvalidArgumentException("Unsupported field: quota");
         }
 
-        if (person.getQuotaUsed() != null)
+        if (person.wasSet(ContentModel.PROP_SIZE_CURRENT))
         {
             throw new InvalidArgumentException("Unsupported field: quotaUsed");
         }

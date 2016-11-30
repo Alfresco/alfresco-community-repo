@@ -25,6 +25,12 @@
  */
 package org.alfresco.rest.api.model;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.namespace.QName;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Represents a company
  * 
@@ -42,6 +48,8 @@ public class Company
 	private String fax;
 	private String email;
 
+	private Map<QName, Boolean> setFields = new HashMap<>(7);
+
 	/**
 	 * Default constructor, required for deserialising from JSON.
 	 */
@@ -53,14 +61,14 @@ public class Company
 			String postcode, String telephone, String fax, String email)
 	{
 		super();
-		this.organization = organization;
-		this.address1 = address1;
-		this.address2 = address2;
-		this.address3 = address3;
-		this.postcode = postcode;
-		this.telephone = telephone;
-		this.fax = fax;
-		this.email = email;
+		setOrganization(organization);
+		setAddress1(address1);
+		setAddress2(address2);
+		setAddress3(address3);
+		setPostcode(postcode);
+		setTelephone(telephone);
+		setFax(fax);
+		setEmail(email);
 	}
 
 	public String getOrganization()
@@ -103,6 +111,60 @@ public class Company
 		return email;
 	}
 
+	public void setOrganization(String organization)
+	{
+		this.organization = organization;
+		setFields.put(ContentModel.PROP_ORGANIZATION, true);
+	}
+
+	public void setAddress1(String address1)
+	{
+		this.address1 = address1;
+		setFields.put(ContentModel.PROP_COMPANYADDRESS1, true);
+	}
+
+	public void setAddress2(String address2)
+	{
+		this.address2 = address2;
+		setFields.put(ContentModel.PROP_COMPANYADDRESS2, true);
+	}
+
+	public void setAddress3(String address3)
+	{
+		this.address3 = address3;
+		setFields.put(ContentModel.PROP_COMPANYADDRESS3, true);
+	}
+
+	public void setPostcode(String postcode)
+	{
+		this.postcode = postcode;
+		setFields.put(ContentModel.PROP_COMPANYPOSTCODE, true);
+	}
+
+	public void setTelephone(String telephone)
+	{
+		this.telephone = telephone;
+		setFields.put(ContentModel.PROP_COMPANYTELEPHONE, true);
+	}
+
+	public void setFax(String fax)
+	{
+		this.fax = fax;
+		setFields.put(ContentModel.PROP_COMPANYFAX, true);
+	}
+
+	public void setEmail(String email)
+	{
+		this.email = email;
+		setFields.put(ContentModel.PROP_COMPANYEMAIL, true);
+	}
+
+	public boolean wasSet(QName fieldName)
+	{
+		Boolean b = setFields.get(fieldName);
+		return (b != null ? b : false);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -111,5 +173,4 @@ public class Company
 				+ ", telephone=" + telephone + ", fax=" + fax + ", email="
 				+ email + "]";
 	}
-
 }

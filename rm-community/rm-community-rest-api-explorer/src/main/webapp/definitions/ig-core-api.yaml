@@ -49,6 +49,8 @@ paths:
             Invalid parameter: **fileplanComponentId** is not a valid format
         '401':
           description: If authentication fails
+        '403':
+          description: If current user does not have permission to read **fileplanComponentId**
         '404':
           description: If **fileplanComponentId** does not exist
         default:
@@ -182,6 +184,8 @@ paths:
             $ref: '#/definitions/IGNodeAssociationPaging'
         '401':
           description: If authentication fails
+        '403':
+          description: If current user does not have permission to read **fileplanComponentId**
         '404':
           description: If **fileplanComponentId** does not exist
         default:

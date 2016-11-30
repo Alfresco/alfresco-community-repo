@@ -24,7 +24,7 @@
    </modules>
 
    <properties>
-      <alfresco.installer.host>nightlybuilds</alfresco.installer.host>
+      <alfresco.installer.host>releases</alfresco.installer.host>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
       <suiteXmlFile>testng.xml</suiteXmlFile>

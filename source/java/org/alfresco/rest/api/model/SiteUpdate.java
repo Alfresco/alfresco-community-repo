@@ -28,6 +28,8 @@ package org.alfresco.rest.api.model;
 import org.alfresco.service.cmr.site.SiteVisibility;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class representing a site update API operation.
@@ -42,12 +44,21 @@ public class SiteUpdate implements Serializable
     private String description;
     private SiteVisibility visibility;
 
+    private Map<String, Boolean> setFields = new HashMap<>(3);
+
+    public static final String TITLE = "title";
+    public static final String DESCRIPTION = "description";
+    public static final String VISIBILITY = "visibility";
+
+    public SiteUpdate()
+    {
+    }
 
     public SiteUpdate(String title, String description, SiteVisibility visibility)
     {
-        this.title = title;
-        this.description = description;
-        this.visibility = visibility;
+        setTitle(title);
+        setDescription(description);
+        setVisibility(visibility);
     }
 
     public String getTitle()
@@ -58,6 +69,7 @@ public class SiteUpdate implements Serializable
     public void setTitle(String title)
     {
         this.title = title;
+        setFields.put(TITLE, true);
     }
 
     public String getDescription()
@@ -68,6 +80,7 @@ public class SiteUpdate implements Serializable
     public void setDescription(String description)
     {
         this.description = description;
+        setFields.put(DESCRIPTION, true);
     }
 
     public SiteVisibility getVisibility()
@@ -78,6 +91,13 @@ public class SiteUpdate implements Serializable
     public void setVisibility(SiteVisibility visibility)
     {
         this.visibility = visibility;
+        setFields.put(VISIBILITY, true);
+    }
+
+    public boolean wasSet(String fieldName)
+    {
+        Boolean b = setFields.get(fieldName);
+        return (b != null ? b : false);
     }
 
     @Override

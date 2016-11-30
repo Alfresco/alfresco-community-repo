@@ -30,7 +30,6 @@ import static org.junit.Assert.fail;
 
 import java.util.*;
 
-import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.api.model.SiteUpdate;
@@ -45,10 +44,10 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.*;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -541,9 +540,9 @@ public class TestSites extends EnterpriseTestApi
         }
 
         // +ve test: remove the description.
-        // This is a workaround for being unable to eplicitly null the field (see REPO-1409)
+        // This is a workaround for being unable to explicitly null the field (see REPO-1409)
         {
-            Site site = sitesProxy.createSite(new SiteImpl("NoDescriptionTest", SiteVisibility.PUBLIC.toString()), 201);
+            Site site = sitesProxy.createSite(new SiteImpl(null, "NoDescriptionTest", "Initial description", SiteVisibility.PUBLIC.toString()), 201);
 
             Site updatedSite = sitesProxy.updateSite(
                     site.getSiteId(),
@@ -566,9 +565,15 @@ public class TestSites extends EnterpriseTestApi
             // Check the return from updateSite(...)
             expectedUpdate.expected(updatedSite);
 
+            // TODO improve expected (and/or AssertUtil) and affected test cases
+            Assert.assertNull(updatedSite.getDescription());
+
             // Double check a fresh retrieval matches.
             Site fresh = sitesProxy.getSite(site.getSiteId(), 200);
             expectedUpdate.expected(fresh);
+
+            // TODO improve expected (and/or AssertUtil) and affected test cases
+            Assert.assertNull(fresh.getDescription());
 
             removeSiteQuietly(site.getSiteId());
         }

@@ -133,34 +133,48 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
     @WebApiDescription(title="Update site", description="Update the Share site")
     public Site update(String siteId, Site site, Parameters parameters)
     {
+        return sites.updateSite(siteId, convert(site), parameters);
+    }
+
+    protected SiteUpdate convert(Site site)
+    {
         // Until REPO-110 is solved, we need to explicitly test for the presence of fields
         // on the Site object that aren't valid SiteUpdate fields. Once REPO-110 is solved,
         // the update method will take a SiteUpdate as a parameter rather than a Site
         // and only the correct fields will be exposed. Any attempt to access illegal fields
         // should then result in the framework returning a 400 automatically.
-        if (site.getId() != null)
+        if (site.wasSet(Site.ID))
         {
             throw new InvalidArgumentException("Site update does not support field: id");
         }
-        if (site.getGuid() != null)
+        if (site.wasSet(Site.GUID))
         {
             throw new InvalidArgumentException("Site update does not support field: guid");
         }
-        if (site.getRole() != null)
+        if (site.wasSet(Site.ROLE))
         {
             throw new InvalidArgumentException("Site update does not support field: role");
         }
-        if (site.getPreset() != null)
+        if (site.wasSet(Site.PRESET))
         {
             throw new InvalidArgumentException("Site update does not support field: preset");
         }
 
         // Bind valid fields to a SiteUpdate instance.
-        final String title = site.getTitle();
-        final String description = site.getDescription();
-        final SiteVisibility visibility = site.getVisibility();
-        SiteUpdate update = new SiteUpdate(title, description, visibility);
+        SiteUpdate siteUpdate = new SiteUpdate();
+        if (site.wasSet(Site.TITLE))
+        {
+            siteUpdate.setTitle(site.getTitle());
+        }
+        if (site.wasSet(Site.DESCRIPTION))
+        {
+            siteUpdate.setDescription(site.getDescription());
+        }
+        if (site.wasSet(Site.VISIBILITY))
+        {
+            siteUpdate.setVisibility(site.getVisibility());
+        }
 
-        return sites.updateSite(siteId, update, parameters);
+        return siteUpdate;
     }
 }

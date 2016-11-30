@@ -19,6 +19,8 @@ tags:
     description: Retrieve and manage fileplan components
   - name: ig-sites
     description: Retrieve and manage the RM site
+  - name: records
+    description: Perform record specific operations
 paths:
   '/fileplan-components/{fileplanComponentId}':
     get:
@@ -547,6 +549,123 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  '/records/{recordId}/content':
+    get:
+      x-alfresco-since: "5.2"
+      tags:
+        - records
+      summary: Get record content
+      description: |
+
+        Gets the content of the record with identifier **recordId**.
+      operationId: getRecordContent
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - $ref: '#/parameters/attachmentParam'
+        - $ref: '#/parameters/ifModifiedSinceHeader'
+      responses:
+        '200':
+          description: Successful response
+        '304':
+          description: Content has not been modified since the date provided in the If-Modified-Since header
+        '400':
+          description: |
+            Invalid parameter: **nodeId** is not a valid format, or is not a file
+        '401':
+          description: Authentication failed          
+        '404':
+          description: |
+            **nodeId** does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      x-alfresco-since: "5.2"
+      tags:
+        - records
+      summary: Update record content
+      description: |
+        Updates the content of the record with identifier **recordId**.
+
+        The request body for this endpoint can be any text or binary stream.
+
+        The **majorVersion** and **comment** parameters can be used to control versioning behaviour. If the content is versionable,
+        a new minor version is created by default.
+
+        Optionally a new **name** parameter can also be specified that must be unique within the parent folder. If specified and valid then this 
+        will rename the node. If invalid then an error is returned and the content is not updated.
+
+        **Note:** This API method accepts any content type, but for testing with this tool text based content can be provided.
+        This is because the OpenAPI Specification does not allow a wildcard to be provided or the ability for
+        tooling to accept an arbitrary file.
+      operationId: updateRecordContent
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - name: majorVersion
+          in: query
+          description: |
+            If **true**, create a major version.
+            Setting this parameter also enables versioning of this node, if it is not already versioned.
+          required: false
+          type: boolean
+          default: false
+        - name: comment
+          in: query
+          description: |
+            Add a version comment which will appear in version history.
+            Setting this parameter also enables versioning of this node, if it is not already versioned.
+          required: false
+          type: string
+        - name: name
+          in: query
+          description: |
+            Optional new name. This should include the file extension.
+            The name must not contain spaces or the following special characters: * " < > \ / ? : and |. 
+            The character `.` must not be used at the end of the name. 
+          required: false
+          type: string
+          pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        - $ref: '#/parameters/IGNodeEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: contentBodyUpdate
+          description: The binary content
+          required: true
+          schema:
+            type: string
+            format: binary
+      produces:
+        - application/json
+      consumes:
+        - application/octet-stream
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/IGNodeEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordId** is not a valid format, or is not a file
+        '401':
+          description: Authentication failed          
+        '403':
+          description: Current user does not have permission to update **recordId**
+        '404':
+          description: |
+            **recordId** does not exist
+        '409':
+          description: Optional new name clashes with an existing node in the current parent folder
+        '413':
+          description: Content exceeds individual file size limit (configured for network/system)          
+        '422':
+          description: Model integrity exception including a file name containing invalid characters
+        '507':
+          description: Content exceeds overall storage quota limit configured for the network/system
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
 parameters:
   fileplanComponentIdWithAliasParam:
     name: fileplanComponentId
@@ -609,11 +728,16 @@ parameters:
     items:
       type: string
     collectionFormat: csv
-  ## Core definition
   fileplanComponentIdParam:
     name: fileplanComponentId
     in: path
     description: The identifier of a fileplan compoment.
+    required: true
+    type: string
+  recordIdParam:
+    name: recordId
+    in: path
+    description: The identifier of a record.
     required: true
     type: string
   ## Core definition
@@ -670,6 +794,33 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  # Core definition
+  attachmentParam:
+    name: attachment
+    in: query
+    description: |
+       **true** enables a web browser to download the file as an attachment.
+       **false** means a web browser may preview the file in a new tab or window, but not
+       download the file.
+
+       You can only set this parameter to **false** if the content type of the file is in the supported list;
+       for example, certain image files and PDF files.
+
+       If the content type is not supported for preview, then a value of **false**  is ignored, and
+       the attachment will be returned in the response.
+    required: false
+    default: true
+    type: boolean
+  # Core definition
+  ifModifiedSinceHeader:
+    name: If-Modified-Since
+    in: header
+    description: |
+      Only returns the content if it has been modified since the date provided.
+      Use the date format defined by HTTP. For example, `Wed, 09 Mar 2016 16:56:34 GMT`.
+    required: false
+    type: string
+    format: date-time
 definitions:
   IGNodeEntry:
     type: object

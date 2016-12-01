@@ -518,59 +518,20 @@ public class PeopleImpl implements People
 
     public Person update(String personId, final Person person)
     {
-        MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+        boolean isAdmin = isAdminAuthority();
 
         String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (!isAdminAuthority() && !currentUserId.equalsIgnoreCase(personId))
+        if (!isAdmin && !currentUserId.equalsIgnoreCase(personId))
         {
             // The user is not an admin user and is not attempting to update *their own* details.
             throw new PermissionDeniedException();
-        }
-        if (!isAdminAuthority() && person.getOldPassword() != null && person.getPassword() == null)
-        {
-            throw new IllegalArgumentException("To change password, both 'oldPassword' and 'password' fields are required.");
         }
 
         final String personIdToUpdate = validatePerson(personId);
         final Map<QName, Serializable> properties = person.toProperties();
 
-        if (person.getPassword() != null && !person.getPassword().isEmpty())
-        {
-            // An admin user can update without knowing the original pass - but must know their own!
-            char[] newPassword = person.getPassword().toCharArray();
-            if (isAdminAuthority())
-            {
-                mutableAuthenticationService.setAuthentication(personIdToUpdate, newPassword);
-            }
-            else
-            {
-                // Non-admin users can update their own password, but must provide their current password.
-                if (person.getOldPassword() == null)
-                {
-                    throw new PermissionDeniedException("Existing password is required, but missing (field 'oldPassword').");
-                }
-                char[] oldPassword = person.getOldPassword().toCharArray();
-                try
-                {
-                    mutableAuthenticationService.updateAuthentication(personIdToUpdate, oldPassword, newPassword);
-                }
-                catch (AuthenticationException e)
-                {
-                    // TODO: add to exception mappings/handler
-                    throw new PermissionDeniedException("Incorrect existing password.");
-                }
-            }
-        }
-
-        if (person.isEnabled() != null)
-        {
-            if (isAdminAuthority(personIdToUpdate))
-            {
-                throw new PermissionDeniedException("Admin authority cannot be disabled.");
-            }
-
-            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
-        }
+        // if requested, update password
+        updatePassword(isAdmin, personIdToUpdate, person);
 
 		NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
 		if (person.wasSet(Person.PROP_PERSON_DESCRIPTION))
@@ -604,6 +565,66 @@ public class PeopleImpl implements People
 		nodes.updateCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
 		
         return getPerson(personId);
+    }
+
+    private void updatePassword(boolean isAdmin, String personIdToUpdate, Person person)
+    {
+        MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+
+        boolean isOldPassword = person.wasSet(Person.PROP_PERSON_OLDPASSWORD);
+        boolean isPassword = person.wasSet(Person.PROP_PERSON_PASSWORD);
+
+        if (isPassword || isOldPassword)
+        {
+            if (isOldPassword && ((person.getOldPassword() == null) || (person.getOldPassword().isEmpty())))
+            {
+                throw new IllegalArgumentException("'oldPassword' field cannot be empty.");
+            }
+
+            if (!isPassword || (person.getPassword() == null) || (person.getPassword().isEmpty()))
+            {
+                throw new IllegalArgumentException("password' field cannot be empty.");
+            }
+
+            char[] newPassword = person.getPassword().toCharArray();
+
+            if (!isAdmin)
+            {
+                // Non-admin users can update their own password, but must provide their current password.
+                if (!isOldPassword)
+                {
+                    throw new IllegalArgumentException("To change password, both 'oldPassword' and 'password' fields are required.");
+                }
+
+                char[] oldPassword = person.getOldPassword().toCharArray();
+                try
+                {
+                    mutableAuthenticationService.updateAuthentication(personIdToUpdate, oldPassword, newPassword);
+                }
+                catch (AuthenticationException e)
+                {
+                    throw new PermissionDeniedException("Incorrect password.");
+                }
+            }
+            else
+            {
+                // An admin user can update without knowing the original pass - but must know their own!
+                // note: is it reasonable to silently ignore oldPassword if supplied ?
+
+                mutableAuthenticationService.setAuthentication(personIdToUpdate, newPassword);
+            }
+        }
+
+        if (person.isEnabled() != null)
+        {
+            if (isAdminAuthority(personIdToUpdate))
+            {
+                throw new PermissionDeniedException("Admin authority cannot be disabled.");
+            }
+
+            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
+        }
+
     }
 
     private boolean isAdminAuthority()

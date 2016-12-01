@@ -85,6 +85,9 @@ public class FilePlanComponent
     @JsonProperty (value = ALLOWABLE_OPERATIONS)
     private List<String> allowableOperations;
     
+    @JsonProperty (required = false)
+    private FilePlanComponentContent content;
+    
     private FilePlanComponentPath path;
 
     @JsonProperty (required = true)

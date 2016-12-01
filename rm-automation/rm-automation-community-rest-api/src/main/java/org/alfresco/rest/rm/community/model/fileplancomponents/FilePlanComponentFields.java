@@ -48,6 +48,7 @@ public class FilePlanComponentFields
     public static final String IS_CLOSED = "isClosed";
     public static final String PROPERTIES_REVIEW_PERIOD = "rma:reviewPeriod";
     public static final String PROPERTIES_LOCATION = "rma:location";
+    public static final String PROPERTIES_IS_CLOSED = "rma:isClosed"; // not to be confused with IS_CLOSED!
     
     // for non-electronic records
     public static final String PROPERTIES_BOX = "rma:box";

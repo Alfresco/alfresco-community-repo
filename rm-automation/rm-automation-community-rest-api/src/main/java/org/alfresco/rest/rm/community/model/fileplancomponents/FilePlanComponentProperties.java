@@ -30,6 +30,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_FILE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IS_CLOSED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_LOCATION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_NUMBER_OF_COPIES;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_PHYSICAL_SIZE;
@@ -79,6 +80,9 @@ public class FilePlanComponentProperties
 
     @JsonProperty(PROPERTIES_LOCATION)
     private String location;
+    
+    @JsonProperty(value = PROPERTIES_IS_CLOSED, required = false)
+    private Boolean isClosed;
     
     @JsonProperty(value = PROPERTIES_BOX, required = false)
     private String box;
@@ -302,5 +306,21 @@ public class FilePlanComponentProperties
     public void setPhysicalSize(Integer physicalSize)
     {
         this.physicalSize = physicalSize;
+    }
+
+    /**
+     * @return the isClosed
+     */
+    public Boolean getIsClosed()
+    {
+        return this.isClosed;
+    }
+
+    /**
+     * @param isClosed the isClosed to set
+     */
+    public void setIsClosed(Boolean isClosed)
+    {
+        this.isClosed = isClosed;
     }
 }

@@ -35,6 +35,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 import com.jayway.restassured.RestAssured;
 
@@ -190,4 +191,24 @@ public class BaseRestTest extends RestTest
         return fpc;
     }
 
+    /**
+     * Helper method to close folder
+     * @param folderToClose
+     * @return
+     * @throws Exception
+     */
+    public FilePlanComponent closeFolder(String folderId) throws Exception
+    {
+        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        
+        // build fileplan component + properties for update request
+        FilePlanComponentProperties properties = new FilePlanComponentProperties();
+        properties.setIsClosed(true);
+        FilePlanComponent filePlanComponent = new FilePlanComponent();
+        filePlanComponent.setProperties(properties);
+        
+        FilePlanComponent updatedComponent = filePlanComponentAPI.updateFilePlanComponent(filePlanComponent, folderId);
+        restWrapper.assertStatusCodeIs(OK);
+        return updatedComponent;
+    }
 }

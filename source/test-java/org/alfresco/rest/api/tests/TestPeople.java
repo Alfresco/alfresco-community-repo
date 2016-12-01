@@ -25,11 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assert.*;
-
-import java.io.Serializable;
-import java.util.*;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
@@ -42,8 +37,7 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.Person;
-import org.alfresco.service.cmr.dictionary.CustomModelService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -54,6 +48,27 @@ import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestPeople extends EnterpriseTestApi
 {
@@ -473,13 +488,15 @@ public class TestPeople extends EnterpriseTestApi
         // the REST API's "create person" function here, so we're isolating this test from it.
         PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
         NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
+        PreferenceService prefService = applicationContext.getBean("PreferenceService", PreferenceService.class);
         Map<QName, Serializable> nodeProps = new HashMap<>();
         // The cm:titled aspect should be auto-added for the cm:title property
         nodeProps.put(ContentModel.PROP_TITLE, "A title");
         
         // These properties should not be present when a person is retrieved
         // since they are present as top-level fields.
-        nodeProps.put(ContentModel.PROP_USERNAME, "docbrown@"+account1.getId());
+        String userName = "docbrown@" + account1.getId();
+        nodeProps.put(ContentModel.PROP_USERNAME, userName);
         nodeProps.put(ContentModel.PROP_FIRSTNAME, "Doc");
         nodeProps.put(ContentModel.PROP_LASTNAME, "Brown");
         nodeProps.put(ContentModel.PROP_JOBTITLE, "Inventor");
@@ -510,13 +527,16 @@ public class TestPeople extends EnterpriseTestApi
         
         AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
         personService.createPerson(nodeProps);
+
+        // Set a preference, so that we can test that we're filtering this property correctly.
+        prefService.setPreferences(userName, Collections.singletonMap("olives", "green"));
         
         // Get the person using the REST API
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
-        Person person = people.getPerson("docbrown@"+account1.getId());
+        Person person = people.getPerson(userName);
         
         // Did we get the correct aspects/properties?
-        assertEquals("docbrown@"+account1.getId(), person.getId());
+        assertEquals(userName, person.getId());
         assertEquals("Doc", person.getFirstName());
         assertEquals("A title", person.getProperties().get("cm:title"));
         assertTrue(person.getAspectNames().contains("cm:titled"));
@@ -548,6 +568,11 @@ public class TestPeople extends EnterpriseTestApi
         assertFalse(person.getProperties().containsKey("cm:sizeCurrent"));
         assertFalse(person.getProperties().containsKey("cm:emailFeedDisabled"));
         assertFalse(person.getProperties().containsKey("cm:persondescription"));
+        assertFalse(person.getProperties().containsKey("usr:enabled"));
+        // TODO: others, e.g. usr:* ?
+        // We also don't want cm:preferenceValues (see REPO-1636)
+        assertFalse(person.getProperties().containsKey("cm:preferenceValues"));
+        
         
         // Check that no properties are present that should have been filtered.
         for (String key : person.getProperties().keySet())

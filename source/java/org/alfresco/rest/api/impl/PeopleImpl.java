@@ -25,9 +25,6 @@
  */
 package org.alfresco.rest.api.impl;
 
-import java.io.Serializable;
-import java.util.*;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -64,6 +61,16 @@ import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
+import java.io.Serializable;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Centralises access to people services and maps between representations.
  * 
@@ -97,7 +104,9 @@ public class PeopleImpl implements People
 			ContentModel.PROP_GOOGLEUSERNAME,
 			ContentModel.PROP_SIZE_QUOTA,
 			ContentModel.PROP_SIZE_CURRENT,
-			ContentModel.PROP_EMAIL_FEED_DISABLED);
+			ContentModel.PROP_EMAIL_FEED_DISABLED,
+            ContentModel.PROP_PREFERENCE_VALUES,
+            ContentModel.PROP_ENABLED);
 	protected Nodes nodes;
 	protected Sites sites;
 

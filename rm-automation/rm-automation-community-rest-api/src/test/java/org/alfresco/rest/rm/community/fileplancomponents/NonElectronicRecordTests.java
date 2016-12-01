@@ -31,11 +31,11 @@ import static java.util.Arrays.asList;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_CLOSED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
@@ -65,13 +65,14 @@ public class NonElectronicRecordTests extends BaseRestTest
     @Autowired
     private DataUser dataUser;
 
-    
     /**
+     * <pre>
      * Given a parent container that is NOT a record folder or an unfiled record folder
      * When I try to create a non-electronic record within the parent container
      * Then nothing happens
      * And an error is reported
-     * @throws Exception 
+     * </pre>
+     * @throws Exception if prerequisites can't be created
      */
     @Test(description = "Non-electronic record can't be created as a child of invalid parent Id")
     public void noCreateForInvalidParentIds() throws Exception
@@ -110,11 +111,13 @@ public class NonElectronicRecordTests extends BaseRestTest
     }
     
     /**
+     * <pre>
      * Given a parent container that is a record folder
      * And the record folder is open
      * When I try to create a non-electronic record within the parent container
      * Then the non-electronic record is created
      * And the details of the new record are returned
+     * <pre>
      * @throws Exception if record can't be created
      */
     @Test(description = "Non-electronic record can be created in open record folder")
@@ -171,12 +174,14 @@ public class NonElectronicRecordTests extends BaseRestTest
     }
     
     /**
+     * <pre>
      * Given a parent container that is a record folder
      * And the record folder is closed 
      * When I try to create a non-electronic record within the parent container
      * Then nothing happens
      * And an error is reported
-     * @throws Exception on failed component creation
+     * </pre>
+     * @throws Exception if prerequisites can't be created
      */
     @Test(description = "Non-electronic record can't be created in closed record folder")
     public void noCreateInClosedFolder() throws Exception
@@ -190,6 +195,7 @@ public class NonElectronicRecordTests extends BaseRestTest
         // close the folder
         closeFolder(recordFolder.getId());
         
+        // try to create it, this should fail and throw an exception
         try
         {
             filePlanComponentAPI.createFilePlanComponent(
@@ -204,6 +210,73 @@ public class NonElectronicRecordTests extends BaseRestTest
         
         // verify the status code
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * <pre>
+     * Given a parent container that is a record folder
+     * And the record folder is open
+     * When I try to create a non-electronic record within the parent container
+     * And I do not provide all the required mandatory property values
+     * Then nothing happens
+     * And an error is reported
+     * </pre>
+     * @throws Exception if prerequisites can't be created
+     */
+    @Test(description = "Non-electronic record can only be created if all mandatory properties are given")
+    public void allMandatoryPropertiesRequired() throws Exception
+    {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        FilePlanComponent recordFolder = createFolderInFilePlan();
+        assertFalse(recordFolder.getProperties().getIsClosed());
+        
+        // component without name and title
+        FilePlanComponent noNameOrTitle = getDummyFilePlanComponent(); 
+        
+        // component with title only
+        FilePlanComponent titleOnly = getDummyFilePlanComponent();
+        FilePlanComponentProperties properties = new FilePlanComponentProperties();
+        properties.setTitle("Title " + getRandomAlphanumeric());
+        titleOnly.setProperties(properties);
+
+        // component with name only
+        FilePlanComponent nameOnly = getDummyFilePlanComponent();
+        nameOnly.setName("Name " + getRandomAlphanumeric());
+
+        // try to create invalid components 
+        asList(noNameOrTitle, titleOnly, nameOnly).stream().forEach(c -> 
+        {
+            try
+            {
+                logger.info("Creating non-electronic record with body:\n" + toJson(c));
+            }
+            catch (Exception error)
+            {
+            }
+            
+            // this should fail and throw an exception
+            try
+            {                
+                filePlanComponentAPI.createFilePlanComponent(c, recordFolder.getId());
+            } 
+            catch (Exception e)
+            {
+            }
+
+            // verify the status code is BAD_REQUEST
+            filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(BAD_REQUEST);
+        });        
+    }
+    
+    /**
+     * Helper function to return an empty FilePlanComponent for non-electronic record
+     * @return
+     */
+    private FilePlanComponent getDummyFilePlanComponent()
+    {
+        FilePlanComponent component = new FilePlanComponent();
+        component.setNodeType(NON_ELECTRONIC_RECORD_TYPE.toString());
+        return component;
     }
     
     /**

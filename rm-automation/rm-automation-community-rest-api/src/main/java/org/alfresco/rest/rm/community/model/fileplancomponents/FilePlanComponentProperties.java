@@ -26,10 +26,15 @@
  */
 package org.alfresco.rest.rm.community.model.fileplancomponents;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_BOX;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_FILE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_LOCATION;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_NUMBER_OF_COPIES;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_PHYSICAL_SIZE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_PERIOD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SHELF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SUPPLEMENTAL_MARKING_LIST;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
@@ -74,6 +79,22 @@ public class FilePlanComponentProperties
 
     @JsonProperty(PROPERTIES_LOCATION)
     private String location;
+    
+    @JsonProperty(value = PROPERTIES_BOX, required = false)
+    private String box;
+    
+    @JsonProperty(value = PROPERTIES_FILE, required = false)
+    private String file;
+    
+    @JsonProperty(value = PROPERTIES_SHELF, required = false)
+    private String shelf;
+    
+    @JsonProperty(value = PROPERTIES_NUMBER_OF_COPIES, required = false)
+    private Integer numberOfCopies;
+    
+    @JsonProperty(value = PROPERTIES_PHYSICAL_SIZE, required = false)
+    private Integer physicalSize;
+    
 
     public FilePlanComponentProperties(String title, String description)
     {
@@ -203,4 +224,83 @@ public class FilePlanComponentProperties
         this.location = location;
     }
 
+    /**
+     * @return the box
+     */
+    public String getBox()
+    {
+        return this.box;
+    }
+
+    /**
+     * @param box the box to set
+     */
+    public void setBox(String box)
+    {
+        this.box = box;
+    }
+
+    /**
+     * @return the file
+     */
+    public String getFile()
+    {
+        return this.file;
+    }
+
+    /**
+     * @param file the file to set
+     */
+    public void setFile(String file)
+    {
+        this.file = file;
+    }
+
+    /**
+     * @return the shelf
+     */
+    public String getShelf()
+    {
+        return this.shelf;
+    }
+
+    /**
+     * @param shelf the shelf to set
+     */
+    public void setShelf(String shelf)
+    {
+        this.shelf = shelf;
+    }
+
+    /**
+     * @return the numberOfCopies
+     */
+    public Integer getNumberOfCopies()
+    {
+        return this.numberOfCopies;
+    }
+
+    /**
+     * @param numberOfCopies the numberOfCopies to set
+     */
+    public void setNumberOfCopies(Integer numberOfCopies)
+    {
+        this.numberOfCopies = numberOfCopies;
+    }
+
+    /**
+     * @return the physicalSize
+     */
+    public Integer getPhysicalSize()
+    {
+        return this.physicalSize;
+    }
+
+    /**
+     * @param physicalSize the physicalSize to set
+     */
+    public void setPhysicalSize(Integer physicalSize)
+    {
+        this.physicalSize = physicalSize;
+    }
 }

@@ -121,24 +121,12 @@ public class NonElectronicRecordTests extends BaseRestTest
     public void canCreateInOpenFolder() throws Exception
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        
-        // create root category
-        FilePlanComponent recordCategory = filePlanComponentAPI.createFilePlanComponent(
-            new FilePlanComponent("Category " + getRandomAlphanumeric(), 
-                RECORD_CATEGORY_TYPE.toString(),
-                new FilePlanComponentProperties()), 
-            FILE_PLAN_ALIAS.toString());
-        
-        // create record folder as a child of recordCategory
-        FilePlanComponent recordFolder = filePlanComponentAPI.withParams("include=" + IS_CLOSED)
-            .createFilePlanComponent(new FilePlanComponent("Folder " + getRandomAlphanumeric(), 
-                RECORD_FOLDER_TYPE.toString(),
-                new FilePlanComponentProperties()), 
-            recordCategory.getId());
+        FilePlanComponent recordFolder = createFolderInFilePlan();
         
         // the folder should be open
-        assertFalse(recordFolder.isClosed());
+        assertFalse(recordFolder.getProperties().getIsClosed());
         
+        // use these properties for non-electronic record to be created
         String title = "Title " + getRandomAlphanumeric();
         String description = "Description " + getRandomAlphanumeric();
         String box = "Box "+ getRandomAlphanumeric();
@@ -180,5 +168,55 @@ public class NonElectronicRecordTests extends BaseRestTest
         assertEquals(location, nonElectronicRecord.getProperties().getLocation());
         assertEquals(copies, nonElectronicRecord.getProperties().getNumberOfCopies());
         assertEquals(size, nonElectronicRecord.getProperties().getPhysicalSize());
-    }    
+    }
+    
+    /**
+     * Given a parent container that is a record folder
+     * And the record folder is closed 
+     * When I try to create a non-electronic record within the parent container
+     * Then nothing happens
+     * And an error is reported
+     * @throws Exception on failed component creation
+     */
+    @Test(description = "Non-electronic record can't be created in closed record folder")
+    public void noCreateInClosedFolder() throws Exception
+    {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        FilePlanComponent recordFolder = createFolderInFilePlan();
+        
+        // the folder should be open
+        assertFalse(recordFolder.getProperties().getIsClosed());
+        
+        // close the folder
+        closeFolder(recordFolder.getId());
+        
+        try
+        {
+            filePlanComponentAPI.createFilePlanComponent(
+                new FilePlanComponent("Record " + getRandomAlphanumeric(), 
+                    NON_ELECTRONIC_RECORD_TYPE.toString(),
+                    new FilePlanComponentProperties()), 
+                recordFolder.getId()).getId();
+        } 
+        catch (Exception e)
+        {
+        }
+        
+        // verify the status code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+    }
+    
+    /**
+     * Helper method to create a randomly-named <category>/<folder> structure in fileplan
+     * @return record folder
+     * @throws Exception on failed creation
+     */
+    private FilePlanComponent createFolderInFilePlan() throws Exception
+    {
+        // create root category
+        FilePlanComponent recordCategory = createCategory(FILE_PLAN_ALIAS.toString(), "Category " + getRandomAlphanumeric());
+        
+        // and return a folder underneath
+        return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
+    }
 }

@@ -123,8 +123,9 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
                 POST,
                 toJson(filePlanComponentModel),
-                "fileplan-components/{fileplanComponentId}/children",
-                parentId
+                "fileplan-components/{fileplanComponentId}/children?{parameters}",
+                parentId,
+                getParameters()
         ));
     }
 
@@ -152,8 +153,9 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
                 PUT,
                 toJson(filePlanComponent),
-                "fileplan-components/{fileplanComponentId}",
-                filePlanComponentId
+                "fileplan-components/{fileplanComponentId}?{parameters}",
+                filePlanComponentId,
+                getParameters()
         ));
     }
 

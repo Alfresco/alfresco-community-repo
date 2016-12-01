@@ -273,10 +273,11 @@ public interface Nodes
      * @param nodeProps
      * @param selectParam
      * @param mapUserInfo
+     * @param excludedNS
      * @param excludedProps
      * @return
      */
-    Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<QName> excludedProps);
+    Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps);
 
     /**
      * Map from the JSON API format of properties (String to Object) to
@@ -293,10 +294,11 @@ public interface Nodes
      * by the API JSON response for get nodes, get person etc.
      * 
      * @param nodeAspects
+     * @param excludedNS
      * @param excludedAspects
      * @return
      */
-    List<String> mapFromNodeAspects(Set<QName> nodeAspects, List<QName> excludedAspects);
+    List<String> mapFromNodeAspects(Set<QName> nodeAspects, List<String> excludedNS, List<QName> excludedAspects);
 
     /**
      * Add aspects to the specified NodeRef. Aspects that appear in the exclusions list

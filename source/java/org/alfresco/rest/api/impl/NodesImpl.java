@@ -890,14 +890,14 @@ public class NodesImpl implements Nodes
 
         if (includeParam.size() > 0)
         {
-            node.setProperties(mapFromNodeProperties(properties, includeParam, mapUserInfo, EXCLUDED_PROPS));
+            node.setProperties(mapFromNodeProperties(properties, includeParam, mapUserInfo, EXCLUDED_NS, EXCLUDED_PROPS));
         }
 
         Set<QName> aspects = null;
         if (includeParam.contains(PARAM_INCLUDE_ASPECTNAMES))
         {
             aspects = nodeService.getAspects(nodeRef);
-            node.setAspectNames(mapFromNodeAspects(aspects, EXCLUDED_ASPECTS));
+            node.setAspectNames(mapFromNodeAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS));
         }
 
         if (includeParam.contains(PARAM_INCLUDE_ISLINK))
@@ -1161,7 +1161,7 @@ public class NodesImpl implements Nodes
         return nodeProps;
     }
     
-    public Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<QName> excludedProps)
+    public Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps)
     {
         List<QName> selectedProperties;
 
@@ -1171,7 +1171,7 @@ public class NodesImpl implements Nodes
             selectedProperties = new ArrayList<>(nodeProps.size());
             for (QName propQName : nodeProps.keySet())
             {
-                if ((! EXCLUDED_NS.contains(propQName.getNamespaceURI())) && (! excludedProps.contains(propQName)))
+                if ((! excludedNS.contains(propQName.getNamespaceURI())) && (! excludedProps.contains(propQName)))
                 {
                     selectedProperties.add(propQName);
                 }
@@ -1209,13 +1209,13 @@ public class NodesImpl implements Nodes
         return props;
     }
 
-    public List<String> mapFromNodeAspects(Set<QName> nodeAspects, List<QName> excludedAspects)
+    public List<String> mapFromNodeAspects(Set<QName> nodeAspects, List<String> excludedNS, List<QName> excludedAspects)
     {
         List<String> aspectNames = new ArrayList<>(nodeAspects.size());
 
         for (QName aspectQName : nodeAspects)
         {
-            if ((! EXCLUDED_NS.contains(aspectQName.getNamespaceURI())) && (! excludedAspects.contains(aspectQName)))
+            if ((! excludedNS.contains(aspectQName.getNamespaceURI())) && (! excludedAspects.contains(aspectQName)))
             {
                 aspectNames.add(aspectQName.toPrefixString(namespaceService));
             }

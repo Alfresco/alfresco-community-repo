@@ -40,6 +40,7 @@ import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -487,7 +488,7 @@ public class TestPeople extends EnterpriseTestApi
         // Create the person directly using the Java services - we don't want to test
         // the REST API's "create person" function here, so we're isolating this test from it.
         PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
-        NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
+        MutableAuthenticationService authService = applicationContext.getBean("AuthenticationService", MutableAuthenticationService.class);
         PreferenceService prefService = applicationContext.getBean("PreferenceService", PreferenceService.class);
         Map<QName, Serializable> nodeProps = new HashMap<>();
         // The cm:titled aspect should be auto-added for the cm:title property
@@ -522,10 +523,14 @@ public class TestPeople extends EnterpriseTestApi
         nodeProps.put(ContentModel.PROP_EMAIL_FEED_DISABLED, false);
         // TODO: PROP_PERSON_DESCRIPTION?
         
-        // Namespace that should be filtered
+        // Namespaces that should be filtered
+        nodeProps.put(ContentModel.PROP_ENABLED, true);
         nodeProps.put(ContentModel.PROP_SYS_NAME, "name-value");
         
+        // Create a password and enable the user so that we can check the usr:* props aren't present later.
         AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+        authService.createAuthentication(userName, "password".toCharArray());
+        authService.setAuthenticationEnabled(userName, true);
         personService.createPerson(nodeProps);
 
         // Set a preference, so that we can test that we're filtering this property correctly.
@@ -568,16 +573,13 @@ public class TestPeople extends EnterpriseTestApi
         assertFalse(person.getProperties().containsKey("cm:sizeCurrent"));
         assertFalse(person.getProperties().containsKey("cm:emailFeedDisabled"));
         assertFalse(person.getProperties().containsKey("cm:persondescription"));
-        assertFalse(person.getProperties().containsKey("usr:enabled"));
-        // TODO: others, e.g. usr:* ?
         // We also don't want cm:preferenceValues (see REPO-1636)
         assertFalse(person.getProperties().containsKey("cm:preferenceValues"));
         
-        
-        // Check that no properties are present that should have been filtered.
+        // Check that no properties are present that should have been filtered by namespace.
         for (String key : person.getProperties().keySet())
         {
-            if (key.startsWith("sys:"))
+            if (key.startsWith("sys:") || key.startsWith("usr:"))
             {
                 Object value = person.getProperties().get(key);
                 String keyValueStr = String.format("(key=%s, value=%s)", key, value);

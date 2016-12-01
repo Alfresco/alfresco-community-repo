@@ -31,7 +31,6 @@ import java.util.Set;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
-import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.action.Action;
@@ -302,7 +301,8 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         this.queueName = queueName;
     }
 
-    public String getQueueName() {
+    public String getQueueName()
+    {
         return queueName;
     }
     

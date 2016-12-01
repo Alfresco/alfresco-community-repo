@@ -201,9 +201,6 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     // End of IOC
     //
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.action.scheduled.AbstractScheduledAction#getTrigger()
-     */
     @Override
     public Trigger getTrigger()
     {
@@ -217,9 +214,6 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.action.scheduled.AbstractScheduledAction#getNodes()
-     */
     @Override
     public List<NodeRef> getNodes()
     {

@@ -44,11 +44,11 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -70,11 +70,11 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
             actionFilters = new ConcurrentHashMap<String, AbstractAsynchronousActionFilter>();
     private String id;
 
-	/**
-	 * We keep a record of ongoing asynchronous actions (this includes those being executed and
-	 * those that are in the queue).
-	 * This needs to be thread-safe - hence the Vector.
-	 */
+    /**
+     * We keep a record of ongoing asynchronous actions (this includes those being executed and
+     * those that are in the queue).
+     * This needs to be thread-safe - hence the Vector.
+     */
     List<OngoingAsyncAction> ongoingActions = new Vector<OngoingAsyncAction>();
     
     // Policy delegates
@@ -170,27 +170,27 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
      */
     public void registerActionFilter(AbstractAsynchronousActionFilter filter)
     {
-    	String filterName = filter.getName();
-    	
-    	if (logger.isDebugEnabled())
-    	{
-    		StringBuilder msg = new StringBuilder();
-    		msg.append("Registered asynchronous action filter ")
-    		    .append(filter.getName()).append(" for action ")
-    		    .append(filter.getActionDefinitionName());
-    		logger.debug(msg.toString());
-    	}
-    	
-    	AbstractAsynchronousActionFilter existingFilter = actionFilters.get(filterName);
-		if (logger.isDebugEnabled() && existingFilter != null)
-    	{
-    		StringBuilder msg = new StringBuilder();
-			msg.append("This replaces previous filter ")
-    		    .append(existingFilter.getName());
-    		logger.debug(msg.toString());
-    	}
-		
-    	this.actionFilters.put(filter.getName(), filter);
+        String filterName = filter.getName();
+        
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Registered asynchronous action filter ")
+                .append(filter.getName()).append(" for action ")
+                .append(filter.getActionDefinitionName());
+            logger.debug(msg.toString());
+        }
+        
+        AbstractAsynchronousActionFilter existingFilter = actionFilters.get(filterName);
+        if (logger.isDebugEnabled() && existingFilter != null)
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("This replaces previous filter ")
+                .append(existingFilter.getName());
+            logger.debug(msg.toString());
+        }
+        
+        this.actionFilters.put(filter.getName(), filter);
     }
     
     /**
@@ -203,26 +203,26 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     }
 
     @SuppressWarnings("unchecked")
-	public void executeAction(RuntimeActionService actionService, Action action, NodeRef actionedUponNodeRef,
+    public void executeAction(RuntimeActionService actionService, Action action, NodeRef actionedUponNodeRef,
             boolean checkConditions, Set<String> actionChain, NodeRef actionExecutionHistoryNodeRef)
     {
-    	if (logger.isDebugEnabled())
-    	{
-    	    StringBuilder msg = new StringBuilder();
-    	    msg.append("Received request to execute async action ").append(action.getActionDefinitionName())
-    	        .append(" on ").append(actionedUponNodeRef);
-    	    logger.debug(msg.toString());
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Received request to execute async action ").append(action.getActionDefinitionName())
+                .append(" on ").append(actionedUponNodeRef);
+            logger.debug(msg.toString());
 
-    	    msg = new StringBuilder();
-    	    msg.append("ThreadPool's active count = ").append(this.threadPoolExecutor.getActiveCount());
-    	    logger.debug(msg.toString());
+            msg = new StringBuilder();
+            msg.append("ThreadPool's active count = ").append(this.threadPoolExecutor.getActiveCount());
+            logger.debug(msg.toString());
 
-    	    msg = new StringBuilder();
-    	    msg.append("ThreadPool's queue size = ").append(this.threadPoolExecutor.getQueue().size());
-    	    logger.debug(msg.toString());
-    	}
+            msg = new StringBuilder();
+            msg.append("ThreadPool's queue size = ").append(this.threadPoolExecutor.getQueue().size());
+            logger.debug(msg.toString());
+        }
 
-    	Set<RuleServiceImpl.ExecutedRuleData> executedRules =
+        Set<RuleServiceImpl.ExecutedRuleData> executedRules =
             (Set<RuleServiceImpl.ExecutedRuleData>) AlfrescoTransactionSupport.getResource("RuleServiceImpl.ExecutedRules");
         Runnable runnable = new ActionExecutionWrapper(
                 actionService,
@@ -238,56 +238,56 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         
         for (Entry<String, AbstractAsynchronousActionFilter> entry : actionFilters.entrySet())
         {
-        	AbstractAsynchronousActionFilter comparator = entry.getValue();
-        	String actionDefinitionName = comparator.getActionDefinitionName();
-        	
-        	if (actionDefinitionName.equals(action.getActionDefinitionName()) == false)
-        	{
-        		// We're only interested in registered actions with the same name as this one.
-        		continue;
-        	}
-        	else
-        	{
-        		// Now we've found a registered action that matches the current one.
-        		// So we'll go through the actions that are ongoing and consider them for matches with this one.
-        		// Need to synchronize to prevent changes to ongoingActions whilst iterating. Assume that ongoingActions
-        		// is not going to be too big and the loop will execute quite quickly, so that the synchronization 
-        		// will not impact concurrency too much.
-        		synchronized(this.ongoingActions)
-        		{
-	        		for (OngoingAsyncAction ongoingAction : this.ongoingActions)
-	        		{
-	        			if (comparator.compare(ongoingAction, nodeBeingNewlyActioned) == 0)
-	        			{
-	        				newActionShouldBeFilteredOut = true;
-	        				break;
-	        			}
-	        		}
-        		}
-        	}
+            AbstractAsynchronousActionFilter comparator = entry.getValue();
+            String actionDefinitionName = comparator.getActionDefinitionName();
+            
+            if (actionDefinitionName.equals(action.getActionDefinitionName()) == false)
+            {
+                // We're only interested in registered actions with the same name as this one.
+                continue;
+            }
+            else
+            {
+                // Now we've found a registered action that matches the current one.
+                // So we'll go through the actions that are ongoing and consider them for matches with this one.
+                // Need to synchronize to prevent changes to ongoingActions whilst iterating. Assume that ongoingActions
+                // is not going to be too big and the loop will execute quite quickly, so that the synchronization 
+                // will not impact concurrency too much.
+                synchronized(this.ongoingActions)
+                {
+                    for (OngoingAsyncAction ongoingAction : this.ongoingActions)
+                    {
+                        if (comparator.compare(ongoingAction, nodeBeingNewlyActioned) == 0)
+                        {
+                            newActionShouldBeFilteredOut = true;
+                            break;
+                        }
+                    }
+                }
+            }
         }
         if (newActionShouldBeFilteredOut)
         {
-        	if (logger.isDebugEnabled())
-        	{
-        		StringBuilder msg = new StringBuilder();
-        		msg.append("Dropping action ").append(action).append(" as equivalent is ongoing.");
-        		logger.debug(msg.toString());
-        	}
-        	return;
+            if (logger.isDebugEnabled())
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Dropping action ").append(action).append(" as equivalent is ongoing.");
+                logger.debug(msg.toString());
+            }
+            return;
         }
         else
         {
-        	if (logger.isDebugEnabled())
-        	{
-        		StringBuilder msg = new StringBuilder();
-        		msg.append("Executing action ").append(action);
-        		logger.debug(msg.toString());
-        	}
-        	
-        	// Queue it and do it.
-        	ongoingActions.add(nodeBeingNewlyActioned);
-        	threadPoolExecutor.execute(runnable);
+            if (logger.isDebugEnabled())
+            {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Executing action ").append(action);
+                logger.debug(msg.toString());
+            }
+            
+            // Queue it and do it.
+            ongoingActions.add(nodeBeingNewlyActioned);
+            threadPoolExecutor.execute(runnable);
         }
 
         // Done
@@ -309,14 +309,14 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
     }
     
     private void handleAsyncActionIsCompleted(NodeRef n, Action action) {
-    	if (logger.isDebugEnabled())
-    	{
-    		StringBuilder msg = new StringBuilder();
-    		msg.append("Completed action ").append(action);
-    		logger.debug(msg.toString());
-    	}
-    	OngoingAsyncAction ongoing = new OngoingAsyncAction(n, action);
-    	ongoingActions.remove(ongoing);
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Completed action ").append(action);
+            logger.debug(msg.toString());
+        }
+        OngoingAsyncAction ongoing = new OngoingAsyncAction(n, action);
+        ongoingActions.remove(ongoing);
     }
     
     /**

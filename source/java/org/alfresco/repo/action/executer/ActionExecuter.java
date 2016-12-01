@@ -38,25 +38,25 @@ import org.alfresco.service.cmr.repository.NodeRef;
 @AlfrescoPublicApi
 public interface ActionExecuter
 {
-	/** Standard action result parameter name */
-	public static String PARAM_RESULT = "result";
-	
-	/**
-	 * Get the queueName that will execute this action
-	 */
-	String getQueueName();
-	
-	/**
-	 * Indicates whether a lock on the actioned upon node reference should be ignored or 
-	 * not.  If true any lock is ignored and execution continues reguardless, otherwise the
-	 * lock is checked and the action is not executed (ignored) if the actioned upon node reference
-	 * is locked in any way.  By default locks will be ignored.
-	 * 
-	 * @since 3.3.4
-	 * @return	boolean	true if ignore lock, false otherwise.
-	 */
-	boolean getIgnoreLock();
-	
+    /** Standard action result parameter name */
+    public static String PARAM_RESULT = "result";
+    
+    /**
+     * Get the queueName that will execute this action
+     */
+    String getQueueName();
+    
+    /**
+     * Indicates whether a lock on the actioned upon node reference should be ignored or 
+     * not.  If true any lock is ignored and execution continues reguardless, otherwise the
+     * lock is checked and the action is not executed (ignored) if the actioned upon node reference
+     * is locked in any way.  By default locks will be ignored.
+     * 
+     * @since 3.3.4
+     * @return    boolean    true if ignore lock, false otherwise.
+     */
+    boolean getIgnoreLock();
+    
     /**
      * Get whether the basic action definition supports action tracking
      * or not.  This can be overridden for each {@link Action#getTrackStatus() action}
@@ -67,20 +67,20 @@ public interface ActionExecuter
      * 
      * @since 3.4.1
      */
-	boolean getTrackStatus();
-	
-	/**
-	 * Get the action definition for the action
-	 * 
-	 * @return  the action definition
-	 */
-	ActionDefinition getActionDefinition();
-	
+    boolean getTrackStatus();
+    
+    /**
+     * Get the action definition for the action
+     * 
+     * @return  the action definition
+     */
+    ActionDefinition getActionDefinition();
+    
     /**
      * Execute the action executer
      * 
-     * @param action				the action
-     * @param actionedUponNodeRef	the actioned upon node reference
+     * @param action                the action
+     * @param actionedUponNodeRef    the actioned upon node reference
      */
     void execute(Action action, NodeRef actionedUponNodeRef);
 }

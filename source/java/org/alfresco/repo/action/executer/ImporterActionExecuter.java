@@ -58,7 +58,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.view.ImporterException;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
@@ -81,7 +80,6 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private static final int BUFFER_SIZE = 16384;
     private static final String TEMP_FILE_PREFIX = "alf";
     private static final String TEMP_FILE_SUFFIX_ACP = ".acp";
-    private static final String TEMP_FILE_SUFFIX_ZIP = ".zip";
     
     private boolean highByteZip = false;
     
@@ -356,9 +354,9 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
         extractDir = extractDir + File.separator;
         try
         {
-            for (Enumeration e = archive.getEntries(); e.hasMoreElements();)
+            for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements();)
             {
-                ZipArchiveEntry entry = (ZipArchiveEntry) e.nextElement();
+                ZipArchiveEntry entry = e.nextElement();
                 if (!entry.isDirectory())
                 {
                     fileName = entry.getName();

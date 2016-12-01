@@ -47,6 +47,7 @@ public final class ScriptExecutionDetails implements Serializable, Scopeable
     private static final long serialVersionUID = 3182925511891455490L;
     
     /** Root scope for this object */
+    @SuppressWarnings("unused")
     private Scriptable scope;
     
     /** The details we wrap */
@@ -57,8 +58,8 @@ public final class ScriptExecutionDetails implements Serializable, Scopeable
     
     public ScriptExecutionDetails(ExecutionDetails details, ServiceRegistry services)
     {
-    	 this.details = details;
-    	 this.services = services;
+         this.details = details;
+         this.services = services;
     }
     
     protected ExecutionDetails getExecutionDetails() 

@@ -43,45 +43,44 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
     /**
      * Action constants
      */
-	public static final String NAME = "composite-action";
-	
-	/**
-	 * The action service
-	 */
-	private RuntimeActionService actionService;
-	
-	/**
-	 * Set the action service
-	 * 
-	 * @param actionService  the action service
-	 */
-	public void setActionService(RuntimeActionService actionService)
-	{
-		this.actionService = actionService;
-	}
+    public static final String NAME = "composite-action";
+    
+    /**
+     * The action service
+     */
+    private RuntimeActionService actionService;
+    
+    /**
+     * Set the action service
+     * 
+     * @param actionService  the action service
+     */
+    public void setActionService(RuntimeActionService actionService)
+    {
+        this.actionService = actionService;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
     public void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-    	if (action instanceof CompositeAction)
-		{
-			for (Action subAction : ((CompositeAction)action).getActions())
-			{
-				// We don't check the conditions of sub-actions and they don't have an execution history
-				this.actionService.directActionExecution(subAction, actionedUponNodeRef);
-			}
-		}
+        if (action instanceof CompositeAction)
+        {
+            for (Action subAction : ((CompositeAction)action).getActions())
+            {
+                // We don't check the conditions of sub-actions and they don't have an execution history
+                this.actionService.directActionExecution(subAction, actionedUponNodeRef);
+            }
+        }
     }
 
     /**
      * Add parameter definitions
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
-		// No parameters
-	}
-
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+        // No parameters
+    }
 }

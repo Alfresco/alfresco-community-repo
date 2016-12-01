@@ -49,22 +49,22 @@ import org.alfresco.service.namespace.QName;
  */
 public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase 
 {
-	/**
-	 * Rule constants
-	 */
-	public static final String NAME = "in-category";
-	public static final String PARAM_CATEGORY_ASPECT = "category-aspect";
-	public static final String PARAM_CATEGORY_VALUE = "category-value";
-	
-	/**
-	 * The node service
-	 */
-	private NodeService nodeService;
-	
-	/**
-	 * The dictionary service
-	 */
-	private DictionaryService dictionaryService;
+    /**
+     * Rule constants
+     */
+    public static final String NAME = "in-category";
+    public static final String PARAM_CATEGORY_ASPECT = "category-aspect";
+    public static final String PARAM_CATEGORY_VALUE = "category-value";
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
+    
+    /**
+     * The dictionary service
+     */
+    private DictionaryService dictionaryService;
     
     /**
      * Sets the node service
@@ -89,55 +89,55 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
     /**
      * Add the parameter definitions
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_ASPECT, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_CATEGORY_ASPECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_VALUE, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_CATEGORY_VALUE)));
-	}
-	
-	/**
-	 * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
-	 */
-	@Override
+    }
+    
+    /**
+     * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
     protected boolean evaluateImpl(
-			ActionCondition ruleCondition,
-			NodeRef actionedUponNodeRef) 
-	{
-		boolean result = false;
+            ActionCondition ruleCondition,
+            NodeRef actionedUponNodeRef) 
+    {
+        boolean result = false;
 
-		// Double check that the node still exists
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
-			// Get the rule parameter values
-			QName categoryAspect = (QName)ruleCondition.getParameterValue(PARAM_CATEGORY_ASPECT);
-			NodeRef categoryValue = (NodeRef)ruleCondition.getParameterValue(PARAM_CATEGORY_VALUE);
-			
-			// Check that the apect is classifiable and is currently applied to the node
-			if (this.dictionaryService.isSubClass(categoryAspect, ContentModel.ASPECT_CLASSIFIABLE) == true &&
-				this.nodeService.hasAspect(actionedUponNodeRef, categoryAspect) == true)
-			{
-				// Get the category property qname
-				QName categoryProperty = null;
-				Map<QName, PropertyDefinition> propertyDefs = this.dictionaryService.getAspect(categoryAspect).getProperties();
-				for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet()) 
-				{
-					if (DataTypeDefinition.CATEGORY.equals(entry.getValue().getDataType().getName()) == true)
-					{
-						// Found the category property
-						categoryProperty = entry.getKey();
-						break;
-					}
-				}
-				
-				if (categoryProperty != null)
-				{
-					// Check to see if the category value is in the list of currently set category values
-					Serializable value = this.nodeService.getProperty(actionedUponNodeRef, categoryProperty);
+        // Double check that the node still exists
+        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        {
+            // Get the rule parameter values
+            QName categoryAspect = (QName)ruleCondition.getParameterValue(PARAM_CATEGORY_ASPECT);
+            NodeRef categoryValue = (NodeRef)ruleCondition.getParameterValue(PARAM_CATEGORY_VALUE);
+            
+            // Check that the apect is classifiable and is currently applied to the node
+            if (this.dictionaryService.isSubClass(categoryAspect, ContentModel.ASPECT_CLASSIFIABLE) == true &&
+                this.nodeService.hasAspect(actionedUponNodeRef, categoryAspect) == true)
+            {
+                // Get the category property qname
+                QName categoryProperty = null;
+                Map<QName, PropertyDefinition> propertyDefs = this.dictionaryService.getAspect(categoryAspect).getProperties();
+                for (Map.Entry<QName, PropertyDefinition> entry : propertyDefs.entrySet()) 
+                {
+                    if (DataTypeDefinition.CATEGORY.equals(entry.getValue().getDataType().getName()) == true)
+                    {
+                        // Found the category property
+                        categoryProperty = entry.getKey();
+                        break;
+                    }
+                }
+                
+                if (categoryProperty != null)
+                {
+                    // Check to see if the category value is in the list of currently set category values
+                    Serializable value = this.nodeService.getProperty(actionedUponNodeRef, categoryProperty);
                     if (value != null)
                     {
                         Collection<NodeRef> actualCategories = DefaultTypeConverter.INSTANCE.getCollection(NodeRef.class, value);
-    					for (NodeRef nodeRef : actualCategories)
+                        for (NodeRef nodeRef : actualCategories)
                         {
                             if (nodeRef != null && nodeRef.equals(categoryValue) == true)
                             {
@@ -146,11 +146,11 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
                             }
                         }
                     }
-				}
-			}
-			
-		}
-		
-		return result;
-	}
+                }
+            }
+            
+        }
+        
+        return result;
+    }
 }

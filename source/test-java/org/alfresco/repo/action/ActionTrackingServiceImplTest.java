@@ -100,7 +100,8 @@ public class ActionTrackingServiceImplTest extends TestCase
     
     @Override
     @SuppressWarnings("unchecked")
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception
+    {
         // Detect any dangling transactions as there is a lot of direct UserTransaction manipulation
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
@@ -416,85 +417,80 @@ public class ActionTrackingServiceImplTest extends TestCase
        assertEquals(ActionStatus.Declined, failedAction.getExecutionStatus());
        assertTrue(failedAction.getExecutionFailureMessage().endsWith("Pop!"));
     }
-    
+
     private Action performFailingActionImpl(boolean fatalFailure, String actionId) throws Exception
     {
-        final SleepActionExecuter sleepActionExec = 
-              (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
-           sleepActionExec.setSleepMs(10000);
+        final SleepActionExecuter sleepActionExec = (SleepActionExecuter) ctx.getBean(SleepActionExecuter.NAME);
+        sleepActionExec.setSleepMs(10000);
 
-           // Have it run asynchronously
-           UserTransaction txn = transactionService.getUserTransaction();
-           txn.begin();
-           Action action = createFailingSleepAction(actionId, fatalFailure);
-           assertNull(action.getExecutionStartDate());
-           assertNull(action.getExecutionEndDate());
-           assertNull(action.getExecutionFailureMessage());
-           assertEquals(ActionStatus.New, action.getExecutionStatus());
-           
-           String key = ActionTrackingServiceImpl.generateCacheKey(action);
-           assertEquals(null, executingActionsCache.get(key));
-           
-           this.actionService.executeAction(action, this.nodeRef, false, true);
-           
-           
-           // End the transaction. Should allow the async action
-           //  to be started, and move into its sleeping phase
-           txn.commit();
-           Thread.sleep(150);
-           
-           
-           // Will get an execution instance id, so a new key
-           key = ActionTrackingServiceImpl.generateCacheKey(action);
-           
-           
-           // Check it's in the cache
-           System.out.println("Checking the cache for " + key);
-           assertNotNull(executingActionsCache.get(key));
-           
-           ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
-           ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
-           assertNotNull(d.getExecutionSummary());
-           assertEquals("sleep-action", d.getActionType());
-           assertEquals(actionId, d.getActionId());
-           assertEquals(1, d.getExecutionInstance());
-           assertEquals(null, d.getPersistedActionRef());
+        // Have it run asynchronously
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        Action action = createFailingSleepAction(actionId, fatalFailure);
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
 
-           // let's be more resilient and try a number of times with a delay
-           long start = System.currentTimeMillis();
-           int sleepTime = 1000; // 1s
-           for(int i = 0; i < 10; i++)
-           {
-               if(d.getStartedAt() == null)
-               {
-                   Thread.sleep(sleepTime);
-                   sleepTime += 100; // increase by 100ms
-                   continue;
-               }
-               else
-               {
-                   break;
-               }
-           }
-           long end = System.currentTimeMillis();
-           assertNotNull("Started at time is null, the action has not yet started after " + (end - start) + "ms",
-                   d.getStartedAt());
+        String key = ActionTrackingServiceImpl.generateCacheKey(action);
+        assertEquals(null, executingActionsCache.get(key));
 
-           // Tell it to stop sleeping
-           // Then wait for it to finish and go bang
-           // (Need to do it by hand, as it won't fire the complete policy
-           //  as the action has failed)
-           sleepActionExec.getExecutingThread().interrupt();
-           Thread.sleep(150);
-           
-           
-           // Ensure it went away again
-           assertEquals(null, executingActionsCache.get(key));
-           
-           d = actionTrackingService.getExecutionDetails(s);
-           assertEquals(null, d);
-           
-           return action;
+        this.actionService.executeAction(action, this.nodeRef, false, true);
+
+        // End the transaction. Should allow the async action
+        // to be started, and move into its sleeping phase
+        txn.commit();
+        Thread.sleep(150);
+
+        // Will get an execution instance id, so a new key
+        key = ActionTrackingServiceImpl.generateCacheKey(action);
+
+        // Check it's in the cache
+        System.out.println("Checking the cache for " + key);
+        assertNotNull(executingActionsCache.get(key));
+
+        ExecutionSummary s = ActionTrackingServiceImpl.buildExecutionSummary(action);
+        ExecutionDetails d = actionTrackingService.getExecutionDetails(s);
+        assertNotNull(d.getExecutionSummary());
+        assertEquals("sleep-action", d.getActionType());
+        assertEquals(actionId, d.getActionId());
+        assertEquals(1, d.getExecutionInstance());
+        assertEquals(null, d.getPersistedActionRef());
+
+        // let's be more resilient and try a number of times with a delay
+        long start = System.currentTimeMillis();
+        int sleepTime = 1000; // 1s
+        for (int i = 0; i < 10; i++)
+        {
+            if (d.getStartedAt() == null)
+            {
+                Thread.sleep(sleepTime);
+                sleepTime += 100; // increase by 100ms
+                continue;
+            }
+            else
+            {
+                break;
+            }
+        }
+        long end = System.currentTimeMillis();
+        assertNotNull("Started at time is null, the action has not yet started after " + (end - start) + "ms",
+                d.getStartedAt());
+
+        // Tell it to stop sleeping
+        // Then wait for it to finish and go bang
+        // (Need to do it by hand, as it won't fire the complete policy
+        // as the action has failed)
+        sleepActionExec.getExecutingThread().interrupt();
+        Thread.sleep(150);
+
+        // Ensure it went away again
+        assertEquals(null, executingActionsCache.get(key));
+
+        d = actionTrackingService.getExecutionDetails(s);
+        assertEquals(null, d);
+
+        return action;
     }
     
     /** Ensure that pending actions behave properly */
@@ -576,701 +572,606 @@ public class ActionTrackingServiceImplTest extends TestCase
         assertEquals(ActionStatus.Completed, action.getExecutionStatus());
         assertEquals(null, executingActionsCache.get(key));
     }
-    
+
     /** Ensure that the listing functions work */
     public void testListings() throws Exception
     {
-       // All listings start blank
-       assertEquals(
-             0, actionTrackingService.getAllExecutingActions().size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions("test").size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(createWorkingSleepAction(null)).size()
-       );
-       
-       // Create some actions
-       Action sleepAction1 = createWorkingSleepAction("12345");
-       Action sleepAction2 = createWorkingSleepAction("54321");
-       Action moveAction = createFailingMoveAction();
-          
-       // Start putting them in
-       actionTrackingService.recordActionExecuting(sleepAction1);
-       assertEquals(
-             1, actionTrackingService.getAllExecutingActions().size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions("test").size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(sleepAction1).size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(sleepAction2).size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(moveAction).size()
-       );
-       
-       actionTrackingService.recordActionExecuting(moveAction);
-       assertEquals(
-             2, actionTrackingService.getAllExecutingActions().size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions("test").size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(sleepAction1).size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(sleepAction2).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(moveAction).size()
-       );
-       
-       actionTrackingService.recordActionExecuting(sleepAction2);
-       assertEquals(
-             3, actionTrackingService.getAllExecutingActions().size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions("test").size()
-       );
-       assertEquals(
-             2, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(sleepAction1).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(sleepAction2).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(moveAction).size()
-       );
-       
-       // Now have some finish, should leave the cache
-       actionTrackingService.recordActionComplete(sleepAction2);
-       assertEquals(
-             2, actionTrackingService.getAllExecutingActions().size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions("test").size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(sleepAction1).size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(sleepAction2).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(moveAction).size()
-       );
-       
-       actionTrackingService.recordActionComplete(sleepAction1);
-       assertEquals(
-             1, actionTrackingService.getAllExecutingActions().size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions("test").size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(sleepAction1).size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions(sleepAction2).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(moveAction).size()
-       );
+        // All listings start blank
+        assertEquals(0, actionTrackingService.getAllExecutingActions().size());
+        assertEquals(0, actionTrackingService.getExecutingActions("test").size());
+        assertEquals(0, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size());
+        assertEquals(0, actionTrackingService.getExecutingActions(createWorkingSleepAction(null)).size());
 
-       
-       // Check for multiple instances of the same action
-       runtimeActionService.saveActionImpl(nodeRef, sleepAction1);
-       ((ActionTrackingServiceImpl)actionTrackingService).resetNextExecutionId();
-       
-       ActionImpl sa11 = (ActionImpl)runtimeActionService.createAction(nodeRef);
-       ActionImpl sa12 = (ActionImpl)runtimeActionService.createAction(nodeRef);
-       ActionImpl sa13 = (ActionImpl)runtimeActionService.createAction(nodeRef);
-       sa11 = new ActionImpl(sa11, SleepActionExecuter.NAME);
-       sa12 = new ActionImpl(sa12, SleepActionExecuter.NAME);
-       sa13 = new ActionImpl(sa13, SleepActionExecuter.NAME);
-       
-       actionTrackingService.recordActionExecuting(sa11);
-       actionTrackingService.recordActionExecuting(sa12);
-       actionTrackingService.recordActionExecuting(sa13);
-       assertEquals(1, sa11.getExecutionInstance());
-       assertEquals(2, sa12.getExecutionInstance());
-       assertEquals(3, sa13.getExecutionInstance());
-       
-       assertEquals(
-             4, actionTrackingService.getAllExecutingActions().size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions("test").size()
-       );
-       assertEquals(
-             3, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
-       );
-       assertEquals(
-             1, actionTrackingService.getExecutingActions(moveAction).size()
-       );
-       assertEquals(
-             3, actionTrackingService.getExecutingActions(sa11).size()
-       );
-       assertEquals(
-             3, actionTrackingService.getExecutingActions(sa12).size()
-       );
-       assertEquals(
-             3, actionTrackingService.getExecutingActions(sa13).size()
-       );
+        // Create some actions
+        Action sleepAction1 = createWorkingSleepAction("12345");
+        Action sleepAction2 = createWorkingSleepAction("54321");
+        Action moveAction = createFailingMoveAction();
 
-       // Let the update change the stored node
-       UserTransaction txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       actionTrackingService.recordActionComplete(sa13);
-       actionTrackingService.recordActionComplete(moveAction);
-       
-       txn.commit();
-       Thread.sleep(50);
+        // Start putting them in
+        actionTrackingService.recordActionExecuting(sleepAction1);
+        assertEquals(1, actionTrackingService.getAllExecutingActions().size());
+        assertEquals(0, actionTrackingService.getExecutingActions("test").size());
+        assertEquals(1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(sleepAction1).size());
+        assertEquals(0, actionTrackingService.getExecutingActions(sleepAction2).size());
+        assertEquals(0, actionTrackingService.getExecutingActions(moveAction).size());
 
-       
-       // Check
-       assertEquals(
-             2, actionTrackingService.getAllExecutingActions().size()
-       );
-       assertEquals(
-             0, actionTrackingService.getExecutingActions("test").size()
-       );
-       assertEquals(
-             2, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size()
-       );
-       assertEquals(
-             2, actionTrackingService.getExecutingActions(sa11).size()
-       );
-       assertEquals(
-             2, actionTrackingService.getExecutingActions(sa12).size()
-       );
-       assertEquals(
-             2, actionTrackingService.getExecutingActions(sa13).size() // Others still going
-       );
+        actionTrackingService.recordActionExecuting(moveAction);
+        assertEquals(2, actionTrackingService.getAllExecutingActions().size());
+        assertEquals(0, actionTrackingService.getExecutingActions("test").size());
+        assertEquals(1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(sleepAction1).size());
+        assertEquals(0, actionTrackingService.getExecutingActions(sleepAction2).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(moveAction).size());
+
+        actionTrackingService.recordActionExecuting(sleepAction2);
+        assertEquals(3, actionTrackingService.getAllExecutingActions().size());
+        assertEquals(0, actionTrackingService.getExecutingActions("test").size());
+        assertEquals(2, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(sleepAction1).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(sleepAction2).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(moveAction).size());
+
+        // Now have some finish, should leave the cache
+        actionTrackingService.recordActionComplete(sleepAction2);
+        assertEquals(2, actionTrackingService.getAllExecutingActions().size());
+        assertEquals(0, actionTrackingService.getExecutingActions("test").size());
+        assertEquals(1, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(sleepAction1).size());
+        assertEquals(0, actionTrackingService.getExecutingActions(sleepAction2).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(moveAction).size());
+
+        actionTrackingService.recordActionComplete(sleepAction1);
+        assertEquals(1, actionTrackingService.getAllExecutingActions().size());
+        assertEquals(0, actionTrackingService.getExecutingActions("test").size());
+        assertEquals(0, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size());
+        assertEquals(0, actionTrackingService.getExecutingActions(sleepAction1).size());
+        assertEquals(0, actionTrackingService.getExecutingActions(sleepAction2).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(moveAction).size());
+
+        // Check for multiple instances of the same action
+        runtimeActionService.saveActionImpl(nodeRef, sleepAction1);
+        ((ActionTrackingServiceImpl) actionTrackingService).resetNextExecutionId();
+
+        ActionImpl sa11 = (ActionImpl) runtimeActionService.createAction(nodeRef);
+        ActionImpl sa12 = (ActionImpl) runtimeActionService.createAction(nodeRef);
+        ActionImpl sa13 = (ActionImpl) runtimeActionService.createAction(nodeRef);
+        sa11 = new ActionImpl(sa11, SleepActionExecuter.NAME);
+        sa12 = new ActionImpl(sa12, SleepActionExecuter.NAME);
+        sa13 = new ActionImpl(sa13, SleepActionExecuter.NAME);
+
+        actionTrackingService.recordActionExecuting(sa11);
+        actionTrackingService.recordActionExecuting(sa12);
+        actionTrackingService.recordActionExecuting(sa13);
+        assertEquals(1, sa11.getExecutionInstance());
+        assertEquals(2, sa12.getExecutionInstance());
+        assertEquals(3, sa13.getExecutionInstance());
+
+        assertEquals(4, actionTrackingService.getAllExecutingActions().size());
+        assertEquals(0, actionTrackingService.getExecutingActions("test").size());
+        assertEquals(3, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size());
+        assertEquals(1, actionTrackingService.getExecutingActions(moveAction).size());
+        assertEquals(3, actionTrackingService.getExecutingActions(sa11).size());
+        assertEquals(3, actionTrackingService.getExecutingActions(sa12).size());
+        assertEquals(3, actionTrackingService.getExecutingActions(sa13).size());
+
+        // Let the update change the stored node
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        actionTrackingService.recordActionComplete(sa13);
+        actionTrackingService.recordActionComplete(moveAction);
+
+        txn.commit();
+        Thread.sleep(50);
+
+        // Check
+        assertEquals(2, actionTrackingService.getAllExecutingActions().size());
+        assertEquals(0, actionTrackingService.getExecutingActions("test").size());
+        assertEquals(2, actionTrackingService.getExecutingActions(SleepActionExecuter.NAME).size());
+        assertEquals(2, actionTrackingService.getExecutingActions(sa11).size());
+        assertEquals(2, actionTrackingService.getExecutingActions(sa12).size());
+        assertEquals(2, actionTrackingService.getExecutingActions(sa13).size() // Others still going
+        );
     }
-    
+
     /** Cancel related */
-    public void testCancellation() throws Exception {
-       // Ensure we get the right answers checking
-       CancellableSleepAction sleepAction1 = (CancellableSleepAction)createWorkingSleepAction(null);
-       CancellableSleepAction sleepAction2 = (CancellableSleepAction)createWorkingSleepAction(null);
-       actionTrackingService.recordActionExecuting(sleepAction1);
-       actionTrackingService.recordActionExecuting(sleepAction2);
-       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction1));
-       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction2));
+    public void testCancellation() throws Exception
+    {
+        // Ensure we get the right answers checking
+        CancellableSleepAction sleepAction1 = (CancellableSleepAction) createWorkingSleepAction(null);
+        CancellableSleepAction sleepAction2 = (CancellableSleepAction) createWorkingSleepAction(null);
+        actionTrackingService.recordActionExecuting(sleepAction1);
+        actionTrackingService.recordActionExecuting(sleepAction2);
+        assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction1));
+        assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction2));
 
-       // Cancel with the action
-       actionTrackingService.requestActionCancellation(sleepAction1);
-       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction1));
-       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction2));
-       
-       // Cancel with the summary
-       ExecutionSummary s2 = ActionTrackingServiceImpl.buildExecutionSummary(sleepAction2);
-       actionTrackingService.requestActionCancellation(s2);
-       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction1));
-       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction2));
-       
-       
-       // If the action had gone missing from the cache,
-       //  then a check will put it back
-       CancellableSleepAction sleepAction3 = (CancellableSleepAction)createWorkingSleepAction(null);
-       String key3 = ActionTrackingServiceImpl.generateCacheKey(sleepAction3);
-       
-       assertNull(executingActionsCache.get(key3));
-       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
-       assertNotNull(executingActionsCache.get(key3));
-       
-       executingActionsCache.remove(key3);
-       assertNull(executingActionsCache.get(key3));
-       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
-       assertNotNull(executingActionsCache.get(key3));
-       
-       actionTrackingService.requestActionCancellation(sleepAction3);
-       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction3));
-       assertNotNull(executingActionsCache.get(key3));
-       
-       
-       // Now have one execute and cancel it, ensure it does
-       final SleepActionExecuter sleepActionExec = 
-          (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
-       sleepActionExec.setSleepMs(10000);
-       
-       UserTransaction txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       executingActionsCache.remove(key3);
-       this.actionService.executeAction(sleepAction3, this.nodeRef, false, true);
-       
-       // End the transaction. Should allow the async action
-       //  to be started
-       txn.commit();
-       Thread.sleep(150);
-       
-       // Get the updated key, and check
-       key3 = ActionTrackingServiceImpl.generateCacheKey(sleepAction3);
-       ExecutionSummary s3 = ActionTrackingServiceImpl.buildExecutionSummary(key3);
-       
-       assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
-       assertEquals(false, actionTrackingService.getExecutionDetails(s3).isCancelRequested());
-       assertNotNull(executingActionsCache.get(key3));
-       
-       actionTrackingService.requestActionCancellation(sleepAction3);
-       
-       assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction3));
-       assertEquals(true, actionTrackingService.getExecutionDetails(s3).isCancelRequested());
-       assertNotNull(executingActionsCache.get(key3));
-       
-       // Have it finish sleeping, will have been cancelled
-       // (Can't use the policy, as cancel is counted as a failure)
-       sleepActionExec.getExecutingThread().interrupt();
-       Thread.sleep(150); 
+        // Cancel with the action
+        actionTrackingService.requestActionCancellation(sleepAction1);
+        assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction1));
+        assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction2));
 
-       // Ensure the proper cancelled tracking
-       assertEquals(ActionStatus.Cancelled, sleepAction3.getExecutionStatus());
-       assertEquals(null, sleepAction3.getExecutionFailureMessage());
+        // Cancel with the summary
+        ExecutionSummary s2 = ActionTrackingServiceImpl.buildExecutionSummary(sleepAction2);
+        actionTrackingService.requestActionCancellation(s2);
+        assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction1));
+        assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction2));
+
+        // If the action had gone missing from the cache,
+        // then a check will put it back
+        CancellableSleepAction sleepAction3 = (CancellableSleepAction) createWorkingSleepAction(null);
+        String key3 = ActionTrackingServiceImpl.generateCacheKey(sleepAction3);
+
+        assertNull(executingActionsCache.get(key3));
+        assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
+        assertNotNull(executingActionsCache.get(key3));
+
+        executingActionsCache.remove(key3);
+        assertNull(executingActionsCache.get(key3));
+        assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
+        assertNotNull(executingActionsCache.get(key3));
+
+        actionTrackingService.requestActionCancellation(sleepAction3);
+        assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction3));
+        assertNotNull(executingActionsCache.get(key3));
+
+        // Now have one execute and cancel it, ensure it does
+        final SleepActionExecuter sleepActionExec = (SleepActionExecuter) ctx.getBean(SleepActionExecuter.NAME);
+        sleepActionExec.setSleepMs(10000);
+
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        executingActionsCache.remove(key3);
+        this.actionService.executeAction(sleepAction3, this.nodeRef, false, true);
+
+        // End the transaction. Should allow the async action
+        // to be started
+        txn.commit();
+        Thread.sleep(150);
+
+        // Get the updated key, and check
+        key3 = ActionTrackingServiceImpl.generateCacheKey(sleepAction3);
+        ExecutionSummary s3 = ActionTrackingServiceImpl.buildExecutionSummary(key3);
+
+        assertEquals(false, actionTrackingService.isCancellationRequested(sleepAction3));
+        assertEquals(false, actionTrackingService.getExecutionDetails(s3).isCancelRequested());
+        assertNotNull(executingActionsCache.get(key3));
+
+        actionTrackingService.requestActionCancellation(sleepAction3);
+
+        assertEquals(true, actionTrackingService.isCancellationRequested(sleepAction3));
+        assertEquals(true, actionTrackingService.getExecutionDetails(s3).isCancelRequested());
+        assertNotNull(executingActionsCache.get(key3));
+
+        // Have it finish sleeping, will have been cancelled
+        // (Can't use the policy, as cancel is counted as a failure)
+        sleepActionExec.getExecutingThread().interrupt();
+        Thread.sleep(150);
+
+        // Ensure the proper cancelled tracking
+        assertEquals(ActionStatus.Cancelled, sleepAction3.getExecutionStatus());
+        assertEquals(null, sleepAction3.getExecutionFailureMessage());
     }
-    
-    
+
     // =================================================================== //
 
-    
     /**
-     * Tests that when we run an action, either
-     *  synchronously or asynchronously, with it
-     *  working or failing, that the action execution
-     *  service correctly sets the flags
+     * Tests that when we run an action, either synchronously or asynchronously, with it working or failing, that the
+     * action execution service correctly sets the flags
      */
-    public void xtestExecutionTrackingOnExecution() throws Exception {
-       //FIXME: This test fails intermittently for no apparent reason.
-       //Removed until a reason/resolution can be found 
-       final SleepActionExecuter sleepActionExec = 
-          (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
-       sleepActionExec.setSleepMs(10);
-       Action action;
-       NodeRef actionNode;
+    public void xtestExecutionTrackingOnExecution() throws Exception
+    {
+        // FIXME: This test fails intermittently for no apparent reason.
+        // Removed until a reason/resolution can be found
+        final SleepActionExecuter sleepActionExec = (SleepActionExecuter) ctx.getBean(SleepActionExecuter.NAME);
+        sleepActionExec.setSleepMs(10);
+        Action action;
+        NodeRef actionNode;
 
-       // We need real transactions
-       UserTransaction txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       
-       // ===========================================================
-       //    Execute a transient Action that works, synchronously
-       // ===========================================================
-       action = createWorkingSleepAction(null);
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       this.actionService.executeAction(action, this.nodeRef);
-       
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
-       
-       
-       // ===========================================================
-       //    Execute a transient Action that fails, synchronously
-       // ===========================================================
-       action = createFailingMoveAction();
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       try {
-          this.actionService.executeAction(action, this.nodeRef);
-          fail("Action should have failed, and the error been thrown");
-       } catch(Exception e) {}
-       
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNotNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+        // We need real transactions
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
 
-       // Tidy up from the action failure
-       txn.rollback();
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       
-       // ===========================================================
-       //    Execute a stored Action that works, synchronously
-       // ===========================================================
-       action = createWorkingSleepAction(null);
-       this.actionService.saveAction(this.nodeRef, action);
-       actionNode = action.getNodeRef();
-       assertNotNull(actionNode);
-       
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       this.actionService.executeAction(action, this.nodeRef);
-       
-       // Check our copy
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
-       
-       // Let the update change the stored node
-       // (Can't use policy as the action has already finished!)
-       txn.commit();
-       Thread.sleep(150);
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       // Now re-load and check the stored one
-       action = runtimeActionService.createAction(actionNode);
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+        // ===========================================================
+        // Execute a transient Action that works, synchronously
+        // ===========================================================
+        action = createWorkingSleepAction(null);
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
 
-       
-       // ===========================================================
-       //    Execute a stored Action that fails, synchronously
-       // ===========================================================
-       action = createFailingMoveAction();
-       this.actionService.saveAction(this.nodeRef, action);
-       actionNode = action.getNodeRef();
-       String actionId = action.getId();
-       assertNotNull(actionNode);
-       
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       // Save this
-       txn.commit();
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       // Run the action - will fail and trigger a rollback
-       try {
-          this.actionService.executeAction(action, this.nodeRef);
-          fail("Action should have failed, and the error been thrown");
-       } catch(Exception e) {}
+        this.actionService.executeAction(action, this.nodeRef);
 
-       // Check our copy
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNotNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
-       
-       // Wait for the post-rollback update to complete
-       // (The stored one gets updated asynchronously)
-       txn.rollback();
-       Thread.sleep(150);
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       // Now re-load and check the stored one
-       action = runtimeActionService.createAction(actionNode);
-       assertEquals(actionId, action.getId());
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNotNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
 
-       // Tidy up from the action failure
-       txn.commit();
-       txn = transactionService.getUserTransaction();
-       txn.begin();
+        // ===========================================================
+        // Execute a transient Action that fails, synchronously
+        // ===========================================================
+        action = createFailingMoveAction();
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
 
-       
-       // ===========================================================
-       //    Execute a transient Action that works, asynchronously
-       // ===========================================================
-       action = createWorkingSleepAction(null);
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       this.actionService.executeAction(action, this.nodeRef, false, true);
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Pending, action.getExecutionStatus());
+        try
+        {
+            this.actionService.executeAction(action, this.nodeRef);
+            fail("Action should have failed, and the error been thrown");
+        }
+        catch (Exception e)
+        {
+        }
 
-       // End the transaction. Should allow the async action
-       //  to be executed
-       asyncOccurs.awaitExecution(txn, null, action.getActionDefinitionName()); 
-       
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
-       
-       // Put things back ready for the next check
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       
-       // ===========================================================
-       //    Execute a transient Action that fails, asynchronously
-       // ===========================================================
-       action = createFailingMoveAction();
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       this.actionService.executeAction(action, this.nodeRef, false, true);
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Pending, action.getExecutionStatus());
-       
-       // End the transaction, and await the failure
-       // (Can't use the policy as fails not suceeds)
-       txn.commit();
-       Thread.sleep(150);
-       
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNotNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
-       
-       // Put things back ready for the next check
-       txn = transactionService.getUserTransaction();
-       txn.begin();
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNotNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
 
-       
-       // ===========================================================
-       //    Execute a stored Action that works, asynchronously
-       // ===========================================================
-       action = createWorkingSleepAction(null);
-       this.actionService.saveAction(this.nodeRef, action);
-       actionNode = action.getNodeRef();
-       assertNotNull(actionNode);
-       
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       this.actionService.executeAction(action, this.nodeRef, false, true);
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Pending, action.getExecutionStatus());
-       
-       // End the transaction. Should allow the async action
-       //  to be executed
-       asyncOccurs.awaitExecution(txn, null, action.getActionDefinitionName());
-       Thread.sleep(250); // Need to allow the post-commit update to the stored node
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       // Check our copy
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
-       
-       // Now re-load and check the stored one
-       action = runtimeActionService.createAction(actionNode);
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+        // Tidy up from the action failure
+        txn.rollback();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
 
-       
-       // ===========================================================
-       //    Execute a stored Action that fails, asynchronously
-       // ===========================================================
-       action = createFailingMoveAction();
-       this.actionService.saveAction(this.nodeRef, action);
-       actionNode = action.getNodeRef();
-       assertNotNull(actionNode);
-       
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.New, action.getExecutionStatus());
-       
-       this.actionService.executeAction(action, this.nodeRef, false, true);
-       assertNull(action.getExecutionStartDate());
-       assertNull(action.getExecutionEndDate());
-       assertNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Pending, action.getExecutionStatus());
-       
-       // End the transaction, and await the failure
-       // (Can't use the policy as fails not suceeds)
-       txn.commit();
-       // Now also wait for the on-rollback to kick in and update
-       //  the persisted copy of the action node too
-       Thread.sleep(400);
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       
-       // Check our copy
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNotNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
-       
-       // Now re-load and check the stored one
-       action = runtimeActionService.createAction(actionNode);
-       assertNotNull(action.getExecutionStartDate());
-       assertNotNull(action.getExecutionEndDate());
-       assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
-       assertBefore(action.getExecutionEndDate(), new Date());
-       assertNotNull(action.getExecutionFailureMessage());
-       assertEquals(ActionStatus.Failed, action.getExecutionStatus());
-       
-       txn.commit();
+        // ===========================================================
+        // Execute a stored Action that works, synchronously
+        // ===========================================================
+        action = createWorkingSleepAction(null);
+        this.actionService.saveAction(this.nodeRef, action);
+        actionNode = action.getNodeRef();
+        assertNotNull(actionNode);
+
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
+
+        this.actionService.executeAction(action, this.nodeRef);
+
+        // Check our copy
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+
+        // Let the update change the stored node
+        // (Can't use policy as the action has already finished!)
+        txn.commit();
+        Thread.sleep(150);
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Now re-load and check the stored one
+        action = runtimeActionService.createAction(actionNode);
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+
+        // ===========================================================
+        // Execute a stored Action that fails, synchronously
+        // ===========================================================
+        action = createFailingMoveAction();
+        this.actionService.saveAction(this.nodeRef, action);
+        actionNode = action.getNodeRef();
+        String actionId = action.getId();
+        assertNotNull(actionNode);
+
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
+
+        // Save this
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Run the action - will fail and trigger a rollback
+        try
+        {
+            this.actionService.executeAction(action, this.nodeRef);
+            fail("Action should have failed, and the error been thrown");
+        }
+        catch (Exception e)
+        {
+        }
+
+        // Check our copy
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNotNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+
+        // Wait for the post-rollback update to complete
+        // (The stored one gets updated asynchronously)
+        txn.rollback();
+        Thread.sleep(150);
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Now re-load and check the stored one
+        action = runtimeActionService.createAction(actionNode);
+        assertEquals(actionId, action.getId());
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNotNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+
+        // Tidy up from the action failure
+        txn.commit();
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // ===========================================================
+        // Execute a transient Action that works, asynchronously
+        // ===========================================================
+        action = createWorkingSleepAction(null);
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
+
+        this.actionService.executeAction(action, this.nodeRef, false, true);
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Pending, action.getExecutionStatus());
+
+        // End the transaction. Should allow the async action
+        // to be executed
+        asyncOccurs.awaitExecution(txn, null, action.getActionDefinitionName());
+
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+
+        // Put things back ready for the next check
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // ===========================================================
+        // Execute a transient Action that fails, asynchronously
+        // ===========================================================
+        action = createFailingMoveAction();
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
+
+        this.actionService.executeAction(action, this.nodeRef, false, true);
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Pending, action.getExecutionStatus());
+
+        // End the transaction, and await the failure
+        // (Can't use the policy as fails not suceeds)
+        txn.commit();
+        Thread.sleep(150);
+
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNotNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+
+        // Put things back ready for the next check
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // ===========================================================
+        // Execute a stored Action that works, asynchronously
+        // ===========================================================
+        action = createWorkingSleepAction(null);
+        this.actionService.saveAction(this.nodeRef, action);
+        actionNode = action.getNodeRef();
+        assertNotNull(actionNode);
+
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
+
+        this.actionService.executeAction(action, this.nodeRef, false, true);
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Pending, action.getExecutionStatus());
+
+        // End the transaction. Should allow the async action
+        // to be executed
+        asyncOccurs.awaitExecution(txn, null, action.getActionDefinitionName());
+        Thread.sleep(250); // Need to allow the post-commit update to the stored node
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Check our copy
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+
+        // Now re-load and check the stored one
+        action = runtimeActionService.createAction(actionNode);
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Completed, action.getExecutionStatus());
+
+        // ===========================================================
+        // Execute a stored Action that fails, asynchronously
+        // ===========================================================
+        action = createFailingMoveAction();
+        this.actionService.saveAction(this.nodeRef, action);
+        actionNode = action.getNodeRef();
+        assertNotNull(actionNode);
+
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.New, action.getExecutionStatus());
+
+        this.actionService.executeAction(action, this.nodeRef, false, true);
+        assertNull(action.getExecutionStartDate());
+        assertNull(action.getExecutionEndDate());
+        assertNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Pending, action.getExecutionStatus());
+
+        // End the transaction, and await the failure
+        // (Can't use the policy as fails not suceeds)
+        txn.commit();
+        // Now also wait for the on-rollback to kick in and update
+        // the persisted copy of the action node too
+        Thread.sleep(400);
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Check our copy
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNotNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+
+        // Now re-load and check the stored one
+        action = runtimeActionService.createAction(actionNode);
+        assertNotNull(action.getExecutionStartDate());
+        assertNotNull(action.getExecutionEndDate());
+        assertBefore(action.getExecutionStartDate(), action.getExecutionEndDate());
+        assertBefore(action.getExecutionEndDate(), new Date());
+        assertNotNull(action.getExecutionFailureMessage());
+        assertEquals(ActionStatus.Failed, action.getExecutionStatus());
+
+        txn.commit();
     }
-    
+
     public void testJavascriptAPI() throws Exception
     {
         // We need a background action to sleep for long enough for
-        //  it still to be running when the JS fires off
-        final SleepActionExecuter sleepActionExec = 
-          (SleepActionExecuter)ctx.getBean(SleepActionExecuter.NAME);
+        // it still to be running when the JS fires off
+        final SleepActionExecuter sleepActionExec = (SleepActionExecuter) ctx.getBean(SleepActionExecuter.NAME);
         sleepActionExec.setSleepMs(2000);
-        
+
         ActionImpl sleepAction;
         ActionImpl action;
-       
+
         // Create three test actions:
-        ((ActionTrackingServiceImpl)actionTrackingService).resetNextExecutionId();
-        
+        ((ActionTrackingServiceImpl) actionTrackingService).resetNextExecutionId();
+
         // Sleep one that will still be running
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
-        sleepAction = (ActionImpl)createWorkingSleepAction(null);
+        sleepAction = (ActionImpl) createWorkingSleepAction(null);
         sleepAction.setNodeRef(nodeRef); // This isn't true!
         this.actionService.executeAction(sleepAction, null, false, true);
         txn.commit();
-        
+
         // Move one that will appear to be "running"
-        action = (ActionImpl)createFailingMoveAction();
+        action = (ActionImpl) createFailingMoveAction();
         actionTrackingService.recordActionExecuting(action);
-        
+
         // Finally one that has "failed"
         // (Shouldn't show up in any lists)
         txn = transactionService.getUserTransaction();
         txn.begin();
-        action = (ActionImpl)createWorkingSleepAction(null);
+        action = (ActionImpl) createWorkingSleepAction(null);
         action.setExecutionStartDate(new Date(1234));
         action.setExecutionEndDate(new Date(54321));
         action.setExecutionStatus(ActionStatus.Failed);
         this.actionService.saveAction(this.nodeRef, action);
         txn.commit();
-       
-        // Call the test 
+
+        // Call the test
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("NodeRef", nodeRef.toString());
         model.put("SleepAction", sleepAction);
-        
-        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/action/script/test_actionTrackingService.js");
+
+        ScriptLocation location = new ClasspathScriptLocation(
+                "org/alfresco/repo/action/script/test_actionTrackingService.js");
         this.scriptService.executeScript(location, model);
     }
 
-    
     // =================================================================== //
-    
-    public class AsyncOccurs implements OnAsyncActionExecute {
-       private Object waitForExecutionLock = new Object();
-       private String wantedType = null;
-       private static final long waitTime = 3500;
-       
-       @Override
-       public void onAsyncActionExecute(Action action, NodeRef actionedUponNodeRef) 
-       {
-          if(wantedType == null || action.getActionDefinitionName().equals(wantedType))
-          {
-             synchronized (waitForExecutionLock) {
-                waitForExecutionLock.notify();
-             }
-          }
-          else
-          {
-             System.out.println("Ignoring unexpected async action:" + action);
-          }
-       }
-       
-       public void awaitExecution(UserTransaction tx, Thread toWake, String type) throws Exception
-       {
-          this.wantedType = type;
-          synchronized (waitForExecutionLock) {
-            // Have things begin working
-            if(tx != null)
+
+    public class AsyncOccurs implements OnAsyncActionExecute
+    {
+        private Object waitForExecutionLock = new Object();
+        private String wantedType = null;
+        private static final long waitTime = 3500;
+
+        @Override
+        public void onAsyncActionExecute(Action action, NodeRef actionedUponNodeRef)
+        {
+            if (wantedType == null || action.getActionDefinitionName().equals(wantedType))
             {
-               tx.commit();
+                synchronized (waitForExecutionLock)
+                {
+                    waitForExecutionLock.notify();
+                }
             }
-            if(toWake != null)
+            else
             {
-               toWake.interrupt();
+                System.out.println("Ignoring unexpected async action:" + action);
             }
-            
-            // Now wait for them to finish
-            try {
-               long now = System.currentTimeMillis();
-               waitForExecutionLock.wait(waitTime);
-               
-               if(System.currentTimeMillis() - now >= waitTime)
-               {
-                  System.err.println("Warning - trigger wasn't received");
-               }
-            } catch(InterruptedException e) {}
-         }
-       }
+        }
+
+        public void awaitExecution(UserTransaction tx, Thread toWake, String type) throws Exception
+        {
+            this.wantedType = type;
+            synchronized (waitForExecutionLock)
+            {
+                // Have things begin working
+                if (tx != null)
+                {
+                    tx.commit();
+                }
+                if (toWake != null)
+                {
+                    toWake.interrupt();
+                }
+
+                // Now wait for them to finish
+                try
+                {
+                    long now = System.currentTimeMillis();
+                    waitForExecutionLock.wait(waitTime);
+
+                    if (System.currentTimeMillis() - now >= waitTime)
+                    {
+                        System.err.println("Warning - trigger wasn't received");
+                    }
+                }
+                catch (InterruptedException e)
+                {
+                }
+            }
+        }
     }
 
     private Action createFailingMoveAction()
@@ -1284,12 +1185,11 @@ public class ActionTrackingServiceImplTest extends TestCase
 
         return failingAction;
     }
-    
+
     /**
-     * 
-     * @param id String
-     * @param isFatal <tt>true</tt> means the sleep action will fail with a RuntimeException,
-     *                <tt>false</tt> means it will fail with a {@link ActionServiceTransientException}.
+     * @param isFatal
+     *            <tt>true</tt> means the sleep action will fail with a RuntimeException, <tt>false</tt> means it will
+     *            fail with a {@link ActionServiceTransientException}.
      */
     private Action createFailingSleepAction(String id, boolean isFatal) throws Exception
     {

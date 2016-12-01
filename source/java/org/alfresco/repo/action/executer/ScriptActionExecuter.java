@@ -182,7 +182,7 @@ public class ScriptActionExecuter extends ActionExecuterAbstractBase
                 // Set the result
                 if (result != null)
                 {
-                	action.setParameterValue(PARAM_RESULT, (Serializable)result);
+                    action.setParameterValue(PARAM_RESULT, (Serializable)result);
                 }
             }
         }

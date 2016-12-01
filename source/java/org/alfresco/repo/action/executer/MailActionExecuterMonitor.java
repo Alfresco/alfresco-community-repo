@@ -41,8 +41,7 @@ public class MailActionExecuterMonitor
             String message = I18NUtil.getMessage("email.outbound.test.send.success", params);
             return message;
         }
-        catch
-        (AlfrescoRuntimeException are)
+        catch (AlfrescoRuntimeException are)
         {
             return (are.getMessage());
         }

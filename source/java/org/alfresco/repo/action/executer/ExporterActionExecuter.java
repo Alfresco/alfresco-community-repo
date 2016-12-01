@@ -93,16 +93,16 @@ public class ExporterActionExecuter extends ActionExecuterAbstractBase
      * The content service
      */
     private ContentService contentService;
-	
+    
     /**
      * Sets the ExporterService to use
      * 
      * @param exporterService The ExporterService
      */
-	public void setExporterService(ExporterService exporterService) 
-	{
-		this.exporterService = exporterService;
-	}
+    public void setExporterService(ExporterService exporterService) 
+    {
+        this.exporterService = exporterService;
+    }
     
     /**
      * Sets the MimetypeService to use
@@ -195,16 +195,16 @@ public class ExporterActionExecuter extends ActionExecuterAbstractBase
         }
     }
 
-	/**
+    /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-	 */
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+     */
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_PACKAGE_NAME, DataTypeDefinition.TEXT, true, 
               getParamDisplayLabel(PARAM_PACKAGE_NAME)));
         paramList.add(new ParameterDefinitionImpl(PARAM_ENCODING, DataTypeDefinition.TEXT, true, 
               getParamDisplayLabel(PARAM_ENCODING)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_STORE, DataTypeDefinition.TEXT, true, 
+        paramList.add(new ParameterDefinitionImpl(PARAM_STORE, DataTypeDefinition.TEXT, true, 
               getParamDisplayLabel(PARAM_STORE)));
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, 
               getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
@@ -212,7 +212,7 @@ public class ExporterActionExecuter extends ActionExecuterAbstractBase
               getParamDisplayLabel(PARAM_INCLUDE_CHILDREN)));
         paramList.add(new ParameterDefinitionImpl(PARAM_INCLUDE_SELF, DataTypeDefinition.BOOLEAN, false, 
               getParamDisplayLabel(PARAM_INCLUDE_SELF)));
-	}
+    }
 
     /**
      * Creates the ZIP file node in the repository for the export

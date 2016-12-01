@@ -349,11 +349,11 @@ public abstract class AbstractMailActionExecuterTest
     @Test
     public void testPrepareEmailForDisabledUsers() throws MessagingException
     {
-    	String groupName = null;
+        String groupName = null;
         final String USER1 = "test_user1";
         final String USER2 = "test_user2";
-    	try
-    	{
+        try
+        {
             createUser(USER1, null);
             NodeRef userNode = createUser(USER2, null);
             groupName = AUTHORITY_SERVICE.createAuthority(AuthorityType.GROUP, "testgroup1");
@@ -381,16 +381,16 @@ public abstract class AbstractMailActionExecuterTest
             Address[] addresses = mm.getRecipients(Message.RecipientType.TO);
             Assert.assertEquals(1, addresses.length);
             Assert.assertEquals(USER1 + "@email.com", addresses[0].toString());
-    	}
-    	finally
-    	{
-    		if (groupName != null)
-    		{
+        }
+        finally
+        {
+            if (groupName != null)
+            {
                 AUTHORITY_SERVICE.deleteAuthority(groupName, true);
-    		}
+            }
             PERSON_SERVICE.deletePerson(USER1);
             PERSON_SERVICE.deletePerson(USER2);
-    	}
+        }
     }
 
     @Test

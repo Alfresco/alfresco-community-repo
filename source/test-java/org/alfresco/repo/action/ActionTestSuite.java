@@ -73,7 +73,7 @@ import org.junit.runners.Suite.SuiteClasses;
     SpecialiseTypeActionExecuterTest.class,
     RemoveFeaturesActionExecuterTest.class,
     ActionTrackingServiceImplTest.class, // intermittent - pending ALF-9773 & ALF-9774
-	MailActionExecuterTest.class,
+    MailActionExecuterTest.class,
     ActionServiceImpl2Test.class,
     ImporterActionExecuterTest.class
 })

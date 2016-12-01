@@ -66,12 +66,12 @@ public class ParameterDefinitionImplTest extends TestCase
         ParameterDefinitionImpl temp = create();
         assertEquals(DataTypeDefinition.TEXT, temp.getType());
     }
-	
-	public void testIsMandatory()
-	{
-		ParameterDefinitionImpl temp = create();
-		assertTrue(temp.isMandatory());
-	}
+    
+    public void testIsMandatory()
+    {
+        ParameterDefinitionImpl temp = create();
+        assertTrue(temp.isMandatory());
+    }
     
     public void testGetDisplayLabel()
     {

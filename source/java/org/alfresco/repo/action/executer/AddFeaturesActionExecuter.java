@@ -50,15 +50,15 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
     /**
      * Action constants
      */
-	public static final String NAME = "add-features";
-	public static final String PARAM_ASPECT_NAME = "aspect-name";
-	public static final String PARAM_CONSTRAINT = "ac-aspects";
-	
-	/**
-	 * The node service
-	 */
-	private NodeService nodeService;
-	
+    public static final String NAME = "add-features";
+    public static final String PARAM_ASPECT_NAME = "aspect-name";
+    public static final String PARAM_CONSTRAINT = "ac-aspects";
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
+    
     /** Transaction Service, used for retrying operations */
     private TransactionService transactionService;
     
@@ -67,11 +67,11 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
      * 
      * @param nodeService  the node service 
      */
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
-	
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
+    
     /**
      * Set the transaction service
      * 
@@ -82,14 +82,14 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
         this.transactionService = transactionService;
     }
     
-	/**
-	 * Adhoc properties are allowed for this executor
-	 */
-	@Override
-	protected boolean getAdhocPropertiesAllowed()
-	{
-		return true;
-	}
+    /**
+     * Adhoc properties are allowed for this executor
+     */
+    @Override
+    protected boolean getAdhocPropertiesAllowed()
+    {
+        return true;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.service.cmr.action.Action, NodeRef)
@@ -99,8 +99,10 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
         if (this.nodeService.exists(actionedUponNodeRef))
         {
            transactionService.getRetryingTransactionHelper().doInTransaction(
-              new RetryingTransactionCallback<Void>() {
-                 public Void execute() throws Throwable {
+              new RetryingTransactionCallback<Void>()
+              {
+                 public Void execute() throws Throwable
+                 {
                      Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
                      QName aspectQName = null;
 
@@ -139,10 +141,10 @@ public class AddFeaturesActionExecuter extends ActionExecuterAbstractBase
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
-		paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT_NAME), false, "ac-aspects"));
-	}
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT_NAME), false, "ac-aspects"));
+    }
 
 }

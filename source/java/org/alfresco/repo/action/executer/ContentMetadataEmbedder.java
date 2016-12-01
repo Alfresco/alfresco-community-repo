@@ -136,7 +136,7 @@ public class ContentMetadataEmbedder extends ActionExecuterAbstractBase
 
         try
         {
-        	embedder.embed(nodeProperties, reader, writer);
+            embedder.embed(nodeProperties, reader, writer);
         }
         catch (Throwable e)
         {

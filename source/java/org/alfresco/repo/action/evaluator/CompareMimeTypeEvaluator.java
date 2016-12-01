@@ -46,14 +46,11 @@ import org.alfresco.service.namespace.QName;
  */
 public class CompareMimeTypeEvaluator extends ComparePropertyValueEvaluator
 {
-	/**
-	 * Evaluator constants
-	 */
-	public static final String NAME = "compare-mime-type";
-    
     /**
-     * 
+     * Evaluator constants
      */
+    public static final String NAME = "compare-mime-type";
+    
     private static final String ERRID_NOT_A_CONTENT_TYPE = "compare_mime_type_evaluator.not_a_content_type";
     private static final String ERRID_NO_PROPERTY_DEFINTION_FOUND = "compare_mime_type_evaluator.no_property_definition_found"; 
     
@@ -99,10 +96,10 @@ public class CompareMimeTypeEvaluator extends ComparePropertyValueEvaluator
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_PROPERTY, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_PROPERTY)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE), false, "ac-mimetypes"));        	    
-	}
+        paramList.add(new ParameterDefinitionImpl(PARAM_VALUE, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_VALUE), false, "ac-mimetypes"));                
+    }
 }

@@ -28,6 +28,8 @@ package org.alfresco.repo.action.executer;
 
 import java.util.List;
 
+import org.alfresco.model.BlogIntegrationModel;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.blog.BlogDetails;
 import org.alfresco.repo.blog.BlogIntegrationRuntimeException;
@@ -40,11 +42,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
-import org.alfresco.model.BlogIntegrationModel;
-import org.alfresco.model.ContentModel;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Post blog repository action
  *
@@ -55,8 +52,6 @@ public class BlogAction extends ActionExecuterAbstractBase implements BlogIntegr
    public static final String NAME = "blog-post";
    public static final String PARAM_BLOG_ACTION = "action";
 
-   private static Log logger = LogFactory.getLog(BlogAction.class);
-   
    private DictionaryService dictionaryService;
    private NodeService nodeService;
    private BlogIntegrationService blogIntegrationService;

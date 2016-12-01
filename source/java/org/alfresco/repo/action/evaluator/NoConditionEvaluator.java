@@ -59,5 +59,4 @@ public class NoConditionEvaluator extends ActionConditionEvaluatorAbstractBase
     {
         // No parameters to add
     }
-
 }

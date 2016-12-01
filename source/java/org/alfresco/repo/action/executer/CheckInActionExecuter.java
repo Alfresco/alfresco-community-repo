@@ -68,20 +68,20 @@ public class CheckInActionExecuter extends ActionExecuterAbstractBase
      * 
      * @param nodeService  the node service
      */
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
-	
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
+    
     /**
      * Set the checkIn checkOut service
      * 
      * @param cociService  the checkIn checkOut Service
      */
-	public void setCociService(CheckOutCheckInService cociService) 
-	{
-		this.cociService = cociService;
-	}
+    public void setCociService(CheckOutCheckInService cociService) 
+    {
+        this.cociService = cociService;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -90,7 +90,7 @@ public class CheckInActionExecuter extends ActionExecuterAbstractBase
     {
         // First ensure that the actionedUponNodeRef is a workingCopy
         if (this.nodeService.exists(actionedUponNodeRef) == true &&
-			this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
+            this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY) == true)
         {
             // Get the version description
             String description = (String)ruleAction.getParameterValue(PARAM_DESCRIPTION);
@@ -115,11 +115,10 @@ public class CheckInActionExecuter extends ActionExecuterAbstractBase
         }
     }
 
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
-		paramList.add(new ParameterDefinitionImpl(PARAM_DESCRIPTION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_DESCRIPTION)));
-		paramList.add(new ParameterDefinitionImpl(PARAM_MINOR_CHANGE, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_MINOR_CHANGE)));
-	}
-
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_DESCRIPTION, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_DESCRIPTION)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_MINOR_CHANGE, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_MINOR_CHANGE)));
+    }
 }

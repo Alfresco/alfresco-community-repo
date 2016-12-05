@@ -39,6 +39,7 @@ import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -49,6 +50,7 @@ import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +70,7 @@ public class NonElectronicRecordTests extends BaseRestTest
 
     @Autowired
     private DataUser dataUser;
-
+    
     /** Valid root containers where non-electronic records can be created */
     @DataProvider(name = "validContainers")
     public Object[][] rootContainers() throws Exception {
@@ -92,7 +94,7 @@ public class NonElectronicRecordTests extends BaseRestTest
      * @throws Exception if prerequisites can't be created
      */
     @Test(description = "Non-electronic record can't be created as a child of invalid parent Id")
-    public void noCreateForInvalidParentIds() throws Exception
+    public void cantCreateForInvalidParentIds() throws Exception
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         
@@ -151,6 +153,8 @@ public class NonElectronicRecordTests extends BaseRestTest
     )
     public void canCreateInValidContainers(FilePlanComponent container) throws Exception
     {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        
         logger.info("Root container:\n" + toJson(container));
         if (container.getNodeType().equals(RECORD_FOLDER_TYPE.toString()))
         {
@@ -213,8 +217,9 @@ public class NonElectronicRecordTests extends BaseRestTest
      * @throws Exception if prerequisites can't be created
      */
     @Test(description = "Non-electronic record can't be created in closed record folder")
-    public void noCreateInClosedFolder() throws Exception
+    public void cantCreateInClosedFolder() throws Exception
     {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         FilePlanComponent recordFolder = createFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString());
         
         // the folder should be open
@@ -266,6 +271,8 @@ public class NonElectronicRecordTests extends BaseRestTest
     )
     public void allMandatoryPropertiesRequired(FilePlanComponent container) throws Exception
     {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        
         logger.info("Root container:\n" + toJson(container));
         if (container.getNodeType().equals(RECORD_FOLDER_TYPE.toString()))
         {
@@ -282,12 +289,8 @@ public class NonElectronicRecordTests extends BaseRestTest
         properties.setTitle("Title " + getRandomAlphanumeric());
         titleOnly.setProperties(properties);
 
-        // component with name only
-        FilePlanComponent nameOnly = getDummyNonElectronicRecord();
-        nameOnly.setName("Name " + getRandomAlphanumeric());
-
         // try to create invalid components 
-        asList(noNameOrTitle, titleOnly, nameOnly).stream().forEach(c -> 
+        asList(noNameOrTitle, titleOnly).stream().forEach(c -> 
         {
             try
             {
@@ -309,6 +312,44 @@ public class NonElectronicRecordTests extends BaseRestTest
             // verify the status code is BAD_REQUEST
             filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(BAD_REQUEST);
         });        
+    }
+    
+    /**
+     * <pre>
+     * Given that I am a user without RM privileges
+     * When I try to create a non-electronic record
+     * Then nothing happens
+     * And an error is reported
+     * </pre>
+     * @throws Exception
+     */
+    @Test
+    (
+        dataProvider = "validContainers", 
+        description = "Non-electronic record can't be created if user doesn't have RM privileges"
+    )
+    public void cantCreateIfNoRmPrivileges(FilePlanComponent container) throws Exception
+    {
+        String username = "zzzuser";
+        UserModel user = createRMUserWithRole(username, UserRole.SiteConsumer);
+
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
+        
+        // try to create a fileplan component
+        FilePlanComponent record = new FilePlanComponent("Record Name", NON_ELECTRONIC_RECORD_TYPE.toString(),
+            new FilePlanComponentProperties("Name", "Title"));
+            
+        // this should fail and throw an exception
+        try
+        {                
+            filePlanComponentAPI.createFilePlanComponent(record, container.getId());
+        } 
+        catch (Exception e)
+        {
+        }
+
+        // user who isn't an RM site member can't access the container path, hence NOT_FOUND
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(NOT_FOUND);
     }
     
     /**

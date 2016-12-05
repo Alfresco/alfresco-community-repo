@@ -39,6 +39,7 @@ import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
@@ -348,8 +349,8 @@ public class NonElectronicRecordTests extends BaseRestTest
         {
         }
 
-        // user who isn't an RM site member can't access the container path, hence NOT_FOUND
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(NOT_FOUND);
+        // user who isn't an RM site member can't access the container path
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(FORBIDDEN);
     }
     
     /**

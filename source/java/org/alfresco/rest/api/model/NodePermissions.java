@@ -154,16 +154,17 @@ public class NodePermissions
 
             NodePermission that = (NodePermission) o;
 
-            if (!authorityId.equals(that.authorityId))
+            if (authorityId != null ? !authorityId.equals(that.authorityId) : that.authorityId != null)
                 return false;
-            return name.equals(that.name);
+            return name != null ? name.equals(that.name) : that.name == null;
+
         }
 
         @Override
         public int hashCode()
         {
-            int result = authorityId.hashCode();
-            result = 31 * result + name.hashCode();
+            int result = authorityId != null ? authorityId.hashCode() : 0;
+            result = 31 * result + (name != null ? name.hashCode() : 0);
             return result;
         }
     }

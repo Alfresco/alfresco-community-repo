@@ -49,6 +49,7 @@ import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.RMSiteAPI;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -230,28 +231,21 @@ public class BaseRestTest extends RestTest
     public UserModel createRMUserWithRole(String userName, UserRole userRole) throws Exception
     {
         rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        
         String siteId = rmSiteAPI.getSite().getId();
-        logger.info("Site:" + rmSiteAPI.getSite() + " id: " + siteId);
 
         // check if user exists
         UserModel user = new UserModel();
         user.setUsername(userName);
         user.setPassword(userName);
-        rmSiteAPI.usingRestWrapper().withCoreAPI().usingSite(siteId).getSiteMember(user);
-        
-        if (rmSiteAPI.usingRestWrapper().getStatusCode().equals(HttpStatus.NOT_FOUND.toString()))
+ 
+        if (!dataUser.isUserInRepo(userName))
         {
             // user doesn't exist, create it
-            logger.info("user doesn't exist, creating");
-
             user = dataUser.createUser(userName, userName);
             user.setUserRole(userRole);
-
-            rmSiteAPI.usingRestWrapper().withCoreAPI().usingSite(siteId).addPerson(user);
-            rmSiteAPI.usingRestWrapper().assertStatusCodeIs(HttpStatus.CREATED);
+            
+            dataUser.addUserToSite(user, new SiteModel(siteId), userRole);
         }
-        logger.info("returning existing user");
 
         return user;
     }

@@ -222,7 +222,7 @@ public class BaseRestTest extends RestTest
      * Checks whether the user exists in RM site and creates it if required, with password identical
      * to username. Note the role is a Core API role, not an RM role.
      * <br>
-     * For already existing users, no role verification is performed.
+     * For already existing users, no site membership or role verification is performed.
      * <p>
      * @param userName username to add
      * @param userRole user's role

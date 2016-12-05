@@ -24,7 +24,6 @@
    </modules>
 
    <properties>
-      <alfresco.installer.host>releases</alfresco.installer.host>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
       <suiteXmlFile>testng.xml</suiteXmlFile>
@@ -109,22 +108,18 @@
                               <echo>Recreating database...</echo>
                               <sql driver="org.postgresql.Driver" url="jdbc:postgresql:template1" userid="alfresco" password="alfresco" autocommit="true">drop database if exists alfresco; create database alfresco</sql>
                               <echo>Downloading Alfresco installer...</echo>
-                              <get src="https://${alfresco.installer.host}.alfresco.com/${installer.path}" dest="target/alf-installer.bin" />
+                              <get src="${installer.url}" dest="target/alf-installer.bin" />
                               <chmod file="target/alf-installer.bin" perm="a+x" verbose="true" />
                               <echo>Installing Alfresco...</echo>
                               <exec executable="${basedir}/target/alf-installer.bin" dir="target" failonerror="true">
                                  <arg line="--mode unattended --alfresco_admin_password admin --disable-components postgres,alfrescowcmqs --jdbc_username alfresco --jdbc_password alfresco --prefix ${basedir}/target/alf-installation" />
                               </exec>
+                              <delete file="target/alf-installer.bin" verbose="true" />
                            </target>
                         </configuration>
                      </execution>
                   </executions>
                   <dependencies>
-                     <dependency>
-                        <groupId>org.apache.ant</groupId>
-                        <artifactId>ant-jsch</artifactId>
-                        <version>1.8.2</version>
-                     </dependency>
                      <dependency>
                         <groupId>postgresql</groupId>
                         <artifactId>postgresql</artifactId>

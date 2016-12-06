@@ -27,13 +27,6 @@
 
 package org.alfresco.opencmis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -137,6 +130,7 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AccessControlListImpl;
@@ -160,6 +154,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.GUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * OpenCMIS tests.
@@ -2587,6 +2588,27 @@ public class CMISTest
                         
                         assertFalse("CMISChangeEvent " + changeType + " should store short form of objectId " + objectId, 
                                 objectId.toString().contains(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString()));
+                    }
+                    int expectAtLeast = changes.getObjects().size();
+
+                    // We should also be able to query without passing in any limit
+                    changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, null, null);
+                    assertTrue("Expected to still get changes", changes.getObjects().size() >= expectAtLeast);
+                    // and zero
+                    changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, BigInteger.valueOf(0), null);
+                    assertTrue("Expected to still get changes", changes.getObjects().size() >= expectAtLeast);
+                    // and one
+                    changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, BigInteger.valueOf(1), null);
+                    assertEquals("Expected to still get changes", changes.getObjects().size(), 1);
+                    // but not negative
+                    try
+                    {
+                        changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, BigInteger.valueOf(-1), null);
+                        fail("Negative maxItems is expected to fail");
+                    }
+                    catch (CmisInvalidArgumentException e)
+                    {
+                        // Expected
                     }
 
                     return null;

@@ -72,7 +72,7 @@ public class QuickShareLinkExpiryActionExecutor extends ActionExecuterAbstractBa
         String sharedId = quickShareLinkExpiryAction.getSharedId();
         if (LOGGER.isDebugEnabled())
         {
-            LOGGER.debug("Unsharing the shared id [" + sharedId + "] for the node:" + quickShareService.getMetaData(sharedId).get("name"));
+            LOGGER.debug("Unsharing the shared id [" + sharedId + "] for the node:" + quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond());
         }
 
         if (StringUtils.isEmpty(sharedId))
@@ -85,7 +85,7 @@ public class QuickShareLinkExpiryActionExecutor extends ActionExecuterAbstractBa
             quickShareService.unshareContent(sharedId);
             if (LOGGER.isDebugEnabled())
             {
-                LOGGER.debug("Unshared the shared id [" + sharedId + "] for the node:" + quickShareService.getMetaData(sharedId).get("name"));
+                LOGGER.debug("Unshared the shared id:" + sharedId);
             }
         }
         catch (Exception ex)

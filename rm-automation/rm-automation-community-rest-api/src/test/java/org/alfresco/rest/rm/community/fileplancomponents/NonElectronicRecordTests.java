@@ -40,7 +40,6 @@ import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -51,8 +50,10 @@ import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
+import org.alfresco.rest.rm.community.requests.RMSiteAPI;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.DataProvider;
@@ -71,6 +72,9 @@ public class NonElectronicRecordTests extends BaseRestTest
 
     @Autowired
     private DataUser dataUser;
+    
+    @Autowired
+    private RMSiteAPI rmSiteAPI;
     
     /** Valid root containers where non-electronic records can be created */
     @DataProvider(name = "validContainers")
@@ -230,17 +234,12 @@ public class NonElectronicRecordTests extends BaseRestTest
         closeFolder(recordFolder.getId());
         
         // try to create it, this should fail and throw an exception
-        try
-        {
-            filePlanComponentAPI.createFilePlanComponent(
-                new FilePlanComponent("Record " + getRandomAlphanumeric(), 
-                    NON_ELECTRONIC_RECORD_TYPE.toString(),
-                    new FilePlanComponentProperties()), 
-                recordFolder.getId()).getId();
-        } 
-        catch (Exception e)
-        {
-        }
+
+        filePlanComponentAPI.createFilePlanComponent(
+            new FilePlanComponent("Record " + getRandomAlphanumeric(), 
+                NON_ELECTRONIC_RECORD_TYPE.toString(),
+                new FilePlanComponentProperties()), 
+            recordFolder.getId()).getId();
         
         // verify the status code
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
@@ -332,7 +331,7 @@ public class NonElectronicRecordTests extends BaseRestTest
     public void cantCreateIfNoRmPrivileges(FilePlanComponent container) throws Exception
     {
         String username = "zzzuser";
-        UserModel user = createRMUserWithRole(username, UserRole.SiteConsumer);
+        UserModel user = createUserWithRole(username, UserRole.SiteManager);
 
         filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
         
@@ -378,5 +377,39 @@ public class NonElectronicRecordTests extends BaseRestTest
         
         // and return a folder underneath
         return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
+    }
+    
+    /**
+     * Create user with given role and add it to RM site
+     * <br>
+     * Checks whether the user exists in RM site and creates it if required, with password identical
+     * to username. Note the role is a Core API role, not an RM role.
+     * <br>
+     * For already existing users, no site membership or role verification is performed.
+     * <p>
+     * @param userName username to add
+     * @param userRole user's role
+     * @throws Exception
+     */
+    private UserModel createUserWithRole(String userName, UserRole userRole) throws Exception
+    {
+        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        String siteId = rmSiteAPI.getSite().getId();
+
+        // check if user exists
+        UserModel user = new UserModel();
+        user.setUsername(userName);
+        user.setPassword(userName);
+ 
+        if (!dataUser.isUserInRepo(userName))
+        {
+            // user doesn't exist, create it
+            user = dataUser.createUser(userName, userName);
+            user.setUserRole(userRole);
+            
+            dataUser.addUserToSite(user, new SiteModel(siteId), userRole);
+        }
+
+        return user;
     }
 }

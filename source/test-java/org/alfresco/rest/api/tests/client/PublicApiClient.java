@@ -1103,7 +1103,12 @@ public class PublicApiClient
 
 		public Person update(String personId, String json, int expectedStatus) throws PublicApiException
 		{
-			HttpResponse response = update("people", personId, null, null, json, null, "Failed to update person", expectedStatus);
+			return update(personId, json, null, expectedStatus);
+		}
+
+		public Person update(String personId, String json, Map<String,String> params, int expectedStatus) throws PublicApiException
+		{
+			HttpResponse response = update("people", personId, null, null, json, params, "Failed to update person", expectedStatus);
 			if (response != null && response.getJsonResponse() != null)
 			{
 				JSONObject entry = (JSONObject) response.getJsonResponse().get("entry");

@@ -776,14 +776,34 @@ public class TestPeople extends EnterpriseTestApi
         people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 401 response when updating " + personId, 401);
     }
 	
-//    @Test
-//    public  void testUpdatePersonNonSelfAndNonAdminDisallowed() throws PublicApiException
-//    {
-//        final String personId = account3PersonIt.next();
-//        publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
-//
-//        people.update("people", personId, null, null, "{\n" + "  \"firstName\": \"Updated firstName\"\n" + "}", null, "Expected 403 response when updating " + personId, 403);
-//    }
+    @Test
+    public  void testUpdatePersonNonSelfAndNonAdminDisallowed() throws PublicApiException
+    {
+		// TODO: this is bad, it seems that the test fixture isn't unique per test!?
+        final String personId = account1PersonIt.next();
+        final String personToUpdateId = account1PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), personId));
+		
+		people.update(personToUpdateId, qjson("{ `firstName`:`Updated firstName` }"), 403);
+
+		// TODO: temp fix, set back to orig firstName
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+		people.update(personToUpdateId, qjson("{ `firstName`:`Bob` }"), 200);
+    }
+
+	@Test
+	public  void testUpdatePersonCanUpdateThemself() throws PublicApiException
+	{
+		final String personId = account1PersonIt.next();
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), personId));
+
+		Person updatedPerson = people.update(personId, qjson("{ `firstName`: `Updated firstName` }"), 200);
+		assertEquals("Updated firstName", updatedPerson.getFirstName());
+
+		// TODO: temp fix, set back to orig firstName
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+		people.update(personId, qjson("{ `firstName`:`Bill` }"), 200);
+	}
 
     @Test
     public  void testUpdatePersonNonexistentPerson() throws PublicApiException
@@ -928,24 +948,50 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public  void testUpdatePersonEnabled() throws PublicApiException
     {
+		// Non-admin user ID
         final String personId = account3PersonIt.next();
-        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
 
-        Boolean enabled = false;
+		// Use admin user credentials
+		publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+		
+		// Admin can toggle enabled flag: false
+		{
+			Boolean enabled = false;
+			Map<String, String> params = Collections.singletonMap("fields", "enabled");
+			Person updatedPerson = people.update(personId, qjson("{`enabled`:"+enabled+"}"), params, 200);
 
-        Map<String, String> params = new HashMap<>();
-        params.put("fields", "enabled");
+			assertEquals(enabled, updatedPerson.isEnabled());
+		}
 
-        HttpResponse response = people.update("people", personId, null, null, "{\n" + "  \"enabled\": \"" + enabled + "\"\n" + "}", params,
-                "Expected 200 response when updating " + personId, 200);
+		// Admin can toggle enabled flag: true
+		{
+			Boolean enabled = true;
+			Map<String, String> params = Collections.singletonMap("fields", "enabled");
+			Person updatedPerson = people.update(personId, qjson("{`enabled`:"+enabled+"}"), params, 200);
 
-        Person updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+			assertEquals(enabled, updatedPerson.isEnabled());
+		}
 
-        assertEquals(enabled, updatedPerson.isEnabled());
+		// Use non-admin user's own credentials
+		publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId, "password"));
+		
+		// Non-admin cannot set enabled flag
+		{
+			boolean origEnabled = people.getPerson(personId).isEnabled();
+			Boolean enabled = false;
+			// The test should change that we can't change this, otherwise it isn't effective
+			assertNotEquals(origEnabled, enabled);
+			
+			Map<String, String> params = Collections.singletonMap("fields", "enabled");
+			people.update(personId, qjson("{`enabled`:"+enabled+"}"), params, 403);
+
+			Person me = people.getPerson(personId);
+			assertEquals("Enabled state shouldn't have changed, but did", origEnabled, me.isEnabled());
+		}
     }
 
     @Test
-    public void testUpdatePersonDisableAdminNotAllowed() throws PublicApiException
+    public void testUpdatePersonAdminCannotBeDisabled() throws PublicApiException
     {
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
 

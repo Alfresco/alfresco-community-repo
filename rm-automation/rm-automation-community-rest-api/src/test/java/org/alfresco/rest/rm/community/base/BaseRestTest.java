@@ -47,15 +47,11 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
 import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.RMSiteAPI;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 
 /**
@@ -216,37 +212,4 @@ public class BaseRestTest extends RestTest
         return updatedComponent;
     }
     
-    /**
-     * Create RM user with given role
-     * <br>
-     * Checks whether the user exists in RM site and creates it if required, with password identical
-     * to username. Note the role is a Core API role, not an RM role.
-     * <br>
-     * For already existing users, no site membership or role verification is performed.
-     * <p>
-     * @param userName username to add
-     * @param userRole user's role
-     * @throws Exception
-     */
-    public UserModel createRMUserWithRole(String userName, UserRole userRole) throws Exception
-    {
-        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        String siteId = rmSiteAPI.getSite().getId();
-
-        // check if user exists
-        UserModel user = new UserModel();
-        user.setUsername(userName);
-        user.setPassword(userName);
- 
-        if (!dataUser.isUserInRepo(userName))
-        {
-            // user doesn't exist, create it
-            user = dataUser.createUser(userName, userName);
-            user.setUserRole(userRole);
-            
-            dataUser.addUserToSite(user, new SiteModel(siteId), userRole);
-        }
-
-        return user;
-    }
 }

@@ -432,7 +432,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         {
             this.numLogins+=1;
             this.timeStamp = System.currentTimeMillis();
-            if (numLogins == protectionLimit && logger.isWarnEnabled())
+            if (numLogins == protectionLimit + 1 && logger.isWarnEnabled())
             {
                 // Shows only first 2 symbols of the username and masks all other character with '*'
                 logger.warn("Brute force attack was detected for user " +

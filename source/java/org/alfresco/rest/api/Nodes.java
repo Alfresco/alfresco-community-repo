@@ -25,7 +25,19 @@
  */
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.model.*;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.alfresco.rest.api.model.AssocChild;
+import org.alfresco.rest.api.model.AssocTarget;
+import org.alfresco.rest.api.model.Document;
+import org.alfresco.rest.api.model.Folder;
+import org.alfresco.rest.api.model.LockInfo;
+import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -34,12 +46,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.servlet.FormData;
-
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * File Folder (Nodes) API
@@ -323,6 +329,7 @@ public interface Nodes
     String OP_CREATE = "create";
     String OP_DELETE = "delete";
     String OP_UPDATE = "update";
+    String OP_UPDATE_PERMISSIONS = "updatePermissions";
 
     String PARAM_RELATIVE_PATH = "relativePath";
     String PARAM_PERMANENT = "permanent";
@@ -333,6 +340,7 @@ public interface Nodes
     String PARAM_INCLUDE_ISLINK = "isLink";
     String PARAM_INCLUDE_ISLOCKED = "isLocked";
     String PARAM_INCLUDE_ALLOWABLEOPERATIONS = "allowableOperations";
+    String PARAM_INCLUDE_PERMISSIONS = "permissions";
 
     String PARAM_INCLUDE_ASSOCIATION = "association";
 

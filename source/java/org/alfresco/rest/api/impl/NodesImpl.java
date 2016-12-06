@@ -86,6 +86,7 @@ import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.NodePermissions;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
@@ -143,6 +144,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
@@ -917,6 +919,8 @@ public class NodesImpl implements Nodes
             mapPermsToOps.put(PermissionService.DELETE, OP_DELETE);
             mapPermsToOps.put(PermissionService.ADD_CHILDREN, OP_CREATE);
             mapPermsToOps.put(PermissionService.WRITE, OP_UPDATE);
+            mapPermsToOps.put(PermissionService.CHANGE_PERMISSIONS, OP_UPDATE_PERMISSIONS);
+            
 
             List<String> allowableOperations = new ArrayList<>(3);
             for (Entry<String, String> kv : mapPermsToOps.entrySet())
@@ -941,6 +945,39 @@ public class NodesImpl implements Nodes
             }
 
             node.setAllowableOperations((allowableOperations.size() > 0 )? allowableOperations : null);
+        }
+
+        if (includeParam.contains(PARAM_INCLUDE_PERMISSIONS))
+        {
+            Boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
+
+            List<NodePermissions.NodePermission> inheritedPerms = new ArrayList<>(5);
+            List<NodePermissions.NodePermission> setDirectlyPerms = new ArrayList<>(5);
+            Set<String> settablePerms = null;
+
+            try
+            {
+                for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
+                {
+                    NodePermissions.NodePermission nodePerm = new NodePermissions.NodePermission(accessPerm.getAuthority(), accessPerm.getPermission(), accessPerm.getAccessStatus().toString());
+                    if (accessPerm.isSetDirectly())
+                    {
+                        setDirectlyPerms.add(nodePerm);
+                    } else
+                    {
+                        inheritedPerms.add(nodePerm);
+                    }
+                }
+
+                settablePerms = permissionService.getSettablePermissions(nodeRef);
+            }
+            catch (AccessDeniedException ade)
+            {
+                // ignore - ie. denied access to retrieve permissions, eg. non-admin on root (Company Home)
+            }
+
+            NodePermissions nodePerms = new NodePermissions(inherit, inheritedPerms, setDirectlyPerms, settablePerms);
+            node.setPermissions(nodePerms);
         }
 
         if (includeParam.contains(PARAM_INCLUDE_ASSOCIATION))
@@ -2145,6 +2182,113 @@ public class NodesImpl implements Nodes
             props.put(ContentModel.PROP_NAME, name);
         }
 
+        NodePermissions nodePerms = nodeInfo.getPermissions();
+        if (nodePerms != null)
+        {
+            // Cannot set inherited permissions, only direct (locally set) permissions can be set
+            if ((nodePerms.getInherited() != null) && (nodePerms.getInherited().size() > 0))
+            {
+                throw new InvalidArgumentException("Cannot set *inherited* permissions on this node");
+            }
+
+            // Check inherit from parent value and if it's changed set the new value
+            if (nodePerms.isInheritanceEnabled() != null)
+            {
+                if (nodePerms.isInheritanceEnabled() != permissionService.getInheritParentPermissions(nodeRef))
+                {
+                    permissionService.setInheritParentPermissions(nodeRef, nodePerms.isInheritanceEnabled());
+                }
+            }
+
+            // set direct permissions
+            if ((nodePerms.getLocallySet() != null))
+            {
+                // list of all directly set permissions
+                Set<AccessPermission> directPerms = new HashSet<>(5);
+                for (AccessPermission accessPerm : permissionService.getAllSetPermissions(nodeRef))
+                {
+                    if (accessPerm.isSetDirectly()) 
+                    {
+                        directPerms.add(accessPerm);
+                    }
+                }
+
+                //
+                // replace (or clear) set of direct permissions
+                //
+
+                // TODO cleanup the way we replace permissions (ie. add, update and delete)
+
+                // check if same permission is sent more than once
+                if (hasDuplicatePermissions(nodePerms.getLocallySet()))
+                {
+                    throw new InvalidArgumentException("Duplicate node permissions, there is more than one permission with the same authority and name!");
+                }
+                
+                for (NodePermissions.NodePermission nodePerm : nodePerms.getLocallySet())
+                {
+                    String permName = nodePerm.getName();
+                    String authorityId = nodePerm.getAuthorityId();
+
+                    AccessStatus accessStatus = AccessStatus.ALLOWED;
+                    if (nodePerm.getAccessStatus() != null)
+                    {
+                        accessStatus = AccessStatus.valueOf(nodePerm.getAccessStatus());
+                    }
+
+                    if ((authorityId == null) || 
+                         ((! authorityId.equals(PermissionService.ALL_AUTHORITIES) && (! authorityService.authorityExists(authorityId)))))
+                    {
+                        throw new InvalidArgumentException("Cannot set permissions on this node - unknown authority: "+authorityId);
+                    }
+
+                    AccessPermission existing = null;
+                    boolean addPerm = true;
+                    boolean updatePerm = false;
+
+                    // If the permission already exists but with different access status it will be updated
+                    for (AccessPermission accessPerm : directPerms)
+                    {
+                        if (accessPerm.getAuthority().equals(authorityId) && accessPerm.getPermission().equals(permName))
+                        {
+                            existing = accessPerm;
+                            addPerm = false;
+
+                            if (accessPerm.getAccessStatus() != accessStatus)
+                            {
+                                updatePerm = true;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (existing != null)
+                    {
+                        // ignore existing permissions
+                        directPerms.remove(existing);
+                    }
+
+                    if (addPerm || updatePerm)
+                    {
+                        try
+                        {
+                            permissionService.setPermission(nodeRef, authorityId, permName, (accessStatus == AccessStatus.ALLOWED));
+                        }
+                        catch (UnsupportedOperationException e)
+                        {
+                            throw new InvalidArgumentException("Cannot set permissions on this node - unknown access level: " + permName);
+                        }
+                    }
+                }
+
+                // remove any remaining direct perms
+                for (AccessPermission accessPerm : directPerms)
+                {
+                    permissionService.deletePermission(nodeRef, accessPerm.getAuthority(), accessPerm.getPermission());
+                }
+            }
+        }
+
         String nodeType = nodeInfo.getNodeType();
         if ((nodeType != null) && (! nodeType.isEmpty()))
         {
@@ -3102,6 +3246,26 @@ public class NodesImpl implements Nodes
         
         lockService.unlock(nodeRef);
         return getFolderOrDocument(nodeId, parameters);
+    }
+
+    /**
+     * Checks if same permission is sent more than once
+     * @param locallySetPermissions
+     * @return
+     */
+    private boolean hasDuplicatePermissions(List<NodePermissions.NodePermission> locallySetPermissions)
+    {
+        boolean duplicate = false;
+        if (locallySetPermissions != null)
+        {
+            HashSet<NodePermissions.NodePermission> temp = new HashSet<NodePermissions.NodePermission>(locallySetPermissions.size());
+            for (NodePermissions.NodePermission permission : locallySetPermissions)
+            {
+                temp.add(permission);
+            }
+            duplicate = (locallySetPermissions.size() != temp.size());
+        }
+        return duplicate;
     }
 
     /**

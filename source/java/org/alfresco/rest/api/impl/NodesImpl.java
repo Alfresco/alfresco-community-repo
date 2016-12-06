@@ -2200,11 +2200,11 @@ public class NodesImpl implements Nodes
             }
 
             // Check inherit from parent value and if it's changed set the new value
-            if (nodePerms.isInheritanceEnabled() != null)
+            if (nodePerms.getIsInheritanceEnabled() != null)
             {
-                if (nodePerms.isInheritanceEnabled() != permissionService.getInheritParentPermissions(nodeRef))
+                if (nodePerms.getIsInheritanceEnabled() != permissionService.getInheritParentPermissions(nodeRef))
                 {
-                    permissionService.setInheritParentPermissions(nodeRef, nodePerms.isInheritanceEnabled());
+                    permissionService.setInheritParentPermissions(nodeRef, nodePerms.getIsInheritanceEnabled());
                 }
             }
 

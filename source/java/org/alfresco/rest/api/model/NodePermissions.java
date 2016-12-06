@@ -58,12 +58,12 @@ public class NodePermissions
         this.settable = settable;
     }
 
-    public Boolean isInheritanceEnabled()
+    public Boolean getIsInheritanceEnabled()
     {
         return inherit;
     }
 
-    public void setInheritanceEnabled(boolean inherit)
+    public void setIsInheritanceEnabled(boolean inherit)
     {
         this.inherit = inherit;
     }
@@ -92,7 +92,7 @@ public class NodePermissions
     public String toString()
     {
         final StringBuilder sb = new StringBuilder(120);
-        sb.append("PathInfo [inheritanceEnabled=").append(inherit)
+        sb.append("PathInfo [isInheritanceEnabled=").append(inherit)
                     .append(", inherited=").append(getInherited())
                     .append(", locallySet=").append(getLocallySet())
                     .append(", settable=").append(getSettable())

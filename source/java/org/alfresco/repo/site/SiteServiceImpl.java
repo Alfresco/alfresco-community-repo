@@ -1662,14 +1662,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final QName siteType = this.directNodeService.getType(nodeRef);
         final String shortName = getSite(nodeRef).getShortName();
         
-        // If there is a live site, we must not wipe out the authority data.
-        // Authority data for sites is associated by a naming convention.
-        if (hasSite(shortName))
-        {
-            // A live site exists, so leave the authority data alone
-            return;
-        }
-        
         // Delete the associated groups
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {

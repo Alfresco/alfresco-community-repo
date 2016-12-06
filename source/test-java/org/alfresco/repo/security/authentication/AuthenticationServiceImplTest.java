@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -53,7 +54,7 @@ import static org.mockito.Mockito.verify;
 public class AuthenticationServiceImplTest
 {
     private AuthenticationComponent authenticationComponent = mock(AuthenticationComponent.class);
-    private SimpleCache<String, AuthenticationServiceImpl.ProtectedUser> cache;
+    private SimpleCache<String, ProtectedUser> cache;
     private TicketComponent ticketComponent = mock(TicketComponent.class);
     private AuthenticationServiceImpl authService;
 
@@ -73,14 +74,15 @@ public class AuthenticationServiceImplTest
     @Test
     public void testProtectedUserBadPassword()
     {
-        int attempts = 3;
+        int limit = 3;
+        int attempts = limit + 3;
         authService.setProtectionPeriodSeconds(99999);
-        authService.setProtectionLimit(attempts);
+        authService.setProtectionLimit(limit);
         authService.setProtectionEnabled(true);
 
         Exception spoofedAE = new AuthenticationException("Bad password");
         doThrow(spoofedAE).when(authenticationComponent).authenticate(USERNAME, PASSWORD);
-        for (int i = 0; i < attempts + 3; i++)
+        for (int i = 0; i < attempts; i++)
         {
             try
             {
@@ -90,7 +92,7 @@ public class AuthenticationServiceImplTest
             catch (AuthenticationException ae)
             {
                 // normal
-                if (i < attempts)
+                if (i < limit)
                 {
                     assertTrue("Expected failure from AuthenticationComponent", ae == spoofedAE);
                 }
@@ -100,8 +102,9 @@ public class AuthenticationServiceImplTest
                 }
             }
         }
-        verify(authenticationComponent, times(attempts)).authenticate(USERNAME, PASSWORD);
-        assertTrue("The user should be protected.", cache.get(USERNAME).isProtected());
+        verify(authenticationComponent, times(limit)).authenticate(USERNAME, PASSWORD);
+        assertTrue("The user should be protected.", authService.isUserProtected(USERNAME));
+        assertEquals("The number of recorded logins did not match.", attempts, cache.get(USERNAME).getNumLogins());
 
         // test that the protection is still in place even if the password is correct
         doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
@@ -114,20 +117,22 @@ public class AuthenticationServiceImplTest
         {
             // normal
         }
-        verify(authenticationComponent, times(attempts)).authenticate(USERNAME, PASSWORD);
+        verify(authenticationComponent, times(limit)).authenticate(USERNAME, PASSWORD);
+        assertEquals("The number of recorded logins did not match.", attempts + 1, cache.get(USERNAME).getNumLogins());
     }
 
     @Test
     public void testProtectedUserCanLoginAfterProtection() throws Exception
     {
         int timeLimit = 1;
+        int attempts = 2;
         authService.setProtectionPeriodSeconds(timeLimit);
-        authService.setProtectionLimit(2);
+        authService.setProtectionLimit(attempts);
         authService.setProtectionEnabled(true);
 
         doThrow(new AuthenticationException("Bad password"))
                 .when(authenticationComponent).authenticate(USERNAME, PASSWORD);
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < attempts; i++)
         {
             try
             {
@@ -139,9 +144,12 @@ public class AuthenticationServiceImplTest
                 // normal
             }
         }
-        assertTrue("The user should be protected.", cache.get(USERNAME).isProtected());
+        assertTrue("The user should be protected.", authService.isUserProtected(USERNAME));
+        assertEquals("The number of recorded logins did not match.", attempts, cache.get(USERNAME).getNumLogins());
         Thread.sleep(timeLimit*1000 + 1);
-        assertFalse("The user should not be protected any more.", cache.get(USERNAME).isProtected());
+        assertFalse("The user should not be protected any more.", authService.isUserProtected(USERNAME));
+        assertEquals("The number of recorded logins should stay the same after protection period ends.",
+                attempts, cache.get(USERNAME).getNumLogins());
 
         doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
         try
@@ -159,9 +167,10 @@ public class AuthenticationServiceImplTest
     @Test
     public void testProtectionDisabledBadPassword()
     {
-        int attempts = 5;
+        int limit = 3;
+        int attempts = limit + 2;
         authService.setProtectionPeriodSeconds(99999);
-        authService.setProtectionLimit(attempts - 2);
+        authService.setProtectionLimit(limit);
         authService.setProtectionEnabled(false);
 
         Exception spoofedAE = new AuthenticationException("Bad password");

@@ -279,9 +279,9 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             HashSet<String> ancestors = new HashSet<String>();
             if(nodeMetaData.getPaths() != null)
             {
-            	StringBuilder ancestorPath = new StringBuilder();
                 for(Pair<Path, QName> pair : nodeMetaData.getPaths())
                 {
+                	StringBuilder ancestorPath = new StringBuilder();
                     JSONObject o = new JSONObject();
                     o.put("path", solrSerializer.serializeValue(String.class, pair.getFirst()));
                     o.put("qname", solrSerializer.serializeValue(String.class, pair.getSecond()));

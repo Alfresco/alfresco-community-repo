@@ -626,6 +626,7 @@
         <property name="siteService" ref="SiteService" />
         <property name="nodeService" ref="NodeService" />
         <property name="personService" ref="PersonService" />
+        <property name="unprotectedPersonService" ref="personService" />
         <property name="authenticationService" ref="AuthenticationService" />
         <property name="authorityService" ref="AuthorityService" />
         <property name="contentUsageService" ref="contentUsageImpl" />

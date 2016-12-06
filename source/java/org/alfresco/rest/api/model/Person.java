@@ -67,6 +67,7 @@ public class Person
 	protected String description;
 	protected Company company;
 	protected String password;
+	protected String oldPassword;
 	protected Map<String, Object> properties;
 	protected List<String> aspectNames;
 
@@ -241,6 +242,11 @@ public class Person
 		this.password = password;
 	}
 
+	public void setOldPassword(String oldPassword)
+	{
+		this.oldPassword = oldPassword;
+	}
+
 	public NodeRef getAvatarId()
 	{
 		return avatarId;
@@ -354,6 +360,11 @@ public class Person
 	public String getPassword()
 	{
 		return this.password;
+	}
+
+	public String getOldPassword()
+	{
+		return oldPassword;
 	}
 
 	public Map<String, Object> getProperties()

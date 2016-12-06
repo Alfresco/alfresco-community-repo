@@ -1067,16 +1067,28 @@ public class PublicApiClient
 
 		public Person getPerson(String personId) throws PublicApiException
 		{
-			HttpResponse response = getSingle("people", personId, null, null, "Failed to get person");
+			return getPerson(personId, 200);
+		}
+		
+		public Person getPerson(String personId, int expectedStatus) throws PublicApiException
+		{
+			HttpResponse response = getSingle("people", personId, null, null, "Failed to get person", expectedStatus);
 			
 			if(logger.isDebugEnabled())
 			{
 				logger.debug(response);
 			}
 			System.out.println(response);
-
-			Person site = Person.parsePerson((JSONObject)response.getJsonResponse().get("entry"));
-			return site;
+			
+			if (response != null && response.getJsonResponse() != null)
+			{
+				JSONObject entry = (JSONObject) response.getJsonResponse().get("entry");
+				if (entry != null)
+				{
+					return Person.parsePerson(entry);
+				}
+			}
+			return null;
 		}
 
 		public Person update(String personId, Person person) throws PublicApiException
@@ -1092,8 +1104,15 @@ public class PublicApiClient
 		public Person update(String personId, String json, int expectedStatus) throws PublicApiException
 		{
 			HttpResponse response = update("people", personId, null, null, json, null, "Failed to update person", expectedStatus);
-			Person retSite = Person.parsePerson((JSONObject)response.getJsonResponse().get("entry"));
-			return retSite;
+			if (response != null && response.getJsonResponse() != null)
+			{
+				JSONObject entry = (JSONObject) response.getJsonResponse().get("entry");
+				if (entry != null)
+				{
+					return Person.parsePerson(entry);
+				}
+			}
+			return null;
 		}
 		
 		public Person create(Person person) throws PublicApiException
@@ -1107,11 +1126,10 @@ public class PublicApiClient
 			HttpResponse response = create("people", null, null, null, jsonizer.toJSON().toString(), "Failed to create person", expectedStatus);
 			if ((response != null) && (response.getJsonResponse() != null))
 			{
-				Object entry = response.getJsonResponse().get("entry");
-				// entry will be null if there is an "error" data structure returned instead.
+				JSONObject entry = (JSONObject) response.getJsonResponse().get("entry");
 				if (entry != null)
 				{
-					return Person.parsePerson((JSONObject) entry);
+					return Person.parsePerson(entry);
 				}
 			}
 			return null;

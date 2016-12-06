@@ -31,6 +31,7 @@ import java.util.*;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.api.Nodes;
@@ -103,6 +104,7 @@ public class PeopleImpl implements People
 	protected SiteService siteService;
 	protected NodeService nodeService;
     protected PersonService personService;
+    protected PersonService unprotectedPersonService;
     protected AuthenticationService authenticationService;
     protected AuthorityService authorityService;
     protected ContentUsageService contentUsageService;
@@ -143,8 +145,13 @@ public class PeopleImpl implements People
     {
 		this.personService = personService;
 	}
-	
-	public void setAuthenticationService(AuthenticationService authenticationService)
+
+    public void setUnprotectedPersonService(PersonService unprotectedPersonService)
+    {
+        this.unprotectedPersonService = unprotectedPersonService;
+    }
+
+    public void setAuthenticationService(AuthenticationService authenticationService)
     {
 		this.authenticationService = authenticationService;
 	}
@@ -512,8 +519,10 @@ public class PeopleImpl implements People
     {
         MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
 
-        if (!isAdminAuthority())
+        String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (!isAdminAuthority() && !currentUserId.equalsIgnoreCase(personId))
         {
+            // The user is not an admin user and is not attempting to update *their own* details.
             throw new PermissionDeniedException();
         }
 
@@ -522,9 +531,30 @@ public class PeopleImpl implements People
 
         if (person.getPassword() != null && !person.getPassword().isEmpty())
         {
-            // an Admin user can update without knowing the original pass - but
-            // must know their own!
-            mutableAuthenticationService.setAuthentication(personIdToUpdate, person.getPassword().toCharArray());
+            // An admin user can update without knowing the original pass - but must know their own!
+            char[] newPassword = person.getPassword().toCharArray();
+            if (isAdminAuthority())
+            {
+                mutableAuthenticationService.setAuthentication(personIdToUpdate, newPassword);
+            }
+            else
+            {
+                // Non-admin users can update their own password, but must provide their current password.
+                if (person.getOldPassword() == null)
+                {
+                    throw new PermissionDeniedException();
+                }
+                char[] oldPassword = person.getOldPassword().toCharArray();
+                try
+                {
+                    mutableAuthenticationService.updateAuthentication(personIdToUpdate, oldPassword, newPassword);
+                }
+                catch (AuthenticationException e)
+                {
+                    // TODO: add to exception mappings/handler
+                    throw new PermissionDeniedException("Incorrect existing password.");
+                }
+            }
         }
 
         if (person.isEnabled() != null)
@@ -553,8 +583,16 @@ public class PeopleImpl implements People
 			Map<String, Object> customProps = person.getProperties();
 			properties.putAll(nodes.mapToNodeProperties(customProps));
 		}
-		
-        personService.setPersonProperties(personIdToUpdate, properties, false);
+        
+		// The person service only allows admin users to set the properties by default.
+        if (!isAdminAuthority())
+        {
+            unprotectedPersonService.setPersonProperties(personIdToUpdate, properties, false);
+        }
+        else
+        {
+            personService.setPersonProperties(personIdToUpdate, properties, false);
+        }
 
 		// Update custom aspects
 		nodes.updateCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);

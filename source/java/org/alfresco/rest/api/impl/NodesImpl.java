@@ -895,7 +895,7 @@ public class NodesImpl implements Nodes
         if (includeParam.contains(PARAM_INCLUDE_ASPECTNAMES))
         {
             aspects = nodeService.getAspects(nodeRef);
-            node.setAspectNames(mapFromNodeAspects(aspects));
+            node.setAspectNames(mapFromNodeAspects(aspects, EXCLUDED_ASPECTS));
         }
 
         if (includeParam.contains(PARAM_INCLUDE_ISLINK))
@@ -1135,7 +1135,7 @@ public class NodesImpl implements Nodes
         else
         {
             // return selected properties
-            selectedProperties = createQNames(selectParam);
+            selectedProperties = createQNames(selectParam, excludedProps);
         }
 
         Map<String, Object> props = null;
@@ -1164,13 +1164,13 @@ public class NodesImpl implements Nodes
         return props;
     }
 
-    public List<String> mapFromNodeAspects(Set<QName> nodeAspects)
+    public List<String> mapFromNodeAspects(Set<QName> nodeAspects, List<QName> excludedAspects)
     {
         List<String> aspectNames = new ArrayList<>(nodeAspects.size());
 
         for (QName aspectQName : nodeAspects)
         {
-            if ((! EXCLUDED_NS.contains(aspectQName.getNamespaceURI())) && (! EXCLUDED_ASPECTS.contains(aspectQName)))
+            if ((! EXCLUDED_NS.contains(aspectQName.getNamespaceURI())) && (! excludedAspects.contains(aspectQName)))
             {
                 aspectNames.add(aspectQName.toPrefixString(namespaceService));
             }
@@ -1761,7 +1761,7 @@ public class NodesImpl implements Nodes
         return newNode;
     }
 
-    public void addCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> exclusions)
+    public void addCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> excludedAspects)
     {
         if (aspectNames == null)
         {
@@ -1771,7 +1771,7 @@ public class NodesImpl implements Nodes
         Set<QName> aspectQNames = mapToNodeAspects(aspectNames);
         for (QName aspectQName : aspectQNames)
         {
-            if (exclusions.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
+            if (excludedAspects.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
             {
                 continue; // ignore
             }
@@ -2181,6 +2181,48 @@ public class NodesImpl implements Nodes
         }
 
         List<String> aspectNames = nodeInfo.getAspectNames();
+        updateCustomAspects(nodeRef, aspectNames, EXCLUDED_ASPECTS);
+
+        if (props.size() > 0)
+        {
+            validatePropValues(props);
+
+            try
+            {
+                // update node properties - note: null will unset the specified property
+                nodeService.addProperties(nodeRef, props);
+            }
+            catch (DuplicateChildNodeNameException dcne)
+            {
+                throw new ConstraintViolatedException(dcne.getMessage());
+            }
+        }
+        
+        return nodeRef;
+    }
+
+    @Override
+    public Node moveOrCopyNode(String sourceNodeId, String targetParentId, String name, Parameters parameters, boolean isCopy)
+    {
+        if ((sourceNodeId == null) || (sourceNodeId.isEmpty()))
+        {
+            throw new InvalidArgumentException("Missing sourceNodeId");
+        }
+
+        if ((targetParentId == null) || (targetParentId.isEmpty()))
+        {
+            throw new InvalidArgumentException("Missing targetParentId");
+        }
+
+        final NodeRef parentNodeRef = validateOrLookupNode(targetParentId, null);
+        final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
+
+        FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
+        return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
+    }
+    
+    public void updateCustomAspects(NodeRef nodeRef, List<String> aspectNames, List<QName> excludedAspects)
+    {
         if (aspectNames != null)
         {
             // update aspects - note: can be empty (eg. to remove existing aspects+properties) but not cm:auditable, sys:referencable, sys:localized
@@ -2194,7 +2236,7 @@ public class NodesImpl implements Nodes
 
             for (QName aspectQName : aspectQNames)
             {
-                if (EXCLUDED_NS.contains(aspectQName.getNamespaceURI()) || EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
+                if (EXCLUDED_NS.contains(aspectQName.getNamespaceURI()) || excludedAspects.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
                 {
                     continue; // ignore
                 }
@@ -2207,7 +2249,7 @@ public class NodesImpl implements Nodes
 
             for (QName existingAspect : existingAspects)
             {
-                if (EXCLUDED_NS.contains(existingAspect.getNamespaceURI()) || EXCLUDED_ASPECTS.contains(existingAspect) || existingAspect.equals(ContentModel.ASPECT_AUDITABLE))
+                if (EXCLUDED_NS.contains(existingAspect.getNamespaceURI()) || excludedAspects.contains(existingAspect) || existingAspect.equals(ContentModel.ASPECT_AUDITABLE))
                 {
                     continue; // ignore
                 }
@@ -2250,45 +2292,8 @@ public class NodesImpl implements Nodes
                 nodeService.addAspect(nodeRef, aQName, null);
             }
         }
-
-        if (props.size() > 0)
-        {
-            validatePropValues(props);
-
-            try
-            {
-                // update node properties - note: null will unset the specified property
-                nodeService.addProperties(nodeRef, props);
-            }
-            catch (DuplicateChildNodeNameException dcne)
-            {
-                throw new ConstraintViolatedException(dcne.getMessage());
-            }
-        }
-        
-        return nodeRef;
     }
-
-    @Override
-    public Node moveOrCopyNode(String sourceNodeId, String targetParentId, String name, Parameters parameters, boolean isCopy)
-    {
-        if ((sourceNodeId == null) || (sourceNodeId.isEmpty()))
-        {
-            throw new InvalidArgumentException("Missing sourceNodeId");
-        }
-
-        if ((targetParentId == null) || (targetParentId.isEmpty()))
-        {
-            throw new InvalidArgumentException("Missing targetParentId");
-        }
-
-        final NodeRef parentNodeRef = validateOrLookupNode(targetParentId, null);
-        final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
-
-        FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
-        return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
-    }
-
+    
     protected FileInfo moveOrCopyImpl(NodeRef nodeRef, NodeRef parentNodeRef, String name, boolean isCopy)
     {
         String targetParentId = parentNodeRef.getId();
@@ -3018,9 +3023,10 @@ public class NodesImpl implements Nodes
      * Helper to create a QName from either a fully qualified or short-name QName string
      *
      * @param qnameStrList list of fully qualified or short-name QName string
+     * @param excludedProps
      * @return a list of {@code QName} objects
      */
-    protected List<QName> createQNames(List<String> qnameStrList)
+    protected List<QName> createQNames(List<String> qnameStrList, List<QName> excludedProps)
     {
         String PREFIX = PARAM_INCLUDE_PROPERTIES +"/";
 
@@ -3033,7 +3039,7 @@ public class NodesImpl implements Nodes
             }
 
             QName name = createQName(str);
-            if (!EXCLUDED_PROPS.contains(name))
+            if (!excludedProps.contains(name))
             {
                 result.add(name);
             }

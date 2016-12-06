@@ -42,6 +42,8 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -51,7 +53,6 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestPeople extends EnterpriseTestApi
@@ -101,7 +102,14 @@ public class TestPeople extends EnterpriseTestApi
 	public void tearDown()
 	{
 		// Restore authentication to pre-test state.
-		AuthenticationUtil.popAuthentication();
+		try
+		{
+			AuthenticationUtil.popAuthentication();
+		}
+		catch(EmptyStackException e)
+		{
+			// Nothing to do.
+		}
 	}
 
     private TestNetwork createNetwork(String networkPrefix)
@@ -574,51 +582,142 @@ public class TestPeople extends EnterpriseTestApi
 		assertEquals("This is a title", retProps.get(ContentModel.PROP_TITLE));
 	}
 
+	// Create a person for use in the testing of updating custom aspects/props
+	private Person createTestUpdatePerson() throws PublicApiException
+	{
+		Person person = new Person();
+		String personId = UUID.randomUUID().toString()+"@"+account1.getId();
+		person.setUserName(personId);
+		person.setFirstName("Joe");
+		person.setEmail(personId);
+		person.setEnabled(true);
+		person.setPassword("password123");
+		person.setDescription("This is a very short bio.");
+		person.setProperties(Collections.singletonMap("cm:title", "Initial title"));
+		person.setAspectNames(Collections.singletonList("cm:projectsummary"));
+
+		person = people.create(person);
+
+		AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+		NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
+		PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
+		NodeRef nodeRef = personService.getPerson(person.getId());
+		nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUDITABLE, null);
+		
+		assertEquals("Initial title", person.getProperties().get("cm:title"));
+		assertTrue(person.getAspectNames().contains("cm:titled"));
+		assertTrue(person.getAspectNames().contains("cm:projectsummary"));
+		assertTrue(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUDITABLE));
+		return person;
+	}
+	
 	@Test
 	public void testUpdatePerson_withCustomProps() throws Exception
 	{
 		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
-		Person person = new Person();
-		String personId = "jbloggs2@"+account1.getId();
-		person.setUserName(personId);
-		person.setFirstName("Joe");
-		person.setEmail("jbloggs2@"+account1.getId());
-		person.setEnabled(true);
-		person.setPassword("password123");
-		Map<String, Object> props = new HashMap<>();
-		props.put("cm:title", "Initial title");
-		person.setProperties(props);
 		
-		person = people.create(person);
-		assertEquals("Initial title", person.getProperties().get("cm:title"));
-		assertTrue(person.getAspectNames().contains("cm:titled"));
-		
-		// Update property
-		person.getProperties().put("cm:title", "Updated title");
+		// Add a property
+		{
+			Person person = createTestUpdatePerson();
+			assertNull(person.getProperties().get("cm:middleName"));
+			String json = qjson(
+					"{" +
+					"    `properties`: {" +
+					"        `cm:middleName`: `Bertrand`" +
+					"    }" +
+					"}"
+			);
+			person = people.update(person.getId(), json, 200);
 
-		// ID/UserName is not a valid field for update.
-		person.setUserName(null);
-		// TODO: We don't want to attempt to set ownable using the text available?! ...it won't work
-		person.getProperties().remove("cm:owner");
-		person.getAspectNames().clear();
-		person = people.update(personId, person);
-		assertEquals("Updated title", person.getProperties().get("cm:title"));
-		assertTrue(person.getAspectNames().contains("cm:titled"));
+			// Property added
+			assertEquals("Bertrand", person.getProperties().get("cm:middleName"));
+			assertEquals("Initial title", person.getProperties().get("cm:title"));
+			// Aspect untouched
+			assertTrue(person.getAspectNames().contains("cm:titled"));
+		}
 		
-		// Remove property
-		person.getProperties().put("cm:title", null);
+		// Simple update of properties
+		{
+			Person person = createTestUpdatePerson();
+			person = people.update(person.getId(), qjson("{`properties`: {`cm:title`: `Updated title`}}"), 200);
+			
+			// Property updated
+			assertEquals("Updated title", person.getProperties().get("cm:title"));
+			// Aspect untouched
+			assertTrue(person.getAspectNames().contains("cm:titled"));
+		}
+		
+		// Update with zero aspects - clear them all, except for protected items.
+		{
+			Person person = createTestUpdatePerson();
+			person = people.update(person.getId(), qjson("{`aspectNames`: []}"), 200);
+			
+			// Aspect should no longer be present.
+			assertFalse(person.getAspectNames().contains("cm:titled"));
+			assertFalse(person.getProperties().containsKey("cm:title"));
+			// Protected aspects should still be present.
+			List<String> aspectNames = person.getAspectNames();
+			assertTrue(aspectNames.contains("cm:auditable"));
+			
+			// Check for the protected (but filtered) sys:* properties
+			NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
+			PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
+			NodeRef nodeRef = personService.getPerson(person.getId());
+			Set<QName> aspects = nodeService.getAspects(nodeRef);
+			assertTrue(aspects.contains(ContentModel.ASPECT_REFERENCEABLE));
+			assertTrue(aspects.contains(ContentModel.ASPECT_LOCALIZED));
+		}
+		
+		// Set aspects - all except protected items will be replaced with those presented.
+		{
+			Person person = createTestUpdatePerson();
+			String json = qjson(
+					"{" +
+					"    `aspectNames`: [" +
+					"        `cm:dublincore`," +
+					"        `cm:summarizable`" +
+					"    ]" +
+					"}"
+			);
+			person = people.update(person.getId(), json, 200);
 
-		// TODO: We don't want to attempt to set ownable using the text available?! ...it won't work
-		person.getProperties().remove("cm:owner");
-		person.getAspectNames().clear();
+			// Aspect should no longer be present.
+			assertFalse(person.getAspectNames().contains("cm:titled"));
+			assertFalse(person.getProperties().containsKey("cm:title"));
+			// Protected aspects should still be present.
+			List<String> aspectNames = person.getAspectNames();
+			assertTrue(aspectNames.contains("cm:auditable"));
+			
+			// Newly added aspects
+			assertTrue(aspectNames.contains("cm:dublincore"));
+			assertTrue(aspectNames.contains("cm:summarizable"));
+		}
 		
-		person.setUserName(null);
-		person = people.update(personId, person);
-		
-		assertFalse(person.getProperties().containsKey("cm:title"));
-		// The aspect will still be there, I don't think we can easily remove the aspect automatically
-		// just because the associated properties have all been removed.
-		assertTrue(person.getAspectNames().contains("cm:titled"));
+		// Remove a property by setting it to null
+		{
+			Person person = createTestUpdatePerson();
+			person = people.update(person.getId(), qjson("{`properties`: {`cm:title`: null}}"), 200);
+			
+			assertFalse(person.getProperties().containsKey("cm:title"));
+			// The aspect will still be there, I don't think we can easily remove the aspect automatically
+			// just because the associated properties have all been removed.
+			assertTrue(person.getAspectNames().contains("cm:titled"));
+		}
+	}
+
+	/**
+	 * Simple helper to make JSON literals a little easier to read in test code,
+	 * by allowing values that would normally be quoted with double quotes, to be
+	 * quoted with <strong>backticks</strong> instead.
+	 * <p>
+	 * Double and single quotes may still be used as normal, if required.
+	 * 
+	 * @param raw    The untreated JSON string to munge
+	 * @return JSON String with <strong>backticks</strong> replaced with double quotes.   
+	 */
+	private String qjson(String raw)
+	{
+		return raw.replace("`", "\"");
 	}
 	
 	public static class PersonJSONSerializer implements JSONAble

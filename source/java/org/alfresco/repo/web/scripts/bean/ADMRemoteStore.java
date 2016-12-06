@@ -626,32 +626,42 @@ public class ADMRemoteStore extends BaseRemoteStore
             return;
         }
         
-        try
+        final String runAsUser = getPathRunAsUser(path);
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            final NodeRef fileRef = fileInfo.getNodeRef();
-            this.nodeService.addAspect(fileRef, ContentModel.ASPECT_TEMPORARY, null);
-            
-            // ALF-17729
-            NodeRef parentFolderRef = unprotNodeService.getPrimaryParent(fileRef).getParentRef();
-            behaviourFilter.disableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
-            
-            try
+            @SuppressWarnings("synthetic-access")
+            public Void doWork() throws Exception
             {
-                this.nodeService.deleteNode(fileRef);
+                try
+                {
+                    final NodeRef fileRef = fileInfo.getNodeRef();
+                    // MNT-16371: Revoke ownership privileges for surf-config folder contents, to tighten access for former SiteManagers.
+                    nodeService.addAspect(fileRef, ContentModel.ASPECT_TEMPORARY, null);
+
+                    // ALF-17729
+                    NodeRef parentFolderRef = unprotNodeService.getPrimaryParent(fileRef).getParentRef();
+                    behaviourFilter.disableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
+
+                    try
+                    {
+                        nodeService.deleteNode(fileRef);
+                    }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
+                    }
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("deleteDocument: " + fileInfo.toString());
+                }
+                catch (AccessDeniedException ae)
+                {
+                    res.setStatus(Status.STATUS_UNAUTHORIZED);
+                    throw ae;
+                }
+                return null;
             }
-            finally
-            {
-                behaviourFilter.enableBehaviour(parentFolderRef, ContentModel.ASPECT_AUDITABLE);
-            }
-            
-            if (logger.isDebugEnabled())
-                logger.debug("deleteDocument: " + fileInfo.toString());
-        }
-        catch (AccessDeniedException ae)
-        {
-            res.setStatus(Status.STATUS_UNAUTHORIZED);
-            throw ae;
-        }
+        }, runAsUser);
     }
 
     /**

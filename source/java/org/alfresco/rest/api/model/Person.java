@@ -493,50 +493,62 @@ public class Person
 		if (wasSet(PROP_PERSON_COMPANY))
 		{
 			Company company = getCompany();
+
+			int setCount = 0;
 			if (company != null)
 			{
 				if (company.wasSet(ContentModel.PROP_ORGANIZATION))
 				{
+					setCount++;
 					properties.put(ContentModel.PROP_ORGANIZATION, company.getOrganization());
 				}
-				
+
 				if (company.wasSet(ContentModel.PROP_COMPANYADDRESS1))
 				{
+					setCount++;
 					properties.put(ContentModel.PROP_COMPANYADDRESS1, company.getAddress1());
 				}
-				
+
 				if (company.wasSet(ContentModel.PROP_COMPANYADDRESS2))
 				{
+					setCount++;
 					properties.put(ContentModel.PROP_COMPANYADDRESS2, company.getAddress2());
 				}
-				
+
 				if (company.wasSet(ContentModel.PROP_COMPANYADDRESS3))
 				{
+					setCount++;
 					properties.put(ContentModel.PROP_COMPANYADDRESS3, company.getAddress3());
 				}
 
 				if (company.wasSet(ContentModel.PROP_COMPANYPOSTCODE))
 				{
+					setCount++;
 					properties.put(ContentModel.PROP_COMPANYPOSTCODE, company.getPostcode());
 				}
 
 				if (company.wasSet(ContentModel.PROP_COMPANYTELEPHONE))
 				{
+					setCount++;
 					properties.put(ContentModel.PROP_COMPANYTELEPHONE, company.getTelephone());
 				}
-				
+
 				if (company.wasSet(ContentModel.PROP_COMPANYFAX))
 				{
+					setCount++;
 					properties.put(ContentModel.PROP_COMPANYFAX, company.getFax());
 				}
 
 				if (company.wasSet(ContentModel.PROP_COMPANYEMAIL))
 				{
+					setCount++;
 					properties.put(ContentModel.PROP_COMPANYEMAIL, company.getEmail());
 				}
 			}
-			else
+
+			if (setCount == 0)
 			{
+				// company was null or {} (no individual properties set)
 				properties.put(ContentModel.PROP_ORGANIZATION, null);
 				properties.put(ContentModel.PROP_COMPANYADDRESS1, null);
 				properties.put(ContentModel.PROP_COMPANYADDRESS2, null);

@@ -852,6 +852,11 @@ public class TestPeople extends EnterpriseTestApi
         // TODO: temp fix, set back to orig firstName
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
         people.update(personId, qjson("{ `firstName`:`Bill` }"), 200);
+
+        // -ve test: check that required/mandatory/non-null fields cannot be unset (or empty string)
+        people.update("people", personId, null, null, qjson("{ `firstName`:`` }"), null, "Expected 400 response when updating " + personId, 400);
+        people.update("people", personId, null, null, qjson("{ `email`:`` }"), null, "Expected 400 response when updating " + personId, 400);
+        people.update("people", personId, null, null, qjson("{ `emailNotificationsEnabled`:`` }"), null, "Expected 400 response when updating " + personId, 400);
     }
 
     @Test
@@ -996,7 +1001,6 @@ public class TestPeople extends EnterpriseTestApi
                         + "  \"location\":null,\n"
 
                         + "  \"company\": {\n"
-                        + "    \"organization\":null,\n" 
                         + "    \"address1\":null,\n"
                         + "    \"address2\":null,\n"
                         + "    \"address3\":null,\n"
@@ -1024,7 +1028,8 @@ public class TestPeople extends EnterpriseTestApi
         assertNull(updatedPerson.getLocation());
 
         assertNotNull(updatedPerson.getCompany());
-        assertNull(updatedPerson.getCompany().getOrganization());
+        assertNotNull(updatedPerson.getCompany().getOrganization());
+
         assertNull(updatedPerson.getCompany().getAddress1());
         assertNull(updatedPerson.getCompany().getAddress2());
         assertNull(updatedPerson.getCompany().getAddress3());
@@ -1036,6 +1041,19 @@ public class TestPeople extends EnterpriseTestApi
         assertNull(updatedPerson.getMobile());
         assertNull(updatedPerson.getTelephone());
         assertNull(updatedPerson.getUserStatus());
+
+        // test ability to unset company fields as a whole
+        response = people.update("people", personId, null, null,
+                "{\n"
+                        + "  \"company\": {} \n"
+                        + "}", params,
+                "Expected 200 response when updating " + personId, 200);
+
+        updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+
+        // note: empty company object is returned for backwards compatibility (with pre-existing getPerson API <= 5.1)
+        assertNotNull(updatedPerson.getCompany());
+        assertNull(updatedPerson.getCompany().getOrganization());
 
         // set at least one company field
         String updatedOrgName = "another org";
@@ -1064,7 +1082,6 @@ public class TestPeople extends EnterpriseTestApi
 
         // note: empty company object is returned for backwards compatibility (with pre-existing getPerson API <= 5.1)
         assertNotNull(updatedPerson.getCompany());
-
         assertNull(updatedPerson.getCompany().getOrganization());
     }
 
@@ -1103,6 +1120,10 @@ public class TestPeople extends EnterpriseTestApi
 
             assertEquals(enabled, updatedPerson.isEnabled());
         }
+
+        // -ve test: enabled flag cannot be null/empty
+        people.update("people", personId, null, null, qjson("{ `enabled`: null }"), null, "Expected 400 response when updating " + personId, 400);
+        people.update("people", personId, null, null, qjson("{ `enabled`: `` }"), null, "Expected 400 response when updating " + personId, 400);
 
         // Use non-admin user's own credentials
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId, "password"));

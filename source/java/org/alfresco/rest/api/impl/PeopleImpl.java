@@ -526,10 +526,18 @@ public class PeopleImpl implements People
 		{
 			throw new InvalidArgumentException("Field '"+fieldName+"' is null, but is required.");
 		}
+
+        // belts-and-braces - note: should not see empty string (since converted to null via custom json deserializer)
+        if ((fieldValue instanceof String) && ((String)fieldValue).isEmpty())
+        {
+            throw new InvalidArgumentException("Field '"+fieldName+"' is empty, but is required.");
+        }
 	}
 
     public Person update(String personId, final Person person)
     {
+        validateUpdatePersonData(person);
+
         boolean isAdmin = isAdminAuthority();
 
         String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -544,6 +552,18 @@ public class PeopleImpl implements People
 
         // if requested, update password
         updatePassword(isAdmin, personIdToUpdate, person);
+
+        if (person.isEnabled() != null)
+        {
+            if (isAdminAuthority(personIdToUpdate))
+            {
+                throw new PermissionDeniedException("Admin authority cannot be disabled.");
+            }
+
+            // note: if current user is not an admin then permission denied exception is thrown
+            MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
+        }
 
 		NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
 		if (person.wasSet(Person.PROP_PERSON_DESCRIPTION))
@@ -577,6 +597,29 @@ public class PeopleImpl implements People
 		nodes.updateCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
 		
         return getPerson(personId);
+    }
+
+    private void validateUpdatePersonData(Person person)
+    {
+        if (person.wasSet(ContentModel.PROP_FIRSTNAME))
+        {
+            checkRequiredField("firstName", person.getFirstName());
+        }
+
+        if (person.wasSet(ContentModel.PROP_EMAIL))
+        {
+            checkRequiredField("email", person.getEmail());
+        }
+
+        if (person.wasSet(ContentModel.PROP_ENABLED) && (person.isEnabled() == null))
+        {
+            throw new IllegalArgumentException("'enabled' field cannot be empty.");
+        }
+
+        if (person.wasSet(ContentModel.PROP_EMAIL_FEED_DISABLED) && (person.isEmailNotificationsEnabled() == null))
+        {
+            throw new IllegalArgumentException("'emailNotificationsEnabled' field cannot be empty.");
+        }
     }
 
     private void updatePassword(boolean isAdmin, String personIdToUpdate, Person person)
@@ -626,17 +669,6 @@ public class PeopleImpl implements People
                 mutableAuthenticationService.setAuthentication(personIdToUpdate, newPassword);
             }
         }
-
-        if (person.isEnabled() != null)
-        {
-            if (isAdminAuthority(personIdToUpdate))
-            {
-                throw new PermissionDeniedException("Admin authority cannot be disabled.");
-            }
-
-            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
-        }
-
     }
 
     private boolean isAdminAuthority()

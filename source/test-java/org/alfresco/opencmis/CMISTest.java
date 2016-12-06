@@ -2600,6 +2600,10 @@ public class CMISTest
                     // and one
                     changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, BigInteger.valueOf(1), null);
                     assertEquals("Expected to still get changes", changes.getObjects().size(), 1);
+                    // Integery.MAX_VALUE must be handled
+                    //      This will limit the number to a sane value
+                    changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, BigInteger.valueOf(Integer.MAX_VALUE), null);
+                    assertTrue("Expected to still get changes", changes.getObjects().size() >= expectAtLeast);
                     // but not negative
                     try
                     {

@@ -471,6 +471,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             throw new IllegalArgumentException("The default maximum number of content changes to retrieve must be greater than zero.");
         }
+        else if (contentChangesDefaultMaxItems == Integer.MAX_VALUE)
+        {
+            throw new IllegalArgumentException("The server cannot return " + Integer.MAX_VALUE + " content changes in a request!");
+        }
         this.contentChangesDefaultMaxItems = contentChangesDefaultMaxItems;
     }
 
@@ -3698,8 +3702,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         params.setForward(true);
         params.setFromId(from);
 
+        // So we have a BigInteger.  We need to ensure that we cut it down to an integer smaller than Integer.MAX_VALUE
+        
         int maxResults = (maxItems == null ? contentChangesDefaultMaxItems : maxItems.intValue());
         maxResults = maxResults < 1 ? contentChangesDefaultMaxItems : maxResults;           // Just a double check of the unbundled contents
+        maxResults = maxResults > contentChangesDefaultMaxItems ? contentChangesDefaultMaxItems : maxResults;   // cut it down
         int queryFor = maxResults + 1;                          // Query for 1 more so that we know if there are more results
 
         auditService.auditQuery(changeLogCollectingCallback, params, queryFor);

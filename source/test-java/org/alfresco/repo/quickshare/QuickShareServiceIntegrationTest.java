@@ -620,8 +620,8 @@ public class QuickShareServiceIntegrationTest
         QuickShareLinkExpiryAction expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
         assertEquals(quickShareDTO.getId(), expiryAction.getSharedId());
         assertEquals(quickShareDTO.getExpiresAt(), expiryAction.getScheduleStart());
-       // assertNull("We haven't set interval count.", expiryAction.getScheduleIntervalCount());
-        //assertNull("We haven't set interval period.", expiryAction.getScheduleIntervalPeriod());
+        assertNull("We haven't set interval count.", expiryAction.getScheduleIntervalCount());
+        assertNull("We haven't set interval period.", expiryAction.getScheduleIntervalPeriod());
 
         // Try to share the already shared node with a different expiry date.
         // This basically will update the expiry action start time
@@ -635,8 +635,8 @@ public class QuickShareServiceIntegrationTest
         expiryAction = getExpiryActionAndAttachSchedule(quickShareDTO.getId());
         assertEquals(quickShareDTO.getId(), expiryAction.getSharedId());
         assertEquals(quickShareDTO.getExpiresAt(), expiryAction.getScheduleStart());
-        //assertNull("We haven't set interval count.", expiryAction.getScheduleIntervalCount());
-       // assertNull("We haven't set interval period.", expiryAction.getScheduleIntervalPeriod());
+        assertNull("We haven't set interval count.", expiryAction.getScheduleIntervalCount());
+        assertNull("We haven't set interval period.", expiryAction.getScheduleIntervalPeriod());
 
         // Delete the expiry action
         deleteExpiryAction(expiryAction);

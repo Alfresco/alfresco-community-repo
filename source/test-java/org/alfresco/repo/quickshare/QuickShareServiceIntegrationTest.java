@@ -125,7 +125,7 @@ public class QuickShareServiceIntegrationTest
     private static CopyService copyService;
     private static NodeService nodeService;
     private static QuickShareService quickShareService;
-    private static QuickShareService directDuickShareService;
+    private static QuickShareService directQuickShareService;
     private static Repository repository;
     private static AttributeService attributeService;
     private static PermissionService permissionService;
@@ -163,7 +163,7 @@ public class QuickShareServiceIntegrationTest
         
         copyService = ctx.getBean("CopyService", CopyService.class);
         nodeService = ctx.getBean("NodeService", NodeService.class);
-        directDuickShareService = ctx.getBean("quickShareService", QuickShareService.class);
+        directQuickShareService = ctx.getBean("quickShareService", QuickShareService.class);
         quickShareService = ctx.getBean("QuickShareService", QuickShareService.class);
         repository = ctx.getBean("repositoryHelper", Repository.class);
         attributeService = ctx.getBean("AttributeService", AttributeService.class);
@@ -734,7 +734,7 @@ public class QuickShareServiceIntegrationTest
              * Set the expiry date period enforcement to Days
              */
             {
-                ((QuickShareServiceImpl) directDuickShareService).setExpiryDatePeriod("DAYS");
+                ((QuickShareServiceImpl) directQuickShareService).setExpiryDatePeriod("DAYS");
 
                 try
                 {
@@ -778,7 +778,7 @@ public class QuickShareServiceIntegrationTest
              * Set the expiry date period enforcement to Hours
              */
             {
-                ((QuickShareServiceImpl) directDuickShareService).setExpiryDatePeriod("HOURS");
+                ((QuickShareServiceImpl) directQuickShareService).setExpiryDatePeriod("HOURS");
 
                 try
                 {
@@ -812,7 +812,7 @@ public class QuickShareServiceIntegrationTest
              * Set the expiry date period enforcement to Minutes
              */
             {
-                ((QuickShareServiceImpl) directDuickShareService).setExpiryDatePeriod("MINUTES");
+                ((QuickShareServiceImpl) directQuickShareService).setExpiryDatePeriod("MINUTES");
 
                 try
                 {
@@ -845,7 +845,7 @@ public class QuickShareServiceIntegrationTest
         }
         finally
         {
-            ((QuickShareServiceImpl) directDuickShareService).setExpiryDatePeriod(defaultExpiryDatePeriod);
+            ((QuickShareServiceImpl) directQuickShareService).setExpiryDatePeriod(defaultExpiryDatePeriod);
         }
     }
 

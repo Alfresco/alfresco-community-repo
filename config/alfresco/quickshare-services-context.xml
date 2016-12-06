@@ -99,6 +99,9 @@
 
     <bean id="quickShareLinkExpiryActionExecutor" parent="action-executer"
           class="org.alfresco.repo.quickshare.QuickShareLinkExpiryActionExecutor">
+        <property name="publicAction">
+            <value>false</value>
+        </property>
         <property name="quickShareService" ref="quickShareService"/>
     </bean>
 

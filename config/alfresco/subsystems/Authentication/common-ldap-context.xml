@@ -96,6 +96,18 @@
       <property name="personService">
          <ref bean="PersonService" />
       </property>
+      <property name="protectedUsersCache">
+         <ref bean="protectedUsersCache" />
+      </property>
+      <property name="protectionEnabled">
+         <value>${authentication.protection.enabled}</value>
+      </property>
+      <property name="protectionLimit">
+         <value>${authentication.protection.limit}</value>
+      </property>
+      <property name="protectionPeriodSeconds">
+         <value>${authentication.protection.periodSeconds}</value>
+      </property>
    </bean>
 
    <!--

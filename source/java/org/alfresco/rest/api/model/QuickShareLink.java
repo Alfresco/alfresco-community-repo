@@ -45,41 +45,42 @@ import java.util.List;
  */
 public class QuickShareLink
 {
-	// unique short id (ie. shorter than a guid, 22 vs 36 chars)
-	private String sharedId;
+    // unique short id (ie. shorter than a guid, 22 vs 36 chars)
+    private String sharedId;
 
     private Date expiresAt;
 
-	private String nodeId;
+    private String nodeId;
 
-	private String name;
-	private ContentInfo content;
+    private String name;
 
-	private Date modifiedAt;
-	private UserInfo modifiedByUser;
+    private ContentInfo content;
 
-	private UserInfo sharedByUser;
+    private Date modifiedAt;
+    private UserInfo modifiedByUser;
 
-	private List<String> allowableOperations;
+    private UserInfo sharedByUser;
+
+    private List<String> allowableOperations;
 
 
-	public QuickShareLink()
-	{
-	}
+    public QuickShareLink()
+    {
+    }
 
-	public QuickShareLink(String sharedId, String nodeId)
-	{
-		this.sharedId = sharedId;
-		this.nodeId = nodeId;
-	}
+    public QuickShareLink(String sharedId, String nodeId)
+    {
+        this.sharedId = sharedId;
+        this.nodeId = nodeId;
+    }
 
     public String getId() {
         return sharedId;
     }
 
-	public void setId(String sharedId) {
-		this.sharedId = sharedId;
-	}
+    public void setId(String sharedId) {
+        this.sharedId = sharedId;
+    }
 
     public Date getExpiresAt()
     {
@@ -92,88 +93,88 @@ public class QuickShareLink
     }
 
     public String getNodeId() {
-		return nodeId;
-	}
+        return nodeId;
+    }
 
-	public void setNodeId(String nodeId) {
-		this.nodeId = nodeId;
-	}
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
 
-	public ContentInfo getContent()
-	{
-		return content;
-	}
+    public ContentInfo getContent()
+    {
+        return content;
+    }
 
-	public void setContent(ContentInfo content)
-	{
-		this.content = content;
-	}
+    public void setContent(ContentInfo content)
+    {
+        this.content = content;
+    }
 
-	public String getName()
-	{
-		return name;
-	}
+    public String getName()
+    {
+        return name;
+    }
 
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public Date getModifiedAt()
-	{
-		return modifiedAt;
-	}
+    public Date getModifiedAt()
+    {
+        return modifiedAt;
+    }
 
-	public void setModifiedAt(Date modifiedAt)
-	{
-		this.modifiedAt = modifiedAt;
-	}
+    public void setModifiedAt(Date modifiedAt)
+    {
+        this.modifiedAt = modifiedAt;
+    }
 
-	public UserInfo getModifiedByUser()
-	{
-		return modifiedByUser;
-	}
+    public UserInfo getModifiedByUser()
+    {
+        return modifiedByUser;
+    }
 
-	public void setModifiedByUser(UserInfo modifiedByUser)
-	{
-		this.modifiedByUser = modifiedByUser;
-	}
+    public void setModifiedByUser(UserInfo modifiedByUser)
+    {
+        this.modifiedByUser = modifiedByUser;
+    }
 
-	public UserInfo getSharedByUser()
-	{
-		return sharedByUser;
-	}
+    public UserInfo getSharedByUser()
+    {
+        return sharedByUser;
+    }
 
-	public void setSharedByUser(UserInfo sharedByUser)
-	{
-		this.sharedByUser = sharedByUser;
-	}
+    public void setSharedByUser(UserInfo sharedByUser)
+    {
+        this.sharedByUser = sharedByUser;
+    }
 
-	public List<String> getAllowableOperations()
-	{
-		return allowableOperations;
-	}
+    public List<String> getAllowableOperations()
+    {
+        return allowableOperations;
+    }
 
-	public void setAllowableOperations(List<String> allowableOperations)
-	{
-		this.allowableOperations = allowableOperations;
-	}
+    public void setAllowableOperations(List<String> allowableOperations)
+    {
+        this.allowableOperations = allowableOperations;
+    }
 
-	// eg. for debug logging etc
+    // eg. for debug logging etc
     @Override
-	public String toString()
-	{
-		StringBuilder sb = new StringBuilder();
-		sb.append("QuickShareLink [id=").append(getId());
-		sb.append(", nodeId=").append(getNodeId());
-		sb.append(", name=").append(getName());
-		sb.append(", modifiedAt=").append(getModifiedAt());
-		sb.append(", modifiedByUser=").append(getModifiedByUser());
-		sb.append(", sharedByUser=").append(getSharedByUser());
-		sb.append(", content=").append(getContent());
-		sb.append(", allowableOperations=").append(getAllowableOperations());
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("QuickShareLink [id=").append(getId());
+        sb.append(", nodeId=").append(getNodeId());
+        sb.append(", name=").append(getName());
+        sb.append(", modifiedAt=").append(getModifiedAt());
+        sb.append(", modifiedByUser=").append(getModifiedByUser());
+        sb.append(", sharedByUser=").append(getSharedByUser());
+        sb.append(", content=").append(getContent());
+        sb.append(", allowableOperations=").append(getAllowableOperations());
         sb.append(", expiresAt=").append(getExpiresAt());
-		sb.append("]");
-		return sb.toString();
-	}
+        sb.append("]");
+        return sb.toString();
+    }
 }

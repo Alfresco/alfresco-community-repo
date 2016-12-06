@@ -104,7 +104,6 @@ public class PeopleImpl implements People
 	protected SiteService siteService;
 	protected NodeService nodeService;
     protected PersonService personService;
-    protected PersonService unprotectedPersonService;
     protected AuthenticationService authenticationService;
     protected AuthorityService authorityService;
     protected ContentUsageService contentUsageService;
@@ -145,11 +144,6 @@ public class PeopleImpl implements People
     {
 		this.personService = personService;
 	}
-
-    public void setUnprotectedPersonService(PersonService unprotectedPersonService)
-    {
-        this.unprotectedPersonService = unprotectedPersonService;
-    }
 
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -583,16 +577,17 @@ public class PeopleImpl implements People
 			Map<String, Object> customProps = person.getProperties();
 			properties.putAll(nodes.mapToNodeProperties(customProps));
 		}
-        
-		// The person service only allows admin users to set the properties by default.
-        if (!isAdminAuthority())
+
+        // The person service only allows admin users to set the properties by default.
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            unprotectedPersonService.setPersonProperties(personIdToUpdate, properties, false);
-        }
-        else
-        {
-            personService.setPersonProperties(personIdToUpdate, properties, false);
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                personService.setPersonProperties(personIdToUpdate, properties, false);
+                return null;
+            }
+        });
 
 		// Update custom aspects
 		nodes.updateCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);

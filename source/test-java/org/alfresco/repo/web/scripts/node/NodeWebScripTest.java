@@ -34,7 +34,6 @@ import java.util.Map;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.dictionary.DictionaryModelTypeTest;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -583,6 +582,23 @@ public class NodeWebScripTest extends BaseWebScriptTest
 
         json = asJSON(sendRequest(req, Status.STATUS_BAD_REQUEST));
 
+        //create a file and a link to that file inside the documentLibrary 
+        NodeRef site2DocLib = siteService.getContainer(TEST_SITE.getShortName(), SiteService.DOCUMENT_LIBRARY);
+        NodeRef testFileSite2 = createNode(site2DocLib, "testingLinkCreationFileInSite2", ContentModel.TYPE_CONTENT,
+                AuthenticationUtil.getAdminUserName());
+        req = new Request("POST", CREATE_LINK_API + testFolder1.getStoreRef().getProtocol() + "/"
+                + testFolder1.getStoreRef().getIdentifier() + "/" + testFolder1.getId());
+        jsonReq = new JSONObject();
+        jsonReq.put(DESTINATION_NODE_REF_PARAM, site2DocLib.toString());
+        jsonArray = new JSONArray();
+        jsonArray.add(testFileSite2.toString());
+        jsonReq.put(MULTIPLE_FILES_PARAM, jsonArray);
+        req.setBody(jsonReq.toString().getBytes());
+        req.setType(MimetypeMap.MIMETYPE_JSON);
+
+        json = asJSON(sendRequest(req, Status.STATUS_OK));
+
+        //links are created with success, try to delete site2 - should succeed
         siteService.deleteSite(site2.getShortName());
         nodeArchiveService.purgeArchivedNode(nodeArchiveService.getArchivedNode(siteNodeRef));
 
@@ -745,7 +761,6 @@ public class NodeWebScripTest extends BaseWebScriptTest
         nodeService.exists(testFileSite3Link);
         assertEquals(true, nodeService.hasAspect(testFile6, ApplicationModel.ASPECT_LINKED));
 
-        nodeService.deleteNode(testFileSite3Link);
     }
 
     private NodeRef createNode(NodeRef parentNode, String nodeCmName, QName nodeType, String ownerUserName)

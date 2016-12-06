@@ -393,7 +393,14 @@ public class PeopleImpl implements People
 		{
 			throw new ConstraintViolatedException("Person '"+person.getUserName()+"' already exists.");
 		}
-		Map<QName, Serializable> props = person.toProperties();
+
+		// set enabled default value true
+        if (person.isEnabled() == null)
+        {
+            person.setEnabled(true);
+        }
+
+        Map<QName, Serializable> props = person.toProperties();
 
 		MutableAuthenticationService mas = (MutableAuthenticationService) authenticationService;
 		mas.createAuthentication(person.getUserName(), person.getPassword().toCharArray());
@@ -437,7 +444,6 @@ public class PeopleImpl implements People
 		checkRequiredField("id", person.getUserName());
 		checkRequiredField("firstName", person.getFirstName());
 		checkRequiredField("email", person.getEmail());
-		checkRequiredField("enabled", person.isEnabled());
 		checkRequiredField("password", person.getPassword());
 	}
 	

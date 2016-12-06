@@ -318,7 +318,6 @@ public class TestPeople extends EnterpriseTestApi
 			person.setUserName("joe.bloggs.2@"+account1.getId());
 			person.setFirstName("Joe");
 			person.setEmail("joe.bloggs.2@example.com");
-			person.setEnabled(true);
 			person.setPassword("password-is-secret");
 
 			Person p = people.create(person);

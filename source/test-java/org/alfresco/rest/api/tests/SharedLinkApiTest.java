@@ -25,7 +25,15 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionImpl;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.impl.QuickShareLinksImpl;
@@ -41,6 +49,11 @@ import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
+import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryAction;
+import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryActionPersister;
+import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -53,9 +66,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.*;
 
 /**
  * V1 REST API tests for Shared Links (aka public "quick shares")
@@ -70,7 +80,18 @@ import static org.junit.Assert.*;
 public class SharedLinkApiTest extends AbstractBaseApiTest
 {
     private static final String URL_SHARED_LINKS = "shared-links";
-    
+
+    private QuickShareLinkExpiryActionPersister quickShareLinkExpiryActionPersister;
+    private ScheduledPersistedActionService scheduledPersistedActionService;
+
+    @Before
+    public void setup() throws Exception
+    {
+        super.setup();
+        quickShareLinkExpiryActionPersister = applicationContext.getBean("quickShareLinkExpiryActionPersister", QuickShareLinkExpiryActionPersister.class);
+        scheduledPersistedActionService = applicationContext.getBean("scheduledPersistedActionService", ScheduledPersistedActionService.class);
+    }
+
     /**
      * Tests shared links to file (content)
      *
@@ -854,6 +875,94 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         deleteSharedLink(shared1Id);
     }
 
+    /**
+     * Tests shared links to file with expiry date.
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links}
+     */
+    @Test
+    public void testSharedLinkWithExpiryDate() throws Exception
+    {
+        final int numOfSchedules = getSchedules();
+        setRequestContext(user1);
+
+        // Create plain text document
+        String myFolderNodeId = getMyNodeId();
+        String contentText = "The quick brown fox jumps over the lazy dog.";
+        String fileName = "file-" + RUNID + ".txt";
+        String docId = createTextFile(myFolderNodeId, fileName, contentText).getId();
+
+        // Create shared link to document
+        QuickShareLink body = new QuickShareLink();
+        body.setNodeId(docId);
+        // Invalid time - passed time
+        body.setExpiresAt(DateTime.now().minusSeconds(20).toDate());
+        post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), 400);
+
+        // The default expiryDate period is DAYS (see: 'system.quickshare.expiry_date.enforce.period' property),
+        // so the expiry date must be at least 1 day from now
+        body.setExpiresAt(DateTime.now().plusMinutes(5).toDate());
+        post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), 400);
+
+        // Set the expiry date to be in the next 2 days
+        Date time = DateTime.now().plusDays(2).toDate();
+        body.setExpiresAt(time);
+        // Post the share request
+        HttpResponse response = post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), 201);
+        QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        assertNotNull(resp.getId());
+        assertEquals(fileName, resp.getName());
+        assertEquals(time, resp.getExpiresAt());
+        // Check that the schedule is persisted
+        // Note: No need to check for expiry actions here, as the scheduledPersistedActionService
+        // checks that the expiry action is persisted first and if it wasn't will throw an exception.
+        assertEquals(numOfSchedules + 1, getSchedules());
+        // Delete the shared link
+        deleteSharedLink(resp.getId());
+        // Check the shred link has been deleted
+        getSingle(QuickShareLinkEntityResource.class, resp.getId(), null, 404);
+        // As we deleted the shared link, the expiry action and its related schedule should have been removed as well.
+        // Check that the schedule is deleted
+        assertEquals(numOfSchedules, getSchedules());
+
+        // Set the expiry date to be in the next 24 hours
+        time = DateTime.now().plusDays(1).toDate();
+        body.setExpiresAt(time);
+        // Post the share request
+        response = post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), 201);
+        resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        assertNotNull(resp.getId());
+        // Check that the schedule is persisted
+        assertEquals(numOfSchedules + 1, getSchedules());
+        // Get the shared link info
+        response = getSingle(QuickShareLinkEntityResource.class, resp.getId(), null, 200);
+        resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(fileName, resp.getName());
+        assertEquals(time, resp.getExpiresAt());
+        // Change the expiry time to be in the next 6 seconds.
+        // Here we'll bypass the QuickShareService in order to force the new time.
+        // As the QuickShareService by default will enforce the expiry date to not be less than 24 hours.
+        forceNewExpiryTime(resp.getId(), DateTime.now().plusSeconds(6).toDate());
+        // Wait for 10 seconds - the expiry action should be triggered in the next 6 seconds.
+        Thread.sleep((10000));
+        // Check that the expiry action unshared the link
+        getSingle(QuickShareLinkEntityResource.class, resp.getId(), null, 404);
+        // The expiry action and its related schedule should have been removed after the link unshared by the action executor.
+        // Check that the schedule is deleted
+        assertEquals(numOfSchedules, getSchedules());
+
+        // Create a shared link without an expiry date
+        body.setExpiresAt(null);
+        response = post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), 201);
+        resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        assertNotNull(resp.getId());
+        assertNull("The 'expiryDate' property should have benn null.", resp.getExpiresAt());
+        assertEquals(numOfSchedules, getSchedules());
+
+        // Delete the share link that hasn't got an expiry date
+        deleteSharedLink(resp.getId());
+    }
+
     @Override
     public String getScope()
     {
@@ -873,5 +982,30 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     private void deleteSharedLink(String sharedId, int expectedStatus) throws Exception
     {
         delete(URL_SHARED_LINKS, sharedId, expectedStatus);
+    }
+
+    private void forceNewExpiryTime(String sharedId, Date date)
+    {
+        TenantUtil.runAsSystemTenant(() -> {
+            // Load the expiry action and attach the schedule
+            QuickShareLinkExpiryAction linkExpiryAction = quickShareLinkExpiryActionPersister
+                        .loadQuickShareLinkExpiryAction(QuickShareLinkExpiryActionImpl.createQName(sharedId));
+            linkExpiryAction.setSchedule(scheduledPersistedActionService.getSchedule(linkExpiryAction));
+            linkExpiryAction.setScheduleStart(date);
+
+            // save the expiry action and the schedule
+            transactionHelper.doInTransaction(() -> {
+                quickShareLinkExpiryActionPersister.saveQuickShareLinkExpiryAction(linkExpiryAction);
+                scheduledPersistedActionService.saveSchedule(linkExpiryAction.getSchedule());
+                return null;
+            });
+
+            return null;
+        }, TenantUtil.getCurrentDomain());
+    }
+
+    private int getSchedules()
+    {
+        return TenantUtil.runAsSystemTenant(() -> scheduledPersistedActionService.listSchedules().size(), TenantUtil.getCurrentDomain());
     }
 }

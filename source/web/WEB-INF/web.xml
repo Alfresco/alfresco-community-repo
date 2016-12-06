@@ -104,7 +104,6 @@
       <filter-class>org.springframework.extensions.webscripts.servlet.CSRFFilter</filter-class>
    </filter>
 
-   <!-- AOSM filter placeholder -->
 
    <!-- CORS Filter Begin -->
    <!--<filter>
@@ -247,8 +246,6 @@
       <filter-name>CSRF Token Filter</filter-name>
       <url-pattern>/s/enterprise/admin/*</url-pattern>
    </filter-mapping>
-
-   <!-- AOSM filter-mapping placeholder -->
 
    <!-- Enterprise filter-mapping placeholder -->
 
@@ -431,8 +428,6 @@
       </init-param>
    </servlet>
 
-   <!-- AOSM servlet placeholder -->
-
    <!-- Enterprise servlet placeholder -->
 
    <servlet-mapping>
@@ -527,8 +522,6 @@
       <url-pattern>/cmistck</url-pattern>
    </servlet-mapping>
    CMISTCK -->
-
-   <!-- AOSM servlet-mapping placeholder -->
 
    <!-- Enterprise servlet-mapping placeholder -->
 

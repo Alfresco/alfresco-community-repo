@@ -25,18 +25,13 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.Serializable;
+import java.util.*;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.Pair;
@@ -47,10 +42,16 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.simple.JSONObject;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestPeople extends EnterpriseTestApi
@@ -91,7 +92,17 @@ public class TestPeople extends EnterpriseTestApi
 
         account3.createUser();
         account3PersonIt = account3.getPersonIds().iterator();
+		
+		// Capture authentication pre-test, so we can restore it again afterwards.
+		AuthenticationUtil.pushAuthentication();
     }
+    
+    @After
+	public void tearDown()
+	{
+		// Restore authentication to pre-test state.
+		AuthenticationUtil.popAuthentication();
+	}
 
     private TestNetwork createNetwork(String networkPrefix)
     {
@@ -424,7 +435,192 @@ public class TestPeople extends EnterpriseTestApi
 			people.create(person, 409);
 		}
 	}
+	
+	@Test
+	public void testGetPerson_withCustomProps() throws PublicApiException
+	{
+		// Create the person directly using the Java services - we don't want to test
+		// the REST API's "create person" function here, so we're isolating this test from it.
+		PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
+		NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
+		Map<QName, Serializable> nodeProps = new HashMap<>();
+		// The cm:titled aspect should be auto-added for the cm:title property
+		nodeProps.put(ContentModel.PROP_TITLE, "A title");
+		
+		// These properties should not be present when a person is retrieved
+		// since they are present as top-level fields.
+		nodeProps.put(ContentModel.PROP_USERNAME, "docbrown@"+account1.getId());
+		nodeProps.put(ContentModel.PROP_FIRSTNAME, "Doc");
+		nodeProps.put(ContentModel.PROP_LASTNAME, "Brown");
+		nodeProps.put(ContentModel.PROP_JOBTITLE, "Inventor");
+		nodeProps.put(ContentModel.PROP_LOCATION, "Location");
+		nodeProps.put(ContentModel.PROP_TELEPHONE, "123345");
+		nodeProps.put(ContentModel.PROP_MOBILE, "456456");
+		nodeProps.put(ContentModel.PROP_EMAIL, "doc.brown@example.com");
+		nodeProps.put(ContentModel.PROP_ORGANIZATION, "Acme");
+		nodeProps.put(ContentModel.PROP_COMPANYADDRESS1, "123 Acme Crescent");
+		nodeProps.put(ContentModel.PROP_COMPANYADDRESS2, "Cholsey");
+		nodeProps.put(ContentModel.PROP_COMPANYADDRESS3, "Oxfordshire");
+		nodeProps.put(ContentModel.PROP_COMPANYPOSTCODE, "OX10 1AB");
+		nodeProps.put(ContentModel.PROP_COMPANYTELEPHONE, "098876234");
+		nodeProps.put(ContentModel.PROP_COMPANYFAX, "098234876");
+		nodeProps.put(ContentModel.PROP_COMPANYEMAIL, "info@example.com");
+		nodeProps.put(ContentModel.PROP_SKYPE, "doc.brown");
+		nodeProps.put(ContentModel.PROP_INSTANTMSG, "doc.brown.instmsg");
+		nodeProps.put(ContentModel.PROP_USER_STATUS, "status");
+		nodeProps.put(ContentModel.PROP_USER_STATUS_TIME, new Date());
+		nodeProps.put(ContentModel.PROP_GOOGLEUSERNAME, "doc.brown.google");
+		nodeProps.put(ContentModel.PROP_SIZE_QUOTA, 12345000);
+		nodeProps.put(ContentModel.PROP_SIZE_CURRENT, 1230);
+		nodeProps.put(ContentModel.PROP_EMAIL_FEED_DISABLED, false);
+		// TODO: PROP_PERSON_DESCRIPTION?
+		
+		// Namespace that should be filtered
+		nodeProps.put(ContentModel.PROP_SYS_NAME, "name-value");
+		
+		AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+		personService.createPerson(nodeProps);
+		
+		// Get the person using the REST API
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+		Person person = people.getPerson("docbrown@"+account1.getId());
+		
+		// Did we get the correct aspects/properties?
+		assertEquals("docbrown@"+account1.getId(), person.getId());
+		assertEquals("Doc", person.getFirstName());
+		assertEquals("A title", person.getProperties().get("cm:title"));
+		assertTrue(person.getAspectNames().contains("cm:titled"));
+		
+		// Properties that are already represented as specific fields in the API response (e.g. firstName, lastName...)
+		// must be filtered from the generic properties datastructure.
+		assertFalse(person.getProperties().containsKey("cm:userName"));
+		assertFalse(person.getProperties().containsKey("cm:firstName"));
+		assertFalse(person.getProperties().containsKey("cm:lastName"));
+		assertFalse(person.getProperties().containsKey("cm:jobtitle"));
+		assertFalse(person.getProperties().containsKey("cm:location"));
+		assertFalse(person.getProperties().containsKey("cm:telephone"));
+		assertFalse(person.getProperties().containsKey("cm:mobile"));
+		assertFalse(person.getProperties().containsKey("cm:email"));
+		assertFalse(person.getProperties().containsKey("cm:organization"));
+		assertFalse(person.getProperties().containsKey("cm:companyaddress1"));
+		assertFalse(person.getProperties().containsKey("cm:companyaddress2"));
+		assertFalse(person.getProperties().containsKey("cm:companyaddress3"));
+		assertFalse(person.getProperties().containsKey("cm:companypostcode"));
+		assertFalse(person.getProperties().containsKey("cm:companytelephone"));
+		assertFalse(person.getProperties().containsKey("cm:companyfax"));
+		assertFalse(person.getProperties().containsKey("cm:companyemail"));
+		assertFalse(person.getProperties().containsKey("cm:skype"));
+		assertFalse(person.getProperties().containsKey("cm:instantmsg"));
+		assertFalse(person.getProperties().containsKey("cm:userStatus"));
+		assertFalse(person.getProperties().containsKey("cm:userStatusTime"));
+		assertFalse(person.getProperties().containsKey("cm:googleusername"));
+		assertFalse(person.getProperties().containsKey("cm:sizeQuota"));
+		assertFalse(person.getProperties().containsKey("cm:sizeCurrent"));
+		assertFalse(person.getProperties().containsKey("cm:emailFeedDisabled"));
+		assertFalse(person.getProperties().containsKey("cm:persondescription"));
+		
+		// Check that no properties are present that should have been filtered.
+		for (String key : person.getProperties().keySet())
+		{
+			if (key.startsWith("sys:"))
+			{
+				Object value = person.getProperties().get(key);
+				String keyValueStr = String.format("(key=%s, value=%s)", key, value);
+				fail("Property " + keyValueStr +
+						" found with namespace that should have been excluded.");
+			}
+		}
+	}
+	
+	@Test
+	public void testCreatePerson_withCustomProps() throws Exception
+	{
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+		Person person = new Person();
+		person.setUserName("jbloggs@"+account1.getId());
+		person.setFirstName("Joe");
+		person.setEmail("jbloggs@"+account1.getId());
+		person.setEnabled(true);
+		person.setPassword("password123");
+		
+		Map<String, Object> props = new HashMap<>();
+		props.put("cm:title", "This is a title");
+		person.setProperties(props);
 
+		// Explicitly add an aspect
+		List<String> aspectNames = new ArrayList<>();
+		aspectNames.add("cm:classifiable");
+		person.setAspectNames(aspectNames);
+		
+		// REST API call to create person
+		Person retPerson = people.create(person);
+		
+		// Check that the response contains the expected aspects and properties
+		assertTrue(retPerson.getAspectNames().contains("cm:titled"));
+		assertTrue(retPerson.getAspectNames().contains("cm:classifiable"));
+		assertEquals("This is a title", retPerson.getProperties().get("cm:title"));
+		
+		// Get the NodeRef
+		AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+		PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
+		NodeRef nodeRef = personService.getPerson("jbloggs@"+account1.getId(), false);
+
+		// Check the node has the properties and aspects we expect
+		NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
+		assertTrue(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED));
+		assertTrue(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE));
+		
+		Map<QName, Serializable> retProps = nodeService.getProperties(nodeRef);
+		assertEquals("This is a title", retProps.get(ContentModel.PROP_TITLE));
+	}
+
+	@Test
+	public void testUpdatePerson_withCustomProps() throws Exception
+	{
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+		Person person = new Person();
+		String personId = "jbloggs2@"+account1.getId();
+		person.setUserName(personId);
+		person.setFirstName("Joe");
+		person.setEmail("jbloggs2@"+account1.getId());
+		person.setEnabled(true);
+		person.setPassword("password123");
+		Map<String, Object> props = new HashMap<>();
+		props.put("cm:title", "Initial title");
+		person.setProperties(props);
+		
+		person = people.create(person);
+		assertEquals("Initial title", person.getProperties().get("cm:title"));
+		assertTrue(person.getAspectNames().contains("cm:titled"));
+		
+		// Update property
+		person.getProperties().put("cm:title", "Updated title");
+
+		// ID/UserName is not a valid field for update.
+		person.setUserName(null);
+		// TODO: We don't want to attempt to set ownable using the text available?! ...it won't work
+		person.getProperties().remove("cm:owner");
+		person.getAspectNames().clear();
+		person = people.update(personId, person);
+		assertEquals("Updated title", person.getProperties().get("cm:title"));
+		assertTrue(person.getAspectNames().contains("cm:titled"));
+		
+		// Remove property
+		person.getProperties().put("cm:title", null);
+
+		// TODO: We don't want to attempt to set ownable using the text available?! ...it won't work
+		person.getProperties().remove("cm:owner");
+		person.getAspectNames().clear();
+		
+		person.setUserName(null);
+		person = people.update(personId, person);
+		
+		assertFalse(person.getProperties().containsKey("cm:title"));
+		// The aspect will still be there, I don't think we can easily remove the aspect automatically
+		// just because the associated properties have all been removed.
+		assertTrue(person.getAspectNames().contains("cm:titled"));
+	}
+	
 	public static class PersonJSONSerializer implements JSONAble
 	{
 		private final Person personUpdate;
@@ -439,7 +635,10 @@ public class TestPeople extends EnterpriseTestApi
 		{
 			JSONObject personJson = new JSONObject();
 
-			personJson.put("id", personUpdate.getUserName());
+			if (personUpdate.getUserName() != null)
+			{
+				personJson.put("id", personUpdate.getUserName());
+			}
 			personJson.put("firstName", personUpdate.getFirstName());
 			personJson.put("lastName", personUpdate.getLastName());
 
@@ -462,7 +661,8 @@ public class TestPeople extends EnterpriseTestApi
 			personJson.put("enabled", personUpdate.isEnabled());
 			personJson.put("emailNotificationsEnabled", personUpdate.isEmailNotificationsEnabled());
 			personJson.put("password", personUpdate.getPassword());
-
+			personJson.put("properties", personUpdate.getProperties());
+			personJson.put("aspectNames", personUpdate.getAspectNames());
 			return personJson;
 		}
 	}

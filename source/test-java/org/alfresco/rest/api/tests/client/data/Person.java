@@ -85,7 +85,9 @@ public class Person
                   Long quotaUsed,
                   Boolean emailNotificationsEnabled,
                   String description,
-                  org.alfresco.rest.api.model.Company company)
+                  org.alfresco.rest.api.model.Company company,
+                  Map<String, Object> properties,
+                  List<String> aspectNames)
     {
         super(userName,
                 enabled,
@@ -108,6 +110,8 @@ public class Person
                 description,
                 company);
         this.id = userName;
+        this.properties = properties;
+        this.aspectNames = aspectNames;
     }
 
     public String getId()
@@ -148,7 +152,10 @@ public class Person
     {
         JSONObject personJson = new JSONObject();
 
-        personJson.put("id", getId());
+        if (getUserName() != null)
+        {
+            personJson.put("id", getUserName());
+        }
         personJson.put("firstName", getFirstName());
         personJson.put("lastName", getLastName());
 
@@ -161,12 +168,17 @@ public class Person
             personJson.put("instantMessageId", getInstantMessageId());
             personJson.put("jobTitle", getJobTitle());
             personJson.put("location", getLocation());
-            personJson.put("company", new Company(company).toJSON());
+            if (company != null)
+            {
+                personJson.put("company", new Company(company).toJSON());
+            }
             personJson.put("mobile", getMobile());
             personJson.put("telephone", getTelephone());
             personJson.put("userStatus", getUserStatus());
             personJson.put("enabled", isEnabled());
             personJson.put("emailNotificationsEnabled", isEmailNotificationsEnabled());
+            personJson.put("properties", getProperties());
+            personJson.put("aspectNames", getAspectNames());
         }
         return personJson;
     }
@@ -214,6 +226,8 @@ public class Person
         String userStatus = (String) jsonObject.get("userStatus");
         Boolean enabled = (Boolean)jsonObject.get("enabled");
         Boolean emailNotificationsEnabled = (Boolean) jsonObject.get("emailNotificationsEnabled");
+        List<String> aspectNames = (List<String>) jsonObject.get("aspectNames");
+        Map<String, Object> properties = (Map<String, Object>) jsonObject.get("properties");
         
         Person person = new Person(
                 userId,
@@ -235,7 +249,9 @@ public class Person
                 null, // quotaUsers - not used
                 emailNotificationsEnabled,
                 description,
-                company
+                company,
+                properties,
+                aspectNames
         );
         return person;
     }

@@ -26,12 +26,7 @@
 package org.alfresco.rest.api.impl;
 
 import java.io.Serializable;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -76,6 +71,32 @@ import org.alfresco.util.Pair;
  */
 public class PeopleImpl implements People
 {
+	private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
+	private static final List<QName> EXCLUDED_PROPS = Arrays.asList(
+			ContentModel.PROP_USERNAME,
+			ContentModel.PROP_FIRSTNAME,
+			ContentModel.PROP_LASTNAME,
+			ContentModel.PROP_JOBTITLE,
+			ContentModel.PROP_LOCATION,
+			ContentModel.PROP_TELEPHONE,
+			ContentModel.PROP_MOBILE,
+			ContentModel.PROP_EMAIL,
+			ContentModel.PROP_ORGANIZATION,
+			ContentModel.PROP_COMPANYADDRESS1,
+			ContentModel.PROP_COMPANYADDRESS2,
+			ContentModel.PROP_COMPANYADDRESS3,
+			ContentModel.PROP_COMPANYPOSTCODE,
+			ContentModel.PROP_COMPANYTELEPHONE,
+			ContentModel.PROP_COMPANYFAX,
+			ContentModel.PROP_COMPANYEMAIL,
+			ContentModel.PROP_SKYPE,
+			ContentModel.PROP_INSTANTMSG,
+			ContentModel.PROP_USER_STATUS,
+			ContentModel.PROP_USER_STATUS_TIME,
+			ContentModel.PROP_GOOGLEUSERNAME,
+			ContentModel.PROP_SIZE_QUOTA,
+			ContentModel.PROP_SIZE_CURRENT,
+			ContentModel.PROP_EMAIL_FEED_DISABLED);
 	protected Nodes nodes;
 	protected Sites sites;
 
@@ -358,6 +379,18 @@ public class PeopleImpl implements People
             });
             person = new Person(personNode, nodeProps, enabled);
 
+            // Remove the temporary property used to help inline the person description content property.
+            // It may be accessed from the person object (person.getDescription()).
+            nodeProps.remove(Person.PROP_PERSON_DESCRIPTION);
+
+            // Expose properties
+            Map<String, Object> custProps = new HashMap<>();
+            custProps.putAll(nodes.mapFromNodeProperties(nodeProps, new ArrayList<>(), new HashMap<>(), EXCLUDED_PROPS));
+            person.setProperties(custProps);
+            // Expose aspect names
+            Set<QName> aspects = nodeService.getAspects(personNode);
+            person.setAspectNames(nodes.mapFromNodeAspects(aspects));
+            
             // get avatar information
             if (hasAvatar(personNode))
             {
@@ -405,8 +438,19 @@ public class PeopleImpl implements People
 		MutableAuthenticationService mas = (MutableAuthenticationService) authenticationService;
 		mas.createAuthentication(person.getUserName(), person.getPassword().toCharArray());
 		mas.setAuthenticationEnabled(person.getUserName(), person.isEnabled());
-		NodeRef nodeRef = personService.createPerson(props);
 
+		// Add custom properties
+		if (person.getProperties() != null)
+		{
+			Map<String, Object> customProps = person.getProperties();
+			props.putAll(nodes.mapToNodeProperties(customProps));
+		}
+		
+		NodeRef nodeRef = personService.createPerson(props);
+		
+		// Add custom aspects
+		nodes.addCustomAspects(nodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
+		
         // Write the contents of PersonUpdate.getDescription() text to a content file
         // and store the content URL in ContentModel.PROP_PERSONDESC
         if (person.getDescription() != null)
@@ -417,7 +461,7 @@ public class PeopleImpl implements People
         // Return a fresh retrieval
         return getPerson(person.getUserName());
     }
-
+	
     /**
      * Write the description to a content file and store the content URL in
      * ContentModel.PROP_PERSONDESC
@@ -483,19 +527,29 @@ public class PeopleImpl implements People
 
             mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
         }
-        
-        if (person.getDescription() != null)
-        {
-            // Remove person description from saved properties
-            properties.remove(ContentModel.PROP_PERSONDESC);
 
-            // Custom save for person description.
-            NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
+		NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
+		if (person.getDescription() != null)
+        {
+			// Remove person description from saved properties
+			properties.remove(ContentModel.PROP_PERSONDESC);
+
+			// Custom save for person description.
             savePersonDescription(person.getDescription(), personNodeRef);
         }
 
+		// Add custom properties
+		if (person.getProperties() != null)
+		{
+			Map<String, Object> customProps = person.getProperties();
+			properties.putAll(nodes.mapToNodeProperties(customProps));
+		}
+		
         personService.setPersonProperties(personIdToUpdate, properties, false);
 
+		// Add custom aspects
+		nodes.addCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
+		
         return getPerson(personId);
     }
 

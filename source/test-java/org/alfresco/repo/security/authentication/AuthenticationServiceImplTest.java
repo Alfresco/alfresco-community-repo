@@ -35,8 +35,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -76,8 +78,8 @@ public class AuthenticationServiceImplTest
         authService.setProtectionLimit(attempts);
         authService.setProtectionEnabled(true);
 
-        doThrow(new AuthenticationException("Bad password"))
-                .when(authenticationComponent).authenticate(USERNAME, PASSWORD);
+        Exception spoofedAE = new AuthenticationException("Bad password");
+        doThrow(spoofedAE).when(authenticationComponent).authenticate(USERNAME, PASSWORD);
         for (int i = 0; i < attempts + 3; i++)
         {
             try
@@ -88,10 +90,31 @@ public class AuthenticationServiceImplTest
             catch (AuthenticationException ae)
             {
                 // normal
+                if (i < attempts)
+                {
+                    assertTrue("Expected failure from AuthenticationComponent", ae == spoofedAE);
+                }
+                else
+                {
+                    assertFalse("Expected failure from protection code", ae == spoofedAE);
+                }
             }
         }
         verify(authenticationComponent, times(attempts)).authenticate(USERNAME, PASSWORD);
         assertTrue("The user should be protected.", cache.get(USERNAME).isProtected());
+
+        // test that the protection is still in place even if the password is correct
+        doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
+        try
+        {
+            authService.authenticate(USERNAME, PASSWORD);
+            fail("The " + AuthenticationException.class.getName() + " should have been thrown.");
+        }
+        catch (AuthenticationException ae)
+        {
+            // normal
+        }
+        verify(authenticationComponent, times(attempts)).authenticate(USERNAME, PASSWORD);
     }
 
     @Test
@@ -120,6 +143,17 @@ public class AuthenticationServiceImplTest
         Thread.sleep(timeLimit*1000 + 1);
         assertFalse("The user should not be protected any more.", cache.get(USERNAME).isProtected());
 
+        doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
+        try
+        {
+            authService.authenticate(USERNAME, PASSWORD);
+        }
+        catch (AuthenticationException ae)
+        {
+            fail("An " + AuthenticationException.class.getName() + " should not be thrown.");
+        }
+        assertNull("The user should be removed from the cache after successful login.",
+                cache.get(USERNAME));
     }
 
     private class MockCache<K extends Serializable, V> implements SimpleCache<K,V>

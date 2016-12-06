@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -64,12 +65,17 @@ import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
+import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
 import org.alfresco.service.cmr.quickshare.QuickShareDisabledException;
+import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryAction;
+import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryActionPersister;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -96,10 +102,12 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+import org.joda.time.PeriodType;
 import org.safehaus.uuid.UUID;
 import org.safehaus.uuid.UUIDGenerator;
 import org.springframework.extensions.surf.util.I18NUtil;
-
 
 /**
  * QuickShare Service implementation.
@@ -147,7 +155,10 @@ public class QuickShareServiceImpl implements QuickShareService,
     private boolean enabled;
     private String defaultEmailSender;
     private ClientAppConfig clientAppConfig;
-
+    private ScheduledPersistedActionService scheduledPersistedActionService;
+    private QuickShareLinkExpiryActionPersister quickShareLinkExpiryActionPersister;
+    // The default period is in DAYS, but we allow HOURS|MINUTES as well for testing purposes.
+    private ExpiryDatePeriod expiryDatePeriod = ExpiryDatePeriod.DAYS;
     /**
      * Set the attribute service
      */
@@ -300,6 +311,39 @@ public class QuickShareServiceImpl implements QuickShareService,
         this.clientAppConfig = clientAppConfig;
     }
 
+    /**
+     * Spring configuration
+     *
+     * @param scheduledPersistedActionService the scheduledPersistedActionService to set
+     */
+    public void setScheduledPersistedActionService(ScheduledPersistedActionService scheduledPersistedActionService)
+    {
+        this.scheduledPersistedActionService = scheduledPersistedActionService;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param quickShareLinkExpiryActionPersister the quickShareLinkExpiryActionPersister to set
+     */
+    public void setQuickShareLinkExpiryActionPersister(QuickShareLinkExpiryActionPersister quickShareLinkExpiryActionPersister)
+    {
+        this.quickShareLinkExpiryActionPersister = quickShareLinkExpiryActionPersister;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param expiryDatePeriod the expiryDatePeriod to set
+     */
+    public void setExpiryDatePeriod(String expiryDatePeriod)
+    {
+        if (expiryDatePeriod != null)
+        {
+            this.expiryDatePeriod = ExpiryDatePeriod.valueOf(expiryDatePeriod.toUpperCase());
+        }
+    }
+
     private void checkMandatoryProperties()
     {
         PropertyCheck.mandatory(this, "attributeService", attributeService);
@@ -319,6 +363,8 @@ public class QuickShareServiceImpl implements QuickShareService,
         PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "siteService", siteService);
         PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "scheduledPersistedActionService", scheduledPersistedActionService);
+        PropertyCheck.mandatory(this, "quickShareLinkExpiryActionPersister", quickShareLinkExpiryActionPersister);
     }
 
     /**
@@ -350,28 +396,34 @@ public class QuickShareServiceImpl implements QuickShareService,
     @Override
     public QuickShareDTO shareContent(final NodeRef nodeRef)
     {
+        return shareContent(nodeRef, DateTime.now().plusMinutes(1).toDate());
+    }
+
+    @Override
+    public QuickShareDTO shareContent(NodeRef nodeRef, Date expiryDate) throws QuickShareDisabledException, InvalidNodeRefException
+    {
         checkEnabled();
-        
+
         //Check the node is the correct type
         final QName typeQName = nodeService.getType(nodeRef);
         if (isSharable(typeQName) == false)
         {
             throw new InvalidNodeRefException(nodeRef);
         }
-        
+
         final String sharedId;
-        
+
         // Only add the quick share aspect if it isn't already present.
         // If it is retura dto built from the existing properties.
         if (! nodeService.getAspects(nodeRef).contains(QuickShareModel.ASPECT_QSHARE))
         {
             UUID uuid = UUIDGenerator.getInstance().generateRandomBasedUUID();
             sharedId = Base64.encodeBase64URLSafeString(uuid.toByteArray()); // => 22 chars (eg. q3bEKPeDQvmJYgt4hJxOjw)
-            
+
             final Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
             props.put(QuickShareModel.PROP_QSHARE_SHAREDID, sharedId);
             props.put(QuickShareModel.PROP_QSHARE_SHAREDBY, AuthenticationUtil.getRunAsUser());
-            
+
             // Disable audit to preserve modifier and modified date
             // see MNT-11960
             behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
@@ -393,7 +445,7 @@ public class QuickShareServiceImpl implements QuickShareService,
             }
 
             final NodeRef tenantNodeRef = tenantService.getName(nodeRef);
-            
+
             TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>()
             {
                 public Void doWork() throws Exception
@@ -402,20 +454,20 @@ public class QuickShareServiceImpl implements QuickShareService,
                     return null;
                 }
             });
-            
+
             final StringBuffer sb = new StringBuffer();
             sb.append("{").append("\"sharedId\":\"").append(sharedId).append("\"").append("}");
-            
+
             eventPublisher.publishEvent(new EventPreparator(){
                 @Override
                 public Event prepareEvent(String user, String networkId, String transactionId)
-                {            
+                {
                     return new ActivityEvent("quickshare", transactionId, networkId, user, nodeRef.getId(),
                                 null, typeQName.toString(),  Client.asType(ClientType.webclient), sb.toString(),
                                 null, null, 0l, null);
                 }
             });
-            
+
             if (logger.isInfoEnabled())
             {
                 logger.info("QuickShare - shared content: "+sharedId+" ["+nodeRef+"]");
@@ -429,10 +481,28 @@ public class QuickShareServiceImpl implements QuickShareService,
                 logger.debug("QuickShare - content already shared: "+sharedId+" ["+nodeRef+"]");
             }
         }
-        
-        
-        return new QuickShareDTO(sharedId);
-     }
+
+        if (expiryDate != null)
+        {
+            AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
+                // Create and save the expiry action
+                saveSharedLinkExpiryAction(sharedId, expiryDate);
+                // if we get here, it means the expiry date is validated and the action
+                // is created and saved, so now set the expiryDate property.
+                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                try
+                {
+                    nodeService.setProperty(nodeRef, QuickShareModel.PROP_QSHARE_EXPIRY_DATE, expiryDate);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                }
+                return null;
+            });
+        }
+        return new QuickShareDTO(sharedId, expiryDate);
+    }
 
     /**
      * Is this service enable? 
@@ -530,6 +600,8 @@ public class QuickShareServiceImpl implements QuickShareService,
         if (nodeProps.containsKey(QuickShareModel.PROP_QSHARE_SHAREDID))
         {
             metadata.put("sharedId", nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDID));
+            metadata.put("expiryDate", nodeProps.get(QuickShareModel.PROP_QSHARE_EXPIRY_DATE));
+
         }
         else
         {
@@ -719,6 +791,20 @@ public class QuickShareServiceImpl implements QuickShareService,
                 return null;
             }
         });
+
+        try
+        {
+            // Remove scheduled expiry action if any
+            NodeRef expiryActionNodeRef = getQuickShareLinkExpiryActionNode(sharedId);
+            if (expiryActionNodeRef != null)
+            {
+                deleteQuickShareLinkExpiryAction(expiryActionNodeRef);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new QuickShareLinkExpiryActionException("Couldn't delete the quick share link expiry action for the sharedId:" + sharedId);
+        }
     }
 
     @Override
@@ -762,7 +848,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         }, tenantDomain);
         
         removeSharedId(sharedId);
-        
+
         if (logger.isInfoEnabled())
         {
             logger.info("QuickShare - unshared content: "+sharedId+" ["+nodeRef+"]");
@@ -1099,6 +1185,216 @@ public class QuickShareServiceImpl implements QuickShareService,
                 this.ignoreSendFailure = ignoreSendFailure;
             }
         }
+    }
+
+    /**
+     * Creates and persists the quick share link expiry action and its related schedule.
+     */
+    protected void saveSharedLinkExpiryAction(String sharedId, Date expiryDate)
+    {
+        ParameterCheck.mandatory("expiryDate", expiryDate);
+        // Validate the given expiry date
+        checkExpiryDate(expiryDate);
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Creating shared link expiry action for the sharedId:" + sharedId);
+        }
+
+        final NodeRef expiryActionNodeRef = getQuickShareLinkExpiryActionNode(sharedId);
+        // If an expiry action already exists for the specified shared Id, first remove it, before creating a new one.
+        if (expiryActionNodeRef != null)
+        {
+            deleteQuickShareLinkExpiryAction(expiryActionNodeRef);
+        }
+
+        // Create the expiry action
+        final QuickShareLinkExpiryAction expiryAction = new QuickShareLinkExpiryActionImpl(java.util.UUID.randomUUID().toString(), sharedId,
+                    "QuickShare link expiry action");
+        // Create the persisted schedule
+        final ScheduledPersistedAction schedule = scheduledPersistedActionService.createSchedule(expiryAction);
+
+        // first set the scheduledAction so we can set the other information
+        expiryAction.setSchedule(schedule);
+        expiryAction.setScheduleStart(expiryDate);
+        expiryAction.setScheduleIntervalCount(2);
+        expiryAction.setScheduleIntervalPeriod(IntervalPeriod.Minute);
+
+        try
+        {
+            TenantUtil.runAsDefaultTenant((TenantRunAsWork<Void>) () -> {
+                quickShareLinkExpiryActionPersister.saveQuickShareLinkExpiryAction(expiryAction);
+                scheduledPersistedActionService.saveSchedule(schedule);
+
+                return null;
+            });
+
+        }
+        catch (Exception ex)
+        {
+            throw new QuickShareLinkExpiryActionException("Couldn't create quick share link expiry action.", ex);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Quick share link expiry action is created for sharedId[" + sharedId + "] and it's scheduled to be executed on: "
+                        + expiryDate);
+        }
+    }
+
+    @Override
+    public void deleteQuickShareLinkExpiryAction(QuickShareLinkExpiryAction linkExpiryAction)
+    {
+        ParameterCheck.mandatory("linkExpiryAction", linkExpiryAction);
+
+        NodeRef nodeRef = null;
+        try
+        {
+            Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(linkExpiryAction.getSharedId());
+            nodeRef =pair.getSecond();
+        }
+        catch (InvalidSharedIdException ex)
+        {
+            // do nothing, as the node might be already unshared
+        }
+        final NodeRef sharedNodeRef = nodeRef;
+
+        AuthenticationUtil.runAsSystem(() -> {
+            // Delete the expiry action and its related persisted schedule
+            deleteQuickShareLinkExpiryActionImpl(linkExpiryAction);
+
+            // As the method is called directly (ie. not via unshareContent method which removes the aspect properties),
+            // then we have to remove the 'expiryDate' property as well.
+            if (sharedNodeRef != null && nodeService.getProperty(sharedNodeRef, QuickShareModel.PROP_QSHARE_EXPIRY_DATE) != null)
+            {
+                behaviourFilter.disableBehaviour(sharedNodeRef, ContentModel.ASPECT_AUDITABLE);
+                try
+                {
+                    nodeService.removeProperty(sharedNodeRef, QuickShareModel.PROP_QSHARE_EXPIRY_DATE);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(sharedNodeRef, ContentModel.ASPECT_AUDITABLE);
+                }
+            }
+            return null;
+        });
+    }
+
+    /**
+     * Removes (hard deletes) the previously persisted {@link QuickShareLinkExpiryAction} and its related
+     * schedule {@link ScheduledPersistedAction} from the repository.
+     */
+    protected void deleteQuickShareLinkExpiryAction(NodeRef linkExpiryActionNodeRef)
+    {
+        AuthenticationUtil.runAsSystem(() -> {
+            QuickShareLinkExpiryAction linkExpiryAction = quickShareLinkExpiryActionPersister.loadQuickShareLinkExpiryAction(linkExpiryActionNodeRef);
+            // Delete the expiry action and its related persisted schedule
+            deleteQuickShareLinkExpiryActionImpl(linkExpiryAction);
+            return null;
+        });
+    }
+
+    private void deleteQuickShareLinkExpiryActionImpl(QuickShareLinkExpiryAction linkExpiryAction)
+    {
+        // Attach the schedule if null. This could be the case when the Action is
+        // loaded from the quickShareLinkExpiryActionPersister
+        attachSchedule(linkExpiryAction);
+        if (linkExpiryAction.getSchedule() != null)
+        {
+            scheduledPersistedActionService.deleteSchedule(linkExpiryAction.getSchedule());
+        }
+        quickShareLinkExpiryActionPersister.deleteQuickShareLinkExpiryAction(linkExpiryAction);
+    }
+
+    private QuickShareLinkExpiryAction attachSchedule(QuickShareLinkExpiryAction quickShareLinkExpiryAction)
+    {
+        if (quickShareLinkExpiryAction.getSchedule() == null)
+        {
+            ScheduledPersistedAction schedule = scheduledPersistedActionService.getSchedule(quickShareLinkExpiryAction);
+            quickShareLinkExpiryAction.setSchedule(schedule);
+
+        }
+        return quickShareLinkExpiryAction;
+    }
+
+    private NodeRef getQuickShareLinkExpiryActionNode(String sharedId)
+    {
+        final QName expiryActionQName = QuickShareLinkExpiryActionImpl.createQName(sharedId);
+        return TenantUtil.runAsDefaultTenant(() -> quickShareLinkExpiryActionPersister.getQuickShareLinkExpiryActionNode(expiryActionQName));
+    }
+
+    private void checkExpiryDate(Date expiryDate)
+    {
+        DateTime now = DateTime.now();
+        if (now.isAfter(expiryDate.getTime()))
+        {
+            throw new QuickShareLinkExpiryActionException.InvalidExpiryDateException("Invalid expiry date. Expiry date can't be in the past.");
+        }
+        if (expiryDatePeriod.getDuration(now, new DateTime(expiryDate)) < 1)
+        {
+            throw new QuickShareLinkExpiryActionException.InvalidExpiryDateException(
+                        "Invalid expiry date. Expiry date can't be less then 1 " + expiryDatePeriod.getMessage() + '.');
+        }
+
+    }
+
+    /**
+     * A helper enum to get the number of days/hours/minutes between two dates.
+     *
+     * @author Jamal Kaabi-Mofrad
+     */
+    private enum ExpiryDatePeriod
+    {
+        DAYS
+        {
+            @Override
+            int getDuration(DateTime now, DateTime expiryDate)
+            {
+                Interval interval = new Interval(now.withSecondOfMinute(0).withMillisOfSecond(0), expiryDate);
+                return interval.toPeriod(PeriodType.days()).getDays();
+            }
+
+            @Override
+            String getMessage()
+            {
+                return "day (24 hours)";
+            }
+        },
+        HOURS
+        {
+            @Override
+            int getDuration(DateTime now, DateTime expiryDate)
+            {
+                Interval interval = new Interval(now.withSecondOfMinute(0).withMillisOfSecond(0), expiryDate);
+                return interval.toPeriod(PeriodType.hours()).getHours();
+            }
+
+            @Override
+            String getMessage()
+            {
+                return "hour";
+            }
+        },
+        MINUTES
+        {
+            @Override
+            public int getDuration(DateTime now, DateTime expiryDate)
+            {
+                Interval interval = new Interval(now.withMillisOfSecond(0), expiryDate);
+                return interval.toPeriod(PeriodType.minutes()).getMinutes();
+            }
+
+            @Override
+            String getMessage()
+            {
+                return "minute";
+            }
+        };
+
+        abstract int getDuration(DateTime now, DateTime expiryDate);
+
+        abstract String getMessage();
     }
 }
 

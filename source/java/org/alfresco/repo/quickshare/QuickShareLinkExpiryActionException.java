@@ -23,58 +23,47 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.service.cmr.quickshare;
 
-import java.io.Serializable;
-import java.util.Date;
+package org.alfresco.repo.quickshare;
+
+import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Data transfer object for holding quick share information.
- *
- * @author Alex Miller
- * @since Cloud/4.2
+ * @author Jamal Kaabi-Mofrad
  */
-public class QuickShareDTO implements Serializable
+public class QuickShareLinkExpiryActionException extends AlfrescoRuntimeException
 {
-    private static final long serialVersionUID = -2163618127531335360L;
 
-    private String sharedId;
-    private Date expiresAt;
+    private static final long serialVersionUID = 6298296507061784874L;
 
-    /**
-     * Default constructor
-     * 
-     * @param sharedId The quick share id
-     */
-    public QuickShareDTO(String sharedId)
+    public QuickShareLinkExpiryActionException(String msgId)
     {
-        this(sharedId, null);
+        super(msgId);
     }
 
-    public QuickShareDTO(String sharedId, Date expiresAt)
+    public QuickShareLinkExpiryActionException(String msgId, Object[] msgParams)
     {
-        this.sharedId = sharedId;
-        this.expiresAt = expiresAt;
+        super(msgId, msgParams);
     }
 
-    /**
-     * Copy constructor
-     */
-    public QuickShareDTO(QuickShareDTO from) 
+    public QuickShareLinkExpiryActionException(String msgId, Throwable cause)
     {
-        this(from.getId(), from.getExpiresAt());
-    }
-    
-    /**
-     * @return The share id
-     */
-    public String getId()
-    {
-        return this.sharedId;
+        super(msgId, cause);
     }
 
-    public Date getExpiresAt()
+    public static class InvalidExpiryDateException extends QuickShareLinkExpiryActionException
     {
-        return expiresAt;
+
+        private static final long serialVersionUID = 7529497485776706174L;
+
+        public InvalidExpiryDateException(String msgId)
+        {
+            super(msgId);
+        }
+
+        public InvalidExpiryDateException(String msgId, Object[] msgParams)
+        {
+            super(msgId, msgParams);
+        }
     }
 }

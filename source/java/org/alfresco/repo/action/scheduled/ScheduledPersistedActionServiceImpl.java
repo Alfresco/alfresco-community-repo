@@ -132,7 +132,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     {
         this.runtimeActionService = runtimeActionService;
     }
-    
+
 
     protected void locatePersistanceFolder()
     {
@@ -193,7 +193,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
     public void saveSchedule(ScheduledPersistedAction schedule)
     {
         ScheduledPersistedActionImpl scheduleImpl = (ScheduledPersistedActionImpl)schedule;
-        
+
         // Remove if already there
         removeFromScheduler(scheduleImpl);
         
@@ -202,7 +202,7 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
             // if not already persisted, create the persistent schedule
             createPersistentSchedule(scheduleImpl);
         }
-        
+
         // update the persistent schedule with schedule properties
         updatePersistentSchedule(scheduleImpl);
 
@@ -297,33 +297,36 @@ public class ScheduledPersistedActionServiceImpl implements ScheduledPersistedAc
         schedule.setPersistedAtNodeRef(null);
     }
     
-    /**
-     * Returns the schedule for the specified action, or null if it isn't
-     * currently scheduled.
-     */
+    @Override
     public ScheduledPersistedAction getSchedule(Action persistedAction)
     {
         NodeRef nodeRef = persistedAction.getNodeRef();
-        if (nodeRef == null)
+        return getSchedule(nodeRef);
+    }
+
+    @Override
+    public ScheduledPersistedAction getSchedule(NodeRef persistedActionNodeRef)
+    {
+        if (persistedActionNodeRef == null)
         {
             // action is not persistent
             return null;
         }
 
         // locate associated schedule for action
-        List<AssociationRef> assocs = nodeService.getSourceAssocs(nodeRef, ActionModel.ASSOC_SCHEDULED_ACTION);
+        List<AssociationRef> assocs = nodeService.getSourceAssocs(persistedActionNodeRef, ActionModel.ASSOC_SCHEDULED_ACTION);
         AssociationRef scheduledAssoc = null;
         for (AssociationRef assoc : assocs)
         {
             scheduledAssoc = assoc;
         }
-        
+
         if (scheduledAssoc == null)
         {
             // there is no associated schedule
             return null;
         }
-        
+
         // load the scheduled action
         return loadPersistentSchedule(scheduledAssoc.getSourceRef());
     }

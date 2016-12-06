@@ -46,7 +46,8 @@ public enum FilePlanComponentType
     TRANSFER_CONTAINER_TYPE("rma:transferContainer"),
     UNFILED_CONTAINER_TYPE("rma:unfiledRecordContainer"),
     FOLDER_TYPE("cm:folder"),
-    CONTENT_TYPE("cm:content");
+    CONTENT_TYPE("cm:content"),
+    NON_ELECTRONIC_RECORD_TYPE("rma:nonElectronicDocument");
 
     private String type;
 

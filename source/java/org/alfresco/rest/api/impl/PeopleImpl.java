@@ -519,6 +519,10 @@ public class PeopleImpl implements People
             // The user is not an admin user and is not attempting to update *their own* details.
             throw new PermissionDeniedException();
         }
+        if (!isAdminAuthority() && person.getOldPassword() != null && person.getPassword() == null)
+        {
+            throw new IllegalArgumentException("To change password, both 'oldPassword' and 'password' fields are required.");
+        }
 
         final String personIdToUpdate = validatePerson(personId);
         final Map<QName, Serializable> properties = person.toProperties();

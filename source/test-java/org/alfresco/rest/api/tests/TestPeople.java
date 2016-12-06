@@ -1030,6 +1030,10 @@ public class TestPeople extends EnterpriseTestApi
 
         // update with no oldPassword
         people.update(me.getId(), qjson("{ `password`:`newpassword456` }"), 403);
+
+        // update with no password
+        people.update(me.getId(), qjson("{ `oldPassword`:`newpassword456`, `password`:`` }"), 400);
+        people.update(me.getId(), qjson("{ `oldPassword`:`newpassword456` }"), 400);
     }
 
     @Test

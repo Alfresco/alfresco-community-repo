@@ -903,7 +903,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         body.setExpiresAt(DateTime.now().minusSeconds(20).toDate());
         post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), 400);
 
-        // The default expiryDate period is DAYS (see: 'system.quickshare.expiry_date.enforce.period' property),
+        // The default expiryDate period is DAYS (see: 'system.quickshare.expiry_date.enforce.minimum.period' property),
         // so the expiry date must be at least 1 day from now
         body.setExpiresAt(DateTime.now().plusMinutes(5).toDate());
         post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), 400);

@@ -65,7 +65,6 @@ import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -396,7 +395,7 @@ public class QuickShareServiceImpl implements QuickShareService,
     @Override
     public QuickShareDTO shareContent(final NodeRef nodeRef)
     {
-        return shareContent(nodeRef, DateTime.now().plusMinutes(1).toDate());
+        return shareContent(nodeRef, null);
     }
 
     @Override
@@ -1249,7 +1248,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         try
         {
             Pair<String, NodeRef> pair = getTenantNodeRefFromSharedId(linkExpiryAction.getSharedId());
-            nodeRef =pair.getSecond();
+            nodeRef = pair.getSecond();
         }
         catch (InvalidSharedIdException ex)
         {
@@ -1257,7 +1256,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         }
         final NodeRef sharedNodeRef = nodeRef;
 
-        AuthenticationUtil.runAsSystem(() -> {
+        TenantUtil.runAsSystemTenant(() -> {
             // Delete the expiry action and its related persisted schedule
             deleteQuickShareLinkExpiryActionImpl(linkExpiryAction);
 
@@ -1276,7 +1275,7 @@ public class QuickShareServiceImpl implements QuickShareService,
                 }
             }
             return null;
-        });
+        }, TenantUtil.getCurrentDomain());
     }
 
     /**
@@ -1285,7 +1284,7 @@ public class QuickShareServiceImpl implements QuickShareService,
      */
     protected void deleteQuickShareLinkExpiryAction(NodeRef linkExpiryActionNodeRef)
     {
-        AuthenticationUtil.runAsSystem(() -> {
+        TenantUtil.runAsDefaultTenant(() -> {
             QuickShareLinkExpiryAction linkExpiryAction = quickShareLinkExpiryActionPersister.loadQuickShareLinkExpiryAction(linkExpiryActionNodeRef);
             // Delete the expiry action and its related persisted schedule
             deleteQuickShareLinkExpiryActionImpl(linkExpiryAction);
@@ -1334,7 +1333,6 @@ public class QuickShareServiceImpl implements QuickShareService,
             throw new QuickShareLinkExpiryActionException.InvalidExpiryDateException(
                         "Invalid expiry date. Expiry date can't be less then 1 " + expiryDatePeriod.getMessage() + '.');
         }
-
     }
 
     /**

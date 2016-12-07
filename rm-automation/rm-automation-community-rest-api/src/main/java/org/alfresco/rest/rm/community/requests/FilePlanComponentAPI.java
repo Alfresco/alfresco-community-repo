@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.rm.community.requests;
 
+import static com.jayway.restassured.RestAssured.given;
+
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
@@ -35,11 +37,20 @@ import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
+import static org.testng.Assert.fail;
+
+import java.io.File;
+
+import com.google.common.io.Resources;
+import com.jayway.restassured.response.Response;
 
 import org.alfresco.rest.core.RestAPI;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -118,15 +129,76 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     public FilePlanComponent createFilePlanComponent(FilePlanComponent filePlanComponentModel, String parentId) throws Exception
     {
         mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
-        mandatoryString("parentId", parentId);
 
+        return doCreateFilePlanComponent(toJson(filePlanComponentModel), parentId);
+    }
+    
+    /**
+     * Create electronic record from file resource
+     * @param electronicRecordModel {@link FilePlanComponent} for electronic record to be created
+     * @param fileName the name of the resource file
+     * @param parentId parent container id
+     * @return newly created {@link FilePlanComponent}
+     * @throws Exception if operation failed
+     */
+    public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, String fileName, String parentId) throws Exception
+    {
+        return createElectronicRecord(electronicRecordModel, new File(Resources.getResource(fileName).getFile()), parentId);
+    }
+    
+    /**
+     * Create electronic record from file resource
+     * @param electronicRecordModel {@link FilePlanComponent} for electronic record to be created
+     * @param recordContent {@link File} pointing to the content of the electronic record to be created
+     * @param parentId parent container id
+     * @return newly created {@link FilePlanComponent}
+     * @throws Exception if operation failed
+     */
+    public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent, String parentId) throws Exception
+    {
+        mandatoryObject("filePlanComponentProperties", electronicRecordModel);
+        if (!electronicRecordModel.getNodeType().equals(FilePlanComponentType.CONTENT_TYPE.toString()))
+        {
+            fail("Only electronic records are supported");
+        }
+        
+        /* 
+         * RestWrapper adds some headers which break multipart/form-data uploads and also assumes json POST requests. 
+         * Upload the file using RestAssured library.
+         */
+        UserModel currentUser = usingRestWrapper().getTestUser();
+        Response response = given()
+            .auth().basic(currentUser.getUsername(), currentUser.getPassword())
+            .multiPart("nodeBodyCreate", toJson(electronicRecordModel), "application/json")
+            .multiPart("filedata", recordContent, "application/octet-stream")
+        .expect()
+            .statusCode(HttpStatus.CREATED.value())
+        .when()
+            .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getParameters())
+            .andReturn();
+        usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+        LOG.info("electronic record created: " + response.getBody().prettyPrint());
+        
+        /* return a FilePlanComponent object representing Response */
+        return response.jsonPath().getObject("entry", FilePlanComponent.class);
+    }
+    
+    /**
+     * Helper method for handling low-level fileplan component creation requests
+     * @param requestBody
+     * @param parentId
+     * @return Newly created {@link FilePlanComponent}
+     * @throws Exception
+     */
+    private FilePlanComponent doCreateFilePlanComponent(String requestBody, String parentId) throws Exception
+    {
+        mandatoryString("parentId", parentId);
         return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
-                POST,
-                toJson(filePlanComponentModel),
-                "fileplan-components/{fileplanComponentId}/children?{parameters}",
-                parentId,
-                getParameters()
-        ));
+            POST,
+            requestBody,
+            "fileplan-components/{fileplanComponentId}/children?{parameters}",
+            parentId,
+            getParameters()));
     }
 
     /**

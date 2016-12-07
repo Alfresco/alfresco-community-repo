@@ -11,30 +11,21 @@
  */
 package org.alfresco.rest.rm.community.fileplancomponents;
 
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
-import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
-
-import java.util.Random;
 
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
-import org.alfresco.rest.rm.community.requests.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
 /**
  *
@@ -48,9 +39,6 @@ public class ElectronicRecordTests extends BaseRestTest
 
     @Autowired
     private DataUser dataUser;
-    
-    @Autowired
-    private RMSiteAPI rmSiteAPI;
     
     /** image resource file to be used for records body */
     private static final String IMAGE_FILE = "money.JPG";

@@ -83,7 +83,7 @@ public class NonElectronicRecordTests extends BaseRestTest
             // an arbitrary record folder
             { createFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()) },
             // unfiled records root
-            { filePlanComponentAPI.getFilePlanComponent(UNFILED_RECORDS_CONTAINER_ALIAS.toString()) },
+            { getFilePlanComponentAsUser(dataUser.getAdminUser(), UNFILED_RECORDS_CONTAINER_ALIAS.toString()) },
             // an arbitrary unfiled records folder
             { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), "Unfiled Folder " + getRandomAlphanumeric()) }
         };
@@ -361,22 +361,6 @@ public class NonElectronicRecordTests extends BaseRestTest
         FilePlanComponent component = new FilePlanComponent();
         component.setNodeType(NON_ELECTRONIC_RECORD_TYPE.toString());
         return component;
-    }
-    
-    /**
-     * Helper method to create a randomly-named <category>/<folder> structure in fileplan
-     * @return record folder
-     * @throws Exception on failed creation
-     */
-    private FilePlanComponent createFolderInFilePlan(UserModel user, String parentId) throws Exception
-    {
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
-        
-        // create root category
-        FilePlanComponent recordCategory = createCategory(parentId, "Category " + getRandomAlphanumeric());
-        
-        // and return a folder underneath
-        return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
     }
     
     /**

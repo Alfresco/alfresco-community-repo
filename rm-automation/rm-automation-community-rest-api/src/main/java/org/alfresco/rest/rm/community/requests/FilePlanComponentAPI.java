@@ -42,6 +42,7 @@ import static org.testng.Assert.fail;
 import java.io.File;
 
 import com.google.common.io.Resources;
+import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
 import org.alfresco.rest.core.RestAPI;
@@ -170,8 +171,8 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         UserModel currentUser = usingRestWrapper().getTestUser();
         Response response = given()
             .auth().basic(currentUser.getUsername(), currentUser.getPassword())
-            .multiPart("nodeBodyCreate", toJson(electronicRecordModel), "application/json")
-            .multiPart("filedata", recordContent, "application/octet-stream")
+            .multiPart("nodeBodyCreate", toJson(electronicRecordModel), ContentType.JSON.name())
+            .multiPart("filedata", recordContent, ContentType.BINARY.name())
         .expect()
             .statusCode(HttpStatus.CREATED.value())
         .when()

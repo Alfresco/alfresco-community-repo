@@ -290,7 +290,7 @@ paths:
         You can create an empty electronic record and use the record endpoint to create content:
         ```JSON
         {
-          "name":"My Non-electronic Record",
+          "name":"My Electronic Record",
           "nodeType":"cm:content"
         }
         ```

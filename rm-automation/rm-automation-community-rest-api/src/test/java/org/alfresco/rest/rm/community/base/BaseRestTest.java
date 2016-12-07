@@ -30,10 +30,12 @@ import static java.lang.Integer.parseInt;
 
 import static org.alfresco.rest.rm.community.base.TestData.CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -48,6 +50,7 @@ import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -212,4 +215,34 @@ public class BaseRestTest extends RestTest
         return updatedComponent;
     }
     
+    /**
+     * Helper method to create a randomly-named <category>/<folder> structure in fileplan
+     * @param user user under whose privileges this structure is going to be created
+     * @param parentId parent container id
+     * @return record folder
+     * @throws Exception on failed creation
+     */
+    public FilePlanComponent createFolderInFilePlan(UserModel user, String parentId) throws Exception
+    {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
+        
+        // create root category
+        FilePlanComponent recordCategory = createCategory(parentId, "Category " + getRandomAlphanumeric());
+        
+        // and return a folder underneath
+        return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
+    }
+    
+    /**
+     * Helper method to retieve a fileplan component with user's privilege
+     * @param user user under whose privileges a component is to be read
+     * @param componentId id of the component to read
+     * @return {@link FilePlanComponent} for given componentId
+     * @throws Exception if user doesn't have sufficient privileges
+     */
+    public FilePlanComponent getFilePlanComponentAsUser(UserModel user, String componentId) throws Exception
+    {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
+        return filePlanComponentAPI.getFilePlanComponent(componentId);
+    }
 }

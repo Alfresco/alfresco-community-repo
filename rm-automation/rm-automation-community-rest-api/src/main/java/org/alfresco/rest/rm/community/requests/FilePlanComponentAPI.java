@@ -157,6 +157,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent, String parentId) throws Exception
     {
         mandatoryObject("filePlanComponentProperties", electronicRecordModel);
+        mandatoryString("parentId", parentId);
         if (!electronicRecordModel.getNodeType().equals(FilePlanComponentType.CONTENT_TYPE.toString()))
         {
             fail("Only electronic records are supported");

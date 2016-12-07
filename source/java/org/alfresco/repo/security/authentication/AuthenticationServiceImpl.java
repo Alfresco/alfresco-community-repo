@@ -179,8 +179,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
                 if (protectedUser.getNumLogins() == protectionLimit && logger.isWarnEnabled())
                 {
                     // Shows only first 2 symbols of the username and masks all other character with '*'
-                    logger.warn(String.format(BRUTE_FORCE_ATTACK_DETECTED,
-                            userName.substring(0,2) + new String(new char[(userName.length() - 2)]).replace("\0", "*")));
+                    if (userName.length() >= 2)
+                    {
+                        logger.warn(String.format(BRUTE_FORCE_ATTACK_DETECTED,
+                                userName.substring(0,2) + new String(new char[(userName.length() - 2)]).replace("\0", "*")));
+                    }
                 }
             }
             protectedUsersCache.put(userName, protectedUser);

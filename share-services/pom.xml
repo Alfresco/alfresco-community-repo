@@ -124,7 +124,7 @@
                      <!-- No unit tests in this project - all tests are integration tests -->
                      <configuration>
                           <includes>
-                              <include />
+                              <include>nothing</include>
                           </includes>
                      </configuration>
                   </execution>

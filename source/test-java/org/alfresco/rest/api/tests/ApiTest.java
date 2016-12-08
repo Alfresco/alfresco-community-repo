@@ -67,14 +67,14 @@ import org.junit.runners.Suite;
     TestTags.class,
     TestNetworks.class,
     TestActivities.class,
+    GroupsTest.class,
     TestPeople.class,
     TestSiteMembers.class,
     TestPersonSites.class,
     TestSiteMembershipRequests.class,
     TestFavourites.class,
     TestPublicApi128.class,
-    TestPublicApiCaching.class,
-    GroupsTest.class
+    TestPublicApiCaching.class
 })
 public class ApiTest
 {

@@ -81,7 +81,7 @@ public class NonElectronicRecordTests extends BaseRestTest
     public Object[][] rootContainers() throws Exception {
         return new Object[][] {
             // an arbitrary record folder
-            { createFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()) },
+            { createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()) },
             // unfiled records root
             { getFilePlanComponentAsUser(dataUser.getAdminUser(), UNFILED_RECORDS_CONTAINER_ALIAS.toString()) },
             // an arbitrary unfiled records folder
@@ -225,7 +225,7 @@ public class NonElectronicRecordTests extends BaseRestTest
     public void cantCreateInClosedFolder() throws Exception
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        FilePlanComponent recordFolder = createFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString());
+        FilePlanComponent recordFolder = createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString());
         
         // the folder should be open
         assertFalse(recordFolder.getProperties().getIsClosed());

@@ -30,7 +30,6 @@ import static java.lang.Integer.parseInt;
 
 import static org.alfresco.rest.rm.community.base.TestData.CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
@@ -222,7 +221,7 @@ public class BaseRestTest extends RestTest
      * @return record folder
      * @throws Exception on failed creation
      */
-    public FilePlanComponent createFolderInFilePlan(UserModel user, String parentId) throws Exception
+    public FilePlanComponent createCategoryFolderInFilePlan(UserModel user, String parentId) throws Exception
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
         

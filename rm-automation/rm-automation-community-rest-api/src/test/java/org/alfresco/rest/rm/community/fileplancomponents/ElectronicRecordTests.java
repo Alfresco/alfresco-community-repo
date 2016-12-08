@@ -65,7 +65,7 @@ public class ElectronicRecordTests extends BaseRestTest
     /** image resource file to be used for records body */
     private static final String IMAGE_FILE = "money.JPG";
     
-    /** Valid root containers where non-electronic records can be created */
+    /** Valid root containers where electronic records can be created */
     @DataProvider(name = "invalidParentContainers")
     public Object[][] invalidContainers() throws Exception {
         return new Object[][] {
@@ -81,7 +81,7 @@ public class ElectronicRecordTests extends BaseRestTest
         };
     }
     
-    /** Valid root containers where non-electronic records can be created */
+    /** Valid root containers where electronic records can be created */
     @DataProvider(name = "validContainers")
     public Object[][] rootContainers() throws Exception {
         return new Object[][] {

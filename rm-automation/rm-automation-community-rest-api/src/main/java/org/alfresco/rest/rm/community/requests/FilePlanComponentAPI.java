@@ -51,7 +51,6 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 /**
@@ -173,8 +172,6 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
             .auth().basic(currentUser.getUsername(), currentUser.getPassword())
             .multiPart("nodeBodyCreate", toJson(electronicRecordModel), ContentType.JSON.name())
             .multiPart("filedata", recordContent, ContentType.BINARY.name())
-        .expect()
-            .statusCode(HttpStatus.CREATED.value())
         .when()
             .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getParameters())
             .andReturn();

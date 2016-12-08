@@ -70,7 +70,9 @@ public class Node implements Comparable<Node>
     protected UserInfo archivedByUser;
 
     // Version info - specifically for version node - see Version History API
+    protected String versionLabel;
     protected String versionComment;
+    protected String nodeId; //This is the frozen node id NOT the current node id
 
     protected Boolean isFolder;
     protected Boolean isFile;
@@ -95,6 +97,7 @@ public class Node implements Comparable<Node>
 
     //optional SearchEntry (only ever returned from a search)
     protected SearchEntry search = null;
+    protected String location;
 
     public Node(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
@@ -377,6 +380,16 @@ public class Node implements Comparable<Node>
         this.archivedByUser = archivedByUser;
     }
 
+    public String getVersionLabel()
+    {
+        return versionLabel;
+    }
+
+    public void setVersionLabel(String versionLabel)
+    {
+        this.versionLabel = versionLabel;
+    }
+
     public String getVersionComment()
     {
         return versionComment;
@@ -385,6 +398,26 @@ public class Node implements Comparable<Node>
     public void setVersionComment(String versionComment)
     {
         this.versionComment = versionComment;
+    }
+
+    public String getLocation()
+    {
+        return location;
+    }
+
+    public void setLocation(String location)
+    {
+        this.location = location;
+    }
+
+    public String getNodeId()
+    {
+        return nodeId;
+    }
+
+    public void setNodeId(String nodeId)
+    {
+        this.nodeId = nodeId;
     }
 
     public boolean equals(Object other)
@@ -450,6 +483,22 @@ public class Node implements Comparable<Node>
         if (getArchivedByUser() != null)
         {
             sb.append(", archivedByUser=").append(getArchivedByUser());
+        }
+        if (getVersionLabel() != null)
+        {
+            sb.append(", versionLabel=").append(getVersionLabel());
+        }
+        if (getVersionComment() != null)
+        {
+            sb.append(", versionComment=").append(getVersionComment());
+        }
+        if (getLocation() != null)
+        {
+            sb.append(", location=").append(getLocation());
+        }
+        if (getNodeId() != null)
+        {
+            sb.append(", nodeId=").append(getNodeId());
         }
         if (getIsLink() != null)
         {

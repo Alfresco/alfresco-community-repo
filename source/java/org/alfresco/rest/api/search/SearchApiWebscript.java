@@ -77,8 +77,8 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
         this.searchService = serviceRegistry.getSearchService();
         ParameterCheck.mandatory("assistant", this.assistant);
-
-        searchMapper = new SearchMapper();
+        ParameterCheck.mandatory("searchMapper", this.searchMapper);
+        ParameterCheck.mandatory("resultMapper", this.resultMapper);
     }
 
     @Override
@@ -140,6 +140,11 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
 
         Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, paging, filter, null, include, null, null, null, false);
         return Params.valueOf(null, recognizedParams, null, webScriptRequest);
+    }
+
+    public void setSearchMapper(SearchMapper searchMapper)
+    {
+        this.searchMapper = searchMapper;
     }
 
     public void setResultMapper(ResultMapper resultMapper)

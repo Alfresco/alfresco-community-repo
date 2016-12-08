@@ -64,7 +64,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"facetQueries\": [{\"query\": \"facquery\",\"label\": \"facnoused\"}],"
                 + "\"spellcheck\": {\"query\": \"alfrezco\"},"
                 + "\"limits\": {\"permissionEvaluationCount\": \"2000\",\"permissionEvaluationTime\": \"5000\"},"
-                + "\"scope\": { \"stores\": [\"workspace://SpacesStore\"]},"
+                + "\"scope\": { \"locations\": [\"nodes\"]},"
                 + "\"fields\": [\"id\", \"name\"],"
                 + "\"highlight\": {\"prefix\": \"[\",\"postfix\": \"]\",\"snippetCount\": \"20\","
                 + "\"fragmentSize\": \"10\",\"mergeContiguous\": \"true\",\"maxAnalyzedChars\": \"40\", \"usePhraseHighlighter\": \"true\","

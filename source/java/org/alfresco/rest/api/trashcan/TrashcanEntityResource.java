@@ -77,7 +77,7 @@ public class TrashcanEntityResource implements
     @Override
     public Node readById(String nodeId, Parameters parameters) throws EntityNotFoundException
     {
-        return deletedNodes.getDeletedNode(nodeId, parameters);
+        return deletedNodes.getDeletedNode(nodeId, parameters, true, null);
     }
 
     @Operation("restore")

@@ -36,7 +36,7 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ SearchMapperTests.class, ResultMapperTests.class,SearchQuerySerializerTests.class,
-              SearchApiWebscriptTests.class})
+              SearchApiWebscriptTests.class, StoreMapperTests.class})
 public class AllSearchApiTests
 {
 }

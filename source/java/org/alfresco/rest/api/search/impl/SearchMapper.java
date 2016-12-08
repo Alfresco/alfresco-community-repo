@@ -83,6 +83,7 @@ public class SearchMapper
     public static final String CMIS = "cmis";
     public static final String LUCENE = "lucene";
     public static final String AFTS = "afts";
+    private StoreMapper storeMapper;
 
     /**
      * Turn the SearchQuery params serialized by Jackson into the Java SearchParameters object
@@ -430,7 +431,7 @@ public class SearchMapper
     {
         if (scope != null)
         {
-            List<String> stores = scope.getStores();
+            List<String> stores = scope.getLocations();
             if (stores!= null && !stores.isEmpty())
             {
                 //First reset the stores then add them.
@@ -439,7 +440,7 @@ public class SearchMapper
                 {
                     try
                     {
-                        sp.addStore(new StoreRef(aStore));
+                        sp.addStore(storeMapper.getStoreRef(aStore));
                     }
                     catch (AlfrescoRuntimeException are)
                     {
@@ -484,5 +485,10 @@ public class SearchMapper
                 sp.setMaxPermissionCheckTimeMillis(limits.getPermissionEvaluationTime());
             }
         }
+    }
+
+    public void setStoreMapper(StoreMapper storeMapper)
+    {
+        this.storeMapper = storeMapper;
     }
 }

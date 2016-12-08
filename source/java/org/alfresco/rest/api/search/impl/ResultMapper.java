@@ -26,11 +26,18 @@
 
 package org.alfresco.rest.api.search.impl;
 
+import static org.alfresco.rest.api.search.impl.StoreMapper.DELETED;
+import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
+import static org.alfresco.rest.api.search.impl.StoreMapper.VERSIONS;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.version.Version2Model;
+import org.alfresco.repo.version.VersionBaseModel;
+import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.lookups.PropertyLookupRegistry;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.nodes.NodeVersionsRelation;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
@@ -38,15 +45,24 @@ import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchEntry;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SpellCheckResult;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,13 +76,36 @@ import java.util.Map.Entry;
  */
 public class ResultMapper
 {
-
+    private ServiceRegistry serviceRegistry;
     private Nodes nodes;
+    private NodeVersionsRelation nodeVersions;
     private PropertyLookupRegistry propertyLookup;
+    private StoreMapper storeMapper;
+    private DeletedNodes deletedNodes;
     private static Log logger = LogFactory.getLog(ResultMapper.class);
 
     public ResultMapper()
     {
+    }
+
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+
+    public void setNodeVersions(NodeVersionsRelation nodeVersions)
+    {
+        this.nodeVersions = nodeVersions;
+    }
+
+    public void setDeletedNodes(DeletedNodes deletedNodes)
+    {
+        this.deletedNodes = deletedNodes;
+    }
+
+    public void setStoreMapper(StoreMapper storeMapper)
+    {
+        this.storeMapper = storeMapper;
     }
 
     public void setNodes(Nodes nodes)
@@ -92,10 +131,12 @@ public class ResultMapper
         List<Node> noderesults = new ArrayList();
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
         Map<NodeRef, List<Pair<String, List<String>>>> hightLighting = results.getHighlighting();
+        int notFound = 0;
 
-        results.forEach(row ->
+        for (ResultSetRow row:results)
         {
-            Node aNode = nodes.getFolderOrDocument(row.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
+            Node aNode = getNode(row, params, mapUserInfo);
+
             if (aNode != null)
             {
                 float f = row.getScore();
@@ -116,15 +157,16 @@ public class ResultMapper
             else
             {
                 logger.debug("Unknown noderef returned from search results "+row.getNodeRef());
+                notFound++;
             }
-        });
+        }
 
         SolrJSONResultSet solrResultSet = findSolrResultSet(results);
 
         if (solrResultSet != null)
         {
             //We used Solr for this query
-            context = toSearchContext(solrResultSet);
+            context = toSearchContext(solrResultSet, notFound);
             total = setTotal(solrResultSet);
         }
         else
@@ -139,6 +181,65 @@ public class ResultMapper
         }
 
         return CollectionWithPagingInfo.asPaged(params.getPaging(), noderesults, results.hasMore(), total, null, context);
+    }
+
+    /**
+     * Builds a node representation based on a ResultSetRow;
+     * @param aRow
+     * @param params
+     * @param mapUserInfo
+     * @return Node
+     */
+    public Node getNode(ResultSetRow aRow, Params params, Map<String, UserInfo> mapUserInfo)
+    {
+        String nodeStore = storeMapper.getStore(aRow.getNodeRef());
+        Node aNode = null;
+        switch (nodeStore)
+        {
+            case LIVE_NODES:
+                aNode = nodes.getFolderOrDocument(aRow.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                break;
+            case VERSIONS:
+                Map<QName, Serializable> properties = serviceRegistry.getNodeService().getProperties(aRow.getNodeRef());
+                NodeRef frozenNodeRef = ((NodeRef) properties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF));
+                String versionLabelId = (String) properties.get(Version2Model.PROP_QNAME_VERSION_LABEL);
+                Version v = null;
+                try
+                {
+                    v = nodeVersions.findVersion(frozenNodeRef.getId(),versionLabelId);
+                    aNode = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                }
+                catch (EntityNotFoundException|InvalidNodeRefException e)
+                {
+                    //Solr says there is a node but we can't find it
+                    logger.debug("Failed to find a versioned node with id of "+frozenNodeRef
+                                + " this is probably because the original node has been deleted.");
+                }
+
+                if (v != null && aNode != null)
+                {
+                    nodeVersions.mapVersionInfo(v, aNode, aRow.getNodeRef());
+                    aNode.setNodeId(frozenNodeRef.getId());
+                    aNode.setVersionLabel(versionLabelId);
+                }
+                break;
+            case DELETED:
+                try
+                {
+                    aNode = deletedNodes.getDeletedNode(aRow.getNodeRef().getId(), params, false, mapUserInfo);
+                }
+                catch (EntityNotFoundException enfe)
+                {
+                    //Solr says there is a deleted node but we can't find it, we want the rest of the search to return so lets ignore it.
+                    logger.debug("Failed to find a deleted node with id of "+aRow.getNodeRef().getId());
+                }
+                break;
+        }
+        if (aNode != null)
+        {
+            aNode.setLocation(nodeStore);
+        }
+        return aNode;
     }
 
     /**
@@ -158,7 +259,7 @@ public class ResultMapper
      * @param SolrJSONResultSet
      * @return SearchContext
      */
-    public SearchContext toSearchContext(SolrJSONResultSet solrResultSet)
+    public SearchContext toSearchContext(SolrJSONResultSet solrResultSet, int notFound)
     {
         SearchContext context = null;
         Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();

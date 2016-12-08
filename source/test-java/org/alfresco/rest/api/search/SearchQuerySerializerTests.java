@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
+import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -92,8 +93,8 @@ public class SearchQuerySerializerTests
         assertEquals("facquery",searchQuery.getFacetQueries().get(0).getQuery());
         assertEquals("facnoused",searchQuery.getFacetQueries().get(0).getLabel());
         assertEquals("alfrezco", searchQuery.getSpellcheck().getQuery());
-        assertEquals(1, searchQuery.getScope().getStores().size());
-        assertEquals("workspace://SpacesStore", searchQuery.getScope().getStores().get(0));
+        assertEquals(1, searchQuery.getScope().getLocations().size());
+        assertEquals(StoreMapper.LIVE_NODES, searchQuery.getScope().getLocations().get(0));
         assertEquals(2, searchQuery.getFacetFields().getFacets().size());
         FacetField ff = searchQuery.getFacetFields().getFacets().get(0);
         assertEquals("cm:creator", ff.getField());

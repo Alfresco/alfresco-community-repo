@@ -264,8 +264,8 @@ function doclist_main()
                 // Ensure we have Read permissions on the destination on the link object
                 if (!locationNode.hasPermission("Read"))
                 {
-                	--totalRecords;
-                	break;
+                   --totalRecords;
+                   continue;
                 }
                 location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
             }

@@ -27,13 +27,17 @@
 package org.alfresco.rest.rm.community.fileplancomponents;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import org.alfresco.rest.rm.community.base.BaseRestTest;
@@ -117,6 +121,85 @@ public class ElectronicRecordTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }
 
+    /**
+     * <pre>
+     * Given a parent container that is a record folder
+     * And the record folder is closed 
+     * When I try to create an electronic record within the parent container
+     * Then nothing happens
+     * And an error is reported
+     * </pre>
+     * @throws Exception
+     */
+    @Test(description = "Electronic record can't be created in closed record folder")
+    public void cantCreateElectronicRecordInClosedFolder() throws Exception
+    {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        FilePlanComponent recordFolder = createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString());
+        
+        // the folder should be open
+        assertFalse(recordFolder.getProperties().getIsClosed());
+        
+        // close the folder
+        closeFolder(recordFolder.getId());
+        
+        // try to create it, this should fail
+        FilePlanComponent record = new FilePlanComponent("Record " + getRandomAlphanumeric(), CONTENT_TYPE.toString(), 
+            new FilePlanComponentProperties());
+        filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, recordFolder.getId());
+        
+        // verify the status code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+    }
+    
+    /**
+     * <pre>
+     * Given a parent container that is a record folder
+     * And the record folder is open
+     * When I try to create an electronic record within the parent container
+     * And I do not provide all the required mandatory property values
+     * Then nothing happens
+     * And an error is reported
+     * </pre>
+     * and
+     * <pre>
+     * Given a parent container that is an unfiled record folder or the root unfiled record container
+     * When I try to create an electronic record within the parent container
+     * And I do not provide all the required mandatory property values
+     * Then nothing happens
+     * And an error is reported
+     * </pre>
+     * @param container
+     * @throws Exception
+     */
+    @Test
+    (
+        dataProvider = "validContainers", 
+        description = "Electronic record can only be created if all mandatory properties are given"
+    )
+    public void canCreateElectronicRecordOnlyWithMandatoryProperties(FilePlanComponent container) throws Exception
+    {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        
+        logger.info("Root container:\n" + toJson(container));
+        if (container.getNodeType().equals(RECORD_FOLDER_TYPE.toString()))
+        {
+            // only record folders can be open or closed
+            assertFalse(container.getProperties().getIsClosed());
+        }
+
+        // component without name
+        FilePlanComponent record = new FilePlanComponent();
+        record.setNodeType(CONTENT_TYPE.toString());
+        record.setProperties(new FilePlanComponentProperties());
+        
+        // try to create it
+        filePlanComponentAPI.createFilePlanComponent(record, container.getId());
+
+        // verify the status code is BAD_REQUEST
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(BAD_REQUEST);      
+    }
+    
     /**
      * <pre>
      * Given a parent container that is a record folder

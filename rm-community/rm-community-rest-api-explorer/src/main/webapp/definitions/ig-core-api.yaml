@@ -200,9 +200,10 @@ paths:
         Create a fileplan component as a primary child of node **fileplanComponentId**.
 
         This API method supports file upload using multipart/form-data.
+        Electronic records are the only nodes that have content.
 
         Use the **filedata** field to represent the content to upload.
-        You can use a **name** field to give an alternative name for the new file.
+        You can use a **name** field to give an alternative name for the new electronic record.
 
         For multipart/form-data upload you can use the **renditions** field to create renditions (e.g. doclib) asynchronously upon upload.
         Note that currently only one rendition can be requested. Also, as requesting rendition is a background process,
@@ -283,6 +284,14 @@ paths:
               "rma:shelf":"My Non-electronic Record Shelf",
               "rma:storageLocation":"My Non-electronic Record Location"
             }
+        }
+        ```
+
+        You can create an empty electronic record and use the record endpoint to create content:
+        ```JSON
+        {
+          "name":"My Electronic Record",
+          "nodeType":"cm:content"
         }
         ```
 

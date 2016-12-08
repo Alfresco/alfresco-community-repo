@@ -1324,4 +1324,28 @@
         <property name="nodeService" ref="NodeService"/>
     </bean>
 
+    <!--                               -->
+    <!--    Groups REST API   -->
+    <!--                               -->
+    <bean id="groups" class="org.alfresco.rest.api.impl.GroupsImpl">
+        <property name="authorityService" ref="AuthorityService" />
+    </bean>
+
+    <bean id="Groups" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Groups</value>
+        </property>
+        <property name="target">
+            <ref bean="groups" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.groups.GroupsEntityResource">
+        <property name="groups" ref="Groups" />
+    </bean>
 </beans>

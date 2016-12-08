@@ -210,7 +210,11 @@ function getDoclist()
          {
             locationNode = item.isLink ? item.linkedNode : item.node;
             // Ensure we have Read permissions on the destination on the link object
-            if (!locationNode.hasPermission("Read")) break;
+            if (!locationNode.hasPermission("Read"))
+            {
+            	--totalRecords;
+            	break;
+            }
             location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
          }
          else

@@ -31,7 +31,6 @@ import static java.util.Arrays.asList;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
@@ -56,7 +55,6 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -75,20 +73,7 @@ public class NonElectronicRecordTests extends BaseRestTest
     
     @Autowired
     private RMSiteAPI rmSiteAPI;
-    
-    /** Valid root containers where non-electronic records can be created */
-    @DataProvider(name = "validContainers")
-    public Object[][] rootContainers() throws Exception {
-        return new Object[][] {
-            // an arbitrary record folder
-            { createFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()) },
-            // unfiled records root
-            { filePlanComponentAPI.getFilePlanComponent(UNFILED_RECORDS_CONTAINER_ALIAS.toString()) },
-            // an arbitrary unfiled records folder
-            { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), "Unfiled Folder " + getRandomAlphanumeric()) }
-        };
-    }
-    
+        
     /**
      * <pre>
      * Given a parent container that is NOT a record folder or an unfiled record folder
@@ -153,7 +138,7 @@ public class NonElectronicRecordTests extends BaseRestTest
      */
     @Test
     (
-        dataProvider = "validContainers",
+        dataProvider = "validRootContainers",
         description = "Non-electronic records can be created in valid containers"
     )
     public void canCreateInValidContainers(FilePlanComponent container) throws Exception
@@ -225,7 +210,7 @@ public class NonElectronicRecordTests extends BaseRestTest
     public void cantCreateInClosedFolder() throws Exception
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        FilePlanComponent recordFolder = createFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString());
+        FilePlanComponent recordFolder = createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString());
         
         // the folder should be open
         assertFalse(recordFolder.getProperties().getIsClosed());
@@ -266,7 +251,7 @@ public class NonElectronicRecordTests extends BaseRestTest
      */
     @Test
     (
-        dataProvider = "validContainers", 
+        dataProvider = "validRootContainers", 
         description = "Non-electronic record can only be created if all mandatory properties are given"
     )
     public void allMandatoryPropertiesRequired(FilePlanComponent container) throws Exception
@@ -325,7 +310,7 @@ public class NonElectronicRecordTests extends BaseRestTest
      */
     @Test
     (
-        dataProvider = "validContainers", 
+        dataProvider = "validRootContainers", 
         description = "Non-electronic record can't be created if user doesn't have RM privileges"
     )
     public void cantCreateIfNoRmPrivileges(FilePlanComponent container) throws Exception
@@ -361,22 +346,6 @@ public class NonElectronicRecordTests extends BaseRestTest
         FilePlanComponent component = new FilePlanComponent();
         component.setNodeType(NON_ELECTRONIC_RECORD_TYPE.toString());
         return component;
-    }
-    
-    /**
-     * Helper method to create a randomly-named <category>/<folder> structure in fileplan
-     * @return record folder
-     * @throws Exception on failed creation
-     */
-    private FilePlanComponent createFolderInFilePlan(UserModel user, String parentId) throws Exception
-    {
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
-        
-        // create root category
-        FilePlanComponent recordCategory = createCategory(parentId, "Category " + getRandomAlphanumeric());
-        
-        // and return a folder underneath
-        return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
     }
     
     /**

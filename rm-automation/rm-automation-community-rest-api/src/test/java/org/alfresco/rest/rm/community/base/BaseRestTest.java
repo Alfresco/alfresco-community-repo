@@ -102,8 +102,8 @@ public class BaseRestTest extends RestTest
     public static final String RM_DESCRIPTION = "Records Management Site";
 
     /** Valid root containers where electronic and non-electronic records can be created */
-    @DataProvider(name = "validContainers")
-    public Object[][] rootContainers() throws Exception {
+    @DataProvider(name = "validRootContainers")
+    public Object[][] getValidRootContainers() throws Exception {
         return new Object[][] {
             // an arbitrary record folder
             { createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()) },

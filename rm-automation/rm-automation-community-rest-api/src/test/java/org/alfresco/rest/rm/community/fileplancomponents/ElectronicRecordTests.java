@@ -164,7 +164,7 @@ public class ElectronicRecordTests extends BaseRestTest
      */
     @Test
     (
-        dataProvider = "validContainers", 
+        dataProvider = "validRootContainers", 
         description = "Electronic record can only be created if all mandatory properties are given"
     )
     public void canCreateElectronicRecordOnlyWithMandatoryProperties(FilePlanComponent container) throws Exception
@@ -209,7 +209,7 @@ public class ElectronicRecordTests extends BaseRestTest
      */
     @Test
     (
-        dataProvider = "validContainers",
+        dataProvider = "validRootContainers",
         description = "Electronic records can be created in unfiled record folder or unfiled record root"
     )
     public void canCreateElectronicRecordsInValidContainers(FilePlanComponent container) throws Exception

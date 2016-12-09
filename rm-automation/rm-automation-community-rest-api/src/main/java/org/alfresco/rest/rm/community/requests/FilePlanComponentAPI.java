@@ -129,8 +129,14 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     public FilePlanComponent createFilePlanComponent(FilePlanComponent filePlanComponentModel, String parentId) throws Exception
     {
         mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
-
-        return doCreateFilePlanComponent(toJson(filePlanComponentModel), parentId);
+        mandatoryString("parentId", parentId);
+        
+        return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
+            POST,
+            toJson(filePlanComponentModel),
+            "fileplan-components/{fileplanComponentId}/children?{parameters}",
+            parentId,
+            getParameters()));
     }
     
     /**
@@ -180,24 +186,6 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         
         /* return a FilePlanComponent object representing Response */
         return response.jsonPath().getObject("entry", FilePlanComponent.class);
-    }
-    
-    /**
-     * Helper method for handling low-level fileplan component creation requests
-     * @param requestBody
-     * @param parentId
-     * @return Newly created {@link FilePlanComponent}
-     * @throws Exception
-     */
-    private FilePlanComponent doCreateFilePlanComponent(String requestBody, String parentId) throws Exception
-    {
-        mandatoryString("parentId", parentId);
-        return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
-            POST,
-            requestBody,
-            "fileplan-components/{fileplanComponentId}/children?{parameters}",
-            parentId,
-            getParameters()));
     }
 
     /**

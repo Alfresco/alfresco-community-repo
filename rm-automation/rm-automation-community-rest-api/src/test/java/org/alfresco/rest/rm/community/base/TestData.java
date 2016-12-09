@@ -50,7 +50,7 @@ import org.testng.annotations.DataProvider;
  * @since 2.6
  */
 public interface TestData
-{
+{    
     /**
      * A user with ALFRESCO_ADMINISTRATORS role.
      * <p>"GROUP_ANOTHER_ADMIN_EXISTS" The ANOTHER_ADMIN user has been created.
@@ -141,5 +141,4 @@ public interface TestData
             { CONTENT_TYPE.toString()}
         };
     }
-
 }

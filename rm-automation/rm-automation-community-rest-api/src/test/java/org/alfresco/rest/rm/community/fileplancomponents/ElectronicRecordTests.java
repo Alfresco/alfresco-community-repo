@@ -50,9 +50,13 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
- *
+ * Create/File electronic records tests
+ * <br>
+ * These tests only test the creation and filing of electronic records, update at
+ * present isn't implemented in the API under test.
+ * <p>
  * @author Kristijan Conkas
- * @since
+ * @since 2.6
  */
 public class ElectronicRecordTests extends BaseRestTest
 {
@@ -78,19 +82,6 @@ public class ElectronicRecordTests extends BaseRestTest
             { getFilePlanComponentAsUser(dataUser.getAdminUser(), TRANSFERS_ALIAS.toString()) },
             // holds
             { getFilePlanComponentAsUser(dataUser.getAdminUser(), HOLDS_ALIAS.toString()) },
-        };
-    }
-    
-    /** Valid root containers where electronic records can be created */
-    @DataProvider(name = "validContainers")
-    public Object[][] rootContainers() throws Exception {
-        return new Object[][] {
-            // an arbitrary record folder
-            { createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()) },
-            // unfiled records root
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(), UNFILED_RECORDS_CONTAINER_ALIAS.toString()) },
-            // an arbitrary unfiled records folder
-            { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), "Unfiled Folder " + getRandomAlphanumeric()) }
         };
     }
     

@@ -138,7 +138,7 @@ public class NonElectronicRecordTests extends BaseRestTest
      */
     @Test
     (
-        dataProvider = "validContainers",
+        dataProvider = "validRootContainers",
         description = "Non-electronic records can be created in valid containers"
     )
     public void canCreateInValidContainers(FilePlanComponent container) throws Exception
@@ -251,7 +251,7 @@ public class NonElectronicRecordTests extends BaseRestTest
      */
     @Test
     (
-        dataProvider = "validContainers", 
+        dataProvider = "validRootContainers", 
         description = "Non-electronic record can only be created if all mandatory properties are given"
     )
     public void allMandatoryPropertiesRequired(FilePlanComponent container) throws Exception
@@ -310,7 +310,7 @@ public class NonElectronicRecordTests extends BaseRestTest
      */
     @Test
     (
-        dataProvider = "validContainers", 
+        dataProvider = "validRootContainers", 
         description = "Non-electronic record can't be created if user doesn't have RM privileges"
     )
     public void cantCreateIfNoRmPrivileges(FilePlanComponent container) throws Exception

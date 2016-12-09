@@ -31,6 +31,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 
+import java.util.List;
+
 public interface People
 {
 	String DEFAULT_USER = "-me-";
@@ -45,11 +47,21 @@ public interface People
     NodeRef getAvatar(String personId);
 
     /**
+     * Get a person. This included a full representation of the person.
      * 
      * @throws NoSuchPersonException if personId does not exist
      */
     Person getPerson(final String personId);
 
+    /**
+     * Get a person, specifying optional includes as required.
+     * 
+     * @param personId
+     * @param include
+     * @return
+     */
+    Person getPerson(String personId, List<String> include);
+    
     /**
      * Create a person.
      *

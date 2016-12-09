@@ -42,8 +42,9 @@ import java.util.Map;
  * @author steveglover
  *
  */
-public class Person
+public class Person implements Serializable
 {
+	private static final long serialVersionUID = 1L;
 	protected String userName;
 	protected Boolean enabled;
 	protected NodeRef avatarId;

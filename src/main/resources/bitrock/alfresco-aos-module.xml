@@ -12,7 +12,7 @@
         <booleanParameter name="aosmodule_component_enabled" ask="0" value="1" />
     </parameterList>
     <initializationActionList>
-		<setInstallerVariable name="component(aosmodule).detailedDescription" value="Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services  installation&#xa;(proprietary module licensed under the Alfresco Component License).">
+		<setInstallerVariable name="component(aosmodule).detailedDescription" value="Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation&#xa;(proprietary module licensed under the Alfresco Component License).">
 			<ruleList>
                 <compareText text="${alfresco_edition}" value="community"/>
 			</ruleList>

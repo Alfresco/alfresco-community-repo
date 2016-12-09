@@ -319,8 +319,8 @@ msgstr "Select a database configuration."
 msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation."
 msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation."
 
-msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services  installation&#xa;(proprietary module licensed under the Alfresco Component License)."
-msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services  installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation&#xa;(proprietary module licensed under the Alfresco Component License)."
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Specify the directory where Tomcat is located."

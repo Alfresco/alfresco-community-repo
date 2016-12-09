@@ -30,6 +30,8 @@ import static java.lang.Integer.parseInt;
 
 import static org.alfresco.rest.rm.community.base.TestData.CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
@@ -55,6 +57,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 
 /**
  * Base class for all IG REST API Tests
@@ -98,6 +101,19 @@ public class BaseRestTest extends RestTest
     public static final String RM_TITLE = "Records Management";
     public static final String RM_DESCRIPTION = "Records Management Site";
 
+    /** Valid root containers where electronic and non-electronic records can be created */
+    @DataProvider(name = "validContainers")
+    public Object[][] rootContainers() throws Exception {
+        return new Object[][] {
+            // an arbitrary record folder
+            { createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()) },
+            // unfiled records root
+            { getFilePlanComponentAsUser(dataUser.getAdminUser(), UNFILED_RECORDS_CONTAINER_ALIAS.toString()) },
+            // an arbitrary unfiled records folder
+            { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), "Unfiled Folder " + getRandomAlphanumeric()) }
+        };
+    }
+    
     /**
      * @see org.alfresco.rest.RestTest#checkServerHealth()
      */

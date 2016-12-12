@@ -41,6 +41,7 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
 import java.io.File;
+import java.util.Iterator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -184,8 +185,11 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(toJson(electronicRecordModel));
-        
-        root.fieldNames().forEachRemaining(f -> {
+
+        Iterator<String> fieldNames = root.fieldNames();
+        while (fieldNames.hasNext())
+        {
+            String f = fieldNames.next();
             try
             {
                 builder.addMultiPart(f, root.get(f).asText(), ContentType.JSON.name());
@@ -194,8 +198,8 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
             {
                 LOG.error("Failed to set " + f + " error: " + error);
             }
-        });
- 
+        }
+        
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
         
         /* 

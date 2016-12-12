@@ -377,7 +377,10 @@ paths:
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
-          description: The node information to create.
+          description: |
+            The node information to create.
+
+            This field is ignored for multipart/form-data content uploads.
           required: true
           schema:
             $ref: '#/definitions/RMNodeBodyCreate'

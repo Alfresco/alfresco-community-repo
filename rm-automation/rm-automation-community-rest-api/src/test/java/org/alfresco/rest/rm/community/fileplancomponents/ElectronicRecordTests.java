@@ -216,8 +216,41 @@ public class ElectronicRecordTests extends BaseRestTest
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        FilePlanComponent record = new FilePlanComponent("Record " + getRandomAlphanumeric(), CONTENT_TYPE.toString(), 
-            new FilePlanComponentProperties());
+        FilePlanComponent record = new FilePlanComponent();
+        record.setName("Record " + getRandomAlphanumeric());
+        record.setNodeType(CONTENT_TYPE.toString());
+        
+        String newRecordId = filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
+        
+        // verify the create request status code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+        
+        // get newly created electonic record and verify its properties
+        FilePlanComponent electronicRecord = filePlanComponentAPI.getFilePlanComponent(newRecordId);
+        // created record will have record identifier inserted in its name but will be prefixed with
+        // the name it was created as
+        assertTrue(electronicRecord.getName().startsWith(record.getName()));
+    }
+    
+    /**
+     * This test verified that in the test client implementation if record name isn't specified it 
+     * defaults to filed file name.
+     * @param container valid record container
+     * @throws Exception if record creation failed
+     */
+    @Test
+    (
+        dataProvider = "validRootContainers",
+        description = "Electronic records can be created in unfiled record folder or unfiled record root"
+    )
+    public void recordNameDerivedFromFileName(FilePlanComponent container) throws Exception
+    {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
+        // record object without name set
+        FilePlanComponent record = new FilePlanComponent();
+        record.setNodeType(CONTENT_TYPE.toString());
+
         String newRecordId = filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
         
         // verify the create request status code

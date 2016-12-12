@@ -90,7 +90,6 @@ public class FilePlanComponentProperties
     @JsonProperty(PROPERTIES_LOCATION)
     private String location;
 
-    
     @JsonProperty(value = PROPERTIES_IS_CLOSED, required = false)
     private Boolean isClosed;
     

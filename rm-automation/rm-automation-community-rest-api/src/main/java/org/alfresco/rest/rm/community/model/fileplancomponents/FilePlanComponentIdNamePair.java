@@ -26,46 +26,24 @@
  */
 package org.alfresco.rest.rm.community.model.fileplancomponents;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * POJO for id/name pair
  *
  * @author Kristijan Conkas
  * @since 2.6
  */
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FilePlanComponentIdNamePair
 {
     public String id;
     public String name;
 
-    /**
-     * @return the id
-     */
-    public String getId()
-    {
-        return this.id;
-    }
-
-    /**
-     * @param id the id to set
-     */
-    public void setId(String id)
-    {
-        this.id = id;
-    }
-
-    /**
-     * @return the name
-     */
-    public String getName()
-    {
-        return this.name;
-    }
-
-    /**
-     * @param name the name to set
-     */
-    public void setName(String name)
-    {
-        this.name = name;
-    }
 }

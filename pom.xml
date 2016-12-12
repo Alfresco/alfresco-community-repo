@@ -97,6 +97,7 @@
          <modules>
             <module>rm-enterprise</module>
             <module>rm-automation</module>
+            <module>rm-benchmark</module>
          </modules>
       </profile>
    </profiles>

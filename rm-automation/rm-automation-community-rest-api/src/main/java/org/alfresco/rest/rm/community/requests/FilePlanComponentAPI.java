@@ -42,7 +42,6 @@ import static org.testng.Assert.fail;
 
 import java.io.File;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -184,7 +183,6 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         builder.setAuth(basic(currentUser.getUsername(), currentUser.getPassword()));
         
         ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(Include.NON_DEFAULT);
         JsonNode root = mapper.readTree(toJson(electronicRecordModel));
         
         root.fieldNames().forEachRemaining(f -> {

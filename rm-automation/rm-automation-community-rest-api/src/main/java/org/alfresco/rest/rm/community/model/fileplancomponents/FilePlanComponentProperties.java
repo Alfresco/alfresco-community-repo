@@ -26,10 +26,16 @@
  */
 package org.alfresco.rest.rm.community.model.fileplancomponents;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_BOX;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_FILE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_HOLD_REASON;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IS_CLOSED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_LOCATION;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_NUMBER_OF_COPIES;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_PHYSICAL_SIZE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_PERIOD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SHELF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SUPPLEMENTAL_MARKING_LIST;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
@@ -83,4 +89,25 @@ public class FilePlanComponentProperties
 
     @JsonProperty(PROPERTIES_LOCATION)
     private String location;
+
+    
+    @JsonProperty(value = PROPERTIES_IS_CLOSED, required = false)
+    private Boolean isClosed;
+    
+    @JsonProperty(value = PROPERTIES_BOX, required = false)
+    private String box;
+    
+    @JsonProperty(value = PROPERTIES_FILE, required = false)
+    private String file;
+    
+    @JsonProperty(value = PROPERTIES_SHELF, required = false)
+    private String shelf;
+    
+    @JsonProperty(value = PROPERTIES_NUMBER_OF_COPIES, required = false)
+    private Integer numberOfCopies;
+    
+    @JsonProperty(value = PROPERTIES_PHYSICAL_SIZE, required = false)
+    private Integer physicalSize;
+    
+
 }

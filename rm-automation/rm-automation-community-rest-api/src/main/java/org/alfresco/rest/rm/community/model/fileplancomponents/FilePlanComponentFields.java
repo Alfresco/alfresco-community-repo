@@ -45,7 +45,17 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_DESCRIPTION = "cm:description";
     public static final String PROPERTIES_SUPPLEMENTAL_MARKING_LIST = "rmc:supplementalMarkingList";
     public static final String ALLOWABLE_OPERATIONS = "allowableOperations";
-    public static final String IS_CLOSED="isClosed";
-    public static final String PROPERTIES_REVIEW_PERIOD="rma:reviewPeriod";
-    public static final String PROPERTIES_LOCATION="rma:location";
+    public static final String IS_CLOSED = "isClosed";
+    public static final String PROPERTIES_REVIEW_PERIOD = "rma:reviewPeriod";
+    public static final String PROPERTIES_LOCATION = "rma:location";
+    public static final String PROPERTIES_IS_CLOSED = "rma:isClosed"; // not to be confused with IS_CLOSED!
+    
+    // for non-electronic records
+    public static final String PROPERTIES_BOX = "rma:box";
+    public static final String PROPERTIES_FILE = "rma:file";
+    public static final String PROPERTIES_NUMBER_OF_COPIES = "rma:numberOfCopies";
+    public static final String PROPERTIES_PHYSICAL_SIZE = "rma:physicalSize";
+    public static final String PROPERTIES_SHELF = "rma:shelf";
+    public static final String PROPERTIES_STORAGE_LOCATION = "rma:storageLocation";
+        
 }

@@ -31,6 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -59,12 +62,14 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     }
 
     @Override
+    @WebApiDescription(title = "Return a paged list of fileplan components for the container identified by parentFolderNodeId")
     public CollectionWithPagingInfo<Node> readAll(String parentFolderNodeId, Parameters parameters)
     {
         return nodes.listChildren(parentFolderNodeId, parameters);
     }
 
     @Override
+    @WebApiDescription(title="Create one (or more) nodes as children of container identified by parentFolderNodeId")
     public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
     {
         List<Node> result = new ArrayList<>(nodeInfos.size());
@@ -78,8 +83,29 @@ public class FileplanComponentChildrenRelation implements RelationshipResourceAc
     }
 
     @Override
+    @WebApiDescription(title = "Upload file content and meta-data into the repository.")
+    @WebApiParam(name = "formData", title = "A single form data", description = "A single form data which holds FormFields.")
     public Node create(String parentFolderNodeId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
-        return nodes.upload(parentFolderNodeId, formData, parameters);
+        try
+        {
+            return nodes.upload(parentFolderNodeId, formData, parameters);
+        }
+        catch (ApiException apiException)
+        {
+            /*
+             * The upload method encapsulates most exceptions that can occur on node creation in an ApiException. 
+             * To allow the API framework to correctly map the exception to the API error code we throw the original exception.
+             */
+            Throwable originalException = apiException.getCause();
+            if (originalException != null && originalException instanceof RuntimeException)
+            {
+                throw (RuntimeException) originalException;
+            }
+            else
+            {
+                throw apiException;
+            }
+        }
     }
 }

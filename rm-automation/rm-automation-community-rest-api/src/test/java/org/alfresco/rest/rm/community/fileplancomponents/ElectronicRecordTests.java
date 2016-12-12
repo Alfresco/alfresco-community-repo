@@ -216,8 +216,10 @@ public class ElectronicRecordTests extends BaseRestTest
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        FilePlanComponent record = new FilePlanComponent("Record " + getRandomAlphanumeric(), CONTENT_TYPE.toString(), 
-            new FilePlanComponentProperties());
+        FilePlanComponent record = new FilePlanComponent();
+        record.setName("Record " + getRandomAlphanumeric());
+        record.setNodeType(CONTENT_TYPE.toString());
+        
         String newRecordId = filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
         
         // verify the create request status code
@@ -248,7 +250,7 @@ public class ElectronicRecordTests extends BaseRestTest
         // record object without name set
         FilePlanComponent record = new FilePlanComponent();
         record.setNodeType(CONTENT_TYPE.toString());
-        record.setProperties(new FilePlanComponentProperties());
+
         String newRecordId = filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
         
         // verify the create request status code

@@ -26,66 +26,23 @@
  */
 package org.alfresco.rest.rm.community.model.fileplancomponents;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * POJO for the review period
  *
  * @author Rodica Sutu
  * @since 2.6
  */
-
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ReviewPeriod
 {
     private String periodType;
     private String expression;
-
-    /**
-     * Helper constructor with
-     *
-     * @param periodType
-     * @param expression
-     */
-    public ReviewPeriod(String periodType, String expression)
-    {
-        this.periodType = periodType;
-        this.expression = expression;
-    }
-
-    /**
-     * Helper constructor
-     */
-    public ReviewPeriod()
-    {
-    }
-
-    /**
-     * @return the periodType
-     */
-    public String getPeriodType()
-    {
-        return this.periodType;
-    }
-
-    /**
-     * @param periodType the periodType to set
-     */
-    public void setPeriodType(String periodType)
-    {
-        this.periodType = periodType;
-    }
-
-    /**
-     * @return the expression
-     */
-    public String getExpression()
-    {
-        return this.expression;
-    }
-
-    /**
-     * @param expression the expression to set
-     */
-    public void setExpression(String expression)
-    {
-        this.expression = expression;
-    }
 }

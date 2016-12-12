@@ -100,7 +100,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     public void createRootUnfiledRecordsFolder() throws Exception
     {
         // Authenticate with admin user
-        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         String folderName = "Folder " + getRandomAlphanumeric();
         String folderTitle = folderName + " Title";
@@ -148,7 +148,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     )
     public void onlyRecordFoldersCanBeCreatedAtUnfiledRecordsRoot(FilePlanComponentType componentType)
     {
-        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
         String folderName = "Folder " + getRandomAlphanumeric();
         String folderTitle = folderName + " Title";

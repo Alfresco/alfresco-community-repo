@@ -190,7 +190,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         root.fieldNames().forEachRemaining(f -> {
             try
             {
-                builder.addMultiPart(f,  root.get(f).asText(), ContentType.JSON.name());
+                builder.addMultiPart(f, root.get(f).asText(), ContentType.JSON.name());
             }
             catch (Exception error)
             {
@@ -206,7 +206,6 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
          */
         Response response = given()
             .spec(builder.build())
-            .log().everything()
         .when()
             .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getParameters())
             .andReturn();

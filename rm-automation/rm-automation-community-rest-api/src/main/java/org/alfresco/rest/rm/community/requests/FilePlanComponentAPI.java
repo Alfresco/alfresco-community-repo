@@ -178,6 +178,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
             .auth().basic(currentUser.getUsername(), currentUser.getPassword())
             .multiPart("nodeBodyCreate", toJson(electronicRecordModel), ContentType.JSON.name())
             .multiPart("filedata", recordContent, ContentType.BINARY.name())
+            .multiPart("name", electronicRecordModel.getName() != null ? electronicRecordModel.getName() : recordContent.getName())
         .when()
             .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getParameters())
             .andReturn();

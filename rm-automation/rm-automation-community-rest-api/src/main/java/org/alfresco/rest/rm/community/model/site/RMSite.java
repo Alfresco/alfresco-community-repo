@@ -30,6 +30,10 @@ import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.alfresco.rest.model.RestSiteModel;
 
 /**
@@ -38,59 +42,13 @@ import org.alfresco.rest.model.RestSiteModel;
  * @author Rodica Sutu
  * @since 2.6
  */
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RMSite extends RestSiteModel
 {
     @JsonProperty (value = COMPLIANCE,required = true)
     private RMSiteCompliance compliance;
-
-    /**
-     * Helper constructor to create RM Site object using
-     *
-     * @param title
-     * @param description
-     * @param compliance
-     */
-    public RMSite(String title, String description, RMSiteCompliance compliance)
-    {
-        this.title=title;
-        this.description=description;
-        this.compliance=compliance;
-    }
-
-    /**
-     * Helper constructor for creating the RM Site
-     */
-    public RMSite() { }
-
-    /**
-     * Helper constructor to create RM Site object using
-     *
-     * @param compliance RM Site Compliance
-     */
-    public RMSite(RMSiteCompliance compliance)
-    {
-        super();
-        this.compliance = compliance;
-    }
-
-    /**
-     * Helper method to set RM site compliance
-     *
-     * @param compliance {@link RMSiteCompliance} the compliance to set
-     */
-    public void setCompliance(RMSiteCompliance compliance)
-    {
-        this.compliance = compliance;
-    }
-
-    /**
-     * Helper method to get RM site compliance
-     *
-     * @return compliance the RM Site compliance to get
-     */
-    public RMSiteCompliance getCompliance()
-    {
-        return compliance;
-    }
 
 }

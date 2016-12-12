@@ -113,7 +113,7 @@ public class BaseRestTest extends RestTest
             { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), "Unfiled Folder " + getRandomAlphanumeric()) }
         };
     }
-    
+
     /**
      * @see org.alfresco.rest.RestTest#checkServerHealth()
      */
@@ -141,7 +141,9 @@ public class BaseRestTest extends RestTest
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
             // Create the RM site
-            RMSite rmSite = new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
+            RMSite rmSite =  RMSite.builder().compliance(STANDARD).build();
+            rmSite.setTitle(RM_TITLE);
+            rmSite.setDescription(RM_DESCRIPTION);
             rmSiteAPI.createRMSite(rmSite);
 
             // Verify the status code
@@ -217,7 +219,7 @@ public class BaseRestTest extends RestTest
 
     /**
      * Helper method to close folder
-     * @param folderToClose
+     * @param folderId
      * @return
      * @throws Exception
      */

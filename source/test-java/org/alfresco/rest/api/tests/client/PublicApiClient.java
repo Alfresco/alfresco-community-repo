@@ -57,6 +57,7 @@ import org.alfresco.rest.api.tests.client.data.Favourite;
 import org.alfresco.rest.api.tests.client.data.FavouriteSite;
 import org.alfresco.rest.api.tests.client.data.FolderNode;
 import org.alfresco.rest.api.tests.client.data.Group;
+import org.alfresco.rest.api.tests.client.data.GroupMember;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.MemberOfSite;
 import org.alfresco.rest.api.tests.client.data.NodeRating;
@@ -2262,9 +2263,25 @@ public class PublicApiClient
             return null;
         }
 
-        public ListResponse<Group> getGroups(Map<String, String> params) throws PublicApiException, ParseException
+        public ListResponse<GroupMember> getGroupMembers(String groupId, Map<String, String> params) throws PublicApiException, ParseException
         {
-            return getGroups(params, "Failed to get groups", HttpServletResponse.SC_OK);
+            return getGroupMembers(groupId, params, "Failed to get groups", HttpServletResponse.SC_OK);
+        }
+
+        public ListResponse<GroupMember> getGroupMembers(String groupId, Map<String, String> params, String errorMessage, int expectedStatus)
+                throws PublicApiException, ParseException
+        {
+            HttpResponse response = getAll("groups", groupId, "members", null, params, errorMessage, expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return GroupMember.parseGroupMembers(response.getJsonResponse());
+                }
+            }
+            return null;
         }
     }
 }

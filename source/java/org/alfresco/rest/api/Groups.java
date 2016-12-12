@@ -26,6 +26,7 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.Group;
+import org.alfresco.rest.api.model.GroupMember;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
@@ -41,6 +42,9 @@ public interface Groups
     String PARAM_INCLUDE_PARENT_IDS = "parentIds";
     String PARAM_INCLUDE_ZONES = "zones";
     String PARAM_IS_ROOT = "isRoot";
+    String PARAM_MEMBER_TYPE = "memberType";
+    String PARAM_MEMBER_TYPE_GROUP = "GROUP";
+    String PARAM_MEMBER_TYPE_PERSON = "PERSON";
 
     /**
      * Gets a list of groups.
@@ -53,4 +57,15 @@ public interface Groups
      */
     CollectionWithPagingInfo<Group> getGroups(Parameters parameters);
 
+    /**
+     * Gets a list of groups.
+     *
+     * @param groupId the identifier of a group.
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *        including:
+     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
+     *        - incFiles, incFolders (both true by default)
+     * @return a paged list of {@code org.alfresco.rest.api.model.GroupMember} objects
+     */
+    CollectionWithPagingInfo<GroupMember> getGroupMembers(String groupId, Parameters parameters);
 }

@@ -54,8 +54,6 @@ public class SolrStoreMapping implements BeanNameAware
 
     private int replicationFactor = 1;
     
-    private String secureComms;
-    
     public SolrStoreMapping()
     {
         
@@ -250,10 +248,4 @@ public class SolrStoreMapping implements BeanNameAware
     {
         this.replicationFactor = replicationFactor;
     }
-
-    public void setSecureComms(String secureComms)
-    {
-        this.secureComms = secureComms;
-    }
-
 }

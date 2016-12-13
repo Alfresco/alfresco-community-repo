@@ -3374,7 +3374,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     public void testDownloadFileContent() throws Exception
     {
         setRequestContext(user1);
-        
+
         //
         // Test plain text
         //
@@ -3399,7 +3399,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
         // Download text content - by default with Content-Disposition header
-        response = getSingle(NodesEntityResource.class, contentNodeId+"/content", null, 200);
+        response = getSingle(NodesEntityResource.class, contentNodeId + "/content", null, 200);
 
         String textContent = response.getResponse();
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
@@ -3479,6 +3479,69 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
         // Test 304 response
         getSingle(getNodeContentUrl(contentNodeId), null, null, headers, 304);
+    }
+
+    /**
+     * Tests download of file/content - basic read permission
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
+     */
+    @Test
+    public void testDownloadFileContentReadPermission() throws Exception
+    {
+        setRequestContext(user1);
+
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload text content
+        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // Download text content
+        response = getSingle(NodesEntityResource.class, contentNodeId+"/content", null, 200);
+        String textContent = response.getResponse();
+        assertEquals("The quick brown fox jumps over the lazy dog", textContent);
+
+        // Also test versions endpoint (1.0 in this case)
+        response = getSingle(NodesEntityResource.class, contentNodeId+"/versions/1.0/content", null, 200);
+        textContent = response.getResponse();
+        assertEquals("The quick brown fox jumps over the lazy dog", textContent);
+
+        // -ve test: user2 does not have read permission
+        setRequestContext(user2);
+        getSingle(NodesEntityResource.class, contentNodeId+"/content", null, 403);
+        getSingle(NodesEntityResource.class, contentNodeId+"/versions/1.0/content", null, 403);
+
+        // add Consumer (~ Read) permission
+        setRequestContext(user1);
+
+        Document dUpdate = new Document();
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(user2, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // update node
+        response = put(URL_NODES, contentNodeId, toJsonAsStringNonNull(dUpdate), null, 200);
+
+        setRequestContext(user2);
+
+        // Download text content
+        response = getSingle(NodesEntityResource.class, contentNodeId+"/content", null, 200);
+        textContent = response.getResponse();
+        assertEquals("The quick brown fox jumps over the lazy dog", textContent);
+
+        // Also test versions endpoint (1.0 in this case)
+        response = getSingle(NodesEntityResource.class, contentNodeId+"/versions/1.0/content", null, 200);
+        textContent = response.getResponse();
+        assertEquals("The quick brown fox jumps over the lazy dog", textContent);
     }
 
     /**

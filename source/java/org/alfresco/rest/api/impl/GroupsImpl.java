@@ -258,7 +258,16 @@ public class GroupsImpl implements Groups
 
         Group group = new Group();
         group.setId(authorityInfo.getAuthorityName());
-        group.setDisplayName(authorityInfo.getAuthorityDisplayName());
+
+        // REPO-1743
+        String authorityDisplayName = authorityInfo.getAuthorityDisplayName();
+        if (authorityDisplayName == null || authorityDisplayName.isEmpty())
+        {
+            authorityDisplayName = authorityService.getAuthorityDisplayName(authorityInfo.getAuthorityName());
+        }
+
+        group.setDisplayName(authorityDisplayName);
+
         group.setIsRoot(isRootAuthority(rootAuthorities, authorityInfo.getAuthorityName()));
 
         // Optionally include

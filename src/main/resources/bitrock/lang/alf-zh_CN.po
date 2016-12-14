@@ -1,5 +1,5 @@
-msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
-msgstr "${machine_total_memoryGB} GB 的 RAM 不足够运行 Alfresco 用于测试或生产目的。Alfresco 可能无法正常运行，如果确实如此，则其将不能发挥最佳性能。升级服务器以至少拥有 ${minimum_ramGB} GB 的 RAM，最好拥有 ${recommended_ramGB} GB 的 RAM。"
+msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco Content Services for test or production purposes. Alfresco Content Services might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
+msgstr "${machine_total_memoryGB} GB 的 RAM 不足够运行 Alfresco Content Services 用于测试或生产目的。Alfresco Content Services 可能无法正常运行，如果确实如此，则其将不能发挥最佳性能。升级服务器以至少拥有 ${minimum_ramGB} GB 的 RAM，最好拥有 ${recommended_ramGB} GB 的 RAM。"
 
 msgid "${product_fullname} LibreOffice Service"
 msgstr "${product_fullname} LibreOffice 服务"
@@ -25,38 +25,38 @@ msgstr "管理密码："
 msgid "Advanced - Configure server ports and service properties."
 msgstr "高级 - 配置服务器端口和服务属性。"
 
-msgid "Alfresco"
-msgstr "Alfresco"
+msgid "Alfresco Content Services"
+msgstr "Alfresco Content Services"
 
 msgid "Alfresco Community Edition"
 msgstr "Alfresco Community Edition"
 
-msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
-msgstr "Alfresco Enterprise Content Management (ECM) 系统具有文档管理、合作管理和图像管理等功能。"
+msgid "Alfresco Content Services Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
+msgstr "Alfresco Content Services Enterprise Content Management (ECM) 系统具有文档管理、合作管理和图像管理等功能。"
 
-msgid "Alfresco FTP Port"
-msgstr "Alfresco FTP 端口"
+msgid "FTP Port"
+msgstr "FTP 端口"
 
 msgid "Alfresco Module Packages"
 msgstr "Alfresco Module Package"
 
-msgid "Alfresco RMI Port"
-msgstr "Alfresco RMI 端口"
+msgid "RMI Port"
+msgstr "RMI 端口"
 
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco Shortcuts"
-msgstr "Alfresco 快捷方式"
+msgid "Shortcuts"
+msgstr "快捷方式"
 
-msgid "Alfresco Validations"
-msgstr "Alfresco 验证"
+msgid "Validations"
+msgstr "验证"
 
 msgid "Alfresco Website"
 msgstr "Alfresco 网站"
 
-msgid "Alfresco Data Directory"
-msgstr "Alfresco 数据目录"
+msgid "Data Directory"
+msgstr "数据目录"
 
 msgid "Choose optional components to install."
 msgstr "还可以选择要安装的可选组件。"
@@ -106,8 +106,8 @@ msgstr "数据库名称"
 msgid "Database Name:"
 msgstr "数据库名称："
 
-msgid "Deploying Alfresco... This can take up to five minutes."
-msgstr "正在部署 Alfresco... 这可能需要 5 分钟。"
+msgid "Deploying Alfresco Content Services... This can take up to five minutes."
+msgstr "正在部署 Alfresco Content Services... 这可能需要 5 分钟。"
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "是否要将 PostgreSQL 作为 Windows 服务安装？"
@@ -223,8 +223,8 @@ msgstr "Java"
 msgid "Java Component required to run ${product_fullname}."
 msgstr "运行 ${product_fullname} 所需的 Java 组件。"
 
-msgid "Java Home path contains spaces. Alfresco might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
-msgstr "Java 主路径包含空格。Alfresco 可能无法正常工作，因为当安装路径包含空格时，JVM 存在问题。在不包含空格的路径中重新安装 JVM。"
+msgid "Java Home path contains spaces. Alfresco Content Services might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgstr "Java 主路径包含空格。Alfresco Content Services 可能无法正常工作，因为当安装路径包含空格时，JVM 存在问题。在不包含空格的路径中重新安装 JVM。"
 
 msgid "This module requires Java, and no Java instance can be found."
 msgstr "此模块要求安装 Java，且无法找到 Java 实例。"
@@ -277,11 +277,11 @@ msgstr "密码："
 msgid "Choose a folder to install ${product_fullname}."
 msgstr "请选择要安装 ${product_fullname} 的文件夹。"
 
-msgid "Choose a port number for Alfresco to use to execute remote commands."
-msgstr "请选择 Alfresco 执行远程命令使用的端口号。"
+msgid "Choose a port number for Alfresco Content Services to use to execute remote commands."
+msgstr "请选择 Alfresco Content Services 执行远程命令使用的端口号。"
 
-msgid "Choose a port number for the integrated Alfresco FTP server."
-msgstr "请选择集成式 Alfresco FTP 服务器的端口号。"
+msgid "Choose a port number for the integrated FTP server."
+msgstr "请选择集成式 FTP 服务器的端口号。"
 
 msgid "Enter a valid IP address or hostname."
 msgstr "请输入有效的 IP 地址或主机名。"
@@ -301,8 +301,8 @@ msgstr "请输入 LibreOffice 服务器将侦听的端口。"
 msgid "Enter your database 'postgres' user password."
 msgstr "请输入数据库 ‘postgres’ 用户密码。"
 
-msgid "Specify a password for the Alfresco administrator account."
-msgstr "请指定 Alfresco 管理员帐户的密码。"
+msgid "Specify a password for the Alfresco Content Services administrator account."
+msgstr "请指定 Alfresco Content Services 管理员帐户的密码。"
 
 msgid "Select a different installation directory. The installation directory cannot contain symbolic links."
 msgstr "请另选一个安装路径。安装路径不能包含符号链接。"
@@ -316,11 +316,11 @@ msgstr "请选择 Tomcat 配置"
 msgid "Select a database configuration."
 msgstr "请选择数据库配置。"
 
-msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
-msgstr "选择此模块后，可与 SharePoint 服务器通信的应用程序将能与您的 Alfresco 安装通信。"
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation."
+msgstr "选择此模块后，可与 SharePoint 服务器通信的应用程序将能与您的 Alfresco Content Services 安装通信。"
 
-msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
-msgstr "选择此模块后，可与 SharePoint 服务器通信的应用程序将能与您的 Alfresco 安装通信&#xa;（Alfresco 组件许可证授权的属性模块）。"
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "选择此模块后，可与 SharePoint 服务器通信的应用程序将能与您的 Alfresco Content Services 安装通信&#xa;（Alfresco 组件许可证授权的专有模块）。"
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "请指定 Tomcat 所在的目录。"
@@ -442,8 +442,8 @@ msgstr "停止服务"
 msgid "The ${product_shortname} service script file exists. Use a different name for the service script."
 msgstr "${product_shortname} 服务脚本文件已存在。请使用不同的服务脚本名称。"
 
-msgid "The Alfresco data directory increases in size over time. Choose where you want to store it."
-msgstr "Alfresco 数据目录趋向于增大。请选择存储位置。"
+msgid "The data directory increases in size over time. Choose where you want to store it."
+msgstr "数据目录趋向于增大。请选择存储位置。"
 
 msgid "The current installation directory cannot be accessed by non-root users. Select a different installation directory or change the permissions to 755 for this folder."
 msgstr "非根用户无法访问当前的安装目录。请另选一个安装目录或将该文件夹的权限更改为 755。"
@@ -481,14 +481,14 @@ msgstr "所选的文件夹不为空。请指定其他文件夹。"
 msgid "The service script file exists. Insert a different name for the service script."
 msgstr "服务脚本文件已存在。请插入不同的服务脚本名称。"
 
-msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
-msgstr "您选择的 Java 版本为 32 位，但该 Alfresco 的安装为 64 位。请安装 Java 64 位版本的 Java，然后再继续操作，或返回并确认已选择"Java"组件。"
+msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco Content Services. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
+msgstr "您选择的 Java 版本为 32 位，但该 Alfresco Content Services 的安装为 64 位。请安装 64 位版本的 Java，然后再继续操作，或返回并确认已选择"Java"组件。"
 
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 msgstr "${installdir} 上没有足够的可用空间。您需要至少 ${base_needed_space} MB 才可安装 ${product_fullname}"
 
-msgid "This environment is not configured optimally for Alfresco - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco from functioning, some product features might not be available, or the system might not perform optimally."
-msgstr "此环境没有为 Alfresco 进行优化配置 - 请仔细阅读此列表后再继续操作。\n\n虽然这些问题不会妨碍 Alfresco 正常运行，但有些产品功能可能不可用，或者系统可能无法发挥最佳性能。"
+msgid "This environment is not configured optimally for Alfresco Content Services - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco Content Services from functioning, some product features might not be available, or the system might not perform optimally."
+msgstr "此环境没有为 Alfresco Content Services 进行优化配置 - 请仔细阅读此列表后再继续操作。\n\n虽然这些问题不会妨碍 Alfresco Content Services 正常运行，但有些产品功能可能不可用，或者系统可能无法发挥最佳性能。"
 
 msgid "This installer is for Windows 64 bit.  Download the Windows 32 bit version."
 msgstr "此安装程序适用于 Windows 64 位。请下载 Windows 32 位版本。"
@@ -637,14 +637,14 @@ msgstr "只有在安装程序中设置密码时才使用 ASCII 字符。如果�
 msgid "Connect Alfresco Share to the repository"
 msgstr "将 Alfresco Share 连接到存储库"
 
-msgid "Enter the location of your Alfresco repository."
-msgstr "请输入 Alfresco 存储库的位置。"
+msgid "Enter the location of your Alfresco Content Services repository."
+msgstr "请输入 Alfresco Content Services 存储库的位置。"
 
 msgid "Repository location: "
-msgstr "存储库位置："
+msgstr "存储库位置： "
 
-msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
-msgstr "Solr - 仅从早期的 Alfresco 版本升级时需要安装 Solr 1.4。"
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco Content Services versions."
+msgstr "Solr - 仅从早期的 Alfresco Content Services 版本升级时需要安装 Solr 1.4。"
 
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr 是一种开源的企业搜索平台，使用 Apache Lucene 作为索引和搜索引擎。与 Solr 1 相比，Solr 4 在可扩展性、性能和灵活性方面进行了改进。"
@@ -658,8 +658,8 @@ msgstr "无法绑定提供的服务器端口。此端口已被 ${process_binding
 msgid "Remote Solr configuration"
 msgstr "远程 Solr 配置"
 
-msgid "Enter the Solr host and port to connect to Alfresco:"
-msgstr "输入 Solr 主机和端口以连接至 Alfresco："
+msgid "Enter the Solr host and port to connect to Alfresco Content Services:"
+msgstr "输入 Solr 主机和端口以连接至 Alfresco Content Services:"
 
 msgid "Solr host:"
 msgstr "Solr 主机："

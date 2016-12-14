@@ -68,7 +68,7 @@ public class EnterprisePublicApiTestFixture extends EnterpriseTestFixture
 	@Override
 	protected JettyComponent makeJettyComponent()
 	{
-		JettyComponent jettyComponent = new EnterpriseJettyComponent(port, contextPath, configLocations, classLocations);
+		JettyComponent jettyComponent = new EnterpriseJettyComponent(getPort(), getContextPath(), getConfigLocations(), getClassLocations());
 		return jettyComponent;
 	}
 

@@ -43,6 +43,7 @@ import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest.PatchMethod;
+import org.alfresco.rest.api.tests.TestFixture;
 import org.alfresco.rest.api.tests.client.AuthenticatedHttp.HttpRequestCallback;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.Api.SCOPE;
@@ -93,10 +94,10 @@ public class PublicApiHttpClient
     private static final String PUBLICAPI_CMIS_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/cmis/versions/{7}/{8}";
     private static final String PUBLICAPI_CMIS_URL_SUFFIX = "{0}/{1}/cmis/versions/{2}/{3}";
     private static final String ATOM_PUB_URL = "{0}://{1}:{2}{3}cmisatom";
-
+    
     private String scheme = "http";
-    private String host = "localhost";
-    private int port = 8081;
+    private String host = TestFixture.HOST;
+    private int port = TestFixture.PORT;
 
     private String contextPath;
     private String servletName;

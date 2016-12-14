@@ -1464,7 +1464,8 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         
         // Delete the version node
         this.dbNodeService.deleteNode(VersionUtil.convertNodeRef(version.getFrozenStateNodeRef()));
-        
+
+        // If we try to delete the last version
         if (currentVersion.getVersionLabel().equals(version.getVersionLabel()))
         {
             Version headVersion = getHeadVersion(nodeRef);
@@ -1475,6 +1476,9 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 //  to have this create a new version for the property change!
                 policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
                 this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, headVersion.getVersionLabel());
+                // MNT-13097 Content will be reverted as well
+                revert(nodeRef, headVersion);
+                policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
             }
             else
             {

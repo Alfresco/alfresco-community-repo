@@ -1232,6 +1232,51 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	assertEquals(version2.getVersionLabel(), versionLabel3);
     	
     }
+
+    /**
+     * Test test_MNT13097
+     * MNT-13097. Revert content if the last version is chosen.
+     */
+    public void test_MNT13097()
+    {
+        // Use 1.0, 2.0 etc for the main part
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+
+        // Create a versionable node with content
+        NodeRef versionableNode = createNewVersionableNode();
+        ContentWriter contentWriter = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+        assertNotNull(contentWriter);
+        contentWriter.putContent(UPDATED_CONTENT_1);
+
+        // Create first version
+        Version version1 = createVersion(versionableNode);
+
+        // Update Content
+        contentWriter = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+        contentWriter.putContent(UPDATED_CONTENT_2);
+
+        // Create second version
+        Version version2 = createVersion(versionableNode);
+
+        // Check that the version label is right
+        Version currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(version2.getVersionLabel(), currentVersion.getVersionLabel());
+
+        // Check that the content is right
+        ContentReader contentReader1 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
+        assertEquals(UPDATED_CONTENT_2, contentReader1.getContentString());
+
+        // Delete version 2.0
+        this.versionService.deleteVersion(versionableNode, version2);
+
+        // Check that the version label is resetted
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(version1.getVersionLabel(), currentVersion.getVersionLabel());
+
+        // Check that the content has been reverted
+        contentReader1 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
+        assertEquals(UPDATED_CONTENT_1, contentReader1.getContentString());
+    }
     
     /**
      * Test deleteVersion

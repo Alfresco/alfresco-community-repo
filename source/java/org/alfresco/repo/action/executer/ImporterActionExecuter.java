@@ -307,7 +307,6 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                     
                     // add titled aspect
                     Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>(1, 1.0f);
-                    titledProps.put(ContentModel.PROP_TITLE, folderName);
                     this.nodeService.addAspect(folderRef, ContentModel.ASPECT_TITLED, titledProps);
                     
                     // add the uifacets aspect for the read/edit properties screens

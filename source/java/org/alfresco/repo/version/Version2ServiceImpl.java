@@ -1366,12 +1366,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         try
         {
             // Create the restored node
-            restoredNodeRef = this.nodeService.createNode(
-                    parentNodeRef,
-                    assocTypeQName,
-                    assocQName,
-                    type,
-                    props).getChildRef();
+            restoredNodeRef = this.nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, type, props).getChildRef();
         }
         finally
         {
@@ -1475,10 +1470,16 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 // Disable the VersionableAspect for this change though, we don't want
                 //  to have this create a new version for the property change!
                 policyBehaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-                this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, headVersion.getVersionLabel());
-                // MNT-13097 Content will be reverted as well
-                revert(nodeRef, headVersion);
-                policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                try
+                {
+                    this.nodeService.setProperty(nodeRef, ContentModel.PROP_VERSION_LABEL, headVersion.getVersionLabel());
+                    // MNT-13097 Content will be reverted as well
+                    revert(nodeRef, headVersion);
+                }
+                finally
+                {
+                    policyBehaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                }
             }
             else
             {

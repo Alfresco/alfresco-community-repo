@@ -91,8 +91,10 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
 
     private static final String UPDATED_NAME_1 = "a.txt";
     private static final String UPDATED_NAME_2 = "b.txt";
+    private static final String UPDATED_NAME_3 = "c.txt";
     private static final String UPDATED_TITLE_1 = "a";
     private static final String UPDATED_TITLE_2 = "b";
+    private static final String UPDATED_TITLE_3 = "c";
     private static final String UPDATED_VALUE_1 = "updatedValue1";
     private static final String UPDATED_VALUE_2 = "updatedValue2";
     private static final String UPDATED_VALUE_3 = "updatedValue3";
@@ -1266,43 +1268,53 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         // Create second version
         Version version2 = createVersion(versionableNode);
 
+        // Update name, title and content
+        this.nodeService.setProperty(versionableNode, ContentModel.PROP_NAME, UPDATED_NAME_3);
+        this.nodeService.setProperty(versionableNode, ContentModel.PROP_TITLE, UPDATED_TITLE_3);
+        contentWriter = this.contentService.getWriter(versionableNode, ContentModel.PROP_CONTENT, true);
+        contentWriter.putContent(UPDATED_CONTENT_3);
+
         // Check that the name and title is right
+        String name3 = (String) this.nodeService.getProperty(versionableNode, ContentModel.PROP_NAME);
+        assertEquals(UPDATED_NAME_3, name3);
+        String title3 = (String) this.nodeService.getProperty(versionableNode, ContentModel.PROP_TITLE);
+        assertEquals(UPDATED_TITLE_3, title3);
+
+        // Create third version
+        Version version3 = createVersion(versionableNode);
+
+        // Check that the version label is right
+        Version currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        assertEquals(version3.getVersionLabel(), currentVersion.getVersionLabel());
+
+        // Check that the content is right
+        ContentReader contentReader1 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
+        assertEquals(UPDATED_CONTENT_3, contentReader1.getContentString());
+
+        // Delete version 3.0
+        this.versionService.deleteVersion(versionableNode, version3);
+
+        // Check that the name and title is reverted to 2.0
         String name2 = (String) this.nodeService.getProperty(versionableNode, ContentModel.PROP_NAME);
         assertEquals(UPDATED_NAME_2, name2);
         String title2 = (String) this.nodeService.getProperty(versionableNode, ContentModel.PROP_TITLE);
         assertEquals(UPDATED_TITLE_2, title2);
 
-        // Check that the version label is right
-        Version currentVersion = this.versionService.getCurrentVersion(versionableNode);
+        // Check that the version label is reverted to 2.0
+        currentVersion = this.versionService.getCurrentVersion(versionableNode);
         assertEquals(version2.getVersionLabel(), currentVersion.getVersionLabel());
 
-        // Check that the content is right
-        ContentReader contentReader1 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
+        // Check that the content has been reverted to 2.0
+        contentReader1 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
         assertEquals(UPDATED_CONTENT_2, contentReader1.getContentString());
 
-        // Delete version 2.0
-        this.versionService.deleteVersion(versionableNode, version2);
+        // Version 1.0 and 2.0 should left
+        VersionHistory vHistory = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(2, vHistory.getAllVersions().size());
 
-        // Check that the name and title is reverted
-        String name1 = (String) this.nodeService.getProperty(versionableNode, ContentModel.PROP_NAME);
-        assertEquals(UPDATED_NAME_1, name1);
-        String title1 = (String) this.nodeService.getProperty(versionableNode, ContentModel.PROP_TITLE);
-        assertEquals(UPDATED_TITLE_1, title1);
-
-        // Check that the version label is reverted
-        currentVersion = this.versionService.getCurrentVersion(versionableNode);
-        assertEquals(version1.getVersionLabel(), currentVersion.getVersionLabel());
-
-        // Check that the content has been reverted
-        contentReader1 = this.contentService.getReader(versionableNode, ContentModel.PROP_CONTENT);
-        assertEquals(UPDATED_CONTENT_1, contentReader1.getContentString());
-
-        // We should only have 1.0 Version left
-        VersionHistory vhistory = this.versionService.getVersionHistory(versionableNode);
-        for(Version v : vhistory.getAllVersions()){
-            //System.err.println(v.toString());
-            assertEquals("1.0", v.getVersionLabel());
-        }
+        // Version 2.0 should be the head version
+        Version headVersion = vHistory.getHeadVersion();
+        assertEquals("2.0", headVersion.getVersionLabel());
     }
     
     /**

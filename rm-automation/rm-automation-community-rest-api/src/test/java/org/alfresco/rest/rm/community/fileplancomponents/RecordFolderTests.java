@@ -31,6 +31,7 @@ import static org.alfresco.rest.rm.community.base.TestData.FOLDER_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_CLOSED;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -44,6 +45,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertTrue;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
@@ -58,7 +60,6 @@ import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 /**
@@ -356,6 +357,73 @@ public class RecordFolderTests extends BaseRestTest
                     }
                 }
             );
+
+    }
+
+
+    /**
+     * Given that I want to create a record folder
+     * When I use the API with the relativePath
+     * Then the categories specified in the relativePath that don't exist are created within the record folder
+     *
+     * Containers in the relativePath that do not exist are created before the node is created
+     */
+    @Test
+    (
+        description = "Create a folder based on the relativePath. " +
+            "Containers in the relativePath that do not exist are created before the node is created"
+    )
+    public void createFolderWithRelativePath() throws Exception
+    {
+        //RelativePath specifies the container structure to create relative to the node nodeId.
+        String RELATIVE_PATH = LocalDateTime.now().getYear()+"/"+ LocalDateTime.now().getMonth()+"/"+ LocalDateTime.now().getDayOfMonth();
+
+        // Authenticate with admin user
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        //The record folder to be created
+        FilePlanComponent recordFolder = FilePlanComponent.builder()
+                                                          .name(FOLDER_NAME)
+                                                          .nodeType(RECORD_FOLDER_TYPE.toString())
+                                                          .relativePath(RELATIVE_PATH)
+                                                          .build();
+
+        // Create the record folder
+        FilePlanComponent folder = filePlanComponentAPI.withParams("include="+ PATH).createFilePlanComponent(recordFolder,FILE_PLAN_ALIAS.toString());
+        //Check the API response code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+
+        // Verify the returned properties for the file plan component - record folder
+        assertFalse(folder.getIsCategory());
+        assertFalse(folder.getIsFile());
+        assertTrue(folder.getIsRecordFolder());
+
+        //Check the path return contains the RELATIVE_PATH
+        assertTrue(folder.getPath().getName().contains(RELATIVE_PATH));
+        //check the parent is a category
+        assertTrue(filePlanComponentAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
+        //New Relative Path only a part of containers need to be created before the recrod folder
+        String NEW_RELATIVE_PATH = LocalDateTime.now().getYear() + "/" + LocalDateTime.now().getMonth() + "/" +( LocalDateTime.now().getDayOfMonth()+1);
+        //The record folder to be created
+        FilePlanComponent recordFolder2 = FilePlanComponent.builder()
+                                                          .name(FOLDER_NAME)
+                                                          .nodeType(RECORD_FOLDER_TYPE.toString())
+                                                          .relativePath(NEW_RELATIVE_PATH)
+                                                          .build();
+
+        // Create the record folder
+        FilePlanComponent folder2 = filePlanComponentAPI.withParams("include=" + PATH).createFilePlanComponent(recordFolder2, FILE_PLAN_ALIAS.toString());
+        //Check the API response code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+
+        // Verify the returned properties for the file plan component - record folder
+        assertFalse(folder2.getIsCategory());
+        assertFalse(folder2.getIsFile());
+        assertTrue(folder2.getIsRecordFolder());
+        //Check the path return contains the NEW_RELATIVE_PATH
+        assertTrue(folder2.getPath().getName().contains(NEW_RELATIVE_PATH));
+
+        //check the parent is a category
+        assertTrue(filePlanComponentAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
 
     }
     @AfterClass (alwaysRun = true)

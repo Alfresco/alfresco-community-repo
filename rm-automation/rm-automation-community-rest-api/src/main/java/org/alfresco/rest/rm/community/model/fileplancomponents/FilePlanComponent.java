@@ -28,7 +28,9 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_CLOSED;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.RELATIVE_PATH;
 
 import java.util.List;
 
@@ -97,6 +99,7 @@ public class FilePlanComponent
     @JsonProperty (required = false)
     private FilePlanComponentContent content;
     
+	@JsonProperty (value = PATH)
     private FilePlanComponentPath path;
 
     @JsonProperty (required = true)
@@ -107,5 +110,8 @@ public class FilePlanComponent
 
     @JsonProperty (required = true)
     private FilePlanComponentUserInfo modifiedByUser;
+
+    @JsonProperty (value = RELATIVE_PATH)
+    private String relativePath;
 
 }

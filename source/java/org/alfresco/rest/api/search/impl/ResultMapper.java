@@ -206,8 +206,11 @@ public class ResultMapper
                 Version v = null;
                 try
                 {
-                    v = nodeVersions.findVersion(frozenNodeRef.getId(),versionLabelId);
-                    aNode = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                    if (frozenNodeRef != null && versionLabelId != null)
+                    {
+                        v = nodeVersions.findVersion(frozenNodeRef.getId(),versionLabelId);
+                        aNode = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                    }
                 }
                 catch (EntityNotFoundException|InvalidNodeRefException e)
                 {

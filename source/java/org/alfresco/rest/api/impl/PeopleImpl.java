@@ -82,8 +82,10 @@ public class PeopleImpl implements People
 {
     private static final List<String> EXCLUDED_NS = Arrays.asList(
             NamespaceService.SYSTEM_MODEL_1_0_URI,
-            "http://www.alfresco.org/model/user/1.0");
+            "http://www.alfresco.org/model/user/1.0",
+            NamespaceService.CONTENT_MODEL_1_0_URI);
 	private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
+    // TODO: no longer needed? (can be empty)
 	private static final List<QName> EXCLUDED_PROPS = Arrays.asList(
 			ContentModel.PROP_USERNAME,
 			ContentModel.PROP_FIRSTNAME,
@@ -411,8 +413,8 @@ public class PeopleImpl implements People
             // Expose properties
             if (include.contains(PARAM_INCLUDE_PROPERTIES))
             {
-                Map<String, Object> custProps = new HashMap<>();
-                custProps.putAll(nodes.mapFromNodeProperties(nodeProps, new ArrayList<>(), new HashMap<>(), EXCLUDED_NS, EXCLUDED_PROPS));
+                // Note that custProps may be null.
+                Map<String, Object> custProps = nodes.mapFromNodeProperties(nodeProps, new ArrayList<>(), new HashMap<>(), EXCLUDED_NS, EXCLUDED_PROPS);
                 person.setProperties(custProps);
             }
             if (include.contains(PARAM_INCLUDE_ASPECTNAMES))
@@ -529,13 +531,41 @@ public class PeopleImpl implements People
 
 	private void validateCreatePersonData(Person person)
 	{
+        validateNamespaces(person.getAspectNames(), person.getProperties());
 		checkRequiredField("id", person.getUserName());
 		checkRequiredField("firstName", person.getFirstName());
 		checkRequiredField("email", person.getEmail());
 		checkRequiredField("password", person.getPassword());
 	}
-	
-	private void checkRequiredField(String fieldName, Object fieldValue)
+
+    private void validateNamespaces(List<String> aspectNames, Map<String, Object> properties)
+    {
+        if (aspectNames != null)
+        {
+            Set<QName> aspects = nodes.mapToNodeAspects(aspectNames);
+            aspects.forEach(aspect ->
+            {
+                if (EXCLUDED_NS.contains(aspect.getNamespaceURI()))
+                {
+                    throw new IllegalArgumentException("Namespace cannot be used by People API: "+aspect.toPrefixString());
+                }
+            });
+        }
+        
+        if (properties != null)
+        {
+            Map<QName, Serializable> nodeProps = nodes.mapToNodeProperties(properties);
+            nodeProps.keySet().forEach(qname ->
+            {
+                if (EXCLUDED_NS.contains(qname.getNamespaceURI()))
+                {
+                    throw new IllegalArgumentException("Namespace cannot be used by People API: "+qname.toPrefixString());
+                }
+            });
+        }
+    }
+
+    private void checkRequiredField(String fieldName, Object fieldValue)
 	{
 		if (fieldValue == null)
 		{
@@ -616,6 +646,8 @@ public class PeopleImpl implements People
 
     private void validateUpdatePersonData(Person person)
     {
+        validateNamespaces(person.getAspectNames(), person.getProperties());
+        
         if (person.wasSet(ContentModel.PROP_FIRSTNAME))
         {
             checkRequiredField("firstName", person.getFirstName());

@@ -73,6 +73,10 @@ import static org.junit.Assert.fail;
 
 public class TestPeople extends EnterpriseTestApi
 {
+    private static final QName ASPECT_COMMS = QName.createQName("test.people.api", "comms");
+    private static final QName PROP_TELEHASH = QName.createQName("test.people.api", "telehash");
+    private static final QName ASPECT_LUNCHABLE = QName.createQName("test.people.api", "lunchable");
+    private static final QName PROP_LUNCH = QName.createQName("test.people.api", "lunch");
     private People people;
     private Iterator<TestNetwork> accountsIt;
     private TestNetwork account1;
@@ -90,6 +94,8 @@ public class TestPeople extends EnterpriseTestApi
     private Person personAlice;
     private Person personAliceD;
     private Person personBen;
+    private NodeService nodeService;
+    private PersonService personService;
 
     @Before
     public void setUp() throws Exception
@@ -109,6 +115,9 @@ public class TestPeople extends EnterpriseTestApi
 
         account3.createUser();
         account3PersonIt = account3.getPersonIds().iterator();
+        
+        nodeService = applicationContext.getBean("NodeService", NodeService.class);
+        personService = applicationContext.getBean("PersonService", PersonService.class);
         
         // Capture authentication pre-test, so we can restore it again afterwards.
         AuthenticationUtil.pushAuthentication();
@@ -488,6 +497,27 @@ public class TestPeople extends EnterpriseTestApi
             // Attempt to create the person a second time - as non-admin expect 403
             people.create(person, 403);
         }
+
+        // -ve: cannot set built-in/non-custom props
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+            Person person = new Person();
+            String personId = UUID.randomUUID().toString()+"@"+account1.getId();
+            person.setUserName(personId);
+            person.setFirstName("Joe");
+            person.setEmail(personId);
+            person.setEnabled(true);
+            person.setPassword("password123");
+            
+            person.setProperties(Collections.singletonMap("usr:enabled", false));
+            people.create(person, 400);
+            
+            person.setProperties(Collections.singletonMap("cm:title", "hello-world"));
+            people.create(person, 400);
+            
+            person.setProperties(Collections.singletonMap("sys:locale", "en_GB"));
+            people.create(person, 400);
+        }
     }
     
     @Test
@@ -495,12 +525,11 @@ public class TestPeople extends EnterpriseTestApi
     {
         // Create the person directly using the Java services - we don't want to test
         // the REST API's "create person" function here, so we're isolating this test from it.
-        PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
         MutableAuthenticationService authService = applicationContext.getBean("AuthenticationService", MutableAuthenticationService.class);
         PreferenceService prefService = applicationContext.getBean("PreferenceService", PreferenceService.class);
         Map<QName, Serializable> nodeProps = new HashMap<>();
-        // The cm:titled aspect should be auto-added for the cm:title property
-        nodeProps.put(ContentModel.PROP_TITLE, "A title");
+        // The papi:lunchable aspect should be auto-added for the papi:lunch property
+        nodeProps.put(PROP_LUNCH, "Falafel wrap");
         
         // These properties should not be present when a person is retrieved
         // since they are present as top-level fields.
@@ -551,43 +580,13 @@ public class TestPeople extends EnterpriseTestApi
         // Did we get the correct aspects/properties?
         assertEquals(userName, person.getId());
         assertEquals("Doc", person.getFirstName());
-        assertEquals("A title", person.getProperties().get("cm:title"));
-        assertTrue(person.getAspectNames().contains("cm:titled"));
-        
-        // Properties that are already represented as specific fields in the API response (e.g. firstName, lastName...)
-        // must be filtered from the generic properties datastructure.
-        assertFalse(person.getProperties().containsKey("cm:userName"));
-        assertFalse(person.getProperties().containsKey("cm:firstName"));
-        assertFalse(person.getProperties().containsKey("cm:lastName"));
-        assertFalse(person.getProperties().containsKey("cm:jobtitle"));
-        assertFalse(person.getProperties().containsKey("cm:location"));
-        assertFalse(person.getProperties().containsKey("cm:telephone"));
-        assertFalse(person.getProperties().containsKey("cm:mobile"));
-        assertFalse(person.getProperties().containsKey("cm:email"));
-        assertFalse(person.getProperties().containsKey("cm:organization"));
-        assertFalse(person.getProperties().containsKey("cm:companyaddress1"));
-        assertFalse(person.getProperties().containsKey("cm:companyaddress2"));
-        assertFalse(person.getProperties().containsKey("cm:companyaddress3"));
-        assertFalse(person.getProperties().containsKey("cm:companypostcode"));
-        assertFalse(person.getProperties().containsKey("cm:companytelephone"));
-        assertFalse(person.getProperties().containsKey("cm:companyfax"));
-        assertFalse(person.getProperties().containsKey("cm:companyemail"));
-        assertFalse(person.getProperties().containsKey("cm:skype"));
-        assertFalse(person.getProperties().containsKey("cm:instantmsg"));
-        assertFalse(person.getProperties().containsKey("cm:userStatus"));
-        assertFalse(person.getProperties().containsKey("cm:userStatusTime"));
-        assertFalse(person.getProperties().containsKey("cm:googleusername"));
-        assertFalse(person.getProperties().containsKey("cm:sizeQuota"));
-        assertFalse(person.getProperties().containsKey("cm:sizeCurrent"));
-        assertFalse(person.getProperties().containsKey("cm:emailFeedDisabled"));
-        assertFalse(person.getProperties().containsKey("cm:persondescription"));
-        // We also don't want cm:preferenceValues (see REPO-1636)
-        assertFalse(person.getProperties().containsKey("cm:preferenceValues"));
+        assertEquals("Falafel wrap", person.getProperties().get("papi:lunch"));
+        assertTrue(person.getAspectNames().contains("papi:lunchable"));
         
         // Check that no properties are present that should have been filtered by namespace.
         for (String key : person.getProperties().keySet())
         {
-            if (key.startsWith("sys:") || key.startsWith("usr:"))
+            if (key.startsWith("cm:") || key.startsWith("sys:") || key.startsWith("usr:"))
             {
                 Object value = person.getProperties().get(key);
                 String keyValueStr = String.format("(key=%s, value=%s)", key, value);
@@ -609,34 +608,34 @@ public class TestPeople extends EnterpriseTestApi
         person.setPassword("password123");
         
         Map<String, Object> props = new HashMap<>();
-        props.put("cm:title", "This is a title");
+        props.put("papi:telehash", "724332b5796a8");
         person.setProperties(props);
 
         // Explicitly add an aspect
         List<String> aspectNames = new ArrayList<>();
-        aspectNames.add("cm:classifiable");
+        aspectNames.add("papi:lunchable");
         person.setAspectNames(aspectNames);
         
         // REST API call to create person
         Person retPerson = people.create(person);
         
         // Check that the response contains the expected aspects and properties
-        assertTrue(retPerson.getAspectNames().contains("cm:titled"));
-        assertTrue(retPerson.getAspectNames().contains("cm:classifiable"));
-        assertEquals("This is a title", retPerson.getProperties().get("cm:title"));
+        assertEquals(2, retPerson.getAspectNames().size());
+        assertTrue(retPerson.getAspectNames().contains("papi:comms"));
+        assertEquals(1, retPerson.getProperties().size());
+        assertEquals("724332b5796a8", retPerson.getProperties().get("papi:telehash"));
         
         // Get the NodeRef
         AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
-        PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
         NodeRef nodeRef = personService.getPerson("jbloggs@"+account1.getId(), false);
 
         // Check the node has the properties and aspects we expect
-        NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
-        assertTrue(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED));
-        assertTrue(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CLASSIFIABLE));
+        assertTrue(nodeService.hasAspect(nodeRef, ASPECT_COMMS));
+        assertTrue(nodeService.hasAspect(nodeRef, ASPECT_LUNCHABLE));
         
         Map<QName, Serializable> retProps = nodeService.getProperties(nodeRef);
-        assertEquals("This is a title", retProps.get(ContentModel.PROP_TITLE));
+        assertEquals("724332b5796a8", retProps.get(PROP_TELEHASH));
+        assertEquals(null, retProps.get(PROP_LUNCH));
     }
 
     // Create a person for use in the testing of updating custom aspects/props
@@ -650,21 +649,21 @@ public class TestPeople extends EnterpriseTestApi
         person.setEnabled(true);
         person.setPassword("password123");
         person.setDescription("This is a very short bio.");
-        person.setProperties(Collections.singletonMap("cm:title", "Initial title"));
-        person.setAspectNames(Collections.singletonList("cm:projectsummary"));
+        person.setProperties(Collections.singletonMap("papi:jabber", "jbloggs@example.com"));
+        person.setAspectNames(Collections.singletonList("papi:dessertable"));
 
         person = people.create(person);
 
         AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
-        NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
-        PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
         NodeRef nodeRef = personService.getPerson(person.getId());
+        // Add some non-custom aspects, these should be untouched by the people API.
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUDITABLE, null);
+        nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "This is a title");
         
-        assertEquals("Initial title", person.getProperties().get("cm:title"));
-        assertTrue(person.getAspectNames().contains("cm:titled"));
-        assertTrue(person.getAspectNames().contains("cm:projectsummary"));
-        assertTrue(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUDITABLE));
+        assertEquals("jbloggs@example.com", person.getProperties().get("papi:jabber"));
+        assertEquals(2, person.getAspectNames().size());
+        assertTrue(person.getAspectNames().contains("papi:comms"));
+        assertTrue(person.getAspectNames().contains("papi:dessertable"));
         return person;
     }
     
@@ -676,89 +675,134 @@ public class TestPeople extends EnterpriseTestApi
         // Add a property
         {
             Person person = createTestUpdatePerson();
-            assertNull(person.getProperties().get("cm:middleName"));
+            assertNull(person.getProperties().get("papi:lunch"));
+            assertFalse(person.getAspectNames().contains("papi:lunchable"));
             String json = qjson(
                     "{" +
                     "    `properties`: {" +
-                    "        `cm:middleName`: `Bertrand`" +
+                    "        `papi:lunch`: `Tomato soup`" +
                     "    }" +
                     "}"
             );
             person = people.update(person.getId(), json, 200);
 
             // Property added
-            assertEquals("Bertrand", person.getProperties().get("cm:middleName"));
-            assertEquals("Initial title", person.getProperties().get("cm:title"));
-            // Aspect untouched
-            assertTrue(person.getAspectNames().contains("cm:titled"));
+            assertEquals("Tomato soup", person.getProperties().get("papi:lunch"));
+            assertTrue(person.getAspectNames().contains("papi:lunchable"));
+            // Aspects untouched
+            assertTrue(person.getAspectNames().contains("papi:comms"));
+            assertTrue(person.getAspectNames().contains("papi:dessertable"));
         }
         
         // Simple update of properties
         {
             Person person = createTestUpdatePerson();
-            person = people.update(person.getId(), qjson("{`properties`: {`cm:title`: `Updated title`}}"), 200);
+            person = people.update(person.getId(), qjson("{`properties`: {`papi:jabber`: `updated@example.com`}}"), 200);
             
             // Property updated
-            assertEquals("Updated title", person.getProperties().get("cm:title"));
-            // Aspect untouched
-            assertTrue(person.getAspectNames().contains("cm:titled"));
+            assertEquals("updated@example.com", person.getProperties().get("papi:jabber"));
+            // Aspects untouched
+            assertEquals(2, person.getAspectNames().size());
+            assertTrue(person.getAspectNames().contains("papi:comms"));
+            assertTrue(person.getAspectNames().contains("papi:dessertable"));
         }
         
         // Update with zero aspects - clear them all, except for protected items.
         {
             Person person = createTestUpdatePerson();
+            assertEquals(2, person.getAspectNames().size());
+            assertTrue(person.getAspectNames().contains("papi:comms"));
+            assertTrue(person.getAspectNames().contains("papi:dessertable"));
+            
             person = people.update(person.getId(), qjson("{`aspectNames`: []}"), 200);
             
-            // Aspect should no longer be present.
-            assertFalse(person.getAspectNames().contains("cm:titled"));
-            assertFalse(person.getProperties().containsKey("cm:title"));
-            // Protected aspects should still be present.
-            List<String> aspectNames = person.getAspectNames();
-            assertTrue(aspectNames.contains("cm:auditable"));
+            // Aspects should no longer be present.
+            assertNull(person.getAspectNames());
             
             // Check for the protected (but filtered) sys:* properties
-            NodeService nodeService = applicationContext.getBean("NodeService", NodeService.class);
-            PersonService personService = applicationContext.getBean("PersonService", PersonService.class);
             NodeRef nodeRef = personService.getPerson(person.getId());
             Set<QName> aspects = nodeService.getAspects(nodeRef);
             assertTrue(aspects.contains(ContentModel.ASPECT_REFERENCEABLE));
             assertTrue(aspects.contains(ContentModel.ASPECT_LOCALIZED));
         }
         
-        // Set aspects - all except protected items will be replaced with those presented.
+        // Set aspects - all "custom" aspects will be replaced with those presented.
         {
             Person person = createTestUpdatePerson();
-            String json = qjson(
-                    "{" +
-                    "    `aspectNames`: [" +
-                    "        `cm:dublincore`," +
-                    "        `cm:summarizable`" +
-                    "    ]" +
-                    "}"
-            );
-            person = people.update(person.getId(), json, 200);
 
-            // Aspect should no longer be present.
-            assertFalse(person.getAspectNames().contains("cm:titled"));
-            assertFalse(person.getProperties().containsKey("cm:title"));
-            // Protected aspects should still be present.
-            List<String> aspectNames = person.getAspectNames();
-            assertTrue(aspectNames.contains("cm:auditable"));
+            assertEquals(2, person.getAspectNames().size());
+            assertTrue(person.getAspectNames().contains("papi:comms"));
+            assertTrue(person.getAspectNames().contains("papi:dessertable"));
             
-            // Newly added aspects
-            assertTrue(aspectNames.contains("cm:dublincore"));
-            assertTrue(aspectNames.contains("cm:summarizable"));
+            String json = qjson("{ `aspectNames`: [`papi:lunchable`] }");
+            person = people.update(person.getId(), json, 200);
+            
+            // Get the person's NodeRef
+            AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+            NodeRef nodeRef = personService.getPerson(person.getId(), false);
+            // Aspects from non-custom models should still be present.
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED);
+            
+            // Newly added aspect should be the only one exposed by the people API.
+            List<String> aspectNames = person.getAspectNames();
+            assertEquals(1, aspectNames.size());
+            assertTrue(aspectNames.contains("papi:lunchable"));
+            assertNull(person.getProperties());
         }
         
         // Remove a property by setting it to null
         {
             Person person = createTestUpdatePerson();
-            person = people.update(person.getId(), qjson("{`properties`: {`cm:title`: null}}"), 200);
             
-            assertFalse(person.getProperties().containsKey("cm:title"));
+            assertEquals(2, person.getAspectNames().size());
+            assertTrue(person.getAspectNames().contains("papi:comms"));
+            assertTrue(person.getAspectNames().contains("papi:dessertable"));
+            assertEquals(1, person.getProperties().size());
+            assertTrue(person.getProperties().containsKey("papi:jabber"));
+            
+            person = people.update(person.getId(), qjson("{`properties`: {`papi:jabber`: null}}"), 200);
+
+            // No properties == null
+            assertNull(person.getProperties());
             // The aspect will still be there, I don't think we can easily remove the aspect automatically
             // just because the associated properties have all been removed.
-            assertTrue(person.getAspectNames().contains("cm:titled"));
+            assertEquals(2, person.getAspectNames().size());
+            assertTrue(person.getAspectNames().contains("papi:comms"));
+            assertTrue(person.getAspectNames().contains("papi:dessertable"));
+        }
+
+        // Cannot set built-in/non-custom props
+        {
+            Person person = createTestUpdatePerson();
+            final String personId = person.getId();
+
+            assertEquals(2, person.getAspectNames().size());
+            assertTrue(person.getAspectNames().contains("papi:comms"));
+            assertTrue(person.getAspectNames().contains("papi:dessertable"));
+
+            String json = qjson("{ `properties`: {`usr:enabled`: false} }");
+            people.update(person.getId(), json, 400);
+
+            json = qjson("{ `properties`: {`cm:title`: `hello-world`} }");
+            people.update(person.getId(), json, 400);
+
+            json = qjson("{ `properties`: {`sys:locale`: `en_GB`} }");
+            people.update(person.getId(), json, 400);
+            
+            // Get the person's NodeRef
+            AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+            NodeRef nodeRef = personService.getPerson(person.getId(), false);
+            // Aspects from non-custom models should still be present.
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TITLED);
+
+            // Custom aspects should be undisturbed
+            person = people.getPerson(personId);
+            assertEquals(2, person.getAspectNames().size());
+            assertTrue(person.getAspectNames().contains("papi:comms"));
+            assertTrue(person.getAspectNames().contains("papi:dessertable"));
+            assertEquals("jbloggs@example.com", person.getProperties().get("papi:jabber"));
         }
     }
 
@@ -1318,9 +1362,9 @@ public class TestPeople extends EnterpriseTestApi
                     filter(p -> p.getUserName().equals("alice@"+account4.getId()))
                     .findFirst().get();
             assertNotNull(alice.getAspectNames());
-            assertTrue(alice.getAspectNames().contains("cm:titled"));
+            assertTrue(alice.getAspectNames().contains("papi:lunchable"));
             assertNotNull(alice.getProperties());
-            assertEquals("Alice through the REST API", alice.getProperties().get("cm:title"));
+            assertEquals("Magical sandwich", alice.getProperties().get("papi:lunch"));
         }
     }
     
@@ -1523,7 +1567,7 @@ public class TestPeople extends EnterpriseTestApi
         personAlice.setEmail("alison.smith@example.com");
         personAlice.setPassword("password");
         personAlice.setEnabled(true);
-        personAlice.setProperties(Collections.singletonMap("cm:title", "Alice through the REST API"));
+        personAlice.setProperties(Collections.singletonMap("papi:lunch", "Magical sandwich"));
         people.create(personAlice);
 
         publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Custom model for testing the People API -->
+
+<!-- Note: This model is pre-configured to load at startup of the Repository.  So, all custom -->
+<!--       types and aspects added here will automatically be registered -->
+
+<model name="papi:peopleApiTestModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+    <description>Custom model for testing the People API</description>
+    <author>Matt Ward</author>
+    <version>1.0</version>
+
+    <imports>
+        <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+    </imports>
+
+    <namespaces>
+        <namespace uri="test.people.api" prefix="papi"/>
+    </namespaces>
+
+    <types>
+    </types>
+
+    <aspects>
+        <!--
+            Fictional aspect to allow some custom communications preferences, such as a user's
+            telehash hashname or their jabber ID.
+          -->
+        <aspect name="papi:comms">
+            <title>Custom Communications Channels</title>
+            <properties>
+                <property name="papi:telehash">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                </property>
+                <property name="papi:jabber">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                </property>
+            </properties>
+        </aspect>
+
+        <!-- Is this person lunchable? Optionally, what lunch do they partake in? -->
+        <aspect name="papi:lunchable">
+            <title>Favourite lunch</title>
+            <properties>
+                <property name="papi:lunch">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                </property>
+            </properties>
+        </aspect>
+        
+        <!-- Is this person partial to dessert? Optionally, what dessert do they prefer? -->
+        <aspect name="papi:dessertable">
+            <title>Favourite dessert</title>
+            <properties>
+                <property name="papi:dessert">
+                    <type>d:text</type>
+                    <mandatory>false</mandatory>
+                </property>
+            </properties>
+        </aspect>
+    </aspects>
+
+</model>

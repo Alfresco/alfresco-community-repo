@@ -1099,7 +1099,7 @@ public class NodesImpl implements Nodes
         return new PathInfo(pathStr, isComplete, pathElements);
     }
 
-    protected Set<QName> mapToNodeAspects(List<String> aspectNames)
+    public Set<QName> mapToNodeAspects(List<String> aspectNames)
     {
         Set<QName> nodeAspects = new HashSet<>(aspectNames.size());
 

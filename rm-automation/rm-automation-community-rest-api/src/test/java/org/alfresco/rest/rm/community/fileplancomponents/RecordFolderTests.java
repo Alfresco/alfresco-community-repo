@@ -60,6 +60,7 @@ import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 /**
@@ -360,7 +361,6 @@ public class RecordFolderTests extends BaseRestTest
 
     }
 
-
     /**
      * Given that I want to create a record folder
      * When I use the API with the relativePath
@@ -375,7 +375,7 @@ public class RecordFolderTests extends BaseRestTest
     )
     public void createFolderWithRelativePath() throws Exception
     {
-        //RelativePath specifies the container structure to create relative to the node nodeId.
+        //RelativePath specify the container structure to create relative to the record folder to be created
         String RELATIVE_PATH = LocalDateTime.now().getYear()+"/"+ LocalDateTime.now().getMonth()+"/"+ LocalDateTime.now().getDayOfMonth();
 
         // Authenticate with admin user
@@ -401,7 +401,8 @@ public class RecordFolderTests extends BaseRestTest
         assertTrue(folder.getPath().getName().contains(RELATIVE_PATH));
         //check the parent is a category
         assertTrue(filePlanComponentAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
-        //New Relative Path only a part of containers need to be created before the recrod folder
+        
+        //New Relative Path only a part of containers need to be created before the record folder
         String NEW_RELATIVE_PATH = LocalDateTime.now().getYear() + "/" + LocalDateTime.now().getMonth() + "/" +( LocalDateTime.now().getDayOfMonth()+1);
         //The record folder to be created
         FilePlanComponent recordFolder2 = FilePlanComponent.builder()
@@ -424,8 +425,8 @@ public class RecordFolderTests extends BaseRestTest
 
         //check the parent is a category
         assertTrue(filePlanComponentAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
-
     }
+
     @AfterClass (alwaysRun = true)
     public void tearDown() throws Exception
     {

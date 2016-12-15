@@ -85,33 +85,7 @@ public class PeopleImpl implements People
             "http://www.alfresco.org/model/user/1.0",
             NamespaceService.CONTENT_MODEL_1_0_URI);
 	private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
-    // TODO: no longer needed? (can be empty)
-	private static final List<QName> EXCLUDED_PROPS = Arrays.asList(
-			ContentModel.PROP_USERNAME,
-			ContentModel.PROP_FIRSTNAME,
-			ContentModel.PROP_LASTNAME,
-			ContentModel.PROP_JOBTITLE,
-			ContentModel.PROP_LOCATION,
-			ContentModel.PROP_TELEPHONE,
-			ContentModel.PROP_MOBILE,
-			ContentModel.PROP_EMAIL,
-			ContentModel.PROP_ORGANIZATION,
-			ContentModel.PROP_COMPANYADDRESS1,
-			ContentModel.PROP_COMPANYADDRESS2,
-			ContentModel.PROP_COMPANYADDRESS3,
-			ContentModel.PROP_COMPANYPOSTCODE,
-			ContentModel.PROP_COMPANYTELEPHONE,
-			ContentModel.PROP_COMPANYFAX,
-			ContentModel.PROP_COMPANYEMAIL,
-			ContentModel.PROP_SKYPE,
-			ContentModel.PROP_INSTANTMSG,
-			ContentModel.PROP_USER_STATUS,
-			ContentModel.PROP_USER_STATUS_TIME,
-			ContentModel.PROP_GOOGLEUSERNAME,
-			ContentModel.PROP_SIZE_QUOTA,
-			ContentModel.PROP_SIZE_CURRENT,
-			ContentModel.PROP_EMAIL_FEED_DISABLED,
-            ContentModel.PROP_PREFERENCE_VALUES);
+	private static final List<QName> EXCLUDED_PROPS = Arrays.asList();
 	protected Nodes nodes;
 	protected Sites sites;
 

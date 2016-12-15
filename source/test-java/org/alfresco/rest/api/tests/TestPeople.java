@@ -750,6 +750,50 @@ public class TestPeople extends EnterpriseTestApi
             assertTrue(aspectNames.contains("papi:lunchable"));
             assertNull(person.getProperties());
         }
+
+        // Aspects and properties together
+        {
+            Person person = new Person();
+            String personId = UUID.randomUUID().toString()+"@"+account1.getId();
+            person.setUserName(personId);
+            person.setFirstName("Joe");
+            person.setEmail(personId);
+            person.setEnabled(true);
+            person.setPassword("password123");
+            // Start with no custom props/aspects
+            person.setProperties(null);
+            person.setAspectNames(null);
+
+            person = people.create(person);
+            
+            assertNull(person.getAspectNames());
+            assertNull(person.getProperties());
+
+            // Auto-add the papi:comms aspect, by setting its papi:jabber property,
+            // but explicitly add the papi:lunchable aspect.
+            String json = qjson(
+                    "{" +
+                    "    `aspectNames`: [ " +
+                    "        `papi:lunchable` " +
+                    "    ], " +
+                    "    `properties`: { " +
+                    "        `papi:jabber`: `another@jabber.example.com`, " +
+                    "        `papi:lunch`: `sandwich` " +
+                    "     }" +
+                    "}"
+            );
+            
+            person = people.update(person.getId(), json, 200);
+
+            // Were both aspects set?
+            List<String> aspectNames = person.getAspectNames();
+            assertEquals(2, aspectNames.size());
+            assertTrue(aspectNames.contains("papi:lunchable"));
+            assertTrue(aspectNames.contains("papi:comms"));
+            assertEquals(2, person.getProperties().size());
+            assertEquals("another@jabber.example.com", person.getProperties().get("papi:jabber"));
+            assertEquals("sandwich", person.getProperties().get("papi:lunch"));
+        }
         
         // Remove a property by setting it to null
         {

@@ -262,7 +262,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 assertNotNull(group);
 
                 assertNotNull(group.getParentIds());
-                assertFalse(group.getParentIds().isEmpty());
             });
         }
 
@@ -281,7 +280,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 assertNotNull(group);
 
                 assertNotNull(group.getZones());
-                assertFalse(group.getZones().isEmpty());
             });
         }
     }
@@ -422,7 +420,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
     {
         Paging paging = getPaging(0, 4);
 
-        getGroupMembers(null, paging, null, "", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         getGroupMembers("", paging, null, "", HttpServletResponse.SC_BAD_REQUEST);
         getGroupMembers("invalidGroupId", paging, null, "", HttpServletResponse.SC_NOT_FOUND);
     }

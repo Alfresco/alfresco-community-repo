@@ -333,7 +333,7 @@ public class GroupsImpl implements Groups
      */
     private Pair<String, Boolean> getGroupsSortPropDefault()
     {
-        return new Pair<>(DISPLAY_NAME, Boolean.FALSE);
+        return new Pair<>(DISPLAY_NAME, Boolean.TRUE);
     }
 
     private class AuthorityInfoComparator implements Comparator<AuthorityInfo>

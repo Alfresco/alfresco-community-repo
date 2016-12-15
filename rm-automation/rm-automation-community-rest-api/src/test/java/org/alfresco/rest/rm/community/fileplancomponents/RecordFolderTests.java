@@ -401,7 +401,19 @@ public class RecordFolderTests extends BaseRestTest
         assertTrue(folder.getPath().getName().contains(RELATIVE_PATH));
         //check the parent is a category
         assertTrue(filePlanComponentAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
-        
+
+        //check the created folder from the server
+        folder=filePlanComponentAPI.withParams("include=" + PATH).getFilePlanComponent(folder.getId());
+        //Check the API response code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        // Verify the returned properties for the file plan component - record folder
+        assertFalse(folder.getIsCategory());
+        assertFalse(folder.getIsFile());
+        assertTrue(folder.getIsRecordFolder());
+
+        //Check the path return contains the RELATIVE_PATH
+        assertTrue(folder.getPath().getName().contains(RELATIVE_PATH));
+
         //New Relative Path only a part of containers need to be created before the record folder
         String NEW_RELATIVE_PATH = LocalDateTime.now().getYear() + "/" + LocalDateTime.now().getMonth() + "/" +( LocalDateTime.now().getDayOfMonth()+1);
         //The record folder to be created
@@ -425,6 +437,18 @@ public class RecordFolderTests extends BaseRestTest
 
         //check the parent is a category
         assertTrue(filePlanComponentAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
+
+        // Check the folder created on the server
+        folder2 = filePlanComponentAPI.withParams("include=" + PATH).getFilePlanComponent(folder2.getId());
+        //Check the API response code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
+
+        // Verify the returned properties for the file plan component - record folder
+        assertFalse(folder2.getIsCategory());
+        assertFalse(folder2.getIsFile());
+        assertTrue(folder2.getIsRecordFolder());
+        //Check the path return contains the NEW_RELATIVE_PATH
+        assertTrue(folder2.getPath().getName().contains(NEW_RELATIVE_PATH));
     }
 
     @AfterClass (alwaysRun = true)

@@ -373,16 +373,24 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         }
     }
 
-    private void validateGroupDefaultFields(Group group)
+    private void validateGroupDefaultFields(Group group, boolean ignoreOptionallyIncluded)
     {
         assertNotNull(group);
         assertNotNull(group.getId());
         assertNotNull(group.getDisplayName());
         assertNotNull(group.getIsRoot());
 
-        // Optionally included.
-        assertNull(group.getParentIds());
-        assertNull(group.getZones());
+        if (!ignoreOptionallyIncluded)
+        {
+            // Optionally included.
+            assertNull(group.getParentIds());
+            assertNull(group.getZones());
+        }
+    }
+
+    private void validateGroupDefaultFields(Group group)
+    {
+        validateGroupDefaultFields(group, false);
     }
 
     private ListResponse<GroupMember> getGroupMembers(String groupId, final PublicApiClient.Paging paging, Map<String, String> otherParams, String errorMessage, int expectedStatus) throws Exception
@@ -561,4 +569,49 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         assertNotNull(groupMember.getMemberType());
     }
 
+    @Test
+    public void testGetGroup() throws Exception
+    {
+        final Groups groupsProxy = publicApiClient.groups();
+        try
+        {
+            createAuthorityContext(user1);
+
+            setRequestContext(user1);
+
+            // Check invalid group id.
+            {
+                groupsProxy.getGroup("invalidGroupId", HttpServletResponse.SC_NOT_FOUND);
+            }
+
+            {
+                Group group = groupsProxy.getGroup(groupA.getId());
+                validateGroupDefaultFields(group);
+            }
+
+            {
+                Map<String, String> otherParams = new HashMap<>();
+                otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
+
+                Group group = groupsProxy.getGroup(groupA.getId(), otherParams, HttpServletResponse.SC_OK);
+                validateGroupDefaultFields(group, true);
+                assertNotNull(group.getParentIds());
+                assertNull(group.getZones());
+            }
+
+            {
+                Map<String, String> otherParams = new HashMap<>();
+                otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+
+                Group group = groupsProxy.getGroup(groupA.getId(), otherParams, HttpServletResponse.SC_OK);
+                validateGroupDefaultFields(group, true);
+                assertNull(group.getParentIds());
+                assertNotNull(group.getZones());
+            }
+        }
+        finally
+        {
+            clearAuthorityContext();
+        }
+    }
 }

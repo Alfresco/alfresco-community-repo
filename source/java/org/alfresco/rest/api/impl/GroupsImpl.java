@@ -100,6 +100,16 @@ public class GroupsImpl implements Groups
         this.authorityService = authorityService;
     }
 
+    public Group getGroup(String groupId, Parameters parameters) throws EntityNotFoundException
+    {
+        AuthorityInfo authorityInfo = getAuthorityInfo(groupId);
+
+        final Set<String> rootAuthorities = getAllRootAuthorities(AuthorityType.GROUP);
+        final List<String> includeParam = parameters.getInclude();
+
+        return getGroup(authorityInfo, includeParam, rootAuthorities);
+    }
+
     public CollectionWithPagingInfo<Group> getGroups(final Parameters parameters)
     {
         final List<String> includeParam = parameters.getInclude();

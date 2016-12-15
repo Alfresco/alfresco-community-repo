@@ -49,7 +49,7 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_REVIEW_PERIOD = "rma:reviewPeriod";
     public static final String PROPERTIES_LOCATION = "rma:location";
     public static final String PROPERTIES_IS_CLOSED = "rma:isClosed"; // not to be confused with IS_CLOSED!
-    
+
     // for non-electronic records
     public static final String PROPERTIES_BOX = "rma:box";
     public static final String PROPERTIES_FILE = "rma:file";
@@ -57,5 +57,8 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_PHYSICAL_SIZE = "rma:physicalSize";
     public static final String PROPERTIES_SHELF = "rma:shelf";
     public static final String PROPERTIES_STORAGE_LOCATION = "rma:storageLocation";
-        
+   
+	 //RelativePath specifies the container structure to create relative to the node nodeId.
+    public static final String RELATIVE_PATH = "relativePath";
+    public static final String PATH = "path";
 }

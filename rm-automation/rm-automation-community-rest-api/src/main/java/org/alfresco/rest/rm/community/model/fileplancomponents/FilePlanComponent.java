@@ -98,8 +98,8 @@ public class FilePlanComponent
 
     @JsonProperty (required = false)
     private FilePlanComponentContent content;
-    
-	@JsonProperty (value = PATH)
+
+    @JsonProperty (value = PATH)
     private FilePlanComponentPath path;
 
     @JsonProperty (required = true)

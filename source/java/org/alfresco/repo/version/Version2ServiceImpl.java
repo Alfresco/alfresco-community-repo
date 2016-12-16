@@ -1366,7 +1366,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
         try
         {
             // Create the restored node
-            restoredNodeRef = this.nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, type, props).getChildRef();
+            restoredNodeRef = this.nodeService.createNode(
+                    parentNodeRef,
+                    assocTypeQName,
+                    assocQName,
+                    type,
+                    props).getChildRef();
         }
         finally
         {

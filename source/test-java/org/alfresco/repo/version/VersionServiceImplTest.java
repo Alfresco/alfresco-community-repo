@@ -1240,10 +1240,10 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
 
     /**
-     * Test test_MNT13097
-     * MNT-13097. Revert content if the last version is chosen.
+     * Test testDeleteLastVersion
+     * MNT-13097. Revert content if the last version was chosen.
      */
-    public void test_MNT13097()
+    public void testDeleteLastVersion()
     {
         // Use 1.0, 2.0 etc for the main part
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);

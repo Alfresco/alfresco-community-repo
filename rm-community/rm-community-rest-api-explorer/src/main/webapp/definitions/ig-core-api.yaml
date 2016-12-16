@@ -21,6 +21,8 @@ tags:
     description: Retrieve and manage the RM site
   - name: records
     description: Perform record specific operations
+  - name: files
+    description: Perform operations on non-record files
 paths:
   '/fileplan-components/{fileplanComponentId}':
     get:
@@ -650,15 +652,15 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-  '/records/{nodeId}/declare':
+  '/files/{fileId}/declare':
     post:
       tags: 
-        - records
-      summary: Declare a record
-      description: Declares the file **nodeId** in the unfiled record container.
+        - files
+      summary: Declare as record
+      description: Declares the file **fileId** in the unfiled record container.
       operationId: declareRecord
       parameters: 
-        - name: nodeId
+        - name: fileId
           in: path
           description: The identifier of a non-record file.
           required: true
@@ -681,14 +683,14 @@ paths:
             $ref: '#/definitions/IGNodeEntry'
         '400':
           description: |
-            Invalid parameter: **nodeId** is not a valid format
+            Invalid parameter: **fileId** is not a valid format
         '401':
           description: Authentication failed
         '403':
           description: Current user does not have permission to declare a record
         '404':
           description: |
-            **nodeId** does not exist
+            **fileId** does not exist
         '422':
           description: |
             Model integrity exception: the action breaks system's integrity restrictions

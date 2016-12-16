@@ -258,6 +258,8 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Test delete version
+     * 
+     * Note: see also VersionServiceImplTest.testDeleteLastVersion
      *
      * @throws Exception
      */
@@ -290,6 +292,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt, nodes.size());
 
+            // -ve tests:
             {
                 setRequestContext(null);
                 
@@ -314,39 +317,50 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             }
 
             setRequestContext(user1);
-
+            
             delete(getNodeVersionsUrl(docId), "1.0", null, 204);
 
             response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt - 1, nodes.size());
 
-            // check live node (version label does not change)
+            // check live node (does not change)
             response = getSingle(URL_NODES, docId, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
-
+            
+            response = getSingle(getNodeContentUrl(docId), null, 200);
+            assertEquals(textContentSuffix+"4", response.getResponse());
+            
+            // delete current (most recent) version
             delete(getNodeVersionsUrl(docId), "1.3", null, 204);
 
             response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt - 2, nodes.size());
 
-            // check live node (version label changes)
+            // check live node (changes)
             response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
 
+            response = getSingle(getNodeContentUrl(docId), null, 200);
+            assertEquals(textContentSuffix+"3", response.getResponse());
+
+            // delete another version
             delete(getNodeVersionsUrl(docId), "1.1", null, 204);
 
             response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt - 3, nodes.size());
 
-            // check live node (version label does not change)
+            // check live node (does not change)
             response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
+
+            response = getSingle(getNodeContentUrl(docId), null, 200);
+            assertEquals(textContentSuffix+"3", response.getResponse());
 
             // -ve test - cannot delete last version (via delete version api call) (see REPO-835 & REPO-834)
             delete(getNodeVersionsUrl(docId), "1.2", null, 422);
@@ -432,7 +446,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("1.0", props.get("cm:versionLabel"));
             assertEquals("MAJOR", props.get("cm:versionType"));
 
-            // double-check content
+            // check content
             response = getSingle(getNodeVersionsUrl(docId), "1.0/content", null, 200);
             assertEquals(textContent, response.getResponse());
 
@@ -449,7 +463,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("1.1", props.get("cm:versionLabel"));
             assertEquals("MINOR", props.get("cm:versionType"));
 
-            // double-check content
+            // check content
             response = getSingle(getNodeVersionsUrl(docId), "1.1/content", null, 200);
             assertEquals(textContent, response.getResponse());
         }

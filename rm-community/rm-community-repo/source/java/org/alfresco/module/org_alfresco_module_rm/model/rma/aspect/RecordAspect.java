@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:record behaviour bean
@@ -85,7 +86,10 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /** record service */
     protected RecordService recordService;
-    
+
+    /** I18N */
+    private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
+
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -349,9 +353,10 @@ public class RecordAspect extends    AbstractDisposableItem
     )
     public void onContentPropertyUpdate(NodeRef nodeRef, QName propertyQName, ContentData beforeValue, ContentData afterValue)
     {
+        // Allow creation of content but not update
         if (beforeValue != null)
         {
-            throw new IntegrityException("Content property cannot be updated for records", null);
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
         }
     }
 }

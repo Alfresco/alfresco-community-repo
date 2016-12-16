@@ -1,5 +1,5 @@
-msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
-msgstr "${machine_total_memoryGB} GB の RAM では、テストまたは本番環境で Alfresco を実行するには不十分です。Alfresco が正しく動作しないことがあり、その場合は正常に機能しません。サーバーの RAM を最低 ${minimum_ramGB} GB にアップグレードしてください。推奨 RAM サイズは ${recommended_ramGB} GB です。"
+msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco Content Services for test or production purposes. Alfresco Content Services might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
+msgstr "${machine_total_memoryGB} GB の RAM では、テストまたは本番環境で Alfresco Content Services を実行するには不十分です。Alfresco Content Services が正しく動作しないことがあり、その場合は正常に機能しません。サーバーの RAM を最低 ${minimum_ramGB} GB にアップグレードしてください。推奨 RAM サイズは ${recommended_ramGB} GB です。"
 
 msgid "${product_fullname} LibreOffice Service"
 msgstr "${product_fullname} LibreOffice サービス"
@@ -25,38 +25,38 @@ msgstr "管理者のパスワード:"
 msgid "Advanced - Configure server ports and service properties."
 msgstr "詳細設定 - サーバーのポートとサービスのプロパティを設定できます。"
 
-msgid "Alfresco"
-msgstr "Alfresco"
+msgid "Alfresco Content Services"
+msgstr "Alfresco Content Services"
 
 msgid "Alfresco Community Edition"
 msgstr "Alfresco Community エディション"
 
-msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
-msgstr "Alfresco エンタープライズコンテンツ管理 (ECM) システムは、文書管理、コラボレーション管理、 画像管理に特化したシステムです。"
+msgid "Alfresco Content Services Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
+msgstr "Alfresco Content Services エンタープライズコンテンツ管理 (ECM) システムは、文書管理、コラボレーション管理、画像管理に特化したシステムです。"
 
-msgid "Alfresco FTP Port"
-msgstr "Alfresco FTP のポート"
+msgid "FTP Port"
+msgstr "FTP ポート"
 
 msgid "Alfresco Module Packages"
 msgstr "Alfresco モジュールパッケージ"
 
-msgid "Alfresco RMI Port"
-msgstr "Alfresco RMI のポート"
+msgid "RMI Port"
+msgstr "RMI ポート"
 
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco Shortcuts"
-msgstr "Alfresco のショートカット"
+msgid "Shortcuts"
+msgstr "ショートカット"
 
-msgid "Alfresco Validations"
-msgstr "Alfresco の検証"
+msgid "Validations"
+msgstr "検証"
 
 msgid "Alfresco Website"
 msgstr "Alfresco Web サイト"
 
-msgid "Alfresco Data Directory"
-msgstr "Alfresco データディレクトリ"
+msgid "Data Directory"
+msgstr "データディレクトリ"
 
 msgid "Choose optional components to install."
 msgstr "追加でインストールするコンポーネントを選択してください。"
@@ -106,8 +106,8 @@ msgstr "データベース名"
 msgid "Database Name:"
 msgstr "データベース名"
 
-msgid "Deploying Alfresco... This can take up to five minutes."
-msgstr "Alfresco をデプロイしています... これには最大 5 分かかります。"
+msgid "Deploying Alfresco Content Services... This can take up to five minutes."
+msgstr "Alfresco Content Services をデプロイしています... これには最大 5 分かかります。"
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "PostgreSQL を Windows サービスとしてインストールしますか?"
@@ -223,8 +223,8 @@ msgstr "Java"
 msgid "Java Component required to run ${product_fullname}."
 msgstr "${product_fullname} を実行するには、Java コンポーネントが必要です。"
 
-msgid "Java Home path contains spaces. Alfresco might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
-msgstr "Java Home のパスにスペースが含まれています。インストール先のパスにスペースが含まれていると JVM で問題が発生するため、Alfresco が正しく動作しない場合があります。スペースを含まないパスに JVM をインストールし直してください。"
+msgid "Java Home path contains spaces. Alfresco Content Services might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgstr "Java Home のパスにスペースが含まれています。インストール先のパスにスペースが含まれていると JVM で問題が発生するため、Alfresco Content Services が正しく動作しない場合があります。スペースを含まないパスに JVM をインストールし直してください。"
 
 msgid "This module requires Java, and no Java instance can be found."
 msgstr "このモジュールには Java が必要ですが、Java のインスタンスが見つかりません。"
@@ -277,11 +277,11 @@ msgstr "パスワード:"
 msgid "Choose a folder to install ${product_fullname}."
 msgstr "${product_fullname} をインストールするフォルダを選択してください。"
 
-msgid "Choose a port number for Alfresco to use to execute remote commands."
-msgstr "リモートコマンドの実行に使用する Alfresco 用ポート番号を選択してください。"
+msgid "Choose a port number for Alfresco Content Services to use to execute remote commands."
+msgstr "リモートコマンドの実行に使用する Alfresco Content Services 用ポート番号を選択してください。"
 
-msgid "Choose a port number for the integrated Alfresco FTP server."
-msgstr "統合された Alfresco FTP サーバーに使用するポート番号を選択してください。"
+msgid "Choose a port number for the integrated FTP server."
+msgstr "統合された FTP サーバーに使用するポート番号を選択してください。"
 
 msgid "Enter a valid IP address or hostname."
 msgstr "有効な IP アドレスまたはホスト名を入力してください。"
@@ -301,8 +301,8 @@ msgstr "LibreOffice サーバーがリッスンするポート番号を入力し
 msgid "Enter your database 'postgres' user password."
 msgstr "'postgres' データベースユーザーのパスワードを入力してください。"
 
-msgid "Specify a password for the Alfresco administrator account."
-msgstr "Alfresco 管理者アカウントのパスワードを指定してください。"
+msgid "Specify a password for the Alfresco Content Services administrator account."
+msgstr "Alfresco Content Services 管理者アカウントのパスワードを指定してください。"
 
 msgid "Select a different installation directory. The installation directory cannot contain symbolic links."
 msgstr "別のインストールディレクトリを選択してください。インストールディレクトリにシンボリックリンクを含めることはできません。"
@@ -316,11 +316,11 @@ msgstr "Tomcat の設定を選択してください。"
 msgid "Select a database configuration."
 msgstr "データベースの設定を選択してください。"
 
-msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
-msgstr "インストールされている Alfresco に SharePoint サーバー経由でアクセスすることをアプリケーションに許可する場合は、このモジュールを選択します。"
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation."
+msgstr "インストールされている Alfresco Content Services に SharePoint サーバー経由でアクセスすることをアプリケーションに許可する場合は、このモジュールを選択します。"
 
-msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
-msgstr "インストールされている Alfresco に SharePoint サーバー経由でアクセスすることをアプリケーションに許可する場合は、&#xa;このモジュールを選択します (Alfresco コンポーネントライセンスの下でライセンスされた専用モジュール)。"
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "インストールされている Alfresco Content Services に SharePoint サーバー経由でアクセスすることをアプリケーションに許可する場合は、&#xa;このモジュールを選択します (Alfresco コンポーネントライセンスの下でライセンスされた専用モジュール)。"
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Tomcat があるディレクトリを指定してください。"
@@ -442,8 +442,8 @@ msgstr "サービスを停止しています"
 msgid "The ${product_shortname} service script file exists. Use a different name for the service script."
 msgstr "${product_shortname} という名前のサービススクリプトファイルはすでに存在します。別の名前を指定してください。"
 
-msgid "The Alfresco data directory increases in size over time. Choose where you want to store it."
-msgstr "Alfresco のデータディレクトリは、使っていくうちに大きくなります。そのことを考慮して保存先を選択してください。"
+msgid "The data directory increases in size over time. Choose where you want to store it."
+msgstr "データディレクトリは、使っていくうちに大きくなります。そのことを考慮して保存先を選択してください。"
 
 msgid "The current installation directory cannot be accessed by non-root users. Select a different installation directory or change the permissions to 755 for this folder."
 msgstr "現在のインストールディレクトリは、ルートユーザーしかアクセスできません。別のインストールディレクトリを選択するか、このフォルダのアクセス権を 755 に変更してください。"
@@ -481,14 +481,14 @@ msgstr "選択したフォルダは空ではありません。別のフォルダ
 msgid "The service script file exists. Insert a different name for the service script."
 msgstr "このサービススクリプトファイルはすでに存在します。別の名前を指定してください。"
 
-msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
-msgstr "選択した Java は 32 ビット版ですが、インストールする Alfresco は 64 ビット版です。ここで 64 ビット版の Java をインストールするか、前の画面に戻って「Java」コンポーネントが選択されていることを確認してください。"
+msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco Content Services. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
+msgstr "選択した Java は 32 ビット版ですが、インストールする Alfresco Content Services は 64 ビット版です。ここで 64 ビット版の Java をインストールするか、前の画面に戻って "Java" コンポーネントが選択されていることを確認してください。"
 
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 msgstr "${installdir} に十分な空き容量がありません。${product_fullname} のインストールには、最低 ${base_needed_space} MB 必要です。"
 
-msgid "This environment is not configured optimally for Alfresco - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco from functioning, some product features might not be available, or the system might not perform optimally."
-msgstr "この環境は Alfresco を適切に実行するのに十分な構成ではありません。インストールする前に、以下の問題をチェックしてください。\n\nこれらの問題があっても Alfresco は機能しますが、一部の製品機能が使用できないか、システムが適切に動作しない場合があります。"
+msgid "This environment is not configured optimally for Alfresco Content Services - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco Content Services from functioning, some product features might not be available, or the system might not perform optimally."
+msgstr "この環境は Alfresco Content Services を適切に実行するのに十分な構成ではありません。インストールする前に、以下の問題をチェックしてください。\n\nこれらの問題があっても Alfresco Content Services は機能しますが、一部の製品機能が使用できないか、システムが適切に動作しない場合があります。"
 
 msgid "This installer is for Windows 64 bit.  Download the Windows 32 bit version."
 msgstr "このインストーラは Windows 64 ビット版用です。Windows 32 ビット版用をダウンロードしてください。"
@@ -637,14 +637,14 @@ msgstr "インストーラでパスワードを設定するときは、ASCII 文
 msgid "Connect Alfresco Share to the repository"
 msgstr "Alfresco Share をリポジトリに接続する"
 
-msgid "Enter the location of your Alfresco repository."
-msgstr "Alfresco 用のリポジトリの場所を入力してください。"
+msgid "Enter the location of your Alfresco Content Services repository."
+msgstr "Alfresco Content Services 用のリポジトリの場所を入力してください。"
 
 msgid "Repository location: "
 msgstr "リポジトリの場所: "
 
-msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
-msgstr "Solr - 旧バージョンの Alfresco からアップグレードする場合のみ Solr 1.4 をインストールしてください。"
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco Content Services versions."
+msgstr "Solr - 旧バージョンの Alfresco Content Services からアップグレードする場合のみ Solr 1.4 をインストールしてください。"
 
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr は、Apache Lucene をインデックス化/検索エンジンとして使用する、オープンソースのエンタープライズ検索プラットフォームです。Solr 4 は Solr 1 に比べて、拡張性、パフォーマンス、柔軟性に優れています。"
@@ -658,8 +658,8 @@ msgstr "指定した番号にバインドできません。このポートはす
 msgid "Remote Solr configuration"
 msgstr "リモート Solr の設定"
 
-msgid "Enter the Solr host and port to connect to Alfresco:"
-msgstr "Alfresco に接続する Solr ホストとポートを入力してください:"
+msgid "Enter the Solr host and port to connect to Alfresco Content Services:"
+msgstr "Alfresco Content Services に接続する Solr ホストとポートを入力してください:"
 
 msgid "Solr host:"
 msgstr "Solr ホスト:"

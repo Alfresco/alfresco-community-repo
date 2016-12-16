@@ -25,6 +25,7 @@
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
+      <api.explorer.version>1.4</api.explorer.version>
    </properties>
 
    <build>
@@ -534,9 +535,17 @@
                               </webapp>
                               <webapp>
                                  <groupId>org.alfresco</groupId>
+                                 <artifactId>api-explorer</artifactId>
+                                 <version>${api.explorer.version}</version>
+                                 <contextPath>/api-explorer</contextPath>
+                                 <type>war</type>
+                                 <asWebapp>true</asWebapp>
+                              </webapp>
+                              <webapp>
+                                 <groupId>org.alfresco</groupId>
                                  <artifactId>alfresco-rm-community-rest-api-explorer</artifactId>
                                  <version>${project.version}</version>
-                                 <contextPath>/api-explorer</contextPath>
+                                 <contextPath>/rm-api-explorer</contextPath>
                                  <type>war</type>
                                  <asWebapp>true</asWebapp>
                               </webapp>

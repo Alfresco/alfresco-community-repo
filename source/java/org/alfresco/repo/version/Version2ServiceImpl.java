@@ -868,12 +868,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
      */
     private Pair<Boolean, Version> getCurrentVersionImpl(NodeRef versionHistoryRef, NodeRef nodeRef)
     {
-    	// The noderef should not be a version type node. 
-    	if (Version2Model.STORE_ID.equals(nodeRef.getStoreRef().getIdentifier()))
-    	{
-    		throw new IllegalArgumentException("The node reference " + nodeRef + " is pointing to a version node, when a reference to a live node is expected.");
-    	}
-    	
+        // The noderef should not be a version type node. 
+        if (nodeRef.getStoreRef().getIdentifier().contains(Version2Model.STORE_ID))
+        {
+             throw new IllegalArgumentException("The node reference " + nodeRef + " is pointing to a version node, when a reference to a live node is expected.");
+        }
+        
         Pair<Boolean, Version> result = null;
         
         String versionLabel = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);

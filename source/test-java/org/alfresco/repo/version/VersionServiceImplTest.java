@@ -337,8 +337,8 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
     
     /**
-	 * Test retrieving the current version for a node with multiple versions
-	 */
+     * Test retrieving the current version for a node with multiple versions
+     */
     public void testGetCurrentVersion()
     {
         NodeRef versionableNode = createNewVersionableNode();
@@ -367,8 +367,6 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         }
     }
 
-    // TODO test versioning numberious times with branches implies by different workspaces
-    
     /**
      * Test versioning the children of a versionable node
      */

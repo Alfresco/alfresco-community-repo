@@ -203,7 +203,8 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
             @Override
             public Void doWork()
             {
-                if (nodeService.exists(nodeRef))
+                // Check if the node exists and the aspect hasn't been removed in the same transaction (see RM-3266)
+                if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, aspectTypeQName))
                 {
                     // Look up the root and set on the aspect if found
                     NodeRef root = filePlanService.getFilePlan(nodeRef);

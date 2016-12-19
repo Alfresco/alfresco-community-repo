@@ -195,19 +195,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
-        
-        
-//        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-//        {
-//            public Void execute() throws Throwable
-//            {
-//                // initialise custom properties
-//                initCustomMap();
-//                
-//                return null;
-//            }
-//         });                 
+                       
     }
     
     /**

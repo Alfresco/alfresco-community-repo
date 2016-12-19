@@ -190,7 +190,7 @@ public class RmSiteType extends    BaseBehaviourBean
                 	}
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());
+            }, AuthenticationUtil.getSystemUserName());
         }
 	}
 

@@ -862,33 +862,39 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     }
 
     /**
-     * Gets current version of the passed node ref
+     * Gets current version of the passed node reference. The node reference is expected to be the 'live' node.
      *
      * This uses the version label as a mechanism for looking up the version node.
      */
     private Pair<Boolean, Version> getCurrentVersionImpl(NodeRef versionHistoryRef, NodeRef nodeRef)
     {
+    	// The noderef should not be a version type node. 
+    	if (Version2Model.STORE_ID.equals(nodeRef.getStoreRef().getIdentifier()))
+    	{
+    		throw new IllegalArgumentException("The node reference " + nodeRef + " is pointing to a version node, when a reference to a live node is expected.");
+    	}
+    	
         Pair<Boolean, Version> result = null;
         
         String versionLabel = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
         
-        // note: resultant list is ordered by (a) explicit index and (b) association creation time
+        // Note: resultant list is ordered by (a) explicit index and (b) association creation time
         List<ChildAssociationRef> versionAssocs = getVersionAssocs(versionHistoryRef, false);
         
         // Current version should be head version (since no branching)
-        int cnt = versionAssocs.size();
-        for (int i = cnt; i > 0; i--)
+        int versionCount = versionAssocs.size();
+        for (int i = versionCount; i > 0; i--)
         {
             ChildAssociationRef versionAssoc = versionAssocs.get(i-1);
             
             String tempLabel = (String)this.dbNodeService.getProperty(versionAssoc.getChildRef(), Version2Model.PROP_QNAME_VERSION_LABEL);
             if (tempLabel != null && tempLabel.equals(versionLabel) == true)
             {
-                boolean headVersion = (i == cnt);
+                boolean headVersion = (i == versionCount);
                 
-                if (! headVersion)
+                if (!headVersion)
                 {
-                    throw new ConcurrencyFailureException("Unexpected: current version does not appear to be 1st version in the list  ["+versionHistoryRef+", "+nodeRef+"]");
+                    throw new ConcurrencyFailureException("Unexpected: current version does not appear to be 1st version in the list ["+versionHistoryRef+", "+nodeRef+"]");
                 }
                 
                 result = new Pair<Boolean, Version>(headVersion, getVersion(versionAssoc.getChildRef()));
@@ -902,7 +908,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     /**
      * Check if versions are marked with invalid version label, if true > apply default serial version label (e.g. "1.0", "1.1") 
      * 
-     * @param versionHistory a version histore node reference
+     * @param versionHistory a version history node reference
      * @param nodeRef a node reference
      */
     private void checkForCorruptedVersions(NodeRef versionHistory, NodeRef nodeRef)

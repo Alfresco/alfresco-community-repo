@@ -169,11 +169,10 @@ public interface VersionService
         throws AspectMissingException;     
 	
 	/**
-	 * Gets the version object for the current version of the node reference
-	 * passed.
+	 * Gets the version object for the current version of the node reference passed.
 	 * <p>
 	 * Returns null if the node is not versionable or has not been versioned.
-	 * @param nodeRef   the node reference
+	 * @param nodeRef   the node reference of the 'live' node
 	 * @return			the version object for the current version
 	 */
     @Auditable(parameters = {"nodeRef"})

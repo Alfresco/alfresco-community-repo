@@ -336,10 +336,41 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         createVersion(node);
     }
     
-    // TODO test versioning numberious times with branchs implies by different workspaces
+    /**
+	 * Test retrieving the current version for a node with multiple versions
+	 */
+    public void testGetCurrentVersion()
+    {
+        NodeRef versionableNode = createNewVersionableNode();
+        createVersion(versionableNode);
+        createVersion(versionableNode);
+        createVersion(versionableNode);
+        
+        VersionHistory vh = this.versionService.getVersionHistory(versionableNode);
+        Version version = vh.getRootVersion(); 
+        
+        // Get current version from live node
+        NodeRef node = version.getVersionedNodeRef();
+        Version currentVersion = versionService.getCurrentVersion(node); 
+        assertNotNull("Failed to retrieve the current version from the head", currentVersion);
+        
+        try
+        {
+            // Get current version from the version node (frozen state version node) - not allowed (MNT-15447)
+            node = version.getFrozenStateNodeRef();
+            currentVersion = versionService.getCurrentVersion(node);
+            fail("Getting the current version is only allowed on live nodes, not on version nodes.");
+        }
+        catch (IllegalArgumentException ex)
+        {
+            // expected
+        }
+    }
+
+    // TODO test versioning numberious times with branches implies by different workspaces
     
     /**
-     * Test versioning the children of a verionable node
+     * Test versioning the children of a versionable node
      */
     public void testVersioningChildren()
     {

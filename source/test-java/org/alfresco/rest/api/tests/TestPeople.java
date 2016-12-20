@@ -81,19 +81,18 @@ public class TestPeople extends EnterpriseTestApi
     private Iterator<TestNetwork> accountsIt;
     private TestNetwork account1;
     private TestNetwork account2;
-    private TestNetwork account3;
-    private TestNetwork account4;
+    private static TestNetwork account3;
+    private static TestNetwork account4;
     private Iterator<String> account1PersonIt;
     private Iterator<String> account2PersonIt;
-    private Iterator<String> account3PersonIt;
-    private Iterator<String> account4PersonIt;
     private String account1Admin;
     private String account2Admin;
     private String account3Admin;
-    private String account4Admin;
-    private Person personAlice;
-    private Person personAliceD;
-    private Person personBen;
+    private static String account4Admin;
+    private static Person personAlice;
+    private static Person personAliceD;
+    private static Person personBen;
+    private Person personBob;
     private NodeService nodeService;
     private PersonService personService;
 
@@ -104,17 +103,55 @@ public class TestPeople extends EnterpriseTestApi
         accountsIt = getTestFixture().getNetworksIt();
         account1 = accountsIt.next();
         account2 = accountsIt.next();
-        account3 = createNetwork("account3");
-        account4 = createNetwork("account4");
+        // Networks are very expensive to create, so do this once only and store statically.
+        if (account3 == null)
+        {
+            account3 = createNetwork("account3");
+        }
+        if (account4 == null)
+        {
+            // Use account 4 only for the sorting and paging tests, so that the data doesn't change between tests.
+            account4 = createNetwork("account4");
+
+            account4Admin = "admin@" + account4.getId();
+            
+            publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
+            personAlice = new Person();
+            personAlice.setUserName("alice@" + account4.getId());
+            personAlice.setId("alice@" + account4.getId());
+            personAlice.setFirstName("Alice");
+            personAlice.setLastName("Smith");
+            personAlice.setEmail("alison.smith@example.com");
+            personAlice.setPassword("password");
+            personAlice.setEnabled(true);
+            personAlice.setProperties(Collections.singletonMap("papi:lunch", "Magical sandwich"));
+            people.create(personAlice);
+            
+            personAliceD = new Person();
+            personAliceD.setUserName("aliced@" + account4.getId());
+            personAliceD.setId("aliced@" + account4.getId());
+            personAliceD.setFirstName("Alice");
+            personAliceD.setLastName("Davis");
+            personAliceD.setEmail("alison.davis@example.com");
+            personAliceD.setPassword("password");
+            personAliceD.setEnabled(true);
+            people.create(personAliceD);
+
+            personBen = new Person();
+            personBen.setUserName("ben@" + account4.getId());
+            personBen.setId("ben@" + account4.getId());
+            personBen.setFirstName("Ben");
+            personBen.setLastName("Carson");
+            personBen.setEmail("ben.smythe@example.com");
+            personBen.setPassword("password");
+            personBen.setEnabled(true);
+            people.create(personBen);
+        }
         account1Admin = "admin@" + account1.getId();
         account2Admin = "admin@" + account2.getId();
         account3Admin = "admin@" + account3.getId();
-        account4Admin = "admin@" + account4.getId();
         account1PersonIt = account1.getPersonIds().iterator();
         account2PersonIt = account2.getPersonIds().iterator();
-
-        account3.createUser();
-        account3PersonIt = account3.getPersonIds().iterator();
         
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
         personService = applicationContext.getBean("PersonService", PersonService.class);
@@ -967,7 +1004,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testUpdatePersonUsingPartialUpdate() throws PublicApiException
     {
-        final String personId = account3PersonIt.next();
+        final String personId = account3.createUser().getId();
 
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
 
@@ -984,7 +1021,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public  void testUpdatePersonWithRestrictedResponseFields() throws PublicApiException
     {
-        final String personId = account3PersonIt.next();
+        final String personId = account3.createUser().getId();
 
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
 
@@ -1006,7 +1043,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testUpdatePersonUpdateAsAdmin() throws Exception
     {
-        final String personId = account3PersonIt.next();
+        final String personId = account3.createUser().getId();
 
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
 
@@ -1184,7 +1221,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public  void testUpdatePersonEnabledNonAdminNotAllowed() throws PublicApiException
     {
-        final String personId = account3PersonIt.next();
+        final String personId = account3.createUser().getId();
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), personId));
 
         people.update("people", personId, null, null, "{\n" + "  \"enabled\": \"false\"\n" + "}", null, "Expected 403 response when updating " + personId, 403);
@@ -1194,7 +1231,7 @@ public class TestPeople extends EnterpriseTestApi
     public  void testUpdatePersonEnabled() throws PublicApiException
     {
         // Non-admin user ID
-        final String personId = account3PersonIt.next();
+        final String personId = account3.createUser().getId();
 
         // Use admin user credentials
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
@@ -1291,7 +1328,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public  void testUpdatePersonPasswordByAdmin() throws PublicApiException
     {
-        final String personId = account3PersonIt.next();
+        final String personId = account3.createUser().getId();
         final String networkId = account3.getId();
 
         publicApiClient.setRequestContext(new RequestContext(networkId, account3Admin, "admin"));
@@ -1344,7 +1381,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testUpdatePersonWithNotUpdatableFields() throws PublicApiException
     {
-        final String personId = account3PersonIt.next();
+        final String personId = account3.createUser().getId();
 
         publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
 
@@ -1389,8 +1426,18 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testListPeopleWithAspectNamesAndProperties() throws PublicApiException
     {
-        initializeContextForGetPeople();
-        
+        publicApiClient.setRequestContext(new RequestContext(account3.getId(), account3Admin, "admin"));
+        personBob = new Person();
+        personBob.setId("bob@" + account3.getId());
+        personBob.setUserName(personBob.getId());
+        personBob.setFirstName("Bob");
+        personBob.setLastName("Cratchit");
+        personBob.setEmail("bob.cratchit@example.com");
+        personBob.setPassword("password");
+        personBob.setEnabled(true);
+        personBob.setProperties(Collections.singletonMap("papi:lunch", "Magical sandwich"));
+        people.create(personBob);
+
         // Are aspectNames and properties left absent when not required?
         {
             PublicApiClient.ListResponse<Person> resp = listPeople(Collections.emptyMap(), 200);
@@ -1402,13 +1449,13 @@ public class TestPeople extends EnterpriseTestApi
         {
             Map<String, String> parameters = Collections.singletonMap("include", "aspectNames,properties");
             PublicApiClient.ListResponse<Person> resp = listPeople(parameters, 200);
-            Person alice = resp.getList().stream().
-                    filter(p -> p.getUserName().equals("alice@"+account4.getId()))
+            Person bob = resp.getList().stream().
+                    filter(p -> p.getUserName().equals(personBob.getId()))
                     .findFirst().get();
-            assertNotNull(alice.getAspectNames());
-            assertTrue(alice.getAspectNames().contains("papi:lunchable"));
-            assertNotNull(alice.getProperties());
-            assertEquals("Magical sandwich", alice.getProperties().get("papi:lunch"));
+            assertNotNull(bob.getAspectNames());
+            assertTrue(bob.getAspectNames().contains("papi:lunchable"));
+            assertNotNull(bob.getProperties());
+            assertEquals("Magical sandwich", bob.getProperties().get("papi:lunch"));
         }
     }
     
@@ -1421,7 +1468,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testPagingAndSortingByFirstNameAsc() throws Exception
     {
-        initializeContextForGetPeople();
+        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
 
         // paging
         int skipCount = 1;
@@ -1449,7 +1496,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testPagingAndSortingByFirstNameDesc() throws Exception
     {
-        initializeContextForGetPeople();
+        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
 
         // paging
         int skipCount = 1;
@@ -1477,7 +1524,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testPagingAndDefaultSorting() throws Exception
     {
-        initializeContextForGetPeople();
+        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
 
         // paging
         int skipCount = 1;
@@ -1504,7 +1551,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testPagingAndSortingByIdDesc() throws Exception
     {
-        initializeContextForGetPeople();
+        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
 
         // paging
         int skipCount = 1;
@@ -1532,7 +1579,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testPagingAndSortingByInvalidSortKey() throws Exception
     {
-        initializeContextForGetPeople();
+        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
 
         // paging
         int skipCount = 1;
@@ -1553,7 +1600,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testPagingAndSortingByLastName() throws Exception
     {
-        initializeContextForGetPeople();
+        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
 
         // paging
         int skipCount = 2;
@@ -1581,7 +1628,7 @@ public class TestPeople extends EnterpriseTestApi
     @Test
     public void testPagingAndSortingByFirstNameAndLastName() throws Exception
     {
-        initializeContextForGetPeople();
+        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
 
         // paging
         int skipCount = 1;
@@ -1598,41 +1645,5 @@ public class TestPeople extends EnterpriseTestApi
         expectedList.add((Person) personBen);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
-    }
-
-    private void initializeContextForGetPeople() throws PublicApiException
-    {
-        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
-        personAlice = new Person();
-        personAlice.setUserName("alice@" + account4.getId());
-        personAlice.setId("alice@" + account4.getId());
-        personAlice.setFirstName("Alice");
-        personAlice.setLastName("Smith");
-        personAlice.setEmail("alison.smith@example.com");
-        personAlice.setPassword("password");
-        personAlice.setEnabled(true);
-        personAlice.setProperties(Collections.singletonMap("papi:lunch", "Magical sandwich"));
-        people.create(personAlice);
-
-        publicApiClient.setRequestContext(new RequestContext(account4.getId(), account4Admin, "admin"));
-        personAliceD = new Person();
-        personAliceD.setUserName("aliced@" + account4.getId());
-        personAliceD.setId("aliced@" + account4.getId());
-        personAliceD.setFirstName("Alice");
-        personAliceD.setLastName("Davis");
-        personAliceD.setEmail("alison.davis@example.com");
-        personAliceD.setPassword("password");
-        personAliceD.setEnabled(true);
-        people.create(personAliceD);
-
-        personBen = new Person();
-        personBen.setUserName("ben@" + account4.getId());
-        personBen.setId("ben@" + account4.getId());
-        personBen.setFirstName("Ben");
-        personBen.setLastName("Carson");
-        personBen.setEmail("ben.smythe@example.com");
-        personBen.setPassword("password");
-        personBen.setEnabled(true);
-        people.create(personBen);
     }
 }

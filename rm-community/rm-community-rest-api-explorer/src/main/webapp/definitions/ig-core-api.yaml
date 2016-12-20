@@ -21,6 +21,8 @@ tags:
     description: Retrieve and manage the RM site
   - name: records
     description: Perform record specific operations
+  - name: files
+    description: Perform operations on non-record files
 paths:
   '/fileplan-components/{fileplanComponentId}':
     get:
@@ -567,7 +569,6 @@ paths:
             $ref: '#/definitions/Error'
   '/records/{recordId}/content':
     get:
-      x-alfresco-since: "5.2"
       tags:
         - records
       summary: Get record content
@@ -586,75 +587,48 @@ paths:
           description: Content has not been modified since the date provided in the If-Modified-Since header
         '400':
           description: |
-            Invalid parameter: **nodeId** is not a valid format, or is not a file
+            Invalid parameter: **recordId** is not a valid format, or is not a record
         '401':
-          description: Authentication failed          
+          description: Authentication failed
         '404':
           description: |
-            **nodeId** does not exist
+            **recordId** does not exist
         default:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
-    put:
-      x-alfresco-since: "5.2"
-      tags:
+  '/records/{recordId}/file':
+    post:
+      tags: 
         - records
-      summary: Update record content
+      summary: File a record
       description: |
-        Updates the content of the record with identifier **recordId**.
+        Files the record **recordId** in the target record folder. 
 
-        The request body for this endpoint can be any text or binary stream.
+        You can specify the target record folder by providing its id **targetParentId**
+        or by providing the id of a parent container **targetParentId** and a relative path **relativePath**.
 
-        The **majorVersion** and **comment** parameters can be used to control versioning behaviour. If the content is versionable,
-        a new minor version is created by default.
+        The **relativePath** specifies the container structure relative to the node **targetParentId**.
+        If targetParentId is missing the path will be relative to the fileplan.
+        The relativePath is made of record containers and a record folder as the last element.
+        Containers that are missing from relativePath will be created before filing.
 
-        Optionally a new **name** parameter can also be specified that must be unique within the parent folder. If specified and valid then this 
-        will rename the node. If invalid then an error is returned and the content is not updated.
-
-        **Note:** This API method accepts any content type, but for testing with this tool text based content can be provided.
-        This is because the OpenAPI Specification does not allow a wildcard to be provided or the ability for
-        tooling to accept an arbitrary file.
-      operationId: updateRecordContent
-      parameters:
+        If the record is already filed, a link to the target record folder is created. 
+      operationId: fileRecord
+      parameters: 
         - $ref: '#/parameters/recordIdParam'
-        - name: majorVersion
-          in: query
-          description: |
-            If **true**, create a major version.
-            Setting this parameter also enables versioning of this node, if it is not already versioned.
-          required: false
-          type: boolean
-          default: false
-        - name: comment
-          in: query
-          description: |
-            Add a version comment which will appear in version history.
-            Setting this parameter also enables versioning of this node, if it is not already versioned.
-          required: false
-          type: string
-        - name: name
-          in: query
-          description: |
-            Optional new name. This should include the file extension.
-            The name must not contain spaces or the following special characters: * " < > \ / ? : and |. 
-            The character `.` must not be used at the end of the name. 
-          required: false
-          type: string
-          pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
         - $ref: '#/parameters/IGNodeEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
-          name: contentBodyUpdate
-          description: The binary content
+          name: nodeBodyFile
+          description: The target record folder id
           required: true
           schema:
-            type: string
-            format: binary
+            $ref: '#/definitions/RequestBodyFile'
+      consumes:
+        - application/json
       produces:
         - application/json
-      consumes:
-        - application/octet-stream
       responses:
         '200':
           description: Successful response
@@ -662,22 +636,64 @@ paths:
             $ref: '#/definitions/IGNodeEntry'
         '400':
           description: |
-            Invalid parameter: **recordId** is not a valid format, or is not a file
+            Invalid parameter: **recordIdParam** or **targetParentId** is not a valid format,
+            **recordIdParam** is not a record, **targetParentId** is not a record container or **nodeBodyFile** is invalid
         '401':
-          description: Authentication failed          
+          description: Authentication failed
         '403':
-          description: Current user does not have permission to update **recordId**
+          description: Current user does not have permission to create children of **nodeId**
         '404':
           description: |
-            **recordId** does not exist
-        '409':
-          description: Optional new name clashes with an existing node in the current parent folder
-        '413':
-          description: Content exceeds individual file size limit (configured for network/system)          
+            **recordIdParam** or **targetParentId** does not exist
         '422':
-          description: Model integrity exception including a file name containing invalid characters
-        '507':
-          description: Content exceeds overall storage quota limit configured for the network/system
+          description: |
+            Model integrity exception: the action breaks system's integrity restrictions
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/files/{fileId}/declare':
+    post:
+      tags: 
+        - files
+      summary: Declare as record
+      description: Declares the file **fileId** in the unfiled record container.
+      operationId: declareRecord
+      parameters: 
+        - name: fileId
+          in: path
+          description: The identifier of a non-record file.
+          required: true
+          type: string
+        - name: hideRecord
+          in: query
+          description: Flag to indicate whether the record should be hiden from the curent parent folder.
+          type: boolean
+          default: false
+        - $ref: '#/parameters/IGNodeEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/IGNodeEntry'
+        '400':
+          description: |
+            Invalid parameter: **fileId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to declare a record
+        '404':
+          description: |
+            **fileId** does not exist
+        '422':
+          description: |
+            Model integrity exception: the action breaks system's integrity restrictions
         default:
           description: Unexpected error
           schema:
@@ -961,6 +977,13 @@ definitions:
         type: object
         additionalProperties:
           type: string
+  RequestBodyFile:
+    type: object
+    properties:
+      targetParentId:
+        type: string
+      relativePath:
+        type: string
   ## Core definition
   ChildAssociationInfo:
     type: object

@@ -43,7 +43,6 @@ import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authority.RMAuthority;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -57,6 +56,9 @@ import org.alfresco.util.ParameterCheck;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
+import org.alfresco.repo.security.authentication.AuthenticationUtil; 
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork; 
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 
 /**
  * Extended security service implementation.
@@ -138,19 +140,29 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent)
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        // run as System on bootstrap
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            public Void execute() throws Throwable
+            public Object doWork()
             {
-                // if the root group doesn't exist then create it
-                if (!authorityService.authorityExists(getRootIRPGroup()))
+                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
                 {
-                    authorityService.createAuthority(AuthorityType.GROUP, ROOT_IPR_GROUP, ROOT_IPR_GROUP, Collections.singleton(RMAuthority.ZONE_APP_RM));
-                }
-                
+                    public Void execute()
+                    {
+                        // if the root group doesn't exist then create it
+                        if (!authorityService.authorityExists(getRootIRPGroup()))
+                        {
+                            authorityService.createAuthority(AuthorityType.GROUP, ROOT_IPR_GROUP, ROOT_IPR_GROUP,
+                                        Collections.singleton(RMAuthority.ZONE_APP_RM));
+                        }
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+
                 return null;
             }
-        });
+        }, AuthenticationUtil.getSystemUserName());
     }
     
     /**

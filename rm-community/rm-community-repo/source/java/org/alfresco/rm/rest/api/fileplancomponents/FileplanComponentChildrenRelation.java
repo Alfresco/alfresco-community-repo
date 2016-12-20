@@ -25,7 +25,7 @@
  * #L%
  */
 
-package org.alfresco.rm.rest.api.nodes;
+package org.alfresco.rm.rest.api.fileplancomponents;
 
 import java.util.ArrayList;
 import java.util.List;

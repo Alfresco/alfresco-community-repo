@@ -27,15 +27,11 @@
 
 package org.alfresco.rm.rest.api.nodes;
 
-import java.io.InputStream;
-
-import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
-import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
@@ -49,8 +45,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @since 2.6
  */
 @EntityResource(name="records", title = "Records")
-public class RecordsEntityResource implements BinaryResourceAction.Update<Node>,
-                                              BinaryResourceAction.Read,
+public class RecordsEntityResource implements BinaryResourceAction.Read,
                                               InitializingBean
 {
 
@@ -83,24 +78,4 @@ public class RecordsEntityResource implements BinaryResourceAction.Update<Node>,
         return nodes.getContent(recordId, parameters, true);
     }
 
-    /**
-     * Upload new version of content
-     * 
-     * This allow binary content update of an existing record.
-     * 
-     * Note: alternatively, can upload via POST (multipart/form-data) with existing file name and form "overwrite=true".
-     * 
-     * @param recordId the id of the record to set the content for
-     * @param contentInfo Basic information about the content stream
-     * @param stream an inputstream representing the new content of the node
-     * @param parameters {@link Parameters}
-     * @return information about the record that has been updated
-     */
-    @Override
-    @WebApiDescription(title = "Upload content", description = "Upload content")
-    @BinaryProperties({"content"})
-    public Node updateProperty(String recordId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
-    {
-        return nodes.updateContent(recordId, contentInfo, stream, parameters);
-    }
 }

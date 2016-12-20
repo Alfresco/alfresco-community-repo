@@ -23,13 +23,17 @@ function main()
       highlightPostfix: (args.highlightPostfix !== null) ? args.highlightPostfix : DEFAULT_HIGHLIGHT_POSTFIX,
       highlightSnippetCount: (args.highlightSnippetCount !== null) ? parseInt(args.highlightSnippetCount, 10) : DEFAULT_HIGHLIGHT_SNIPPET_COUNT,
       highlightFragmentSize: (args.highlightFragmentSize !== null) ? parseInt(args.highlightFragmentSize, 10) : DEFAULT_HIGHLIGHT_FRAGMENT_SIZE,
-      highlightMaxAnalyzedChars: (args.highlightMaxAnalyzedChars !== null) ? parseInt(args.highlightMaxAnalyzedChars, 10) : DEFAULT_HIGHLIGHT_MAX_ANALYZED_CHARS,
       highlightUsePhraseHighlighter: (args.highlightUsePhraseHighlighter !== null) ? args.highlightUsePhraseHighlighter.toUpperCase() === "TRUE" : DEFAULT_HIGHLIGHT_USE_PHRASE_HIGHLIGHTER,
       highlightMergeContiguous: (args.highlightMergeContiguous !== null) ? args.highlightMergeContiguous.toUpperCase() === "TRUE" : DEFAULT_HIGHLIGHT_MERGE_CONTIGUOUS,
       
       encodedFilters: args.encodedFilters,
       spell: (args.spellcheck !== null) ? (args.spellcheck == "true") : false
    };
+
+   if (args.highlightMaxAnalyzedChars !== null)
+   {
+      params.highlightMaxAnalyzedChars = parseInt(args.highlightMaxAnalyzedChars, 10)
+   }
    
    model.data = getSearchResults(params);
 }

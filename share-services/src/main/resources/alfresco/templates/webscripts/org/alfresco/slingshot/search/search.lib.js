@@ -26,7 +26,6 @@ const DEFAULT_HIGHLIGHT_PREFIX = "\u0000";
 const DEFAULT_HIGHLIGHT_POSTFIX = "\u0003";
 const DEFAULT_HIGHLIGHT_SNIPPET_COUNT = 255;
 const DEFAULT_HIGHLIGHT_FRAGMENT_SIZE = 100;
-const DEFAULT_HIGHLIGHT_MAX_ANALYZED_CHARS = 500;
 const DEFAULT_HIGHLIGHT_USE_PHRASE_HIGHLIGHTER = true;
 const DEFAULT_HIGHLIGHT_MERGE_CONTIGUOUS = true;
 
@@ -1262,11 +1261,15 @@ function getSearchResults(params)
             postfix: params.highlightPostfix,
             snippetCount: params.highlightSnippetCount,
             fragmentSize: params.highlightFragmentSize,
-            maxAnalyzedChars: params.highlightMaxAnalyzedChars,
             usePhraseHighlighter: params.highlightUsePhraseHighlighter,
             mergeContiguous: params.highlightMergeContiguous,
             fields: fields
          };
+
+         if (params.highlightMaxAnalyzedChars)
+         {
+            queryDef.highlight.maxAnalyzedChars = params.highlightMaxAnalyzedChars;
+         }
       }
 
       var rs = search.queryResultSet(queryDef);

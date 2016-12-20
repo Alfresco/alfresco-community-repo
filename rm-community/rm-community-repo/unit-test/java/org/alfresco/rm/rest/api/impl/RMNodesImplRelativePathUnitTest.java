@@ -90,8 +90,7 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
          *  When trying to create a node in the parent node with no relative path
          */
         Node nodeInfo = mock(Node.class);
-        when(nodeInfo.getRelativePath()).thenReturn(null);
-        NodeRef returnedPath = rmNodesImpl.getOrCreatePath(parentNode.getId(), nodeInfo);
+        NodeRef returnedPath = rmNodesImpl.getOrCreatePath(parentNode.getId(), null, ContentModel.TYPE_CONTENT);
 
         /*
          * Then the parent node is returned and no node is created
@@ -126,8 +125,7 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
          * When trying to create a node in the parent node with the relative path c1/f1
          */
         Node nodeInfo = mock(Node.class);
-        when(nodeInfo.getRelativePath()).thenReturn(category + "/" + recordFolder);
-        NodeRef returnedPath = rmNodesImpl.getOrCreatePath(parentNode.getId(), nodeInfo);
+        NodeRef returnedPath = rmNodesImpl.getOrCreatePath(parentNode.getId(), category + "/" + recordFolder, ContentModel.TYPE_CONTENT);
 
         /*
          * Then the node f1 is returned and no node is created
@@ -166,9 +164,6 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
         /*
          *  When trying to create a content node in the relative path c1/c2/c3/f1
          */
-        Node nodeInfo = mock(Node.class);
-        when(nodeInfo.getNodeType()).thenReturn("cm:content");
-
         // c3
         String category3 = "c3";
         NodeRef categoryNode3 = AlfMock.generateNodeRef(mockedNodeService);
@@ -182,8 +177,7 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
         when(mockedFileFolderService.create(categoryNode3, recordFolder, RecordsManagementModel.TYPE_RECORD_FOLDER)).thenReturn(recordFolderFileInfo);
 
         // call the class under tests
-        when(nodeInfo.getRelativePath()).thenReturn(category1 + "/" + category2 + "/" + category3 + "/" + recordFolder);
-        NodeRef returnedPath = rmNodesImpl.getOrCreatePath(fileplanNodeRef.getId(), nodeInfo);
+        NodeRef returnedPath = rmNodesImpl.getOrCreatePath(fileplanNodeRef.getId(), category1 + "/" + category2 + "/" + category3 + "/" + recordFolder, ContentModel.TYPE_CONTENT);
 
         /*
          *  Then the category c1 and the record folder f1 should be created and f1 should be returned
@@ -232,9 +226,7 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
         when(mockedFileFolderService.create(folderNode2, folder3, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER)).thenReturn(folderFileInfo3);
 
         // call the class under tests
-        Node nodeInfo = mock(Node.class);
-        when(nodeInfo.getRelativePath()).thenReturn(folder1 + "/" + folder2 + "/" + folder3);
-        NodeRef returnedParentNode = rmNodesImpl.getOrCreatePath(unfiledRecordContainer.getId(), nodeInfo);
+        NodeRef returnedParentNode = rmNodesImpl.getOrCreatePath(unfiledRecordContainer.getId(), folder1 + "/" + folder2 + "/" + folder3, ContentModel.TYPE_CONTENT);
 
         /*
          *  Then the category c1 and the record folder rf1 should be created 
@@ -267,9 +259,6 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
         /*
          *  When trying to create a folder node in the relative path c1/c2/c3
          */
-        Node nodeInfo = mock(Node.class);
-        when(nodeInfo.getNodeType()).thenReturn("rma:recordFolder");
-
         // c1
         String category1 = "c1";
         NodeRef categoryNode1 = AlfMock.generateNodeRef(mockedNodeService);
@@ -286,8 +275,7 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
         when(mockedFilePlanService.createRecordCategory(categoryNode2, category3)).thenReturn(categoryNode3);
 
         // call the class under tests
-        when(nodeInfo.getRelativePath()).thenReturn(category1 + "/" + category2 + "/" + category3);
-        NodeRef returnedParentNode = rmNodesImpl.getOrCreatePath(fileplanNodeRef.getId(), nodeInfo);
+        NodeRef returnedParentNode = rmNodesImpl.getOrCreatePath(fileplanNodeRef.getId(), category1 + "/" + category2 + "/" + category3, RecordsManagementModel.TYPE_RECORD_FOLDER);
 
         /*
          *  Then the categories c1, c2 and c3 should be created and c3 should be returned

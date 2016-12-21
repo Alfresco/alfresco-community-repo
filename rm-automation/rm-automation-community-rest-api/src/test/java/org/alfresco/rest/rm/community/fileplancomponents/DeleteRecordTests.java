@@ -26,29 +26,28 @@
  */
 package org.alfresco.rest.rm.community.fileplancomponents;
 
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
+import org.alfresco.rest.rm.community.requests.RMSiteAPI;
+import org.alfresco.rest.rm.community.requests.RMUserAPI;
 import org.alfresco.test.AlfrescoTest;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -66,7 +65,13 @@ public class DeleteRecordTests extends BaseRestTest
     private FilePlanComponentAPI filePlanComponentAPI;
 
     @Autowired
+    private RMUserAPI rmUserAPI;
+    
+    @Autowired
     private DataUser dataUser;
+    
+    @Autowired
+    private RMSiteAPI rmSiteAPI;
 
     /** image resource file to be used for records body */
     private static final String IMAGE_FILE = "money.JPG";
@@ -139,8 +144,64 @@ public class DeleteRecordTests extends BaseRestTest
         deleteAndVerify(newRecord);
     }
     
+    /**
+     * <pre>
+     * Given a record
+     * And that I don't have write permissions
+     * When I try to delete the record
+     * Then nothing happens
+     * And error gets reported
+     * </pre>
+     * 
+     * @param container
+     * @throws Exception
+     */
+    @Test
+    (
+        description = "User without delete permissions can't delete a record"
+    )
+    public void userWithoutDeletePermissionsCantDeleteRecord() throws Exception
+    {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        
+        // create a non-electronic record in unfiled records
+        FilePlanComponent record = FilePlanComponent.builder()
+            .name("Record " + getRandomAlphanumeric())
+            .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
+            .build();
+        FilePlanComponent newRecord = filePlanComponentAPI.createFilePlanComponent(
+            record,
+            UNFILED_RECORDS_CONTAINER_ALIAS.toString());
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+        
+        // create test user and add it with collab. privileges
+        UserModel deleteUser = dataUser.createRandomTestUser("delnoperm");
+        deleteUser.setUserRole(UserRole.SiteCollaborator);
+        logger.info("test user: " + deleteUser.getUsername());
+        dataUser.addUserToSite(deleteUser, new SiteModel(rmSiteAPI.getSite().getId()), UserRole.SiteCollaborator);
+        
+        // add RM role to user
+        rmUserAPI.assignRoleToUser(deleteUser.getUsername(), UserRoles.ROLE_RM_POWER_USER);
+        rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        
+        // log in as deleteUser
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(deleteUser);
+        
+        // try to delete newRecord
+        filePlanComponentAPI.deleteFilePlanComponent(newRecord.getId());
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(FORBIDDEN);
+    }
+    
+    /**
+     * Utility method to delete a record and verify successful deletion
+     * @param record
+     * @throws Exception
+     */
     private void deleteAndVerify(FilePlanComponent record) throws Exception
     {
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        
         // delete it and verify status
         filePlanComponentAPI.deleteFilePlanComponent(record.getId());
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(NO_CONTENT);

@@ -39,8 +39,15 @@ public class PublicApiCallContextHandler extends BasicAuthCallContextHandler
     @Override
 	public Map<String, String> getCallContextMap(HttpServletRequest request)
 	{
-		Map<String, String> map = new HashMap<String, String>();
-		map.put("isPublicApi", "true");
-		return map;
+        Map<String, String> map = new HashMap<String, String>();
+        
+        Map<String, String> basicAuthMap = super.getCallContextMap(request);
+        if (basicAuthMap != null && !basicAuthMap.isEmpty()) 
+        {
+            map.putAll(basicAuthMap);
+        }
+        
+        map.put("isPublicApi", "true");
+        return map;
 	}
 }

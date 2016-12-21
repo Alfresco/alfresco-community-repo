@@ -231,7 +231,7 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 		{
 			if(arg0.equals(CmisAtomPubServlet.PARAM_CALL_CONTEXT_HANDLER))
 			{
-				return "org.alfresco.opencmis.PublicApiCallContextHandler";
+				return PublicApiCallContextHandler.class.getName();
 			}
 			else if(arg0.equals(CmisAtomPubServlet.PARAM_CMIS_VERSION))
 			{

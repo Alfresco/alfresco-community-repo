@@ -99,6 +99,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -127,6 +128,7 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.commons.httpclient.HttpStatus;
@@ -165,6 +167,7 @@ public class TestCMIS extends EnterpriseTestApi
     private CMISStrictDictionaryService cmisDictionary;
     private QNameFilter cmisTypeExclusions;
 	private NodeService nodeService;
+    private PermissionService permissionService;
 	private Properties globalProperties;
 
     @Before
@@ -177,6 +180,7 @@ public class TestCMIS extends EnterpriseTestApi
         this.cmisDictionary = (CMISStrictDictionaryService)ctx.getBean("OpenCMISDictionaryService");
         this.cmisTypeExclusions = (QNameFilter)ctx.getBean("cmisTypeExclusions");
 		this.nodeService = (NodeService) ctx.getBean("NodeService");
+		this.permissionService = (PermissionService) ctx.getBean("permissionService");
         
 		this.globalProperties = (Properties) ctx.getBean("global-properties");
 		this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "true");
@@ -215,22 +219,6 @@ public class TestCMIS extends EnterpriseTestApi
         {
             assertTrue("Expected missing secondary types but at least one is still present: " + secondaryTypes, !secondaryTypes.containsAll(expectedMissingSecondaryTypes));
         }
-    }
-       
-    private String getBareObjectId(String objectId)
-    {
-        int idx = objectId.indexOf(";");
-        String bareObjectId = null;
-        if(idx != -1)
-        {
-            bareObjectId = objectId.substring(0, idx);
-        }
-        else
-        {
-            bareObjectId = objectId;
-        }
-
-        return bareObjectId;
     }
 
     /**
@@ -579,7 +567,7 @@ public class TestCMIS extends EnterpriseTestApi
                 
                 Document autoVersionedDoc = documentLibrary.createDocument(fileProps, fileContent, VersioningState.MAJOR);
                 String objectId = autoVersionedDoc.getId();
-                String bareObjectId = getBareObjectId(objectId);
+                String bareObjectId = stripCMISSuffix(objectId);
                 final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, bareObjectId);
                 Boolean autoVersion = TenantUtil.runAsUserTenant(new TenantRunAsWork<Boolean>()
                 {
@@ -605,7 +593,7 @@ public class TestCMIS extends EnterpriseTestApi
 
                 Document autoVersionedDoc = documentLibrary.createDocument(fileProps, fileContent, VersioningState.MAJOR);
                 String objectId = autoVersionedDoc.getId();
-                String bareObjectId = getBareObjectId(objectId);
+                String bareObjectId = stripCMISSuffix(objectId);
 
                 for(int i = 0; i < 3; i++)
                 {
@@ -1397,7 +1385,7 @@ public class TestCMIS extends EnterpriseTestApi
 
         Document autoVersionedDoc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
         String objectId = autoVersionedDoc.getId();
-        String bareObjectId = getBareObjectId(objectId);
+        String bareObjectId = stripCMISSuffix(objectId);
         // create versions
         for (int i = 0; i < 3; i++)
         {
@@ -2215,8 +2203,7 @@ public class TestCMIS extends EnterpriseTestApi
         String person1Id = person1.getId();
 
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11,
-        		"org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl");
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11, AlfrescoObjectFactoryImpl.class.getName());
 
 		ObjectType objectType = cmisSession.getTypeDefinition("D:testcmis:maDoc");
 
@@ -2230,10 +2217,11 @@ public class TestCMIS extends EnterpriseTestApi
 		assertTrue("The aspects should have P:cm:generalclassifiable", mandatoryAspects.contains("P:cm:generalclassifiable"));
     }
     
-    // TODO comment-in once we have fixed MNT-16449 - CMIS delete version fails on versions other than latest (most recent) version
-    /*
+    /**
+     * Test delete version on versions other than latest (most recent) version (MNT-17228)
+     */
     @Test
-    public void testMNT_16449() throws Exception
+    public void testDeleteNonCurrentVersion() throws Exception
     {
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
@@ -2244,13 +2232,12 @@ public class TestCMIS extends EnterpriseTestApi
         String personId = person.getId();
 
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11,
-                "org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl");
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11, AlfrescoObjectFactoryImpl.class.getName());
 
         Folder homeFolder = (Folder)cmisSession.getObjectByPath("/User Homes/" + personId);
         assertNotNull(homeFolder.getId());
 
-        // create a doc
+        // Create a document
         String name = String.format(TEST_DOCUMENT_NAME_PATTERN, GUID.generate());
 
         Map<String, Object> properties = new HashMap<String, Object>();
@@ -2273,7 +2260,7 @@ public class TestCMIS extends EnterpriseTestApi
         int cnt = 4;
         for (int i = 1; i <= cnt; i++)
         {
-            // update content to create new versions (1.1, 1.2, 1.3, 1.4)
+            // Update content to create new versions (1.1, 1.2, 1.3, 1.4)
             fileContent = new ContentStreamImpl();
             {
                 ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
@@ -2296,15 +2283,50 @@ public class TestCMIS extends EnterpriseTestApi
                 docVersionToDelete = latestDoc; // ie. 1.2
             }
         }
-
-        /// TODO this fails unless we fix MNT-16449 (note: deleting the latest version 1.4 works ok)
-        // delete 1.2
-        docVersionToDelete.delete(false);
         
+        // Test delete with a user without permissions
+        String username2 = "user" + System.currentTimeMillis();
+        PersonInfo person2Info = new PersonInfo(username2, username2, username2, TEST_PASSWORD, null, null,
+                                                null, null, null, null, null);
+        TestPerson person2 = network1.createUser(person2Info);
+        String person2Id = person2.getId();
+        
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                String nodeId = stripCMISSuffix(doc.getId());
+                NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+                // Give user person2 READ permissions to access the node
+                permissionService.setPermission(nodeRef, person2Id, PermissionService.READ, true);
+                return null;
+            }
+        }, network1.getId());
+
+        // Connect with person2
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
+        CmisSession cmisSession2 = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11, AlfrescoObjectFactoryImpl.class.getName());
+
+        CmisObject docVersionToDeleteBy2 = cmisSession2.getObject(docVersionToDelete.getId());
+        
+        try
+    	{
+        	// (-) Delete v 1.2 (without DELETE permission)
+        	docVersionToDeleteBy2.delete(false);
+        	fail("Node version was deleted without permissions.");
+    	}
+        catch (CmisPermissionDeniedException ex)
+    	{
+        	// expected
+    	}
+        
+        // (+) Delete v 1.2 (with permission)
+        docVersionToDelete.delete(false);
+ 
         // eg. 1.0, 1.2, 1.3, 1.4 (not 1.1)
         assertEquals(cnt, cmisSession.getAllVersions(doc.getId()).size());
     }
-    */
 
     @Test
     public void testMnt11631() throws Exception

@@ -158,7 +158,7 @@ public class DeleteRecordTests extends BaseRestTest
      */
     @Test
     (
-        description = "User without delete permissions can't delete a record"
+        description = "User without write permissions can't delete a record"
     )
     public void userWithoutDeletePermissionsCantDeleteRecord() throws Exception
     {

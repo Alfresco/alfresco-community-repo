@@ -229,6 +229,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-downloads-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-discussion-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/query-archived-nodes-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/query-doclink-nodes-common-SqlMap.xml"/>
     </mappers>
     
 </configuration>

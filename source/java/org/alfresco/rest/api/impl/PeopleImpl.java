@@ -157,7 +157,13 @@ public class PeopleImpl implements People
     {
 		this.thumbnailService = thumbnailService;
 	}
-	
+
+    /**
+     * Validate, perform -me- substitution and canonicalize the person ID.
+     * 
+     * @param personId
+     * @return The validated and processed ID.
+     */
 	public String validatePerson(String personId)
 	{
 		return validatePerson(personId, false);
@@ -555,6 +561,8 @@ public class PeopleImpl implements People
 
     public Person update(String personId, final Person person)
     {
+        // Validate, perform -me- substitution and canonicalize the person ID.
+        personId = validatePerson(personId);
         validateUpdatePersonData(person);
 
         boolean isAdmin = isAdminAuthority();

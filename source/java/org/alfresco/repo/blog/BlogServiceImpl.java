@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.blog;
 
+import static java.lang.Math.min;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -82,6 +84,7 @@ import org.springframework.dao.ConcurrencyFailureException;
 public class BlogServiceImpl implements BlogService
 {
     public static final String BLOG_COMPONENT = "blog";
+    private static final int MIN_NUMBER_OF_PAGES_FOR_THE_USER_TO_LOOP_THROUGH = 10;
     
     /**
      * The logger
@@ -537,23 +540,23 @@ public class BlogServiceImpl implements BlogService
         {
             luceneQuery.append(createDateRangeQuery(dateRange.getFromDate(), dateRange.getToDate(), dateRange.getDateProperty()));
         }
-        
+
         SearchParameters sp = new SearchParameters();
         sp.addStore(blogContainerNode.getStoreRef());
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery(luceneQuery.toString());
         sp.addSort(ContentModel.PROP_PUBLISHED.toString(), false);
-        
-        sp.setMaxItems(pagingReq.getMaxItems());
+
+        sp.setMaxItems(pagingReq.getMaxItems() * MIN_NUMBER_OF_PAGES_FOR_THE_USER_TO_LOOP_THROUGH); 
         sp.setSkipCount(pagingReq.getSkipCount());
-        
         ResultSet luceneResults = null;
         PagingResults<BlogPostInfo> results = null;
         try
         {
             luceneResults = searchService.query(sp);
             final ResultSet finalLuceneResults = luceneResults;
-            final List<NodeRef> nodeRefs = finalLuceneResults.getNodeRefs();
+            
+            final List<NodeRef> nodeRefs = finalLuceneResults.getNodeRefs().subList(0, min(pagingReq.getMaxItems(), finalLuceneResults.length()));
             
             results = new PagingResults<BlogPostInfo>()
             {
@@ -578,16 +581,18 @@ public class BlogServiceImpl implements BlogService
                 
                 @Override
                 public Pair<Integer, Integer> getTotalResultCount()
-                {
-                    int itemsRemainingAfterThisPage = finalLuceneResults.length();
-                    final int totalItemsInUnpagedResultSet = pagingReq.getSkipCount() + itemsRemainingAfterThisPage;
-                    return new Pair<Integer, Integer>(totalItemsInUnpagedResultSet, totalItemsInUnpagedResultSet);
+                { 
+                    long totalResultCount = finalLuceneResults.getNumberFound();
+                    /*if (finalLuceneResults.hasMore()){
+                        totalResultCount++;
+                    }*/ 
+                    return new Pair<Integer, Integer>((int)totalResultCount, (int)totalResultCount);
                 }
                 
                 @Override
                 public boolean hasMoreItems()
                 {
-                    return finalLuceneResults.hasMore();
+                    return finalLuceneResults.length() > pagingReq.getMaxItems();
                 }
             };
         }

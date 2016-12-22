@@ -286,7 +286,7 @@ public class BaseRestTest extends RestTest
      * Helper method to add permission on a component to user
      * @param component {@link FilePlanComponent} on which permission should be given
      * @param user {@link UserModel} for a user to be granted permission
-     * @param permission permission to be granted (e.g. "Filing")
+     * @param permission {@link UserPermissions} to be granted
      */
      // FIXME: As of December 2016 there is no v1-style API for managing RM permissions.
      // Until such APIs have become available, this method is just a proxy to an "old-style"

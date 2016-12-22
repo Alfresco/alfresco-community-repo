@@ -227,6 +227,8 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             {
                 // the property is there, but the content is not
                 versionPropertiesContentAvailable = false;
+                String msg = I18NUtil.getMessage(ERR_MISSING_CONTENT, reader.getContentUrl());
+                logger.error(msg);
             }
         }
             
@@ -244,12 +246,6 @@ public class ConfigurationChecker extends AbstractLifecycleBean
             
             String msgRecover = I18NUtil.getMessage(MSG_HOWTO_INDEX_RECOVER);
             logger.info(msgRecover);
-        }
-        // check for missing content
-        if (!versionPropertiesContentAvailable)
-        {
-            String msg = I18NUtil.getMessage(ERR_MISSING_CONTENT);
-            logger.error(msg);
         }
         // handle either content or indexes missing
         if (missingStoreIndexes > 0 || !versionPropertiesContentAvailable)

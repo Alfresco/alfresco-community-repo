@@ -34,7 +34,6 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.core.RestAPI;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,12 +53,6 @@ import org.springframework.stereotype.Component;
 @Scope (value = "prototype")
 public class RMUserAPI extends RestAPI<RMUserAPI>
 {
-    @Autowired
-    private RMSiteAPI rmSiteAPI;
-
-    @Autowired
-    private UserService userService;
-    
     @Autowired
     private DataUser dataUser;
     

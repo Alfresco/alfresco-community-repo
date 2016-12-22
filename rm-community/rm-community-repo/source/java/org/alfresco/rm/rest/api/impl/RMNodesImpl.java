@@ -336,25 +336,30 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
     public Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters)
     {
         // create RM path if needed and call the super method with the last element of the created path
-        NodeRef parentNodeRef = getOrCreatePath(parentFolderNodeId, nodeInfo);
+        String relativePath = nodeInfo.getRelativePath();
+
+        // Get the type of the node to be created
+        String nodeType = nodeInfo.getNodeType();
+        if ((nodeType == null) || nodeType.isEmpty())
+        {
+            throw new InvalidArgumentException("Node type is expected: "+parentFolderNodeId+","+nodeInfo.getName());
+        }
+        QName nodeTypeQName = createQName(nodeType);
+
+        // Get or create the path
+        NodeRef parentNodeRef = getOrCreatePath(parentFolderNodeId, relativePath, nodeTypeQName);
+
+        // Set relative path to null as we pass the last element from the path
         nodeInfo.setRelativePath(null); 
 
         return super.createNode(parentNodeRef.getId(), nodeInfo, parameters);
     }
 
-    /**
-     * Gets or creates the relative path specified in nodeInfo.relativePath 
-     * starting from the provided parent folder.
-     * The method decides the type of the created elements considering the 
-     * parent container's type and the type of the node to be created.
-     * @param parentFolderNodeId the parent folder to start from
-     * @param nodeInfo information about the node to be created
-     * @return reference to the last element of the created path
-     */
-    protected NodeRef getOrCreatePath(String parentFolderNodeId, Node nodeInfo)
+    @Override
+    public NodeRef getOrCreatePath(String parentFolderNodeId, String relativePath, QName nodeTypeQName)
     {
         NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
-        String relativePath = nodeInfo.getRelativePath();
+
         if (relativePath == null)
         {
             return parentNodeRef;
@@ -413,14 +418,6 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         }
         else 
         {
-            // Get the type of the node to be created
-            String nodeType = nodeInfo.getNodeType();
-            if ((nodeType == null) || nodeType.isEmpty())
-            {
-                throw new InvalidArgumentException("Node type is expected: "+parentFolderNodeId+","+nodeInfo.getName());
-            }
-            QName nodeTypeQName = createQName(nodeType);
-
             /* Outside the unfiled record container the path elements are record categories 
              * except the last element which is a record folder if the created node is of type content
              */

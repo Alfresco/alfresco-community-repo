@@ -25,57 +25,45 @@
  * #L%
  */
 
-package org.alfresco.rm.rest.api.nodes;
+package org.alfresco.rm.rest.api.files;
 
-import org.alfresco.rest.framework.BinaryProperties;
+import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
-import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rm.rest.api.RMNodes;
+import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.alfresco.rm.rest.api.Records;
+import org.alfresco.rm.rest.api.model.TargetContainer;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * An implementation of an Entity Resource for a record
+ * An implementation of an Entity Resource for a file
  *
  * @author Ana Bozianu
  * @since 2.6
  */
-@EntityResource(name="records", title = "Records")
-public class RecordsEntityResource implements BinaryResourceAction.Read,
-                                              InitializingBean
+@EntityResource(name="files", title = "Files")
+public class FilesEntityResource implements InitializingBean
 {
+    private Records records;
 
-    private RMNodes nodes;
-
-    public void setNodes(RMNodes nodes)
+    public void setRecords(Records records)
     {
-        this.nodes = nodes;
+        this.records = records;
+    }
+
+    @Operation("declare")
+    @WebApiDescription(title = "Declare as record", description="Declare a file as record.")
+    public Node declareAsRecord(String fileId, Void body, Parameters parameters, WithResponse withResponse)
+    {
+        return records.declareFileAsRecord(fileId, parameters);
     }
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        ParameterCheck.mandatory("nodes", this.nodes);
+        ParameterCheck.mandatory("records", this.records);
     }
-
-    /**
-     * Download content
-     * 
-     * @param recordId the id of the record to get the content from
-     * @param parameters {@link Parameters}
-     * @return binary content resource
-     * @throws EntityNotFoundException
-     */
-    @Override
-    @WebApiDescription(title = "Download content", description = "Download content")
-    @BinaryProperties({"content"})
-    public BinaryResource readProperty(String recordId, Parameters parameters) throws EntityNotFoundException
-    {
-        return nodes.getContent(recordId, parameters, true);
-    }
-
 }

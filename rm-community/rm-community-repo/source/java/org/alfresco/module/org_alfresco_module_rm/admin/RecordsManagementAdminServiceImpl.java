@@ -32,6 +32,7 @@ import static org.springframework.extensions.surf.util.ParameterCheck.mandatoryS
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +61,7 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
@@ -71,6 +73,7 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
@@ -172,19 +175,28 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event)
     {
-
         if(!isCustomMapInit && getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL)) 
         {
-            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() 
+		// run as System on bootstrap
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork()
             {
-                public Void execute() throws Throwable 
+                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
                 {
-                    // initialise custom properties
-                    initCustomMap();
-                    return null;
-                }
-            });
-        }
+                    public Void execute()
+                    {
+                      // initialise custom properties
+                      initCustomMap();
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+		}           
     }
     
     /**

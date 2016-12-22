@@ -24,26 +24,19 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.fileplancomponents;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+package org.alfresco.rest.rm.community.model.user;
 
 /**
- * POJO for id/name pair
- *
+ * Constants for RM user roles
+ * 
  * @author Kristijan Conkas
  * @since 2.6
  */
-@Builder
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class FilePlanComponentIdNamePair
+public class UserRoles
 {
-    public String id;
-    public String name;
-
+    public static final String ROLE_RM_ADMIN = "Administrator";
+    public static final String ROLE_RM_MANAGER = "RecordsManager";
+    public static final String ROLE_RM_POWER_USER = "PowerUser";
+    public static final String ROLE_RM_SECURITY_OFFICER = "SecurityOfficer";
+    public static final String ROLE_RM_USER = "User";
 }

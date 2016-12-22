@@ -45,18 +45,23 @@
        </property>
     </bean>
 
-    <bean class="org.alfresco.rm.rest.api.nodes.FileplanComponentsEntityResource">
+    <bean class="org.alfresco.rm.rest.api.fileplancomponents.FileplanComponentsEntityResource">
        <property name="nodes" ref="rm.Nodes" />
     </bean>
 
-    <bean class="org.alfresco.rm.rest.api.nodes.RecordsEntityResource">
+    <bean class="org.alfresco.rm.rest.api.fileplancomponents.FileplanComponentChildrenRelation">
        <property name="nodes" ref="rm.Nodes" />
     </bean>
 
-    <bean class="org.alfresco.rm.rest.api.nodes.FileplanComponentChildrenRelation">
+    <bean class="org.alfresco.rm.rest.api.records.RecordsEntityResource">
        <property name="nodes" ref="rm.Nodes" />
+       <property name="records" ref="Records" />
     </bean>
 
+    <bean class="org.alfresco.rm.rest.api.files.FilesEntityResource">
+       <property name="records" ref="Records" />
+    </bean>
+    
    <!-- extended sites bean definition -->
    <bean id="rm.sites" class="org.alfresco.rm.rest.api.impl.RMSitesImpl" parent="sites">
         <property name="siteSurfConfig" ref="rm.siteSurfConfig" />
@@ -83,6 +88,30 @@
    <bean class="org.alfresco.rm.rest.api.sites.RMSiteEntityResource">
        <property name="sites" ref="rm.Sites" />
    </bean>
+
+    
+    <bean id="records" class="org.alfresco.rm.rest.api.impl.RecordsImpl">
+        <property name="recordService" ref="RecordService"/>
+        <property name="filePlanService" ref="FilePlanService"/>
+        <property name="nodes" ref="rm.nodes"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+    </bean>
+
+    <bean id="Records" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rm.rest.api.Records</value>
+       </property>
+       <property name="target">
+          <ref bean="records" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
 
    <!-- Map RM exceptions to HTML status codes -->
    <bean id="rm.simpleMappingExceptionResolver" abstract="true" parent="simpleMappingExceptionResolver">

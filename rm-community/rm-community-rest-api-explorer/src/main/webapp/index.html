@@ -32,7 +32,7 @@
   <script type="text/javascript">
     $(function () {
       window.swaggerUi = new SwaggerUi({
-        url: "definitions/alfresco-core.yaml",
+        url: "definitions/ig-core-api.yaml",
         dom_id: "swagger-ui-container",
         supportedSubmitMethods: ['get', 'post', 'put', 'delete'],
         onComplete: function(swaggerApi, swaggerUi){
@@ -91,10 +91,6 @@
     <form id="api_selector">
       <div class="input" id="select-wrapper">
         <select id="select_baseUrl" name="select_baseUrl">
-          <option value="definitions/alfresco-core.yaml">Core API</option>
-          <option value="definitions/alfresco-search.yaml">Search API</option>
-          <option value="definitions/alfresco-auth.yaml">Authentication API</option>
-          <option value="definitions/alfresco-workflow.yaml">Workflow API</option>
           <option value="definitions/ig-core-api.yaml">IG Core API</option>
         </select>
       </div>

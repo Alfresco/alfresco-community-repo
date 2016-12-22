@@ -11,8 +11,7 @@
    </parent>
 
    <properties>
-      <alfresco.api.explorer.version>2.0-SNAPSHOT</alfresco.api.explorer.version>
-      <swagger-ui.version>2.1.4</swagger-ui.version>
+      <alfresco.api.explorer.version>1.4</alfresco.api.explorer.version>
       <maven.compiler.source>1.7</maven.compiler.source>
       <maven.compiler.target>1.7</maven.compiler.target>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,6 +29,9 @@
                   <overlay>
                      <groupId>org.alfresco</groupId>
                      <artifactId>api-explorer</artifactId>
+                     <excludes>
+                        <exclude>definitions/*</exclude>
+                     </excludes>
                   </overlay>
                </overlays>
             </configuration>

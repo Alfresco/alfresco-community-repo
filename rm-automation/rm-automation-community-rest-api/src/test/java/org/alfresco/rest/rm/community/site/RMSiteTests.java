@@ -95,7 +95,10 @@ public class RMSiteTests extends BaseRestTest
         }
 
         // Create the RM site
-        RMSite rmSite = new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
+        RMSite rmSite =RMSite.builder().compliance(STANDARD).build();
+        rmSite.setTitle(RM_TITLE);
+        rmSite.setDescription(RM_DESCRIPTION);
+
         RMSite rmSiteResponse = rmSiteAPI.createRMSite(rmSite);
 
         // Verify the status code
@@ -132,7 +135,10 @@ public class RMSiteTests extends BaseRestTest
         String newDescription = RM_DESCRIPTION + "createRMSiteWhenSiteExists";
 
         // Create the RM site
-        RMSite rmSite = new RMSite(newTitle, newDescription, STANDARD);
+        RMSite rmSite = RMSite.builder().compliance(STANDARD).build();
+        rmSite.setTitle(newTitle);
+        rmSite.setDescription(newDescription);
+
         rmSiteAPI.createRMSite(rmSite);
 
         // Verify the status code
@@ -236,7 +242,9 @@ public class RMSiteTests extends BaseRestTest
         rmSiteAPI.usingRestWrapper().authenticateUser(userModel);
 
         // Create the RM site
-        RMSite rmSite = new RMSite(RM_TITLE, RM_DESCRIPTION, DOD5015);
+        RMSite rmSite = RMSite.builder().compliance(DOD5015).build();
+        rmSite.setTitle(RM_TITLE);
+        rmSite.setDescription(RM_DESCRIPTION);
         rmSite=rmSiteAPI.createRMSite(rmSite);
 
         // Verify the status code
@@ -325,7 +333,7 @@ public class RMSiteTests extends BaseRestTest
         createRMSiteIfNotExists();
 
         // Build the RM site properties
-        RMSite rmSiteToUpdate = new RMSite(DOD5015);
+        RMSite rmSiteToUpdate =  RMSite.builder().compliance(DOD5015).build();
 
         // Update the RM site
         rmSiteAPI.updateRMSite(rmSiteToUpdate);

@@ -48,6 +48,11 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * POJO for file plan component properties
  *
@@ -56,6 +61,10 @@ import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
  */
 //FIXME: Once the fields have been added the JsonIgnoreProperties annotation should be removed
 @JsonIgnoreProperties (ignoreUnknown = true)
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FilePlanComponentProperties
 {
 
@@ -80,7 +89,7 @@ public class FilePlanComponentProperties
 
     @JsonProperty(PROPERTIES_LOCATION)
     private String location;
-    
+
     @JsonProperty(value = PROPERTIES_IS_CLOSED, required = false)
     private Boolean isClosed;
     
@@ -100,227 +109,4 @@ public class FilePlanComponentProperties
     private Integer physicalSize;
     
 
-    public FilePlanComponentProperties(String title, String description)
-    {
-        this.title = title;
-        this.description = description;
-    }
-
-    public FilePlanComponentProperties(String title)
-    {
-        this.title = title;
-    }
-
-    public FilePlanComponentProperties()
-    {
-    }
-
-
-    /**
-     * @return the vitalRecord
-     */
-    public Boolean isVitalRecord()
-    {
-        return this.vitalRecord;
-    }
-
-    /**
-     * @param vitalRecord the vitalRecord to set
-     */
-    public void setVitalRecord(Boolean vitalRecord)
-    {
-        this.vitalRecord = vitalRecord;
-    }
-
-    /**
-     * @return the title
-     */
-    public String getTitle()
-    {
-        return this.title;
-    }
-
-    /**
-     * @param title the title to set
-     */
-    public void setTitle(String title)
-    {
-        this.title = title;
-    }
-
-    /**
-     * @return the holdReason
-     */
-    public String getHoldReason()
-    {
-        return this.holdReason;
-    }
-
-    /**
-     * @param holdReason the holdReason to set
-     */
-    public void setHoldReason(String holdReason)
-    {
-        this.holdReason = holdReason;
-    }
-
-    /**
-     * @param description the description to set
-     */
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
-
-    /**
-     * @return the description
-     */
-    public String getDescription()
-    {
-        return this.description;
-    }
-
-    /**
-     * @return the supplementalMarkingList
-     */
-    public List<String> getSupplementalMarkingList()
-    {
-        return this.supplementalMarkingList;
-    }
-
-    /**
-     * @param supplementalMarkingList the supplementalMarkingList to set
-     */
-    public void setSupplementalMarkingList(List<String> supplementalMarkingList)
-    {
-        this.supplementalMarkingList = supplementalMarkingList;
-    }
-
-    /**
-     * @return the reviewPeriod
-     */
-    public ReviewPeriod getReviewPeriod()
-    {
-        return reviewPeriod;
-    }
-
-    /**
-     * @param reviewPeriod the reviewPeriod to set
-     */
-    public void setReviewPeriod(ReviewPeriod reviewPeriod)
-    {
-        this.reviewPeriod = reviewPeriod;
-    }
-
-    /**
-     * @return the location
-     */
-    public String getLocation()
-    {
-        return location;
-    }
-
-    /**
-     * @param location the location to set
-     */
-    public void setLocation(String location)
-    {
-        this.location = location;
-    }
-
-    /**
-     * @return the box
-     */
-    public String getBox()
-    {
-        return this.box;
-    }
-
-    /**
-     * @param box the box to set
-     */
-    public void setBox(String box)
-    {
-        this.box = box;
-    }
-
-    /**
-     * @return the file
-     */
-    public String getFile()
-    {
-        return this.file;
-    }
-
-    /**
-     * @param file the file to set
-     */
-    public void setFile(String file)
-    {
-        this.file = file;
-    }
-
-    /**
-     * @return the shelf
-     */
-    public String getShelf()
-    {
-        return this.shelf;
-    }
-
-    /**
-     * @param shelf the shelf to set
-     */
-    public void setShelf(String shelf)
-    {
-        this.shelf = shelf;
-    }
-
-    /**
-     * @return the numberOfCopies
-     */
-    public Integer getNumberOfCopies()
-    {
-        return this.numberOfCopies;
-    }
-
-    /**
-     * @param numberOfCopies the numberOfCopies to set
-     */
-    public void setNumberOfCopies(Integer numberOfCopies)
-    {
-        this.numberOfCopies = numberOfCopies;
-    }
-
-    /**
-     * @return the physicalSize
-     */
-    public Integer getPhysicalSize()
-    {
-        return this.physicalSize;
-    }
-
-    /**
-     * @param physicalSize the physicalSize to set
-     */
-    public void setPhysicalSize(Integer physicalSize)
-    {
-        this.physicalSize = physicalSize;
-    }
-
-    /**
-     * @return the isClosed
-     */
-    public Boolean getIsClosed()
-    {
-        return this.isClosed;
-    }
-
-    /**
-     * @param isClosed the isClosed to set
-     */
-    public void setIsClosed(Boolean isClosed)
-    {
-        this.isClosed = isClosed;
-    }
 }

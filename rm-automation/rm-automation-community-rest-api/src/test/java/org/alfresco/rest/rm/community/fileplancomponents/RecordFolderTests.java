@@ -31,6 +31,7 @@ import static org.alfresco.rest.rm.community.base.TestData.FOLDER_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_CLOSED;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -44,6 +45,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertTrue;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
@@ -93,8 +95,13 @@ public class RecordFolderTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         FilePlanComponent filePlanComponent = createCategory(FILE_PLAN_ALIAS.toString(), CATEGORY);
 
-        FilePlanComponentProperties filePlanComponentProperties = new FilePlanComponentProperties(FOLDER_TITLE);
-        FilePlanComponent recordFolder = new FilePlanComponent(FOLDER_NAME,RECORD_FOLDER_TYPE.toString(), filePlanComponentProperties);
+        FilePlanComponent recordFolder = FilePlanComponent.builder()
+                .name(FOLDER_NAME)
+                .nodeType(RECORD_FOLDER_TYPE.toString())
+                .properties(FilePlanComponentProperties.builder()
+                        .title(FOLDER_TITLE)
+                        .build())
+                .build();
 
         // Create the record folder
         FilePlanComponent folder = filePlanComponentAPI.createFilePlanComponent(recordFolder, filePlanComponent.getId());
@@ -105,9 +112,9 @@ public class RecordFolderTests extends BaseRestTest
         // Check folder has been created  within the category created
         assertEquals(filePlanComponent.getId(),folder.getParentId());
         // Verify the returned properties for the file plan component - record folder
-        assertFalse(folder.isCategory());
-        assertFalse(folder.isFile());
-        assertTrue(folder.isRecordFolder());
+        assertFalse(folder.getIsCategory());
+        assertFalse(folder.getIsFile());
+        assertTrue(folder.getIsRecordFolder());
 
         assertEquals(folder.getName(), FOLDER_NAME);
         assertEquals(folder.getNodeType(), RECORD_FOLDER_TYPE.toString());
@@ -138,8 +145,14 @@ public class RecordFolderTests extends BaseRestTest
         String componentID = filePlanComponentAPI.getFilePlanComponent(filePlanComponent).getId();
 
         // Build the record category properties
-        FilePlanComponent recordFolder = new FilePlanComponent(FOLDER_NAME,RECORD_FOLDER_TYPE.toString(),
-                                             new FilePlanComponentProperties(FOLDER_TITLE));
+        FilePlanComponent recordFolder = FilePlanComponent.builder()
+                .name(FOLDER_NAME)
+                .nodeType(RECORD_FOLDER_TYPE.toString())
+                .properties(FilePlanComponentProperties.builder()
+                                .title(FOLDER_TITLE)
+                                .build())
+                .build();
+
         // Create a record folder
         filePlanComponentAPI.createFilePlanComponent(recordFolder, componentID);
 
@@ -168,10 +181,10 @@ public class RecordFolderTests extends BaseRestTest
 
         // Verify the returned properties for the file plan component - record folder
         assertEquals(RECORD_FOLDER_TYPE.toString(),folderDetails.getNodeType());
-        assertTrue(folderDetails.isRecordFolder());
-        assertFalse(folderDetails.isCategory());
-        assertFalse(folderDetails.isFile());
-        assertFalse(folderDetails.isClosed());
+        assertTrue(folderDetails.getIsRecordFolder());
+        assertFalse(folderDetails.getIsCategory());
+        assertFalse(folderDetails.getIsFile());
+        assertFalse(folderDetails.getIsClosed());
 
         assertEquals(FOLDER_NAME,folderDetails.getName());
         assertEquals(dataUser.getAdminUser().getUsername(),folderDetails.getCreatedByUser().getId());
@@ -210,11 +223,16 @@ public class RecordFolderTests extends BaseRestTest
         String location = "Location"+getRandomAlphanumeric();
 
         //Create the file plan component properties to update
-        FilePlanComponentProperties filePlanComponentProperties = new FilePlanComponentProperties(folderTitle, folderDescription);
-        filePlanComponentProperties.setVitalRecord(true);
-        filePlanComponentProperties.setReviewPeriod( new ReviewPeriod("month","1"));
-        filePlanComponentProperties.setLocation(location);
-        FilePlanComponent recordFolder = new FilePlanComponent(folderName,filePlanComponentProperties);
+        FilePlanComponent recordFolder = FilePlanComponent.builder()
+                .name(folderName)
+                .properties(FilePlanComponentProperties.builder()
+                                .title(folderTitle)
+                                .description(folderDescription)
+                                .vitalRecord(true)
+                                .reviewPeriod(new ReviewPeriod("month","1"))
+                                .location(location)
+                                .build())
+                .build();
 
         // Update the record category
         FilePlanComponent folderUpdated = filePlanComponentAPI.updateFilePlanComponent(recordFolder, folder.getId());
@@ -226,7 +244,7 @@ public class RecordFolderTests extends BaseRestTest
         assertEquals(folderName, folderUpdated.getName());
         assertEquals(folderDescription, folderUpdated.getProperties().getDescription());
         assertEquals(folderTitle, folderUpdated.getProperties().getTitle());
-        assertTrue(folderUpdated.getProperties().isVitalRecord());
+        assertTrue(folderUpdated.getProperties().getVitalRecord());
         assertEquals(location, folderUpdated.getProperties().getLocation());
         assertNotNull(folderUpdated.getProperties().getReviewPeriod().getPeriodType());
         assertNotNull(folderUpdated.getProperties().getReviewPeriod().getExpression());
@@ -324,11 +342,11 @@ public class RecordFolderTests extends BaseRestTest
 
                         // Is parent Id set correctly
                         assertEquals(filePlanComponent.getParentId(), category.getId());
-                        assertFalse(filePlanComponent.isFile());
+                        assertFalse(filePlanComponent.getIsFile());
 
                         // Boolean properties related to node type
-                        assertTrue(filePlanComponent.isRecordFolder());
-                        assertFalse(filePlanComponent.isCategory());
+                        assertTrue(filePlanComponent.getIsRecordFolder());
+                        assertFalse(filePlanComponent.getIsCategory());
 
                         assertEquals(createdComponent.getName(), filePlanComponent.getName());
                         assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
@@ -342,6 +360,97 @@ public class RecordFolderTests extends BaseRestTest
             );
 
     }
+
+    /**
+     * Given that I want to create a record folder
+     * When I use the API with the relativePath
+     * Then the categories specified in the relativePath that don't exist are created within the record folder
+     *
+     * Containers in the relativePath that do not exist are created before the node is created
+     */
+    @Test
+    (
+        description = "Create a folder based on the relativePath. " +
+            "Containers in the relativePath that do not exist are created before the node is created"
+    )
+    public void createFolderWithRelativePath() throws Exception
+    {
+        //RelativePath specify the container structure to create relative to the record folder to be created
+        String RELATIVE_PATH = LocalDateTime.now().getYear()+"/"+ LocalDateTime.now().getMonth()+"/"+ LocalDateTime.now().getDayOfMonth();
+
+        // Authenticate with admin user
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        //The record folder to be created
+        FilePlanComponent recordFolder = FilePlanComponent.builder()
+                                                          .name(FOLDER_NAME)
+                                                          .nodeType(RECORD_FOLDER_TYPE.toString())
+                                                          .relativePath(RELATIVE_PATH)
+                                                          .build();
+
+        // Create the record folder
+        FilePlanComponent folder = filePlanComponentAPI.withParams("include="+ PATH).createFilePlanComponent(recordFolder,FILE_PLAN_ALIAS.toString());
+        //Check the API response code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+
+        // Verify the returned properties for the file plan component - record folder
+        assertFalse(folder.getIsCategory());
+        assertFalse(folder.getIsFile());
+        assertTrue(folder.getIsRecordFolder());
+
+        //Check the path return contains the RELATIVE_PATH
+        assertTrue(folder.getPath().getName().contains(RELATIVE_PATH));
+        //check the parent is a category
+        assertTrue(filePlanComponentAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
+
+        //check the created folder from the server
+        folder=filePlanComponentAPI.withParams("include=" + PATH).getFilePlanComponent(folder.getId());
+        //Check the API response code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        // Verify the returned properties for the file plan component - record folder
+        assertFalse(folder.getIsCategory());
+        assertFalse(folder.getIsFile());
+        assertTrue(folder.getIsRecordFolder());
+
+        //Check the path return contains the RELATIVE_PATH
+        assertTrue(folder.getPath().getName().contains(RELATIVE_PATH));
+
+        //New Relative Path only a part of containers need to be created before the record folder
+        String NEW_RELATIVE_PATH = LocalDateTime.now().getYear() + "/" + LocalDateTime.now().getMonth() + "/" +( LocalDateTime.now().getDayOfMonth()+1);
+        //The record folder to be created
+        FilePlanComponent recordFolder2 = FilePlanComponent.builder()
+                                                          .name(FOLDER_NAME)
+                                                          .nodeType(RECORD_FOLDER_TYPE.toString())
+                                                          .relativePath(NEW_RELATIVE_PATH)
+                                                          .build();
+
+        // Create the record folder
+        FilePlanComponent folder2 = filePlanComponentAPI.withParams("include=" + PATH).createFilePlanComponent(recordFolder2, FILE_PLAN_ALIAS.toString());
+        //Check the API response code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+
+        // Verify the returned properties for the file plan component - record folder
+        assertFalse(folder2.getIsCategory());
+        assertFalse(folder2.getIsFile());
+        assertTrue(folder2.getIsRecordFolder());
+        //Check the path return contains the NEW_RELATIVE_PATH
+        assertTrue(folder2.getPath().getName().contains(NEW_RELATIVE_PATH));
+
+        //check the parent is a category
+        assertTrue(filePlanComponentAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
+
+        // Check the folder created on the server
+        folder2 = filePlanComponentAPI.withParams("include=" + PATH).getFilePlanComponent(folder2.getId());
+        //Check the API response code
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
+
+        // Verify the returned properties for the file plan component - record folder
+        assertFalse(folder2.getIsCategory());
+        assertFalse(folder2.getIsFile());
+        assertTrue(folder2.getIsRecordFolder());
+        //Check the path return contains the NEW_RELATIVE_PATH
+        assertTrue(folder2.getPath().getName().contains(NEW_RELATIVE_PATH));
+    }
+
     @AfterClass (alwaysRun = true)
     public void tearDown() throws Exception
     {

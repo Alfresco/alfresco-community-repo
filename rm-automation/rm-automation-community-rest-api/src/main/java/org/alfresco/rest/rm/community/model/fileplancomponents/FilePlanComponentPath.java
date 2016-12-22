@@ -30,12 +30,21 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * POJO for FilePlanComponent path parameter
  * <br>
  * @author Kristijan Conkas
  * @since 2.6
  */
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FilePlanComponentPath
 {
@@ -43,51 +52,4 @@ public class FilePlanComponentPath
     private Boolean isComplete;
     private List<FilePlanComponentIdNamePair> elements;
 
-    /**
-     * @return the name
-     */
-    public String getName()
-    {
-        return this.name;
-    }
-
-    /**
-     * @param name the name to set
-     */
-    public void setName(String name)
-    {
-        this.name = name;
-    }
-
-    /**
-     * @return the isComplete
-     */
-    public Boolean isComplete()
-    {
-        return this.isComplete;
-    }
-
-    /**
-     * @param isComplete the isComplete to set
-     */
-    public void setComplete(Boolean isComplete)
-    {
-        this.isComplete = isComplete;
-    }
-
-    /**
-     * @return the elements
-     */
-    public List<FilePlanComponentIdNamePair> getElements()
-    {
-        return this.elements;
-    }
-
-    /**
-     * @param elements the elements to set
-     */
-    public void setElements(List<FilePlanComponentIdNamePair> elements)
-    {
-        this.elements = elements;
-    }
 }

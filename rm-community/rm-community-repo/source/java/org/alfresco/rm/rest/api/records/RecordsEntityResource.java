@@ -25,20 +25,21 @@
  * #L%
  */
 
-package org.alfresco.rm.rest.api.nodes;
-
-import java.io.InputStream;
+package org.alfresco.rm.rest.api.records;
 
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.BinaryProperties;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
-import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.RMNodes;
+import org.alfresco.rm.rest.api.Records;
+import org.alfresco.rm.rest.api.model.TargetContainer;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -49,22 +50,21 @@ import org.springframework.beans.factory.InitializingBean;
  * @since 2.6
  */
 @EntityResource(name="records", title = "Records")
-public class RecordsEntityResource implements BinaryResourceAction.Update<Node>,
-                                              BinaryResourceAction.Read,
+public class RecordsEntityResource implements BinaryResourceAction.Read,
                                               InitializingBean
 {
 
     private RMNodes nodes;
+    private Records records;
 
     public void setNodes(RMNodes nodes)
     {
         this.nodes = nodes;
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
+    public void setRecords(Records records)
     {
-        ParameterCheck.mandatory("nodes", this.nodes);
+        this.records = records;
     }
 
     /**
@@ -83,24 +83,22 @@ public class RecordsEntityResource implements BinaryResourceAction.Update<Node>,
         return nodes.getContent(recordId, parameters, true);
     }
 
-    /**
-     * Upload new version of content
-     * 
-     * This allow binary content update of an existing record.
-     * 
-     * Note: alternatively, can upload via POST (multipart/form-data) with existing file name and form "overwrite=true".
-     * 
-     * @param recordId the id of the record to set the content for
-     * @param contentInfo Basic information about the content stream
-     * @param stream an inputstream representing the new content of the node
-     * @param parameters {@link Parameters}
-     * @return information about the record that has been updated
-     */
-    @Override
-    @WebApiDescription(title = "Upload content", description = "Upload content")
-    @BinaryProperties({"content"})
-    public Node updateProperty(String recordId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
+    @Operation("file")
+    @WebApiDescription(title = "File record", description="File a record into fileplan.")
+    public Node fileRecord(String recordId, TargetContainer target, Parameters parameters, WithResponse withResponse)
     {
-        return nodes.updateContent(recordId, contentInfo, stream, parameters);
+        try{
+                return records.fileOrLinkRecord(recordId, target, parameters);
+        }catch(Exception ex)
+       {
+           throw ex;
+       }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        ParameterCheck.mandatory("nodes", this.nodes);
+        ParameterCheck.mandatory("records", this.records);
     }
 }

@@ -236,6 +236,7 @@ public class DeleteRecordTests extends BaseRestTest
         // inherited to randomFolder
         addUserPermission(filePlanComponentAPI.getFilePlanComponent(randomFolder.getParentId()), 
             deleteUser, UserPermissions.PERMISSION_FILING);
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
         
         // create a non-electronic record in randomFolder
         FilePlanComponent record = FilePlanComponent.builder()

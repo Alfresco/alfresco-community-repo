@@ -32,9 +32,9 @@ package org.alfresco.rest.rm.community.model.user;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class UserCapabilities
+public class UserPermissions
 {
-    public static final String CAPABILITY_FILING = "Filing";
-    public static final String CAPABILITY_READ_RECORDS = "ReadRecords";
-    public static final String CAPABILITY_FILE_RECORDS = "FileRecords";
+    public static final String PERMISSION_FILING = "Filing";
+    public static final String PERMISSION_READ_RECORDS = "ReadRecords";
+    public static final String PERMISSION_FILE_RECORDS = "FileRecords";
 }

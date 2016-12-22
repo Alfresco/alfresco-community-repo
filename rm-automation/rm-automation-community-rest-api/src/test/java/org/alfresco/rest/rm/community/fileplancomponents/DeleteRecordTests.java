@@ -39,7 +39,7 @@ import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.rm.community.model.user.UserCapabilities;
+import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.RMSiteAPI;
@@ -235,7 +235,7 @@ public class DeleteRecordTests extends BaseRestTest
         // grant deleteUser Filing privileges on randomFolder category, this will be
         // inherited to randomFolder
         addUserPermission(filePlanComponentAPI.getFilePlanComponent(randomFolder.getParentId()), 
-            deleteUser, UserCapabilities.CAPABILITY_FILING);
+            deleteUser, UserPermissions.PERMISSION_FILING);
         
         // create a non-electronic record in randomFolder
         FilePlanComponent record = FilePlanComponent.builder()

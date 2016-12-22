@@ -28,6 +28,8 @@
 package org.alfresco.rm.rest.api;
 
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * RM Nodes API
@@ -45,4 +47,15 @@ public interface RMNodes extends Nodes
     public static String PARAM_INCLUDE_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
     public static String PARAM_INCLUDE_IS_CLOSED = "isClosed";
     public static String PARAM_INCLUDE_IS_COMPLETED = "isCompleted";
+
+    /**
+     * Gets or creates the relative path starting from the provided parent folder.
+     * The method decides the type of the created elements considering the 
+     * parent container's type and the type of the node to be created.
+     * @param parentFolderNodeId the parent folder to start from
+     * @param relativePath the relative path
+     * @param nodeTypeQName the type of the node to be created
+     * @return reference to the last element of the created path
+     */
+    public NodeRef getOrCreatePath(String parentFolderNodeId, String relativePath, QName nodeTypeQName);
 }

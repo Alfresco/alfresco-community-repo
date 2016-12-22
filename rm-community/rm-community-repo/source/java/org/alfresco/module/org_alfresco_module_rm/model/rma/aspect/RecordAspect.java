@@ -37,20 +37,24 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:record behaviour bean
@@ -67,7 +71,8 @@ public class RecordAspect extends    AbstractDisposableItem
                                      RecordsManagementPolicies.OnCreateReference,
                                      RecordsManagementPolicies.OnRemoveReference,
                                      NodeServicePolicies.OnMoveNodePolicy,
-                                     CopyServicePolicies.OnCopyCompletePolicy
+                                     CopyServicePolicies.OnCopyCompletePolicy,
+                                     ContentServicePolicies.OnContentPropertyUpdatePolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -81,7 +86,10 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /** record service */
     protected RecordService recordService;
-    
+
+    /** I18N */
+    private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
+
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -335,5 +343,20 @@ public class RecordAspect extends    AbstractDisposableItem
             // then remove any extended security from the newly copied record
             extendedSecurityService.remove(targetNodeRef);
         }        
+    }
+
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS,
+       notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onContentPropertyUpdate(NodeRef nodeRef, QName propertyQName, ContentData beforeValue, ContentData afterValue)
+    {
+        // Allow creation of content but not update
+        if (beforeValue != null)
+        {
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
+        }
     }
 }

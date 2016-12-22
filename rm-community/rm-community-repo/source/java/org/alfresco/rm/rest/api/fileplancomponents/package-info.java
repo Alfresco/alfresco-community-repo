@@ -24,26 +24,14 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.fileplancomponents;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
- * POJO for id/name pair
- *
- * @author Kristijan Conkas
+ * Package info that defines the Information Governance Fileplan Components REST API
+ * 
+ * @author Ana Bozianu
  * @since 2.6
  */
-@Builder
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class FilePlanComponentIdNamePair
-{
-    public String id;
-    public String name;
-
-}
+@WebApi(name="ig", scope=Api.SCOPE.PUBLIC, version=1)
+package org.alfresco.rm.rest.api.fileplancomponents;
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.WebApi;

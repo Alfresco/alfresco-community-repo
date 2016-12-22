@@ -26,6 +26,7 @@
  */
 package org.alfresco.rest.rm.community.requests;
 
+import static com.jayway.restassured.RestAssured.basic;
 import static com.jayway.restassured.RestAssured.given;
 
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
@@ -40,8 +41,12 @@ import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
 import java.io.File;
+import java.util.Iterator;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
+import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
@@ -168,16 +173,41 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         {
             fail("Only electronic records are supported");
         }
+
+        UserModel currentUser = usingRestWrapper().getTestUser();
+        
+        /* 
+         * For file uploads nodeBodyCreate is ignored hence can't be used. Append all FilePlanComponent fields
+         * to the request.
+         */
+        RequestSpecBuilder builder = new RequestSpecBuilder();
+        builder.setAuth(basic(currentUser.getUsername(), currentUser.getPassword()));
+        
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(toJson(electronicRecordModel));
+
+        Iterator<String> fieldNames = root.fieldNames();
+        while (fieldNames.hasNext())
+        {
+            String f = fieldNames.next();
+            try
+            {
+                builder.addMultiPart(f, root.get(f).asText(), ContentType.JSON.name());
+            }
+            catch (Exception error)
+            {
+                LOG.error("Failed to set " + f + " error: " + error);
+            }
+        }
+        
+        builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
         
         /* 
          * RestWrapper adds some headers which break multipart/form-data uploads and also assumes json POST requests. 
          * Upload the file using RestAssured library.
          */
-        UserModel currentUser = usingRestWrapper().getTestUser();
         Response response = given()
-            .auth().basic(currentUser.getUsername(), currentUser.getPassword())
-            .multiPart("nodeBodyCreate", toJson(electronicRecordModel), ContentType.JSON.name())
-            .multiPart("filedata", recordContent, ContentType.BINARY.name())
+            .spec(builder.build())
         .when()
             .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getParameters())
             .andReturn();

@@ -28,6 +28,8 @@ package org.alfresco.rest.rm.community.base;
 
 import static java.lang.Integer.parseInt;
 
+import static com.jayway.restassured.RestAssured.given;
+
 import static org.alfresco.rest.rm.community.base.TestData.CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
@@ -37,11 +39,19 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
+import com.google.gson.JsonObject;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.builder.RequestSpecBuilder;
+import com.jayway.restassured.http.ContentType;
+import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
 
+import org.alfresco.dataprep.AlfrescoHttpClient;
+import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
@@ -96,6 +106,9 @@ public class BaseRestTest extends RestTest
     @Autowired
     public FilePlanComponentAPI filePlanComponentAPI;
 
+    @Autowired
+    private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
+    
     // Constants
     public static final String RM_ID = "rm";
     public static final String RM_TITLE = "Records Management";
@@ -113,7 +126,7 @@ public class BaseRestTest extends RestTest
             { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), "Unfiled Folder " + getRandomAlphanumeric()) }
         };
     }
-    
+
     /**
      * @see org.alfresco.rest.RestTest#checkServerHealth()
      */
@@ -141,7 +154,9 @@ public class BaseRestTest extends RestTest
             rmSiteAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
             // Create the RM site
-            RMSite rmSite = new RMSite(RM_TITLE, RM_DESCRIPTION, STANDARD);
+            RMSite rmSite =  RMSite.builder().compliance(STANDARD).build();
+            rmSite.setTitle(RM_TITLE);
+            rmSite.setDescription(RM_DESCRIPTION);
             rmSiteAPI.createRMSite(rmSite);
 
             // Verify the status code
@@ -202,7 +217,13 @@ public class BaseRestTest extends RestTest
     {
         RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
-        FilePlanComponent filePlanComponent = new FilePlanComponent(componentName, componentType.toString(),new FilePlanComponentProperties(componentTitle));
+        FilePlanComponent filePlanComponent = FilePlanComponent.builder()
+            .name(componentName)
+            .nodeType(componentType.toString())
+            .properties(FilePlanComponentProperties.builder()
+                            .title(componentTitle)
+                            .build())
+            .build();
 
         FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(filePlanComponent, parentComponentId);
         restWrapper.assertStatusCodeIs(CREATED);
@@ -211,7 +232,7 @@ public class BaseRestTest extends RestTest
 
     /**
      * Helper method to close folder
-     * @param folderToClose
+     * @param folderId
      * @return
      * @throws Exception
      */
@@ -259,5 +280,48 @@ public class BaseRestTest extends RestTest
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
         return filePlanComponentAPI.getFilePlanComponent(componentId);
+    }
+    
+    /**
+     * Helper method to add permission on a component to user
+     * @param component {@link FilePlanComponent} on which permission should be given
+     * @param user {@link UserModel} for a user to be granted permission
+     * @param permission {@link UserPermissions} to be granted
+     */
+     // FIXME: As of December 2016 there is no v1-style API for managing RM permissions.
+     // Until such APIs have become available, this method is just a proxy to an "old-style"
+     // API call.
+    public void addUserPermission(FilePlanComponent component, UserModel user, String permission)
+    {
+        // get an "old-style" REST API client
+        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        
+        JsonObject bodyJson = buildObject()
+            .addArray("permissions")
+                .addObject()
+                    .add("authority", user.getUsername())
+                    .add("role", permission)
+                    .end()
+                    .getJson();
+
+        // override v1 baseURI and basePath
+        RequestSpecification spec = new RequestSpecBuilder()
+            .setBaseUri(client.getApiUrl())
+            .setBasePath("/")
+            .build();
+        
+        // execute an "old-style" API call
+        Response response = given()
+            .spec(spec)
+            .auth().basic(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword())
+            .contentType(ContentType.JSON)
+            .body(bodyJson.toString())
+            .pathParam("nodeId", component.getId())
+            .log().all()
+        .when()
+            .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
+            .prettyPeek()
+            .andReturn();
+        filePlanComponentAPI.usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
 }

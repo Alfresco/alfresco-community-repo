@@ -107,8 +107,14 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String folderDescription = folderName + " Description";
 
         // Build unfiled records folder properties
-        FilePlanComponent unfiledFolder=new FilePlanComponent(folderName,UNFILED_RECORD_FOLDER_TYPE.toString(),
-                                                            new FilePlanComponentProperties(folderTitle,folderDescription));
+        FilePlanComponent unfiledFolder = FilePlanComponent.builder()
+                .name(folderName)
+                .nodeType(UNFILED_RECORD_FOLDER_TYPE.toString())
+                .properties(FilePlanComponentProperties.builder()
+                                .title(folderTitle)
+                                .description(folderDescription)
+                                .build())
+                .build();
 
         FilePlanComponent filePlanComponent = filePlanComponentAPI.createFilePlanComponent(unfiledFolder,
             UNFILED_RECORDS_CONTAINER_ALIAS.toString());
@@ -117,9 +123,9 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
 
         // Verify the returned file plan component
-        assertFalse(filePlanComponent.isCategory());
-        assertFalse(filePlanComponent.isFile());
-        assertFalse(filePlanComponent.isRecordFolder()); // it is not a _normal_ record folder!
+        assertFalse(filePlanComponent.getIsCategory());
+        assertFalse(filePlanComponent.getIsFile());
+        assertFalse(filePlanComponent.getIsRecordFolder()); // it is not a _normal_ record folder!
 
         assertEquals(filePlanComponent.getName(), folderName);
         assertEquals(filePlanComponent.getNodeType(), UNFILED_RECORD_FOLDER_TYPE.toString());
@@ -151,8 +157,14 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         logger.info("creating " + componentType.toString());
 
         // Build unfiled records folder properties
-        FilePlanComponent unfiledFolder = new FilePlanComponent(folderName, componentType.toString(),
-            new FilePlanComponentProperties(folderTitle, folderDescription));
+        FilePlanComponent unfiledFolder = FilePlanComponent.builder()
+            .name(folderName)
+            .nodeType(componentType.toString())
+            .properties(FilePlanComponentProperties.builder()
+                            .title(folderTitle)
+                            .description(folderDescription)
+                            .build())
+            .build();
 
         try
         {
@@ -189,8 +201,14 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         assertEquals(parentFolderName, parentFolder.getName());
 
         // Build the unfiled records folder properties
-        FilePlanComponent unfiledFolder = new FilePlanComponent(childFolderName, UNFILED_RECORD_FOLDER_TYPE.toString(),
-            new FilePlanComponentProperties(childFolderTitle, childFolderDescription));
+        FilePlanComponent unfiledFolder = FilePlanComponent.builder()
+                .name(childFolderName)
+                .nodeType(UNFILED_RECORD_FOLDER_TYPE.toString())
+                .properties(FilePlanComponentProperties.builder()
+                        .title(childFolderTitle)
+                        .description(childFolderDescription)
+                        .build())
+                .build();
 
         // Create it as a child of parentFolder
         FilePlanComponent childFolder = filePlanComponentAPI.createFilePlanComponent(unfiledFolder,
@@ -200,9 +218,9 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         restWrapper.assertStatusCodeIs(CREATED);
 
         // Verify the returned file plan component
-        assertFalse(childFolder.isCategory());
-        assertFalse(childFolder.isFile());
-        assertFalse(childFolder.isRecordFolder()); // it is not a _normal_ record folder!
+        assertFalse(childFolder.getIsCategory());
+        assertFalse(childFolder.getIsFile());
+        assertFalse(childFolder.getIsRecordFolder()); // it is not a _normal_ record folder!
 
         assertEquals(childFolder.getName(), childFolderName);
         assertEquals(childFolder.getNodeType(), UNFILED_RECORD_FOLDER_TYPE.toString());
@@ -251,9 +269,14 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         assertEquals(folderName, folderToModify.getName());
 
         // Build the properties which will be updated
-        FilePlanComponent folderToUpdate = new FilePlanComponent(modified + folderToModify.getName(),
-                                                    new FilePlanComponentProperties(modified + folderToModify.getProperties().getTitle(),
-                                                                                    modified + folderToModify.getProperties().getDescription()));
+        FilePlanComponent folderToUpdate = FilePlanComponent.builder()
+            .name(modified + folderToModify.getName())
+            .properties(FilePlanComponentProperties.builder().
+                    title(modified + folderToModify.getProperties().getTitle()).
+                    description(modified + folderToModify.getProperties().getDescription())
+                    .build())
+            .build();
+
         // Update the unfiled records folder
         filePlanComponentAPI.updateFilePlanComponent(folderToUpdate, folderToModify.getId());
         // Verify the status code

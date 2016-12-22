@@ -24,26 +24,51 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.fileplancomponents;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+package org.alfresco.rm.rest.api.model;
 
 /**
- * POJO for id/name pair
- *
- * @author Kristijan Conkas
+ * A target container object
+ * 
+ * @author Ana Bozianu
  * @since 2.6
  */
-@Builder
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class FilePlanComponentIdNamePair
+public class TargetContainer
 {
-    public String id;
-    public String name;
+    String targetParentId;
+    String relativePath;
 
+    public TargetContainer()
+    {
+    }
+
+    public String getTargetParentId()
+    {
+        return targetParentId;
+    }
+
+    public void setTargetParentId(String targetParentId)
+    {
+        this.targetParentId = targetParentId;
+    }
+
+    public String getRelativePath()
+    {
+        return relativePath;
+    }
+
+    public void setRelativePath(String relativePath)
+    {
+        this.relativePath = relativePath;
+    }
+
+    @Override
+    public String toString()
+    {
+        final StringBuilder sb = new StringBuilder("NodeTarget{");
+        sb.append("targetParentId=").append(targetParentId);
+        sb.append(", relativePath='").append(relativePath).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

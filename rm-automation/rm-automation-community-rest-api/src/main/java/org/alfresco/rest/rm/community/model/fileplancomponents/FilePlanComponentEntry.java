@@ -30,6 +30,10 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.alfresco.rest.core.RestModels;
 
 /**
@@ -38,13 +42,13 @@ import org.alfresco.rest.core.RestModels;
  * @author Tuna Aksoy
  * @since 2.6
  */
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FilePlanComponentEntry extends RestModels<FilePlanComponent, FilePlanComponentEntry>
 {
     @JsonProperty(ENTRY)
     FilePlanComponent filePlanComponent;
 
-    public FilePlanComponent getFilePlanComponent()
-    {
-        return filePlanComponent;
-    }
 }

@@ -67,7 +67,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class FilePlanComponentProperties
 {
-
     @JsonProperty(PROPERTIES_VITAL_RECORD_INDICATOR)
     private Boolean vitalRecord;
 
@@ -92,21 +91,19 @@ public class FilePlanComponentProperties
 
     @JsonProperty(value = PROPERTIES_IS_CLOSED, required = false)
     private Boolean isClosed;
-    
+
     @JsonProperty(value = PROPERTIES_BOX, required = false)
     private String box;
-    
+
     @JsonProperty(value = PROPERTIES_FILE, required = false)
     private String file;
-    
+
     @JsonProperty(value = PROPERTIES_SHELF, required = false)
     private String shelf;
-    
+
     @JsonProperty(value = PROPERTIES_NUMBER_OF_COPIES, required = false)
     private Integer numberOfCopies;
-    
+
     @JsonProperty(value = PROPERTIES_PHYSICAL_SIZE, required = false)
     private Integer physicalSize;
-    
-
 }

@@ -45,5 +45,4 @@ public class FilePlanComponentUserInfo
 {
     private String id;
     private String displayName;
-
 }

@@ -24,31 +24,34 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.fileplancomponents;
+package org.alfresco.rest.rm.community.requests;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.requests.ModelRequest;
 
 /**
- * POJO for FilePlanComponent path parameter
+ * FIXME!!!
  *
- * @author Kristijan Conkas
+ * @author Tuna Aksoy
  * @since 2.6
  */
-@Builder
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class FilePlanComponentPath
+public abstract class RMModelRequest extends ModelRequest
 {
-    private String name;
-    private Boolean isComplete;
-    private List<FilePlanComponentIdNamePair> elements;
+    private RMRestWrapper rmRestWrapper;
+
+    /**
+     * @return the rmRestWrapper
+     */
+    protected RMRestWrapper getRMRestWrapper()
+    {
+        return this.rmRestWrapper;
+    }
+
+    /**
+     * @param restWrapper
+     */
+    public RMModelRequest(RMRestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+    }
 }

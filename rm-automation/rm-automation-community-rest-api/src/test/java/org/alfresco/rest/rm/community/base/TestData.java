@@ -50,7 +50,7 @@ import org.testng.annotations.DataProvider;
  * @since 2.6
  */
 public interface TestData
-{    
+{
     /**
      * A user with ALFRESCO_ADMINISTRATORS role.
      * <p>"GROUP_ANOTHER_ADMIN_EXISTS" The ANOTHER_ADMIN user has been created.
@@ -75,10 +75,10 @@ public interface TestData
     public static Object[][] getContainers()
     {
         return new Object[][] {
-                { FILE_PLAN_ALIAS.toString() },
-                { TRANSFERS_ALIAS.toString() },
-                { HOLDS_ALIAS.toString() },
-                { UNFILED_RECORDS_CONTAINER_ALIAS.toString() },
+                { FILE_PLAN_ALIAS },
+                { TRANSFERS_ALIAS },
+                { HOLDS_ALIAS },
+                { UNFILED_RECORDS_CONTAINER_ALIAS },
         };
     }
 
@@ -130,15 +130,15 @@ public interface TestData
     public static Object[][] childrenNotAllowedForCategory()
     {
         return new Object[][] {
-            { FILE_PLAN_TYPE.toString() },
-            { TRANSFER_CONTAINER_TYPE.toString() },
-            { HOLD_CONTAINER_TYPE.toString() },
-            { UNFILED_CONTAINER_TYPE.toString() },
-            { UNFILED_RECORD_FOLDER_TYPE.toString()},
-            { HOLD_TYPE.toString()},
-            { TRANSFER_TYPE.toString()},
-            { FOLDER_TYPE.toString()},
-            { CONTENT_TYPE.toString()}
+            { FILE_PLAN_TYPE },
+            { TRANSFER_CONTAINER_TYPE },
+            { HOLD_CONTAINER_TYPE },
+            { UNFILED_CONTAINER_TYPE },
+            { UNFILED_RECORD_FOLDER_TYPE },
+            { HOLD_TYPE },
+            { TRANSFER_TYPE },
+            { FOLDER_TYPE },
+            { CONTENT_TYPE }
         };
     }
 }

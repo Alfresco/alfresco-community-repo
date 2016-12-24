@@ -57,7 +57,6 @@ public class PojoUtility
         {
             //return the json object
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
-
         }
         catch (JsonGenerationException e)
         {

@@ -24,31 +24,24 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.site;
+package org.alfresco.rest.core;
 
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.alfresco.rest.model.RestSiteModel;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.RestIGCoreAPI;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * POJO for RM Site component
+ * FIXME!!!
  *
- * @author Rodica Sutu
+ * @author Tuna Aksoy
  * @since 2.6
  */
-@Builder
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class RMSite extends RestSiteModel
+public class RMRestWrapper extends RestWrapper
 {
-    @JsonProperty (value = COMPLIANCE,required = true)
-    private RMSiteCompliance compliance;
+    @Autowired
+    private RMRestProperties rmRestProperties;
 
+    public RestIGCoreAPI withIGCoreAPI()
+    {
+        return new RestIGCoreAPI(this, rmRestProperties);
+    }
 }

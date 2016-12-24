@@ -35,7 +35,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import org.alfresco.rest.rm.community.model.fileplancomponents.ReviewPeriod;
 
-
 /**
  * Utility class for serializing the  Review Period type
  *
@@ -44,7 +43,6 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.ReviewPeriod;
  */
 public class ReviewPeriodSerializer extends JsonSerializer<ReviewPeriod>
 {
-
     /**
      * @param value The Review Period value that is being serialized.
      * @param gen Jackson utility is responsible for writing JSON
@@ -57,8 +55,5 @@ public class ReviewPeriodSerializer extends JsonSerializer<ReviewPeriod>
     {
         //create the custom  string value for the Review Period type
        gen.writeString(new StringBuilder().append(value.getPeriodType()).append("|").append(value.getExpression()).toString());
-
     }
 }
-
-

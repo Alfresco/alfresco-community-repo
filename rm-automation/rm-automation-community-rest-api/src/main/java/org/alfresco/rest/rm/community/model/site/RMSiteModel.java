@@ -24,31 +24,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.fileplancomponents;
+package org.alfresco.rest.rm.community.model.site;
 
-import java.util.List;
+import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.model.RestSiteModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * POJO for FilePlanComponent path parameter
+ * POJO for RM Site component
  *
- * @author Kristijan Conkas
+ * @author Rodica Sutu
  * @since 2.6
  */
 @Builder
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class FilePlanComponentPath
+public class RMSiteModel extends RestSiteModel
 {
-    private String name;
-    private Boolean isComplete;
-    private List<FilePlanComponentIdNamePair> elements;
+    @JsonProperty (value = COMPLIANCE, required = true)
+    private RMSiteCompliance compliance;
 }

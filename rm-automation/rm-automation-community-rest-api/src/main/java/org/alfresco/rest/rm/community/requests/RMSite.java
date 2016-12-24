@@ -36,31 +36,35 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.OK;
 
-import org.alfresco.rest.core.RestAPI;
-import org.alfresco.rest.rm.community.model.site.RMSite;
+import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.rm.community.model.site.RMSiteModel;
 import org.alfresco.utility.data.DataUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 /**
- *  File plan component REST API Wrapper
+ * FIXME!!!
  *
  * @author Tuna Aksoy
- * @author Rodica Sutu
  * @since 2.6
  */
-@Component
-@Scope (value = "prototype")
-public class RMSiteAPI extends RestAPI<RMSiteAPI>
+public class RMSite extends RMModelRequest
 {
+    // FIXME!!!
     @Autowired
     private DataUser dataUser;
 
     /**
+     * @param restWrapper
+     */
+    public RMSite(RMRestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+    }
+
+    /**
      * Get the RM site
      *
-     * @return The {@link RMSite} for the given file plan component id
+     * @return The {@link RMSiteModel} for the given file plan component id
      * @throws Exception for the following cases:
      * <ul>
      *  <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM site</li>
@@ -69,9 +73,9 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public RMSite getSite() throws Exception
+    public RMSiteModel getSite() throws Exception
     {
-        return usingRestWrapper().processModel(RMSite.class, simpleRequest(
+        return getRMRestWrapper().processModel(RMSiteModel.class, simpleRequest(
                 GET,
                 "ig-sites/rm"
         ));
@@ -81,7 +85,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      * Create the RM site
      *
      * @param rmSite The properties of the rm site to be created
-     * @return The {@link RMSite} with the given properties
+     * @return The {@link RMSiteModel} with the given properties
      * @throws Exception for the following cases:
      * <ul>
      *  <li>Api Response code 400 Invalid parameter: title, or description exceed the maximum length; or siteBodyCreate invalid</li>
@@ -90,13 +94,13 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public RMSite createRMSite(RMSite rmSite) throws Exception
+    public RMSiteModel createRMSite(RMSiteModel rmSiteModel) throws Exception
     {
-        mandatoryObject("rmSiteProperties", rmSite);
+        mandatoryObject("rmSiteModel", rmSiteModel);
 
-        return usingRestWrapper().processModel(RMSite.class, requestWithBody(
+        return getRMRestWrapper().processModel(RMSiteModel.class, requestWithBody(
                 POST,
-                toJson(rmSite),
+                toJson(rmSiteModel),
                 "ig-sites"
         ));
     }
@@ -114,7 +118,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      */
     public void deleteRMSite() throws Exception
     {
-        usingRestWrapper().processEmptyModel(simpleRequest(
+        getRMRestWrapper().processEmptyModel(simpleRequest(
                 DELETE,
                 "ig-sites/rm"
         ));
@@ -124,23 +128,23 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      * Update RM site
      *
      * @param rmSiteProperties The properties to be updated
-     * @return The updated {@link RMSite}
+     * @return The updated {@link RMSiteModel}
      * @throws Exception for the following cases:
      * <ul>
-     *  <li>Api Response code 400 the update request is invalid {@code rmSiteProperties} is invalid</li>
+     *  <li>Api Response code 400 the update request is invalid {@code rmSiteModel} is invalid</li>
      *  <li>Api Response code 401 If authentication fails</li>
      *  <li>Api Response code 403 does not have permission to update {@code RMSite}</li>
-     *  <li>Api Response code 404 {@code RMSite} does not exist</li>
+     *  <li>Api Response code 404 {@code RMSiteModel} does not exist</li>
      *  <li>Api Response code default Unexpected error,model integrity exception</li>
      * </ul>
      */
-    public RMSite updateRMSite(RMSite rmSiteProperties) throws Exception
+    public RMSiteModel updateRMSite(RMSiteModel rmSiteModel) throws Exception
     {
-        mandatoryObject("rmSiteProperties", rmSiteProperties);
+        mandatoryObject("rmSiteProperties", rmSiteModel);
 
-        return usingRestWrapper().processModel(RMSite.class, requestWithBody(
+        return getRMRestWrapper().processModel(RMSiteModel.class, requestWithBody(
                 PUT,
-            toJson(rmSiteProperties),
+                toJson(rmSiteModel),
                 "ig-sites/rm"
         ));
     }
@@ -159,8 +163,8 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      */
     public boolean existsRMSite() throws Exception
     {
-        usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        getRMRestWrapper().authenticateUser(dataUser.getAdminUser());
         getSite();
-        return usingRestWrapper().getStatusCode().equals(OK.toString());
+        return getRMRestWrapper().getStatusCode().equals(OK.toString());
     }
 }

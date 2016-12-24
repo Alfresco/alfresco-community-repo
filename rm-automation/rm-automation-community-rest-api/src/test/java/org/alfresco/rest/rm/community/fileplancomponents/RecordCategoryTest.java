@@ -44,14 +44,11 @@ import static org.testng.Assert.fail;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
-import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
-import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,9 +63,6 @@ import org.testng.annotations.Test;
  */
 public class RecordCategoryTest extends BaseRestTest
 {
-    @Autowired
-    private FilePlanComponentAPI filePlanComponentAPI;
-
     @Autowired
     private DataUser dataUser;
 
@@ -88,15 +82,15 @@ public class RecordCategoryTest extends BaseRestTest
     public void createCategoryTest() throws Exception
     {
         // Authenticate with admin user
-        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        authenticateUser(dataUser.getAdminUser());
 
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
         // Build the record category properties
-        FilePlanComponent recordCategory = FilePlanComponent.builder()
+        FilePlanComponentModel recordCategory = FilePlanComponentModel.builder()
             .name(categoryName)
-            .nodeType(RECORD_CATEGORY_TYPE.toString())
+            .nodeType(RECORD_CATEGORY_TYPE)
             .properties(
                     FilePlanComponentProperties.builder()
                         .title(categoryTitle)
@@ -104,10 +98,10 @@ public class RecordCategoryTest extends BaseRestTest
             .build();
 
         // Create the record category
-        FilePlanComponent filePlanComponent = filePlanComponentAPI.createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS.toString());
+        FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS);
 
         // Verify the status code
-        restWrapper.assertStatusCodeIs(CREATED);
+        assertStatusCodeIs(CREATED);
 
         // Verify the returned file plan component
         assertTrue(filePlanComponent.getIsCategory());
@@ -115,7 +109,7 @@ public class RecordCategoryTest extends BaseRestTest
         assertFalse(filePlanComponent.getIsRecordFolder());
 
         assertEquals(filePlanComponent.getName(), categoryName);
-        assertEquals(filePlanComponent.getNodeType(), RECORD_CATEGORY_TYPE.toString());
+        assertEquals(filePlanComponent.getNodeType(), RECORD_CATEGORY_TYPE);
 
         assertEquals(filePlanComponent.getCreatedByUser().getId(), dataUser.getAdminUser().getUsername());
 
@@ -139,16 +133,16 @@ public class RecordCategoryTest extends BaseRestTest
     public void renameCategory() throws Exception
     {
         // Authenticate with admin user
-        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        authenticateUser(dataUser.getAdminUser());
 
         // Create record category first
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
         // Build the record category properties
-        FilePlanComponent recordCategory = FilePlanComponent.builder()
+        FilePlanComponentModel recordCategory = FilePlanComponentModel.builder()
             .name(categoryName)
-            .nodeType(RECORD_CATEGORY_TYPE.toString())
+            .nodeType(RECORD_CATEGORY_TYPE)
             .properties(
                     FilePlanComponentProperties.builder()
                         .title(categoryTitle)
@@ -156,24 +150,24 @@ public class RecordCategoryTest extends BaseRestTest
             .build();
 
         // Create the record category
-        FilePlanComponent filePlanComponent = filePlanComponentAPI.createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS.toString());
+        FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS);
 
         String newCategoryName = "Rename " + categoryName;
 
         // Build the properties which will be updated
-        FilePlanComponent recordCategoryUpdated = FilePlanComponent.builder().name(newCategoryName).build();
+        FilePlanComponentModel recordCategoryUpdated = FilePlanComponentModel.builder().name(newCategoryName).build();
 
         // Update the record category
-        FilePlanComponent renamedFilePlanComponent = filePlanComponentAPI.updateFilePlanComponent(recordCategoryUpdated, filePlanComponent.getId());
+        FilePlanComponentModel renamedFilePlanComponent = getFilePlanComponentsAPI().updateFilePlanComponent(recordCategoryUpdated, filePlanComponent.getId());
 
         // Verify the status code
-        restWrapper.assertStatusCodeIs(OK);
+        assertStatusCodeIs(OK);
 
         // Verify the returned file plan component
         assertEquals(renamedFilePlanComponent.getName(), newCategoryName);
 
         // Get actual FILE_PLAN_ALIAS id
-        FilePlanComponent parentComponent = filePlanComponentAPI.getFilePlanComponent(FILE_PLAN_ALIAS.toString());
+        FilePlanComponentModel parentComponent = getFilePlanComponentsAPI().getFilePlanComponent(FILE_PLAN_ALIAS);
 
         // verify renamed component still has this parent
         assertEquals(renamedFilePlanComponent.getParentId(), parentComponent.getId());
@@ -192,16 +186,16 @@ public class RecordCategoryTest extends BaseRestTest
     public void deleteCategory() throws Exception
     {
         // Authenticate with admin user
-        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        authenticateUser(dataUser.getAdminUser());
 
         // Create record category first
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
         // Build the record category properties
-        FilePlanComponent recordCategory = FilePlanComponent.builder()
+        FilePlanComponentModel recordCategory = FilePlanComponentModel.builder()
                 .name(categoryName)
-                .nodeType(RECORD_CATEGORY_TYPE.toString())
+                .nodeType(RECORD_CATEGORY_TYPE)
                 .properties(
                         FilePlanComponentProperties.builder()
                             .title(categoryTitle)
@@ -209,17 +203,17 @@ public class RecordCategoryTest extends BaseRestTest
                 .build();
 
         // Create the record category
-        FilePlanComponent filePlanComponent = filePlanComponentAPI.createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS.toString());
+        FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS);
 
         // Delete the record category
-        filePlanComponentAPI.deleteFilePlanComponent(filePlanComponent.getId());
+        getFilePlanComponentsAPI().deleteFilePlanComponent(filePlanComponent.getId());
 
         // Verify the status code
-        restWrapper.assertStatusCodeIs(NO_CONTENT);
+        assertStatusCodeIs(NO_CONTENT);
 
         // Deleted component should no longer be retrievable
-        filePlanComponentAPI.getFilePlanComponent(filePlanComponent.getId());
-        restWrapper.assertStatusCodeIs(NOT_FOUND);
+        getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponent.getId());
+        assertStatusCodeIs(NOT_FOUND);
     }
 
     /**
@@ -235,11 +229,11 @@ public class RecordCategoryTest extends BaseRestTest
     public void createSubcategory() throws Exception
     {
         // Create root level category
-        FilePlanComponent rootCategory = createCategory(FILE_PLAN_ALIAS.toString(), getRandomAlphanumeric());
+        FilePlanComponentModel rootCategory = createCategory(FILE_PLAN_ALIAS, getRandomAlphanumeric());
         assertNotNull(rootCategory.getId());
 
         // Create subcategory as a child of rootCategory
-        FilePlanComponent childCategory = createCategory(rootCategory.getId(), getRandomAlphanumeric());
+        FilePlanComponentModel childCategory = createCategory(rootCategory.getId(), getRandomAlphanumeric());
 
         // Child category created?
         assertNotNull(childCategory.getId());
@@ -249,7 +243,7 @@ public class RecordCategoryTest extends BaseRestTest
         assertTrue(childCategory.getIsCategory());
         assertFalse(childCategory.getIsFile());
         assertFalse(childCategory.getIsRecordFolder());
-        assertEquals(childCategory.getNodeType(), RECORD_CATEGORY_TYPE.toString());
+        assertEquals(childCategory.getNodeType(), RECORD_CATEGORY_TYPE);
     }
 
     /**
@@ -267,15 +261,15 @@ public class RecordCategoryTest extends BaseRestTest
     public void listChildren() throws Exception
     {
         // Create root level category
-        FilePlanComponent rootCategory = createCategory(FILE_PLAN_ALIAS.toString(), getRandomAlphanumeric());
+        FilePlanComponentModel rootCategory = createCategory(FILE_PLAN_ALIAS, getRandomAlphanumeric());
         assertNotNull(rootCategory.getId());
 
         // Add child categories/folders
-        ArrayList<FilePlanComponent> children = new ArrayList<FilePlanComponent>();
+        ArrayList<FilePlanComponentModel> children = new ArrayList<FilePlanComponentModel>();
         for (int i=0; i < NUMBER_OF_CHILDREN; i++)
         {
             // Create a child
-            FilePlanComponent child = createComponent(rootCategory.getId(),
+            FilePlanComponentModel child = createComponent(rootCategory.getId(),
                 getRandomAlphanumeric(),
                 // half of the children should be subcategories, the other subfolders
                 (i <= NUMBER_OF_CHILDREN / 2) ? RECORD_CATEGORY_TYPE : RECORD_FOLDER_TYPE);
@@ -284,26 +278,26 @@ public class RecordCategoryTest extends BaseRestTest
         }
 
         // Authenticate with admin user
-        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        authenticateUser(dataUser.getAdminUser());
 
         // List children from API
-        FilePlanComponentsCollection apiChildren = filePlanComponentAPI.listChildComponents(rootCategory.getId());
+        FilePlanComponentsCollection apiChildren = getFilePlanComponentsAPI().listChildComponents(rootCategory.getId());
 
         // Check status code
-        restWrapper.assertStatusCodeIs(OK);
+        assertStatusCodeIs(OK);
         logger.info("parent: " + rootCategory.getId());
 
         // Check listed children against created list
         apiChildren.getEntries().forEach(c ->
         {
-            FilePlanComponent filePlanComponent = c.getFilePlanComponent();
+            FilePlanComponentModel filePlanComponent = c.getFilePlanComponentModel();
             assertNotNull(filePlanComponent.getId());
             logger.info("Checking child " + filePlanComponent.getId());
 
             try
             {
                 // Find this child in created children list
-                FilePlanComponent createdComponent = children.stream()
+                FilePlanComponentModel createdComponent = children.stream()
                     .filter(child -> child.getId().equals(filePlanComponent.getId()))
                     .findFirst()
                     .get();
@@ -319,7 +313,7 @@ public class RecordCategoryTest extends BaseRestTest
 
                 // Boolean properties related to node type
                 // Only RECORD_CATEGORY_TYPE and RECORD_FOLDER_TYPE have been created
-                if (filePlanComponent.getNodeType().equals(RECORD_CATEGORY_TYPE.toString()))
+                if (filePlanComponent.getNodeType().equals(RECORD_CATEGORY_TYPE))
                 {
                     assertTrue(filePlanComponent.getIsCategory());
                     assertFalse(filePlanComponent.getIsRecordFolder());
@@ -362,13 +356,13 @@ public class RecordCategoryTest extends BaseRestTest
         String COMPONENT_NAME = "Component"+getRandomAlphanumeric();
 
         // Authenticate with admin user
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        authenticateUser(dataUser.getAdminUser());
 
         //Create the category
-        FilePlanComponent category = createCategory(FILE_PLAN_ALIAS.toString(), COMPONENT_NAME);
+        FilePlanComponentModel category = createCategory(FILE_PLAN_ALIAS, COMPONENT_NAME);
 
         //Build node  properties
-        FilePlanComponent recordCategory = FilePlanComponent.builder()
+        FilePlanComponentModel recordCategory = FilePlanComponentModel.builder()
                 .name(COMPONENT_NAME)
                 .nodeType(nodeType)
                 .properties(
@@ -378,8 +372,8 @@ public class RecordCategoryTest extends BaseRestTest
                 .build();
 
         //create the invalid node type
-        filePlanComponentAPI.createFilePlanComponent(recordCategory, category.getId());
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        getFilePlanComponentsAPI().createFilePlanComponent(recordCategory, category.getId());
+        assertStatusCodeIs(UNPROCESSABLE_ENTITY);
     }
 
 
@@ -391,7 +385,7 @@ public class RecordCategoryTest extends BaseRestTest
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
-    public FilePlanComponent createCategory(String parentCategoryId, String categoryName) throws Exception
+    public FilePlanComponentModel createCategory(String parentCategoryId, String categoryName) throws Exception
     {
         return createComponent(parentCategoryId, categoryName, RECORD_CATEGORY_TYPE);
     }
@@ -405,20 +399,22 @@ public class RecordCategoryTest extends BaseRestTest
      * @return The created file plan component
      * @throws Exception
      */
-    private FilePlanComponent createComponent(String parentComponentId, String componentName, FilePlanComponentType componentType) throws Exception
+    private FilePlanComponentModel createComponent(String parentComponentId, String componentName, String componentType) throws Exception
     {
-        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        authenticateUser(dataUser.getAdminUser());
+
         //Build node  properties
-        FilePlanComponent component = FilePlanComponent.builder()
+        FilePlanComponentModel component = FilePlanComponentModel.builder()
                 .name(componentName)
-                .nodeType(componentType.toString())
+                .nodeType(componentType)
                 .properties(FilePlanComponentProperties.builder()
                         .title("Title for " + componentName)
                         .build())
                 .build();
 
-        FilePlanComponent fpc = filePlanComponentAPI.createFilePlanComponent(component, parentComponentId);
-        restWrapper.assertStatusCodeIs(CREATED);
+        FilePlanComponentModel fpc = getFilePlanComponentsAPI().createFilePlanComponent(component, parentComponentId);
+        assertStatusCodeIs(CREATED);
+
         return fpc;
     }
 }

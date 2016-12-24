@@ -42,12 +42,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * RM user management API
- * 
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
-// FIXME: As of December 2016 there is no v1-style API for managing RM users and users' 
-// roles. Until such APIs have become available, methods in this class are just proxies to 
+// FIXME: As of December 2016 there is no v1-style API for managing RM users and users'
+// roles. Until such APIs have become available, methods in this class are just proxies to
 // "old-style" API calls.
 @Component
 @Scope (value = "prototype")
@@ -55,21 +55,21 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
 {
     @Autowired
     private DataUser dataUser;
-    
+
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
-        
+
     public void assignRoleToUser(String userName, String userRole) throws Exception
     {
         // get an "old-style" REST API client
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        
+
         // override v1 baseURI and basePath
         RequestSpecification spec = new RequestSpecBuilder()
             .setBaseUri(client.getApiUrl())
             .setBasePath("/")
             .build();
-        
+
         Response response = given()
             .spec(spec)
             .log().all()

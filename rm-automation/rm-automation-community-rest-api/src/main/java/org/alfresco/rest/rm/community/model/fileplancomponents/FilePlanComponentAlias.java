@@ -26,58 +26,16 @@
  */
 package org.alfresco.rest.rm.community.model.fileplancomponents;
 
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
-
 /**
- * File plan component alias enumeration
+ * File plan component alias
  *
  * @author Tuna Aksoy
  * @since 2.6
  */
-public enum FilePlanComponentAlias
+public class FilePlanComponentAlias
 {
-    FILE_PLAN_ALIAS("-filePlan-"),
-    TRANSFERS_ALIAS("-transfers-"),
-    UNFILED_RECORDS_CONTAINER_ALIAS("-unfiled-"),
-    HOLDS_ALIAS("-holds-");
-
-    private String alias;
-
-    private FilePlanComponentAlias(String alias)
-    {
-        this.alias = alias;
-    }
-
-    public static final FilePlanComponentAlias getFilePlanComponentAlias(String alias)
-    {
-        mandatoryString("alias", alias);
-
-        FilePlanComponentAlias result = null;
-        FilePlanComponentAlias[] values = values();
-
-        for (FilePlanComponentAlias filePlanComponentAlias : values)
-        {
-            if (filePlanComponentAlias.toString().equals(alias))
-            {
-                result = filePlanComponentAlias;
-                break;
-            }
-        }
-
-        if (result == null)
-        {
-            throw new IllegalArgumentException("Invalid file plan component alias enum value: '" + alias + "'.");
-        }
-
-        return result;
-    }
-
-    /**
-     * @see java.lang.Enum#toString()
-     */
-    @Override
-    public String toString()
-    {
-        return this.alias;
-    }
+    public static final String FILE_PLAN_ALIAS = "-filePlan-";
+    public static final String TRANSFERS_ALIAS = "-transfers-";
+    public static final String UNFILED_RECORDS_CONTAINER_ALIAS = "-unfiled-";
+    public static final String HOLDS_ALIAS = "-holds-";
 }

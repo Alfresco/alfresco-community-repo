@@ -30,11 +30,13 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.alfresco.rest.core.RestModels;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.alfresco.rest.core.RestModels;
 
 /**
  * POJO for file plan component entry
@@ -44,11 +46,11 @@ import org.alfresco.rest.core.RestModels;
  */
 @Builder
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilePlanComponentEntry extends RestModels<FilePlanComponent, FilePlanComponentEntry>
+public class FilePlanComponentEntry extends RestModels<FilePlanComponentModel, FilePlanComponentEntry>
 {
     @JsonProperty(ENTRY)
-    FilePlanComponent filePlanComponent;
-
+    FilePlanComponentModel filePlanComponentModel;
 }

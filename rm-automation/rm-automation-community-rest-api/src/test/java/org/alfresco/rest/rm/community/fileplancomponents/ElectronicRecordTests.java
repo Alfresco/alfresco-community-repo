@@ -32,7 +32,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -41,8 +41,6 @@ import static org.testng.Assert.assertTrue;
 
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
-import org.alfresco.utility.data.DataUser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -57,25 +55,23 @@ import org.testng.annotations.Test;
  */
 public class ElectronicRecordTests extends BaseRestTest
 {
-    @Autowired
-    private DataUser dataUser;
-
     /** image resource file to be used for records body */
     private static final String IMAGE_FILE = "money.JPG";
 
     /** Valid root containers where electronic records can be created */
     @DataProvider(name = "invalidParentContainers")
-    public Object[][] invalidContainers() throws Exception {
-        return new Object[][] {
+    public Object[][] invalidContainers() throws Exception
+    {
+        return new Object[][]
+        {
             // record category
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(),
-                createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS).getParentId()) },
+            { getFilePlanComponent(createCategoryFolderInFilePlan().getParentId()) },
             // file plan root
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(), FILE_PLAN_ALIAS) },
+            { getFilePlanComponent(FILE_PLAN_ALIAS) },
             // transfers
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(), TRANSFERS_ALIAS) },
+            { getFilePlanComponent(TRANSFERS_ALIAS) },
             // holds
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(), HOLDS_ALIAS) },
+            { getFilePlanComponent(HOLDS_ALIAS) },
         };
     }
 
@@ -96,17 +92,11 @@ public class ElectronicRecordTests extends BaseRestTest
     )
     public void cantCreateElectronicRecordsInInvalidContainers(FilePlanComponentModel container) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
         // Build object the filePlan
-        FilePlanComponentModel record = FilePlanComponentModel.builder()
-                                                .name("Record " + getRandomAlphanumeric())
-                                                .nodeType(CONTENT_TYPE)
-                                                .build();
-        getFilePlanComponentsAPI().createElectronicRecord(record, IMAGE_FILE, container.getId());
+        getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId());
 
         // verify the create request status code
-        assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -122,8 +112,7 @@ public class ElectronicRecordTests extends BaseRestTest
     @Test(description = "Electronic record can't be created in closed record folder")
     public void cantCreateElectronicRecordInClosedFolder() throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-        FilePlanComponentModel recordFolder = createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS);
+        FilePlanComponentModel recordFolder = createCategoryFolderInFilePlan();
 
         // the folder should be open
         assertFalse(recordFolder.getProperties().getIsClosed());
@@ -132,14 +121,10 @@ public class ElectronicRecordTests extends BaseRestTest
         closeFolder(recordFolder.getId());
 
         // try to create it, this should fail
-        FilePlanComponentModel record = FilePlanComponentModel.builder()
-                                                .name("Record " + getRandomAlphanumeric())
-                                                .nodeType(CONTENT_TYPE)
-                                                .build();
-        getFilePlanComponentsAPI().createElectronicRecord(record, IMAGE_FILE, recordFolder.getId());
+        getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, recordFolder.getId());
 
         // verify the status code
-        assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -169,9 +154,8 @@ public class ElectronicRecordTests extends BaseRestTest
     )
     public void canCreateElectronicRecordOnlyWithMandatoryProperties(FilePlanComponentModel container) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
         logger.info("Root container:\n" + toJson(container));
+
         if (container.getNodeType().equals(RECORD_FOLDER_TYPE))
         {
             // only record folders can be open or closed
@@ -187,7 +171,7 @@ public class ElectronicRecordTests extends BaseRestTest
         getFilePlanComponentsAPI().createFilePlanComponent(record, container.getId());
 
         // verify the status code is BAD_REQUEST
-        assertStatusCodeIs(BAD_REQUEST);
+        assertStatusCode(BAD_REQUEST);
     }
 
     /**
@@ -214,18 +198,13 @@ public class ElectronicRecordTests extends BaseRestTest
     )
     public void canCreateElectronicRecordsInValidContainers(FilePlanComponentModel container) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
-        FilePlanComponentModel record = FilePlanComponentModel.builder()
-                                                    .name("Record " + getRandomAlphanumeric())
-                                                    .nodeType(CONTENT_TYPE)
-                                                    .build();
-        String newRecordId = getFilePlanComponentsAPI().createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
+        FilePlanComponentModel record = createElectronicRecordModel();
+        String newRecordId = getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId()).getId();
 
         // verify the create request status code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
-        // get newly created electonic record and verify its properties
+        // get newly created electronic record and verify its properties
         FilePlanComponentModel electronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(newRecordId);
         // created record will have record identifier inserted in its name but will be prefixed with
         // the name it was created as
@@ -245,8 +224,6 @@ public class ElectronicRecordTests extends BaseRestTest
     )
     public void recordNameDerivedFromFileName(FilePlanComponentModel container) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
         // record object without name set
         FilePlanComponentModel record = FilePlanComponentModel.builder()
                 .nodeType(CONTENT_TYPE)
@@ -255,7 +232,7 @@ public class ElectronicRecordTests extends BaseRestTest
         String newRecordId = getFilePlanComponentsAPI().createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
 
         // verify the create request status code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // get newly created electonic record and verify its properties
         FilePlanComponentModel electronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(newRecordId);

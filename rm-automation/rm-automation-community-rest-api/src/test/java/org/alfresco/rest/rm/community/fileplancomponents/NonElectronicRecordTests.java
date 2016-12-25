@@ -35,6 +35,8 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
+import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -78,14 +80,6 @@ public class NonElectronicRecordTests extends BaseRestTest
     @Test(description = "Non-electronic record can't be created as a child of invalid parent Id")
     public void cantCreateForInvalidParentIds() throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
-        // non-electronic record object to be used for create tests
-        FilePlanComponentModel nonElectronicRecord = FilePlanComponentModel.builder()
-                                                .name("Record " + getRandomAlphanumeric())
-                                                .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                                                .build();
-
         // create record category, non-electronic records can't be its children
         FilePlanComponentModel recordCategoryModel = FilePlanComponentModel.builder()
                                                          .name("Category " + getRandomAlphanumeric())
@@ -101,14 +95,14 @@ public class NonElectronicRecordTests extends BaseRestTest
             {
                 try
                 {
-                    getFilePlanComponentsAPI().createFilePlanComponent(nonElectronicRecord, id);
+                    getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), id);
                 }
                 catch (Exception error)
                 {
                 }
 
                 // Verify the status code
-                assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+                assertStatusCode(UNPROCESSABLE_ENTITY);
             });
     }
 
@@ -136,9 +130,8 @@ public class NonElectronicRecordTests extends BaseRestTest
     )
     public void canCreateInValidContainers(FilePlanComponentModel container) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
         logger.info("Root container:\n" + toJson(container));
+
         if (container.getNodeType().equals(RECORD_FOLDER_TYPE))
         {
             // only record folders can be open or closed
@@ -179,7 +172,7 @@ public class NonElectronicRecordTests extends BaseRestTest
             container.getId()).getId();
 
         // verify the create request status code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // get newly created non-electonic record and verify its properties
         FilePlanComponentModel nonElectronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(nonElectronicId);
@@ -207,8 +200,7 @@ public class NonElectronicRecordTests extends BaseRestTest
     @Test(description = "Non-electronic record can't be created in closed record folder")
     public void cantCreateInClosedFolder() throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-        FilePlanComponentModel recordFolder = createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS);
+        FilePlanComponentModel recordFolder = createCategoryFolderInFilePlan();
 
         // the folder should be open
         assertFalse(recordFolder.getProperties().getIsClosed());
@@ -217,16 +209,10 @@ public class NonElectronicRecordTests extends BaseRestTest
         closeFolder(recordFolder.getId());
 
         // try to create it, this should fail and throw an exception
-
-        getFilePlanComponentsAPI().createFilePlanComponent(FilePlanComponentModel.builder()
-                                                                      .name("Record " + getRandomAlphanumeric())
-                                                                      .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                                                                      .build(),
-                                                    recordFolder.getId())
-                                                                    .getId();
+        getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), recordFolder.getId());
 
         // verify the status code
-        assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -255,8 +241,6 @@ public class NonElectronicRecordTests extends BaseRestTest
     )
     public void allMandatoryPropertiesRequired(FilePlanComponentModel container) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
         logger.info("Root container:\n" + toJson(container));
         if (container.getNodeType().equals(RECORD_FOLDER_TYPE))
         {
@@ -295,7 +279,7 @@ public class NonElectronicRecordTests extends BaseRestTest
             }
 
             // verify the status code is BAD_REQUEST
-            assertStatusCodeIs(BAD_REQUEST);
+            assertStatusCode(BAD_REQUEST);
         });
     }
 
@@ -315,10 +299,7 @@ public class NonElectronicRecordTests extends BaseRestTest
     )
     public void cantCreateIfNoRmPrivileges(FilePlanComponentModel container) throws Exception
     {
-        String username = "zzzuser";
-        UserModel user = createUserWithRole(username, UserRole.SiteManager);
-
-        authenticateUser(user);
+        UserModel user = createUserWithRole("zzzuser", SiteManager);
 
         // try to create a fileplan component
         FilePlanComponentModel record = FilePlanComponentModel.builder()
@@ -334,14 +315,14 @@ public class NonElectronicRecordTests extends BaseRestTest
         // this should fail and throw an exception
         try
         {
-            getFilePlanComponentsAPI().createFilePlanComponent(record, container.getId());
+            getFilePlanComponentsAPI(user).createFilePlanComponent(record, container.getId());
         }
         catch (Exception e)
         {
         }
 
         // user who isn't an RM site member can't access the container path
-        assertStatusCodeIs(FORBIDDEN);
+        assertStatusCode(FORBIDDEN);
     }
 
     /**
@@ -370,7 +351,6 @@ public class NonElectronicRecordTests extends BaseRestTest
      */
     private UserModel createUserWithRole(String userName, UserRole userRole) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
         String siteId = getRMSiteAPI().getSite().getId();
 
         // check if user exists

@@ -73,7 +73,7 @@ public class RecordFolderTests extends BaseRestTest
     @Autowired
     public DataUser dataUser;
 
-    private static final int NUMBER_OF_FOLDERS= 5;
+    private static final int NUMBER_OF_FOLDERS = 5;
     /**
      * Given that a record category exists
      * When I use the API to create a new record folder
@@ -86,8 +86,8 @@ public class RecordFolderTests extends BaseRestTest
     public void createFolderTest() throws Exception
     {
         String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
+
         // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
         FilePlanComponentModel filePlanComponent = createCategory(FILE_PLAN_ALIAS, CATEGORY);
 
         FilePlanComponentModel recordFolder = FilePlanComponentModel.builder()
@@ -101,7 +101,7 @@ public class RecordFolderTests extends BaseRestTest
         // Create the record folder
         FilePlanComponentModel folder = getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, filePlanComponent.getId());
 
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // Check folder has been created  within the category created
         assertEquals(filePlanComponent.getId(),folder.getParentId());
@@ -133,9 +133,6 @@ public class RecordFolderTests extends BaseRestTest
     @Bug(id="RM-4327")
     public void createFolderIntoSpecialContainers(String filePlanComponent) throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         String componentID = getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponent).getId();
 
         // Build the record category properties
@@ -151,7 +148,7 @@ public class RecordFolderTests extends BaseRestTest
         getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, componentID);
 
         // Check the API Response code
-        assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -166,8 +163,7 @@ public class RecordFolderTests extends BaseRestTest
     public void checkTheRecordFolderProperties() throws Exception
     {
         String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
+
         FilePlanComponentModel category = createCategory(FILE_PLAN_ALIAS, CATEGORY);
         FilePlanComponentModel folder = createFolder(category.getId(),FOLDER_NAME);
 
@@ -202,9 +198,6 @@ public class RecordFolderTests extends BaseRestTest
     {
         String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
 
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         //Create a record category
         FilePlanComponentModel category = createCategory(FILE_PLAN_ALIAS, CATEGORY);
 
@@ -233,7 +226,7 @@ public class RecordFolderTests extends BaseRestTest
         FilePlanComponentModel folderUpdated = getFilePlanComponentsAPI().updateFilePlanComponent(recordFolder, folder.getId());
 
         // Check the Response Status Code
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
 
         // Verify the returned properties for the file plan component - record folder
         assertEquals(folderName, folderUpdated.getName());
@@ -259,9 +252,6 @@ public class RecordFolderTests extends BaseRestTest
     {
         String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
 
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Create the record category
         FilePlanComponentModel category = createCategory(FILE_PLAN_ALIAS, CATEGORY);
 
@@ -271,12 +261,12 @@ public class RecordFolderTests extends BaseRestTest
         // Delete the Record folder
         getFilePlanComponentsAPI().deleteFilePlanComponent(folder.getId());
         // Check the Response Status Code
-        assertStatusCodeIs(NO_CONTENT);
+        assertStatusCode(NO_CONTENT);
 
         // Check the File Plan Component is not found
         getFilePlanComponentsAPI().getFilePlanComponent(folder.getId());
         // Check the Response Status Code
-        assertStatusCodeIs(NOT_FOUND);
+        assertStatusCode(NOT_FOUND);
     }
 
     /**
@@ -296,7 +286,6 @@ public class RecordFolderTests extends BaseRestTest
         String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
 
         // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
         FilePlanComponentModel category = createCategory(FILE_PLAN_ALIAS, CATEGORY);
 
         // Add child olders
@@ -310,14 +299,11 @@ public class RecordFolderTests extends BaseRestTest
             children.add(child);
         }
 
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // List children from API
         FilePlanComponentsCollection apiChildren = getFilePlanComponentsAPI().listChildComponents(category.getId());
 
         // Check status code
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
 
         // Check listed children against created list
         apiChildren.getEntries().forEach(c ->
@@ -373,21 +359,19 @@ public class RecordFolderTests extends BaseRestTest
     public void createFolderWithRelativePath() throws Exception
     {
         //RelativePath specify the container structure to create relative to the record folder to be created
-        String RELATIVE_PATH = LocalDateTime.now().getYear()+"/"+ LocalDateTime.now().getMonth()+"/"+ LocalDateTime.now().getDayOfMonth();
+        String relativePath = LocalDateTime.now().getYear() + "/" + LocalDateTime.now().getMonth() + "/" + LocalDateTime.now().getDayOfMonth();
 
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
         //The record folder to be created
         FilePlanComponentModel recordFolder = FilePlanComponentModel.builder()
                                                           .name(FOLDER_NAME)
                                                           .nodeType(RECORD_FOLDER_TYPE)
-                                                          .relativePath(RELATIVE_PATH)
+                                                          .relativePath(relativePath)
                                                           .build();
 
         // Create the record folder
         FilePlanComponentModel folder = getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS, "include=" + PATH);
         //Check the API response code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // Verify the returned properties for the file plan component - record folder
         assertFalse(folder.getIsCategory());
@@ -395,24 +379,24 @@ public class RecordFolderTests extends BaseRestTest
         assertTrue(folder.getIsRecordFolder());
 
         //Check the path return contains the RELATIVE_PATH
-        assertTrue(folder.getPath().getName().contains(RELATIVE_PATH));
+        assertTrue(folder.getPath().getName().contains(relativePath));
         //check the parent is a category
         assertTrue(getFilePlanComponentsAPI().getFilePlanComponent(folder.getParentId()).getIsCategory());
 
         //check the created folder from the server
         folder = getFilePlanComponentsAPI().getFilePlanComponent(folder.getId(), "include=" + PATH);
         //Check the API response code
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
         // Verify the returned properties for the file plan component - record folder
         assertFalse(folder.getIsCategory());
         assertFalse(folder.getIsFile());
         assertTrue(folder.getIsRecordFolder());
 
         //Check the path return contains the RELATIVE_PATH
-        assertTrue(folder.getPath().getName().contains(RELATIVE_PATH));
+        assertTrue(folder.getPath().getName().contains(relativePath));
 
         //New Relative Path only a part of containers need to be created before the record folder
-        String NEW_RELATIVE_PATH = LocalDateTime.now().getYear() + "/" + LocalDateTime.now().getMonth() + "/" +( LocalDateTime.now().getDayOfMonth()+1);
+        String NEW_RELATIVE_PATH = LocalDateTime.now().getYear() + "/" + LocalDateTime.now().getMonth() + "/" + (LocalDateTime.now().getDayOfMonth() + 1);
         //The record folder to be created
         FilePlanComponentModel recordFolder2 = FilePlanComponentModel.builder()
                                                           .name(FOLDER_NAME)
@@ -423,7 +407,7 @@ public class RecordFolderTests extends BaseRestTest
         // Create the record folder
         FilePlanComponentModel folder2 = getFilePlanComponentsAPI().createFilePlanComponent(recordFolder2, FILE_PLAN_ALIAS, "include=" + PATH);
         //Check the API response code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // Verify the returned properties for the file plan component - record folder
         assertFalse(folder2.getIsCategory());
@@ -438,7 +422,7 @@ public class RecordFolderTests extends BaseRestTest
         // Check the folder created on the server
         folder2 = getFilePlanComponentsAPI().getFilePlanComponent(folder2.getId(), "include=" + PATH);
         //Check the API response code
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
 
         // Verify the returned properties for the file plan component - record folder
         assertFalse(folder2.getIsCategory());
@@ -451,7 +435,6 @@ public class RecordFolderTests extends BaseRestTest
     @AfterClass (alwaysRun = true)
     public void tearDown() throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
         getFilePlanComponentsAPI().listChildComponents(FILE_PLAN_ALIAS).getEntries().forEach(filePlanComponentEntry ->
         {
             try

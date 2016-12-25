@@ -26,8 +26,6 @@
  */
 package org.alfresco.rest.rm.community.base;
 
-import static com.jayway.restassured.RestAssured.given;
-
 import static org.alfresco.rest.rm.community.base.TestData.CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
@@ -35,26 +33,16 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createFilePlanComponentModel;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
-import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
-import com.google.gson.JsonObject;
-import com.jayway.restassured.builder.RequestSpecBuilder;
-import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
-import com.jayway.restassured.specification.RequestSpecification;
-
-import org.alfresco.dataprep.AlfrescoHttpClient;
-import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
-import org.alfresco.rest.rm.community.model.site.RMSiteModel;
-import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.requests.FilePlanComponents;
 import org.alfresco.rest.rm.community.requests.RMSite;
 import org.alfresco.utility.data.DataUser;
@@ -79,31 +67,26 @@ public class BaseRestTest extends RestTest
     @Autowired
     private DataUser dataUser;
 
-    @Autowired
-    private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
-
-    private RMSite rmSite;
-
-    private FilePlanComponents filePlanComponents;
-
     protected RMSite getRMSiteAPI()
     {
-        if (rmSite == null)
-        {
-            rmSite = getRmRestWrapper().withIGCoreAPI().usingRMSite();
-        }
+        return getRMSiteAPI(dataUser.getAdminUser());
+    }
 
-        return rmSite;
+    protected RMSite getRMSiteAPI(UserModel userModel)
+    {
+        getRmRestWrapper().authenticateUser(userModel);
+        return getRmRestWrapper().withIGCoreAPI().usingRMSite();
     }
 
     protected FilePlanComponents getFilePlanComponentsAPI()
     {
-        if (filePlanComponents == null)
-        {
-            filePlanComponents = getRmRestWrapper().withIGCoreAPI().usingFilePlanComponents();
-        }
+        return getFilePlanComponentsAPI(dataUser.getAdminUser());
+    }
 
-        return filePlanComponents;
+    protected FilePlanComponents getFilePlanComponentsAPI(UserModel userModel)
+    {
+        getRmRestWrapper().authenticateUser(userModel);
+        return getRmRestWrapper().withIGCoreAPI().usingFilePlanComponents();
     }
 
     /**
@@ -114,11 +97,6 @@ public class BaseRestTest extends RestTest
         return this.rmRestWrapper;
     }
 
-    // Constants
-    public static final String RM_ID = "rm";
-    public static final String RM_TITLE = "Records Management";
-    public static final String RM_DESCRIPTION = "Records Management Site";
-
     /** Valid root containers where electronic and non-electronic records can be created */
     @DataProvider(name = "validRootContainers")
     public Object[][] getValidRootContainers() throws Exception
@@ -126,9 +104,9 @@ public class BaseRestTest extends RestTest
         return new Object[][]
         {
             // an arbitrary record folder
-            { createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS) },
+            { createCategoryFolderInFilePlan() },
             // unfiled records root
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(), UNFILED_RECORDS_CONTAINER_ALIAS) },
+            { getFilePlanComponent(UNFILED_RECORDS_CONTAINER_ALIAS) },
             // an arbitrary unfiled records folder
             { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric()) }
         };
@@ -148,21 +126,11 @@ public class BaseRestTest extends RestTest
     /**
      * FIXME!!!
      *
-     * @param userModel FIXME!!!
+     * @param httpStatus FIXME!!!
      */
-    protected void authenticateUser(UserModel userModel)
-    {
-        getRmRestWrapper().authenticateUser(userModel);
-    }
-
-    protected void assertStatusCodeIs(HttpStatus httpStatus)
+    protected void assertStatusCode(HttpStatus httpStatus)
     {
         getRmRestWrapper().assertStatusCodeIs(httpStatus);
-    }
-
-    protected void disconnect()
-    {
-        getRmRestWrapper().disconnect();
     }
 
     /**
@@ -172,86 +140,115 @@ public class BaseRestTest extends RestTest
     public void createRMSiteIfNotExists() throws Exception
     {
         // Check RM site doesn't exist
-        if (!rmSite.existsRMSite())
+        if (!getRMSiteAPI().existsRMSite())
         {
-            authenticateUser(dataUser.getAdminUser());
-
             // Create the RM site
-            RMSiteModel rmSiteModel =  RMSiteModel.builder().compliance(STANDARD).build();
-            rmSiteModel.setTitle(RM_TITLE);
-            rmSiteModel.setDescription(RM_DESCRIPTION);
-            rmSite.createRMSite(rmSiteModel);
+            getRMSiteAPI().createRMSite(createStandardRMSiteModel());
 
             // Verify the status code
-            assertStatusCodeIs(CREATED);
+            assertStatusCode(CREATED);
         }
     }
 
     /**
      * Helper method to create child category
      *
+     * @param user user under whose privileges this structure is going to be created
      * @param parentCategoryId The id of the parent category
      * @param categoryName     The name of the category
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
+    public FilePlanComponentModel createCategory(UserModel user, String parentCategoryId, String categoryName) throws Exception
+    {
+        return createComponent(user, parentCategoryId, categoryName, RECORD_CATEGORY_TYPE, CATEGORY_TITLE);
+    }
+
+    /**
+     * FIXME!!!
+     *
+     * @param parentCategoryId FIXME!!!
+     * @param categoryName FIXME!!!
+     * @return FIXME!!!
+     * @throws Exception FIXME!!!
+     */
     public FilePlanComponentModel createCategory(String parentCategoryId, String categoryName) throws Exception
     {
-        return createComponent(parentCategoryId, categoryName, RECORD_CATEGORY_TYPE, CATEGORY_TITLE);
+        return createCategory(dataUser.getAdminUser(), parentCategoryId, categoryName);
     }
 
     /**
      * Helper method to create child folder
      *
+     * @param user user under whose privileges this structure is going to be created
      * @param parentCategoryId The id of the parent category
      * @param folderName       The name of the category
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
+    public FilePlanComponentModel createFolder(UserModel user, String parentCategoryId, String folderName) throws Exception
+    {
+        return createComponent(user, parentCategoryId, folderName, RECORD_FOLDER_TYPE, FOLDER_TITLE);
+    }
+
+    /**
+     * FIXME!!!
+     *
+     * @param parentCategoryId FIXME!!!
+     * @param folderName FIXME!!!
+     * @return FIXME!!!
+     * @throws Exception FIXME!!!
+     */
     public FilePlanComponentModel createFolder(String parentCategoryId, String folderName) throws Exception
     {
-        return createComponent(parentCategoryId, folderName, RECORD_FOLDER_TYPE, FOLDER_TITLE);
+        return createFolder(dataUser.getAdminUser(), parentCategoryId, folderName);
     }
 
     /**
      * Helper method to create child unfiled record folder
      *
+     * @param user user under whose privileges this structure is going to be created
      * @param parentId The id of the parent folder
      * @param folderName       The name of the folder
      * @return The created folder
      * @throws Exception on unsuccessful component creation
      */
+    public FilePlanComponentModel createUnfiledRecordsFolder(UserModel user, String parentId, String folderName) throws Exception
+    {
+        return createComponent(user, parentId, folderName, UNFILED_RECORD_FOLDER_TYPE, FOLDER_TITLE);
+    }
+
+    /**
+     * FIXME!!!
+     *
+     * @param parentId FIXME!!!
+     * @param folderName FIXME!!!
+     * @return FIXME!!!
+     * @throws Exception FIXME!!!
+     */
     public FilePlanComponentModel createUnfiledRecordsFolder(String parentId, String folderName) throws Exception
     {
-        return createComponent(parentId, folderName, UNFILED_RECORD_FOLDER_TYPE, FOLDER_TITLE);
+        return createUnfiledRecordsFolder(dataUser.getAdminUser(), parentId, folderName);
     }
 
     /**
      * Helper method to create generic child component
      *
+     * @param user user under whose privileges this structure is going to be created
      * @param parentComponentId The id of the parent file plan component
      * @param componentName     The name of the file plan component
-     * @param componentType     The name of the file plan component
-     * @param componentTitle
+     * @param componentType     The type of the file plan component
+     * @param componentTitle    The title of the file plan component
      * @return The created file plan component
      * @throws Exception
      */
-    private FilePlanComponentModel createComponent(String parentComponentId, String componentName, String componentType, String componentTitle) throws Exception
+    private FilePlanComponentModel createComponent(UserModel user, String parentComponentId, String componentName, String componentType, String componentTitle) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
+        FilePlanComponentModel filePlanComponentModel = createFilePlanComponentModel(componentName, componentType, componentTitle);
+        FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI(user).createFilePlanComponent(filePlanComponentModel, parentComponentId);
+        assertStatusCode(CREATED);
 
-        FilePlanComponentModel filePlanComponent = FilePlanComponentModel.builder()
-            .name(componentName)
-            .nodeType(componentType)
-            .properties(FilePlanComponentProperties.builder()
-                            .title(componentTitle)
-                            .build())
-            .build();
-
-        FilePlanComponentModel fpc = getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, parentComponentId);
-        assertStatusCodeIs(CREATED);
-
-        return fpc;
+        return filePlanComponent;
     }
 
     /**
@@ -262,39 +259,48 @@ public class BaseRestTest extends RestTest
      */
     public FilePlanComponentModel closeFolder(String folderId) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
-        // build fileplan component + properties for update request
+        // build file plan component + properties for update request
         FilePlanComponentProperties properties = new FilePlanComponentProperties();
         properties.setIsClosed(true);
         FilePlanComponentModel filePlanComponent = new FilePlanComponentModel();
         filePlanComponent.setProperties(properties);
 
         FilePlanComponentModel updatedComponent = getFilePlanComponentsAPI().updateFilePlanComponent(filePlanComponent, folderId);
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
         return updatedComponent;
     }
 
     /**
-     * Helper method to create a randomly-named <category>/<folder> structure in fileplan
+     * Helper method to create a randomly-named <category>/<folder> structure in file plan
+     *
      * @param user user under whose privileges this structure is going to be created
      * @param parentId parent container id
      * @return record folder
      * @throws Exception on failed creation
      */
-    public FilePlanComponentModel createCategoryFolderInFilePlan(UserModel user, String parentId) throws Exception
+    public FilePlanComponentModel createCategoryFolderInFilePlan(UserModel user) throws Exception
     {
-        authenticateUser(user);
-
         // create root category
-        FilePlanComponentModel recordCategory = createCategory(parentId, "Category " + getRandomAlphanumeric());
+        FilePlanComponentModel recordCategory = createCategory(user, FILE_PLAN_ALIAS, "Category " + getRandomAlphanumeric());
 
         // and return a folder underneath
-        return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
+        return createFolder(user, recordCategory.getId(), "Folder " + getRandomAlphanumeric());
     }
 
     /**
-     * Helper method to retieve a fileplan component with user's privilege
+     * FIXME!!!
+     *
+     * @param parentId FIXME!!!
+     * @return FIXME!!!
+     * @throws Exception FIXME!!!
+     */
+    public FilePlanComponentModel createCategoryFolderInFilePlan() throws Exception
+    {
+        return createCategoryFolderInFilePlan(dataUser.getAdminUser());
+    }
+
+    /**
+     * Helper method to retrieve a file plan component with user's privilege
      * @param user user under whose privileges a component is to be read
      * @param componentId id of the component to read
      * @return {@link FilePlanComponent} for given componentId
@@ -302,50 +308,18 @@ public class BaseRestTest extends RestTest
      */
     public FilePlanComponentModel getFilePlanComponentAsUser(UserModel user, String componentId) throws Exception
     {
-        authenticateUser(user);
-        return getFilePlanComponentsAPI().getFilePlanComponent(componentId);
+        return getFilePlanComponentsAPI(user).getFilePlanComponent(componentId);
     }
 
     /**
-     * Helper method to add permission on a component to user
-     * @param component {@link FilePlanComponent} on which permission should be given
-     * @param user {@link UserModel} for a user to be granted permission
-     * @param permission {@link UserPermissions} to be granted
+     * FIXME!!!
+     *
+     * @param componentId FIXME!!!
+     * @return FIXME!!!
+     * @throws Exception FIXME!!!
      */
-     // FIXME: As of December 2016 there is no v1-style API for managing RM permissions.
-     // Until such APIs have become available, this method is just a proxy to an "old-style"
-     // API call.
-    public void addUserPermission(FilePlanComponentModel component, UserModel user, String permission)
+    public FilePlanComponentModel getFilePlanComponent(String componentId) throws Exception
     {
-        // get an "old-style" REST API client
-        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-
-        JsonObject bodyJson = buildObject()
-            .addArray("permissions")
-                .addObject()
-                    .add("authority", user.getUsername())
-                    .add("role", permission)
-                    .end()
-                    .getJson();
-
-        // override v1 baseURI and basePath
-        RequestSpecification spec = new RequestSpecBuilder()
-            .setBaseUri(client.getApiUrl())
-            .setBasePath("/")
-            .build();
-
-        // execute an "old-style" API call
-        Response response = given()
-            .spec(spec)
-            .auth().basic(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword())
-            .contentType(ContentType.JSON)
-            .body(bodyJson.toString())
-            .pathParam("nodeId", component.getId())
-            .log().all()
-        .when()
-            .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
-            .prettyPeek()
-            .andReturn();
-        rmRestWrapper.setStatusCode(Integer.toString(response.getStatusCode()));
+        return getFilePlanComponentAsUser(dataUser.getAdminUser(), componentId);
     }
 }

@@ -38,8 +38,6 @@ import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.site.RMSiteModel;
-import org.alfresco.utility.data.DataUser;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * FIXME!!!
@@ -49,10 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RMSite extends RMModelRequest
 {
-    // FIXME!!!
-    @Autowired
-    private DataUser dataUser;
-
     /**
      * @param restWrapper
      */
@@ -163,7 +157,6 @@ public class RMSite extends RMModelRequest
      */
     public boolean existsRMSite() throws Exception
     {
-        getRMRestWrapper().authenticateUser(dataUser.getAdminUser());
         getSite();
         return getRMRestWrapper().getStatusCode().equals(OK.toString());
     }

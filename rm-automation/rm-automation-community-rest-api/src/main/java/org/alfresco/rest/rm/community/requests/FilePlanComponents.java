@@ -205,7 +205,7 @@ public class FilePlanComponents extends RMModelRequest
      */
     public FilePlanComponentModel createElectronicRecord(FilePlanComponentModel electronicRecordModel, File recordContent, String parentId) throws Exception
     {
-        mandatoryObject("filePlanComponentProperties", electronicRecordModel);
+        mandatoryObject("electronicRecordModel", electronicRecordModel);
         mandatoryString("parentId", parentId);
         if (!electronicRecordModel.getNodeType().equals(CONTENT_TYPE))
         {

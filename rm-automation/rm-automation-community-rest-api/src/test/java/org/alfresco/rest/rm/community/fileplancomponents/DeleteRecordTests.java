@@ -27,6 +27,7 @@
 package org.alfresco.rest.rm.community.fileplancomponents;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -64,9 +65,6 @@ public class DeleteRecordTests extends BaseRestTest
 
     @Autowired
     private DataUser dataUser;
-
-    /** image resource file to be used for records body */
-    private static final String IMAGE_FILE = "money.JPG";
 
     /**
      * <pre>

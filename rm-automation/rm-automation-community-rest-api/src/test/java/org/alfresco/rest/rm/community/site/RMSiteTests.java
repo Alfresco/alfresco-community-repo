@@ -34,6 +34,7 @@ import static org.alfresco.rest.rm.community.utils.RMSiteUtil.RM_DESCRIPTION;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.RM_ID;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.RM_TITLE;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createDOD5015RMSiteModel;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createRMSiteModel;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -124,10 +125,7 @@ public class RMSiteTests extends BaseRestTest
         String newDescription = RM_DESCRIPTION + "createRMSiteWhenSiteExists";
 
         // Create the RM site
-        RMSiteModel rmSiteModel = RMSiteModel.builder().compliance(STANDARD).build();
-        rmSiteModel.setTitle(newTitle);
-        rmSiteModel.setDescription(newDescription);
-
+        RMSiteModel rmSiteModel = createRMSiteModel(STANDARD, newTitle, newDescription);
         getRMSiteAPI().createRMSite(rmSiteModel);
 
         // Verify the status code
@@ -145,6 +143,9 @@ public class RMSiteTests extends BaseRestTest
     )
     public void deleteRMSite() throws Exception
     {
+        // Create the RM site if it does not exist
+        createRMSiteIfNotExists();
+
         // Delete the RM site
         getRMSiteAPI().deleteRMSite();
 

@@ -46,6 +46,9 @@ public class FilePlanComponentsUtil
         // Intentionally blank
     }
 
+    /** image resource file to be used for records body */
+    public static final String IMAGE_FILE = "money.JPG";
+
     /**
      *  FIXME!!!
      *

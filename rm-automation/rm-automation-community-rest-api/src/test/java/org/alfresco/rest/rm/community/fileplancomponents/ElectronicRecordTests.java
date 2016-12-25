@@ -32,6 +32,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -55,9 +56,6 @@ import org.testng.annotations.Test;
  */
 public class ElectronicRecordTests extends BaseRestTest
 {
-    /** image resource file to be used for records body */
-    private static final String IMAGE_FILE = "money.JPG";
-
     /** Valid root containers where electronic records can be created */
     @DataProvider(name = "invalidParentContainers")
     public Object[][] invalidContainers() throws Exception
@@ -199,7 +197,7 @@ public class ElectronicRecordTests extends BaseRestTest
     public void canCreateElectronicRecordsInValidContainers(FilePlanComponentModel container) throws Exception
     {
         FilePlanComponentModel record = createElectronicRecordModel();
-        String newRecordId = getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId()).getId();
+        String newRecordId = getFilePlanComponentsAPI().createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
 
         // verify the create request status code
         assertStatusCode(CREATED);

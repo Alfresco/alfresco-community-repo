@@ -28,14 +28,21 @@ package org.alfresco.rest.rm.community.requests;
 
 import static com.jayway.restassured.RestAssured.given;
 
+import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
+
+import com.google.gson.JsonObject;
 import com.jayway.restassured.builder.RequestSpecBuilder;
+import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.specification.RequestSpecification;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
+import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.core.RestAPI;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -47,12 +54,15 @@ import org.springframework.stereotype.Component;
  * @since 2.6
  */
 // FIXME: As of December 2016 there is no v1-style API for managing RM users and users'
-// roles. Until such APIs have become available, methods in this class are just proxies to
+// roles/permissions. Until such APIs have become available, methods in this class are just proxies to
 // "old-style" API calls.
 @Component
 @Scope (value = "prototype")
 public class RMUserAPI extends RestAPI<RMUserAPI>
 {
+    @Autowired
+    private UserService userService;
+
     @Autowired
     private DataUser dataUser;
 
@@ -82,5 +92,62 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
             .prettyPeek()
             .andReturn();
         usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+    }
+
+    /**
+     * Helper method to add permission on a component to user
+     * @param component {@link FilePlanComponent} on which permission should be given
+     * @param user {@link UserModel} for a user to be granted permission
+     * @param permission {@link UserPermissions} to be granted
+     */
+    public void addUserPermission(FilePlanComponentModel component, UserModel user, String permission)
+    {
+        // get an "old-style" REST API client
+        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+
+        JsonObject bodyJson = buildObject()
+            .addArray("permissions")
+                .addObject()
+                    .add("authority", user.getUsername())
+                    .add("role", permission)
+                    .end()
+                    .getJson();
+
+        // override v1 baseURI and basePath
+        RequestSpecification spec = new RequestSpecBuilder()
+            .setBaseUri(client.getApiUrl())
+            .setBasePath("/")
+            .build();
+
+        // execute an "old-style" API call
+        Response response = given()
+            .spec(spec)
+            .auth().basic(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword())
+            .contentType(ContentType.JSON)
+            .body(bodyJson.toString())
+            .pathParam("nodeId", component.getId())
+            .log().all()
+        .when()
+            .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
+            .prettyPeek()
+            .andReturn();
+        usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+    }
+
+    /**
+     * FIXME!!!
+     *
+     * @param userName FIXME!!!
+     * @return FIXME!!!
+     */
+    public boolean createUser(String userName)
+    {
+        return userService.create(dataUser.getAdminUser().getUsername(),
+                dataUser.getAdminUser().getPassword(),
+                userName,
+                "password",
+                "default@alfresco.com",
+                userName,
+                userName);
     }
 }

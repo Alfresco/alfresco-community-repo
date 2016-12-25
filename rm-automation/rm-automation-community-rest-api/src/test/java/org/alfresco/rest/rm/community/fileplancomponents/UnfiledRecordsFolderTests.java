@@ -93,9 +93,6 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     @Test(description = "Create root unfiled records folder")
     public void createRootUnfiledRecordsFolder() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         String folderName = "Folder " + getRandomAlphanumeric();
         String folderTitle = folderName + " Title";
         String folderDescription = folderName + " Description";
@@ -113,7 +110,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().createFilePlanComponent(unfiledFolder, UNFILED_RECORDS_CONTAINER_ALIAS);
 
         // Verify the status code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // Verify the returned file plan component
         assertFalse(filePlanComponent.getIsCategory());
@@ -141,8 +138,6 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     )
     public void onlyRecordFoldersCanBeCreatedAtUnfiledRecordsRoot(String filePlanComponentType)
     {
-        authenticateUser(dataUser.getAdminUser());
-
         String folderName = "Folder " + getRandomAlphanumeric();
         String folderTitle = folderName + " Title";
         String folderDescription = folderName + " Description";
@@ -168,7 +163,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         }
 
         // Verify the status code
-        assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -181,8 +176,6 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     @Test(description = "Child unfiled records folder can be created in a parent unfiled records folder")
     public void childUnfiledRecordsFolderCanBeCreated() throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
         String parentFolderName = "Parent Folder " + getRandomAlphanumeric();
         String childFolderName = "Child Folder " + getRandomAlphanumeric();
         String childFolderTitle = childFolderName + " Title";
@@ -206,7 +199,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         FilePlanComponentModel childFolder = getFilePlanComponentsAPI().createFilePlanComponent(unfiledFolder, parentFolder.getId());
 
         // Verify the status code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // Verify the returned file plan component
         assertFalse(childFolder.getIsCategory());
@@ -228,7 +221,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         // Does child's parent point to it?
         // Perform another call as our parentFolder had been executed before childFolder existed
         FilePlanComponentsCollection parentsChildren = getFilePlanComponentsAPI().listChildComponents(parentFolder.getId());
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
         List<String> childIds = parentsChildren.getEntries()
             .stream()
             .map(c -> c.getFilePlanComponentModel().getId())
@@ -251,7 +244,6 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     @Test(description = "Unfiled record folder")
     public void editUnfiledRecordsFolder() throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
         String modified = "Modified ";
         String folderName = "Folder To Modify" + getRandomAlphanumeric();
 
@@ -271,7 +263,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         // Update the unfiled records folder
         getFilePlanComponentsAPI().updateFilePlanComponent(folderToUpdate, folderToModify.getId());
         // Verify the status code
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
 
         // This is to ensure the change was actually applied, rather than simply trusting the object returned by PUT
         FilePlanComponentModel renamedFolder = getFilePlanComponentsAPI().getFilePlanComponent(folderToModify.getId());
@@ -292,7 +284,6 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
     @Test(description = "Delete unfiled record folder")
     public void deleteUnfiledRecordsFolder() throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
         String folderName = "Folder To Delete" + getRandomAlphanumeric();
 
         // Create folderToDelete
@@ -303,10 +294,10 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         getFilePlanComponentsAPI().deleteFilePlanComponent(folderToDelete.getId());
 
         // Verify the status code
-        assertStatusCodeIs(NO_CONTENT);
+        assertStatusCode(NO_CONTENT);
 
         // Deleted component should no longer be retrievable
         getFilePlanComponentsAPI().getFilePlanComponent(folderToDelete.getId());
-        assertStatusCodeIs(NOT_FOUND);
+        assertStatusCode(NOT_FOUND);
     }
 }

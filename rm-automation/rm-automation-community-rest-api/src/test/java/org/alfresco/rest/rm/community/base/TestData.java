@@ -102,7 +102,7 @@ public interface TestData
     /**
      * The default CATEGORY name used when creating categories
      */
-    public static String CATEGORY_NAME = "CATEGORY NAME"+ getRandomAlphanumeric();
+    public static String CATEGORY_NAME = "CATEGORY NAME" + getRandomAlphanumeric();
 
     /**
      * The default CATEGORY title used when creating categories

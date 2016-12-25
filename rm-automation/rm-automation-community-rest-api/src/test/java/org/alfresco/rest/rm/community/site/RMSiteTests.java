@@ -27,10 +27,15 @@
 package org.alfresco.rest.rm.community.site;
 
 import static org.alfresco.rest.rm.community.base.TestData.ANOTHER_ADMIN;
-import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_EMAIL;
 import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.DOD5015;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.RM_DESCRIPTION;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.RM_ID;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.RM_TITLE;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createDOD5015RMSiteModel;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
+import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -42,10 +47,9 @@ import static org.springframework.social.alfresco.api.entities.Site.Visibility.P
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
-import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.model.site.RMSiteModel;
-import org.alfresco.utility.constants.UserRole;
+import org.alfresco.rest.rm.community.requests.RMUserAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.UserModel;
@@ -63,10 +67,10 @@ import org.testng.annotations.Test;
 public class RMSiteTests extends BaseRestTest
 {
     @Autowired
-    private UserService userService;
+    private DataUser dataUser;
 
     @Autowired
-    private DataUser dataUser;
+    private RMUserAPI rmUserAPI;
 
     /**
      * Given that RM module is installed
@@ -79,9 +83,6 @@ public class RMSiteTests extends BaseRestTest
     )
     public void createRMSiteAsAdminUser() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Check if the RM site exists
         if (getRMSiteAPI().existsRMSite())
         {
@@ -90,14 +91,10 @@ public class RMSiteTests extends BaseRestTest
         }
 
         // Create the RM site
-        RMSiteModel rmSiteModel = RMSiteModel.builder().compliance(STANDARD).build();
-        rmSiteModel.setTitle(RM_TITLE);
-        rmSiteModel.setDescription(RM_DESCRIPTION);
-
-        RMSiteModel rmSiteResponse = getRMSiteAPI().createRMSite(rmSiteModel);
+        RMSiteModel rmSiteResponse = getRMSiteAPI().createRMSite(createStandardRMSiteModel());
 
         // Verify the status code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // Verify the returned file plan component
         assertEquals(rmSiteResponse.getId(), RM_ID);
@@ -105,7 +102,7 @@ public class RMSiteTests extends BaseRestTest
         assertEquals(rmSiteResponse.getDescription(), RM_DESCRIPTION);
         assertEquals(rmSiteResponse.getCompliance(), STANDARD);
         assertEquals(rmSiteResponse.getVisibility(), PUBLIC);
-        assertEquals(rmSiteResponse.getRole(), UserRole.SiteManager.toString());
+        assertEquals(rmSiteResponse.getRole(), SiteManager.toString());
     }
 
     /**
@@ -122,9 +119,6 @@ public class RMSiteTests extends BaseRestTest
         // Create the RM site if it does not exist
         createRMSiteIfNotExists();
 
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Construct new properties
         String newTitle = RM_TITLE + "createRMSiteWhenSiteExists";
         String newDescription = RM_DESCRIPTION + "createRMSiteWhenSiteExists";
@@ -137,7 +131,7 @@ public class RMSiteTests extends BaseRestTest
         getRMSiteAPI().createRMSite(rmSiteModel);
 
         // Verify the status code
-        assertStatusCodeIs(CONFLICT);
+        assertStatusCode(CONFLICT);
     }
 
     /**
@@ -151,14 +145,11 @@ public class RMSiteTests extends BaseRestTest
     )
     public void deleteRMSite() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Delete the RM site
         getRMSiteAPI().deleteRMSite();
 
         // Verify the status code
-        assertStatusCodeIs(NO_CONTENT);
+        assertStatusCode(NO_CONTENT);
     }
 
     /**
@@ -172,14 +163,11 @@ public class RMSiteTests extends BaseRestTest
     )
     public void getRMSite() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Check if RM site exists
         if (!getRMSiteAPI().existsRMSite())
         {
             // Verify the status code when RM site  doesn't exist
-            assertStatusCodeIs(NOT_FOUND);
+            assertStatusCode(NOT_FOUND);
             createRMSiteIfNotExists();
         }
         else
@@ -188,7 +176,7 @@ public class RMSiteTests extends BaseRestTest
             RMSiteModel rmSiteModel = getRMSiteAPI().getSite();
 
             // Verify the status code
-            assertStatusCodeIs(OK);
+            assertStatusCode(OK);
             assertEquals(rmSiteModel.getId(), RM_ID);
             assertEquals(rmSiteModel.getDescription(), RM_DESCRIPTION);
             assertEquals(rmSiteModel.getCompliance(), STANDARD);
@@ -208,9 +196,6 @@ public class RMSiteTests extends BaseRestTest
     @Bug (id="RM-4289")
     public void createRMSiteAsAnotherAdminUser() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Check if the RM site exists
         if (getRMSiteAPI().existsRMSite())
         {
@@ -218,32 +203,14 @@ public class RMSiteTests extends BaseRestTest
             getRMSiteAPI().deleteRMSite();
         }
 
-        // Disconnect the current user from the API session
-        disconnect();
-
         // Create user
-        userService.create(dataUser.getAdminUser().getUsername(),
-                dataUser.getAdminUser().getPassword(),
-                ANOTHER_ADMIN,
-                DEFAULT_PASSWORD,
-                DEFAULT_EMAIL,
-                ANOTHER_ADMIN,
-                ANOTHER_ADMIN);
-
-        // Build the user model
-        UserModel userModel = new UserModel(ANOTHER_ADMIN,DEFAULT_PASSWORD);
-
-        // Authenticate as that new user
-        authenticateUser(userModel);
+        rmUserAPI.createUser(ANOTHER_ADMIN);
 
         // Create the RM site
-        RMSiteModel rmSiteModel = RMSiteModel.builder().compliance(DOD5015).build();
-        rmSiteModel.setTitle(RM_TITLE);
-        rmSiteModel.setDescription(RM_DESCRIPTION);
-        rmSiteModel = getRMSiteAPI().createRMSite(rmSiteModel);
+        RMSiteModel rmSiteModel = getRMSiteAPI(new UserModel(ANOTHER_ADMIN, DEFAULT_PASSWORD)).createRMSite(createDOD5015RMSiteModel());
 
         // Verify the status code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // Verify the returned file plan component
         assertEquals(rmSiteModel.getId(), RM_ID);
@@ -251,7 +218,7 @@ public class RMSiteTests extends BaseRestTest
         assertEquals(rmSiteModel.getDescription(), RM_DESCRIPTION);
         assertEquals(rmSiteModel.getCompliance(), DOD5015);
         assertEquals(rmSiteModel.getVisibility(), PUBLIC);
-        assertEquals(rmSiteModel.getRole(), UserRole.SiteManager.toString());
+        assertEquals(rmSiteModel.getRole(), SiteManager.toString());
     }
 
     /**
@@ -262,13 +229,10 @@ public class RMSiteTests extends BaseRestTest
      * Then RM site details are updated
      */
     @Test
-    public void updateRMSiteDetails()throws Exception
+    public void updateRMSiteDetails() throws Exception
     {
         String NEW_TITLE = RM_TITLE + RandomData.getRandomAlphanumeric();
         String NEW_DESCRIPTION = RM_DESCRIPTION + RandomData.getRandomAlphanumeric();
-
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
 
         // Create the site if it does not exist
         createRMSiteIfNotExists();
@@ -278,32 +242,17 @@ public class RMSiteTests extends BaseRestTest
         rmSiteToUpdate.setTitle(NEW_TITLE);
         rmSiteToUpdate.setDescription(NEW_DESCRIPTION);
 
-        // Disconnect the user from the API session
-        disconnect();
-
-        // Create a random user
-        UserModel nonRMuser = dataUser.createRandomTestUser("testUser");
-
-        // Authenticate as that random user
-        authenticateUser(nonRMuser);
-
         // Create the RM site
-        getRMSiteAPI().updateRMSite(rmSiteToUpdate);
+        getRMSiteAPI(dataUser.createRandomTestUser("testUser")).updateRMSite(rmSiteToUpdate);
 
         // Verify the status code
-        assertStatusCodeIs(FORBIDDEN);
-
-        // Disconnect the user from the API session
-        disconnect();
-
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
+        assertStatusCode(FORBIDDEN);
 
         // Update the RM Site
         RMSiteModel rmSiteModel = getRMSiteAPI().updateRMSite(rmSiteToUpdate);
 
         // Verify the response status code
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
 
         // Verify the returned file plan component
         assertEquals(rmSiteModel.getId(), RM_ID);
@@ -321,19 +270,16 @@ public class RMSiteTests extends BaseRestTest
     @Test
     public void updateRMSiteComplianceAsAdmin() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Create the RM site if it does not exist
         createRMSiteIfNotExists();
 
         // Build the RM site properties
-        RMSiteModel rmSiteToUpdate =  RMSiteModel.builder().compliance(DOD5015).build();
+        RMSiteModel rmSiteToUpdate = RMSiteModel.builder().compliance(DOD5015).build();
 
         // Update the RM site
         getRMSiteAPI().updateRMSite(rmSiteToUpdate);
 
         // Verify the response status code
-        assertStatusCodeIs(BAD_REQUEST);
+        assertStatusCode(BAD_REQUEST);
     }
 }

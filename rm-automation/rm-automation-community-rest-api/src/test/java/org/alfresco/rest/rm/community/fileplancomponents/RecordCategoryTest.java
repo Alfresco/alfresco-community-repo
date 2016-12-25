@@ -81,9 +81,6 @@ public class RecordCategoryTest extends BaseRestTest
     )
     public void createCategoryTest() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
@@ -101,7 +98,7 @@ public class RecordCategoryTest extends BaseRestTest
         FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS);
 
         // Verify the status code
-        assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // Verify the returned file plan component
         assertTrue(filePlanComponent.getIsCategory());
@@ -132,9 +129,6 @@ public class RecordCategoryTest extends BaseRestTest
     )
     public void renameCategory() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Create record category first
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
@@ -161,7 +155,7 @@ public class RecordCategoryTest extends BaseRestTest
         FilePlanComponentModel renamedFilePlanComponent = getFilePlanComponentsAPI().updateFilePlanComponent(recordCategoryUpdated, filePlanComponent.getId());
 
         // Verify the status code
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
 
         // Verify the returned file plan component
         assertEquals(renamedFilePlanComponent.getName(), newCategoryName);
@@ -185,9 +179,6 @@ public class RecordCategoryTest extends BaseRestTest
     )
     public void deleteCategory() throws Exception
     {
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // Create record category first
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
@@ -209,11 +200,11 @@ public class RecordCategoryTest extends BaseRestTest
         getFilePlanComponentsAPI().deleteFilePlanComponent(filePlanComponent.getId());
 
         // Verify the status code
-        assertStatusCodeIs(NO_CONTENT);
+        assertStatusCode(NO_CONTENT);
 
         // Deleted component should no longer be retrievable
         getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponent.getId());
-        assertStatusCodeIs(NOT_FOUND);
+        assertStatusCode(NOT_FOUND);
     }
 
     /**
@@ -277,14 +268,11 @@ public class RecordCategoryTest extends BaseRestTest
             children.add(child);
         }
 
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         // List children from API
         FilePlanComponentsCollection apiChildren = getFilePlanComponentsAPI().listChildComponents(rootCategory.getId());
 
         // Check status code
-        assertStatusCodeIs(OK);
+        assertStatusCode(OK);
         logger.info("parent: " + rootCategory.getId());
 
         // Check listed children against created list
@@ -355,9 +343,6 @@ public class RecordCategoryTest extends BaseRestTest
     {
         String COMPONENT_NAME = "Component"+getRandomAlphanumeric();
 
-        // Authenticate with admin user
-        authenticateUser(dataUser.getAdminUser());
-
         //Create the category
         FilePlanComponentModel category = createCategory(FILE_PLAN_ALIAS, COMPONENT_NAME);
 
@@ -373,7 +358,7 @@ public class RecordCategoryTest extends BaseRestTest
 
         //create the invalid node type
         getFilePlanComponentsAPI().createFilePlanComponent(recordCategory, category.getId());
-        assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
 
@@ -401,9 +386,7 @@ public class RecordCategoryTest extends BaseRestTest
      */
     private FilePlanComponentModel createComponent(String parentComponentId, String componentName, String componentType) throws Exception
     {
-        authenticateUser(dataUser.getAdminUser());
-
-        //Build node  properties
+        // Build node  properties
         FilePlanComponentModel component = FilePlanComponentModel.builder()
                 .name(componentName)
                 .nodeType(componentType)
@@ -412,9 +395,9 @@ public class RecordCategoryTest extends BaseRestTest
                         .build())
                 .build();
 
-        FilePlanComponentModel fpc = getFilePlanComponentsAPI().createFilePlanComponent(component, parentComponentId);
-        assertStatusCodeIs(CREATED);
+        FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().createFilePlanComponent(component, parentComponentId);
+        assertStatusCode(CREATED);
 
-        return fpc;
+        return filePlanComponent;
     }
 }

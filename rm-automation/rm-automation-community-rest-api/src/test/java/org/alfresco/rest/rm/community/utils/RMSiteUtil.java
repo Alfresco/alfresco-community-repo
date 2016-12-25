@@ -54,14 +54,27 @@ public class RMSiteUtil
      * FIXME!!!
      *
      * @param compliance FIXME!!!
+     * @param title FIXME!!!
+     * @param description FIXME!!!
+     * @return FIXME!!!
+     */
+    public static RMSiteModel createRMSiteModel(RMSiteCompliance compliance, String title, String description)
+    {
+        RMSiteModel rmSiteModel = RMSiteModel.builder().compliance(compliance).build();
+        rmSiteModel.setTitle(title);
+        rmSiteModel.setDescription(description);
+        return rmSiteModel;
+    }
+
+    /**
+     * FIXME!!!
+     *
+     * @param compliance FIXME!!!
      * @return FIXME!!!
      */
     private static RMSiteModel createRMSiteModel(RMSiteCompliance compliance)
     {
-        RMSiteModel rmSiteModel =  RMSiteModel.builder().compliance(compliance).build();
-        rmSiteModel.setTitle(RM_TITLE);
-        rmSiteModel.setDescription(RM_DESCRIPTION);
-        return rmSiteModel;
+        return createRMSiteModel(compliance, RM_TITLE, RM_DESCRIPTION);
     }
 
     /**
@@ -83,5 +96,4 @@ public class RMSiteUtil
     {
         return createRMSiteModel(DOD5015);
     }
-
 }

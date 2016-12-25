@@ -28,6 +28,9 @@ package org.alfresco.rest.core;
 
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RestIGCoreAPI;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 /**
  * FIXME!!!
@@ -35,6 +38,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Tuna Aksoy
  * @since 2.6
  */
+@Primary
+@Service
+@Scope(value = "prototype")
 public class RMRestWrapper extends RestWrapper
 {
     @Autowired

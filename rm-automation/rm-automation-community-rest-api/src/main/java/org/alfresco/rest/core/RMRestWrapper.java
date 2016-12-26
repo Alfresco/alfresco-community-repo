@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 /**
- * FIXME!!!
+ * Extends {@link RestWrapper} in order to call IG APIs with our own properties
  *
  * @author Tuna Aksoy
  * @since 2.6

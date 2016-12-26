@@ -56,7 +56,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilePlanComponentModel extends TestModel
+public class FilePlanComponent extends TestModel
 {
     @JsonProperty (required = true)
     private String id;

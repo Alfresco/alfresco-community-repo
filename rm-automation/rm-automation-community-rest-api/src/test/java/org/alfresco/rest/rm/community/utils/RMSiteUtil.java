@@ -30,10 +30,10 @@ import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.DOD5015
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
 
 import org.alfresco.rest.rm.community.model.site.RMSiteCompliance;
-import org.alfresco.rest.rm.community.model.site.RMSiteModel;
+import org.alfresco.rest.rm.community.model.site.RMSite;
 
 /**
- * FIXME!!!
+ * Utility class for the RM Site
  *
  * @author Tuna Aksoy
  * @since 2.6
@@ -51,48 +51,48 @@ public class RMSiteUtil
     public static final String RM_DESCRIPTION = "Records Management Site";
 
     /**
-     * FIXME!!!
+     * Creates an RM Site model for the given compliance, title and description
      *
-     * @param compliance FIXME!!!
-     * @param title FIXME!!!
-     * @param description FIXME!!!
-     * @return FIXME!!!
+     * @param compliance The RM site compliance
+     * @param title The site title
+     * @param description The site description
+     * @return The {@link RMSite} with the given details
      */
-    public static RMSiteModel createRMSiteModel(RMSiteCompliance compliance, String title, String description)
+    public static RMSite createRMSiteModel(RMSiteCompliance compliance, String title, String description)
     {
-        RMSiteModel rmSiteModel = RMSiteModel.builder().compliance(compliance).build();
+        RMSite rmSiteModel = RMSite.builder().compliance(compliance).build();
         rmSiteModel.setTitle(title);
         rmSiteModel.setDescription(description);
         return rmSiteModel;
     }
 
     /**
-     * FIXME!!!
+     * Creates an RM Site for the given compliance and default title and description
      *
-     * @param compliance FIXME!!!
-     * @return FIXME!!!
+     * @param The RM site compliance
+     * @return The {@link RMSite} with the given details
      */
-    private static RMSiteModel createRMSiteModel(RMSiteCompliance compliance)
+    private static RMSite createRMSiteModel(RMSiteCompliance compliance)
     {
         return createRMSiteModel(compliance, RM_TITLE, RM_DESCRIPTION);
     }
 
     /**
-     * FIXME!!!
+     * Creates a standard RM site with the default title and description
      *
-     * @return FIXME!!!
+     * @return The standard RM site
      */
-    public static RMSiteModel createStandardRMSiteModel()
+    public static RMSite createStandardRMSiteModel()
     {
         return createRMSiteModel(STANDARD);
     }
 
     /**
-     * FIXME!!!
+     * Creates a DOD5015 compliance RM site with the default title and description
      *
-     * @return FIXME!!!
+     * @return The DOD5015 compliance RM site
      */
-    public static RMSiteModel createDOD5015RMSiteModel()
+    public static RMSite createDOD5015RMSiteModel()
     {
         return createRMSiteModel(DOD5015);
     }

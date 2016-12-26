@@ -43,9 +43,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import org.alfresco.rest.rm.community.base.BaseRestTest;
+import org.alfresco.rest.rm.community.base.BaseRESTTest;
 import org.alfresco.rest.rm.community.base.TestData;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
@@ -60,7 +60,7 @@ import org.testng.annotations.Test;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class FilePlanTests extends BaseRestTest
+public class FilePlanTests extends BaseRESTTest
 {
     @Autowired
     private DataUser dataUser;
@@ -109,7 +109,7 @@ public class FilePlanTests extends BaseRestTest
         createRMSiteIfNotExists();
 
         // Get the file plan special container
-        FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponentAlias);
+        FilePlanComponent filePlanComponent = getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponentAlias);
 
         // Check the response code
         assertStatusCode(OK);
@@ -135,7 +135,7 @@ public class FilePlanTests extends BaseRestTest
         createRMSiteIfNotExists();
 
         // Get the file plan special containers with the optional parameter allowableOperations
-        FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().getFilePlanComponent(specialContainerAlias, "include=" + ALLOWABLE_OPERATIONS);
+        FilePlanComponent filePlanComponent = getFilePlanComponentsAPI().getFilePlanComponent(specialContainerAlias, "include=" + ALLOWABLE_OPERATIONS);
 
         // Check the list of allowableOperations returned
         if(specialContainerAlias.equals(TRANSFERS_ALIAS))
@@ -171,7 +171,7 @@ public class FilePlanTests extends BaseRestTest
         createRMSiteIfNotExists();
 
         // Build object for updating the filePlan
-        FilePlanComponentModel filePlanComponent = FilePlanComponentModel.builder()
+        FilePlanComponent filePlanComponent = FilePlanComponent.builder()
             .properties(FilePlanComponentProperties.builder()
                             .title(FILE_PLAN_TITLE)
                             .description(FILE_PLAN_DESCRIPTION)
@@ -179,7 +179,7 @@ public class FilePlanTests extends BaseRestTest
             .build();
 
         // Update the record category
-        FilePlanComponentModel renamedFilePlanComponent = getFilePlanComponentsAPI().updateFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS);
+        FilePlanComponent renamedFilePlanComponent = getFilePlanComponentsAPI().updateFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS);
 
         // Verify the response status code
         assertStatusCode(OK);
@@ -262,7 +262,7 @@ public class FilePlanTests extends BaseRestTest
         String name = filePlanComponentAlias + getRandomAlphanumeric();
 
         // Build the file plan root properties
-        FilePlanComponentModel filePlanComponent = FilePlanComponentModel.builder()
+        FilePlanComponent filePlanComponent = FilePlanComponent.builder()
                 .name(name)
                 .nodeType(filePlanComponentType)
                 .properties(FilePlanComponentProperties.builder()

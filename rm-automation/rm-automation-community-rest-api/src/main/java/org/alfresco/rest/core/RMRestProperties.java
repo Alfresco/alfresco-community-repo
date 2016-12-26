@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 /**
- * FIXME!!!
+ * Extends {@link RestProperties} to be able to change/add properties
  *
  * @author Tuna Aksoy
  * @since 2.6

@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.requests;
+package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static com.jayway.restassured.RestAssured.given;
 
@@ -40,7 +40,7 @@ import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.dataprep.UserService;
 import org.alfresco.rest.core.RestAPI;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,7 +100,7 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
      * @param user {@link UserModel} for a user to be granted permission
      * @param permission {@link UserPermissions} to be granted
      */
-    public void addUserPermission(FilePlanComponentModel component, UserModel user, String permission)
+    public void addUserPermission(FilePlanComponent component, UserModel user, String permission)
     {
         // get an "old-style" REST API client
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
@@ -135,10 +135,10 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
     }
 
     /**
-     * FIXME!!!
+     * Creates a user with the given name using the old APIs
      *
-     * @param userName FIXME!!!
-     * @return FIXME!!!
+     * @param userName The user name
+     * @return <code>true</code> if the user was created successfully, <code>false</code> otherwise.
      */
     public boolean createUser(String userName)
     {

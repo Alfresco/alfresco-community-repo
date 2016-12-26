@@ -36,11 +36,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
-import org.alfresco.rest.rm.community.base.BaseRestTest;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
+import org.alfresco.rest.rm.community.base.BaseRESTTest;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.rm.community.requests.RMUserAPI;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.RMUserAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
@@ -58,7 +58,7 @@ import org.testng.annotations.Test;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class DeleteRecordTests extends BaseRestTest
+public class DeleteRecordTests extends BaseRESTTest
 {
     @Autowired
     private RMUserAPI rmUserAPI;
@@ -84,9 +84,9 @@ public class DeleteRecordTests extends BaseRestTest
         description = "Admin user can delete an electronic record"
     )
     @AlfrescoTest(jira="RM-4363")
-    public void adminCanDeleteElectronicRecord(FilePlanComponentModel container) throws Exception
+    public void adminCanDeleteElectronicRecord(FilePlanComponent container) throws Exception
     {
-        FilePlanComponentModel newRecord = getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId());
+        FilePlanComponent newRecord = getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId());
 
         assertStatusCode(CREATED);
 
@@ -111,10 +111,10 @@ public class DeleteRecordTests extends BaseRestTest
         description = "Admin user can delete a non-electronic record"
     )
     @AlfrescoTest(jira="RM-4363")
-    public void adminCanDeleteNonElectronicRecord(FilePlanComponentModel container) throws Exception
+    public void adminCanDeleteNonElectronicRecord(FilePlanComponent container) throws Exception
     {
         // create a non-electronic record
-        FilePlanComponentModel newRecord = getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), container.getId());
+        FilePlanComponent newRecord = getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), container.getId());
 
         assertStatusCode(CREATED);
 
@@ -141,7 +141,7 @@ public class DeleteRecordTests extends BaseRestTest
     public void userWithoutWritePermissionsCantDeleteRecord() throws Exception
     {
         // create a non-electronic record in unfiled records
-        FilePlanComponentModel newRecord = getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), UNFILED_RECORDS_CONTAINER_ALIAS);
+        FilePlanComponent newRecord = getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), UNFILED_RECORDS_CONTAINER_ALIAS);
 
         assertStatusCode(CREATED);
 
@@ -190,7 +190,7 @@ public class DeleteRecordTests extends BaseRestTest
         rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
 
         // create random folder
-        FilePlanComponentModel randomFolder = createCategoryFolderInFilePlan();
+        FilePlanComponent randomFolder = createCategoryFolderInFilePlan();
         logger.info("random folder:" + randomFolder.getName());
 
         // grant deleteUser Filing privileges on randomFolder category, this will be
@@ -200,7 +200,7 @@ public class DeleteRecordTests extends BaseRestTest
         rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
 
         // create a non-electronic record in randomFolder
-        FilePlanComponentModel newRecord = getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), randomFolder.getId());
+        FilePlanComponent newRecord = getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), randomFolder.getId());
         assertStatusCode(CREATED);
 
         // verify the user can see the newRecord
@@ -217,7 +217,7 @@ public class DeleteRecordTests extends BaseRestTest
      * @param record
      * @throws Exception
      */
-    private void deleteAndVerify(FilePlanComponentModel record) throws Exception
+    private void deleteAndVerify(FilePlanComponent record) throws Exception
     {
         // delete it and verify status
         getFilePlanComponentsAPI().deleteFilePlanComponent(record.getId());

@@ -40,8 +40,8 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import org.alfresco.rest.rm.community.base.BaseRestTest;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
+import org.alfresco.rest.rm.community.base.BaseRESTTest;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -54,7 +54,7 @@ import org.testng.annotations.Test;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class ElectronicRecordTests extends BaseRestTest
+public class ElectronicRecordTests extends BaseRESTTest
 {
     /** Valid root containers where electronic records can be created */
     @DataProvider(name = "invalidParentContainers")
@@ -88,7 +88,7 @@ public class ElectronicRecordTests extends BaseRestTest
         dataProvider = "invalidParentContainers",
         description = "Electronic records can't be created in invalid parent containers"
     )
-    public void cantCreateElectronicRecordsInInvalidContainers(FilePlanComponentModel container) throws Exception
+    public void cantCreateElectronicRecordsInInvalidContainers(FilePlanComponent container) throws Exception
     {
         // Build object the filePlan
         getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId());
@@ -110,7 +110,7 @@ public class ElectronicRecordTests extends BaseRestTest
     @Test(description = "Electronic record can't be created in closed record folder")
     public void cantCreateElectronicRecordInClosedFolder() throws Exception
     {
-        FilePlanComponentModel recordFolder = createCategoryFolderInFilePlan();
+        FilePlanComponent recordFolder = createCategoryFolderInFilePlan();
 
         // the folder should be open
         assertFalse(recordFolder.getProperties().getIsClosed());
@@ -150,7 +150,7 @@ public class ElectronicRecordTests extends BaseRestTest
         dataProvider = "validRootContainers",
         description = "Electronic record can only be created if all mandatory properties are given"
     )
-    public void canCreateElectronicRecordOnlyWithMandatoryProperties(FilePlanComponentModel container) throws Exception
+    public void canCreateElectronicRecordOnlyWithMandatoryProperties(FilePlanComponent container) throws Exception
     {
         logger.info("Root container:\n" + toJson(container));
 
@@ -161,7 +161,7 @@ public class ElectronicRecordTests extends BaseRestTest
         }
 
         // component without name
-        FilePlanComponentModel record = FilePlanComponentModel.builder()
+        FilePlanComponent record = FilePlanComponent.builder()
                                                     .nodeType(CONTENT_TYPE)
                                                     .build();
 
@@ -194,16 +194,16 @@ public class ElectronicRecordTests extends BaseRestTest
         dataProvider = "validRootContainers",
         description = "Electronic records can be created in unfiled record folder or unfiled record root"
     )
-    public void canCreateElectronicRecordsInValidContainers(FilePlanComponentModel container) throws Exception
+    public void canCreateElectronicRecordsInValidContainers(FilePlanComponent container) throws Exception
     {
-        FilePlanComponentModel record = createElectronicRecordModel();
+        FilePlanComponent record = createElectronicRecordModel();
         String newRecordId = getFilePlanComponentsAPI().createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
 
         // verify the create request status code
         assertStatusCode(CREATED);
 
         // get newly created electronic record and verify its properties
-        FilePlanComponentModel electronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(newRecordId);
+        FilePlanComponent electronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(newRecordId);
         // created record will have record identifier inserted in its name but will be prefixed with
         // the name it was created as
         assertTrue(electronicRecord.getName().startsWith(record.getName()));
@@ -220,10 +220,10 @@ public class ElectronicRecordTests extends BaseRestTest
         dataProvider = "validRootContainers",
         description = "Electronic records can be created in unfiled record folder or unfiled record root"
     )
-    public void recordNameDerivedFromFileName(FilePlanComponentModel container) throws Exception
+    public void recordNameDerivedFromFileName(FilePlanComponent container) throws Exception
     {
         // record object without name set
-        FilePlanComponentModel record = FilePlanComponentModel.builder()
+        FilePlanComponent record = FilePlanComponent.builder()
                 .nodeType(CONTENT_TYPE)
                 .build();
 
@@ -233,7 +233,7 @@ public class ElectronicRecordTests extends BaseRestTest
         assertStatusCode(CREATED);
 
         // get newly created electonic record and verify its properties
-        FilePlanComponentModel electronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(newRecordId);
+        FilePlanComponent electronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(newRecordId);
         // record will have record identifier inserted in its name but will for sure start with file name
         // and end with its extension
         assertTrue(electronicRecord.getName().startsWith(IMAGE_FILE.substring(0, IMAGE_FILE.indexOf("."))));

@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.requests;
+package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static com.jayway.restassured.RestAssured.basic;
 import static com.jayway.restassured.RestAssured.given;
@@ -53,22 +53,25 @@ import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
 import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.utility.model.UserModel;
 
 /**
- * FIXME!!!
+ * File plan component REST API Wrapper
  *
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class FilePlanComponents extends RMModelRequest
+public class FilePlanComponentAPI extends RMModelRequest
 {
     /**
+     * Constructor
+     *
      * @param restWrapper
      */
-    public FilePlanComponents(RMRestWrapper rmRestWrapper)
+    public FilePlanComponentAPI(RMRestWrapper rmRestWrapper)
     {
         super(rmRestWrapper);
     }
@@ -77,7 +80,7 @@ public class FilePlanComponents extends RMModelRequest
      * Get a file plan component
      *
      * @param filePlanComponentId The id of the file plan component to get
-     * @return The {@link FilePlanComponentModel} for the given file plan component id
+     * @return The {@link FilePlanComponent} for the given file plan component id
      * @throws Exception for the following cases:
      * <ul>
      *  <li>{@code fileplanComponentId} is not a valid format</li>
@@ -85,7 +88,7 @@ public class FilePlanComponents extends RMModelRequest
      *  <li>{@code fileplanComponentId} does not exist</li>
      * </ul>
      */
-    public FilePlanComponentModel getFilePlanComponent(String filePlanComponentId) throws Exception
+    public FilePlanComponent getFilePlanComponent(String filePlanComponentId) throws Exception
     {
         mandatoryString("filePlanComponentId", filePlanComponentId);
 
@@ -93,18 +96,23 @@ public class FilePlanComponents extends RMModelRequest
     }
 
     /**
-     * FIXME!!!
+     * Get a file plan component
      *
-     * @param filePlanComponentId FIXME!!!
-     * @param parameters FIXME!!!
-     * @return FIXME!!!
-     * @throws Exception FIXME!!!
+     * @param filePlanComponentId The id of the file plan component to get
+     * @param parameters The URL parameters to add
+     * @return The {@link FilePlanComponent} for the given file plan component id
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>{@code fileplanComponentId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>{@code fileplanComponentId} does not exist</li>
+     * </ul>
      */
-    public FilePlanComponentModel getFilePlanComponent(String filePlanComponentId, String parameters) throws Exception
+    public FilePlanComponent getFilePlanComponent(String filePlanComponentId, String parameters) throws Exception
     {
         mandatoryString("filePlanComponentId", filePlanComponentId);
 
-        return getRMRestWrapper().processModel(FilePlanComponentModel.class, simpleRequest(
+        return getRMRestWrapper().processModel(FilePlanComponent.class, simpleRequest(
                 GET,
                 "fileplan-components/{fileplanComponentId}?{parameters}",
                 filePlanComponentId,
@@ -140,7 +148,7 @@ public class FilePlanComponents extends RMModelRequest
      *
      * @param filePlanComponentModel The properties of the file plan component to be created
      * @param parentId The id of the parent where the new file plan component should be created
-     * @return The {@link FilePlanComponentModel} with the given properties
+     * @return The {@link FilePlanComponent} with the given properties
      * @throws Exception for the following cases:
      * <ul>
      *  <li>{@code fileplanComponentId} is not a valid format</li>
@@ -151,7 +159,7 @@ public class FilePlanComponents extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public FilePlanComponentModel createFilePlanComponent(FilePlanComponentModel filePlanComponentModel, String parentId) throws Exception
+    public FilePlanComponent createFilePlanComponent(FilePlanComponent filePlanComponentModel, String parentId) throws Exception
     {
         mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
         mandatoryString("parentId", parentId);
@@ -160,26 +168,34 @@ public class FilePlanComponents extends RMModelRequest
     }
 
     /**
-     * FIXME!!!
+     * Creates a file plan component with the given properties under the parent node with the given id
      *
-     * @param filePlanComponentModel FIXME!!!
-     * @param parentId FIXME!!!
-     * @param parameters FIXME!!!
-     * @return FIXME!!!
-     * @throws Exception FIXME!!!
+     * @param filePlanComponentModel The properties of the file plan component to be created
+     * @param parameters The URL parameters to add
+     * @param parentId The id of the parent where the new file plan component should be created
+     * @return The {@link FilePlanComponent} with the given properties
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>{@code fileplanComponentId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code fileplanComponentId}</li>
+     *  <li>{@code fileplanComponentId} does not exist</li>
+     *  <li>new name clashes with an existing node in the current parent container</li>
+     *  <li>model integrity exception, including node name with invalid characters</li>
+     * </ul>
      */
-    public FilePlanComponentModel createFilePlanComponent(FilePlanComponentModel filePlanComponentModel, String parentId, String parameters) throws Exception
+    public FilePlanComponent createFilePlanComponent(FilePlanComponent filePlanComponentModel, String parentId, String parameters) throws Exception
     {
         mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
         mandatoryString("parentId", parentId);
 
-        return getRMRestWrapper().processModel(FilePlanComponentModel.class, requestWithBody(
+        return getRMRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
                 POST,
                 toJson(filePlanComponentModel),
                 "fileplan-components/{fileplanComponentId}/children?{parameters}",
                 parentId,
                 parameters
-                ));
+        ));
     }
 
     /**
@@ -190,7 +206,7 @@ public class FilePlanComponents extends RMModelRequest
      * @return newly created {@link FilePlanComponent}
      * @throws Exception if operation failed
      */
-    public FilePlanComponentModel createElectronicRecord(FilePlanComponentModel electronicRecordModel, String fileName, String parentId) throws Exception
+    public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, String fileName, String parentId) throws Exception
     {
         return createElectronicRecord(electronicRecordModel, new File(Resources.getResource(fileName).getFile()), parentId);
     }
@@ -203,7 +219,7 @@ public class FilePlanComponents extends RMModelRequest
      * @return newly created {@link FilePlanComponent}
      * @throws Exception if operation failed
      */
-    public FilePlanComponentModel createElectronicRecord(FilePlanComponentModel electronicRecordModel, File recordContent, String parentId) throws Exception
+    public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent, String parentId) throws Exception
     {
         mandatoryObject("electronicRecordModel", electronicRecordModel);
         mandatoryString("parentId", parentId);
@@ -245,7 +261,7 @@ public class FilePlanComponents extends RMModelRequest
         getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
 
         /* return a FilePlanComponent object representing Response */
-        return response.jsonPath().getObject("entry", FilePlanComponentModel.class);
+        return response.jsonPath().getObject("entry", FilePlanComponent.class);
     }
 
     /**
@@ -264,7 +280,7 @@ public class FilePlanComponents extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public FilePlanComponentModel updateFilePlanComponent(FilePlanComponentModel filePlanComponentModel, String filePlanComponentId) throws Exception
+    public FilePlanComponent updateFilePlanComponent(FilePlanComponent filePlanComponentModel, String filePlanComponentId) throws Exception
     {
         mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
         mandatoryString("filePlanComponentId", filePlanComponentId);
@@ -272,18 +288,35 @@ public class FilePlanComponents extends RMModelRequest
         return updateFilePlanComponent(filePlanComponentModel, filePlanComponentId, EMPTY);
     }
 
-    public FilePlanComponentModel updateFilePlanComponent(FilePlanComponentModel filePlanComponent, String filePlanComponentId, String parameters) throws Exception
+    /**
+     * Updates a file plan component
+     *
+     * @param filePlanComponentModel The properties to be updated
+     * @param parameters The URL parameters to add
+     * @param filePlanComponentId The id of the file plan component which will be updated
+     * @param returns The updated {@link FilePlanComponent}
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>the update request is invalid or {@code fileplanComponentId} is not a valid format or {@code filePlanComponentProperties} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to update {@code fileplanComponentId}</li>
+     *  <li>{@code fileplanComponentId} does not exist</li>
+     *  <li>the updated name clashes with an existing node in the current parent folder</li>
+     *  <li>model integrity exception, including node name with invalid characters</li>
+     * </ul>
+     */
+    public FilePlanComponent updateFilePlanComponent(FilePlanComponent filePlanComponent, String filePlanComponentId, String parameters) throws Exception
     {
         mandatoryObject("filePlanComponentProperties", filePlanComponent);
         mandatoryString("filePlanComponentId", filePlanComponentId);
 
-        return getRMRestWrapper().processModel(FilePlanComponentModel.class, requestWithBody(
+        return getRMRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
                 PUT,
                 toJson(filePlanComponent),
                 "fileplan-components/{fileplanComponentId}?{parameters}",
                 filePlanComponentId,
                 parameters
-                ));
+        ));
     }
 
     /**

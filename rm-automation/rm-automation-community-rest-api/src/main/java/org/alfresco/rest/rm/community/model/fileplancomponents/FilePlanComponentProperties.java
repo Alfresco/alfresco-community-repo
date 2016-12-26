@@ -84,7 +84,7 @@ public class FilePlanComponentProperties
 
     @JsonProperty(PROPERTIES_REVIEW_PERIOD)
     @JsonSerialize (using = ReviewPeriodSerializer.class)
-    private ReviewPeriod reviewPeriod;
+    private FilePlanComponentReviewPeriod reviewPeriod;
 
     @JsonProperty(PROPERTIES_LOCATION)
     private String location;

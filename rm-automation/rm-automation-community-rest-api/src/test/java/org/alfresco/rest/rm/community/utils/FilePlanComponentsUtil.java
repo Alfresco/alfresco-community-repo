@@ -30,11 +30,11 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 
 /**
- * FIXME!!!
+ * Utility class for file plan component models
  *
  * @author Tuna Aksoy
  * @since 2.6
@@ -50,50 +50,50 @@ public class FilePlanComponentsUtil
     public static final String IMAGE_FILE = "money.JPG";
 
     /**
-     *  FIXME!!!
+     *  Creates a record model with the given type and a random name (with "Record " prefix)
      *
-     * @param nodeType FIXME!!!
-     * @return FIXME!!!
+     * @param nodeType The node type
+     * @return The {@link FilePlanComponent} with for the given node type
      */
-    private static FilePlanComponentModel createRecordModel(String nodeType)
+    private static FilePlanComponent createRecordModel(String nodeType)
     {
-        return FilePlanComponentModel.builder()
+        return FilePlanComponent.builder()
                 .name("Record " + getRandomAlphanumeric())
                 .nodeType(nodeType)
                 .build();
     }
 
     /**
-     * FIXME!!!
+     * Creates an electronic record model with a random name (with "Record " prefix)
      *
-     * @return FIXME!!!
+     * @return The electronic record as {@link FilePlanComponent}
      */
-    public static FilePlanComponentModel createElectronicRecordModel()
+    public static FilePlanComponent createElectronicRecordModel()
     {
         return createRecordModel(CONTENT_TYPE);
     }
 
     /**
-     * FIXME!!!
+     * Creates a non-electronic record model with a random name (with "Record " prefix)
      *
-     * @return FIXME!!!
+     * @return The non-electronic record as {@link FilePlanComponent}
      */
-    public static FilePlanComponentModel createNonElectronicRecordModel()
+    public static FilePlanComponent createNonElectronicRecordModel()
     {
         return createRecordModel(NON_ELECTRONIC_RECORD_TYPE);
     }
 
     /**
-     * FIXME!!!
+     * Creates a file plan component with the given name, type and title
      *
-     * @param name FIXME!!!
-     * @param type FIXME!!!
-     * @param title FIXME!!!
-     * @return
+     * @param name The name of the file plan component
+     * @param type The type of the file plan component
+     * @param title The title of the file plan component
+     * @return The {@link FilePlanComponent} with the given details
      */
-    public static FilePlanComponentModel createFilePlanComponentModel(String name, String type, String title)
+    public static FilePlanComponent createFilePlanComponentModel(String name, String type, String title)
     {
-        return FilePlanComponentModel.builder()
+        return FilePlanComponent.builder()
                 .name(name)
                 .nodeType(type)
                 .properties(FilePlanComponentProperties.builder()

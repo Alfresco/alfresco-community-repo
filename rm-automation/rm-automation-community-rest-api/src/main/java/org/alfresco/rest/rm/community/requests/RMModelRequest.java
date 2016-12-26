@@ -30,7 +30,7 @@ import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.requests.ModelRequest;
 
 /**
- * FIXME!!!
+ * Extends {@link ModelRequest} to set {@link RMRestWrapper}
  *
  * @author Tuna Aksoy
  * @since 2.6

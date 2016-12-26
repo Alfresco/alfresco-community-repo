@@ -48,12 +48,10 @@ import static org.testng.Assert.assertTrue;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.alfresco.rest.rm.community.base.BaseRestTest;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
+import org.alfresco.rest.rm.community.base.BaseRESTTest;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
-import org.alfresco.utility.data.DataUser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -63,24 +61,23 @@ import org.testng.annotations.Test;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class UnfiledRecordsFolderTests extends BaseRestTest
+public class UnfiledRecordsFolderTests extends BaseRESTTest
 {
-    @Autowired
-    private DataUser dataUser;
-
     /** invalid root level types, at unfiled records root level these shouldn't be possible to create */
 
-@DataProvider(name = "invalidRootTypes")
-    public Object[][] createData1() {
-     return new Object[][] {
-       { FILE_PLAN_TYPE },
-       { RECORD_CATEGORY_TYPE },
-       { RECORD_FOLDER_TYPE },
-       { HOLD_TYPE },
-       { HOLD_CONTAINER_TYPE },
-       { TRANSFER_CONTAINER_TYPE },
-       { UNFILED_CONTAINER_TYPE }
-     };
+    @DataProvider(name = "invalidRootTypes")
+    public Object[][] createData1()
+    {
+        return new Object[][]
+        {
+            { FILE_PLAN_TYPE },
+            { RECORD_CATEGORY_TYPE },
+            { RECORD_FOLDER_TYPE },
+            { HOLD_TYPE },
+            { HOLD_CONTAINER_TYPE },
+            { TRANSFER_CONTAINER_TYPE },
+            { UNFILED_CONTAINER_TYPE }
+        };
     }
 
     /**
@@ -98,7 +95,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String folderDescription = folderName + " Description";
 
         // Build unfiled records folder properties
-        FilePlanComponentModel unfiledFolder = FilePlanComponentModel.builder()
+        FilePlanComponent unfiledFolder = FilePlanComponent.builder()
                 .name(folderName)
                 .nodeType(UNFILED_RECORD_FOLDER_TYPE)
                 .properties(FilePlanComponentProperties.builder()
@@ -107,7 +104,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
                                 .build())
                 .build();
 
-        FilePlanComponentModel filePlanComponent = getFilePlanComponentsAPI().createFilePlanComponent(unfiledFolder, UNFILED_RECORDS_CONTAINER_ALIAS);
+        FilePlanComponent filePlanComponent = getFilePlanComponentsAPI().createFilePlanComponent(unfiledFolder, UNFILED_RECORDS_CONTAINER_ALIAS);
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -120,7 +117,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         assertEquals(filePlanComponent.getName(), folderName);
         assertEquals(filePlanComponent.getNodeType(), UNFILED_RECORD_FOLDER_TYPE);
 
-        assertEquals(filePlanComponent.getCreatedByUser().getId(), dataUser.getAdminUser().getUsername());
+        assertEquals(filePlanComponent.getCreatedByUser().getId(), getAdminUser().getUsername());
 
         // Verify the returned file plan component properties
         FilePlanComponentProperties filePlanComponentProperties = filePlanComponent.getProperties();
@@ -145,7 +142,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         logger.info("creating " + filePlanComponentType);
 
         // Build unfiled records folder properties
-        FilePlanComponentModel unfiledFolder = FilePlanComponentModel.builder()
+        FilePlanComponent unfiledFolder = FilePlanComponent.builder()
             .name(folderName)
             .nodeType(filePlanComponentType)
             .properties(FilePlanComponentProperties.builder()
@@ -182,11 +179,11 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String childFolderDescription = childFolderName + " Description";
 
         // No need for fine control, create it using utility function
-        FilePlanComponentModel parentFolder = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS, parentFolderName);
+        FilePlanComponent parentFolder = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS, parentFolderName);
         assertEquals(parentFolderName, parentFolder.getName());
 
         // Build the unfiled records folder properties
-        FilePlanComponentModel unfiledFolder = FilePlanComponentModel.builder()
+        FilePlanComponent unfiledFolder = FilePlanComponent.builder()
                 .name(childFolderName)
                 .nodeType(UNFILED_RECORD_FOLDER_TYPE)
                 .properties(FilePlanComponentProperties.builder()
@@ -196,7 +193,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
                 .build();
 
         // Create it as a child of parentFolder
-        FilePlanComponentModel childFolder = getFilePlanComponentsAPI().createFilePlanComponent(unfiledFolder, parentFolder.getId());
+        FilePlanComponent childFolder = getFilePlanComponentsAPI().createFilePlanComponent(unfiledFolder, parentFolder.getId());
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -208,7 +205,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
 
         assertEquals(childFolder.getName(), childFolderName);
         assertEquals(childFolder.getNodeType(), UNFILED_RECORD_FOLDER_TYPE);
-        assertEquals(childFolder.getCreatedByUser().getId(), dataUser.getAdminUser().getUsername());
+        assertEquals(childFolder.getCreatedByUser().getId(), getAdminUser().getUsername());
 
         // Verify the returned file plan component properties
         FilePlanComponentProperties childProperties = childFolder.getProperties();
@@ -248,11 +245,11 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String folderName = "Folder To Modify" + getRandomAlphanumeric();
 
         // No need for fine control, create it using utility function
-        FilePlanComponentModel folderToModify = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS, folderName);
+        FilePlanComponent folderToModify = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS, folderName);
         assertEquals(folderName, folderToModify.getName());
 
         // Build the properties which will be updated
-        FilePlanComponentModel folderToUpdate = FilePlanComponentModel.builder()
+        FilePlanComponent folderToUpdate = FilePlanComponent.builder()
             .name(modified + folderToModify.getName())
             .properties(FilePlanComponentProperties.builder().
                     title(modified + folderToModify.getProperties().getTitle()).
@@ -266,7 +263,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         assertStatusCode(OK);
 
         // This is to ensure the change was actually applied, rather than simply trusting the object returned by PUT
-        FilePlanComponentModel renamedFolder = getFilePlanComponentsAPI().getFilePlanComponent(folderToModify.getId());
+        FilePlanComponent renamedFolder = getFilePlanComponentsAPI().getFilePlanComponent(folderToModify.getId());
 
         // Verify the returned file plan component
         assertEquals(modified + folderToModify.getName(), renamedFolder.getName());
@@ -287,7 +284,7 @@ public class UnfiledRecordsFolderTests extends BaseRestTest
         String folderName = "Folder To Delete" + getRandomAlphanumeric();
 
         // Create folderToDelete
-        FilePlanComponentModel folderToDelete = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS, folderName);
+        FilePlanComponent folderToDelete = createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS, folderName);
         assertEquals(folderName, folderToDelete.getName());
 
         // Delete folderToDelete

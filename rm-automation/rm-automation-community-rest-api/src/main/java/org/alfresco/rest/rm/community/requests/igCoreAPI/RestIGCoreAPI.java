@@ -33,9 +33,7 @@ import com.jayway.restassured.RestAssured;
 
 import org.alfresco.rest.core.RMRestProperties;
 import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.rm.community.requests.FilePlanComponents;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
-import org.alfresco.rest.rm.community.requests.RMSite;
 
 /**
  * Defines the entire IG Core API
@@ -50,10 +48,10 @@ public class RestIGCoreAPI extends RMModelRequest
     private RMRestProperties rmRestProperties;
 
     /**
-     * FIXME!!!
+     * Constructor
      *
-     * @param rmRestWrapper FIXME!!!
-     * @param rmRestProperties FIXME!!!
+     * @param rmRestWrapper RM REST Wrapper
+     * @param rmRestProperties RM REST Properties
      */
     public RestIGCoreAPI(RMRestWrapper rmRestWrapper, RMRestProperties rmRestProperties)
     {
@@ -67,20 +65,20 @@ public class RestIGCoreAPI extends RMModelRequest
     /**
      * Provides DSL on all REST calls under <code>ig-sites/rm/...</code> API path
      *
-     * @return {@link RMSite}
+     * @return {@link RMSiteAPI}
      */
-    public RMSite usingRMSite()
+    public RMSiteAPI usingRMSite()
     {
-      return new RMSite(getRMRestWrapper());
+      return new RMSiteAPI(getRMRestWrapper());
     }
 
     /**
-     * FIXME!!!
+     * Provides DSL on all REST calls under <code>fileplan-components/...</code> API path
      *
-     * @return FIXME!!!
+     * @return {@link FilePlanComponentAPI}
      */
-    public FilePlanComponents usingFilePlanComponents()
+    public FilePlanComponentAPI usingFilePlanComponents()
     {
-        return new FilePlanComponents(getRMRestWrapper());
+        return new FilePlanComponentAPI(getRMRestWrapper());
     }
 }

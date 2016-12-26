@@ -47,8 +47,8 @@ import static org.testng.Assert.assertFalse;
 
 import java.util.Random;
 
-import org.alfresco.rest.rm.community.base.BaseRestTest;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentModel;
+import org.alfresco.rest.rm.community.base.BaseRESTTest;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataUser;
@@ -63,7 +63,7 @@ import org.testng.annotations.Test;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class NonElectronicRecordTests extends BaseRestTest
+public class NonElectronicRecordTests extends BaseRESTTest
 {
     @Autowired
     private DataUser dataUser;
@@ -81,12 +81,12 @@ public class NonElectronicRecordTests extends BaseRestTest
     public void cantCreateForInvalidParentIds() throws Exception
     {
         // create record category, non-electronic records can't be its children
-        FilePlanComponentModel recordCategoryModel = FilePlanComponentModel.builder()
+        FilePlanComponent recordCategoryModel = FilePlanComponent.builder()
                                                          .name("Category " + getRandomAlphanumeric())
                                                          .nodeType(RECORD_CATEGORY_TYPE)
                                                          .build();
 
-        FilePlanComponentModel recordCategory = getFilePlanComponentsAPI().createFilePlanComponent(recordCategoryModel, FILE_PLAN_ALIAS);
+        FilePlanComponent recordCategory = getFilePlanComponentsAPI().createFilePlanComponent(recordCategoryModel, FILE_PLAN_ALIAS);
 
         // iterate through all invalid parent containers and try to create/file an electronic record
         asList(FILE_PLAN_ALIAS, TRANSFERS_ALIAS, HOLDS_ALIAS, recordCategory.getId())
@@ -128,7 +128,7 @@ public class NonElectronicRecordTests extends BaseRestTest
         dataProvider = "validRootContainers",
         description = "Non-electronic records can be created in valid containers"
     )
-    public void canCreateInValidContainers(FilePlanComponentModel container) throws Exception
+    public void canCreateInValidContainers(FilePlanComponent container) throws Exception
     {
         logger.info("Root container:\n" + toJson(container));
 
@@ -151,7 +151,7 @@ public class NonElectronicRecordTests extends BaseRestTest
         Integer size = random.nextInt(Integer.MAX_VALUE);
 
         // set values of all available properties for the non electronic records
-        FilePlanComponentModel filePlanComponent = FilePlanComponentModel.builder()
+        FilePlanComponent filePlanComponent = FilePlanComponent.builder()
                                                            .name("Record " + getRandomAlphanumeric())
                                                            .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                                            .properties(FilePlanComponentProperties.builder()
@@ -175,7 +175,7 @@ public class NonElectronicRecordTests extends BaseRestTest
         assertStatusCode(CREATED);
 
         // get newly created non-electonic record and verify its properties
-        FilePlanComponentModel nonElectronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(nonElectronicId);
+        FilePlanComponent nonElectronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(nonElectronicId);
 
         assertEquals(title, nonElectronicRecord.getProperties().getTitle());
         assertEquals(description, nonElectronicRecord.getProperties().getDescription());
@@ -200,7 +200,7 @@ public class NonElectronicRecordTests extends BaseRestTest
     @Test(description = "Non-electronic record can't be created in closed record folder")
     public void cantCreateInClosedFolder() throws Exception
     {
-        FilePlanComponentModel recordFolder = createCategoryFolderInFilePlan();
+        FilePlanComponent recordFolder = createCategoryFolderInFilePlan();
 
         // the folder should be open
         assertFalse(recordFolder.getProperties().getIsClosed());
@@ -239,7 +239,7 @@ public class NonElectronicRecordTests extends BaseRestTest
         dataProvider = "validRootContainers",
         description = "Non-electronic record can only be created if all mandatory properties are given"
     )
-    public void allMandatoryPropertiesRequired(FilePlanComponentModel container) throws Exception
+    public void allMandatoryPropertiesRequired(FilePlanComponent container) throws Exception
     {
         logger.info("Root container:\n" + toJson(container));
         if (container.getNodeType().equals(RECORD_FOLDER_TYPE))
@@ -249,10 +249,10 @@ public class NonElectronicRecordTests extends BaseRestTest
         }
 
         // component without name and title
-        FilePlanComponentModel noNameOrTitle = getDummyNonElectronicRecord();
+        FilePlanComponent noNameOrTitle = getDummyNonElectronicRecord();
 
         // component with title only
-        FilePlanComponentModel titleOnly = getDummyNonElectronicRecord();
+        FilePlanComponent titleOnly = getDummyNonElectronicRecord();
         FilePlanComponentProperties properties = FilePlanComponentProperties.builder()
                                                                             .title("Title " + getRandomAlphanumeric())
                                                                             .build();
@@ -297,12 +297,12 @@ public class NonElectronicRecordTests extends BaseRestTest
         dataProvider = "validRootContainers",
         description = "Non-electronic record can't be created if user doesn't have RM privileges"
     )
-    public void cantCreateIfNoRmPrivileges(FilePlanComponentModel container) throws Exception
+    public void cantCreateIfNoRmPrivileges(FilePlanComponent container) throws Exception
     {
         UserModel user = createUserWithRole("zzzuser", SiteManager);
 
         // try to create a fileplan component
-        FilePlanComponentModel record = FilePlanComponentModel.builder()
+        FilePlanComponent record = FilePlanComponent.builder()
                                                   .properties(FilePlanComponentProperties.builder()
                                                                                          .description("Description")
                                                                                          .title("Title")
@@ -329,9 +329,9 @@ public class NonElectronicRecordTests extends BaseRestTest
      * Helper function to return an empty FilePlanComponent for non-electronic record
      * @return
      */
-    private FilePlanComponentModel getDummyNonElectronicRecord()
+    private FilePlanComponent getDummyNonElectronicRecord()
     {
-        FilePlanComponentModel component = FilePlanComponentModel.builder()
+        FilePlanComponent component = FilePlanComponent.builder()
                                             .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                             .build();
         return component;

@@ -24,25 +24,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.fileplancomponents;
+package org.alfresco.rest.rm.community.model.site;
+
+import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.model.RestSiteModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * POJO for the review period
+ * POJO for RM Site component
  *
  * @author Rodica Sutu
  * @since 2.6
  */
 @Builder
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewPeriod
+public class RMSite extends RestSiteModel
 {
-    private String periodType;
-    private String expression;
+    @JsonProperty (value = COMPLIANCE, required = true)
+    private RMSiteCompliance compliance;
 }

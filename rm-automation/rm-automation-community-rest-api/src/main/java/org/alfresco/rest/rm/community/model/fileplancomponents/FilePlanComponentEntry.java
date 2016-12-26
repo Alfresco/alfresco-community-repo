@@ -49,8 +49,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilePlanComponentEntry extends RestModels<FilePlanComponentModel, FilePlanComponentEntry>
+public class FilePlanComponentEntry extends RestModels<FilePlanComponent, FilePlanComponentEntry>
 {
     @JsonProperty(ENTRY)
-    FilePlanComponentModel filePlanComponentModel;
+    FilePlanComponent filePlanComponentModel;
 }

@@ -43,14 +43,12 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import org.alfresco.rest.rm.community.base.BaseRESTTest;
+import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -60,11 +58,8 @@ import org.testng.annotations.Test;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class FilePlanTests extends BaseRESTTest
+public class FilePlanTests extends BaseRMRestTest
 {
-    @Autowired
-    private DataUser dataUser;
-
     /**
      * Given that the RM site doesn't exist
      * When I use the API to get the File Plan/Holds/Unfiled Records Container/Transfers
@@ -79,14 +74,14 @@ public class FilePlanTests extends BaseRESTTest
     public void getFilePlanComponentWhenRMIsNotCreated(String filePlanComponentAlias) throws Exception
     {
         // Check RM Site Exist
-        if (getRMSiteAPI().existsRMSite())
+        if (getRestAPIFactory().getRMSiteAPI().existsRMSite())
         {
             // Delete RM Site
-            getRMSiteAPI().deleteRMSite();
+            getRestAPIFactory().getRMSiteAPI().deleteRMSite();
         }
 
         // Get the file plan component
-        getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponentAlias);
+        getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponentAlias);
 
         //check the response code is NOT_FOUND
         assertStatusCode(NOT_FOUND);
@@ -109,7 +104,7 @@ public class FilePlanTests extends BaseRESTTest
         createRMSiteIfNotExists();
 
         // Get the file plan special container
-        FilePlanComponent filePlanComponent = getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponentAlias);
+        FilePlanComponent filePlanComponent = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponentAlias);
 
         // Check the response code
         assertStatusCode(OK);
@@ -135,7 +130,7 @@ public class FilePlanTests extends BaseRESTTest
         createRMSiteIfNotExists();
 
         // Get the file plan special containers with the optional parameter allowableOperations
-        FilePlanComponent filePlanComponent = getFilePlanComponentsAPI().getFilePlanComponent(specialContainerAlias, "include=" + ALLOWABLE_OPERATIONS);
+        FilePlanComponent filePlanComponent = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(specialContainerAlias, "include=" + ALLOWABLE_OPERATIONS);
 
         // Check the list of allowableOperations returned
         if(specialContainerAlias.equals(TRANSFERS_ALIAS))
@@ -179,7 +174,7 @@ public class FilePlanTests extends BaseRESTTest
             .build();
 
         // Update the record category
-        FilePlanComponent renamedFilePlanComponent = getFilePlanComponentsAPI().updateFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS);
+        FilePlanComponent renamedFilePlanComponent = getRestAPIFactory().getFilePlanComponentsAPI().updateFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS);
 
         // Verify the response status code
         assertStatusCode(OK);
@@ -208,7 +203,7 @@ public class FilePlanTests extends BaseRESTTest
         createRMSiteIfNotExists();
 
         // Delete the file plan component
-        getFilePlanComponentsAPI().deleteFilePlanComponent(filePlanComponentAlias);
+        getRestAPIFactory().getFilePlanComponentsAPI().deleteFilePlanComponent(filePlanComponentAlias);
 
         // Check the DELETE response status code
         assertStatusCode(UNPROCESSABLE_ENTITY);
@@ -231,10 +226,10 @@ public class FilePlanTests extends BaseRESTTest
         createRMSiteIfNotExists();
 
         // Create a random user
-        UserModel nonRMuser = dataUser.createRandomTestUser("testUser");
+        UserModel nonRMuser = getDataUser().createRandomTestUser("testUser");
 
         // Delete the file plan component
-        getFilePlanComponentsAPI(nonRMuser).deleteFilePlanComponent(filePlanComponentAlias);
+        getRestAPIFactory().getFilePlanComponentsAPI(nonRMuser).deleteFilePlanComponent(filePlanComponentAlias);
 
         // Check the DELETE response status code
         assertStatusCode(FORBIDDEN);
@@ -258,7 +253,7 @@ public class FilePlanTests extends BaseRESTTest
         createRMSiteIfNotExists();
 
         // Get the RM site ID
-        String rmSiteId = getRMSiteAPI().getSite().getGuid();
+        String rmSiteId = getRestAPIFactory().getRMSiteAPI().getSite().getGuid();
         String name = filePlanComponentAlias + getRandomAlphanumeric();
 
         // Build the file plan root properties
@@ -270,15 +265,15 @@ public class FilePlanTests extends BaseRESTTest
                 .build();
 
         // Create the special containers into RM site - parent folder
-        getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, rmSiteId);
+        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, rmSiteId);
         assertStatusCode(UNPROCESSABLE_ENTITY);
 
         // Create the special containers into RM site - parent folder
-        getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS);
+        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS);
         assertStatusCode(UNPROCESSABLE_ENTITY);
 
         // Create the special containers into the root of special containers containers
-        getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, filePlanComponentAlias);
+        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, filePlanComponentAlias);
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
@@ -299,10 +294,10 @@ public class FilePlanTests extends BaseRESTTest
         createRMSiteIfNotExists();
 
         // Create a random user
-        UserModel nonRMuser = dataUser.createRandomTestUser("testUser");
+        UserModel nonRMuser = getDataUser().createRandomTestUser("testUser");
 
         // Get the special file plan components
-        getFilePlanComponentsAPI(nonRMuser).getFilePlanComponent(filePlanComponentAlias);
+        getRestAPIFactory().getFilePlanComponentsAPI(nonRMuser).getFilePlanComponent(filePlanComponentAlias);
 
         // Check the response status code is FORBIDDEN
         assertStatusCode(FORBIDDEN);

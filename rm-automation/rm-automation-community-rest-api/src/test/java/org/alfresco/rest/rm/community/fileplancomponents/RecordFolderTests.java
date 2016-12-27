@@ -49,7 +49,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
-import org.alfresco.rest.rm.community.base.BaseRESTTest;
+import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
@@ -66,7 +66,7 @@ import org.testng.annotations.Test;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class RecordFolderTests extends BaseRESTTest
+public class RecordFolderTests extends BaseRMRestTest
 {
     private static final int NUMBER_OF_FOLDERS = 5;
     /**
@@ -94,7 +94,7 @@ public class RecordFolderTests extends BaseRESTTest
                 .build();
 
         // Create the record folder
-        FilePlanComponent folder = getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, filePlanComponent.getId());
+        FilePlanComponent folder = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, filePlanComponent.getId());
 
         assertStatusCode(CREATED);
 
@@ -128,7 +128,7 @@ public class RecordFolderTests extends BaseRESTTest
     @Bug(id="RM-4327")
     public void createFolderIntoSpecialContainers(String filePlanComponent) throws Exception
     {
-        String componentID = getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponent).getId();
+        String componentID = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponent).getId();
 
         // Build the record category properties
         FilePlanComponent recordFolder = FilePlanComponent.builder()
@@ -140,7 +140,7 @@ public class RecordFolderTests extends BaseRESTTest
                 .build();
 
         // Create a record folder
-        getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, componentID);
+        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, componentID);
 
         // Check the API Response code
         assertStatusCode(UNPROCESSABLE_ENTITY);
@@ -162,7 +162,7 @@ public class RecordFolderTests extends BaseRESTTest
         FilePlanComponent category = createCategory(FILE_PLAN_ALIAS, CATEGORY);
         FilePlanComponent folder = createFolder(category.getId(),FOLDER_NAME);
 
-        FilePlanComponent folderDetails = getFilePlanComponentsAPI().getFilePlanComponent(folder.getId(), "include=" + IS_CLOSED);
+        FilePlanComponent folderDetails = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getId(), "include=" + IS_CLOSED);
 
         // Verify the returned properties for the file plan component - record folder
         assertEquals(RECORD_FOLDER_TYPE, folderDetails.getNodeType());
@@ -218,7 +218,7 @@ public class RecordFolderTests extends BaseRESTTest
                 .build();
 
         // Update the record category
-        FilePlanComponent folderUpdated = getFilePlanComponentsAPI().updateFilePlanComponent(recordFolder, folder.getId());
+        FilePlanComponent folderUpdated = getRestAPIFactory().getFilePlanComponentsAPI().updateFilePlanComponent(recordFolder, folder.getId());
 
         // Check the Response Status Code
         assertStatusCode(OK);
@@ -254,12 +254,12 @@ public class RecordFolderTests extends BaseRESTTest
         FilePlanComponent folder = createFolder(category.getId(), FOLDER_NAME);
 
         // Delete the Record folder
-        getFilePlanComponentsAPI().deleteFilePlanComponent(folder.getId());
+        getRestAPIFactory().getFilePlanComponentsAPI().deleteFilePlanComponent(folder.getId());
         // Check the Response Status Code
         assertStatusCode(NO_CONTENT);
 
         // Check the File Plan Component is not found
-        getFilePlanComponentsAPI().getFilePlanComponent(folder.getId());
+        getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getId());
         // Check the Response Status Code
         assertStatusCode(NOT_FOUND);
     }
@@ -295,7 +295,7 @@ public class RecordFolderTests extends BaseRESTTest
         }
 
         // List children from API
-        FilePlanComponentsCollection apiChildren = getFilePlanComponentsAPI().listChildComponents(category.getId());
+        FilePlanComponentsCollection apiChildren = getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(category.getId());
 
         // Check status code
         assertStatusCode(OK);
@@ -364,7 +364,7 @@ public class RecordFolderTests extends BaseRESTTest
                                                           .build();
 
         // Create the record folder
-        FilePlanComponent folder = getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS, "include=" + PATH);
+        FilePlanComponent folder = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS, "include=" + PATH);
         //Check the API response code
         assertStatusCode(CREATED);
 
@@ -376,10 +376,10 @@ public class RecordFolderTests extends BaseRESTTest
         //Check the path return contains the RELATIVE_PATH
         assertTrue(folder.getPath().getName().contains(relativePath));
         //check the parent is a category
-        assertTrue(getFilePlanComponentsAPI().getFilePlanComponent(folder.getParentId()).getIsCategory());
+        assertTrue(getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getParentId()).getIsCategory());
 
         //check the created folder from the server
-        folder = getFilePlanComponentsAPI().getFilePlanComponent(folder.getId(), "include=" + PATH);
+        folder = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getId(), "include=" + PATH);
         //Check the API response code
         assertStatusCode(OK);
         // Verify the returned properties for the file plan component - record folder
@@ -400,7 +400,7 @@ public class RecordFolderTests extends BaseRESTTest
                                                           .build();
 
         // Create the record folder
-        FilePlanComponent folder2 = getFilePlanComponentsAPI().createFilePlanComponent(recordFolder2, FILE_PLAN_ALIAS, "include=" + PATH);
+        FilePlanComponent folder2 = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder2, FILE_PLAN_ALIAS, "include=" + PATH);
         //Check the API response code
         assertStatusCode(CREATED);
 
@@ -412,10 +412,10 @@ public class RecordFolderTests extends BaseRESTTest
         assertTrue(folder2.getPath().getName().contains(NEW_RELATIVE_PATH));
 
         //check the parent is a category
-        assertTrue(getFilePlanComponentsAPI().getFilePlanComponent(folder.getParentId()).getIsCategory());
+        assertTrue(getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getParentId()).getIsCategory());
 
         // Check the folder created on the server
-        folder2 = getFilePlanComponentsAPI().getFilePlanComponent(folder2.getId(), "include=" + PATH);
+        folder2 = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder2.getId(), "include=" + PATH);
         //Check the API response code
         assertStatusCode(OK);
 
@@ -430,11 +430,11 @@ public class RecordFolderTests extends BaseRESTTest
     @AfterClass (alwaysRun = true)
     public void tearDown() throws Exception
     {
-        getFilePlanComponentsAPI().listChildComponents(FILE_PLAN_ALIAS).getEntries().forEach(filePlanComponentEntry ->
+        getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(FILE_PLAN_ALIAS).getEntries().forEach(filePlanComponentEntry ->
         {
             try
             {
-                getFilePlanComponentsAPI().deleteFilePlanComponent(filePlanComponentEntry.getFilePlanComponentModel().getId());
+                getRestAPIFactory().getFilePlanComponentsAPI().deleteFilePlanComponent(filePlanComponentEntry.getFilePlanComponentModel().getId());
             }
             catch (Exception e)
             {

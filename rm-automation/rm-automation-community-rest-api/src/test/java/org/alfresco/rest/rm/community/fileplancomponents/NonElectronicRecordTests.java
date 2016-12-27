@@ -47,14 +47,12 @@ import static org.testng.Assert.assertFalse;
 
 import java.util.Random;
 
-import org.alfresco.rest.rm.community.base.BaseRESTTest;
+import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -63,11 +61,8 @@ import org.testng.annotations.Test;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class NonElectronicRecordTests extends BaseRESTTest
+public class NonElectronicRecordTests extends BaseRMRestTest
 {
-    @Autowired
-    private DataUser dataUser;
-
     /**
      * <pre>
      * Given a parent container that is NOT a record folder or an unfiled record folder
@@ -86,7 +81,7 @@ public class NonElectronicRecordTests extends BaseRESTTest
                                                          .nodeType(RECORD_CATEGORY_TYPE)
                                                          .build();
 
-        FilePlanComponent recordCategory = getFilePlanComponentsAPI().createFilePlanComponent(recordCategoryModel, FILE_PLAN_ALIAS);
+        FilePlanComponent recordCategory = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordCategoryModel, FILE_PLAN_ALIAS);
 
         // iterate through all invalid parent containers and try to create/file an electronic record
         asList(FILE_PLAN_ALIAS, TRANSFERS_ALIAS, HOLDS_ALIAS, recordCategory.getId())
@@ -95,7 +90,7 @@ public class NonElectronicRecordTests extends BaseRESTTest
             {
                 try
                 {
-                    getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), id);
+                    getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), id);
                 }
                 catch (Exception error)
                 {
@@ -167,7 +162,7 @@ public class NonElectronicRecordTests extends BaseRESTTest
                                                            .build();
 
         // create non-electronic record
-        String nonElectronicId = getFilePlanComponentsAPI().createFilePlanComponent(
+        String nonElectronicId = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(
             filePlanComponent,
             container.getId()).getId();
 
@@ -175,7 +170,7 @@ public class NonElectronicRecordTests extends BaseRESTTest
         assertStatusCode(CREATED);
 
         // get newly created non-electonic record and verify its properties
-        FilePlanComponent nonElectronicRecord = getFilePlanComponentsAPI().getFilePlanComponent(nonElectronicId);
+        FilePlanComponent nonElectronicRecord = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(nonElectronicId);
 
         assertEquals(title, nonElectronicRecord.getProperties().getTitle());
         assertEquals(description, nonElectronicRecord.getProperties().getDescription());
@@ -209,7 +204,7 @@ public class NonElectronicRecordTests extends BaseRESTTest
         closeFolder(recordFolder.getId());
 
         // try to create it, this should fail and throw an exception
-        getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), recordFolder.getId());
+        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), recordFolder.getId());
 
         // verify the status code
         assertStatusCode(UNPROCESSABLE_ENTITY);
@@ -272,7 +267,7 @@ public class NonElectronicRecordTests extends BaseRESTTest
             // this should fail and throw an exception
             try
             {
-                getFilePlanComponentsAPI().createFilePlanComponent(c, container.getId());
+                getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(c, container.getId());
             }
             catch (Exception e)
             {
@@ -315,7 +310,7 @@ public class NonElectronicRecordTests extends BaseRESTTest
         // this should fail and throw an exception
         try
         {
-            getFilePlanComponentsAPI(user).createFilePlanComponent(record, container.getId());
+            getRestAPIFactory().getFilePlanComponentsAPI(user).createFilePlanComponent(record, container.getId());
         }
         catch (Exception e)
         {
@@ -351,20 +346,20 @@ public class NonElectronicRecordTests extends BaseRESTTest
      */
     private UserModel createUserWithRole(String userName, UserRole userRole) throws Exception
     {
-        String siteId = getRMSiteAPI().getSite().getId();
+        String siteId = getRestAPIFactory().getRMSiteAPI().getSite().getId();
 
         // check if user exists
         UserModel user = new UserModel();
         user.setUsername(userName);
         user.setPassword(userName);
 
-        if (!dataUser.isUserInRepo(userName))
+        if (!getDataUser().isUserInRepo(userName))
         {
             // user doesn't exist, create it
-            user = dataUser.createUser(userName, userName);
+            user = getDataUser().createUser(userName, userName);
             user.setUserRole(userRole);
 
-            dataUser.addUserToSite(user, new SiteModel(siteId), userRole);
+            getDataUser().addUserToSite(user, new SiteModel(siteId), userRole);
         }
 
         return user;

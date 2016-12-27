@@ -48,10 +48,9 @@ import static org.springframework.social.alfresco.api.entities.Site.Visibility.P
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
-import org.alfresco.rest.rm.community.base.BaseRESTTest;
+import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RMUserAPI;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
@@ -65,11 +64,8 @@ import org.testng.annotations.Test;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class RMSiteTests extends BaseRESTTest
+public class RMSiteTests extends BaseRMRestTest
 {
-    @Autowired
-    private DataUser dataUser;
-
     @Autowired
     private RMUserAPI rmUserAPI;
 
@@ -85,14 +81,14 @@ public class RMSiteTests extends BaseRESTTest
     public void createRMSiteAsAdminUser() throws Exception
     {
         // Check if the RM site exists
-        if (getRMSiteAPI().existsRMSite())
+        if (getRestAPIFactory().getRMSiteAPI().existsRMSite())
         {
             // Delete the RM site
-            getRMSiteAPI().deleteRMSite();
+            getRestAPIFactory().getRMSiteAPI().deleteRMSite();
         }
 
         // Create the RM site
-        RMSite rmSiteResponse = getRMSiteAPI().createRMSite(createStandardRMSiteModel());
+        RMSite rmSiteResponse = getRestAPIFactory().getRMSiteAPI().createRMSite(createStandardRMSiteModel());
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -126,7 +122,7 @@ public class RMSiteTests extends BaseRESTTest
 
         // Create the RM site
         RMSite rmSiteModel = createRMSiteModel(STANDARD, newTitle, newDescription);
-        getRMSiteAPI().createRMSite(rmSiteModel);
+        getRestAPIFactory().getRMSiteAPI().createRMSite(rmSiteModel);
 
         // Verify the status code
         assertStatusCode(CONFLICT);
@@ -147,7 +143,7 @@ public class RMSiteTests extends BaseRESTTest
         createRMSiteIfNotExists();
 
         // Delete the RM site
-        getRMSiteAPI().deleteRMSite();
+        getRestAPIFactory().getRMSiteAPI().deleteRMSite();
 
         // Verify the status code
         assertStatusCode(NO_CONTENT);
@@ -165,7 +161,7 @@ public class RMSiteTests extends BaseRESTTest
     public void getRMSite() throws Exception
     {
         // Check if RM site exists
-        if (!getRMSiteAPI().existsRMSite())
+        if (!getRestAPIFactory().getRMSiteAPI().existsRMSite())
         {
             // Verify the status code when RM site  doesn't exist
             assertStatusCode(NOT_FOUND);
@@ -174,7 +170,7 @@ public class RMSiteTests extends BaseRESTTest
         else
         {
             // Get the RM site
-            RMSite rmSiteModel = getRMSiteAPI().getSite();
+            RMSite rmSiteModel = getRestAPIFactory().getRMSiteAPI().getSite();
 
             // Verify the status code
             assertStatusCode(OK);
@@ -198,17 +194,17 @@ public class RMSiteTests extends BaseRESTTest
     public void createRMSiteAsAnotherAdminUser() throws Exception
     {
         // Check if the RM site exists
-        if (getRMSiteAPI().existsRMSite())
+        if (getRestAPIFactory().getRMSiteAPI().existsRMSite())
         {
             // Delete the RM site
-            getRMSiteAPI().deleteRMSite();
+            getRestAPIFactory().getRMSiteAPI().deleteRMSite();
         }
 
         // Create user
         rmUserAPI.createUser(ANOTHER_ADMIN);
 
         // Create the RM site
-        RMSite rmSiteModel = getRMSiteAPI(new UserModel(ANOTHER_ADMIN, DEFAULT_PASSWORD)).createRMSite(createDOD5015RMSiteModel());
+        RMSite rmSiteModel = getRestAPIFactory().getRMSiteAPI(new UserModel(ANOTHER_ADMIN, DEFAULT_PASSWORD)).createRMSite(createDOD5015RMSiteModel());
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -244,13 +240,13 @@ public class RMSiteTests extends BaseRESTTest
         rmSiteToUpdate.setDescription(NEW_DESCRIPTION);
 
         // Create the RM site
-        getRMSiteAPI(dataUser.createRandomTestUser("testUser")).updateRMSite(rmSiteToUpdate);
+        getRestAPIFactory().getRMSiteAPI(getDataUser().createRandomTestUser("testUser")).updateRMSite(rmSiteToUpdate);
 
         // Verify the status code
         assertStatusCode(FORBIDDEN);
 
         // Update the RM Site
-        RMSite rmSiteModel = getRMSiteAPI().updateRMSite(rmSiteToUpdate);
+        RMSite rmSiteModel = getRestAPIFactory().getRMSiteAPI().updateRMSite(rmSiteToUpdate);
 
         // Verify the response status code
         assertStatusCode(OK);
@@ -278,7 +274,7 @@ public class RMSiteTests extends BaseRESTTest
         RMSite rmSiteToUpdate = RMSite.builder().compliance(DOD5015).build();
 
         // Update the RM site
-        getRMSiteAPI().updateRMSite(rmSiteToUpdate);
+        getRestAPIFactory().getRMSiteAPI().updateRMSite(rmSiteToUpdate);
 
         // Verify the response status code
         assertStatusCode(BAD_REQUEST);

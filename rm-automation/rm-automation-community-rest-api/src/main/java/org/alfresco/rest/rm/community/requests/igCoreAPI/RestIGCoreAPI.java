@@ -44,9 +44,6 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  */
 public class RestIGCoreAPI extends RMModelRequest
 {
-    @SuppressWarnings("unused")
-    private RMRestProperties rmRestProperties;
-
     /**
      * Constructor
      *
@@ -56,7 +53,6 @@ public class RestIGCoreAPI extends RMModelRequest
     public RestIGCoreAPI(RMRestWrapper rmRestWrapper, RMRestProperties rmRestProperties)
     {
         super(rmRestWrapper);
-        this.rmRestProperties = rmRestProperties;
         RestAssured.baseURI = format("%s://%s", rmRestProperties.getScheme(), rmRestProperties.getServer());
         RestAssured.port = parseInt(rmRestProperties.getPort());
         RestAssured.basePath = rmRestProperties.getRestRmPath();

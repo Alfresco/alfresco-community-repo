@@ -39,9 +39,14 @@ import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestAPIFactory;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 
@@ -52,8 +57,54 @@ import org.testng.annotations.DataProvider;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class BaseRESTTest extends BaseRESTAPI
+public class BaseRMRestTest extends RestTest
 {
+    @Autowired
+    private RestAPIFactory restAPIFactory;
+
+    @Autowired
+    private DataUser dataUser;
+
+    /**
+     * FIXME!!!
+     *
+     * @return the restAPIFactory FIXME!!!
+     */
+    protected RestAPIFactory getRestAPIFactory()
+    {
+        return this.restAPIFactory;
+    }
+
+    /**
+     * FIXME!!!
+     *
+     * @return the dataUser FIXME!!!
+     */
+    protected DataUser getDataUser()
+    {
+        return this.dataUser;
+    }
+
+    /**
+     * FIXME!!!
+     *
+     * @param created FIXME!!!
+     */
+    protected void assertStatusCode(HttpStatus statusCode)
+    {
+        getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(statusCode);
+    }
+
+    /**
+     * FIXME!!!
+     *
+     * @return FIXME!!!
+     */
+    protected UserModel getAdminUser()
+    {
+        return getDataUser().getAdminUser();
+    }
+
     /** Valid root containers where electronic and non-electronic records can be created */
     @DataProvider(name = "validRootContainers")
     public Object[][] getValidRootContainers() throws Exception
@@ -87,10 +138,10 @@ public class BaseRESTTest extends BaseRESTAPI
     public void createRMSiteIfNotExists() throws Exception
     {
         // Check RM site doesn't exist
-        if (!getRMSiteAPI().existsRMSite())
+        if (!getRestAPIFactory().getRMSiteAPI().existsRMSite())
         {
             // Create the RM site
-            getRMSiteAPI().createRMSite(createStandardRMSiteModel());
+            getRestAPIFactory().getRMSiteAPI().createRMSite(createStandardRMSiteModel());
 
             // Verify the status code
             assertStatusCode(CREATED);
@@ -192,7 +243,7 @@ public class BaseRESTTest extends BaseRESTAPI
     private FilePlanComponent createComponent(UserModel user, String parentComponentId, String componentName, String componentType, String componentTitle) throws Exception
     {
         FilePlanComponent filePlanComponentModel = createFilePlanComponentModel(componentName, componentType, componentTitle);
-        FilePlanComponent filePlanComponent = getFilePlanComponentsAPI(user).createFilePlanComponent(filePlanComponentModel, parentComponentId);
+        FilePlanComponent filePlanComponent = getRestAPIFactory().getFilePlanComponentsAPI(user).createFilePlanComponent(filePlanComponentModel, parentComponentId);
         assertStatusCode(CREATED);
 
         return filePlanComponent;
@@ -213,7 +264,7 @@ public class BaseRESTTest extends BaseRESTAPI
         FilePlanComponent filePlanComponent = new FilePlanComponent();
         filePlanComponent.setProperties(properties);
 
-        FilePlanComponent updatedComponent = getFilePlanComponentsAPI().updateFilePlanComponent(filePlanComponent, folderId);
+        FilePlanComponent updatedComponent = getRestAPIFactory().getFilePlanComponentsAPI().updateFilePlanComponent(filePlanComponent, folderId);
         assertStatusCode(OK);
         return updatedComponent;
     }
@@ -257,7 +308,7 @@ public class BaseRESTTest extends BaseRESTAPI
      */
     public FilePlanComponent getFilePlanComponentAsUser(UserModel user, String componentId) throws Exception
     {
-        return getFilePlanComponentsAPI(user).getFilePlanComponent(componentId);
+        return getRestAPIFactory().getFilePlanComponentsAPI(user).getFilePlanComponent(componentId);
     }
 
     /**

@@ -50,6 +50,7 @@ import java.util.Random;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -81,7 +82,8 @@ public class NonElectronicRecordTests extends BaseRMRestTest
                                                          .nodeType(RECORD_CATEGORY_TYPE)
                                                          .build();
 
-        FilePlanComponent recordCategory = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordCategoryModel, FILE_PLAN_ALIAS);
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        FilePlanComponent recordCategory = filePlanComponentsAPI.createFilePlanComponent(recordCategoryModel, FILE_PLAN_ALIAS);
 
         // iterate through all invalid parent containers and try to create/file an electronic record
         asList(FILE_PLAN_ALIAS, TRANSFERS_ALIAS, HOLDS_ALIAS, recordCategory.getId())
@@ -90,7 +92,7 @@ public class NonElectronicRecordTests extends BaseRMRestTest
             {
                 try
                 {
-                    getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), id);
+                    filePlanComponentsAPI.createFilePlanComponent(createNonElectronicRecordModel(), id);
                 }
                 catch (Exception error)
                 {
@@ -162,7 +164,8 @@ public class NonElectronicRecordTests extends BaseRMRestTest
                                                            .build();
 
         // create non-electronic record
-        String nonElectronicId = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        String nonElectronicId = filePlanComponentsAPI.createFilePlanComponent(
             filePlanComponent,
             container.getId()).getId();
 
@@ -170,7 +173,7 @@ public class NonElectronicRecordTests extends BaseRMRestTest
         assertStatusCode(CREATED);
 
         // get newly created non-electonic record and verify its properties
-        FilePlanComponent nonElectronicRecord = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(nonElectronicId);
+        FilePlanComponent nonElectronicRecord = filePlanComponentsAPI.getFilePlanComponent(nonElectronicId);
 
         assertEquals(title, nonElectronicRecord.getProperties().getTitle());
         assertEquals(description, nonElectronicRecord.getProperties().getDescription());

@@ -50,6 +50,7 @@ import static org.testng.Assert.assertNotNull;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.site.RMSite;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RMUserAPI;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.UserModel;
@@ -80,15 +81,17 @@ public class RMSiteTests extends BaseRMRestTest
     )
     public void createRMSiteAsAdminUser() throws Exception
     {
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+
         // Check if the RM site exists
-        if (getRestAPIFactory().getRMSiteAPI().existsRMSite())
+        if (rmSiteAPI.existsRMSite())
         {
             // Delete the RM site
-            getRestAPIFactory().getRMSiteAPI().deleteRMSite();
+            rmSiteAPI.deleteRMSite();
         }
 
         // Create the RM site
-        RMSite rmSiteResponse = getRestAPIFactory().getRMSiteAPI().createRMSite(createStandardRMSiteModel());
+        RMSite rmSiteResponse = rmSiteAPI.createRMSite(createStandardRMSiteModel());
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -160,8 +163,10 @@ public class RMSiteTests extends BaseRMRestTest
     )
     public void getRMSite() throws Exception
     {
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+
         // Check if RM site exists
-        if (!getRestAPIFactory().getRMSiteAPI().existsRMSite())
+        if (!rmSiteAPI.existsRMSite())
         {
             // Verify the status code when RM site  doesn't exist
             assertStatusCode(NOT_FOUND);
@@ -170,7 +175,7 @@ public class RMSiteTests extends BaseRMRestTest
         else
         {
             // Get the RM site
-            RMSite rmSiteModel = getRestAPIFactory().getRMSiteAPI().getSite();
+            RMSite rmSiteModel = rmSiteAPI.getSite();
 
             // Verify the status code
             assertStatusCode(OK);
@@ -193,11 +198,13 @@ public class RMSiteTests extends BaseRMRestTest
     @Bug (id="RM-4289")
     public void createRMSiteAsAnotherAdminUser() throws Exception
     {
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+
         // Check if the RM site exists
-        if (getRestAPIFactory().getRMSiteAPI().existsRMSite())
+        if (rmSiteAPI.existsRMSite())
         {
             // Delete the RM site
-            getRestAPIFactory().getRMSiteAPI().deleteRMSite();
+            rmSiteAPI.deleteRMSite();
         }
 
         // Create user

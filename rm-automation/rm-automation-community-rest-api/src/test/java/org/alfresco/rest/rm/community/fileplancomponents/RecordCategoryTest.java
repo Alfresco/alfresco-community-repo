@@ -49,6 +49,7 @@ import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.alfresco.utility.report.Bug;
 import org.testng.annotations.Test;
 
@@ -139,7 +140,8 @@ public class RecordCategoryTest extends BaseRMRestTest
             .build();
 
         // Create the record category
-        FilePlanComponent filePlanComponent = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS);
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        FilePlanComponent filePlanComponent = filePlanComponentsAPI.createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS);
 
         String newCategoryName = "Rename " + categoryName;
 
@@ -147,7 +149,7 @@ public class RecordCategoryTest extends BaseRMRestTest
         FilePlanComponent recordCategoryUpdated = FilePlanComponent.builder().name(newCategoryName).build();
 
         // Update the record category
-        FilePlanComponent renamedFilePlanComponent = getRestAPIFactory().getFilePlanComponentsAPI().updateFilePlanComponent(recordCategoryUpdated, filePlanComponent.getId());
+        FilePlanComponent renamedFilePlanComponent = filePlanComponentsAPI.updateFilePlanComponent(recordCategoryUpdated, filePlanComponent.getId());
 
         // Verify the status code
         assertStatusCode(OK);
@@ -156,7 +158,7 @@ public class RecordCategoryTest extends BaseRMRestTest
         assertEquals(renamedFilePlanComponent.getName(), newCategoryName);
 
         // Get actual FILE_PLAN_ALIAS id
-        FilePlanComponent parentComponent = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(FILE_PLAN_ALIAS);
+        FilePlanComponent parentComponent = filePlanComponentsAPI.getFilePlanComponent(FILE_PLAN_ALIAS);
 
         // verify renamed component still has this parent
         assertEquals(renamedFilePlanComponent.getParentId(), parentComponent.getId());
@@ -189,16 +191,17 @@ public class RecordCategoryTest extends BaseRMRestTest
                 .build();
 
         // Create the record category
-        FilePlanComponent filePlanComponent = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS);
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        FilePlanComponent filePlanComponent = filePlanComponentsAPI.createFilePlanComponent(recordCategory, FILE_PLAN_ALIAS);
 
         // Delete the record category
-        getRestAPIFactory().getFilePlanComponentsAPI().deleteFilePlanComponent(filePlanComponent.getId());
+        filePlanComponentsAPI.deleteFilePlanComponent(filePlanComponent.getId());
 
         // Verify the status code
         assertStatusCode(NO_CONTENT);
 
         // Deleted component should no longer be retrievable
-        getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponent.getId());
+        filePlanComponentsAPI.getFilePlanComponent(filePlanComponent.getId());
         assertStatusCode(NOT_FOUND);
     }
 

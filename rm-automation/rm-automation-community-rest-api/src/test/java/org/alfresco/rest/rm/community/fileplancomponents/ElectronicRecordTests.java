@@ -42,6 +42,7 @@ import static org.testng.Assert.assertTrue;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -197,13 +198,14 @@ public class ElectronicRecordTests extends BaseRMRestTest
     public void canCreateElectronicRecordsInValidContainers(FilePlanComponent container) throws Exception
     {
         FilePlanComponent record = createElectronicRecordModel();
-        String newRecordId = getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        String newRecordId = filePlanComponentsAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
 
         // verify the create request status code
         assertStatusCode(CREATED);
 
         // get newly created electronic record and verify its properties
-        FilePlanComponent electronicRecord = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(newRecordId);
+        FilePlanComponent electronicRecord = filePlanComponentsAPI.getFilePlanComponent(newRecordId);
         // created record will have record identifier inserted in its name but will be prefixed with
         // the name it was created as
         assertTrue(electronicRecord.getName().startsWith(record.getName()));
@@ -227,13 +229,14 @@ public class ElectronicRecordTests extends BaseRMRestTest
                 .nodeType(CONTENT_TYPE)
                 .build();
 
-        String newRecordId = getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        String newRecordId = filePlanComponentsAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
 
         // verify the create request status code
         assertStatusCode(CREATED);
 
         // get newly created electonic record and verify its properties
-        FilePlanComponent electronicRecord = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(newRecordId);
+        FilePlanComponent electronicRecord = filePlanComponentsAPI.getFilePlanComponent(newRecordId);
         // record will have record identifier inserted in its name but will for sure start with file name
         // and end with its extension
         assertTrue(electronicRecord.getName().startsWith(IMAGE_FILE.substring(0, IMAGE_FILE.indexOf("."))));

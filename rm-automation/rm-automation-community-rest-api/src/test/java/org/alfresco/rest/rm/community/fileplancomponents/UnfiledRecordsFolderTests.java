@@ -52,6 +52,7 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -193,7 +194,8 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
                 .build();
 
         // Create it as a child of parentFolder
-        FilePlanComponent childFolder = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(unfiledFolder, parentFolder.getId());
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        FilePlanComponent childFolder = filePlanComponentsAPI.createFilePlanComponent(unfiledFolder, parentFolder.getId());
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -217,7 +219,7 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
 
         // Does child's parent point to it?
         // Perform another call as our parentFolder had been executed before childFolder existed
-        FilePlanComponentsCollection parentsChildren = getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(parentFolder.getId());
+        FilePlanComponentsCollection parentsChildren = filePlanComponentsAPI.listChildComponents(parentFolder.getId());
         assertStatusCode(OK);
         List<String> childIds = parentsChildren.getEntries()
             .stream()
@@ -258,12 +260,13 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
             .build();
 
         // Update the unfiled records folder
-        getRestAPIFactory().getFilePlanComponentsAPI().updateFilePlanComponent(folderToUpdate, folderToModify.getId());
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        filePlanComponentsAPI.updateFilePlanComponent(folderToUpdate, folderToModify.getId());
         // Verify the status code
         assertStatusCode(OK);
 
         // This is to ensure the change was actually applied, rather than simply trusting the object returned by PUT
-        FilePlanComponent renamedFolder = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folderToModify.getId());
+        FilePlanComponent renamedFolder = filePlanComponentsAPI.getFilePlanComponent(folderToModify.getId());
 
         // Verify the returned file plan component
         assertEquals(modified + folderToModify.getName(), renamedFolder.getName());
@@ -288,13 +291,14 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
         assertEquals(folderName, folderToDelete.getName());
 
         // Delete folderToDelete
-        getRestAPIFactory().getFilePlanComponentsAPI().deleteFilePlanComponent(folderToDelete.getId());
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        filePlanComponentsAPI.deleteFilePlanComponent(folderToDelete.getId());
 
         // Verify the status code
         assertStatusCode(NO_CONTENT);
 
         // Deleted component should no longer be retrievable
-        getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folderToDelete.getId());
+        filePlanComponentsAPI.getFilePlanComponent(folderToDelete.getId());
         assertStatusCode(NOT_FOUND);
     }
 }

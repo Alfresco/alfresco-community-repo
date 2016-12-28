@@ -43,6 +43,7 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,11 +138,13 @@ public class BaseRMRestTest extends RestTest
      */
     public void createRMSiteIfNotExists() throws Exception
     {
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+
         // Check RM site doesn't exist
-        if (!getRestAPIFactory().getRMSiteAPI().existsRMSite())
+        if (!rmSiteAPI.existsRMSite())
         {
             // Create the RM site
-            getRestAPIFactory().getRMSiteAPI().createRMSite(createStandardRMSiteModel());
+            rmSiteAPI.createRMSite(createStandardRMSiteModel());
 
             // Verify the status code
             assertStatusCode(CREATED);

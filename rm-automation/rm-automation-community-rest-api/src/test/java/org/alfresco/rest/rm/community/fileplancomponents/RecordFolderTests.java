@@ -55,6 +55,7 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentReviewPeriod;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.alfresco.utility.report.Bug;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
@@ -128,7 +129,8 @@ public class RecordFolderTests extends BaseRMRestTest
     @Bug(id="RM-4327")
     public void createFolderIntoSpecialContainers(String filePlanComponent) throws Exception
     {
-        String componentID = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(filePlanComponent).getId();
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        String componentID = filePlanComponentsAPI.getFilePlanComponent(filePlanComponent).getId();
 
         // Build the record category properties
         FilePlanComponent recordFolder = FilePlanComponent.builder()
@@ -140,7 +142,7 @@ public class RecordFolderTests extends BaseRMRestTest
                 .build();
 
         // Create a record folder
-        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, componentID);
+        filePlanComponentsAPI.createFilePlanComponent(recordFolder, componentID);
 
         // Check the API Response code
         assertStatusCode(UNPROCESSABLE_ENTITY);
@@ -254,12 +256,13 @@ public class RecordFolderTests extends BaseRMRestTest
         FilePlanComponent folder = createFolder(category.getId(), FOLDER_NAME);
 
         // Delete the Record folder
-        getRestAPIFactory().getFilePlanComponentsAPI().deleteFilePlanComponent(folder.getId());
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        filePlanComponentsAPI.deleteFilePlanComponent(folder.getId());
         // Check the Response Status Code
         assertStatusCode(NO_CONTENT);
 
         // Check the File Plan Component is not found
-        getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getId());
+        filePlanComponentsAPI.getFilePlanComponent(folder.getId());
         // Check the Response Status Code
         assertStatusCode(NOT_FOUND);
     }
@@ -364,7 +367,8 @@ public class RecordFolderTests extends BaseRMRestTest
                                                           .build();
 
         // Create the record folder
-        FilePlanComponent folder = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS, "include=" + PATH);
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        FilePlanComponent folder = filePlanComponentsAPI.createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS, "include=" + PATH);
         //Check the API response code
         assertStatusCode(CREATED);
 
@@ -376,10 +380,10 @@ public class RecordFolderTests extends BaseRMRestTest
         //Check the path return contains the RELATIVE_PATH
         assertTrue(folder.getPath().getName().contains(relativePath));
         //check the parent is a category
-        assertTrue(getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getParentId()).getIsCategory());
+        assertTrue(filePlanComponentsAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
 
         //check the created folder from the server
-        folder = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getId(), "include=" + PATH);
+        folder = filePlanComponentsAPI.getFilePlanComponent(folder.getId(), "include=" + PATH);
         //Check the API response code
         assertStatusCode(OK);
         // Verify the returned properties for the file plan component - record folder
@@ -400,7 +404,7 @@ public class RecordFolderTests extends BaseRMRestTest
                                                           .build();
 
         // Create the record folder
-        FilePlanComponent folder2 = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder2, FILE_PLAN_ALIAS, "include=" + PATH);
+        FilePlanComponent folder2 = filePlanComponentsAPI.createFilePlanComponent(recordFolder2, FILE_PLAN_ALIAS, "include=" + PATH);
         //Check the API response code
         assertStatusCode(CREATED);
 
@@ -412,10 +416,10 @@ public class RecordFolderTests extends BaseRMRestTest
         assertTrue(folder2.getPath().getName().contains(NEW_RELATIVE_PATH));
 
         //check the parent is a category
-        assertTrue(getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder.getParentId()).getIsCategory());
+        assertTrue(filePlanComponentsAPI.getFilePlanComponent(folder.getParentId()).getIsCategory());
 
         // Check the folder created on the server
-        folder2 = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(folder2.getId(), "include=" + PATH);
+        folder2 = filePlanComponentsAPI.getFilePlanComponent(folder2.getId(), "include=" + PATH);
         //Check the API response code
         assertStatusCode(OK);
 
@@ -430,11 +434,12 @@ public class RecordFolderTests extends BaseRMRestTest
     @AfterClass (alwaysRun = true)
     public void tearDown() throws Exception
     {
-        getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(FILE_PLAN_ALIAS).getEntries().forEach(filePlanComponentEntry ->
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        filePlanComponentsAPI.listChildComponents(FILE_PLAN_ALIAS).getEntries().forEach(filePlanComponentEntry ->
         {
             try
             {
-                getRestAPIFactory().getFilePlanComponentsAPI().deleteFilePlanComponent(filePlanComponentEntry.getFilePlanComponentModel().getId());
+                filePlanComponentsAPI.deleteFilePlanComponent(filePlanComponentEntry.getFilePlanComponentModel().getId());
             }
             catch (Exception e)
             {

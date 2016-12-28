@@ -47,6 +47,8 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
 import org.testng.annotations.Test;
@@ -73,11 +75,13 @@ public class FilePlanTests extends BaseRMRestTest
     )
     public void getFilePlanComponentWhenRMIsNotCreated(String filePlanComponentAlias) throws Exception
     {
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+
         // Check RM Site Exist
-        if (getRestAPIFactory().getRMSiteAPI().existsRMSite())
+        if (rmSiteAPI.existsRMSite())
         {
             // Delete RM Site
-            getRestAPIFactory().getRMSiteAPI().deleteRMSite();
+            rmSiteAPI.deleteRMSite();
         }
 
         // Get the file plan component
@@ -264,16 +268,18 @@ public class FilePlanTests extends BaseRMRestTest
                                 .build())
                 .build();
 
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+
         // Create the special containers into RM site - parent folder
-        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, rmSiteId);
+        filePlanComponentsAPI.createFilePlanComponent(filePlanComponent, rmSiteId);
         assertStatusCode(UNPROCESSABLE_ENTITY);
 
         // Create the special containers into RM site - parent folder
-        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS);
+        filePlanComponentsAPI.createFilePlanComponent(filePlanComponent, FILE_PLAN_ALIAS);
         assertStatusCode(UNPROCESSABLE_ENTITY);
 
         // Create the special containers into the root of special containers containers
-        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(filePlanComponent, filePlanComponentAlias);
+        filePlanComponentsAPI.createFilePlanComponent(filePlanComponent, filePlanComponentAlias);
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 

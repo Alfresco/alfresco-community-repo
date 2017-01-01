@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -207,7 +207,7 @@ public class RmSiteType extends    BaseBehaviourBean
                 	}
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());
+            }, AuthenticationUtil.getSystemUserName());
         }
 	}
 

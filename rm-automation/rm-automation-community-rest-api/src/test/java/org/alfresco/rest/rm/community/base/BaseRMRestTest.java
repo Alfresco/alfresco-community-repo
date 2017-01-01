@@ -67,9 +67,9 @@ public class BaseRMRestTest extends RestTest
     private DataUser dataUser;
 
     /**
-     * FIXME!!!
+     * Gets the REST API Factory
      *
-     * @return the restAPIFactory FIXME!!!
+     * @return the restAPIFactory The REST API Factory
      */
     protected RestAPIFactory getRestAPIFactory()
     {
@@ -77,9 +77,9 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * FIXME!!!
+     * Gets the data user
      *
-     * @return the dataUser FIXME!!!
+     * @return the dataUser The data user
      */
     protected DataUser getDataUser()
     {
@@ -87,9 +87,9 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * FIXME!!!
+     * Asserts the given status code
      *
-     * @param created FIXME!!!
+     * @param statusCode The status code to assert
      */
     protected void assertStatusCode(HttpStatus statusCode)
     {
@@ -97,9 +97,9 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * FIXME!!!
+     * Gets the admin user
      *
-     * @return FIXME!!!
+     * @return The admin user
      */
     protected UserModel getAdminUser()
     {

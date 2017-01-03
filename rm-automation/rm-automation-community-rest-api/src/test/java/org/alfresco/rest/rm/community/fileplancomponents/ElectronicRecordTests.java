@@ -32,18 +32,17 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import org.alfresco.rest.rm.community.base.BaseRestTest;
+import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
-import org.alfresco.utility.data.DataUser;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -56,30 +55,22 @@ import org.testng.annotations.Test;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class ElectronicRecordTests extends BaseRestTest
+public class ElectronicRecordTests extends BaseRMRestTest
 {
-    @Autowired
-    private FilePlanComponentAPI filePlanComponentAPI;
-
-    @Autowired
-    private DataUser dataUser;
-
-    /** image resource file to be used for records body */
-    private static final String IMAGE_FILE = "money.JPG";
-
     /** Valid root containers where electronic records can be created */
     @DataProvider(name = "invalidParentContainers")
-    public Object[][] invalidContainers() throws Exception {
-        return new Object[][] {
+    public Object[][] invalidContainers() throws Exception
+    {
+        return new Object[][]
+        {
             // record category
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(),
-                createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()).getParentId()) },
+            { getFilePlanComponent(createCategoryFolderInFilePlan().getParentId()) },
             // file plan root
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()) },
+            { getFilePlanComponent(FILE_PLAN_ALIAS) },
             // transfers
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(), TRANSFERS_ALIAS.toString()) },
+            { getFilePlanComponent(TRANSFERS_ALIAS) },
             // holds
-            { getFilePlanComponentAsUser(dataUser.getAdminUser(), HOLDS_ALIAS.toString()) },
+            { getFilePlanComponent(HOLDS_ALIAS) },
         };
     }
 
@@ -100,17 +91,11 @@ public class ElectronicRecordTests extends BaseRestTest
     )
     public void cantCreateElectronicRecordsInInvalidContainers(FilePlanComponent container) throws Exception
     {
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-
         // Build object the filePlan
-        FilePlanComponent record = FilePlanComponent.builder()
-                                                .name("Record " + getRandomAlphanumeric())
-                                                .nodeType(CONTENT_TYPE.toString())
-                                                .build();
-        filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, container.getId());
+        getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId());
 
         // verify the create request status code
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -126,8 +111,7 @@ public class ElectronicRecordTests extends BaseRestTest
     @Test(description = "Electronic record can't be created in closed record folder")
     public void cantCreateElectronicRecordInClosedFolder() throws Exception
     {
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        FilePlanComponent recordFolder = createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString());
+        FilePlanComponent recordFolder = createCategoryFolderInFilePlan();
 
         // the folder should be open
         assertFalse(recordFolder.getProperties().getIsClosed());
@@ -136,14 +120,10 @@ public class ElectronicRecordTests extends BaseRestTest
         closeFolder(recordFolder.getId());
 
         // try to create it, this should fail
-        FilePlanComponent record = FilePlanComponent.builder()
-                                                .name("Record " + getRandomAlphanumeric())
-                                                .nodeType(CONTENT_TYPE.toString())
-                                                .build();
-        filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, recordFolder.getId());
+        getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, recordFolder.getId());
 
         // verify the status code
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(UNPROCESSABLE_ENTITY);
+        assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
     /**
@@ -173,10 +153,9 @@ public class ElectronicRecordTests extends BaseRestTest
     )
     public void canCreateElectronicRecordOnlyWithMandatoryProperties(FilePlanComponent container) throws Exception
     {
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-
         logger.info("Root container:\n" + toJson(container));
-        if (container.getNodeType().equals(RECORD_FOLDER_TYPE.toString()))
+
+        if (container.getNodeType().equals(RECORD_FOLDER_TYPE))
         {
             // only record folders can be open or closed
             assertFalse(container.getProperties().getIsClosed());
@@ -184,14 +163,14 @@ public class ElectronicRecordTests extends BaseRestTest
 
         // component without name
         FilePlanComponent record = FilePlanComponent.builder()
-                                                    .nodeType(CONTENT_TYPE.toString())
+                                                    .nodeType(CONTENT_TYPE)
                                                     .build();
 
         // try to create it
-        filePlanComponentAPI.createFilePlanComponent(record, container.getId());
+        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(record, container.getId());
 
         // verify the status code is BAD_REQUEST
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(BAD_REQUEST);
+        assertStatusCode(BAD_REQUEST);
     }
 
     /**
@@ -218,19 +197,15 @@ public class ElectronicRecordTests extends BaseRestTest
     )
     public void canCreateElectronicRecordsInValidContainers(FilePlanComponent container) throws Exception
     {
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-
-        FilePlanComponent record = FilePlanComponent.builder()
-                                                    .name("Record " + getRandomAlphanumeric())
-                                                    .nodeType(CONTENT_TYPE.toString())
-                                                    .build();
-        String newRecordId = filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
+        FilePlanComponent record = createElectronicRecordModel();
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        String newRecordId = filePlanComponentsAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
 
         // verify the create request status code
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
-        // get newly created electonic record and verify its properties
-        FilePlanComponent electronicRecord = filePlanComponentAPI.getFilePlanComponent(newRecordId);
+        // get newly created electronic record and verify its properties
+        FilePlanComponent electronicRecord = filePlanComponentsAPI.getFilePlanComponent(newRecordId);
         // created record will have record identifier inserted in its name but will be prefixed with
         // the name it was created as
         assertTrue(electronicRecord.getName().startsWith(record.getName()));
@@ -249,20 +224,19 @@ public class ElectronicRecordTests extends BaseRestTest
     )
     public void recordNameDerivedFromFileName(FilePlanComponent container) throws Exception
     {
-        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-
         // record object without name set
         FilePlanComponent record = FilePlanComponent.builder()
-                .nodeType(CONTENT_TYPE.toString())
+                .nodeType(CONTENT_TYPE)
                 .build();
 
-        String newRecordId = filePlanComponentAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        String newRecordId = filePlanComponentsAPI.createElectronicRecord(record, IMAGE_FILE, container.getId()).getId();
 
         // verify the create request status code
-        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(CREATED);
+        assertStatusCode(CREATED);
 
         // get newly created electonic record and verify its properties
-        FilePlanComponent electronicRecord = filePlanComponentAPI.getFilePlanComponent(newRecordId);
+        FilePlanComponent electronicRecord = filePlanComponentsAPI.getFilePlanComponent(newRecordId);
         // record will have record identifier inserted in its name but will for sure start with file name
         // and end with its extension
         assertTrue(electronicRecord.getName().startsWith(IMAGE_FILE.substring(0, IMAGE_FILE.indexOf("."))));

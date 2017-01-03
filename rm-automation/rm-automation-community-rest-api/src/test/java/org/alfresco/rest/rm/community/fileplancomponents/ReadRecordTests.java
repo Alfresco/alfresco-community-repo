@@ -386,7 +386,7 @@ public class ReadRecordTests extends BaseRestTest
             }
             );
     }
-   
+
     /**
      * Given a record
      * When I try to read the children

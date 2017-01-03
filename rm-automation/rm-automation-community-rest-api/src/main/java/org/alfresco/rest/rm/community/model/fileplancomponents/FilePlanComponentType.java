@@ -26,66 +26,24 @@
  */
 package org.alfresco.rest.rm.community.model.fileplancomponents;
 
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
-
 /**
- * File plan component type enumeration
+ * File plan component type
  *
  * @author Tuna Aksoy
  * @since 2.6
  */
-public enum FilePlanComponentType
+public class FilePlanComponentType
 {
-    FILE_PLAN_TYPE("rma:filePlan"),
-    RECORD_CATEGORY_TYPE("rma:recordCategory"),
-    RECORD_FOLDER_TYPE("rma:recordFolder"),
-    HOLD_TYPE("rma:hold"),
-    UNFILED_RECORD_FOLDER_TYPE("rma:unfiledRecordFolder"),
-    HOLD_CONTAINER_TYPE("rma:holdContainer"),
-    TRANSFER_TYPE("rma:transfer"),
-    TRANSFER_CONTAINER_TYPE("rma:transferContainer"),
-    UNFILED_CONTAINER_TYPE("rma:unfiledRecordContainer"),
-    FOLDER_TYPE("cm:folder"),
-    CONTENT_TYPE("cm:content"),
-    NON_ELECTRONIC_RECORD_TYPE("rma:nonElectronicDocument");
-
-    private String type;
-
-    private FilePlanComponentType(String type)
-    {
-        this.type = type;
-    }
-
-    public static final FilePlanComponentType getFilePlanComponentType(String type)
-    {
-        mandatoryString("type", type);
-
-        FilePlanComponentType result = null;
-        FilePlanComponentType[] values = values();
-
-        for (FilePlanComponentType filePlanComponentType : values)
-        {
-            if (filePlanComponentType.toString().equals(filePlanComponentType))
-            {
-                result = filePlanComponentType;
-                break;
-            }
-        }
-
-        if (result == null)
-        {
-            throw new IllegalArgumentException("Invalid file plan component type enum value: '" + type + "'.");
-        }
-
-        return result;
-    }
-
-    /**
-     * @see java.lang.Enum#toString()
-     */
-    @Override
-    public String toString()
-    {
-        return this.type;
-    }
+    public static final String FILE_PLAN_TYPE = "rma:filePlan";
+    public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
+    public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";
+    public static final String HOLD_TYPE = "rma:hold";
+    public static final String UNFILED_RECORD_FOLDER_TYPE = "rma:unfiledRecordFolder";
+    public static final String HOLD_CONTAINER_TYPE = "rma:holdContainer";
+    public static final String TRANSFER_TYPE = "rma:transfer";
+    public static final String TRANSFER_CONTAINER_TYPE = "rma:transferContainer";
+    public static final String UNFILED_CONTAINER_TYPE = "rma:unfiledRecordContainer";
+    public static final String FOLDER_TYPE = "cm:folder";
+    public static final String CONTENT_TYPE = "cm:content";
+    public static final String NON_ELECTRONIC_RECORD_TYPE = "rma:nonElectronicDocument";
 }

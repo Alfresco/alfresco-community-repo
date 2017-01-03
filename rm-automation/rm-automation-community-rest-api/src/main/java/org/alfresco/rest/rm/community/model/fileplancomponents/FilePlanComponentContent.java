@@ -35,6 +35,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * POJO for FilePlanComponent content field
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
@@ -55,5 +56,4 @@ public class FilePlanComponentContent
 
     @JsonProperty (required = true)
     private Integer sizeInBytes;
-
 }

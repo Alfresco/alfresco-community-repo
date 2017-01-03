@@ -37,7 +37,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * POJO for FilePlanComponent path parameter
- * <br>
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
@@ -51,5 +51,4 @@ public class FilePlanComponentPath
     private String name;
     private Boolean isComplete;
     private List<FilePlanComponentIdNamePair> elements;
-
 }

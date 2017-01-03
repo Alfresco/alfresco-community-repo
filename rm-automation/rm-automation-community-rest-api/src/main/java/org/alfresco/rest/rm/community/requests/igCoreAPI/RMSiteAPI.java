@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.requests;
+package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
@@ -36,26 +36,27 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.springframework.http.HttpStatus.OK;
 
-import org.alfresco.rest.core.RestAPI;
+import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.site.RMSite;
-import org.alfresco.utility.data.DataUser;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import org.alfresco.rest.rm.community.requests.RMModelRequest;
 
 /**
- *  File plan component REST API Wrapper
+ * RM Site REST API Wrapper
  *
  * @author Tuna Aksoy
- * @author Rodica Sutu
  * @since 2.6
  */
-@Component
-@Scope (value = "prototype")
-public class RMSiteAPI extends RestAPI<RMSiteAPI>
+public class RMSiteAPI extends RMModelRequest
 {
-    @Autowired
-    private DataUser dataUser;
+    /**
+     * Constructor
+     *
+     * @param rmRestWrapper RM REST Wrapper
+     */
+    public RMSiteAPI(RMRestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+    }
 
     /**
      * Get the RM site
@@ -71,7 +72,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      */
     public RMSite getSite() throws Exception
     {
-        return usingRestWrapper().processModel(RMSite.class, simpleRequest(
+        return getRMRestWrapper().processModel(RMSite.class, simpleRequest(
                 GET,
                 "ig-sites/rm"
         ));
@@ -90,13 +91,13 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public RMSite createRMSite(RMSite rmSite) throws Exception
+    public RMSite createRMSite(RMSite rmSiteModel) throws Exception
     {
-        mandatoryObject("rmSiteProperties", rmSite);
+        mandatoryObject("rmSiteModel", rmSiteModel);
 
-        return usingRestWrapper().processModel(RMSite.class, requestWithBody(
+        return getRMRestWrapper().processModel(RMSite.class, requestWithBody(
                 POST,
-                toJson(rmSite),
+                toJson(rmSiteModel),
                 "ig-sites"
         ));
     }
@@ -114,7 +115,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      */
     public void deleteRMSite() throws Exception
     {
-        usingRestWrapper().processEmptyModel(simpleRequest(
+        getRMRestWrapper().processEmptyModel(simpleRequest(
                 DELETE,
                 "ig-sites/rm"
         ));
@@ -127,20 +128,20 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      * @return The updated {@link RMSite}
      * @throws Exception for the following cases:
      * <ul>
-     *  <li>Api Response code 400 the update request is invalid {@code rmSiteProperties} is invalid</li>
+     *  <li>Api Response code 400 the update request is invalid {@code rmSiteModel} is invalid</li>
      *  <li>Api Response code 401 If authentication fails</li>
      *  <li>Api Response code 403 does not have permission to update {@code RMSite}</li>
-     *  <li>Api Response code 404 {@code RMSite} does not exist</li>
+     *  <li>Api Response code 404 {@code RMSiteModel} does not exist</li>
      *  <li>Api Response code default Unexpected error,model integrity exception</li>
      * </ul>
      */
-    public RMSite updateRMSite(RMSite rmSiteProperties) throws Exception
+    public RMSite updateRMSite(RMSite rmSiteModel) throws Exception
     {
-        mandatoryObject("rmSiteProperties", rmSiteProperties);
+        mandatoryObject("rmSiteProperties", rmSiteModel);
 
-        return usingRestWrapper().processModel(RMSite.class, requestWithBody(
+        return getRMRestWrapper().processModel(RMSite.class, requestWithBody(
                 PUT,
-            toJson(rmSiteProperties),
+                toJson(rmSiteModel),
                 "ig-sites/rm"
         ));
     }
@@ -159,8 +160,7 @@ public class RMSiteAPI extends RestAPI<RMSiteAPI>
      */
     public boolean existsRMSite() throws Exception
     {
-        usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         getSite();
-        return usingRestWrapper().getStatusCode().equals(OK.toString());
+        return getRMRestWrapper().getStatusCode().equals(OK.toString());
     }
 }

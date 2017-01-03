@@ -37,9 +37,12 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.alfresco.utility.model.TestModel;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -51,9 +54,10 @@ import lombok.NoArgsConstructor;
  */
 @Builder
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class FilePlanComponent
+public class FilePlanComponent extends TestModel
 {
     @JsonProperty (required = true)
     private String id;
@@ -114,5 +118,4 @@ public class FilePlanComponent
 
     @JsonProperty (value = RELATIVE_PATH)
     private String relativePath;
-
 }

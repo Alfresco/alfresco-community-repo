@@ -24,33 +24,35 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.site;
+package org.alfresco.rest.rm.community.requests;
 
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.model.RestSiteModel;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.requests.ModelRequest;
 
 /**
- * POJO for RM Site component
+ * Extends {@link ModelRequest} to set {@link RMRestWrapper}
  *
- * @author Rodica Sutu
+ * @author Tuna Aksoy
  * @since 2.6
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class RMSite extends RestSiteModel
+public abstract class RMModelRequest extends ModelRequest
 {
-    @JsonProperty (value = COMPLIANCE, required = true)
-    private RMSiteCompliance compliance;
+    private RMRestWrapper rmRestWrapper;
+
+    /**
+     * @return the rmRestWrapper
+     */
+    protected RMRestWrapper getRMRestWrapper()
+    {
+        return this.rmRestWrapper;
+    }
+
+    /**
+     * @param restWrapper
+     */
+    public RMModelRequest(RMRestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+        this.rmRestWrapper = rmRestWrapper;
+    }
 }

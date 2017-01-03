@@ -24,33 +24,30 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.site;
+package org.alfresco.rest.core;
 
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.model.RestSiteModel;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.RestIGCoreAPI;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 /**
- * POJO for RM Site component
+ * Extends {@link RestWrapper} in order to call IG APIs with our own properties
  *
- * @author Rodica Sutu
+ * @author Tuna Aksoy
  * @since 2.6
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class RMSite extends RestSiteModel
+@Primary
+@Service
+@Scope(value = "prototype")
+public class RMRestWrapper extends RestWrapper
 {
-    @JsonProperty (value = COMPLIANCE, required = true)
-    private RMSiteCompliance compliance;
+    @Autowired
+    private RMRestProperties rmRestProperties;
+
+    public RestIGCoreAPI withIGCoreAPI()
+    {
+        return new RestIGCoreAPI(this, rmRestProperties);
+    }
 }

@@ -24,16 +24,18 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.requests;
+package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static com.jayway.restassured.RestAssured.basic;
 import static com.jayway.restassured.RestAssured.given;
 
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -50,25 +52,30 @@ import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 
-import org.alfresco.rest.core.RestAPI;
+import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 /**
  * File plan component REST API Wrapper
  *
  * @author Tuna Aksoy
- * @author Kristijan Conkas
  * @since 2.6
  */
-@Component
-@Scope(value = "prototype")
-public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
+public class FilePlanComponentAPI extends RMModelRequest
 {
+    /**
+     * Constructor
+     *
+     * @param restWrapper
+     */
+    public FilePlanComponentAPI(RMRestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+    }
+
     /**
      * Get a file plan component
      *
@@ -85,10 +92,31 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     {
         mandatoryString("filePlanComponentId", filePlanComponentId);
 
-        return usingRestWrapper().processModel(FilePlanComponent.class, simpleRequest(
+        return getFilePlanComponent(filePlanComponentId, EMPTY);
+    }
+
+    /**
+     * Get a file plan component
+     *
+     * @param filePlanComponentId The id of the file plan component to get
+     * @param parameters The URL parameters to add
+     * @return The {@link FilePlanComponent} for the given file plan component id
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>{@code fileplanComponentId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>{@code fileplanComponentId} does not exist</li>
+     * </ul>
+     */
+    public FilePlanComponent getFilePlanComponent(String filePlanComponentId, String parameters) throws Exception
+    {
+        mandatoryString("filePlanComponentId", filePlanComponentId);
+
+        return getRMRestWrapper().processModel(FilePlanComponent.class, simpleRequest(
                 GET,
                 "fileplan-components/{fileplanComponentId}?{parameters}",
-                filePlanComponentId, getParameters()
+                filePlanComponentId,
+                parameters
         ));
     }
 
@@ -108,7 +136,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     {
         mandatoryString("filePlanComponentId", filePlanComponentId);
 
-        return usingRestWrapper().processModels(FilePlanComponentsCollection.class, simpleRequest(
+        return getRMRestWrapper().processModels(FilePlanComponentsCollection.class, simpleRequest(
                 GET,
                 "fileplan-components/{fileplanComponentId}/children?{parameters}",
                 filePlanComponentId, getParameters()
@@ -135,15 +163,41 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     {
         mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
         mandatoryString("parentId", parentId);
-        
-        return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
-            POST,
-            toJson(filePlanComponentModel),
-            "fileplan-components/{fileplanComponentId}/children?{parameters}",
-            parentId,
-            getParameters()));
+
+        return createFilePlanComponent(filePlanComponentModel, parentId, EMPTY);
     }
-    
+
+    /**
+     * Creates a file plan component with the given properties under the parent node with the given id
+     *
+     * @param filePlanComponentModel The properties of the file plan component to be created
+     * @param parameters The URL parameters to add
+     * @param parentId The id of the parent where the new file plan component should be created
+     * @return The {@link FilePlanComponent} with the given properties
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>{@code fileplanComponentId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to add children to {@code fileplanComponentId}</li>
+     *  <li>{@code fileplanComponentId} does not exist</li>
+     *  <li>new name clashes with an existing node in the current parent container</li>
+     *  <li>model integrity exception, including node name with invalid characters</li>
+     * </ul>
+     */
+    public FilePlanComponent createFilePlanComponent(FilePlanComponent filePlanComponentModel, String parentId, String parameters) throws Exception
+    {
+        mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
+        mandatoryString("parentId", parentId);
+
+        return getRMRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
+                POST,
+                toJson(filePlanComponentModel),
+                "fileplan-components/{fileplanComponentId}/children?{parameters}",
+                parentId,
+                parameters
+        ));
+    }
+
     /**
      * Create electronic record from file resource
      * @param electronicRecordModel {@link FilePlanComponent} for electronic record to be created
@@ -156,7 +210,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     {
         return createElectronicRecord(electronicRecordModel, new File(Resources.getResource(fileName).getFile()), parentId);
     }
-    
+
     /**
      * Create electronic record from file resource
      * @param electronicRecordModel {@link FilePlanComponent} for electronic record to be created
@@ -167,53 +221,42 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
      */
     public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent, String parentId) throws Exception
     {
-        mandatoryObject("filePlanComponentProperties", electronicRecordModel);
+        mandatoryObject("electronicRecordModel", electronicRecordModel);
         mandatoryString("parentId", parentId);
-        if (!electronicRecordModel.getNodeType().equals(FilePlanComponentType.CONTENT_TYPE.toString()))
+        if (!electronicRecordModel.getNodeType().equals(CONTENT_TYPE))
         {
             fail("Only electronic records are supported");
         }
 
-        UserModel currentUser = usingRestWrapper().getTestUser();
-        
-        /* 
+        UserModel currentUser = getRMRestWrapper().getTestUser();
+
+        /*
          * For file uploads nodeBodyCreate is ignored hence can't be used. Append all FilePlanComponent fields
          * to the request.
          */
         RequestSpecBuilder builder = new RequestSpecBuilder();
         builder.setAuth(basic(currentUser.getUsername(), currentUser.getPassword()));
-        
+
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(toJson(electronicRecordModel));
 
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext())
         {
-            String f = fieldNames.next();
-            try
-            {
-                builder.addMultiPart(f, root.get(f).asText(), ContentType.JSON.name());
-            }
-            catch (Exception error)
-            {
-                LOG.error("Failed to set " + f + " error: " + error);
-            }
+            String fieldName = fieldNames.next();
+            builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
         }
-        
+
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
-        
-        /* 
-         * RestWrapper adds some headers which break multipart/form-data uploads and also assumes json POST requests.
          * Upload the file using RestAssured library.
          */
         Response response = given()
             .spec(builder.build())
         .when()
-            .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getParameters())
+            .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getRMRestWrapper().getParameters())
             .andReturn();
-        usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
-        LOG.info("electronic record created: " + response.getBody().prettyPrint());
-        
+        getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+
         /* return a FilePlanComponent object representing Response */
         return response.jsonPath().getObject("entry", FilePlanComponent.class);
     }
@@ -221,7 +264,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     /**
      * Updates a file plan component
      *
-     * @param filePlanComponent The properties to be updated
+     * @param filePlanComponentModel The properties to be updated
      * @param filePlanComponentId The id of the file plan component which will be updated
      * @param returns The updated {@link FilePlanComponent}
      * @throws Exception for the following cases:
@@ -234,17 +277,42 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public FilePlanComponent updateFilePlanComponent(FilePlanComponent filePlanComponent, String filePlanComponentId) throws Exception
+    public FilePlanComponent updateFilePlanComponent(FilePlanComponent filePlanComponentModel, String filePlanComponentId) throws Exception
+    {
+        mandatoryObject("filePlanComponentProperties", filePlanComponentModel);
+        mandatoryString("filePlanComponentId", filePlanComponentId);
+
+        return updateFilePlanComponent(filePlanComponentModel, filePlanComponentId, EMPTY);
+    }
+
+    /**
+     * Updates a file plan component
+     *
+     * @param filePlanComponentModel The properties to be updated
+     * @param parameters The URL parameters to add
+     * @param filePlanComponentId The id of the file plan component which will be updated
+     * @param returns The updated {@link FilePlanComponent}
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>the update request is invalid or {@code fileplanComponentId} is not a valid format or {@code filePlanComponentProperties} is invalid</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to update {@code fileplanComponentId}</li>
+     *  <li>{@code fileplanComponentId} does not exist</li>
+     *  <li>the updated name clashes with an existing node in the current parent folder</li>
+     *  <li>model integrity exception, including node name with invalid characters</li>
+     * </ul>
+     */
+    public FilePlanComponent updateFilePlanComponent(FilePlanComponent filePlanComponent, String filePlanComponentId, String parameters) throws Exception
     {
         mandatoryObject("filePlanComponentProperties", filePlanComponent);
         mandatoryString("filePlanComponentId", filePlanComponentId);
 
-        return usingRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
+        return getRMRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
                 PUT,
                 toJson(filePlanComponent),
                 "fileplan-components/{fileplanComponentId}?{parameters}",
                 filePlanComponentId,
-                getParameters()
+                parameters
         ));
     }
 
@@ -265,11 +333,10 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
     {
         mandatoryString("filePlanComponentId", filePlanComponentId);
 
-        usingRestWrapper().processEmptyModel(simpleRequest(
+        getRMRestWrapper().processEmptyModel(simpleRequest(
                 DELETE,
                 "fileplan-components/{fileplanComponentId}",
                 filePlanComponentId
         ));
     }
-
 }

@@ -32,7 +32,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * POJO for the review period
+ * POJO for the file plan component review period
  *
  * @author Rodica Sutu
  * @since 2.6
@@ -41,7 +41,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewPeriod
+public class FilePlanComponentReviewPeriod
 {
     private String periodType;
     private String expression;

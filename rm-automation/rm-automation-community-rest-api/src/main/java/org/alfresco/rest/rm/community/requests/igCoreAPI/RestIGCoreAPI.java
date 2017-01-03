@@ -77,4 +77,14 @@ public class RestIGCoreAPI extends RMModelRequest
     {
         return new FilePlanComponentAPI(getRMRestWrapper());
     }
+
+    /**
+     * Provides DSL on all REST calls under <code>records/...</code> API path
+     *
+     * @return {@link FilePlanComponentAPI}
+     */
+    public RecordsAPI usingRecords()
+    {
+        return new RecordsAPI(getRMRestWrapper());
+    }
 }

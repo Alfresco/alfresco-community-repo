@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.requests;
+package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static com.jayway.restassured.RestAssured.given;
 
@@ -32,9 +32,10 @@ import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString
 
 import com.jayway.restassured.response.Response;
 
-import org.alfresco.rest.core.RestAPI;
+import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestHtmlResponse;
+import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
@@ -47,8 +48,16 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Scope (value = "prototype")
-public class RecordsAPI extends RestAPI<FilePlanComponentAPI>
+public class RecordsAPI extends RMModelRequest
 {
+    /**
+     * @param rmRestWrapper
+     */
+    public RecordsAPI(RMRestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+    }
+
     /**
      * Get the content for the electronic record
      *
@@ -65,13 +74,12 @@ public class RecordsAPI extends RestAPI<FilePlanComponentAPI>
     public <T> T getRecordContentText(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);
-        Response response = given().auth().basic(usingRestWrapper().getTestUser().getUsername(), usingRestWrapper().getTestUser().getPassword())
-                                   .get("records/{recordId}/content?{parameters}", recordId, getParameters())
+        Response response = given().auth().basic(getRMRestWrapper().getTestUser().getUsername(), getRMRestWrapper().getTestUser().getPassword())
+                                   .get("records/{recordId}/content", recordId)
                                    .andReturn();
 
-        usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+        getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
 
-        LOG.info("The record content is " + response.getBody().prettyPrint());
         return (T) response.getBody().prettyPrint();
     }
 
@@ -91,7 +99,7 @@ public class RecordsAPI extends RestAPI<FilePlanComponentAPI>
     public RestHtmlResponse getRecordContent(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "records/{recordId}/content?{parameters}", recordId, getParameters());
-        return usingRestWrapper().processHtmlResponse(request);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "records/{recordId}/content", recordId);
+        return getRMRestWrapper().processHtmlResponse(request);
     }
 }

@@ -138,8 +138,31 @@ public class FilePlanComponentAPI extends RMModelRequest
 
         return getRMRestWrapper().processModels(FilePlanComponentsCollection.class, simpleRequest(
                 GET,
-                "fileplan-components/{fileplanComponentId}/children?{parameters}",
-                filePlanComponentId, getParameters()
+                "fileplan-components/{fileplanComponentId}/children",
+                filePlanComponentId
+        ));
+    }
+
+    /**
+     * List child components of a file plan component
+     * @param parameters The URL parameters to add
+     * @param filePlanComponentId The id of the file plan component of which to get child components
+     * @return The {@link FilePlanComponent} for the given file plan component id
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>{@code fileplanComponentId} is not a valid format</li>
+     *  <li>authentication fails</li>
+     *  <li>{@code fileplanComponentId} does not exist</li>
+     *</ul>
+     */
+    public FilePlanComponentsCollection listChildComponents(String filePlanComponentId, String parameters) throws Exception
+    {
+        mandatoryString("filePlanComponentId", filePlanComponentId);
+
+        return getRMRestWrapper().processModels(FilePlanComponentsCollection.class, simpleRequest(
+            GET,
+            "fileplan-components/{fileplanComponentId}/children?{parameters}",
+            filePlanComponentId,parameters
         ));
     }
 
@@ -248,6 +271,7 @@ public class FilePlanComponentAPI extends RMModelRequest
         }
 
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
+        /*
          * Upload the file using RestAssured library.
          */
         Response response = given()
@@ -288,7 +312,7 @@ public class FilePlanComponentAPI extends RMModelRequest
     /**
      * Updates a file plan component
      *
-     * @param filePlanComponentModel The properties to be updated
+     * @param filePlanComponent The properties to be updated
      * @param parameters The URL parameters to add
      * @param filePlanComponentId The id of the file plan component which will be updated
      * @param returns The updated {@link FilePlanComponent}

@@ -113,7 +113,7 @@ public class BaseRestTest extends RestTest
 
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
-    
+
     // Constants
     public static final String RM_ID = "rm";
     public static final String RM_TITLE = "Records Management";
@@ -287,7 +287,7 @@ public class BaseRestTest extends RestTest
         return filePlanComponentAPI.getFilePlanComponent(componentId);
     }
 
-    
+
     /**
      * Helper method to add permission on a component to user
      * @param component {@link FilePlanComponent} on which permission should be given
@@ -301,7 +301,7 @@ public class BaseRestTest extends RestTest
     {
         // get an "old-style" REST API client
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        
+
         JsonObject bodyJson = buildObject()
             .addArray("permissions")
                 .addObject()
@@ -315,7 +315,7 @@ public class BaseRestTest extends RestTest
             .setBaseUri(client.getApiUrl())
             .setBasePath("/")
             .build();
-        
+
         // execute an "old-style" API call
         Response response = given()
             .spec(spec)
@@ -330,11 +330,10 @@ public class BaseRestTest extends RestTest
             .andReturn();
         filePlanComponentAPI.usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
-}
+
 
     /**
-     * Create temp file
-     * real size content
+     * Create temp file with content
      *
      * @param name file name
      * @return {@link File} file

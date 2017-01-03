@@ -31,6 +31,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_COMPLETED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
@@ -62,7 +63,7 @@ import org.testng.annotations.Test;
 
 /**
  * This class contains the tests for
- * read records API
+ * Read Records API
  *
  * @author Rodica Sutu
  * @since 2.6
@@ -88,9 +89,10 @@ public class ReadRecordTests extends BaseRestTest
                                                           .nodeType(CONTENT_TYPE.toString())
                                                           .content(FilePlanComponentContent.builder().mimeType("text/plain").build())
                                                           .build();
+    
     FilePlanComponent nonelectronicRecord = FilePlanComponent.builder()
                                                              .properties(FilePlanComponentProperties.builder()
-                                                                                                    .description("Description")
+                                                                                                    .description(NONELECTRONIC_RECORD_NAME)
                                                                                                     .title("Title")
                                                                                                     .build())
                                                              .name(NONELECTRONIC_RECORD_NAME)
@@ -124,9 +126,9 @@ public class ReadRecordTests extends BaseRestTest
 
         FilePlanComponent electronicRecord = FilePlanComponent.builder()
                                                               .name(ELECTRONIC_RECORD_NAME)
-                                                               .nodeType(CONTENT_TYPE.toString())
-                                                               .content(FilePlanComponentContent.builder().mimeType("text/plain").build())
-                                                               .build();
+                                                              .nodeType(CONTENT_TYPE.toString())
+                                                              .content(FilePlanComponentContent.builder().mimeType("text/plain").build())
+                                                              .build();
         FilePlanComponent nonelectronicRecord= FilePlanComponent.builder()
                                                                 .properties(FilePlanComponentProperties.builder()
                                                                                                        .description("Description")
@@ -155,12 +157,9 @@ public class ReadRecordTests extends BaseRestTest
     @Test
     public void readChildrenOnRecordsString() throws Exception
     {
-        String ELECTRONIC_RECORD_NAME = "Record electronic" + getRandomAlphanumeric();
-        String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
         String RELATIVE_PATH="CATEGORY"+ getRandomAlphanumeric()+"/FOLDER";
 
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-
 
         //create records in Unfiled Container
         FilePlanComponent recordElecInUnfiled = filePlanComponentAPI.createFilePlanComponent(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS.toString());
@@ -211,9 +210,50 @@ public class ReadRecordTests extends BaseRestTest
     @Test
     public void readRecordMetadata() throws Exception
     {
-        recordsAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        logger.info("NEW TEST" + recordsAPI.getRecordContentText("05978b97-bc84-4693-9f3f-f1b0502cfa7b").toString());
+        String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric() + "/folder";
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+        //create the containers from the relativePath
+        FilePlanComponent recordFolder = FilePlanComponent.builder()
+                                                          .name(FOLDER_NAME)
+                                                          .nodeType(RECORD_FOLDER_TYPE.toString())
+                                                          .relativePath(RELATIVE_PATH)
+                                                          .build();
+        String folderId = filePlanComponentAPI.createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS.toString()).getId();
+        //create electronic record
+        //String recordWithContentId =
+        FilePlanComponent fpc =  filePlanComponentAPI.createElectronicRecord(electronicRecord, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME), folderId);//.getId();
+        //Get the record created
+        FilePlanComponent recordWithContent=filePlanComponentAPI.withParams("include = "+ IS_COMPLETED).getFilePlanComponent(fpc.getId());
+        //Check the metadata returned
+        assertTrue(recordWithContent.getName().startsWith(ELECTRONIC_RECORD_NAME));
+        assertTrue(recordWithContent.getIsFile());
+        assertFalse(recordWithContent.getIsCategory());
+        assertFalse(recordWithContent.getIsRecordFolder());
+        assertNotNull(recordWithContent.getContent().getEncoding());
+        assertEquals(recordWithContent.getNodeType(),CONTENT_TYPE.toString());
+        assertNotNull(recordWithContent.getContent().getEncoding());
+        assertNotNull(recordWithContent.getContent().getMimeType());
+        assertNotNull(recordWithContent.getAspectNames());
+        assertEquals(recordWithContent.getProperties().getDescription(),ELECTRONIC_RECORD_NAME);
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
 
+        //create non-electronic record
+        String nonElectronicRecordId = filePlanComponentAPI.createFilePlanComponent(nonelectronicRecord, folderId).getId();
+        //Get the record created
+        FilePlanComponent nonElectronicRecord = filePlanComponentAPI.withParams("include = " + IS_COMPLETED).getFilePlanComponent(nonElectronicRecordId);
+
+        //Check the metadata returned
+        assertTrue(nonElectronicRecord.getName().startsWith(NONELECTRONIC_RECORD_NAME));
+        assertTrue(nonElectronicRecord.getIsFile());
+        assertFalse(nonElectronicRecord.getIsCategory());
+        assertFalse(nonElectronicRecord.getIsRecordFolder());
+        assertNotNull(nonElectronicRecord.getContent().getEncoding());
+        assertEquals(nonElectronicRecord.getNodeType(), NON_ELECTRONIC_RECORD_TYPE.toString());
+        assertNotNull(nonElectronicRecord.getContent().getEncoding());
+        assertNotNull(nonElectronicRecord.getContent().getMimeType());
+        assertNotNull(nonElectronicRecord.getAspectNames());
+        assertEquals(nonElectronicRecord.getProperties().getDescription(), NONELECTRONIC_RECORD_NAME);
+        filePlanComponentAPI.usingRestWrapper().assertStatusCodeIs(OK);
     }
 
     /**
@@ -261,7 +301,7 @@ public class ReadRecordTests extends BaseRestTest
      * Then I am informed that the record has no content
      */
     @Test
-    public void readRecordNonElectronicContent() throws Exception
+    public void readNonElectronicRecordContent() throws Exception
     {
 
         String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
@@ -276,6 +316,7 @@ public class ReadRecordTests extends BaseRestTest
         recordsAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         assertTrue(recordsAPI.getRecordContentText(nonElectronicRecord).toString().isEmpty());
         recordsAPI.usingRestWrapper().assertStatusCodeIs(OK);
+
     }
 
     /**
@@ -289,7 +330,7 @@ public class ReadRecordTests extends BaseRestTest
         dataProviderClass = TestData.class,
         description = "Reading records from invalid containers"
     )
-    public void readContainFromInvalidContainers(String container) throws Exception
+    public void readContentFromInvalidContainers(String container) throws Exception
     {
         recordsAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         recordsAPI.getRecordContentText(container).toString();
@@ -297,9 +338,9 @@ public class ReadRecordTests extends BaseRestTest
     }
 
     /**
-     * Given a container that is a record folder
+     * Given a container that is a record/unfiled folder
      * When I try to record the containers records
-     * Then I receive a list of all the records contained within the record folder
+     * Then I receive a list of all the records contained within the record/unfiled folder
      */
 
     /** Valid root containers where electronic and non-electronic records can be created */

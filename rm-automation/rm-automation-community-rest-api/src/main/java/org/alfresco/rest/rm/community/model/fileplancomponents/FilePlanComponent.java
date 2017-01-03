@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.ALLOWABLE_OPERATIONS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_CLOSED;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_COMPLETED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.RELATIVE_PATH;
@@ -81,7 +82,7 @@ public class FilePlanComponent
     @JsonProperty(value = IS_CLOSED)
     private Boolean isClosed;
 
-    @JsonProperty
+    @JsonProperty(value = IS_COMPLETED)
     private Boolean isCompleted;
 
     @JsonProperty (required = true)

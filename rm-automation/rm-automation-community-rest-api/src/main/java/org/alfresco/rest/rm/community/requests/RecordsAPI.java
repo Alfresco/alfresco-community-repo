@@ -49,18 +49,45 @@ import org.springframework.stereotype.Component;
 @Scope (value = "prototype")
 public class RecordsAPI extends RestAPI<FilePlanComponentAPI>
 {
+    /**
+     * Get the content for the electronic record
+     *
+     * @param recordId The id of the electronic record
+     * @return The content for the given record id
+     * @throws Exception for the following cases:
+     * <ul>
+     * <li>{@code recordId} has no content</li>
+     * <li> {@code recordId} is not a valid format, or is not a record</li>
+     * <li>authentication fails</li>
+     * <li>{@code recordId} does not exist</li>
+     * </ul>
+     */
     public <T> T getRecordContentText(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);
-        //RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "records/{recordId}/content?{parameters}", recordId, getParameters());
         Response response = given().auth().basic(usingRestWrapper().getTestUser().getUsername(), usingRestWrapper().getTestUser().getPassword())
-            .get("records/{recordId}/content?{parameters}", recordId, getParameters())
-            .andReturn();
+                                   .get("records/{recordId}/content?{parameters}", recordId, getParameters())
+                                   .andReturn();
+
         usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+
         LOG.info("The record content is " + response.getBody().prettyPrint());
         return (T) response.getBody().prettyPrint();
     }
 
+    /**
+     * Get the html content for the electronic record
+     *
+     * @param recordId The id of the electronic record
+     * @return The content for the given record id
+     * @throws Exception for the following cases:
+     * <ul>
+     * <li>{@code recordId} has no content</li>
+     * <li> {@code recordId} is not a valid format, or is not a record</li>
+     * <li>authentication fails</li>
+     * <li>{@code recordId} does not exist</li>
+     * </ul>
+     */
     public RestHtmlResponse getRecordContent(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);

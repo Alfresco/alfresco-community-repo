@@ -38,13 +38,21 @@ import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertTrue;
 
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
+
+import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.rm.community.base.BaseRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentContent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.rm.community.requests.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.RecordsAPI;
 import org.alfresco.utility.data.DataUser;
@@ -70,7 +78,7 @@ public class ReadRecordTests extends BaseRestTest
     @Autowired
     private DataUser dataUser;
 
-    private String CATEGORY_NAME=TestData.CATEGORY_NAME +getRandomAlphanumeric();
+    String CATEGORY_NAME=TestData.CATEGORY_NAME +getRandomAlphanumeric();
 
     String ELECTRONIC_RECORD_NAME = "Record electronic" + getRandomAlphanumeric();
     String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
@@ -95,7 +103,7 @@ public class ReadRecordTests extends BaseRestTest
      * Then I receive an empty list
      */
     @DataProvider(name="invalidContainersForRecords")
-    public  Object[][] getContainers() throws Exception
+    public  Object[][] getInvalidContainersForRecords() throws Exception
     {
         return new Object[][] {
             { FILE_PLAN_ALIAS.toString() },
@@ -111,7 +119,6 @@ public class ReadRecordTests extends BaseRestTest
     )
     public void readRecordsFromInvalidContainers(String container) throws Exception
     {
-
 
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
 
@@ -261,10 +268,11 @@ public class ReadRecordTests extends BaseRestTest
         FilePlanComponent record = FilePlanComponent.builder()
                                                     .name(NONELECTRONIC_RECORD_NAME)
                                                     .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
-                                                    .relativePath("/"+CATEGORY_NAME+"/"+FOLDER_NAME)
+                                                    .relativePath("/"+CATEGORY_NAME+getRandomAlphanumeric()+"/"+FOLDER_NAME)
                                                     .build();
         filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         String nonElectronicRecord=filePlanComponentAPI.createFilePlanComponent(record,FILE_PLAN_ALIAS.toString()).getId();
+
         recordsAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
         assertTrue(recordsAPI.getRecordContentText(nonElectronicRecord).toString().isEmpty());
         recordsAPI.usingRestWrapper().assertStatusCodeIs(OK);
@@ -294,12 +302,104 @@ public class ReadRecordTests extends BaseRestTest
      * Then I receive a list of all the records contained within the record folder
      */
 
-    /**
-     * Given a container this an unfiled record folder or the unfiled record container root
-     * When I try to record the containers records
-     * Then I receive a list of all the records contained within the unfiled record folder or the unfiled record container root
-     */
+    /** Valid root containers where electronic and non-electronic records can be created */
+    @DataProvider (name = "folderContainers")
+    public Object[][] getFolderContainers() throws Exception
+    {
+        return new Object[][] {
+            // an arbitrary record folder
+            { createCategoryFolderInFilePlan(dataUser.getAdminUser(), FILE_PLAN_ALIAS.toString()).getId() },
+            // an arbitrary unfiled records folder
+            { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), "Unfiled Folder " + getRandomAlphanumeric()).getId() }
+        };
+    }
+
+    @Test
+    (
+        dataProvider ="folderContainers",
+        description ="List the records from record folder/unfiled record folder"
+    )
+    public void readRecordsFromFolders(String containerId) throws Exception
+    {
+        final int NUMBER_OF_RECORDS = 5;
+        //String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric();
+        filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
+        // Create Electronic Records
+        ArrayList<FilePlanComponent> children = new ArrayList<FilePlanComponent>();
+        for (int i = 0; i < NUMBER_OF_RECORDS; i++)
+        {
+            //build de electronic record
+            FilePlanComponent record = FilePlanComponent.builder()
+                                                        .name(ELECTRONIC_RECORD_NAME +i)
+                                                        .nodeType(CONTENT_TYPE.toString())
+                                                        .build();
+            //create a child
+            FilePlanComponent child = filePlanComponentAPI.createElectronicRecord(record, createTempFile(ELECTRONIC_RECORD_NAME + i, ELECTRONIC_RECORD_NAME + i ), containerId);
+            children.add(child);
+        }
+        //Create NonElectronicRecords
+        for (int i = 0; i < NUMBER_OF_RECORDS; i++)
+        {
+            FilePlanComponent nonelectronicRecord = FilePlanComponent.builder()
+                                                                     .properties(FilePlanComponentProperties.builder()
+                                                                                                            .description("Description")
+                                                                                                            .title("Title")
+                                                                                                            .build())
+                                                                     .name(NONELECTRONIC_RECORD_NAME+i)
+                                                                     .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
+                                                                     .build();
+            //create records
+            FilePlanComponent child=filePlanComponentAPI.createFilePlanComponent(nonelectronicRecord, containerId);
+            children.add(child);
+        }
+        // Authenticate with admin user
+        RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
+
+        // List children from API
+        FilePlanComponentsCollection apiChildren =
+            (FilePlanComponentsCollection) filePlanComponentAPI.listChildComponents(containerId).assertThat().entriesListIsNotEmpty();
+
+        // Check status code
+        restWrapper.assertStatusCodeIs(OK);
 
 
+        // Check listed children against created list
+        apiChildren.getEntries().forEach(c ->
+            {
+                FilePlanComponent filePlanComponent = c.getFilePlanComponent();
+                assertNotNull(filePlanComponent.getId());
+                logger.info("Checking child " + filePlanComponent.getId());
+
+                try
+                {
+                    // Find this child in created children list
+                    FilePlanComponent createdComponent = children.stream()
+                                                                 .filter(child -> child.getId().equals(filePlanComponent.getId()))
+                                                                 .findFirst()
+                                                                 .get();
+
+                    // Created by
+                    assertEquals(filePlanComponent.getCreatedByUser().getId(), dataUser.getAdminUser().getUsername());
+
+                    // Is parent Id set correctly
+                    assertEquals(filePlanComponent.getParentId(), containerId);
+                    assertTrue(filePlanComponent.getIsFile());
+
+                    // Boolean properties related to node type
+                    assertFalse(filePlanComponent.getIsRecordFolder());
+                    assertFalse(filePlanComponent.getIsCategory());
+
+                    //assertEquals(createdComponent.getName(), filePlanComponent.getName());
+                    assertTrue(filePlanComponent.getName().startsWith(createdComponent.getName()));
+                    assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
+
+                } catch (NoSuchElementException e)
+                {
+                    fail("No child element for " + filePlanComponent.getId());
+                }
+            }
+            );
+    }
 
 }

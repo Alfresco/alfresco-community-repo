@@ -44,6 +44,11 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.google.gson.JsonObject;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+
 import com.jayway.restassured.RestAssured;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
@@ -99,7 +104,7 @@ public class BaseRestTest extends RestTest
 
     @Autowired
     private RMSiteAPI rmSiteAPI;
-    
+
     @Autowired
     private DataUser dataUser;
 
@@ -239,18 +244,18 @@ public class BaseRestTest extends RestTest
     public FilePlanComponent closeFolder(String folderId) throws Exception
     {
         RestWrapper restWrapper = filePlanComponentAPI.usingRestWrapper().authenticateUser(dataUser.getAdminUser());
-        
+
         // build fileplan component + properties for update request
         FilePlanComponentProperties properties = new FilePlanComponentProperties();
         properties.setIsClosed(true);
         FilePlanComponent filePlanComponent = new FilePlanComponent();
         filePlanComponent.setProperties(properties);
-        
+
         FilePlanComponent updatedComponent = filePlanComponentAPI.updateFilePlanComponent(filePlanComponent, folderId);
         restWrapper.assertStatusCodeIs(OK);
         return updatedComponent;
     }
-    
+
     /**
      * Helper method to create a randomly-named <category>/<folder> structure in fileplan
      * @param user user under whose privileges this structure is going to be created
@@ -261,14 +266,14 @@ public class BaseRestTest extends RestTest
     public FilePlanComponent createCategoryFolderInFilePlan(UserModel user, String parentId) throws Exception
     {
         filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
-        
+
         // create root category
         FilePlanComponent recordCategory = createCategory(parentId, "Category " + getRandomAlphanumeric());
-        
+
         // and return a folder underneath
         return createFolder(recordCategory.getId(), "Folder " + getRandomAlphanumeric());
     }
-    
+
     /**
      * Helper method to retieve a fileplan component with user's privilege
      * @param user user under whose privileges a component is to be read
@@ -281,6 +286,7 @@ public class BaseRestTest extends RestTest
         filePlanComponentAPI.usingRestWrapper().authenticateUser(user);
         return filePlanComponentAPI.getFilePlanComponent(componentId);
     }
+
     
     /**
      * Helper method to add permission on a component to user
@@ -323,5 +329,35 @@ public class BaseRestTest extends RestTest
             .prettyPeek()
             .andReturn();
         filePlanComponentAPI.usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+    }
+}
+
+    /**
+     * Create temp file
+     * real size content
+     *
+     * @param name file name
+     * @return {@link File} file
+     */
+    public static File createTempFile(final String name,String content)
+    {
+        try
+        {
+            // create file
+            final File file = File.createTempFile(name, ".txt");
+
+            // create writer
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 OutputStreamWriter writer = new OutputStreamWriter(fos, Charset.forName("UTF-8").newEncoder()))
+            {
+                // place content in file
+                writer.write(content);
+            }
+
+            return file;
+        } catch (Exception exception)
+        {
+            throw new RuntimeException("Unable to create test file.", exception);
+        }
     }
 }

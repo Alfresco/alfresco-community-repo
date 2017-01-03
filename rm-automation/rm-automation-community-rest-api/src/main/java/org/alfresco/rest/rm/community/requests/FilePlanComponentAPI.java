@@ -110,8 +110,8 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
 
         return usingRestWrapper().processModels(FilePlanComponentsCollection.class, simpleRequest(
                 GET,
-                "fileplan-components/{fileplanComponentId}/children",
-                filePlanComponentId
+                "fileplan-components/{fileplanComponentId}/children?{parameters}",
+                filePlanComponentId, getParameters()
         ));
     }
 
@@ -203,7 +203,7 @@ public class FilePlanComponentAPI extends RestAPI<FilePlanComponentAPI>
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
         
         /* 
-         * RestWrapper adds some headers which break multipart/form-data uploads and also assumes json POST requests. 
+         * RestWrapper adds some headers which break multipart/form-data uploads and also assumes json POST requests.
          * Upload the file using RestAssured library.
          */
         Response response = given()

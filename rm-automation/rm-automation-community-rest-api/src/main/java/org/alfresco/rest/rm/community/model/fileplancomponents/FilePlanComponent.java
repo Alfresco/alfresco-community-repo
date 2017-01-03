@@ -90,7 +90,7 @@ public class FilePlanComponent
     @JsonProperty (required = true)
     private FilePlanComponentUserInfo createdByUser;
 
-    @JsonProperty(value = PROPERTIES, required = true)
+    @JsonProperty(value = PROPERTIES)
     private FilePlanComponentProperties properties;
 
     @JsonProperty (value = ALLOWABLE_OPERATIONS)

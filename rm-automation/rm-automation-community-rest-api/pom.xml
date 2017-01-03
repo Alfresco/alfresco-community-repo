@@ -19,6 +19,16 @@
    </properties>
 
    <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <groupId>org.projectlombok</groupId>
+               <artifactId>lombok-maven-plugin</artifactId>
+               <version>1.16.10</version>
+            </plugin>
+         </plugins>
+
+      </pluginManagement>
       <plugins>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
@@ -28,6 +38,23 @@
                <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
                <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
             </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok-maven-plugin</artifactId>
+            <version>1.16.8.0</version>
+            <configuration>
+               <encoding>UTF-8</encoding>
+            </configuration>
+            <executions>
+               <execution>
+                  <phase>generate-sources</phase>
+                  <goals>
+                     <goal>testDelombok</goal>
+                     <goal>delombok</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

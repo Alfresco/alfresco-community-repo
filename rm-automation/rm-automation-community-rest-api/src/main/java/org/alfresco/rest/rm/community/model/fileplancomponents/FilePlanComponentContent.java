@@ -28,11 +28,20 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 /**
  * POJO for FilePlanComponent content field
  * @author Kristijan Conkas
  * @since 2.6
  */
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class FilePlanComponentContent
 {
     @JsonProperty (required = true)

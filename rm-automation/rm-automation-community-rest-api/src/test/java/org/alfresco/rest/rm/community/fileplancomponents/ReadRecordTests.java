@@ -289,7 +289,6 @@ public class ReadRecordTests extends BaseRMRestTest
     public void readRecordsFromFolders(String containerId) throws Exception
     {
         final int NUMBER_OF_RECORDS = 5;
-        //String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric();
 
         // Create Electronic Records
         ArrayList<FilePlanComponent> children = new ArrayList<FilePlanComponent>();
@@ -316,7 +315,7 @@ public class ReadRecordTests extends BaseRMRestTest
                                                                      .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
                                                                      .build();
             //create records
-            FilePlanComponent child= getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(nonelectronicRecord, containerId);
+            FilePlanComponent child = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(nonelectronicRecord, containerId);
             children.add(child);
         }
 
@@ -372,7 +371,7 @@ public class ReadRecordTests extends BaseRMRestTest
      * Then I receive error
      */
     @Test
-    public void readChildrenOnRecordsString() throws Exception
+    public void readChildrenOnRecords() throws Exception
     {
         String RELATIVE_PATH = "CATEGORY" + getRandomAlphanumeric() + "/FOLDER";
         FilePlanComponent electRecord = FilePlanComponent.builder()

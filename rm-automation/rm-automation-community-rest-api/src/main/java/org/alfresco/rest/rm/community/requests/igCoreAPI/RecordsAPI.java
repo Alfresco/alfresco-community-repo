@@ -71,6 +71,7 @@ public class RecordsAPI extends RMModelRequest
      * <li>{@code recordId} does not exist</li>
      * </ul>
      */
+    //FIXME Add a generic method to support retrieving  binary content
     public <T> T getRecordContentText(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);
@@ -98,6 +99,8 @@ public class RecordsAPI extends RMModelRequest
      * <li>{@code recordId} does not exist</li>
      * </ul>
      */
+    //FIXME Add a generic method to support retrieving  binary content as we might end up
+    //FIXME with too many methods for differents content types
     public RestHtmlResponse getRecordContent(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);

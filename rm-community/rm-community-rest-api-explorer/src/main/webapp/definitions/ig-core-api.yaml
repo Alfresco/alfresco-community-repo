@@ -667,7 +667,7 @@ paths:
           type: string
         - name: hideRecord
           in: query
-          description: Flag to indicate whether the record should be hiden from the curent parent folder.
+          description: Flag to indicate whether the record should be hidden from the current parent folder.
           type: boolean
           default: false
         - $ref: '#/parameters/IGNodeEntryIncludeParam'

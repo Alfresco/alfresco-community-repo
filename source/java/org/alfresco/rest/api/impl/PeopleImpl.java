@@ -511,12 +511,26 @@ public class PeopleImpl implements People
 
 	private void validateCreatePersonData(Person person)
 	{
+        validateUsername(person.getUserName());
         validateNamespaces(person.getAspectNames(), person.getProperties());
 		checkRequiredField("id", person.getUserName());
 		checkRequiredField("firstName", person.getFirstName());
 		checkRequiredField("email", person.getEmail());
 		checkRequiredField("password", person.getPassword());
 	}
+
+    private void validateUsername(String username)
+    {
+        if (username.length() > 100)
+        {
+            throw new InvalidArgumentException("Username is too long.");
+        }
+
+        if (username.indexOf('/') != -1)
+        {
+            throw new IllegalArgumentException("Username contains characters that are not permitted.");
+        }
+    }
 
     private void validateNamespaces(List<String> aspectNames, Map<String, Object> properties)
     {

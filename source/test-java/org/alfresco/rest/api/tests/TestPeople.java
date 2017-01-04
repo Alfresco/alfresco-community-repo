@@ -289,8 +289,18 @@ public class TestPeople extends EnterpriseTestApi
         assertEquals("userStatus", p.getUserStatus());
         assertEquals(true, p.isEnabled());
         assertEquals(true, p.isEmailNotificationsEnabled());
+
+        // -ve tests
+        // create person with username too long
+        person.setUserName("myUserName11111111111111111111111111111111111111111111111111111111111111111111111111111111@" + account1.getId());
+        people.create(person, 400);
+
+        // create person with special character '/'
+        person.setUserName("myUser/Name@" + account1.getId());
+        people.create(person, 400);
+
     }
-    
+
     @Test
     public void testCreatePerson_canCreateDisabledPerson() throws PublicApiException
     {
@@ -703,7 +713,7 @@ public class TestPeople extends EnterpriseTestApi
         assertTrue(person.getAspectNames().contains("papi:dessertable"));
         return person;
     }
-    
+
     @Test
     public void testUpdatePerson_withCustomProps() throws Exception
     {

@@ -271,7 +271,9 @@ public class FilePlanComponentAPI extends RMModelRequest
         }
 
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
+
         /*
+         * RestWrapper adds some headers which break multipart/form-data uploads and also assumes json POST requests.
          * Upload the file using RestAssured library.
          */
         Response response = given()

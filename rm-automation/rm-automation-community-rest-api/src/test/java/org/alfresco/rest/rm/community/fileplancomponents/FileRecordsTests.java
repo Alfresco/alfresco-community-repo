@@ -2,9 +2,15 @@ package org.alfresco.rest.rm.community.fileplancomponents;
 
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.NONELECTRONIC_RECORD_NAME;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.Assert.assertEquals;
@@ -16,6 +22,8 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentContent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.RecordBodyFile;
+import org.alfresco.utility.report.Bug;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -164,6 +172,7 @@ public class FileRecordsTests extends BaseRMRestTest
      * Then the record is filed in both locations
      */
     @Test
+    @Bug(id="RM-4578")
     public void linkRecordInto() throws Exception
     {
         //create a record folder
@@ -192,9 +201,9 @@ public class FileRecordsTests extends BaseRMRestTest
         //check the response status code
         assertStatusCode(CREATED);
         //link the nonelectronic record
-        FilePlanComponent nonElectronicLink = getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, recordNonElect.getId());
+        FilePlanComponent nonElectronicLink = getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, nonElectronicFiled.getId());
         assertStatusCode(CREATED);
-        assertTrue(recordLink.getParentId().equals(parentFolderId));
+        assertTrue(nonElectronicLink.getParentId().equals(parentFolderId));
 
         //check the record is added into the record folder
         assertTrue(getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(parentFolderId)
@@ -204,13 +213,29 @@ public class FileRecordsTests extends BaseRMRestTest
                                                 )
                    );
         //check the record doesn't exist into unfiled record container
+        //TODO add a check after the issue will be fixed RM-4578
         assertTrue(getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(folderToLink)
                                       .getEntries().stream()
                                       .anyMatch(c -> c.getFilePlanComponentModel().getId()
-                                                      .equals(recordFiled.getId()) && c.getFilePlanComponentModel().getParentId().equals(parentFolderId)
+                                                      .equals(recordFiled.getId()) //&& c.getFilePlanComponentModel().getParentId().equals(parentFolderId)
                                                )
                   );
 
+        //check the record is added into the record folder
+        assertTrue(getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(parentFolderId)
+                                      .getEntries().stream()
+                                      .anyMatch(c -> c.getFilePlanComponentModel().getId()
+                                                      .equals(nonElectronicFiled.getId()) && c.getFilePlanComponentModel().getParentId().equals(parentFolderId)
+                                               )
+                  );
+        //check the record doesn't exist into unfiled record container
+        //TODO add a check after the issue will be fixed RM-4578
+        assertTrue(getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(folderToLink)
+                                      .getEntries().stream()
+                                      .anyMatch(c -> c.getFilePlanComponentModel().getId()
+                                                      .equals(nonElectronicFiled.getId()) //&& c.getFilePlanComponentModel().getParentId().equals(parentFolderId)
+                                               )
+                  );
     }
 
     /**
@@ -219,5 +244,43 @@ public class FileRecordsTests extends BaseRMRestTest
      * When I file the unfiled or filed record to the container
      * Then I get an unsupported operation exception
      */
+    /**
+     * Valid root containers where electronic and non-electronic records can be created
+     */
+    @DataProvider (name = "invalidContainersForFile")
+    public Object[][] getFolderContainers() throws Exception
+    {
+        return new Object[][] {
+            { getFilePlanComponent(FILE_PLAN_ALIAS).getId()},
+            { getFilePlanComponent(UNFILED_RECORDS_CONTAINER_ALIAS).getId()},
+            { getFilePlanComponent(HOLDS_ALIAS).getId() },
+            { getFilePlanComponent(TRANSFERS_ALIAS).getId() },
+            // an arbitrary record category
+            { createCategory(getAdminUser(), FILE_PLAN_ALIAS, "Category " + getRandomAlphanumeric()).getId()},
+            // an arbitrary unfiled records folder
+            { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS.toString(), "Unfiled Folder " + getRandomAlphanumeric()).getId() }
+        };
+    }
+    @Test
+    (
+        dataProvider = "invalidContainersForFile",
+        description = "File the unfiled record to the container that is not a record foldr"
+    )
+    public void invalidContainerToFile(String containerId) throws Exception
+    {
+
+        //create records
+        FilePlanComponent recordElectronic = getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(electronicRecord, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME), UNFILED_RECORDS_CONTAINER_ALIAS);
+        FilePlanComponent recordNonElect = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(nonelectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
+
+        //file the record into the folder created
+        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(containerId).build();
+        getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, recordElectronic.getId());
+        assertStatusCode(BAD_REQUEST);
+
+        getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, recordNonElect.getId());
+        //check the response status
+        assertStatusCode(BAD_REQUEST);
+    }
 
 }

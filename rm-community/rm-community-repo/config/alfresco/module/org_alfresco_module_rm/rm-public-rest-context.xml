@@ -97,6 +97,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="fileFolderService" ref="FileFolderService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
+        <property name="authenticationUtil" ref="rm.authenticationUtil"/>
     </bean>
 
     <bean id="Records" class="org.springframework.aop.framework.ProxyFactoryBean">

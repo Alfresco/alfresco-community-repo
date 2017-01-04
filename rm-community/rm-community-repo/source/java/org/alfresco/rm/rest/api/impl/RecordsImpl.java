@@ -33,8 +33,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.node.integrity.IntegrityException;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -48,10 +48,17 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
+/**
+ * Centralizes access to record services
+ * 
+ * @author Ana Bozianu
+ * @since 2.6
+ */
 public class RecordsImpl implements Records, InitializingBean
 {
     protected RecordService recordService;
@@ -59,6 +66,7 @@ public class RecordsImpl implements Records, InitializingBean
     protected NodeService nodeService;
     protected FileFolderService fileFolderService;
     protected DictionaryService dictionaryService;
+    protected AuthenticationUtil authenticationUtil;
     protected RMNodes nodes;
 
     public void setRecordService(RecordService recordService)
@@ -86,6 +94,11 @@ public class RecordsImpl implements Records, InitializingBean
         this.dictionaryService = dictionaryService;
     }
 
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    {
+        this.authenticationUtil = authenticationUtil;
+    }
+
     public void setNodes(RMNodes nodes)
     {
         this.nodes = nodes;
@@ -94,17 +107,11 @@ public class RecordsImpl implements Records, InitializingBean
     @Override
     public Node declareFileAsRecord(String fileId, Parameters parameters)
     {
-        // Parameter check
-        if ((fileId == null) || (fileId.isEmpty()))
-        {
-            throw new InvalidArgumentException("Missing fileId");
-        }
-
         // Get file to be declared
         NodeRef fileNodeRef = nodes.validateNode(fileId) ;
 
         // Get fileplan
-        NodeRef filePlan = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+        NodeRef filePlan = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
             @Override
             public NodeRef doWork()
@@ -126,10 +133,7 @@ public class RecordsImpl implements Records, InitializingBean
     @Override
     public Node fileOrLinkRecord(String recordId, TargetContainer target, Parameters parameters)
     {
-        ParameterCheck.mandatoryString("recordId", recordId);
-
-        if((target.getTargetParentId() == null || target.getTargetParentId().isEmpty()) &&
-           (target.getRelativePath() == null || target.getRelativePath().isEmpty()))
+        if(StringUtils.isBlank(target.getTargetParentId()) && StringUtils.isBlank(target.getRelativePath()))
         {
             throw new InvalidParameterException("No target folder information was provided");
         }
@@ -142,7 +146,7 @@ public class RecordsImpl implements Records, InitializingBean
         if(parentContainerId == null || parentContainerId.isEmpty())
         {
             // If target container not provided get fileplan
-            parentContainerId = AuthenticationUtil.runAsSystem(new RunAsWork<String>()
+            parentContainerId = authenticationUtil.runAsSystem(new RunAsWork<String>()
             {
                 @Override
                 public String doWork()

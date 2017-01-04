@@ -119,14 +119,15 @@ public class RecordsAPI extends RMModelRequest
      * @param recordId       The id of the record to file
      * @return The {@link FilePlanComponent} with the given properties
      * @throws Exception for the following cases:
-     *                   <ul>
-     *                   <li>{@code fileplanComponentId} is not a valid format</li>
-     *                   <li>authentication fails</li>
-     *                   <li>current user does not have permission to add children to {@code fileplanComponentId}</li>
-     *                   <li>{@code fileplanComponentId} does not exist</li>
-     *                   <li>new name clashes with an existing node in the current parent container</li>
-     *                   <li>model integrity exception, including node name with invalid characters</li>
-     *                   </ul>
+     * <ul>
+     *  <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to file to {@code fileplanComponentId}</li>
+     *  <li>{@code recordId} does not exist</li>
+     *  <li>targetParentId from recordBodyFile does not exist</li>
+     *  <li>model integrity exception: the action breaks system's integrity restrictions</li>
+     * </ul>
+     *
      */
     public FilePlanComponent fileRecord(RecordBodyFile recordBodyFile, String recordId) throws Exception
     {
@@ -137,21 +138,21 @@ public class RecordsAPI extends RMModelRequest
     }
 
     /**
-     * Creates a file plan component with the given properties under the parent node with the given id
+     * File the record recordId into file plan structure based on the location sent via the request body
      *
-     * @param filePlanComponentModel The properties of the file plan component to be created
-     * @param parameters             The URL parameters to add
-     * @param parentId               The id of the parent where the new file plan component should be created
+     * @param recordBodyFile The properties where to file the record
+     * @param recordId       The id of the record to file
      * @return The {@link FilePlanComponent} with the given properties
      * @throws Exception for the following cases:
-     *                   <ul>
-     *                   <li>{@code fileplanComponentId} is not a valid format</li>
-     *                   <li>authentication fails</li>
-     *                   <li>current user does not have permission to add children to {@code fileplanComponentId}</li>
-     *                   <li>{@code fileplanComponentId} does not exist</li>
-     *                   <li>new name clashes with an existing node in the current parent container</li>
-     *                   <li>model integrity exception, including node name with invalid characters</li>
-     *                   </ul>
+     * <ul>
+     *  <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to file to {@code fileplanComponentId}</li>
+     *  <li>{@code recordId} does not exist</li>
+     *  <li>targetParentId from recordBodyFile does not exist</li>
+     *  <li>model integrity exception: the action breaks system's integrity restrictions</li>
+     * </ul>
+     *
      */
     public FilePlanComponent fileRecord(RecordBodyFile recordBodyFile, String recordId, String parameters) throws Exception
     {

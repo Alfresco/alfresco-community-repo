@@ -110,16 +110,23 @@ public interface TestData
     public static String CATEGORY_TITLE = "CATEGORY TITLE" + getRandomAlphanumeric();
 
     /**
-     * The default FOLDER name used when creating categories
+     * The default FOLDER name used when creating folders
      */
     public static String FOLDER_NAME = "FOLDER NAME" + getRandomAlphanumeric();
 
     /**
-     * The default FOLDER title used when creating categories
+     * The default FOLDER title used when creating folders
      */
     public static  String FOLDER_TITLE = "FOLDER TITLE" + getRandomAlphanumeric();
 
-
+    /**
+     * The default electronic record  name used when creating electronic records
+     */
+    public static String ELECTRONIC_RECORD_NAME = "Record electronic" + getRandomAlphanumeric();
+    /**
+     * The default Non electronic record name used when creating non-electronic records
+     */
+    public static String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
     /**
      * Data Provider with:
      * with the object types not allowed as children for a record category

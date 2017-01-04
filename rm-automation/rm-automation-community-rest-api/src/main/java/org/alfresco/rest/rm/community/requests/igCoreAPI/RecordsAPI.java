@@ -28,13 +28,20 @@ package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static com.jayway.restassured.RestAssured.given;
 
+import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.POST;
 
 import com.jayway.restassured.response.Response;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.model.RestHtmlResponse;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.community.model.fileplancomponents.RecordBodyFile;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpMethod;
@@ -84,7 +91,7 @@ public class RecordsAPI extends RMModelRequest
     }
 
     /**
-     * Get the html content for the electronic record
+     * Get the html response for the electronic record
      *
      * @param recordId The id of the electronic record
      * @return The content for the given record id
@@ -102,4 +109,61 @@ public class RecordsAPI extends RMModelRequest
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "records/{recordId}/content", recordId);
         return getRMRestWrapper().processHtmlResponse(request);
     }
+
+    /**
+     * File the record recordId into file plan structure based on the location sent via the request body
+     *
+     * @param recordBodyFile The properties where to file the record
+     * @param recordId       The id of the record to file
+     * @return The {@link FilePlanComponent} with the given properties
+     * @throws Exception for the following cases:
+     *                   <ul>
+     *                   <li>{@code fileplanComponentId} is not a valid format</li>
+     *                   <li>authentication fails</li>
+     *                   <li>current user does not have permission to add children to {@code fileplanComponentId}</li>
+     *                   <li>{@code fileplanComponentId} does not exist</li>
+     *                   <li>new name clashes with an existing node in the current parent container</li>
+     *                   <li>model integrity exception, including node name with invalid characters</li>
+     *                   </ul>
+     */
+    public FilePlanComponent fileRecord(RecordBodyFile recordBodyFile, String recordId) throws Exception
+    {
+        mandatoryObject("recordBodyFile", recordBodyFile);
+        mandatoryString("recordId", recordId);
+
+        return fileRecord(recordBodyFile, recordId, EMPTY);
+    }
+
+    /**
+     * Creates a file plan component with the given properties under the parent node with the given id
+     *
+     * @param filePlanComponentModel The properties of the file plan component to be created
+     * @param parameters             The URL parameters to add
+     * @param parentId               The id of the parent where the new file plan component should be created
+     * @return The {@link FilePlanComponent} with the given properties
+     * @throws Exception for the following cases:
+     *                   <ul>
+     *                   <li>{@code fileplanComponentId} is not a valid format</li>
+     *                   <li>authentication fails</li>
+     *                   <li>current user does not have permission to add children to {@code fileplanComponentId}</li>
+     *                   <li>{@code fileplanComponentId} does not exist</li>
+     *                   <li>new name clashes with an existing node in the current parent container</li>
+     *                   <li>model integrity exception, including node name with invalid characters</li>
+     *                   </ul>
+     */
+    public FilePlanComponent fileRecord(RecordBodyFile recordBodyFile, String recordId, String parameters) throws Exception
+    {
+        mandatoryObject("requestBodyFile", recordBodyFile);
+        mandatoryString("recordId", recordId);
+
+        return getRMRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
+            POST,
+            toJson(recordBodyFile),
+            "/records/{recordId}/file?{parameters}",
+            recordId,
+            parameters
+        ));
+    }
+
 }
+

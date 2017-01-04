@@ -357,7 +357,8 @@ public class ReadRecordTests extends BaseRMRestTest
                     assertTrue(filePlanComponent.getName().startsWith(createdComponent.getName()));
                     assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
 
-                } catch (NoSuchElementException e)
+                }
+                catch (NoSuchElementException e)
                 {
                     fail("No child element for " + filePlanComponent.getId());
                 }

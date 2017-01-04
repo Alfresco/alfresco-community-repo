@@ -30,6 +30,11 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 
@@ -100,5 +105,33 @@ public class FilePlanComponentsUtil
                                 .title(title)
                                 .build())
                 .build();
+    }
+
+    /**
+     * Create temp file with content
+     *
+     * @param name file name
+     * @return {@link File} file
+     */
+    public static File createTempFile(final String name, String content)
+    {
+        try
+        {
+            // create file
+            final File file = File.createTempFile(name, ".txt");
+
+            // create writer
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 OutputStreamWriter writer = new OutputStreamWriter(fos, Charset.forName("UTF-8").newEncoder()))
+            {
+                // place content in file
+                writer.write(content);
+            }
+
+            return file;
+        } catch (Exception exception)
+        {
+            throw new RuntimeException("Unable to create test file.", exception);
+        }
     }
 }

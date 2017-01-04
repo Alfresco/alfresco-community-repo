@@ -331,31 +331,4 @@ public class BaseRMRestTest extends RestTest
         return getFilePlanComponentAsUser(getAdminUser(), componentId);
     }
 
-   /**
-     * Create temp file with content
-     *
-     * @param name file name
-     * @return {@link File} file
-     */
-    public static File createTempFile(final String name, String content)
-    {
-        try
-        {
-            // create file
-            final File file = File.createTempFile(name, ".txt");
-
-            // create writer
-            try (FileOutputStream fos = new FileOutputStream(file);
-                 OutputStreamWriter writer = new OutputStreamWriter(fos, Charset.forName("UTF-8").newEncoder()))
-            {
-                // place content in file
-                writer.write(content);
-            }
-
-            return file;
-        } catch (Exception exception)
-        {
-            throw new RuntimeException("Unable to create test file.", exception);
-        }
-    }
 }

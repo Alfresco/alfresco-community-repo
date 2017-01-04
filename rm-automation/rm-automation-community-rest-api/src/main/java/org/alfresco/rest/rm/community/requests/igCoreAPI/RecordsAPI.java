@@ -71,10 +71,13 @@ public class RecordsAPI extends RMModelRequest
      * <li>{@code recordId} does not exist</li>
      * </ul>
      */
+    //FIXME Add a generic method to support retrieving  binary content
     public <T> T getRecordContentText(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);
-        Response response = given().auth().basic(getRMRestWrapper().getTestUser().getUsername(), getRMRestWrapper().getTestUser().getPassword())
+        Response response = given().auth().basic(getRMRestWrapper().getTestUser().getUsername(),
+                                                 getRMRestWrapper().getTestUser().getPassword()
+                                                )
                                    .get("records/{recordId}/content", recordId)
                                    .andReturn();
 
@@ -84,10 +87,10 @@ public class RecordsAPI extends RMModelRequest
     }
 
     /**
-     * Get the html content for the electronic record
+     * Get the content RestHtmlResponse(Response header and body) for the electronic record
      *
      * @param recordId The id of the electronic record
-     * @return The content for the given record id
+     * @return The body and the header for the record
      * @throws Exception for the following cases:
      * <ul>
      * <li>{@code recordId} has no content</li>
@@ -96,6 +99,8 @@ public class RecordsAPI extends RMModelRequest
      * <li>{@code recordId} does not exist</li>
      * </ul>
      */
+    //FIXME Add a generic method to support retrieving  binary content as we might end up
+    //FIXME with too many methods for differents content types
     public RestHtmlResponse getRecordContent(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);

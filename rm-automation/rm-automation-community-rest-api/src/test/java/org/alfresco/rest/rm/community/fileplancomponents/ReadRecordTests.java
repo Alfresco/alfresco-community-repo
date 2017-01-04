@@ -35,6 +35,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
@@ -53,6 +54,7 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentContent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -85,6 +87,7 @@ public class ReadRecordTests extends BaseRMRestTest
                                                              .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
                                                              .build();
 
+
     /**
      * Given a record category or a container which can't contain records
      * When I try to read the children filtering the results to records
@@ -107,7 +110,7 @@ public class ReadRecordTests extends BaseRMRestTest
     )
     public void readRecordsFromInvalidContainers(String container) throws Exception
     {
-
+        FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         FilePlanComponent electronicRecord = FilePlanComponent.builder()
                                                               .name(ELECTRONIC_RECORD_NAME)
                                                               .nodeType(CONTENT_TYPE.toString())
@@ -122,12 +125,12 @@ public class ReadRecordTests extends BaseRMRestTest
                                                                  .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
                                                                  .build();
         //create records
-        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(electronicRecord, container);
-        getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(nonelectronicRecord, container);
+        filePlanComponentAPI.createFilePlanComponent(electronicRecord, container);
+        filePlanComponentAPI.createFilePlanComponent(nonelectronicRecord, container);
 
 
         // List children from API
-        getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(container, "where=(isFile=true)")
+        filePlanComponentAPI.listChildComponents(container, "where=(isFile=true)")
                            .assertThat()//check the list returned is empty
                            .entriesListIsEmpty().assertThat().paginationExist();
         //check response status code
@@ -144,17 +147,19 @@ public class ReadRecordTests extends BaseRMRestTest
     public void readRecordMetadata() throws Exception
     {
         String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric() + "/folder";
-               //create the containers from the relativePath
+        FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        //create the containers from the relativePath
         FilePlanComponent recordFolder = FilePlanComponent.builder()
                                                           .name(FOLDER_NAME)
                                                           .nodeType(RECORD_FOLDER_TYPE.toString())
                                                           .relativePath(RELATIVE_PATH)
                                                           .build();
-        String folderId = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS.toString()).getId();
+        String folderId = filePlanComponentAPI.createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS.toString()).getId();
         //create electronic record
-        String recordWithContentId = getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(electronicRecord, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME), folderId).getId();
+
+        String recordWithContentId = filePlanComponentAPI.createElectronicRecord(electronicRecord, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME), folderId).getId();
         //Get the record created
-        FilePlanComponent recordWithContent=getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(recordWithContentId, "include = "+IS_COMPLETED);
+        FilePlanComponent recordWithContent= filePlanComponentAPI.getFilePlanComponent(recordWithContentId, "include = "+IS_COMPLETED);
         //Check the metadata returned
         assertTrue(recordWithContent.getName().startsWith(ELECTRONIC_RECORD_NAME));
         assertTrue(recordWithContent.getIsFile());
@@ -168,9 +173,9 @@ public class ReadRecordTests extends BaseRMRestTest
         assertStatusCode(OK);
 
         //create non-electronic record
-        String nonElectronicRecordId = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(nonelectronicRecord, folderId).getId();
+        String nonElectronicRecordId = filePlanComponentAPI.createFilePlanComponent(nonelectronicRecord, folderId).getId();
         //Get the record created
-        FilePlanComponent nonElectronicRecord = getRestAPIFactory().getFilePlanComponentsAPI().getFilePlanComponent(nonElectronicRecordId, "include = " + IS_COMPLETED);
+        FilePlanComponent nonElectronicRecord = filePlanComponentAPI.getFilePlanComponent(nonElectronicRecordId, "include = " + IS_COMPLETED);
 
         //Check the metadata returned
         assertTrue(nonElectronicRecord.getName().startsWith(NONELECTRONIC_RECORD_NAME));
@@ -196,19 +201,20 @@ public class ReadRecordTests extends BaseRMRestTest
     {
         String RECORD_ELECTRONIC = "Record " + getRandomAlphanumeric();
         String RELATIVE_PATH = "/"+CATEGORY_NAME+ getRandomAlphanumeric()+"/folder";
+        FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         //create the containers from the relativePath
         FilePlanComponent recordFolder = FilePlanComponent.builder()
                                                     .name(FOLDER_NAME)
                                                     .nodeType(RECORD_FOLDER_TYPE.toString())
                                                     .relativePath(RELATIVE_PATH)
                                                     .build();
-        String folderId = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordFolder,FILE_PLAN_ALIAS.toString()).getId();
+        String folderId = filePlanComponentAPI.createFilePlanComponent(recordFolder,FILE_PLAN_ALIAS.toString()).getId();
         //
         FilePlanComponent record = FilePlanComponent.builder()
                                                     .name(RECORD_ELECTRONIC)
                                                     .nodeType(CONTENT_TYPE.toString())
                                                     .build();
-        String recordId = getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(record, createTempFile(RECORD_ELECTRONIC, RECORD_ELECTRONIC), folderId).getId();
+        String recordId = filePlanComponentAPI.createElectronicRecord(record, createTempFile(RECORD_ELECTRONIC, RECORD_ELECTRONIC), folderId).getId();
 
         assertEquals(getRestAPIFactory().getRecordsAPI().getRecordContentText(recordId),RECORD_ELECTRONIC);
         // Check status code
@@ -218,7 +224,7 @@ public class ReadRecordTests extends BaseRMRestTest
                                                     .name(RECORD_ELECTRONIC)
                                                     .nodeType(CONTENT_TYPE.toString())
                                                     .build();
-        String recordNoContentId = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(recordNoContent,folderId).getId();
+        String recordNoContentId = filePlanComponentAPI.createFilePlanComponent(recordNoContent,folderId).getId();
         assertTrue(getRestAPIFactory().getRecordsAPI().getRecordContentText(recordNoContentId).toString().isEmpty());
         assertStatusCode(OK);
     }
@@ -232,13 +238,14 @@ public class ReadRecordTests extends BaseRMRestTest
     {
 
         String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
+        FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         FilePlanComponent record = FilePlanComponent.builder()
                                                     .name(NONELECTRONIC_RECORD_NAME)
                                                     .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
                                                     .relativePath("/"+CATEGORY_NAME+getRandomAlphanumeric()+"/"+FOLDER_NAME)
                                                     .build();
 
-        String nonElectronicRecord= getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(record,FILE_PLAN_ALIAS.toString()).getId();
+        String nonElectronicRecord= filePlanComponentAPI.createFilePlanComponent(record,FILE_PLAN_ALIAS.toString()).getId();
 
 
         assertTrue(getRestAPIFactory().getRecordsAPI().getRecordContentText(nonElectronicRecord).toString().isEmpty());
@@ -289,18 +296,18 @@ public class ReadRecordTests extends BaseRMRestTest
     public void readRecordsFromFolders(String containerId) throws Exception
     {
         final int NUMBER_OF_RECORDS = 5;
-
+        FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         // Create Electronic Records
         ArrayList<FilePlanComponent> children = new ArrayList<FilePlanComponent>();
         for (int i = 0; i < NUMBER_OF_RECORDS; i++)
         {
-            //build de electronic record
+            //build the electronic record
             FilePlanComponent record = FilePlanComponent.builder()
                                                         .name(ELECTRONIC_RECORD_NAME +i)
                                                         .nodeType(CONTENT_TYPE.toString())
                                                         .build();
             //create a child
-            FilePlanComponent child = getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(record, createTempFile(ELECTRONIC_RECORD_NAME + i, ELECTRONIC_RECORD_NAME + i ), containerId);
+            FilePlanComponent child = filePlanComponentAPI.createElectronicRecord(record, createTempFile(ELECTRONIC_RECORD_NAME + i, ELECTRONIC_RECORD_NAME + i ), containerId);
             children.add(child);
         }
         //Create NonElectronicRecords
@@ -315,13 +322,13 @@ public class ReadRecordTests extends BaseRMRestTest
                                                                      .nodeType(NON_ELECTRONIC_RECORD_TYPE.toString())
                                                                      .build();
             //create records
-            FilePlanComponent child = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(nonelectronicRecord, containerId);
+            FilePlanComponent child = filePlanComponentAPI.createFilePlanComponent(nonelectronicRecord, containerId);
             children.add(child);
         }
 
         // List children from API
         FilePlanComponentsCollection apiChildren =
-            (FilePlanComponentsCollection) getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(containerId).assertThat().entriesListIsNotEmpty();
+            (FilePlanComponentsCollection) filePlanComponentAPI.listChildComponents(containerId).assertThat().entriesListIsNotEmpty();
 
         // Check status code
         assertStatusCode(OK);
@@ -375,6 +382,7 @@ public class ReadRecordTests extends BaseRMRestTest
     public void readChildrenOnRecords() throws Exception
     {
         String RELATIVE_PATH = "CATEGORY" + getRandomAlphanumeric() + "/FOLDER";
+        FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         FilePlanComponent electRecord = FilePlanComponent.builder()
                                                               .name(ELECTRONIC_RECORD_NAME)
                                                               .nodeType(CONTENT_TYPE.toString())
@@ -390,18 +398,18 @@ public class ReadRecordTests extends BaseRMRestTest
                                                                  .build();
 
         //create records in Unfiled Container
-        FilePlanComponent recordElecInUnfiled = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(electRecord, UNFILED_RECORDS_CONTAINER_ALIAS.toString());
-        FilePlanComponent recordNonElecInUnfiled = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(nonElectronic, UNFILED_RECORDS_CONTAINER_ALIAS.toString());
+        FilePlanComponent recordElecInUnfiled = filePlanComponentAPI.createFilePlanComponent(electRecord, UNFILED_RECORDS_CONTAINER_ALIAS.toString());
+        FilePlanComponent recordNonElecInUnfiled = filePlanComponentAPI.createFilePlanComponent(nonElectronic, UNFILED_RECORDS_CONTAINER_ALIAS.toString());
 
         // List children for the electronic Record
-        getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(recordElecInUnfiled.getId(), "where=(isFile=true)")
+        filePlanComponentAPI.listChildComponents(recordElecInUnfiled.getId(), "where=(isFile=true)")
                             //check the list returned is empty
                             .assertThat().entriesListIsEmpty().assertThat().paginationExist();
         // Check status code
         assertStatusCode(OK);
 
         // List children for the nonElectronic Record
-        getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(recordNonElecInUnfiled.getId(), "where=(isFile=true)")
+        filePlanComponentAPI.listChildComponents(recordNonElecInUnfiled.getId(), "where=(isFile=true)")
                             //check the list returned is empty
                             .assertThat().entriesListIsEmpty().assertThat().paginationExist();
         // Check status code
@@ -412,11 +420,11 @@ public class ReadRecordTests extends BaseRMRestTest
         nonElectronic.setRelativePath(RELATIVE_PATH);
 
         //create records in Unfiled Container
-        FilePlanComponent recordElecFromRecordFolder = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(electRecord, FILE_PLAN_ALIAS.toString());
-        FilePlanComponent recordNonElecFromRecordFolder = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(nonElectronic, FILE_PLAN_ALIAS.toString());
+        FilePlanComponent recordElecFromRecordFolder = filePlanComponentAPI.createFilePlanComponent(electRecord, FILE_PLAN_ALIAS.toString());
+        FilePlanComponent recordNonElecFromRecordFolder = filePlanComponentAPI.createFilePlanComponent(nonElectronic, FILE_PLAN_ALIAS.toString());
 
         // List children for the electronic Record
-        getRestAPIFactory().getFilePlanComponentsAPI().listChildComponents(recordElecFromRecordFolder.getId(), "where=(isFile=true)")
+        filePlanComponentAPI.listChildComponents(recordElecFromRecordFolder.getId(), "where=(isFile=true)")
                             //check the list returned is empty
                             .assertThat().entriesListIsEmpty().assertThat().paginationExist();
         // Check status code

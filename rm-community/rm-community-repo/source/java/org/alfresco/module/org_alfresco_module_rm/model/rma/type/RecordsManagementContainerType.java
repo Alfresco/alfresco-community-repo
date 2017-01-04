@@ -124,7 +124,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     @Behaviour
     (
        kind = BehaviourKind.ASSOCIATION,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT,
+       // execute on first event so the response of the create child operation contains the correct name
+       notificationFrequency = NotificationFrequency.FIRST_EVENT,
        name = BEHAVIOUR_NAME
     )
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)

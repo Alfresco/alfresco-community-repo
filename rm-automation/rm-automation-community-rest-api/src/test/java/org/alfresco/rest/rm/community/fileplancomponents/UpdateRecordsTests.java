@@ -26,32 +26,28 @@
  */
 package org.alfresco.rest.rm.community.fileplancomponents;
 
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
-import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
-
-import static org.testng.Assert.assertEquals;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.community.model.user.UserPermissions;
+import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.RMUserAPI;
 import org.alfresco.test.AlfrescoTest;
-import org.testng.annotations.DataProvider;
+import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -64,23 +60,9 @@ import org.testng.annotations.Test;
  */
 public class UpdateRecordsTests extends BaseRMRestTest
 {
-    /** Valid root containers where electronic records can be created */
-    @DataProvider(name = "invalidParentContainers")
-    public Object[][] invalidContainers() throws Exception
-    {
-        return new Object[][]
-        {
-            // record category
-            { getFilePlanComponent(createCategoryFolderInFilePlan().getParentId()) },
-            // file plan root
-            { getFilePlanComponent(FILE_PLAN_ALIAS) },
-            // transfers
-            { getFilePlanComponent(TRANSFERS_ALIAS) },
-            // holds
-            { getFilePlanComponent(HOLDS_ALIAS) },
-        };
-    }
-
+    @Autowired
+    private RMUserAPI rmUserAPI;
+    
     /* to be used to append to modifications */
     private final String MODIFIED_PREFIX = "modified_";
     
@@ -136,6 +118,82 @@ public class UpdateRecordsTests extends BaseRMRestTest
     
     /**
      * <pre>
+     * Given an incomplete record
+     * And that I am a non-admin user with metadata update capabilities
+     * When I try to update the records meta-data
+     * Then the record is successfully updated
+     * </pre>
+     * @throws Exception
+     */
+    @Test
+    (
+        description = "User with Edit Metadata capabilities can update incomplete record's metadata"
+    )
+    @AlfrescoTest(jira="RM-4362")
+    public void userWithEditMetadataCapsCanUpdateMetadata() throws Exception
+    {   
+        // create test user and add it with collab. privileges
+        UserModel updateUser = getDataUser().createRandomTestUser("updateuser");
+        updateUser.setUserRole(UserRole.SiteCollaborator);
+        getDataUser().addUserToSite(updateUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), UserRole.SiteCollaborator);
+
+        // RM Security Officer is the lowest role with Edit Record Metadata capabilities
+        rmUserAPI.assignRoleToUser(updateUser.getUsername(), UserRoles.ROLE_RM_SECURITY_OFFICER);
+        rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
+
+        // create random folder
+        FilePlanComponent randomFolder = createCategoryFolderInFilePlan();
+        logger.info("random folder:" + randomFolder.getName());
+
+        // grant updateUser Filing privileges on randomFolder category, this will be
+        // inherited to randomFolder
+        FilePlanComponentAPI filePlanComponentsAPIAsAdmin = getRestAPIFactory().getFilePlanComponentsAPI();
+        rmUserAPI.addUserPermission(filePlanComponentsAPIAsAdmin.getFilePlanComponent(randomFolder.getParentId()),
+            updateUser, UserPermissions.PERMISSION_FILING);
+        rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        
+        // create electronic and non-electronic records in a folder
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        FilePlanComponent electronicRecord = filePlanComponentsAPI.createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, randomFolder.getId());
+        assertStatusCode(CREATED);
+        FilePlanComponent nonElectronicRecord = filePlanComponentsAPI.createFilePlanComponent(createNonElectronicRecordModel(), randomFolder.getId());
+        assertStatusCode(CREATED);
+        
+        // get FilePlanComponentAPI instance initialised to updateUser
+        FilePlanComponentAPI filePlanComponentsAPIAsUser = getRestAPIFactory().getFilePlanComponentsAPI(updateUser);
+        
+        for (FilePlanComponent record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
+            filePlanComponentsAPIAsUser.getFilePlanComponent(record.getId());
+            assertStatusCode(OK);
+            
+            // generate update metadata
+            String newName = getModifiedPropertyValue(record.getName());
+            String newTitle = getModifiedPropertyValue(record.getProperties().getTitle());
+            String newDescription = getModifiedPropertyValue(record.getProperties().getDescription());
+
+            FilePlanComponent updateRecord = FilePlanComponent.builder()
+                .name(newName)
+                .properties(FilePlanComponentProperties.builder()
+                    .description(newDescription)
+                    .title(newTitle)
+                    .build())
+                .build();
+
+            // update record
+            filePlanComponentsAPIAsUser.updateFilePlanComponent(updateRecord, record.getId());
+            assertStatusCode(OK);
+
+            // verify the update got applied
+            FilePlanComponent updatedRecord = filePlanComponentsAPIAsUser.getFilePlanComponent(record.getId());
+            assertEquals(updatedRecord.getName(), newName);
+            assertEquals(updatedRecord.getProperties().getTitle(), newTitle);
+            assertEquals(updatedRecord.getProperties().getDescription(), newDescription);
+            assertEquals(updatedRecord.getModifiedByUser().getId(), updateUser.getUsername());
+        }
+    }
+    
+    /**
+     * <pre>
      * Given a complete record
      * When I try to update the records meta-data
      * Then it fails
@@ -146,7 +204,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
     @Test
     (
         dataProvider = "validRootContainers",
-        description = "Complete records can be updated"
+        description = "Complete records can't be updated"
     )
     @AlfrescoTest(jira="RM-4362")
     public void completeRecordsCantBeUpdated(FilePlanComponent recordFolder) throws Exception

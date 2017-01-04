@@ -30,19 +30,26 @@ import static org.alfresco.rest.rm.community.base.TestData.CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_CLOSED_RECORD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createFilePlanComponentModel;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+
+import java.util.List;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
@@ -272,6 +279,31 @@ public class BaseRMRestTest extends RestTest
         return updatedComponent;
     }
 
+    /**
+     * Helper method to close record
+     *
+     * @param recordToClose Record to close
+     * @return The closed record
+     * @throws Exception
+     */
+    public FilePlanComponent closeRecord(FilePlanComponent recordToClose) throws Exception
+    {
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        List<String> aspects = filePlanComponentsAPI.getFilePlanComponent(recordToClose.getId()).getAspectNames();
+        // this operation is only valid for records
+        assertTrue(aspects.contains(RECORD_TYPE));
+        // a record mustn't be closed
+        assertFalse(aspects.contains(ASPECTS_CLOSED_RECORD));
+        
+        // add closed record aspect
+        aspects.add(ASPECTS_CLOSED_RECORD);
+        
+        FilePlanComponent updatedComponent = filePlanComponentsAPI.updateFilePlanComponent(FilePlanComponent.builder().aspectNames(aspects).build(), 
+            recordToClose.getId());
+        assertStatusCode(OK);
+        return updatedComponent;
+    }
+    
     /**
      * Helper method to create a randomly-named <category>/<folder> structure in file plan
      *

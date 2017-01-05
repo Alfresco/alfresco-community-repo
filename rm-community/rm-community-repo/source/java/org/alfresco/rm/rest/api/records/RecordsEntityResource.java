@@ -87,12 +87,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     @WebApiDescription(title = "File record", description="File a record into fileplan.")
     public Node fileRecord(String recordId, TargetContainer target, Parameters parameters, WithResponse withResponse)
     {
-        try{
-                return records.fileOrLinkRecord(recordId, target, parameters);
-        }catch(Exception ex)
-       {
-           throw ex;
-       }
+        return records.fileOrLinkRecord(recordId, target, parameters);
     }
 
     @Override

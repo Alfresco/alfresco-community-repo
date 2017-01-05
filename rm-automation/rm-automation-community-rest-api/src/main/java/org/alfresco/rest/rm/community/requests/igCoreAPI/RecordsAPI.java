@@ -28,12 +28,19 @@ package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static com.jayway.restassured.RestAssured.given;
 
+import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.POST;
 
 import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ResponseBody;
 
 import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
+import org.alfresco.rest.rm.community.model.fileplancomponents.RecordBodyFile;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -81,4 +88,62 @@ public class RecordsAPI extends RMModelRequest
         getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
         return response.getBody();
     }
+
+    /**
+     * File the record recordId into file plan structure based on the location sent via the request body
+     *
+     * @param recordBodyFile The properties where to file the record
+     * @param recordId       The id of the record to file
+     * @return The {@link FilePlanComponent} with the given properties
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to file to {@code fileplanComponentId}</li>
+     *  <li>{@code recordId} does not exist</li>
+     *  <li>targetParentId from recordBodyFile does not exist</li>
+     *  <li>model integrity exception: the action breaks system's integrity restrictions</li>
+     * </ul>
+     *
+     */
+    public FilePlanComponent fileRecord(RecordBodyFile recordBodyFile, String recordId) throws Exception
+    {
+        mandatoryObject("recordBodyFile", recordBodyFile);
+        mandatoryString("recordId", recordId);
+
+        return fileRecord(recordBodyFile, recordId, EMPTY);
+    }
+
+    /**
+     * File the record recordId into file plan structure based on the location sent via the request body
+     *
+     * @param recordBodyFile The properties where to file the record
+     * @param recordId       The id of the record to file
+     * @return The {@link FilePlanComponent} with the given properties
+     * @throws Exception for the following cases:
+     * <ul>
+     *  <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
+     *  <li>authentication fails</li>
+     *  <li>current user does not have permission to file to {@code fileplanComponentId}</li>
+     *  <li>{@code recordId} does not exist</li>
+     *  <li>targetParentId from recordBodyFile does not exist</li>
+     *  <li>model integrity exception: the action breaks system's integrity restrictions</li>
+     * </ul>
+     *
+     */
+    public FilePlanComponent fileRecord(RecordBodyFile recordBodyFile, String recordId, String parameters) throws Exception
+    {
+        mandatoryObject("requestBodyFile", recordBodyFile);
+        mandatoryString("recordId", recordId);
+
+        return getRMRestWrapper().processModel(FilePlanComponent.class, requestWithBody(
+            POST,
+            toJson(recordBodyFile),
+            "/records/{recordId}/file?{parameters}",
+            recordId,
+            parameters
+        ));
+    }
+
 }
+

@@ -35,6 +35,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -45,8 +46,12 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertTrue;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
+
+import com.google.common.io.Resources;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
@@ -55,6 +60,7 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -77,7 +83,7 @@ public class ReadRecordTests extends BaseRMRestTest
                                                           .nodeType(CONTENT_TYPE.toString())
                                                           .content(FilePlanComponentContent.builder().mimeType("text/plain").build())
                                                           .build();
-
+    
     private  FilePlanComponent nonelectronicRecord = FilePlanComponent.builder()
                                                              .properties(FilePlanComponentProperties.builder()
                                                                                                     .description(NONELECTRONIC_RECORD_NAME)
@@ -200,32 +206,48 @@ public class ReadRecordTests extends BaseRMRestTest
     public void readRecordContent() throws Exception
     {
         String RECORD_ELECTRONIC = "Record " + getRandomAlphanumeric();
-        String RELATIVE_PATH = "/"+CATEGORY_NAME+ getRandomAlphanumeric()+"/folder";
+        String RECORD_ELECTRONIC_BINARY = "Binary Record" + getRandomAlphanumeric();
+        String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric() + "/folder";
+        
+        // create the containers from the relativePath
         FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
-        //create the containers from the relativePath
         FilePlanComponent recordFolder = FilePlanComponent.builder()
                                                     .name(FOLDER_NAME)
                                                     .nodeType(RECORD_FOLDER_TYPE.toString())
                                                     .relativePath(RELATIVE_PATH)
                                                     .build();
-        String folderId = filePlanComponentAPI.createFilePlanComponent(recordFolder,FILE_PLAN_ALIAS.toString()).getId();
-        //
-        FilePlanComponent record = FilePlanComponent.builder()
+        String folderId = filePlanComponentAPI.createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS.toString()).getId();
+               
+        // text file as an electronic record
+        FilePlanComponent recordText = FilePlanComponent.builder()
                                                     .name(RECORD_ELECTRONIC)
                                                     .nodeType(CONTENT_TYPE.toString())
                                                     .build();
-        String recordId = filePlanComponentAPI.createElectronicRecord(record, createTempFile(RECORD_ELECTRONIC, RECORD_ELECTRONIC), folderId).getId();
-
-        assertEquals(getRestAPIFactory().getRecordsAPI().getRecordContentText(recordId),RECORD_ELECTRONIC);
+        String recordId = filePlanComponentAPI.createElectronicRecord(recordText, createTempFile(RECORD_ELECTRONIC, RECORD_ELECTRONIC), folderId).getId();
+        assertEquals(getRestAPIFactory().getRecordsAPI().getRecordContent(recordId).asString(), RECORD_ELECTRONIC);
         // Check status code
         assertStatusCode(OK);
 
+        // binary file as an electronic record
+        FilePlanComponent recordBinary = FilePlanComponent.builder()
+            .name(RECORD_ELECTRONIC_BINARY)
+            .nodeType(CONTENT_TYPE.toString())
+            .build();
+       
+        String binaryRecordId = filePlanComponentAPI.createElectronicRecord(recordBinary, IMAGE_FILE, folderId).getId();
+        // binary content, therefore compare respective SHA1 checksums in order to verify this is identical content
+        assertEquals(
+            DigestUtils.sha1(getRestAPIFactory().getRecordsAPI().getRecordContent(binaryRecordId).asInputStream()),
+            DigestUtils.sha1(new FileInputStream(new File(Resources.getResource(IMAGE_FILE).getFile()))));
+        assertStatusCode(OK);
+        
+        // electronic record with no content
         FilePlanComponent recordNoContent = FilePlanComponent.builder()
                                                     .name(RECORD_ELECTRONIC)
                                                     .nodeType(CONTENT_TYPE.toString())
                                                     .build();
         String recordNoContentId = filePlanComponentAPI.createFilePlanComponent(recordNoContent,folderId).getId();
-        assertTrue(getRestAPIFactory().getRecordsAPI().getRecordContentText(recordNoContentId).toString().isEmpty());
+        assertTrue(getRestAPIFactory().getRecordsAPI().getRecordContent(recordNoContentId).asString().isEmpty());
         assertStatusCode(OK);
     }
     /**
@@ -245,12 +267,11 @@ public class ReadRecordTests extends BaseRMRestTest
                                                     .relativePath("/"+CATEGORY_NAME+getRandomAlphanumeric()+"/"+FOLDER_NAME)
                                                     .build();
 
-        String nonElectronicRecord= filePlanComponentAPI.createFilePlanComponent(record,FILE_PLAN_ALIAS.toString()).getId();
+        String nonElectronicRecord = filePlanComponentAPI.createFilePlanComponent(record,FILE_PLAN_ALIAS.toString()).getId();
 
 
-        assertTrue(getRestAPIFactory().getRecordsAPI().getRecordContentText(nonElectronicRecord).toString().isEmpty());
+        assertTrue(getRestAPIFactory().getRecordsAPI().getRecordContent(nonElectronicRecord).asString().isEmpty());
         assertStatusCode(OK);
-
     }
 
     /**
@@ -266,7 +287,7 @@ public class ReadRecordTests extends BaseRMRestTest
     )
     public void readContentFromInvalidContainers(String container) throws Exception
     {
-        getRestAPIFactory().getRecordsAPI().getRecordContentText(container).toString();
+        getRestAPIFactory().getRecordsAPI().getRecordContent(container).asString();
         assertStatusCode(BAD_REQUEST);
     }
 

@@ -31,20 +31,18 @@ import static com.jayway.restassured.RestAssured.given;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 
 import com.jayway.restassured.response.Response;
+import com.jayway.restassured.response.ResponseBody;
 
 import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.core.RestRequest;
-import org.alfresco.rest.model.RestHtmlResponse;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 /**
- *Records  REST API Wrapper
+ * Records  REST API Wrapper
  *
- *@author Rodica Sutu
- *@since 2.6
+ * @author Rodica Sutu
+ * @since 2.6
  */
 @Component
 @Scope (value = "prototype")
@@ -62,7 +60,7 @@ public class RecordsAPI extends RMModelRequest
      * Get the content for the electronic record
      *
      * @param recordId The id of the electronic record
-     * @return The content for the given record id
+     * @return {@link ResponseBody} representing content for the given record id
      * @throws Exception for the following cases:
      * <ul>
      * <li>{@code recordId} has no content</li>
@@ -71,40 +69,16 @@ public class RecordsAPI extends RMModelRequest
      * <li>{@code recordId} does not exist</li>
      * </ul>
      */
-    //FIXME Add a generic method to support retrieving  binary content
-    public <T> T getRecordContentText(String recordId) throws Exception
+    public ResponseBody<?> getRecordContent(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);
-        Response response = given().auth().basic(getRMRestWrapper().getTestUser().getUsername(),
-                                                 getRMRestWrapper().getTestUser().getPassword()
-                                                )
+        Response response = given()
+                                .auth().basic(getRMRestWrapper().getTestUser().getUsername(),
+                                    getRMRestWrapper().getTestUser().getPassword())
+                            .when()
                                    .get("records/{recordId}/content", recordId)
                                    .andReturn();
-
         getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
-
-        return (T) response.getBody().prettyPrint();
-    }
-
-    /**
-     * Get the content RestHtmlResponse(Response header and body) for the electronic record
-     *
-     * @param recordId The id of the electronic record
-     * @return The body and the header for the record
-     * @throws Exception for the following cases:
-     * <ul>
-     * <li>{@code recordId} has no content</li>
-     * <li> {@code recordId} is not a valid format, or is not a record</li>
-     * <li>authentication fails</li>
-     * <li>{@code recordId} does not exist</li>
-     * </ul>
-     */
-    //FIXME Add a generic method to support retrieving  binary content as we might end up
-    //FIXME with too many methods for differents content types
-    public RestHtmlResponse getRecordContent(String recordId) throws Exception
-    {
-        mandatoryString("recordId", recordId);
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "records/{recordId}/content", recordId);
-        return getRMRestWrapper().processHtmlResponse(request);
+        return response.getBody();
     }
 }

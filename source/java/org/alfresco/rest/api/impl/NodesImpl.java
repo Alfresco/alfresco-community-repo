@@ -1197,6 +1197,15 @@ public class NodesImpl implements Nodes
                     {
                         value = Node.lookupUserInfo((String)value, mapUserInfo, sr.getPersonService());
                     }
+
+                    // Empty (zero length) string values are considered to be
+                    // null values, and will be represented the same as null
+                    // values (i.e. by non-existence of the property).
+                    if (value != null && value instanceof String && ((String) value).isEmpty())
+                    {
+                        continue;
+                    }
+
                     props.put(qName.toPrefixString(namespaceService), value);
                 }
             }

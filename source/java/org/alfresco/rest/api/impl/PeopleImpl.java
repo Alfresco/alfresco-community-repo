@@ -86,6 +86,7 @@ public class PeopleImpl implements People
             NamespaceService.CONTENT_MODEL_1_0_URI);
 	private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
 	private static final List<QName> EXCLUDED_PROPS = Arrays.asList();
+    private static final int USERNAME_MAXLENGTH = 100;
 	protected Nodes nodes;
 	protected Sites sites;
 
@@ -523,7 +524,7 @@ public class PeopleImpl implements People
     {
         if (username.length() > 100)
         {
-            throw new InvalidArgumentException("Username is too long.");
+            throw new InvalidArgumentException("Username exceeds max length of " + USERNAME_MAXLENGTH + " characters.");
         }
 
         if (username.indexOf('/') != -1)

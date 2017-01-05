@@ -48,7 +48,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 /**
- *Records  REST API Wrapper
+ * Records  REST API Wrapper
  *
  *@author Rodica Sutu
  *@since 2.6

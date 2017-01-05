@@ -39,11 +39,6 @@ import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;

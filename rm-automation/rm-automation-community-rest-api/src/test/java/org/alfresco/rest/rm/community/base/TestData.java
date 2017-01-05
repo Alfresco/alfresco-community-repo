@@ -123,10 +123,12 @@ public interface TestData
      * The default electronic record  name used when creating electronic records
      */
     public static String ELECTRONIC_RECORD_NAME = "Record electronic" + getRandomAlphanumeric();
+    
     /**
      * The default Non electronic record name used when creating non-electronic records
      */
     public static String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
+    
     /**
      * Data Provider with:
      * with the object types not allowed as children for a record category

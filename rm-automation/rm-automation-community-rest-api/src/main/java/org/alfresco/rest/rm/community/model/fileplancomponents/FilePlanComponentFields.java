@@ -40,6 +40,7 @@ public class FilePlanComponentFields
     public static final String ENTRY = "entry";
     public static final String PROPERTIES = "properties";
     public static final String PROPERTIES_TITLE = "cm:title";
+    public static final String PROPERTIES_RECORD_ID = "rma:identifier";
     public static final String PROPERTIES_VITAL_RECORD_INDICATOR = "rma:vitalRecordIndicator";
     public static final String PROPERTIES_HOLD_REASON = "rma:holdReason";
     public static final String PROPERTIES_DESCRIPTION = "cm:description";
@@ -50,7 +51,7 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_LOCATION = "rma:location";
     public static final String PROPERTIES_IS_CLOSED = "rma:isClosed"; // not to be confused with IS_CLOSED!
     public static final String IS_COMPLETED = "isCompleted";
-
+    
     // for non-electronic records
     public static final String PROPERTIES_BOX = "rma:box";
     public static final String PROPERTIES_FILE = "rma:file";

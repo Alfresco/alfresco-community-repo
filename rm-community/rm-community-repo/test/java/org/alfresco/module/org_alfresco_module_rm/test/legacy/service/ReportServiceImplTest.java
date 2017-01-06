@@ -218,10 +218,6 @@ public class ReportServiceImplTest extends BaseRMTestCase implements ReportModel
 
         NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
 
-        // Set the record folder identifier
-        String identifier = identifierService.generateIdentifier(TYPE_RECORD_FOLDER, recordCategory);
-        nodeService.setProperty(recordFolder, PROP_IDENTIFIER, identifier);
-
         // Complete event
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);

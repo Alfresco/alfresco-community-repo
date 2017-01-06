@@ -131,34 +131,34 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
             .stream()
             .filter(f -> f.getFilePlanComponentModel().getId().equals(document.getNodeRefWithoutVersion()))
             .collect(Collectors.toList());
-       assertEquals(filesAfterRename.size(), 1, "There should be only one file in folder " + testFolder.getName());
-       
-       // verify the new name has the form of "<original name> (<record Id>).<original extension>"
-       assertEquals(filesAfterRename.get(0).getFilePlanComponentModel().getName(), 
-           document.getName().replace(".", String.format(" (%s).", record.getProperties().getRecordId())));
-       
-       // verify the document in collaboration site is now a record, note the file is now renamed hence folder + doc. name concatenation
-       // this also verifies the document is still in the initial folder
-       Document documentPostFiling = dataContent.usingSite(testSite)
-           .usingUser(testUser)
-           .getCMISDocument(testFolder.getCmisLocation() + "/" + filesAfterRename.get(0).getFilePlanComponentModel().getName());
- 
-       // a document is a record if "Record" is one of its secondary types
-       List<SecondaryType> documentSecondary = documentPostFiling.getSecondaryTypes()
-           .stream()
-           .filter(t -> t.getDisplayName().equals("Record"))
-           .collect(Collectors.toList());
-       assertFalse(documentSecondary.isEmpty(), "Document is not a record");
-       
-       // verify the document is readable and has same content as corresponding record
-       try 
-       (
-           InputStream recordInputStream = getRestAPIFactory().getRecordsAPI().getRecordContent(record.getId()).asInputStream();
-           InputStream documentInputStream = documentPostFiling.getContentStream().getStream();
-       )
-       {
-           assertEquals(DigestUtils.sha1(recordInputStream), DigestUtils.sha1(documentInputStream));
-       }
+        assertEquals(filesAfterRename.size(), 1, "There should be only one file in folder " + testFolder.getName());
+
+        // verify the new name has the form of "<original name> (<record Id>).<original extension>"
+        assertEquals(filesAfterRename.get(0).getFilePlanComponentModel().getName(), 
+            document.getName().replace(".", String.format(" (%s).", record.getProperties().getRecordId())));
+
+        // verify the document in collaboration site is now a record, note the file is now renamed hence folder + doc. name concatenation
+        // this also verifies the document is still in the initial folder
+        Document documentPostFiling = dataContent.usingSite(testSite)
+            .usingUser(testUser)
+            .getCMISDocument(testFolder.getCmisLocation() + "/" + filesAfterRename.get(0).getFilePlanComponentModel().getName());
+
+        // a document is a record if "Record" is one of its secondary types
+        List<SecondaryType> documentSecondary = documentPostFiling.getSecondaryTypes()
+            .stream()
+            .filter(t -> t.getDisplayName().equals("Record"))
+            .collect(Collectors.toList());
+        assertFalse(documentSecondary.isEmpty(), "Document is not a record");
+
+        // verify the document is readable and has same content as corresponding record
+        try 
+        (
+            InputStream recordInputStream = getRestAPIFactory().getRecordsAPI().getRecordContent(record.getId()).asInputStream();
+            InputStream documentInputStream = documentPostFiling.getContentStream().getStream();
+            )
+        {
+            assertEquals(DigestUtils.sha1(recordInputStream), DigestUtils.sha1(documentInputStream));
+        }
     }
     
     /**

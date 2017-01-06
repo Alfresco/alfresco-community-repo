@@ -1241,7 +1241,7 @@ public class SitesImpl implements Sites
 
         if (siteId.length() > SITE_MAXLEN_ID)
         {
-            throw new InvalidArgumentException("Site id exceeds max length of "+SITE_MAXLEN_ID+ "characters");
+            throw new InvalidArgumentException("Site id exceeds max length of " + SITE_MAXLEN_ID + " characters");
         }
 
         site.setId(siteId);

@@ -87,4 +87,14 @@ public class RestIGCoreAPI extends RMModelRequest
     {
         return new RecordsAPI(getRMRestWrapper());
     }
+    
+    /**
+     * Provides DSL on all REST calls under <code>files/...</code> API path
+     *
+     * @return {@link FilesAPI}
+     */
+    public FilesAPI usingFiles()
+    {
+        return new FilesAPI(getRMRestWrapper());
+    }
 }

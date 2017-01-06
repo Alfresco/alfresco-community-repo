@@ -27,6 +27,7 @@
 package org.alfresco.rest.core;
 
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
+import org.alfresco.rest.rm.community.requests.igCoreAPI.FilesAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RestIGCoreAPI;
@@ -94,5 +95,15 @@ public class RestAPIFactory
     public RecordsAPI getRecordsAPI(UserModel userModel)
     {
         return getRestIGCoreAPI(userModel).usingRecords();
+    }
+    
+    public FilesAPI getFilesAPI()
+    {
+        return getRestIGCoreAPI(null).usingFiles();
+    }
+
+    public FilesAPI getFilesAPI(UserModel userModel)
+    {
+        return getRestIGCoreAPI(userModel).usingFiles();
     }
 }

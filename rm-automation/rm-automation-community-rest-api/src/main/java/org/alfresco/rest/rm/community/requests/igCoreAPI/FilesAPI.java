@@ -60,7 +60,7 @@ public class FilesAPI extends RMModelRequest
      * @param fileId The Id of a file to declare as record
      * @param parameters Request parameters, refer to API documentation for more details
      * @return The {@link FilePlanComponent} for created record
-     * @throws Exception
+     * @throws Exception for malformed JSON responses
      */
     public FilePlanComponent declareAsRecord(String fileId, String parameters) throws Exception
     {
@@ -78,7 +78,7 @@ public class FilesAPI extends RMModelRequest
      * A no-parameter version of {@link FilesAPI#declareAsRecord}
      * @param fileId The Id of a file to declare as record
      * @return The {@link FilePlanComponent} for created record
-     * @throws Exception
+     * @throws Exception for malformed JSON responses
      */
     public FilePlanComponent declareAsRecord(String fileId) throws Exception
     {

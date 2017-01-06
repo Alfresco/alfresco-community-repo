@@ -73,7 +73,6 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     private SiteModel testSite;
     private FolderModel testFolder;
 
-
     @BeforeClass(alwaysRun=true)
     public void declareDocumentAsRecordSetup() throws Exception
     {
@@ -99,7 +98,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * And it is now a record
      * And it remains a secondary child of the starting location where I can still view it
      * <pre>
-     * @throws Exception 
+     * @throws Exception for malformed JSON API response
      */
     @Test(description = "User with correct permissions can declare document as a record")
     @AlfrescoTest(jira = "RM-4429")
@@ -169,7 +168,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * When I declare the document as a record
      * Then I get a permission denied exception
      * </pre>
-     * @throws Exception 
+     * @throws Exception for malformed JSON API response
      */
     @Test(description = "User with read-only permissions can't declare document a record")
     @AlfrescoTest(jira = "RM-4429")
@@ -202,7 +201,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * When I declare the record as a record
      * Then I get a invalid operation exception
      * </pre>
-     * @throws Exception
+     * @throws Exception for malformed JSON API response
      */
     @Test(description = "Record can't be declared a record")
     @AlfrescoTest(jira = "RM-4429")
@@ -232,7 +231,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * When I declare the node as a record
      * Then I get a invalid operation exception
      * </pre>
-     * @throws Exception 
+     * @throws Exception for malformed JSON API response
      */
     @Test(description = "Node that is not a document can't be declared a record")
     @AlfrescoTest(jira = "RM-4429")

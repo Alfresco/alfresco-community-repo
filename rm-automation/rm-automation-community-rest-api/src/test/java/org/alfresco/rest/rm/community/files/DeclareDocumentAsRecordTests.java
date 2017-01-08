@@ -91,9 +91,9 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     /**
      * <pre>
      * Given a document that is not a record
-     * And I have write permissions on the record
+     * And I have write permissions on the document
      * When I declare the document as a record
-     * Then it successfully moved into the unfiled record container
+     * Then it is successfully moved into the unfiled record container
      * And it is renamed to reflect the record identifier
      * And it is now a record
      * And it remains a secondary child of the starting location where I can still view it
@@ -164,7 +164,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     /**
      * <pre>
      * Given a document that is not a record
-     * And I have read permissions on the record
+     * And I have read permissions on the document
      * When I declare the document as a record
      * Then I get a permission denied exception
      * </pre>

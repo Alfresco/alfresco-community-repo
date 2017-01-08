@@ -39,6 +39,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SUPPLEMENTAL_MARKING_LIST;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_ID;
 
 import java.util.List;
 
@@ -106,4 +107,7 @@ public class FilePlanComponentProperties
 
     @JsonProperty(value = PROPERTIES_PHYSICAL_SIZE, required = false)
     private Integer physicalSize;
+    
+    @JsonProperty(value = PROPERTIES_RECORD_ID, required = false)
+    private String recordId;
 }

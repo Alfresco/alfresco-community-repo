@@ -165,7 +165,7 @@ public interface RecordService
     * Note that the node reference of the record will be the same as the original
     * document.
     *
-    * @param filePlan  The filePlan in which the record should be placed
+    * @param filePlan  The filePlan in which the record should be placed. filePlan can be <code>null</code> in this case the default RM site will be used.
     * @param nodeRef   The node from which the record will be created
     * @param isLinked  indicates if the newly created record is linked to it's original location or not.
     */

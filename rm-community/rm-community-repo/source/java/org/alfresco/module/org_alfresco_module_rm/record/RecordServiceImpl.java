@@ -1304,7 +1304,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             	behaviourFilter.enableBehaviour();
             }
 
-            LOGGER.debug("Rename " + name + " to " + recordName);
+            LOGGER.debug("Rename {} to {}", name, recordName);
 
             // add the record aspect
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
@@ -1459,7 +1459,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             fileFolderService.rename(nodeRef, originalName);
 
                             String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                            LOGGER.debug("Rename " + name + " to " + originalName);
+                            LOGGER.debug("Rename {} to {}", name, originalName);
                         }
 
                         // save the information about the rejection details

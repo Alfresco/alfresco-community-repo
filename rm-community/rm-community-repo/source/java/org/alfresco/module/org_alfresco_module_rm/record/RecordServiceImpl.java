@@ -975,7 +975,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             {
                 String msg = "Cannot create record, because the default file plan cannot be determined. Make sure at least one file plan has been created.";
                 LOGGER.debug(msg);
-                throw new AlfrescoRuntimeException(msg);
+                throw new RecordCreationException(msg);
             }
         }
         else
@@ -985,7 +985,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             {
                 String msg = "Cannot create record, because the provided file plan node reference is not a file plan.";
                 LOGGER.debug(msg);
-                throw new AlfrescoRuntimeException(msg);
+                throw new RecordCreationException(msg);
             }
 
             result = filePlan;
@@ -1017,7 +1017,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             String msg = "Cannot create record, because " + nodeRef.toString() + " does not exist.";
             LOGGER.debug(msg);
-            throw new AlfrescoRuntimeException(msg);
+            throw new RecordCreationException(msg);
         }
 
         // TODO eventually we should support other types .. either as record folders or as composite records
@@ -1025,7 +1025,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             String msg = "Cannot create record, because " + nodeRef.toString() + " is not a supported type.";
             LOGGER.debug(msg);
-            throw new AlfrescoRuntimeException(msg);
+            throw new RecordCreationException(msg);
         }
 
         // Do not create record if the node is already a record!
@@ -1033,7 +1033,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             String msg = "Cannot create record, because " + nodeRef.toString() + " is already a record.";
             LOGGER.debug(msg);
-            throw new AlfrescoRuntimeException(msg);
+            throw new RecordCreationException(msg);
         }
 
         // We cannot create records from working copies
@@ -1041,7 +1041,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             String msg = "Can node create record, because " + nodeRef.toString() + " is a working copy.";
             LOGGER.debug(msg);
-            throw new AlfrescoRuntimeException(msg);
+            throw new RecordCreationException(msg);
         }
 
         // Cannot create a record from a previously rejected one
@@ -1049,7 +1049,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             String msg = "Cannot create record, because " + nodeRef.toString() + " has previously been rejected.";
             LOGGER.debug(msg);
-            throw new AlfrescoRuntimeException(msg);
+            throw new RecordCreationException(msg);
         }
 
         // can't declare the record if the node is sync'ed
@@ -1057,7 +1057,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             String msg = "Can't declare as record, because " + nodeRef.toString() + " is synched content.";
             LOGGER.debug(msg);
-            throw new AlfrescoRuntimeException(msg);
+            throw new RecordCreationException(msg);
         }
     }
 

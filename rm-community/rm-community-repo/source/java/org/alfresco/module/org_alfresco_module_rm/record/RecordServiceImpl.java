@@ -112,8 +112,8 @@ import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -133,7 +133,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                           NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RecordServiceImpl.class);
+
+    /** Sync Model URI */
+    private static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
+
+    /** Synced aspect */
+    private static final QName ASPECT_SYNCED = QName.createQName(SYNC_MODEL_1_0_URI, "synced");
 
     /** transation data key */
     private static final String KEY_IGNORE_ON_UPDATE = "ignoreOnUpdate";
@@ -238,10 +244,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** records management container type */
     private RecordsManagementContainerType recordsManagementContainerType;
-    
+
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
-    
+
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
 
@@ -390,7 +396,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
 		this.recordsManagementContainerType = recordsManagementContainerType;
 	}
-    
+
     /**
      * @param recordableVersionService  recordable version service
      */
@@ -398,7 +404,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         this.recordableVersionService = recordableVersionService;
     }
-    
+
     /**
      * Init method
      */
@@ -486,24 +492,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
         catch (FileExistsException e)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(e.getMessage());
-            }
+            LOGGER.debug(e.getMessage());
         }
         catch (InvalidNodeRefException e)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(e.getMessage());
-            }
+            LOGGER.debug(e.getMessage());
         }
         catch (FileNotFoundException e)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(e.getMessage());
-            }
+            LOGGER.debug(e.getMessage());
         }
     }
 
@@ -571,10 +568,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 catch (AlfrescoRuntimeException e)
                 {
                     // do nothing but log error
-                    if (logger.isWarnEnabled())
-                    {
-                        logger.warn("Unable to file pending record.", e);
-                    }
+                    LOGGER.warn("Unable to file pending record.", e);
                 }
                 finally
                 {
@@ -854,19 +848,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     public void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final boolean isLinked)
     {
-        ParameterCheck.mandatory("filePlan", filePlan);
+        // filePlan can be null. In this case the default RM site will be used.
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("isLinked", isLinked);
 
-        // first we do a sanity check to ensure that the user has at least write permissions on the document
-        if (extendedPermissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
-        {
-            throw new AccessDeniedException("Can not create record from document, because the user " +
-                                            AuthenticationUtil.getRunAsUser() +
-                                            " does not have Write permissions on the doucment " +
-                                            nodeRef.toString());
-        }
-
+        recordCreationSanityCheckOnNode(nodeRef);
+        final NodeRef checkedFilePlan = recordCreationSanityCheckOnFilePlan(filePlan);
 
         // do the work of creating the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -881,7 +868,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     try
                     {
                         // get the new record container for the file plan
-                        NodeRef newRecordContainer = filePlanService.getUnfiledContainer(filePlan);
+                        NodeRef newRecordContainer = filePlanService.getUnfiledContainer(checkedFilePlan);
                         if (newRecordContainer == null)
                         {
                             throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");
@@ -962,6 +949,119 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
+     * Helper method to check the given file plan before trying to determine the unfiled records container.
+     *
+     * @param filePlan The reference of the file plan node
+     */
+    private NodeRef recordCreationSanityCheckOnFilePlan(NodeRef filePlan)
+    {
+        NodeRef result = null;
+
+        if (filePlan == null)
+        {
+            // TODO .. eventually make the file plan parameter required
+
+            result = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork()
+                {
+                    return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                }
+            }, AuthenticationUtil.getAdminUserName());
+
+            // if the file plan is still null, raise an exception
+            if (result == null)
+            {
+                String msg = "Cannot create record, because the default file plan cannot be determined. Make sure at least one file plan has been created.";
+                LOGGER.debug(msg);
+                throw new AlfrescoRuntimeException(msg);
+            }
+        }
+        else
+        {
+            // verify that the provided file plan is actually a file plan
+            if (!filePlanService.isFilePlan(filePlan))
+            {
+                String msg = "Cannot create record, because the provided file plan node reference is not a file plan.";
+                LOGGER.debug(msg);
+                throw new AlfrescoRuntimeException(msg);
+            }
+
+            result = filePlan;
+        }
+
+        return result;
+    }
+
+    /**
+     * Helper method to check the given node before trying to declare it as record
+     *
+     * @param nodeRef The reference of the node which will be declared as record
+     */
+    private void recordCreationSanityCheckOnNode(NodeRef nodeRef)
+    {
+        // first we do a sanity check to ensure that the user has at least write permissions on the document
+        if (extendedPermissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
+        {
+            String msg = "Cannot create record from document, because the user " +
+                    AuthenticationUtil.getRunAsUser() +
+                    " does not have Write permissions on the doucment " +
+                    nodeRef.toString();
+            LOGGER.debug(msg);
+            throw new AccessDeniedException(msg);
+        }
+
+        // do not create record if the node does not exist!
+        if (!nodeService.exists(nodeRef))
+        {
+            String msg = "Cannot create record, because " + nodeRef.toString() + " does not exist.";
+            LOGGER.debug(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // TODO eventually we should support other types .. either as record folders or as composite records
+        if (!dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
+        {
+            String msg = "Cannot create record, because " + nodeRef.toString() + " is not a supported type.";
+            LOGGER.debug(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // Do not create record if the node is already a record!
+        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+        {
+            String msg = "Cannot create record, because " + nodeRef.toString() + " is already a record.";
+            LOGGER.debug(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // We cannot create records from working copies
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            String msg = "Can node create record, because " + nodeRef.toString() + " is a working copy.";
+            LOGGER.debug(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // Cannot create a record from a previously rejected one
+        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS))
+        {
+            String msg = "Cannot create record, because " + nodeRef.toString() + " has previously been rejected.";
+            LOGGER.debug(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // can't declare the record if the node is sync'ed
+        if (nodeService.hasAspect(nodeRef, ASPECT_SYNCED))
+        {
+            String msg = "Can't declare as record, because " + nodeRef.toString() + " is synched content.";
+            LOGGER.debug(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecordFromCopy(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -999,7 +1099,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                     	recordsManagementContainerType.enable();
                     }
-                    
+
                     // if versionable, then remove without destroying version history,
                     // because it is being shared with the originating document
                     behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
@@ -1011,7 +1111,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                         behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
                     }
-                    
+
                     // make record
                     makeRecord(record);
 
@@ -1060,8 +1160,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private NodeRef getLatestVersionRecord(NodeRef nodeRef)
     {
         NodeRef versionRecord = null;
-       
- 
+
+
         recordableVersionService.createSnapshotVersion(nodeRef);
         // wire record up to previous record
         VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
@@ -1204,10 +1304,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             	behaviourFilter.enableBehaviour();
             }
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Rename " + name + " to " + recordName);
-            }
+            LOGGER.debug("Rename {} to {}", name, recordName);
 
             // add the record aspect
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
@@ -1361,11 +1458,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         {
                             fileFolderService.rename(nodeRef, originalName);
 
-                            if (logger.isDebugEnabled())
-                            {
-                                String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                                logger.debug("Rename " + name + " to " + originalName);
-                            }
+                            String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                            LOGGER.debug("Rename {} to {}", name, originalName);
                         }
 
                         // save the information about the rejection details
@@ -1442,32 +1536,32 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         if (!isRecord(record))
         {
-            throw new AlfrescoRuntimeException("Can not check if the property " + property.toString() + " is editable, because node reference is not a record.");
+            throw new AlfrescoRuntimeException("Cannot check if the property " + property.toString() + " is editable, because node reference is not a record.");
         }
 
         NodeRef filePlan = getFilePlan(record);
 
         // DEBUG ...
-        boolean debugEnabled = logger.isDebugEnabled();
+        boolean debugEnabled = LOGGER.isDebugEnabled();
         if (debugEnabled)
         {
-            logger.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
+            LOGGER.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
 
             Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
 
-            logger.debug(" ... users roles");
+            LOGGER.debug(" ... users roles");
 
             for (Role role : roles)
             {
-                logger.debug("     ... user has role " + role.getName() + " with capabilities ");
+                LOGGER.debug("     ... user has role " + role.getName() + " with capabilities ");
 
                 for (Capability cap : role.getCapabilities())
                 {
-                    logger.debug("         ... " + cap.getName());
+                    LOGGER.debug("         ... " + cap.getName());
                 }
             }
 
-            logger.debug(" ... user has the following set permissions on the file plan");
+            LOGGER.debug(" ... user has the following set permissions on the file plan");
 
             Set<AccessPermission> perms = permissionService.getAllSetPermissions(filePlan);
             for (AccessPermission perm : perms)
@@ -1475,13 +1569,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 if ((perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA) ||
                      perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
                 {
-                    logger.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
+                    LOGGER.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
                 }
             }
 
             if (permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED))
             {
-                logger.debug(" ... user has the edit non record metadata permission on the file plan");
+                LOGGER.debug(" ... user has the edit non record metadata permission on the file plan");
             }
         }
         // END DEBUG ...
@@ -1489,10 +1583,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         boolean result = alwaysEditProperty(property);
         if (result)
         {
-            if (debugEnabled)
-            {
-                logger.debug(" ... property marked as always editable.");
-            }
+            LOGGER.debug(" ... property marked as always editable.");
         }
         else
         {
@@ -1505,32 +1596,20 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (AccessStatus.ALLOWED.equals(accessNonRecord))
             {
-                if (debugEnabled)
-                {
-                    logger.debug(" ... user has edit nonrecord metadata capability");
-                }
-
+                LOGGER.debug(" ... user has edit nonrecord metadata capability");
                 allowNonRecordEdit = true;
             }
 
             if (AccessStatus.ALLOWED.equals(accessRecord)  ||
                 AccessStatus.ALLOWED.equals(accessDeclaredRecord))
             {
-                if (debugEnabled)
-                {
-                    logger.debug(" ... user has edit record or declared metadata capability");
-                }
-
+                LOGGER.debug(" ... user has edit record or declared metadata capability");
                 allowRecordEdit = true;
             }
 
             if (allowNonRecordEdit && allowRecordEdit)
             {
-                if (debugEnabled)
-                {
-                    logger.debug(" ... so all properties can be edited.");
-                }
-
+                LOGGER.debug(" ... so all properties can be edited.");
                 result = true;
             }
             else if (allowNonRecordEdit && !allowRecordEdit)
@@ -1538,19 +1617,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // can only edit non record properties
                 if (!isRecordMetadata(filePlan, property))
                 {
-                    if (debugEnabled)
-                    {
-                        logger.debug(" ... property is not considered record metadata so editable.");
-                    }
-
+                    LOGGER.debug(" ... property is not considered record metadata so editable.");
                     result = true;
                 }
                 else
                 {
-                    if (debugEnabled)
-                    {
-                        logger.debug(" ... property is considered record metadata so not editable.");
-                    }
+                    LOGGER.debug(" ... property is considered record metadata so not editable.");
                 }
             }
             else if (!allowNonRecordEdit && allowRecordEdit)
@@ -1558,19 +1630,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // can only edit record properties
                 if (isRecordMetadata(filePlan, property))
                 {
-                    if (debugEnabled)
-                    {
-                        logger.debug(" ... property is considered record metadata so editable.");
-                    }
-
+                    LOGGER.debug(" ... property is considered record metadata so editable.");
                     result = true;
                 }
                 else
                 {
-                    if (debugEnabled)
-                    {
-                        logger.debug(" ... property is not considered record metadata so not editable.");
-                    }
+                    LOGGER.debug(" ... property is not considered record metadata so not editable.");
                 }
             }
             // otherwise we can't edit any properties so just return the empty set
@@ -1700,7 +1765,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
         else
         {
-            logger.info(I18NUtil.getMessage(MSG_NODE_HAS_ASPECT, nodeRef.toString(), typeQName.toString()));
+            LOGGER.info(I18NUtil.getMessage(MSG_NODE_HAS_ASPECT, nodeRef.toString(), typeQName.toString()));
         }
     }
 
@@ -1722,8 +1787,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
             {
                 if (parent.getParentRef().equals(recordFolder))
                 {
-                    // we can not link a record to the same location more than once
-                    throw new RecordLinkRuntimeException("Can not link a record to the same record folder more than once");
+                    // we cannot link a record to the same location more than once
+                    throw new RecordLinkRuntimeException("Cannot link a record to the same record folder more than once");
                 }
             }
 
@@ -1739,7 +1804,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 record,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
-            
+
             // recalculate disposition schedule for the record when linking it
             dispositionService.recalculateNextDispositionStep(record);
         }
@@ -1758,10 +1823,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private void validateLinkConditions(NodeRef record, NodeRef recordFolder)
     {
         // ensure that the linking record folders have compatible disposition schedules
-        
+
         // get the origin disposition schedule for the record, not the calculated one
         DispositionSchedule recordDispositionSchedule = dispositionService.getOriginDispositionSchedule(record);
-                
+
         if (recordDispositionSchedule != null)
         {
             DispositionSchedule recordFolderDispositionSchedule = dispositionService.getDispositionSchedule(recordFolder);
@@ -1770,7 +1835,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 if (recordDispositionSchedule.isRecordLevelDisposition() != recordFolderDispositionSchedule.isRecordLevelDisposition())
                 {
                     // we can't link a record to an incompatible disposition schedule
-                    throw new RecordLinkRuntimeException("Can not link a record to a record folder with an incompatible retention schedule.  "
+                    throw new RecordLinkRuntimeException("Cannot link a record to a record folder with an incompatible retention schedule.  "
                                                      + "They must either both be record level or record folder level retentions.");
                 }
             }
@@ -1798,7 +1863,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             // remove the link
             nodeService.removeChild(recordFolder, record);
-            
+
             // recalculate disposition schedule for record after unlinking it
             dispositionService.recalculateNextDispositionStep(record);
         }
@@ -1807,5 +1872,5 @@ public class RecordServiceImpl extends BaseBehaviourBean
             // can only unlink a record from a record folder
             throw new RecordLinkRuntimeException("Can only unlink a record from a record folder.");
         }
-    }    
+    }
 }

@@ -135,6 +135,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
 
+
+    /** Sync Model URI */
+    private static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
+
+    /** Synced aspect */
+    private static final QName ASPECT_SYNCED = QName.createQName(SYNC_MODEL_1_0_URI, "synced");
+
     /** transation data key */
     private static final String KEY_IGNORE_ON_UPDATE = "ignoreOnUpdate";
     private static final String KEY_PENDING_FILLING = "pendingFilling";
@@ -238,10 +245,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** records management container type */
     private RecordsManagementContainerType recordsManagementContainerType;
-    
+
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
-    
+
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
 
@@ -390,7 +397,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
 		this.recordsManagementContainerType = recordsManagementContainerType;
 	}
-    
+
     /**
      * @param recordableVersionService  recordable version service
      */
@@ -398,7 +405,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         this.recordableVersionService = recordableVersionService;
     }
-    
+
     /**
      * Init method
      */
@@ -854,19 +861,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     public void createRecord(final NodeRef filePlan, final NodeRef nodeRef, final boolean isLinked)
     {
-        ParameterCheck.mandatory("filePlan", filePlan);
+        // filePlan can be null. In this case the default RM site will be used.
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("isLinked", isLinked);
 
-        // first we do a sanity check to ensure that the user has at least write permissions on the document
-        if (extendedPermissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
-        {
-            throw new AccessDeniedException("Can not create record from document, because the user " +
-                                            AuthenticationUtil.getRunAsUser() +
-                                            " does not have Write permissions on the doucment " +
-                                            nodeRef.toString());
-        }
-
+        recordCreationSanityCheckOnNode(nodeRef);
+        recordCreationSanityCheckOnFilePlan(filePlan);
 
         // do the work of creating the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -962,6 +962,158 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
+     * Helper method to check the given file plan before trying to determine the unfiled records container.
+     *
+     * @param filePlan The reference of the file plan node
+     */
+    private void recordCreationSanityCheckOnFilePlan(NodeRef filePlan)
+    {
+        if (filePlan == null)
+        {
+            // TODO .. eventually make the file plan parameter required
+
+            filePlan = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork()
+                {
+                    return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                }
+            }, AuthenticationUtil.getAdminUserName());
+
+            // if the file plan is still null, raise an exception
+            if (filePlan == null)
+            {
+                String msg = "Can not create record, because the default file plan can not be determined. Make sure at least one file plan has been created.";
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(msg);
+                }
+
+                throw new AlfrescoRuntimeException(msg);
+            }
+        }
+        else
+        {
+            // verify that the provided file plan is actually a file plan
+            if (!filePlanService.isFilePlan(filePlan))
+            {
+                String msg = "Can not create record, because the provided file plan node reference is not a file plan.";
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(msg);
+                }
+
+                throw new AlfrescoRuntimeException(msg);
+            }
+        }
+    }
+
+    /**
+     * Helper method to check the given node before trying to declare it as record
+     *
+     * @param nodeRef The reference of the node which will be declared as record
+     */
+    private void recordCreationSanityCheckOnNode(NodeRef nodeRef)
+    {
+        // first we do a sanity check to ensure that the user has at least write permissions on the document
+        if (extendedPermissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
+        {
+            String msg = "Can not create record from document, because the user " +
+                    AuthenticationUtil.getRunAsUser() +
+                    " does not have Write permissions on the doucment " +
+                    nodeRef.toString();
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
+
+            throw new AccessDeniedException(msg);
+        }
+
+        // do not create record if the node does not exist!
+        if (!nodeService.exists(nodeRef))
+        {
+            String msg = "Can not create record, because " + nodeRef.toString() + " does not exist.";
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
+
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // TODO eventually we should support other types .. either as record folders or as composite records
+        if (!dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
+        {
+            String msg = "Can not create record, because " + nodeRef.toString() + " is not a supported type.";
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
+
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // Do not create record if the node is already a record!
+        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+        {
+            String msg = "Can not create record, because " + nodeRef.toString() + " is already a record.";
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
+
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // We can not create records from working copies
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            String msg = "Can node create record, because " + nodeRef.toString() + " is a working copy.";
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
+
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // can not create a record from a previously rejected one
+        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS))
+        {
+            String msg = "Can not create record, because " + nodeRef.toString() + " has previously been rejected.";
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
+
+            throw new AlfrescoRuntimeException(msg);
+        }
+
+        // can't declare the record if the node is sync'ed
+        if (nodeService.hasAspect(nodeRef, ASPECT_SYNCED))
+        {
+            String msg = "Can't declare as record, because " + nodeRef.toString() + " is synched content.";
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(msg);
+            }
+
+            throw new AlfrescoRuntimeException(msg);
+        }
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecordFromCopy(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -999,7 +1151,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                     	recordsManagementContainerType.enable();
                     }
-                    
+
                     // if versionable, then remove without destroying version history,
                     // because it is being shared with the originating document
                     behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
@@ -1011,7 +1163,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                         behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
                     }
-                    
+
                     // make record
                     makeRecord(record);
 
@@ -1060,8 +1212,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private NodeRef getLatestVersionRecord(NodeRef nodeRef)
     {
         NodeRef versionRecord = null;
-       
- 
+
+
         recordableVersionService.createSnapshotVersion(nodeRef);
         // wire record up to previous record
         VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
@@ -1739,7 +1891,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 record,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
-            
+
             // recalculate disposition schedule for the record when linking it
             dispositionService.recalculateNextDispositionStep(record);
         }
@@ -1758,10 +1910,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private void validateLinkConditions(NodeRef record, NodeRef recordFolder)
     {
         // ensure that the linking record folders have compatible disposition schedules
-        
+
         // get the origin disposition schedule for the record, not the calculated one
         DispositionSchedule recordDispositionSchedule = dispositionService.getOriginDispositionSchedule(record);
-                
+
         if (recordDispositionSchedule != null)
         {
             DispositionSchedule recordFolderDispositionSchedule = dispositionService.getDispositionSchedule(recordFolder);
@@ -1798,7 +1950,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             // remove the link
             nodeService.removeChild(recordFolder, record);
-            
+
             // recalculate disposition schedule for record after unlinking it
             dispositionService.recalculateNextDispositionStep(record);
         }
@@ -1807,5 +1959,5 @@ public class RecordServiceImpl extends BaseBehaviourBean
             // can only unlink a record from a record folder
             throw new RecordLinkRuntimeException("Can only unlink a record from a record folder.");
         }
-    }    
+    }
 }

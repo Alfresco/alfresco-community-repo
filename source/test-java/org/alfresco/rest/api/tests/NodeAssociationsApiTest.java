@@ -34,6 +34,7 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Association;
+import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -1226,6 +1227,59 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             deleteNode(f3Id, true, 204);
             deleteNode(f4Id, true, 204);
         }
+    }
+
+    /**
+     * Regardless of which parent is used to list children of a node, the node information
+     * should consistently present the primary parent as a node's {@code parentId}.
+     * <p>
+     * See REPO-1780
+     */
+    @Test
+    public void testListChildrenConsistentParentIdWithSecondaryAssociations() throws Exception
+    {
+        setRequestContext(user1);
+        String myNodeId = getMyNodeId();
+
+        // Create primary folder
+        String primaryFolderName = "primary folder " + RUNID;
+        String primaryFolderId = createFolder(myNodeId, primaryFolderName, null).getId();
+
+        // Create content file
+        String contentFileName = "content" + RUNID + " in folder";
+        String contentId = createTextFile(primaryFolderId, contentFileName, "The quick brown fox jumps over the lazy dog.").getId();
+
+        // Add a secondary parent for content file
+        Node n = new Node();
+        n.setName("secondary folder " + RUNID);
+        n.setNodeType(TYPE_CM_FOLDER);
+        n.setAspectNames(Arrays.asList(ASPECT_CM_PREFERENCES));
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(n), 201);
+        String secondaryFolderId = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+        AssocChild secChild = new AssocChild(contentId, ASSOC_TYPE_CM_CONTAINS);
+        post(getNodeSecondaryChildrenUrl(secondaryFolderId), toJsonAsStringNonNull(secChild), 201);
+
+        Paging paging = getPaging(0, 100);
+        // Order by folders and modified date first
+        Map<String, String> orderBy = Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
+
+        // Retrieve the node via the primary parent
+        String primaryChildrenUrl = getNodeChildrenUrl(primaryFolderId);
+        response = getAll(primaryChildrenUrl, paging, orderBy, 200);
+        List<Document> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        Document node = nodes.get(0);
+        assertEquals(contentId, node.getId());
+        assertEquals(primaryFolderId, node.getParentId());
+
+        // Retrieve the node via the secondary parent
+        String secondaryChildrenUrl = getNodeChildrenUrl(secondaryFolderId);
+        response = getAll(secondaryChildrenUrl, paging, orderBy, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        node = nodes.get(0);
+        assertEquals(contentId, node.getId());
+        // The parent ID must STILL be the primary parent, even when the info
+        // is retrieved via the secondary parent.
+        assertEquals(primaryFolderId, node.getParentId());
     }
 
     /**

@@ -1304,7 +1304,8 @@ public class NodesImpl implements Nodes
                 FileInfo fInfo = page.get(index);
 
                 // minimal info by default (unless "include"d otherwise)
-                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), includeParam, mapUserInfo);
+                // (pass in null as parentNodeRef to force loading of primary parent node as parentId)
+                return getFolderOrDocument(fInfo.getNodeRef(), null, fInfo.getType(), includeParam, mapUserInfo);
             }
 
             @Override

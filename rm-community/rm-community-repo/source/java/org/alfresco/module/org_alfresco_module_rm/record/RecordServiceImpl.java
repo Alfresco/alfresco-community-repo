@@ -853,7 +853,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("isLinked", isLinked);
 
         recordCreationSanityCheckOnNode(nodeRef);
-        recordCreationSanityCheckOnFilePlan(filePlan);
+        final NodeRef checkedFilePlan = recordCreationSanityCheckOnFilePlan(filePlan);
 
         // do the work of creating the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -868,7 +868,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     try
                     {
                         // get the new record container for the file plan
-                        NodeRef newRecordContainer = filePlanService.getUnfiledContainer(filePlan);
+                        NodeRef newRecordContainer = filePlanService.getUnfiledContainer(checkedFilePlan);
                         if (newRecordContainer == null)
                         {
                             throw new AlfrescoRuntimeException("Unable to create record, because new record container could not be found.");

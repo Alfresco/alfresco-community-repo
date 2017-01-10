@@ -61,7 +61,7 @@
     <bean class="org.alfresco.rm.rest.api.files.FilesEntityResource">
        <property name="records" ref="Records" />
     </bean>
-    
+
    <!-- extended sites bean definition -->
    <bean id="rm.sites" class="org.alfresco.rm.rest.api.impl.RMSitesImpl" parent="sites">
         <property name="siteSurfConfig" ref="rm.siteSurfConfig" />
@@ -89,7 +89,7 @@
        <property name="sites" ref="rm.Sites" />
    </bean>
 
-    
+
     <bean id="records" class="org.alfresco.rm.rest.api.impl.RecordsImpl">
         <property name="recordService" ref="RecordService"/>
         <property name="filePlanService" ref="FilePlanService"/>
@@ -119,11 +119,12 @@
        <property name="exceptionMappings">
             <map merge="true">
                 <entry key="org.alfresco.service.cmr.attributes.DuplicateAttributeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+                <entry key="org.alfresco.module.org_alfresco_module_rm.record.RecordCreationException" value="422" />
             </map>
         </property>
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="simpleMappingExceptionResolver"/>
       <property name="extendingBeanName" value="rm.simpleMappingExceptionResolver"/>
-    </bean> 
+    </bean>
 </beans>

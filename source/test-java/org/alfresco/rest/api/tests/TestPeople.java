@@ -1163,11 +1163,14 @@ public class TestPeople extends EnterpriseTestApi
         people.update(me.getId(), qjson("{ `oldPassword`:`password123`, `password`:`newpassword456` }"), 403);
 
         // update with no oldPassword
-        people.update(me.getId(), qjson("{ `password`:`newpassword456` }"), 403);
+        people.update(me.getId(), qjson("{ `password`:`newpassword456` }"), 400);
+        people.update(me.getId(), qjson("{ `oldPassword`:``, `password`:`newpassword456` }"), 400);
+        people.update(me.getId(), qjson("{ `oldPassword`:null, `password`:`newpassword456` }"), 400);
 
-        // update with no password
-        people.update(me.getId(), qjson("{ `oldPassword`:`newpassword456`, `password`:`` }"), 400);
+        // update with no new password
         people.update(me.getId(), qjson("{ `oldPassword`:`newpassword456` }"), 400);
+        people.update(me.getId(), qjson("{ `oldPassword`:`newpassword456`, `password`:`` }"), 400);
+        people.update(me.getId(), qjson("{ `oldPassword`:`newpassword456`, `password`:null }"), 400);
     }
 
     @Test
@@ -1197,6 +1200,30 @@ public class TestPeople extends EnterpriseTestApi
 
         publicApiClient.setRequestContext(new RequestContext(networkId, personId, updatedPassword));
         this.people.getPerson(personId);
+
+        publicApiClient.setRequestContext(new RequestContext(networkId, account3Admin, "admin"));
+
+        // update with another new password but note that oldPassword is ignored (even if sent by admin)
+        String updatedPassword2 = "newPassword2";
+        people.update(personId, qjson("{ `password`:`" + updatedPassword2 + "`, `oldPassword`:`rubbish` }"), 200);
+
+        publicApiClient.setRequestContext(new RequestContext(networkId, personId, updatedPassword));
+        try
+        {
+            this.people.getPerson(personId);
+            fail("");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
+        }
+
+        publicApiClient.setRequestContext(new RequestContext(networkId, personId, updatedPassword2));
+        this.people.getPerson(personId);
+
+        // -ve: update with no new password
+        people.update(personId, qjson("{ `password`:`` }"), 400);
+        people.update(personId, qjson("{ `password`:null }"), 400);
     }
 
     @Test

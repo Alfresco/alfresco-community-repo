@@ -85,6 +85,11 @@
                 <arg value="${maven.localrepo}/com/oracle/java/jre/${installer.java.version}/jre-${installer.java.version}-@{targetPlatform}.tgz" />
             </exec>
 
+            <echo>  Extracting Manager...</echo>
+            <exec failonerror="true" executable="tar" dir="${bin.folder}">
+                <arg value="xf" />
+                <arg value="${maven.localrepo}/org/alfresco/manager/${installer.manager.version}/manager-${installer.manager.version}-@{targetPlatform}.tgz" />
+            </exec>
         </sequential>
     </macrodef>
 
@@ -153,12 +158,6 @@
             <exec failonerror="true" executable="tar" dir="${bin.folder}">
                 <arg value="xf" />
                 <arg value="${maven.localrepo}/org/imagemagick/imagemagick-distribution/${installer.imagemagick.version}/imagemagick-distribution-${installer.imagemagick.version}-@{targetPlatform}.tgz" />
-            </exec>
-            
-            <echo>  Extracting Manager...</echo>
-            <exec failonerror="true" executable="tar" dir="${bin.folder}">
-                <arg value="xf" />
-                <arg value="${maven.localrepo}/org/alfresco/manager/${installer.manager.version}/manager-${installer.manager.version}-@{targetPlatform}.tgz" />
             </exec>
         </sequential>
     </macrodef>

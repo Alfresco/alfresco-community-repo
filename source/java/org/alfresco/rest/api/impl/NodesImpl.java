@@ -1978,7 +1978,7 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * Posts activites based on the activity_type.
+     * Posts activities based on the activity_type.
      * If the method is called with aSync=true then a TransactionListener is used post the activity
      * afterCommit.  Otherwise the activity posting is done synchronously.
      * @param activity_type
@@ -2009,9 +2009,19 @@ public class NodesImpl implements Nodes
         }
     }
 
+    // note: see also org.alfresco.opencmis.ActivityPosterImpl
     protected ActivityInfo getActivityInfo(NodeRef parentNodeRef, NodeRef nodeRef)
     {
-        SiteInfo siteInfo = siteService.getSite(nodeRef);
+        // runAs system, eg. user may not have permission see one or more parents (irrespective of whether in a site context of not)
+        SiteInfo siteInfo = AuthenticationUtil.runAs(new RunAsWork<SiteInfo>()
+        {
+            @Override
+            public SiteInfo doWork() throws Exception
+            {
+                return siteService.getSite(nodeRef);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
         String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
         if(siteId != null && !siteId.equals(""))
         {

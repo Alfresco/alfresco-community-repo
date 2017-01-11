@@ -4255,6 +4255,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             testUpdatePermissionInvalidAccessStatus();
             testUpdatePermissionAddDuplicate();
 
+            // required permission properties missing
+            testUpdatePermissionMissingFields();
+            
             // 'Permission Denied' tests
             testUpdatePermissionsPermissionDeniedUser();
             testUpdatePermissionsOnSpecialNodes();
@@ -4438,6 +4441,42 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
     }
 
+    /**
+     * Tests updating permissions on a node without providing mandatory
+     * properties
+     * 
+     * @throws Exception
+     */
+    private void testUpdatePermissionMissingFields() throws Exception
+    {
+        // create folder with an empty document
+        String postUrl = createFolder();
+        String dId = createDocument(postUrl);
+
+        // update permissions
+        Document dUpdate = new Document();
+        // Add same permission with different access status
+        NodePermissions nodePermissions = new NodePermissions();
+        List<NodePermissions.NodePermission> locallySetPermissions = new ArrayList<>();
+        locallySetPermissions.add(new NodePermissions.NodePermission(null, PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+        nodePermissions.setLocallySet(locallySetPermissions);
+        dUpdate.setPermissions(nodePermissions);
+
+        // "Authority Id is expected."
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+        locallySetPermissions.clear();
+        locallySetPermissions.add(new NodePermissions.NodePermission("", PermissionService.CONSUMER, AccessStatus.ALLOWED.toString()));
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+
+        locallySetPermissions.clear();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, null, AccessStatus.ALLOWED.toString()));
+        // "Permission name is expected."
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+        locallySetPermissions.clear();
+        locallySetPermissions.add(new NodePermissions.NodePermission(groupA, "", AccessStatus.ALLOWED.toString()));
+        put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+    }
+    
     /**
      * Tests updating permissions on a node that user doesn't have permission for
      *

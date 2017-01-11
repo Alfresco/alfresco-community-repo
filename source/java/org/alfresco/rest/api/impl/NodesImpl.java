@@ -2254,10 +2254,19 @@ public class NodesImpl implements Nodes
                         accessStatus = AccessStatus.valueOf(nodePerm.getAccessStatus());
                     }
 
-                    if ((authorityId == null) || 
-                         ((! authorityId.equals(PermissionService.ALL_AUTHORITIES) && (! authorityService.authorityExists(authorityId)))))
+                    if (authorityId == null || authorityId.isEmpty())
                     {
-                        throw new InvalidArgumentException("Cannot set permissions on this node - unknown authority: "+authorityId);
+                        throw new InvalidArgumentException("Authority Id is expected.");
+                    }
+
+                    if (permName == null || permName.isEmpty())
+                    {
+                        throw new InvalidArgumentException("Permission name is expected.");
+                    }
+
+                    if (((!authorityId.equals(PermissionService.ALL_AUTHORITIES) && (!authorityService.authorityExists(authorityId)))))
+                    {
+                        throw new InvalidArgumentException("Cannot set permissions on this node - unknown authority: " + authorityId);
                     }
 
                     AccessPermission existing = null;

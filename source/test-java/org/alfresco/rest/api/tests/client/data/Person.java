@@ -136,7 +136,7 @@ public class Person
                 + (enabled != null ? "enabled=" + enabled + ", " : "")
                 + (firstName != null ? "firstName=" + firstName + ", " : "")
                 + (lastName != null ? "lastName=" + lastName + ", " : "")
-                + (company != null ? "company=" + company + ", " : "")
+                + (company != null ? "company=" + company + ", " : "company=" + new Company().toString() + ", ")
                 + (skypeId != null ? "skype=" + skypeId + ", " : "")
                 + (location != null ? "location=" + location + ", " : "")
                 + (telephone != null ? "tel=" + telephone + ", " : "")

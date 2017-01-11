@@ -2,8 +2,8 @@
   "data": 
   {
 <#escape x as jsonUtils.encodeJSONString(x)>
-    "totalUsers": ${totalUsers},
-    "addedUsers": ${addedUsers},
+    "totalUsers": ${totalUsers?c},
+    "addedUsers": ${addedUsers?c},
     "users": 
     [
       <#list users?keys as username>

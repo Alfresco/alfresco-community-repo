@@ -435,9 +435,9 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         term = LAST_A;
         expectedPeople = new String[]
         {
-            "Person ["+                  "lastName=LastA, ]", // USER5
-            "Person ["+"firstName=FirstA, lastName=LastA, ]", // USER1
-            "Person ["+"firstName=FirstB, lastName=LastA, ]", // USER3
+            "Person ["+                  "lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER5
+            "Person ["+"firstName=FirstA, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER1
+            "Person ["+"firstName=FirstB, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER3
         };
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
@@ -450,9 +450,9 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         term = LAST_A;
         expectedPeople = new String[]
         {
-            "Person [id=user5@org.alfresco.rest.api.tests.queriespeopleapitest, ]", // USER5
-            "Person [id=user1@org.alfresco.rest.api.tests.queriespeopleapitest, ]", // USER1
-            "Person [id=user3@org.alfresco.rest.api.tests.queriespeopleapitest, ]", // USER3
+            "Person [id=user5@org.alfresco.rest.api.tests.queriespeopleapitest, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER5
+            "Person [id=user1@org.alfresco.rest.api.tests.queriespeopleapitest, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER1
+            "Person [id=user3@org.alfresco.rest.api.tests.queriespeopleapitest, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER3
         };
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
@@ -528,9 +528,9 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         term = LAST_A;
         expectedPeople = new String[]
         {
-            "Person ["+                  "lastName=LastA, ]", // USER5
-            "Person ["+"firstName=FirstA, lastName=LastA, ]", // USER1
-            "Person ["+"firstName=FirstB, lastName=LastA, ]" // USER3
+            "Person ["+                  "lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER5
+            "Person ["+"firstName=FirstA, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER1
+            "Person ["+"firstName=FirstB, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]" // USER3
         };
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);

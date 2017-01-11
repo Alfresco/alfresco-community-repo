@@ -1785,8 +1785,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
             else if (info.isVariant(CMISObjectVariant.VERSION))
             {
-                // Check the DELETE permission since the version service has no restrictions. 
-                if (connector.getServiceRegistry().getPermissionService().hasPermission(nodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
+                // Check the DELETE permission since the version service has no restrictions.
+                AccessStatus perm = connector.getServiceRegistry().getPermissionService().hasPermission(nodeRef, PermissionService.DELETE);
+                if (AccessStatus.ALLOWED != perm)
                 {
                     throw new CmisPermissionDeniedException("Cannot delete the node version.");
                 }
@@ -1811,7 +1812,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 }
                 else
                 {
-                    if (connector.getServiceRegistry().getPermissionService().hasPermission(nodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
+                    AccessStatus perm = connector.getServiceRegistry().getPermissionService().hasPermission(nodeRef, PermissionService.DELETE);
+                    if (AccessStatus.ALLOWED != perm)
                     {
                         throw new CmisPermissionDeniedException("Cannot delete the node version.");
                     }

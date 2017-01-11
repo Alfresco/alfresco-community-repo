@@ -49,6 +49,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private boolean allowsUserPasswordChange = true;
 
     private static final String AUTHENTICATION_UNSUCCESSFUL = "Authentication was not successful.";
+    private static final String BRUTE_FORCE_ATTACK_DETECTED = "Brute force attack was detected for user: %s";
     private int protectionPeriodSeconds;
     private boolean protectionEnabled;
     private int protectionLimit;
@@ -110,13 +111,9 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             // clear context - to avoid MT concurrency issue (causing domain mismatch) - see also 'validate' below
             clearCurrentSecurityContext();
             preAuthenticationCheck(userName);
-            if (protectionEnabled)
+            if (isUserProtected(userName))
             {
-                ProtectedUser protectedUser = protectedUsersCache.get(userName);
-                if (protectedUser != null && protectedUser.isProtected())
-                {
-                    throw new AuthenticationException(AUTHENTICATION_UNSUCCESSFUL);
-                }
+                throw new AuthenticationException(AUTHENTICATION_UNSUCCESSFUL);
             }
             authenticationComponent.authenticate(userName, password);
             if (tenant == null)
@@ -136,25 +133,60 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         catch(AuthenticationException ae)
         {
             clearCurrentSecurityContext();
-            if (protectionEnabled)
-            {
-                ProtectedUser protectedUser = protectedUsersCache.get(userName);
-                if (protectedUser == null)
-                {
-                    protectedUser = new ProtectedUser(userName);
-                }
-                else
-                {
-                    protectedUser.recordUnsuccessfulLogin();
-                }
-                protectedUsersCache.put(userName, protectedUser);
-            }
+            recordFailedAuthentication(userName);
             throw ae;
         }
         ticketComponent.clearCurrentTicket();
         getCurrentTicket();
     }
-    
+
+    /**
+     * @return <code>true</code> if user is 'protected' from brute force attack
+     */
+    public boolean isUserProtected(String userName)
+    {
+        boolean isProtected = false;
+        if (protectionEnabled)
+        {
+            ProtectedUser protectedUser = protectedUsersCache.get(userName);
+            if (protectedUser != null)
+            {
+                long currentTimeStamp = System.currentTimeMillis();
+                isProtected = protectedUser.getNumLogins() >= protectionLimit &&
+                        currentTimeStamp - protectedUser.getTimeStamp() < protectionPeriodSeconds * 1000;
+            }
+        }
+        return isProtected;
+    }
+
+    /**
+     * Method records a failed login attempt.
+     * If the number of recorded failures exceeds {@link AuthenticationServiceImpl#protectionLimit}
+     * the user will be considered 'protected'.
+     */
+    public void recordFailedAuthentication(String userName)
+    {
+        if (protectionEnabled)
+        {
+            ProtectedUser protectedUser = protectedUsersCache.get(userName);
+            if (protectedUser == null)
+            {
+                protectedUser = new ProtectedUser(userName);
+            }
+            else
+            {
+                protectedUser = new ProtectedUser(userName, protectedUser.getNumLogins() + 1);
+                if (protectedUser.getNumLogins() == protectionLimit && logger.isWarnEnabled())
+                {
+                    // Shows only first 2 symbols of the username and masks all other character with '*'
+                    logger.warn(String.format(BRUTE_FORCE_ATTACK_DETECTED,
+                            userName.substring(0,2) + new String(new char[(userName.length() - 2)]).replace("\0", "*")));
+                }
+            }
+            protectedUsersCache.put(userName, protectedUser);
+        }
+    }
+
     public String getCurrentUserName() throws AuthenticationException
     {
         return authenticationComponent.getCurrentUserName();
@@ -408,75 +440,5 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         }
 
         return true;
-    }
-
-    /**
-     * An object to hold information about unsuccessful logins
-     */
-    /*package*/ class ProtectedUser
-    {
-        private String userId;
-        /** number of consecutive unsuccessful login attempts */
-        private long numLogins;
-        /** time stamp of last unsuccessful login attempt */
-        private long timeStamp;
-
-        public ProtectedUser(String userId)
-        {
-            this.userId = userId;
-            this.numLogins = 1;
-            this.timeStamp = System.currentTimeMillis();
-        }
-
-        public void recordUnsuccessfulLogin()
-        {
-            this.numLogins+=1;
-            this.timeStamp = System.currentTimeMillis();
-            if (numLogins == protectionLimit + 1 && logger.isWarnEnabled())
-            {
-                // Shows only first 2 symbols of the username and masks all other character with '*'
-                logger.warn("Brute force attack was detected for user " +
-                        userId.substring(0,2) + new String(new char[(userId.length() - 2)]).replace("\0", "*"));
-            }
-        }
-
-        public boolean isProtected()
-        {
-            long currentTimeStamp = System.currentTimeMillis();
-            return numLogins >= protectionLimit &&
-                    currentTimeStamp - timeStamp < protectionPeriodSeconds * 1000;
-        }
-
-        @Override
-        public String toString()
-        {
-            return "ProtectedUser{" +
-                    "userId='" + userId + '\'' +
-                    ", numLogins=" + numLogins +
-                    ", timeStamp=" + timeStamp +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o)
-        {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            ProtectedUser that = (ProtectedUser) o;
-
-            if (numLogins != that.numLogins) return false;
-            if (timeStamp != that.timeStamp) return false;
-            return userId.equals(that.userId);
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int result = userId.hashCode();
-            result = 31 * result + (int) (numLogins ^ (numLogins >>> 32));
-            result = 31 * result + (int) (timeStamp ^ (timeStamp >>> 32));
-            return result;
-        }
     }
 }

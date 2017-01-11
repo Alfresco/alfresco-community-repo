@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -79,6 +80,9 @@ import java.util.Set;
  */
 public class PeopleImpl implements People
 {
+    private static final List<String> EXCLUDED_NS = Arrays.asList(
+            NamespaceService.SYSTEM_MODEL_1_0_URI,
+            "http://www.alfresco.org/model/user/1.0");
 	private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
 	private static final List<QName> EXCLUDED_PROPS = Arrays.asList(
 			ContentModel.PROP_USERNAME,
@@ -105,8 +109,7 @@ public class PeopleImpl implements People
 			ContentModel.PROP_SIZE_QUOTA,
 			ContentModel.PROP_SIZE_CURRENT,
 			ContentModel.PROP_EMAIL_FEED_DISABLED,
-            ContentModel.PROP_PREFERENCE_VALUES,
-            ContentModel.PROP_ENABLED);
+            ContentModel.PROP_PREFERENCE_VALUES);
 	protected Nodes nodes;
 	protected Sites sites;
 
@@ -409,14 +412,14 @@ public class PeopleImpl implements People
             if (include.contains(PARAM_INCLUDE_PROPERTIES))
             {
                 Map<String, Object> custProps = new HashMap<>();
-                custProps.putAll(nodes.mapFromNodeProperties(nodeProps, new ArrayList<>(), new HashMap<>(), EXCLUDED_PROPS));
+                custProps.putAll(nodes.mapFromNodeProperties(nodeProps, new ArrayList<>(), new HashMap<>(), EXCLUDED_NS, EXCLUDED_PROPS));
                 person.setProperties(custProps);
             }
             if (include.contains(PARAM_INCLUDE_ASPECTNAMES))
             {
                 // Expose aspect names
                 Set<QName> aspects = nodeService.getAspects(personNode);
-                person.setAspectNames(nodes.mapFromNodeAspects(aspects, EXCLUDED_ASPECTS));
+                person.setAspectNames(nodes.mapFromNodeAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS));
             }
             
             // get avatar information

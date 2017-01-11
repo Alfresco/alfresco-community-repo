@@ -2947,25 +2947,16 @@ public class NodesImpl implements Nodes
             // Do not clean formData temp files to allow for retries.
             // Temp files will be deleted later when GC call DiskFileItem#finalize() method or by temp file cleaner.
         }
-        catch (ApiException apiEx)
-        {
-            // As this is an public API fwk exception, there is no need to convert it, so just throw it.
-            throw apiEx;
-        }
         catch (AccessDeniedException ade)
         {
             throw new PermissionDeniedException(ade.getMessage());
         }
-        catch (Exception ex)
-        {
-            /*
-             * NOTE: Do not clean formData temp files to allow for retries. It's
-             * possible for a temp file to remain if max retry attempts are
-             * made, but this is rare, so leave to usual temp file cleanup.
-             */
 
-            throw new ApiException("Unexpected error occurred during upload of new content.", ex);
-        }
+        /*
+         * NOTE: Do not clean formData temp files to allow for retries. It's
+         * possible for a temp file to remain if max retry attempts are
+         * made, but this is rare, so leave to usual temp file cleanup.
+         */
     }
 
     private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,

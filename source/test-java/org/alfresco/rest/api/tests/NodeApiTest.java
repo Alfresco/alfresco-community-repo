@@ -1389,6 +1389,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
                     .setRelativePath("userTwoFolder1/userTwoFolder2")
                     .build();
         post(getNodeChildrenUrl(folderA_id), reqBody.getBody(), null, reqBody.getContentType(), 403);
+
+        // -ve test: integrity error
+        setRequestContext(user1);
+        reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData("invalid:name", file))
+                .build();
+        // 422 -> invalid name (includes a ':' in this example)
+        post(getNodeChildrenUrl(coolFolder.getId()), reqBody.getBody(), null, reqBody.getContentType(), 422);
     }
 
     /**

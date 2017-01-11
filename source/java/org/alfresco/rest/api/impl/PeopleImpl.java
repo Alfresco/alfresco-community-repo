@@ -583,6 +583,11 @@ public class PeopleImpl implements People
             savePersonDescription(person.getDescription(), personNodeRef);
         }
 
+        // Update custom aspects - do this *before* adding custom properties. The
+        // addition of custom properties may result in the auto-addition of aspects
+        // and we don't want to remove them during the update of explicitly specified aspects.
+        nodes.updateCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
+        
 		// Add custom properties
 		if (person.getProperties() != null)
 		{
@@ -600,9 +605,6 @@ public class PeopleImpl implements People
                 return null;
             }
         });
-
-		// Update custom aspects
-		nodes.updateCustomAspects(personNodeRef, person.getAspectNames(), EXCLUDED_ASPECTS);
 		
         return getPerson(personId);
     }

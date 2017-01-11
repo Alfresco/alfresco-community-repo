@@ -270,9 +270,8 @@
                                     <table border="0" cellspacing="0" cellpadding="10" align="center" width="100%">
                                         <tr>
                                             <td align="right" valign="middle"><span
-                                                    style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; font-weight:200; color: #727174;">Simple<span
-                                                    style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 18px; font-weight:400; color:
-#727174;">+</span>Smart&nbsp;</span></td>
+                                                    style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; font-weight:200; color: #727174;">make business flow</span>
+                                            </td>
                                         </tr>
                                     </table>
                                 </td>
@@ -452,3 +451,4 @@ sans-serif; font-size: 10px; color: #b3b3b8;">© 2015 Alfresco Software, Inc. Al
 </table>
 </body>
 </html>
+

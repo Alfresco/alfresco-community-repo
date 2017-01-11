@@ -70,8 +70,6 @@
                                              <p>Klik op deze koppeling als u de uitnodiging van ${inviterPerson.properties["cm:firstName"]?html!""}, wilt afwijzen:<br />
                                              <br /><a href="${args["rejectLink"]}">${args["rejectLink"]}</a></p>
                                              
-                                             <p>Hoogachtend,<br />
-                                             Alfresco ${productName!""}</p>
                                           </div>
                                        </td>
                                     </tr>

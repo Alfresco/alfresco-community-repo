@@ -37,15 +37,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a user of the system.
+ * Represents a person (aka user) within the system.
  * 
  * @author steveglover
  *
  */
 public class Person
 {
-    public static final QName PROP_PERSON_DESCRIPTION = QName.createQName("RestApi", "description");
-
 	protected String userName;
 	protected Boolean enabled;
 	protected NodeRef avatarId;
@@ -70,6 +68,14 @@ public class Person
 	protected String oldPassword;
 	protected Map<String, Object> properties;
 	protected List<String> aspectNames;
+
+	private Map<QName, Boolean> setFields = new HashMap<>(7);
+
+	public static final QName PROP_PERSON_DESCRIPTION = QName.createQName("RestApi", "description");
+	public static final QName PROP_PERSON_COMPANY = QName.createQName("RestApi", "company");
+	public static final QName PROP_PERSON_AVATAR_ID = QName.createQName("RestApi", "avatarId");
+	public static final QName PROP_PERSON_OLDPASSWORD = QName.createQName("RestApi", "oldPassword");
+	public static final QName PROP_PERSON_PASSWORD = QName.createQName("RestApi", "password");
 
 	public Person()
     {
@@ -97,26 +103,28 @@ public class Person
 			String description,
 			Company company)
 	{
-		this.userName = userName;
-		this.enabled = enabled;
-		this.avatarId = avatarId;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.jobTitle = jobTitle;
-		this.location = location;
-		this.telephone = telephone;
-		this.mobile = mobile;
-		this.email = email;
-		this.skypeId = skypeId;
-		this.instantMessageId = instantMessageId;
-		this.userStatus = userStatus;
-		this.statusUpdatedAt = statusUpdatedAt;
-		this.googleId = googleId;
-		this.quota = quota;
-		this.quotaUsed = quotaUsed;
-		this.emailNotificationsEnabled = emailNotificationsEnabled;
-		this.description = description;
-		this.company = company;
+		setUserName(userName);
+		setEnabled(enabled);
+		setAvatarId(avatarId);
+		setFirstName(firstName);
+		setLastName(lastName);
+		setJobTitle(jobTitle);
+		setLocation(location);
+		setTelephone(telephone);
+		setMobile(mobile);
+		setEmail(email);
+		setSkypeId(skypeId);
+		setInstantMessageId(instantMessageId);
+		setUserStatus(userStatus);
+		setGoogleId(googleId);
+		setEmailNotificationsEnabled(emailNotificationsEnabled);
+		setDescription(description);
+		setCompany(company);
+
+		// system-maintained / derived
+		setStatusUpdatedAt(statusUpdatedAt);
+		setQuota(quota);
+		setQuotaUsed(quotaUsed);
 	}
 
 	public Person(NodeRef nodeRef, Map<QName, Serializable> nodeProps, boolean enabled)
@@ -129,15 +137,15 @@ public class Person
     {
 		nodeProps.remove(ContentModel.PROP_CONTENT);
 
-		this.userName = (String) nodeProps.get(ContentModel.PROP_USERNAME);
-		this.firstName = (String) nodeProps.get(ContentModel.PROP_FIRSTNAME);
-		this.lastName = (String) nodeProps.get(ContentModel.PROP_LASTNAME);
-		this.jobTitle = (String) nodeProps.get(ContentModel.PROP_JOBTITLE);
+		setUserName((String) nodeProps.get(ContentModel.PROP_USERNAME));
+		setFirstName((String) nodeProps.get(ContentModel.PROP_FIRSTNAME));
+		setLastName((String) nodeProps.get(ContentModel.PROP_LASTNAME));
+		setJobTitle((String) nodeProps.get(ContentModel.PROP_JOBTITLE));
 
-		this.location = (String) nodeProps.get(ContentModel.PROP_LOCATION);
-		this.telephone = (String) nodeProps.get(ContentModel.PROP_TELEPHONE);
-		this.mobile = (String) nodeProps.get(ContentModel.PROP_MOBILE);
-		this.email = (String) nodeProps.get(ContentModel.PROP_EMAIL);
+		setLocation((String) nodeProps.get(ContentModel.PROP_LOCATION));
+		setTelephone((String) nodeProps.get(ContentModel.PROP_TELEPHONE));
+		setMobile((String) nodeProps.get(ContentModel.PROP_MOBILE));
+		setEmail((String) nodeProps.get(ContentModel.PROP_EMAIL));
 
 		String organization = (String) nodeProps.get(ContentModel.PROP_ORGANIZATION);
 		String companyAddress1 = (String) nodeProps.get(ContentModel.PROP_COMPANYADDRESS1);
@@ -147,20 +155,22 @@ public class Person
 		String companyTelephone = (String) nodeProps.get(ContentModel.PROP_COMPANYTELEPHONE);
 		String companyFax = (String) nodeProps.get(ContentModel.PROP_COMPANYFAX);
 		String companyEmail = (String) nodeProps.get(ContentModel.PROP_COMPANYEMAIL);
-		this.company = new Company(organization, companyAddress1, companyAddress2, companyAddress3, companyPostcode, companyTelephone, companyFax, companyEmail);
+		setCompany(new Company(organization, companyAddress1, companyAddress2, companyAddress3, companyPostcode, companyTelephone, companyFax, companyEmail));
 
-		this.skypeId = (String) nodeProps.get(ContentModel.PROP_SKYPE);
-		this.instantMessageId = (String) nodeProps.get(ContentModel.PROP_INSTANTMSG);
-		this.userStatus = (String) nodeProps.get(ContentModel.PROP_USER_STATUS);
-		this.statusUpdatedAt = (Date) nodeProps.get(ContentModel.PROP_USER_STATUS_TIME);
-		this.googleId = (String) nodeProps.get(ContentModel.PROP_GOOGLEUSERNAME);
-		this.quota = (Long) nodeProps.get(ContentModel.PROP_SIZE_QUOTA);
-		this.quotaUsed = (Long) nodeProps.get(ContentModel.PROP_SIZE_CURRENT);
+		setSkypeId((String) nodeProps.get(ContentModel.PROP_SKYPE));
+		setInstantMessageId((String) nodeProps.get(ContentModel.PROP_INSTANTMSG));
+		setUserStatus((String) nodeProps.get(ContentModel.PROP_USER_STATUS));
+		setGoogleId((String) nodeProps.get(ContentModel.PROP_GOOGLEUSERNAME));
 		Boolean bool = (Boolean)nodeProps.get(ContentModel.PROP_EMAIL_FEED_DISABLED);
-		this.emailNotificationsEnabled = (bool == null ? Boolean.TRUE : !bool.booleanValue());
-		this.description = (String)nodeProps.get(PROP_PERSON_DESCRIPTION);
+		setEmailNotificationsEnabled(bool == null ? Boolean.TRUE : !bool.booleanValue());
+		setDescription((String)nodeProps.get(PROP_PERSON_DESCRIPTION));
+
+		// system-maintained / derived
+		setStatusUpdatedAt((Date) nodeProps.get(ContentModel.PROP_USER_STATUS_TIME));
+		setQuota((Long) nodeProps.get(ContentModel.PROP_SIZE_QUOTA));
+		setQuotaUsed((Long) nodeProps.get(ContentModel.PROP_SIZE_CURRENT));
     }
-	
+
 	public Company getCompany()
 	{
 		return company;
@@ -169,6 +179,7 @@ public class Person
 	public void setCompany(Company company)
 	{
 		this.company = company;
+		setFields.put(PROP_PERSON_COMPANY, true);
 	}
 
 	public String getInstantMessageId()
@@ -179,6 +190,7 @@ public class Person
 	public void setInstantMessageId(String instantMessageId)
 	{
 		this.instantMessageId = instantMessageId;
+		setFields.put(ContentModel.PROP_INSTANTMSG, true);
 	}
 
 	public String getGoogleId()
@@ -189,16 +201,31 @@ public class Person
 	public void setGoogleId(String googleId)
 	{
 		this.googleId = googleId;
+		setFields.put(ContentModel.PROP_GOOGLEUSERNAME, true);
 	}
-	
+
 	public Long getQuota()
 	{
 		return quota;
 	}
 
+	// TEMP: for tracking (pending REPO-110)
+	protected void setQuota(Long quota)
+	{
+		this.quota = quota;
+		setFields.put(ContentModel.PROP_SIZE_QUOTA, true);
+	}
+
 	public Long getQuotaUsed()
 	{
 		return quotaUsed;
+	}
+
+	// TEMP: for tracking (pending REPO-110)
+	protected void setQuotaUsed(Long quotaUsed)
+	{
+		this.quotaUsed = quotaUsed;
+		setFields.put(ContentModel.PROP_SIZE_CURRENT, true);
 	}
 
 	public String getDescription()
@@ -209,8 +236,9 @@ public class Person
 	public void setDescription(String description)
 	{
 		this.description = description;
+		setFields.put(PROP_PERSON_DESCRIPTION, true);
 	}
-	
+
 	@UniqueId
 	public String getUserName() 
 	{
@@ -220,6 +248,7 @@ public class Person
 	public void setUserName(String userName)
 	{
 		this.userName = userName;
+		setFields.put(ContentModel.PROP_USERNAME, true);
 	}
 
 	public Boolean isEnabled()
@@ -230,21 +259,25 @@ public class Person
 	public void setEnabled(Boolean enabled)
 	{
 		this.enabled = enabled;
+		setFields.put(ContentModel.PROP_ENABLED, true);
 	}
-	
+
 	public void setAvatarId(NodeRef avatarId)
 	{
 		this.avatarId = avatarId;
+		setFields.put(PROP_PERSON_AVATAR_ID, true);
 	}
-	
+
 	public void setPassword(String password)
 	{
 		this.password = password;
+		setFields.put(PROP_PERSON_PASSWORD, true);
 	}
 
 	public void setOldPassword(String oldPassword)
 	{
 		this.oldPassword = oldPassword;
+		setFields.put(PROP_PERSON_OLDPASSWORD, true);
 	}
 
 	public NodeRef getAvatarId()
@@ -260,11 +293,13 @@ public class Person
 	public void setFirstName(String firstName)
 	{
 		this.firstName = firstName;
+		setFields.put(ContentModel.PROP_FIRSTNAME, true);
 	}
 
 	public void setLastName(String lastName)
 	{
 		this.lastName = lastName;
+		setFields.put(ContentModel.PROP_LASTNAME, true);
 	}
 
 	public String getLastName()
@@ -280,6 +315,7 @@ public class Person
 	public void setJobTitle(String jobTitle)
 	{
 		this.jobTitle = jobTitle;
+		setFields.put(ContentModel.PROP_JOBTITLE, true);
 	}
 
 	public String getLocation()
@@ -290,6 +326,7 @@ public class Person
 	public void setLocation(String location)
 	{
 		this.location = location;
+		setFields.put(ContentModel.PROP_LOCATION, true);
 	}
 
 	public String getTelephone()
@@ -300,6 +337,7 @@ public class Person
 	public void setTelephone(String telephone)
 	{
 		this.telephone = telephone;
+		setFields.put(ContentModel.PROP_TELEPHONE, true);
 	}
 
 	public String getMobile()
@@ -310,6 +348,7 @@ public class Person
 	public void setMobile(String mobile)
 	{
 		this.mobile = mobile;
+		setFields.put(ContentModel.PROP_MOBILE, true);
 	}
 
 	public String getEmail()
@@ -320,6 +359,7 @@ public class Person
 	public void setEmail(String email)
 	{
 		this.email = email;
+		setFields.put(ContentModel.PROP_EMAIL, true);
 	}
 
 	public String getSkypeId()
@@ -330,6 +370,7 @@ public class Person
 	public void setSkypeId(String skypeId)
 	{
 		this.skypeId = skypeId;
+		setFields.put(ContentModel.PROP_SKYPE, true);
 	}
 
 	public String getUserStatus()
@@ -340,11 +381,19 @@ public class Person
 	public void setUserStatus(String userStatus)
 	{
 		this.userStatus = userStatus;
+		setFields.put(ContentModel.PROP_USER_STATUS, true);
 	}
 
 	public Date getStatusUpdatedAt()
 	{
 		return statusUpdatedAt;
+	}
+
+	// TEMP: for tracking (pending REPO-110)
+	protected void setStatusUpdatedAt(Date statusUpdatedAt)
+	{
+		this.statusUpdatedAt = statusUpdatedAt;
+		setFields.put(ContentModel.PROP_USER_STATUS_TIME, true);
 	}
 
 	public Boolean isEmailNotificationsEnabled()
@@ -355,6 +404,7 @@ public class Person
 	public void setEmailNotificationsEnabled(Boolean emailNotificationsEnabled)
 	{
 		this.emailNotificationsEnabled = emailNotificationsEnabled;
+		setFields.put(ContentModel.PROP_EMAIL_FEED_DISABLED, true);
 	}
 
 	public String getPassword()
@@ -387,6 +437,12 @@ public class Person
 		this.aspectNames = aspectNames;
 	}
 
+	public boolean wasSet(QName fieldName)
+	{
+		Boolean b = setFields.get(fieldName);
+		return (b != null ? b : false);
+	}
+
 	@Override
 	public String toString()
 	{
@@ -413,12 +469,16 @@ public class Person
 
 	private void addToMap(Map<QName, Serializable> properties, QName name, Serializable value)
 	{
-		if(name != null && value != null)
+		if (name != null)
 		{
-			properties.put(name, value);
+			Boolean b = setFields.get(name);
+			if (Boolean.TRUE.equals(b))
+			{
+				properties.put(name, value);
+			}
 		}
 	}
-
+	
 	private void populateProps(Map<QName, Serializable> properties)
 	{
 		addToMap(properties, ContentModel.PROP_USERNAME, getUserName());
@@ -429,29 +489,63 @@ public class Person
 		addToMap(properties, ContentModel.PROP_TELEPHONE, getTelephone());
 		addToMap(properties, ContentModel.PROP_MOBILE, getMobile());
 		addToMap(properties, ContentModel.PROP_EMAIL, getEmail());
+		
+		if (wasSet(PROP_PERSON_COMPANY))
+		{
+			Company company = getCompany();
+			if (company != null)
+			{
+				if (company.wasSet(ContentModel.PROP_ORGANIZATION))
+				{
+					properties.put(ContentModel.PROP_ORGANIZATION, company.getOrganization());
+				}
+				
+				if (company.wasSet(ContentModel.PROP_COMPANYADDRESS1))
+				{
+					properties.put(ContentModel.PROP_COMPANYADDRESS1, company.getAddress1());
+				}
+				
+				if (company.wasSet(ContentModel.PROP_COMPANYADDRESS2))
+				{
+					properties.put(ContentModel.PROP_COMPANYADDRESS2, company.getAddress2());
+				}
+				
+				if (company.wasSet(ContentModel.PROP_COMPANYADDRESS3))
+				{
+					properties.put(ContentModel.PROP_COMPANYADDRESS3, company.getAddress3());
+				}
 
-		Company company = getCompany();
-		if(company != null)
-		{
-			addToMap(properties, ContentModel.PROP_ORGANIZATION, company.getOrganization());
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS1, company.getAddress1());
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS2, company.getAddress2());
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS3, company.getAddress3());
-			addToMap(properties, ContentModel.PROP_COMPANYPOSTCODE, company.getPostcode());
-			addToMap(properties, ContentModel.PROP_COMPANYTELEPHONE, company.getTelephone());
-			addToMap(properties, ContentModel.PROP_COMPANYFAX, company.getFax());
-			addToMap(properties, ContentModel.PROP_COMPANYEMAIL, company.getEmail());
-		}
-		else
-		{
-			addToMap(properties, ContentModel.PROP_ORGANIZATION, null);
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS1, null);
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS2, null);
-			addToMap(properties, ContentModel.PROP_COMPANYADDRESS3, null);
-			addToMap(properties, ContentModel.PROP_COMPANYPOSTCODE, null);
-			addToMap(properties, ContentModel.PROP_COMPANYTELEPHONE, null);
-			addToMap(properties, ContentModel.PROP_COMPANYFAX, null);
-			addToMap(properties, ContentModel.PROP_COMPANYEMAIL, null);
+				if (company.wasSet(ContentModel.PROP_COMPANYPOSTCODE))
+				{
+					properties.put(ContentModel.PROP_COMPANYPOSTCODE, company.getPostcode());
+				}
+
+				if (company.wasSet(ContentModel.PROP_COMPANYTELEPHONE))
+				{
+					properties.put(ContentModel.PROP_COMPANYTELEPHONE, company.getTelephone());
+				}
+				
+				if (company.wasSet(ContentModel.PROP_COMPANYFAX))
+				{
+					properties.put(ContentModel.PROP_COMPANYFAX, company.getFax());
+				}
+
+				if (company.wasSet(ContentModel.PROP_COMPANYEMAIL))
+				{
+					properties.put(ContentModel.PROP_COMPANYEMAIL, company.getEmail());
+				}
+			}
+			else
+			{
+				properties.put(ContentModel.PROP_ORGANIZATION, null);
+				properties.put(ContentModel.PROP_COMPANYADDRESS1, null);
+				properties.put(ContentModel.PROP_COMPANYADDRESS2, null);
+				properties.put(ContentModel.PROP_COMPANYADDRESS3, null);
+				properties.put(ContentModel.PROP_COMPANYPOSTCODE, null);
+				properties.put(ContentModel.PROP_COMPANYTELEPHONE, null);
+				properties.put(ContentModel.PROP_COMPANYFAX, null);
+				properties.put(ContentModel.PROP_COMPANYEMAIL, null);
+			}
 		}
 
 //		addToMap(properties, ContentModel.ASSOC_AVATAR, getAvatarId());

@@ -323,7 +323,18 @@ public class TestPeople extends EnterpriseTestApi
             assertEquals(null, p.getInstantMessageId());
             assertEquals(null, p.getJobTitle());
             assertEquals(null, p.getLocation());
-            assertEquals(null, p.getCompany());
+
+            // note: empty company object is returned for backwards compatibility (with pre-existing getPerson API <= 5.1)
+            assertNotNull(p.getCompany());
+            assertNull(p.getCompany().getOrganization());
+            assertNull(p.getCompany().getAddress1());
+            assertNull(p.getCompany().getAddress2());
+            assertNull(p.getCompany().getAddress3());
+            assertNull(p.getCompany().getPostcode());
+            assertNull(p.getCompany().getFax());
+            assertNull(p.getCompany().getEmail());
+            assertNull(p.getCompany().getTelephone());
+
             assertEquals(null, p.getMobile());
             assertEquals("1234 5678 9012", p.getTelephone());
             assertEquals(null, p.getUserStatus());
@@ -351,7 +362,18 @@ public class TestPeople extends EnterpriseTestApi
             assertEquals(null, p.getInstantMessageId());
             assertEquals(null, p.getJobTitle());
             assertEquals(null, p.getLocation());
-            assertEquals(null, p.getCompany());
+
+            // note: empty company object is returned for backwards compatibility (with pre-existing getPerson API <= 5.1)
+            assertNotNull(p.getCompany());
+            assertNull(p.getCompany().getOrganization());
+            assertNull(p.getCompany().getAddress1());
+            assertNull(p.getCompany().getAddress2());
+            assertNull(p.getCompany().getAddress3());
+            assertNull(p.getCompany().getPostcode());
+            assertNull(p.getCompany().getFax());
+            assertNull(p.getCompany().getEmail());
+            assertNull(p.getCompany().getTelephone());
+
             assertEquals(null, p.getMobile());
             assertEquals(null, p.getTelephone());
             assertEquals(null, p.getUserStatus());
@@ -862,7 +884,7 @@ public class TestPeople extends EnterpriseTestApi
     }
 
     @Test
-    public void testUpdatePersonUpdate() throws Exception
+    public void testUpdatePersonUpdateAsAdmin() throws Exception
     {
         final String personId = account3PersonIt.next();
 
@@ -942,6 +964,89 @@ public class TestPeople extends EnterpriseTestApi
         assertEquals(userStatus, updatedPerson.getUserStatus());
         assertEquals(emailNotificationsEnabled, updatedPerson.isEmailNotificationsEnabled());
         assertEquals(enabled, updatedPerson.isEnabled());
+        
+        // test ability to unset optional fields (could be one or more - here all) including individual company fields
+        response = people.update("people", personId, null, null,
+                "{\n"
+                        + "  \"lastName\":null,\n"
+                        + "  \"description\":null,\n"
+                        + "  \"skypeId\":null,\n"
+                        + "  \"googleId\":null,\n"
+                        + "  \"instantMessageId\":null,\n"
+                        + "  \"jobTitle\":null,\n"
+                        + "  \"location\":null,\n"
+
+                        + "  \"company\": {\n"
+                        + "    \"organization\":null,\n" 
+                        + "    \"address1\":null,\n"
+                        + "    \"address2\":null,\n"
+                        + "    \"address3\":null,\n"
+                        + "    \"postcode\":null,\n"
+                        + "    \"telephone\":null,\n"
+                        + "    \"fax\":null,\n"
+                        + "    \"email\":null\n"
+                        + "  },\n"
+
+                        + "  \"mobile\":null,\n"
+                        + "  \"telephone\":null,\n"
+                        + "  \"userStatus\":null\n"
+                        + "}", params,
+                "Expected 200 response when updating " + personId, 200);
+
+        updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+
+        assertNotNull(updatedPerson.getId());
+        assertNull(updatedPerson.getLastName());
+        assertNull(updatedPerson.getDescription());
+        assertNull(updatedPerson.getSkypeId());
+        assertNull(updatedPerson.getGoogleId());
+        assertNull(updatedPerson.getInstantMessageId());
+        assertNull(updatedPerson.getJobTitle());
+        assertNull(updatedPerson.getLocation());
+
+        assertNotNull(updatedPerson.getCompany());
+        assertNull(updatedPerson.getCompany().getOrganization());
+        assertNull(updatedPerson.getCompany().getAddress1());
+        assertNull(updatedPerson.getCompany().getAddress2());
+        assertNull(updatedPerson.getCompany().getAddress3());
+        assertNull(updatedPerson.getCompany().getPostcode());
+        assertNull(updatedPerson.getCompany().getFax());
+        assertNull(updatedPerson.getCompany().getEmail());
+        assertNull(updatedPerson.getCompany().getTelephone());
+
+        assertNull(updatedPerson.getMobile());
+        assertNull(updatedPerson.getTelephone());
+        assertNull(updatedPerson.getUserStatus());
+
+        // set at least one company field
+        String updatedOrgName = "another org";
+
+        response = people.update("people", personId, null, null,
+                "{\n"
+                        + "  \"company\": {\n"
+                        + "    \"organization\":\""+updatedOrgName+"\"\n"
+                        + "  }\n"
+                        + "}", params,
+                "Expected 200 response when updating " + personId, 200);
+
+        updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+
+        assertNotNull(updatedPerson.getCompany());
+        assertEquals(updatedOrgName, updatedPerson.getCompany().getOrganization());
+
+        // test ability to unset company fields as a whole
+        response = people.update("people", personId, null, null,
+                "{\n"
+                        + "  \"company\": null\n"
+                        + "}", params,
+                "Expected 200 response when updating " + personId, 200);
+
+        updatedPerson = Person.parsePerson((JSONObject) response.getJsonResponse().get("entry"));
+
+        // note: empty company object is returned for backwards compatibility (with pre-existing getPerson API <= 5.1)
+        assertNotNull(updatedPerson.getCompany());
+
+        assertNull(updatedPerson.getCompany().getOrganization());
     }
 
     @Test

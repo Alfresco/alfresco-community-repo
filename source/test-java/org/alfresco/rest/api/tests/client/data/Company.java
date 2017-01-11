@@ -31,6 +31,10 @@ import org.json.simple.JSONObject;
 
 public class Company extends org.alfresco.rest.api.model.Company implements ExpectedComparison
 {
+	public Company()
+	{
+	}
+
 	public Company(org.alfresco.rest.api.model.Company company)
 	{
 		super(company.getOrganization(), company.getAddress1(), company.getAddress2(), company.getAddress3(), company.getPostcode(), company.getTelephone(), company.getFax(), company.getEmail());
@@ -40,7 +44,7 @@ public class Company extends org.alfresco.rest.api.model.Company implements Expe
 	{
 		super(organization, address1, address2, address3, postcode, telephone, fax, email);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public JSONObject toJSON()
 	{
@@ -55,14 +59,14 @@ public class Company extends org.alfresco.rest.api.model.Company implements Expe
 		companyJson.put("email", getEmail());
 		return companyJson;
 	}
-	
+
 	@Override
 	public void expected(Object o)
 	{
 		assertTrue(o instanceof Company);
-		
+
 		Company other = (Company)o;
-		
+
 		AssertUtil.assertEquals("organization", getOrganization(), other.getOrganization());
 		AssertUtil.assertEquals("address1", getAddress1(), other.getAddress1());
 		AssertUtil.assertEquals("address2", getAddress2(), other.getAddress2());

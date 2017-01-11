@@ -53,7 +53,7 @@
         -->
         <installer.version.name>${installer.build.timestamp}-${installer.build.number}</installer.version.name>
 
-        <alfresco.package.name>alfresco-community</alfresco.package.name>
+        <alfresco.package.name>alfresco-content-services-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
     </properties>
 

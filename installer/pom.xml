@@ -6,7 +6,7 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.2-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-community-installer</artifactId>
+    <artifactId>alfresco-content-services-community-installer</artifactId>
     <packaging>pom</packaging>
     <name>Alfresco Community Full Installers</name>
 
@@ -302,7 +302,7 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-community-distribution</artifactId>
+                                    <artifactId>alfresco-content-services-community-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>

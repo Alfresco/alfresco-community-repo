@@ -50,6 +50,7 @@
                     </dependency>
                 </dependencies>
                 <configuration>
+                    <useCache>true</useCache>
                     <overlays>
                         <overlay>
                             <groupId>org.alfresco</groupId>
@@ -67,6 +68,12 @@
                             <type>amp</type>
                         </overlay>
                     </overlays>
+                    <archive>
+                        <manifestEntries>
+                            <!-- WebSphere property -->
+                            <DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>

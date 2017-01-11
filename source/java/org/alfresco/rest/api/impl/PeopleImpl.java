@@ -534,8 +534,6 @@ public class PeopleImpl implements People
 
         validateUpdatePersonData(person);
 
-        boolean isAdmin = isAdminAuthority();
-
         String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
         if (!isAdmin && !currentUserId.equalsIgnoreCase(personId))
         {
@@ -664,55 +662,6 @@ public class PeopleImpl implements People
         if (person.wasSet(ContentModel.PROP_EMAIL_FEED_DISABLED) && (person.isEmailNotificationsEnabled() == null))
         {
             throw new IllegalArgumentException("'emailNotificationsEnabled' field cannot be empty.");
-        }
-    }
-
-    private void updatePassword(boolean isAdmin, String personIdToUpdate, Person person)
-    {
-        MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
-
-        boolean isOldPassword = person.wasSet(Person.PROP_PERSON_OLDPASSWORD);
-        boolean isPassword = person.wasSet(Person.PROP_PERSON_PASSWORD);
-
-        if (isPassword || isOldPassword)
-        {
-            if (isOldPassword && ((person.getOldPassword() == null) || (person.getOldPassword().isEmpty())))
-            {
-                throw new IllegalArgumentException("'oldPassword' field cannot be empty.");
-            }
-
-            if (!isPassword || (person.getPassword() == null) || (person.getPassword().isEmpty()))
-            {
-                throw new IllegalArgumentException("password' field cannot be empty.");
-            }
-
-            char[] newPassword = person.getPassword().toCharArray();
-
-            if (!isAdmin)
-            {
-                // Non-admin users can update their own password, but must provide their current password.
-                if (!isOldPassword)
-                {
-                    throw new IllegalArgumentException("To change password, both 'oldPassword' and 'password' fields are required.");
-                }
-
-                char[] oldPassword = person.getOldPassword().toCharArray();
-                try
-                {
-                    mutableAuthenticationService.updateAuthentication(personIdToUpdate, oldPassword, newPassword);
-                }
-                catch (AuthenticationException e)
-                {
-                    throw new PermissionDeniedException("Incorrect password.");
-                }
-            }
-            else
-            {
-                // An admin user can update without knowing the original pass - but must know their own!
-                // note: is it reasonable to silently ignore oldPassword if supplied ?
-
-                mutableAuthenticationService.setAuthentication(personIdToUpdate, newPassword);
-            }
         }
     }
 

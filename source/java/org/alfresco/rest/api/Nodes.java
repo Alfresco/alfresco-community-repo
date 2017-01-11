@@ -269,13 +269,15 @@ public interface Nodes
      * Convert from node properties (map of QName to Serializable) retrieved from
      * the respository to a map of String to Object that can be formatted/expressed
      * as required by the API JSON response for get nodes, get person etc.
+     * <p>
+     * Returns null if there are no properties to return, rather than an empty map.
      * 
      * @param nodeProps
      * @param selectParam
      * @param mapUserInfo
      * @param excludedNS
      * @param excludedProps
-     * @return
+     * @return The map of properties, or null if none to return.
      */
     Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo, List<String> excludedNS, List<QName> excludedProps);
 
@@ -289,14 +291,25 @@ public interface Nodes
     Map<QName, Serializable> mapToNodeProperties(Map<String, Object> props);
 
     /**
+     * Map from a String representation of aspect names to a set
+     * of QName objects, as used by the repository.
+     * 
+     * @param aspectNames
+     * @return
+     */
+    Set<QName> mapToNodeAspects(List<String> aspectNames);
+        
+    /**
      * Map from aspects (Set of QName) retrieved from the repository to a
      * map List of String required that can be formatted/expressed as required
      * by the API JSON response for get nodes, get person etc.
+     * <p>
+     * Returns null if there are no aspect names to return, rather than an empty list.
      * 
      * @param nodeAspects
      * @param excludedNS
      * @param excludedAspects
-     * @return
+     * @return The list of aspect names, or null if none to return.
      */
     List<String> mapFromNodeAspects(Set<QName> nodeAspects, List<String> excludedNS, List<QName> excludedAspects);
 

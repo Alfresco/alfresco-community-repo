@@ -26,6 +26,7 @@
 package org.alfresco.repo.action.executer;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -195,6 +196,10 @@ public class ImporterActionExecuterTest
                     // check if aspect is set
                     boolean hasAspectTitled = nodeService.hasAspect(importedFolder, ContentModel.ASPECT_TITLED);
                     assertTrue("folder didn't get the cm:titled aspect applied", hasAspectTitled);
+
+                    // MNT-17017 check ContentModel.PROP_TITLE is not set on the top level folder, just like Share
+                    String title = (String)nodeService.getProperty(importedFolder, ContentModel.PROP_TITLE);
+                    assertNull("The title should not have cm:title set", title);
                 }
                 finally
                 {

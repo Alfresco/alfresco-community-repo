@@ -838,7 +838,7 @@
         <property name="nodeAssocService" ref="NodeAssocService"/>
     </bean>
 
-    <bean class="org.alfresco.rest.api.nodes.NodeVersionsRelation" parent="baseNodeRelation">
+    <bean id="nodeVersionsRelation" class="org.alfresco.rest.api.nodes.NodeVersionsRelation" parent="baseNodeRelation">
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
     </bean>
     
@@ -893,13 +893,22 @@
         <property name="assistant" ref="apiAssistant" />
         <property name="helper" ref="webscriptHelper" />
         <property name="resultMapper" ref="searchapiResultMapper" />
+        <property name="searchMapper" ref="searchapiSearchMapper" />
+    </bean>
+
+    <bean id="searchapiStoreMapper" class="org.alfresco.rest.api.search.impl.StoreMapper" />
+
+    <bean id="searchapiSearchMapper" class="org.alfresco.rest.api.search.impl.SearchMapper">
+        <property name="storeMapper" ref="searchapiStoreMapper" />
     </bean>
 
     <bean id="searchapiResultMapper" class="org.alfresco.rest.api.search.impl.ResultMapper">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="storeMapper" ref="searchapiStoreMapper" />
+        <property name="nodeVersions" ref="nodeVersionsRelation" />
         <property name="nodes" ref="Nodes" />
-        <property name="propertyLookup">
-            <ref bean="publicapi.propertyLookups"/>
-        </property>
+        <property name="deletedNodes"  ref="DeletedNodes" />
+        <property name="propertyLookup" ref="publicapi.propertyLookups" />
     </bean>
 
     <bean id="webscript.org.alfresco.api.DiscoveryApiWebscript.get"

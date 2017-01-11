@@ -133,8 +133,12 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
 
     private void mapVersionInfo(Version v, Node aNode)
     {
-        aNode.setNodeRef(new NodeRef("", "", v.getVersionLabel()));
-        
+        mapVersionInfo(v, aNode, new NodeRef("", "", v.getVersionLabel()));
+    }
+
+    public void mapVersionInfo(Version v, Node aNode, NodeRef nodeRef)
+    {
+        aNode.setNodeRef(nodeRef);
         aNode.setVersionComment(v.getDescription());
 
         Map<String, Object> props = aNode.getProperties();
@@ -279,7 +283,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
         }
     }
 
-    private Version findVersion(String nodeId, String versionLabelId)
+    public Version findVersion(String nodeId, String versionLabelId)
     {
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
         VersionHistory vh = versionService.getVersionHistory(nodeRef);

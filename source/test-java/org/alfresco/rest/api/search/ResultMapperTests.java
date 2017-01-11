@@ -31,22 +31,30 @@ import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.version.Version2Model;
+import org.alfresco.repo.version.common.VersionImpl;
+import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.impl.NodesImpl;
 import org.alfresco.rest.api.lookups.PropertyLookupRegistry;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.nodes.NodeVersionsRelation;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
+import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.HighlightEntry;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.ServiceRegistry;
@@ -58,6 +66,9 @@ import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.json.JSONException;
@@ -95,6 +106,9 @@ public class ResultMapperTests
                 + "},"
                 + "\"processedDenies\":true, \"lastIndexedTx\":34}";
     public static final Params EMPTY_PARAMS = Params.valueOf((String)null,(String)null,(WebScriptRequest) null);
+    public static final String FROZEN_ID = "frozen";
+    public static final String FROZEN_VER = "1.1";
+    private static final long VERSIONED_ID = 521l;
 
     @BeforeClass
     public static void setupTests() throws Exception
@@ -105,8 +119,57 @@ public class ResultMapperTests
 
         NodesImpl nodes = mock(NodesImpl.class);
         ServiceRegistry sr = mock(ServiceRegistry.class);
+        DeletedNodes deletedNodes = mock(DeletedNodes.class);
         nodes.setServiceRegistry(sr);
+        VersionService versionService = mock(VersionService.class);
+        VersionHistory versionHistory = mock(VersionHistory.class);
 
+        Map<String, Serializable> versionProperties = new HashMap<>();
+        versionProperties.put(Version.PROP_DESCRIPTION, "ver desc");
+        versionProperties.put(Version2Model.PROP_VERSION_TYPE, "v type");
+        when(versionHistory.getVersion(anyString())).thenAnswer(invocation ->
+        {
+            return new VersionImpl(versionProperties,new NodeRef(StoreMapper.STORE_REF_VERSION2_SPACESSTORE, GUID.generate()));
+        });
+        NodeService nodeService = mock(NodeService.class);
+
+        when(versionService.getVersionHistory(notNull(NodeRef.class))).thenAnswer(invocation ->
+        {
+            Object[] args = invocation.getArguments();
+            NodeRef aNode = (NodeRef)args[0];
+            return versionHistory;
+        });
+
+        when(nodeService.getProperties(notNull(NodeRef.class))).thenAnswer(invocation ->
+        {
+            Object[] args = invocation.getArguments();
+            NodeRef aNode = (NodeRef)args[0];
+            if (StoreMapper.STORE_REF_VERSION2_SPACESSTORE.equals(aNode.getStoreRef()))
+            {
+                nodeProps.put(Version2Model.PROP_QNAME_FROZEN_NODE_REF, new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, FROZEN_ID+aNode.getId()));
+                nodeProps.put(Version2Model.PROP_QNAME_VERSION_LABEL, FROZEN_VER);
+            }
+            return nodeProps;
+        });
+
+        when(sr.getVersionService()).thenReturn(versionService);
+        when(sr.getNodeService()).thenReturn(nodeService);
+
+        when(nodes.validateOrLookupNode(notNull(String.class), anyString())).thenAnswer(invocation ->
+        {
+            Object[] args = invocation.getArguments();
+            String aNode = (String)args[0];
+            if (aNode.endsWith(""+VERSIONED_ID))
+            {
+                throw new EntityNotFoundException(""+VERSIONED_ID);
+            }
+            else
+            {
+                return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, aNode);
+            }
+        });
+
+        //        // NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
         when(nodes.getFolderOrDocument(notNull(NodeRef.class), any(), any(), any(), any())).thenAnswer(new Answer<Node>() {
             @Override
             public Node answer(InvocationOnMock invocation) throws Throwable {
@@ -120,9 +183,28 @@ public class ResultMapperTests
                 return new Node(aNode, (NodeRef)args[1], nodeProps, mapUserInfo, sr);
             }
         });
+
+        when(deletedNodes.getDeletedNode(notNull(String.class), any(), anyBoolean(), any())).thenAnswer(new Answer<Node>() {
+            @Override
+            public Node answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                String nodeId = (String)args[0];
+                if (FROZEN_ID.equals(nodeId)) throw new EntityNotFoundException(nodeId);
+                NodeRef aNode = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeId);
+                return new Node(aNode, new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,"unknown"), nodeProps, mapUserInfo, sr);
+            }
+        });
         mapper = new ResultMapper();
         mapper.setNodes(nodes);
+        mapper.setStoreMapper(new StoreMapper());
         mapper.setPropertyLookup(new PropertyLookupRegistry());
+        mapper.setDeletedNodes(deletedNodes);
+        mapper.setServiceRegistry(sr);
+        NodeVersionsRelation nodeVersionsRelation = new NodeVersionsRelation();
+        nodeVersionsRelation.setNodes(nodes);
+        nodeVersionsRelation.setServiceRegistry(sr);
+        nodeVersionsRelation.afterPropertiesSet();
+        mapper.setNodeVersions(nodeVersionsRelation);
     }
 
     @Test
@@ -138,13 +220,14 @@ public class ResultMapperTests
     @Test
     public void testToCollectionWithPagingInfo() throws Exception
     {
-        ResultSet results = mockResultset(Arrays.asList(514l));
+        ResultSet results = mockResultset(Arrays.asList(514l), Arrays.asList(566l, VERSIONED_ID));
         CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS,results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
         Node firstNode = collectionWithPage.getCollection().stream().findFirst().get();
         assertNotNull(firstNode.getSearch().getScore());
+        assertEquals(StoreMapper.LIVE_NODES, firstNode.getLocation());
         collectionWithPage.getCollection().stream().forEach(aNode -> {
             List<HighlightEntry> high = aNode.getSearch().getHighlight();
             if (high != null)
@@ -155,13 +238,18 @@ public class ResultMapperTests
                 assertNotNull(first.getSnippets());
             }
         });
+        //1 deleted node in the test data
+        assertEquals(1l, collectionWithPage.getCollection().stream().filter(node -> StoreMapper.DELETED.equals(node.getLocation())).count());
+
+        //1 version nodes in the test data (and 1 is not shown because it is in the archive store)
+        assertEquals(1l, collectionWithPage.getCollection().stream().filter(node -> StoreMapper.VERSIONS.equals(node.getLocation())).count());
     }
 
     @Test
     public void testToSearchContext() throws Exception
     {
-        ResultSet results = mockResultset(Collections.emptyList());
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results);
+        ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, 0);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(6, searchContext.getFacetQueries().size());
    //     assertEquals("{!afts}creator:admin",searchContext.getFacetQueries().get(0).getLabel());
@@ -209,7 +297,7 @@ public class ResultMapperTests
         assertEquals(")",sp.getHighlight().getFields().get(1).getPostfix());
     }
 
-    private ResultSet mockResultset(List<Long> archivedNodes) throws JSONException
+    private ResultSet mockResultset(List<Long> archivedNodes, List<Long> versionNodes) throws JSONException
     {
 
         NodeService nodeService = mock(NodeService.class);
@@ -218,7 +306,8 @@ public class ResultMapperTests
             public NodeRef answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
                 //If the DBID is in the list archivedNodes, instead of returning a noderef return achivestore noderef
-                if (archivedNodes.contains(args[0])) return new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, GUID.generate());;
+                if (archivedNodes.contains(args[0])) return new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, GUID.generate());
+                if (versionNodes.contains(args[0])) return new NodeRef(StoreMapper.STORE_REF_VERSION2_SPACESSTORE, GUID.generate()+args[0]);
                 return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
             }
         });

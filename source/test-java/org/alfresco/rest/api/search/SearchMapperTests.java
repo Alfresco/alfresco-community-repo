@@ -29,14 +29,13 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
-import static org.alfresco.service.cmr.repository.StoreRef.PROTOCOL_DELETED;
-import static org.alfresco.service.cmr.repository.StoreRef.PROTOCOL_TEST;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import org.alfresco.rest.api.search.impl.SearchMapper;
+import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.FacetFields;
@@ -58,13 +57,11 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Tests the SearchMapper class
@@ -76,6 +73,12 @@ public class SearchMapperTests
 
     static SearchMapper searchMapper = new SearchMapper();
     static SerializerTestHelper helper = new SerializerTestHelper();
+
+    @BeforeClass
+    public static void setupTests() throws Exception
+    {
+        searchMapper.setStoreMapper(new StoreMapper());
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testMandatory() throws Exception
@@ -431,12 +434,11 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
-        searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(
-                    new StoreRef(PROTOCOL_TEST, "SpacesStore").toString(),
-                    new StoreRef(PROTOCOL_DELETED, "SpacesStore").toString())));
-        assertEquals(2 ,searchParameters.getStores().size());
-        assertEquals("test://SpacesStore",searchParameters.getStores().get(0).toString());
-        assertEquals("deleted://SpacesStore",searchParameters.getStores().get(1).toString());
+        searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED, StoreMapper.LIVE_NODES, StoreMapper.VERSIONS)));
+        assertEquals(3 ,searchParameters.getStores().size());
+        assertEquals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.toString(),searchParameters.getStores().get(0).toString());
+        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString(),searchParameters.getStores().get(1).toString());
+        assertEquals(StoreMapper.STORE_REF_VERSION2_SPACESSTORE.toString(),searchParameters.getStores().get(2).toString());
     }
 
     @Test

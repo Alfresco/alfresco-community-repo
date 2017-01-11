@@ -37,16 +37,16 @@ import java.util.List;
  */
 public class Scope
 {
-    private final List<String> stores;
+    private final List<String> locations;
 
     @JsonCreator
-    public Scope(@JsonProperty("stores") List<String> stores)
+    public Scope(@JsonProperty("locations") List<String> locations)
     {
-        this.stores = stores;
+        this.locations = locations;
     }
 
-    public List<String> getStores()
+    public List<String> getLocations()
     {
-        return stores;
+        return locations;
     }
 }

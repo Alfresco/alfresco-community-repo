@@ -130,7 +130,7 @@ public class DeletedNodesImpl implements DeletedNodes
     }
 
     @Override
-    public Node getDeletedNode(String originalId, Parameters parameters)
+    public Node getDeletedNode(String originalId, Parameters parameters, boolean fullnode, Map<String, UserInfo> mapUserInfo)
     {
         //First check the node is valid and has been archived.
         NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalId);
@@ -139,8 +139,16 @@ public class DeletedNodesImpl implements DeletedNodes
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, validatedNodeRef.getId());
         NodeRef archivedNodeRef = nodeArchiveService.getArchivedNode(nodeRef);
 
-        //Turn it into a JSON Node (FULL version)
-        Node foundNode = nodes.getFolderOrDocumentFullInfo(archivedNodeRef, null, null, parameters, null);
+        Node foundNode = null;
+        if (fullnode)
+        {
+            foundNode = nodes.getFolderOrDocumentFullInfo(archivedNodeRef, null, null, parameters, mapUserInfo);
+        }
+        else
+        {
+            foundNode = nodes.getFolderOrDocument(archivedNodeRef, null, null, parameters.getInclude(), mapUserInfo);
+        }
+
         if (foundNode != null) mapArchiveInfo(foundNode,null);
         return foundNode;
     }

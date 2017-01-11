@@ -263,7 +263,7 @@
                 </substitution>
             </substitutionList>
             <ruleList>
-                <compareText text="${product_fullname}" logic="equals" value="Alfresco One Share"/>
+                <compareText text="${product_fullname}" logic="equals" value="Alfresco Content Services Share"/>
             </ruleList>
         </substitute>
 
@@ -286,14 +286,14 @@
                     <ruleList>
                         <ruleGroup>
                             <ruleList>
-                                <compareText logic="equals" text="${project.fullName}" value="Alfresco One Platform"/>
+                                <compareText logic="equals" text="${project.fullName}" value="Alfresco Content Services Platform"/>
                                 <isFalse value="${component(alfrescosolr4).selected}"/>
                             </ruleList>
                         </ruleGroup>
                         <ruleGroup>
                             <ruleList>
-                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Platform"/>
-                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Share"/>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco Content Services Platform"/>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco Content Services Share"/>
                                 <compareText logic="equals" text="${alfresco_edition}" value="enterprise"/>
                                 <isFalse value="${component(alfrescosolr4).selected}"/>
                                 <isFalse value="${component(alfrescosolr).selected}"/>
@@ -317,14 +317,14 @@
                     <ruleList>
                         <ruleGroup>
                             <ruleList>
-                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Share"/>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco Content Services Share"/>
                                 <isTrue value="${component(alfrescosolr4).selected}"/>
                             </ruleList>
                         </ruleGroup>
                         <ruleGroup>
                             <ruleList>
-                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Platform"/>
-                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Share"/>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco Content Services Platform"/>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco Content Services Share"/>
                                 <isTrue value="${component(alfrescosolr).selected}"/>
                             </ruleList>
                         </ruleGroup>
@@ -413,7 +413,7 @@
                 </ruleList>
             </findFile>
             <logMessage text="Tomcat log file ${windowsTomcatLogFile}" />
-            <foreach values="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20" variables="iteration" progressText="Deploying Alfresco... This can take up to five minutes.">
+            <foreach values="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20" variables="iteration" progressText="Deploying Alfresco Content Services... This can take up to five minutes.">
                 <actionList>
                 <actionGroup>
                     <actionList>

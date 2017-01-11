@@ -1,7 +1,7 @@
 <component>
     <name>alfresco</name>
     <description>${product_fullname}</description>
-    <detailedDescription>Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management.</detailedDescription>
+    <detailedDescription>Alfresco Content Services Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management.</detailedDescription>
     <canBeEdited>0</canBeEdited>
     <selected>1</selected>
     <show>1</show>
@@ -20,7 +20,7 @@
         </deleteFile>
     </installationAbortedActionList>
     <parameterList>
-        <stringParameter name="alfresco_component_name" ask="0" value="Alfresco One" />
+        <stringParameter name="alfresco_component_name" ask="0" value="Alfresco Content Services" />
         <directoryParameter name="alfresco_base_application_directory" value="${installdir}" ask="0"/>
         <directoryParameter name="alfresco_commands_directory" value="${installdir}/bin" ask="0" description="Use to configure the destination of the content in commands folder"/>
         <directoryParameter name="alfresco_library_directory" value="${tomcat_server_directory}/lib" ask="0"/>
@@ -53,7 +53,7 @@
         <parameterGroup>
             <name>remote_solr_configuration</name>
             <title>Remote Solr configuration</title>
-            <explanation>Enter the Solr host and port to connect to Alfresco:</explanation>
+            <explanation>Enter the Solr host and port to connect to Alfresco Content Services:</explanation>
             <ask>0</ask>
             <parameterList>
                 <stringParameter>
@@ -94,7 +94,7 @@
         <stringParameter>
             <name>repository_url_port</name>
             <title>Connect Alfresco Share to the repository</title>
-            <explanation>Enter the location of your Alfresco repository.</explanation>
+            <explanation>Enter the location of your Alfresco Content Services repository.</explanation>
             <default>http://localhost:8080/alfresco</default>
             <ask>0</ask>
             <description>Repository location: </description>
@@ -103,8 +103,8 @@
         <!-- Ports: FTP, RMI -->
         <stringParameter>
             <name>alfresco_ftp_port</name>
-            <title>Alfresco FTP Port</title>
-            <explanation>Choose a port number for the integrated Alfresco FTP server.</explanation>
+            <title>FTP Port</title>
+            <explanation>Choose a port number for the integrated FTP server.</explanation>
             <default>21</default>
             <value/>
             <ask>1</ask>
@@ -131,8 +131,8 @@
         </stringParameter>
         <stringParameter>
             <name>alfresco_rmi_port</name>
-            <title>Alfresco RMI Port</title>
-            <explanation>Choose a port number for Alfresco to use to execute remote commands.</explanation>
+            <title>RMI Port</title>
+            <explanation>Choose a port number for Alfresco Content Services to use to execute remote commands.</explanation>
             <default>50500</default>
             <value/>
             <ask>1</ask>
@@ -159,9 +159,9 @@
         </stringParameter>
         <directoryParameter>
             <name>alfresco_data_directory</name>
-            <title>Alfresco Data Directory</title>
+            <title>Data Directory</title>
             <description>Select a folder:</description>
-            <explanation>The Alfresco data directory increases in size over time. Choose where you want to store it.</explanation>
+            <explanation>The data directory increases in size over time. Choose where you want to store it.</explanation>
             <value>${installdir}/alf_data</value>
             <mustBeWritable>1</mustBeWritable>
             <mustExist>0</mustExist>
@@ -173,7 +173,7 @@
         <stringParameter ask="0" name="alfresco_admin_username" value="admin"/>
         <passwordParameter allowEmptyValue="0" description="Admin Password:" descriptionRetype="Repeat Password:" name="alfresco_admin_password">
             <title>Admin Password</title>
-            <explanation>Specify a password for the Alfresco administrator account.</explanation>
+            <explanation>Specify a password for the Alfresco Content Services administrator account.</explanation>
             <validationActionList>
                 <throwError>
                     <text>The password must be longer than 3 characters.</text>
@@ -250,7 +250,7 @@
             <actionList>
                 <setInstallerVariable name="alfresco_apply_amps" value="1">
                     <ruleList>
-                        <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco One Share"/>
+                        <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Content Services Share"/>
                     </ruleList>
                 </setInstallerVariable>
             </actionList>
@@ -387,7 +387,7 @@
                 <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/alfresco-global.properties"/>
             </distributionFileList>
             <shouldPackRuleList>
-                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco One Share"/>
+                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Content Services Share"/>
             </shouldPackRuleList>
         </folder>
         <folder>
@@ -492,7 +492,7 @@
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>
-                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco One Share"/>
+                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Content Services Share"/>
             </ruleList>
         </actionGroup>
         <substitute>

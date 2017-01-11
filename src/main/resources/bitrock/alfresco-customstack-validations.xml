@@ -1,6 +1,6 @@
 <component>
     <name>alfrescovalidations</name>
-    <description>//Alfresco Validations</description>
+    <description>//Validations</description>
     <detailedDescription></detailedDescription>
     <selected>1</selected>
     <show>0</show>
@@ -110,7 +110,7 @@
                     </actionList>
                 </foreach>
                 <throwError>
-                    <text>${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM.</text>
+                    <text>${machine_total_memoryGB} GB of RAM is not enough to run Alfresco Content Services for test or production purposes. Alfresco Content Services might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM.</text>
                     <ruleList>
                         <compareValues>
                             <logic>less</logic>
@@ -246,9 +246,9 @@
         <infoParameter>
             <name>alfresco_report</name>
             <title>Warning</title>
-            <explanation>This environment is not configured optimally for Alfresco - review this list before continuing.
+            <explanation>This environment is not configured optimally for Alfresco Content Services - review this list before continuing.
 
-While these issues won’t prevent Alfresco from functioning, some product features might not be available, or the system might not perform optimally.</explanation>
+While these issues won’t prevent Alfresco Content Services from functioning, some product features might not be available, or the system might not perform optimally.</explanation>
             <value></value>
             <insertBefore>readytoinstall</insertBefore>
         </infoParameter>

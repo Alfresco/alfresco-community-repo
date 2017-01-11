@@ -94,7 +94,7 @@ public interface VersionService
      *                              thrown if a reserved property name is used int he version properties 
      *                              provided
      * @throws AspectMissingException
-     *                              thrown if the version aspect is missing                              
+     *                              thrown if the version aspect is missing
      */
     @Auditable(parameters = {"nodeRef", "versionProperties"})
     public Version createVersion(
@@ -166,31 +166,32 @@ public interface VersionService
      */
     @Auditable(parameters = {"nodeRef"})
     public VersionHistory getVersionHistory(NodeRef nodeRef)
-        throws AspectMissingException;     
-	
-	/**
-	 * Gets the version object for the current version of the node reference passed.
-	 * <p>
-	 * Returns null if the node is not versionable or has not been versioned.
-	 * @param nodeRef   the node reference of the 'live' node
-	 * @return			the version object for the current version
-	 */
+        throws AspectMissingException;
+
+    /**
+     * Gets the version object for the current version of the node reference passed.
+     * <p>
+     * Returns <code>null</code> if the node is not versionable or has not been versioned.
+     * @param nodeRef the node reference of the 'live' node
+     * @return the version object for the current version
+     * @throws IllegalArgumentException if the nodeRef is not a reference to a 'live' node
+     */
     @Auditable(parameters = {"nodeRef"})
-	public Version getCurrentVersion(NodeRef nodeRef);
-	
-	/**
-	 * Revert the state of the node to the current version.
-	 * <p>
-	 * The node reference will be reverted to the current version.
+    public Version getCurrentVersion(NodeRef nodeRef);
+
+    /**
+     * Revert the state of the node to the current version.
+     * <p>
+     * The node reference will be reverted to the current version.
      * <p>
      * A deep revert will be performed.
-	 * 
-	 * @see VersionService#revert(NodeRef, Version, boolean)
-	 * 
-	 * @param 	nodeRef					the node reference
-	 */
+     * 
+     * @see VersionService#revert(NodeRef, Version, boolean)
+     * 
+     * @param nodeRef the node reference
+     */
     @Auditable(parameters = {"nodeRef"})
-	public void revert(NodeRef nodeRef);
+    public void revert(NodeRef nodeRef);
     
     /**
      * Revert the state of the node to the current version.
@@ -199,8 +200,8 @@ public interface VersionService
      * 
      * @see VersionService#revert(NodeRef, Version, boolean)
      * 
-     * @param nodeRef                       the node reference
-     * @param deep                          true if a deep revert is to be performed, false otherwise
+     * @param nodeRef   the node reference
+     * @param deep   true if a deep revert is to be performed, false otherwise
      */
     @Auditable(parameters = {"nodeRef", "deep"})
     public void revert(NodeRef nodeRef, boolean deep);
@@ -217,28 +218,28 @@ public interface VersionService
      */
     @Auditable(parameters = {"nodeRef", "version"})
     public void revert(NodeRef nodeRef, Version version);
-	
-	/**
-	 * Revert the state of the node to the specified version.  
-	 * <p>
-	 * Any changes made to the node will be lost and the state of the node will reflect
-	 * that of the version specified.
-	 * <p>
-	 * The version label property on the node reference will remain unchanged. 
-	 * <p>
-	 * If the node is further versioned then the new version will be created at the head of 
-	 * the version history graph.  A branch will not be created.
+    
+    /**
+     * Revert the state of the node to the specified version.  
+     * <p>
+     * Any changes made to the node will be lost and the state of the node will reflect
+     * that of the version specified.
+     * <p>
+     * The version label property on the node reference will remain unchanged. 
+     * <p>
+     * If the node is further versioned then the new version will be created at the head of 
+     * the version history graph.  A branch will not be created.
      * <p>
      * If a deep revert is to be performed then any child nodes that are no longer present will
      * be deep restored (if appropriate) otherwise child associations to deleted, versioned nodes
      * will not be restored.
-	 * 
-	 * @param 	nodeRef			the node reference
-	 * @param 	version			the version to revert to
-     * @param   deep            true is a deep revert is to be performed, false otherwise.
-	 */
+     * 
+     * @param nodeRef   the node reference
+     * @param version   the version to revert to
+     * @param deep            true is a deep revert is to be performed, false otherwise.
+     */
     @Auditable(parameters = {"nodeRef", "version", "deep"})
-	public void revert(NodeRef nodeRef, Version version, boolean deep);
+    public void revert(NodeRef nodeRef, Version version, boolean deep);
     
     /**
      * By default a deep restore is performed.
@@ -289,23 +290,23 @@ public interface VersionService
             QName assocTypeQName,
             QName assocQName,
             boolean deep);
-	
-	/**
-	 * Delete the version history associated with a node reference.
-	 * <p>
-	 * This operation is permanent, all versions in the version history are
-	 * deleted and cannot be retrieved.
-	 * <p>
-	 * The current version label for the node reference is reset and any subsequent versions
-	 * of the node will result in a new version history being created.
-	 * 
-	 * @param 	nodeRef					the node reference
-	 * @throws	AspectMissingException	thrown if the version aspect is missing
-	 */
-    @Auditable(parameters = {"nodeRef"})
-	public void deleteVersionHistory(NodeRef nodeRef)
-		throws AspectMissingException;
     
+    /**
+     * Delete the version history associated with a node reference.
+     * <p>
+     * This operation is permanent, all versions in the version history are
+     * deleted and cannot be retrieved.
+     * <p>
+     * The current version label for the node reference is reset and any subsequent versions
+     * of the node will result in a new version history being created.
+     * 
+     * @param nodeRef the node reference
+     * @throws AspectMissingException thrown if the version aspect is missing
+     */
+    @Auditable(parameters = {"nodeRef"})
+    public void deleteVersionHistory(NodeRef nodeRef)
+             throws AspectMissingException;
+
     /**
      * Delete a specific version associated with a node reference.
      * <p>

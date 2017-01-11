@@ -235,13 +235,13 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
         SiteInfo siteInfo = getSiteInfo(req, COMMENT_CREATED_ACTIVITY.equals(activityType));
 
         // post an activity item, but only if we've got a site
-        if (siteInfo != null)
+        if (siteInfo == null || siteInfo.getShortName() == null || siteInfo.getShortName().length() == 0)
+        {
+            return;
+        }
+        else
         {
             siteId = siteInfo.getShortName();
-            if (siteId == null || siteId.length() == 0)
-            {
-                return;
-            }
         }
 
         // json is not sent null with this activity type - only for delete

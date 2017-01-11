@@ -55,14 +55,14 @@ public interface DocumentLinkService
      * @return A reference to the destination of the provided link node
      */
     public NodeRef getLinkDestination(NodeRef linkNodeRef);
-    
+
     /**
-     * Returns the associated links for a node, from all stores
+     * Returns the associated link ids for a node, from all stores
      * 
      * @param nodeRef
-     * @return A list of link nodeRefs for given node
+     * @return A list of link nodeIds for given node
      */
-    public List<NodeRef> getNodeLinks(NodeRef nodeRef);
+    public List<Long> getNodeLinksIds(NodeRef nodeRef);
 
     /**
      * Deletes all links having the provided node as destination.

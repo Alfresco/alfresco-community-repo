@@ -329,10 +329,12 @@ public class DocumentLinkServiceImplTest extends TestCase
         }, TEST_USER);
 
         // check if the service found 2 links of the document
-        assertEquals(report.getTotalLinksFoundCount(), 2);
+        assertEquals(2, report.getTotalLinksFoundCount());
 
         // check if the service successfully deleted one
-        assertEquals(report.getDeletedLinksCount(), 1);
+        assertEquals(1, report.getDeletedLinksCount());
+
+        assertEquals(true, nodeService.hasAspect(site1File2, ApplicationModel.ASPECT_LINKED));
 
         // check if the second one failed with access denied
         Throwable ex = report.getErrorDetails().get(linkOfFile1Site2);

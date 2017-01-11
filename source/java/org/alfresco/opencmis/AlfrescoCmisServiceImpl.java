@@ -77,6 +77,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
@@ -117,6 +119,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisContentAlreadyExistsException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStorageException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStreamNotSupportedException;
@@ -1767,6 +1770,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
 
             // handle versions
+            if (info.isVariant(CMISObjectVariant.VERSION))
+            {
+                nodeRef = info.getCurrentNodeNodeRef();
+            }
+
             if (allVersions)
             {
                 NodeRef workingCopy = connector.getCheckOutCheckInService().getWorkingCopy(nodeRef);
@@ -1777,14 +1785,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
             else if (info.isVariant(CMISObjectVariant.VERSION))
             {
+                // Check the DELETE permission since the version service has no restrictions. 
+                if (connector.getServiceRegistry().getPermissionService().hasPermission(nodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
+                {
+                    throw new CmisPermissionDeniedException("Cannot delete the node version.");
+                }
                 Version version = ((CMISNodeInfoImpl) info).getVersion();
                 connector.getVersionService().deleteVersion(nodeRef, version);
                 break;      // Reason for do-while
-            }
-
-            if (info.isVariant(CMISObjectVariant.VERSION))
-            {
-                nodeRef = info.getCurrentNodeNodeRef();
             }
 
             // attempt to delete the node
@@ -1794,7 +1802,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
             else
             {
-                CMISNodeInfoImpl infoImpl = ((CMISNodeInfoImpl) info);
+                CMISNodeInfoImpl infoImpl = (CMISNodeInfoImpl) info;
                 Version version = infoImpl.getVersion();
 
                 if (infoImpl.getVersionHistory().getPredecessor(version) == null)
@@ -1803,6 +1811,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 }
                 else
                 {
+                    if (connector.getServiceRegistry().getPermissionService().hasPermission(nodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
+                    {
+                        throw new CmisPermissionDeniedException("Cannot delete the node version.");
+                    }
                     connector.getVersionService().deleteVersion(nodeRef, version);
                     // MNT-10032 revert node version to predecessor
                     connector.getVersionService().revert(nodeRef);

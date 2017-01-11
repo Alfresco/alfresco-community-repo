@@ -506,6 +506,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 		this.serviceRegistry = serviceRegistry;
 	}
 
+    /**
+     * Return the service registry
+     */
+    public final ServiceRegistry getServiceRegistry()
+    {
+    	return this.serviceRegistry;
+    }
+
 	/**
      * Sets the descriptor service.
      */

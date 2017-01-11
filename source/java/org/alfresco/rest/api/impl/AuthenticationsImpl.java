@@ -35,6 +35,7 @@ import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.LoginTicket;
 import org.alfresco.rest.api.model.LoginTicketResponse;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
@@ -114,12 +115,12 @@ public class AuthenticationsImpl implements Authentications
             // or the user is not fully authenticated
             if (currentUser == null || !currentUser.equals(ticketUser))
             {
-                withResponse.setStatus(Status.STATUS_NOT_FOUND);
+                throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] { ticket });
             }
         }
         catch (AuthenticationException e)
         {
-            withResponse.setStatus(Status.STATUS_NOT_FOUND);
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] { ticket });
         }
         LoginTicketResponse response = new LoginTicketResponse();
         response.setId(ticket);
@@ -144,7 +145,7 @@ public class AuthenticationsImpl implements Authentications
             // or the user is not fully authenticated
             if (currentUser == null || !currentUser.equals(ticketUser))
             {
-                withResponse.setStatus(Status.STATUS_NOT_FOUND);
+                throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] { ticket });
             }
             else
             {
@@ -154,7 +155,7 @@ public class AuthenticationsImpl implements Authentications
         }
         catch (AuthenticationException e)
         {
-            withResponse.setStatus(Status.STATUS_NOT_FOUND);
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] { ticket });
         }
     }
 

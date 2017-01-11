@@ -35,6 +35,7 @@ import org.alfresco.rest.api.model.LoginTicket;
 import org.alfresco.rest.api.model.LoginTicketResponse;
 import org.alfresco.rest.api.sites.SiteEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -134,7 +135,10 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
         
         // Check the ticket has been invalidated - the difference with the above is that the API call is authorized
-        getSingle(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 404);
+        response = getSingle(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 404);
+        PublicApiClient.ExpectedErrorResponse error = RestApiUtil.parseErrorResponse(response.getJsonResponse());
+        // Double check that we've retrieved a standard error response (REPO-1773)
+        assertEquals(404, error.getStatusCode());
 
         // Ticket has already been invalidated
         delete(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 404);

@@ -29,6 +29,9 @@ import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Represents a site.
  * 
@@ -37,8 +40,6 @@ import org.alfresco.service.cmr.site.SiteVisibility;
  */
 public class Site implements Comparable<Site>
 {
-    public static final String ROLE = "role";
-
     protected String id; // site id (aka short name)
     protected String guid; // site nodeId
     protected String title;
@@ -47,23 +48,33 @@ public class Site implements Comparable<Site>
     protected String preset;
     protected String role;
 
+    private Map<String, Boolean> setFields = new HashMap<>(7);
+
+    public static final String ID = "id";
+    public static final String GUID = "guid";
+    public static final String TITLE = "title";
+    public static final String DESCRIPTION = "description";
+    public static final String VISIBILITY = "visibility";
+    public static final String PRESET = "preset";
+    public static final String ROLE = "role";
+
     public Site()
     {
     }
 
-    public Site(SiteInfo siteInfo, String role) 
+    public Site(SiteInfo siteInfo, String role)
     {
-        if (siteInfo == null) 
+        if (siteInfo == null)
         {
             throw new IllegalArgumentException("Must provide siteInfo");
         }
-        this.id = siteInfo.getShortName();
-        this.guid = siteInfo.getNodeRef().getId();
-        this.title = siteInfo.getTitle();
-        this.description = siteInfo.getDescription();
-        this.visibility = siteInfo.getVisibility();
-        this.preset = siteInfo.getSitePreset();
-        this.role = role;
+        setId(siteInfo.getShortName());
+        setGuid(siteInfo.getNodeRef().getId());
+        setTitle(siteInfo.getTitle());
+        setDescription(siteInfo.getDescription());
+        setVisibility(siteInfo.getVisibility());
+        setPreset(siteInfo.getSitePreset());
+        setRole(role);
     }
 
     @UniqueId
@@ -75,6 +86,7 @@ public class Site implements Comparable<Site>
     public void setId(String id)
     {
         this.id = id;
+        setFields.put(ID, true);
     }
 
     public String getGuid()
@@ -85,6 +97,7 @@ public class Site implements Comparable<Site>
     public void setGuid(String guid)
     {
         this.guid = guid;
+        setFields.put(GUID, true);
     }
 
     public String getTitle()
@@ -95,6 +108,7 @@ public class Site implements Comparable<Site>
     public void setTitle(String title)
     {
         this.title = title;
+        setFields.put(TITLE, true);
     }
 
     public String getDescription()
@@ -105,6 +119,7 @@ public class Site implements Comparable<Site>
     public void setDescription(String description)
     {
         this.description = description;
+        setFields.put(DESCRIPTION, true);
     }
 
     public SiteVisibility getVisibility()
@@ -115,16 +130,18 @@ public class Site implements Comparable<Site>
     public void setVisibility(SiteVisibility visibility)
     {
         this.visibility = visibility;
+        setFields.put(VISIBILITY, true);
     }
 
     public String getPreset()
     {
         return preset;
     }
-    
+
     public void setPreset(String preset)
     {
         this.preset = preset;
+        setFields.put(PRESET, true);
     }
 
     public String getRole()
@@ -135,6 +152,13 @@ public class Site implements Comparable<Site>
     public void setRole(String role)
     {
         this.role = role;
+        setFields.put(ROLE, true);
+    }
+
+    public boolean wasSet(String fieldName)
+    {
+        Boolean b = setFields.get(fieldName);
+        return (b != null ? b : false);
     }
 
     @Override
@@ -144,17 +168,17 @@ public class Site implements Comparable<Site>
         {
             return true;
         }
-        
+
         if (obj == null)
         {
             return false;
         }
-        
+
         if (getClass() != obj.getClass())
         {
             return false;
         }
-        
+
         Site other = (Site) obj;
         return id.equals(other.id);
     }

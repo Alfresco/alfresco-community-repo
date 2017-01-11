@@ -1179,15 +1179,15 @@ public class SitesImpl implements Sites
         }
 
         // Bind any provided values to the site info, allowing for "partial" updates.
-        if (update.getTitle() != null)
+        if (update.wasSet(Site.TITLE))
         {
             siteInfo.setTitle(update.getTitle());
         }
-        if (update.getDescription() != null)
+        if (update.wasSet(Site.DESCRIPTION))
         {
             siteInfo.setDescription(update.getDescription());
         }
-        if (update.getVisibility() != null)
+        if (update.wasSet(Site.VISIBILITY))
         {
             siteInfo.setVisibility(update.getVisibility());
         }

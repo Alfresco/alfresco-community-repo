@@ -45,14 +45,16 @@ import org.alfresco.service.namespace.QName;
 public class Comment
 {
     public static final QName PROP_COMMENT_CONTENT = QName.createQName("RestApi", "commentContent");
+    public static final QName PROP_COMMENT_CREATED_BY = QName.createQName("RestApi", "createdBy");
+    public static final QName PROP_COMMENT_MODIFIED_BY = QName.createQName("RestApi", "modifiedBy");
 
 	private String id;
     private String title;
     private String content;
     private Date createdAt;
-    private String createdBy;
+    private Person createdBy;
     private Date modifiedAt;
-    private String modifiedBy;
+    private Person modifiedBy;
     private Boolean edited;
 
     // permissions
@@ -117,15 +119,13 @@ public class Comment
     {
 		return createdAt;
 	}
-
-    @EmbeddedEntityResource(propertyName = "createdBy", entityResource = PeopleEntityResource.class)
-	public String getCreatedBy()
+	
+	public Person getCreatedBy()
 	{
 		return createdBy;
 	}
-
-    @EmbeddedEntityResource(propertyName = "modifiedBy", entityResource = PeopleEntityResource.class)
-    public String getModifiedBy()
+	
+    public Person getModifiedBy()
     {
 		return modifiedBy;
 	}
@@ -155,13 +155,16 @@ public class Comment
 			long diff = modifiedAt.getTime() - createdAt.getTime();
 			this.edited = Boolean.valueOf(diff >= 100); // logic is consistent with existing (Javascript) comments implementation
 		}
-
-		this.createdBy = (String)nodeProps.get(ContentModel.PROP_CREATOR);
-		this.modifiedBy = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
-
+		
 		this.content = (String)nodeProps.get(PROP_COMMENT_CONTENT);
 		nodeProps.remove(PROP_COMMENT_CONTENT);
-    }
+		
+		this.createdBy = (Person) nodeProps.get(PROP_COMMENT_CREATED_BY);
+		nodeProps.remove(PROP_COMMENT_CREATED_BY);
+
+		this.modifiedBy = (Person) nodeProps.get(PROP_COMMENT_MODIFIED_BY);
+		nodeProps.remove(PROP_COMMENT_MODIFIED_BY);
+	}
 
 	@Override
 	public String toString()

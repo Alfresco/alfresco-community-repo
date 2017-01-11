@@ -291,6 +291,7 @@ public class PeopleImpl implements People
     }
 
     /**
+     * Get a full representation of a person.
      * 
      * @throws NoSuchPersonException
      *             if personId does not exist
@@ -301,6 +302,14 @@ public class PeopleImpl implements People
         List<String> include = Arrays.asList(
                 PARAM_INCLUDE_ASPECTNAMES,
                 PARAM_INCLUDE_PROPERTIES);
+        Person person = getPersonWithProperties(personId, include);
+
+        return person;
+    }
+    
+    public Person getPerson(String personId, List<String> include)
+    {
+        personId = validatePerson(personId);
         Person person = getPersonWithProperties(personId, include);
 
         return person;

@@ -421,6 +421,7 @@
         <property name="commentService" ref="CommentService" />
         <property name="contentService" ref="ContentService" />
         <property name="typeConstraint" ref="nodeTypeConstraint" />
+        <property name="people" ref="people"/>
     </bean>
 
     <bean id="Comments" class="org.springframework.aop.framework.ProxyFactoryBean">

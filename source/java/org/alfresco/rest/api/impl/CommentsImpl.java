@@ -25,39 +25,38 @@
  */
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
+import org.alfresco.repo.forum.CommentService;
+import org.alfresco.rest.api.Comments;
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.People;
+import org.alfresco.rest.api.model.Comment;
+import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.TypeConstraint;
+
 import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.query.PagingRequest;
-import org.alfresco.query.PagingResults;
-import org.alfresco.repo.forum.CommentService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteModel;
-import org.alfresco.rest.api.Comments;
-import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.Comment;
-import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
-import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.TypeConstraint;
+import static org.alfresco.rest.api.People.PARAM_INCLUDE_ASPECTNAMES;
+import static org.alfresco.rest.api.People.PARAM_INCLUDE_PROPERTIES;
 
 /**
  * Centralises access to comment services and maps between representations.
@@ -67,11 +66,15 @@ import org.alfresco.util.TypeConstraint;
  */
 public class CommentsImpl implements Comments
 {
-    private Nodes nodes;
+	private static final List<String> INCLUDE_FULL_PERSON = Arrays.asList(
+			PARAM_INCLUDE_ASPECTNAMES,
+			PARAM_INCLUDE_PROPERTIES);;
+	private Nodes nodes;
     private NodeService nodeService;
     private CommentService commentService;
     private ContentService contentService;
     private TypeConstraint typeConstraint;
+	private People people;
 
 	public void setTypeConstraint(TypeConstraint typeConstraint)
 	{
@@ -98,7 +101,12 @@ public class CommentsImpl implements Comments
 		this.contentService = contentService;
 	}
 
-	private Comment toComment(NodeRef nodeRef, NodeRef commentNodeRef)
+	public void setPeople(People people)
+	{
+		this.people = people;
+	}
+
+	private Comment toComment(NodeRef nodeRef, NodeRef commentNodeRef, List<String> include)
     {
         Map<QName, Serializable> nodeProps = nodeService.getProperties(commentNodeRef);
 
@@ -115,7 +123,12 @@ public class CommentsImpl implements Comments
         boolean canEdit = map.get(CommentService.CAN_EDIT);
         boolean canDelete =  map.get(CommentService.CAN_DELETE);
 
-
+		Person createdBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_CREATOR), include);
+		nodeProps.put(Comment.PROP_COMMENT_CREATED_BY, createdBy);
+		
+		Person modifiedBy = people.getPerson((String) nodeProps.get(ContentModel.PROP_MODIFIER), include);
+		nodeProps.put(Comment.PROP_COMMENT_MODIFIED_BY, modifiedBy);
+		
         Comment comment = new Comment(commentNodeRef.getId(), nodeProps, canEdit, canDelete);
         return comment;
     }
@@ -132,7 +145,7 @@ public class CommentsImpl implements Comments
 		try
 		{
 	        NodeRef commentNode = commentService.createComment(nodeRef, comment.getTitle(), comment.getContent(), false);
-	        return toComment(nodeRef, commentNode);
+	        return toComment(nodeRef, commentNode, INCLUDE_FULL_PERSON);
 	    }
 	    catch(IllegalArgumentException e)
 	    {
@@ -157,7 +170,7 @@ public class CommentsImpl implements Comments
 			}
             
             commentService.updateComment(commentNodeRef, title, content);
-	        return toComment(nodeRef, commentNodeRef);
+	        return toComment(nodeRef, commentNodeRef, INCLUDE_FULL_PERSON);
 		}
 		catch(IllegalArgumentException e)
 		{
@@ -165,7 +178,7 @@ public class CommentsImpl implements Comments
 		}
     }
 
-    public CollectionWithPagingInfo<Comment> getComments(String nodeId, Paging paging)
+    public CollectionWithPagingInfo<Comment> getComments(String nodeId, Paging paging, List<String> include)
     {
 		final NodeRef nodeRef = nodes.validateNode(nodeId);
         
@@ -186,7 +199,7 @@ public class CommentsImpl implements Comments
 			@Override
 			public Comment get(int index)
 			{
-				return toComment(nodeRef, page.get(index));
+				return toComment(nodeRef, page.get(index), include);
 			}
 
 			@Override

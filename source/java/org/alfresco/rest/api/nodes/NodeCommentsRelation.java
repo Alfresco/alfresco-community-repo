@@ -93,7 +93,7 @@ public class NodeCommentsRelation implements RelationshipResourceAction.Read<Com
     @WebApiDescription(title = "Returns a paged list of comments for the document/folder identified by nodeId, sorted chronologically with the newest first.")
     public CollectionWithPagingInfo<Comment> readAll(String nodeId, Parameters parameters)
     {
-        return comments.getComments(nodeId, parameters.getPaging());
+        return comments.getComments(nodeId, parameters.getPaging(), parameters.getInclude());
     }
 
 	@Override

@@ -430,17 +430,25 @@ public class TestPeople extends EnterpriseTestApi
 
         // -ve: person already exists
         {
-            publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+            String username = "myUserName03@"+account1.getId();
+            String password = "secret";
+
             Person person = new Person();
-            person.setUserName("myUserName03@"+account1.getId());
+            person.setUserName(username);
             person.setFirstName("Alison");
             person.setEmail("alison.smythe@example.com");
             person.setEnabled(true);
-            person.setPassword("secret");
+            person.setPassword(password);
+
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
             people.create(person);
 
-            // Attempt to create the person a second time.
+            // Attempt to create the person a second time - as admin expect 409
             people.create(person, 409);
+
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), username, password));
+            // Attempt to create the person a second time - as non-admin expect 403
+            people.create(person, 403);
         }
     }
     

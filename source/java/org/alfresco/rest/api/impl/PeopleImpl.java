@@ -428,7 +428,13 @@ public class PeopleImpl implements People
 	{
 		validateCreatePersonData(person);
 
-		// TODO: check, is this transaction safe?
+        if (! isAdminAuthority())
+        {
+            // note: do an explict check for admin here (since personExists does not throw 403 unlike createPerson,
+            // hence next block would cause 409 to be returned)
+            throw new PermissionDeniedException();
+        }
+
 		// Unfortunately PersonService.createPerson(...) only throws an AlfrescoRuntimeException
 		// rather than a more specific exception and does not use a message ID either, so there's
 		// no sensible way to know that it was thrown due to the user already existing - hence this check here.

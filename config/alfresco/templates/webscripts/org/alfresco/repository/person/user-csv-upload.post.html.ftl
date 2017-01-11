@@ -8,8 +8,8 @@
       ${args.success}({
           data: 
           {
-              "totalUsers": ${totalUsers},
-              "addedUsers": ${addedUsers},
+              "totalUsers": ${totalUsers?c},
+              "addedUsers": ${addedUsers?c},
               "users": 
               [
                    <#list users?keys as username>

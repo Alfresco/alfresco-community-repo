@@ -28,6 +28,8 @@ package org.alfresco.rest.api.groups;
 import org.alfresco.rest.api.Groups;
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
@@ -36,13 +38,16 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * An implementation of an Entity Resource for a Group
  * 
  * @author cturlica
  */
 @EntityResource(name = "groups", title = "Groups")
-public class GroupsEntityResource implements EntityResourceAction.Read<Group>, EntityResourceAction.ReadById<Group>, InitializingBean
+public class GroupsEntityResource implements EntityResourceAction.Read<Group>, EntityResourceAction.ReadById<Group>, EntityResourceAction.Create<Group>, InitializingBean
 {
     private Groups groups;
 
@@ -69,5 +74,16 @@ public class GroupsEntityResource implements EntityResourceAction.Read<Group>, E
     public Group readById(String groupId, Parameters parameters) throws EntityNotFoundException
     {
         return groups.getGroup(groupId, parameters);
+    }
+
+    @Override
+    @WebApiDescription(title="Create group", description="Create group")
+    @WebApiParam(name="entity", title="A single group", description="A single group, multiple groups are not supported.",
+            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
+    public List<Group> create(List<Group> entity, Parameters parameters)
+    {
+        List<Group> result = new ArrayList<>(1);
+        result.add(groups.create(entity.get(0), parameters));
+        return result;
     }
 }

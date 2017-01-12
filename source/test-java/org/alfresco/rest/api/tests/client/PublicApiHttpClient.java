@@ -492,16 +492,28 @@ public class PublicApiHttpClient
     }
 
     public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
+            final String relationCollectionName, final Object relationshipEntityId, final String body, final Map<String, String> params) throws IOException
+    {
+        return post(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, "application/json", params);
+    }
+
+    public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
                 final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType) throws IOException
     {
         return post(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, contentType);
     }
 
     public HttpResponse post(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType) throws IOException
+            final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType) throws IOException
+    {
+        return post(rq, scope, version, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, contentType, null);
+    }
+
+    public HttpResponse post(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType, final Map<String, String> params) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId, null);
+                    relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         PostMethod req = new PostMethod(url.toString());

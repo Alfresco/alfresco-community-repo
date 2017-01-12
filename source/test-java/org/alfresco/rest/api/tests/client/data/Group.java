@@ -32,7 +32,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
@@ -73,12 +72,12 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
 
         if (getParentIds() != null)
         {
-            groupJson.put("parentIds", getParentIds());
+            groupJson.put("parentIds", new ArrayList(getParentIds()));
         }
 
         if (getZones() != null)
         {
-            groupJson.put("zones", getZones());
+            groupJson.put("zones", new ArrayList(getZones()));
         }
 
         return groupJson;

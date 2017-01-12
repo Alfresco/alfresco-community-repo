@@ -32,8 +32,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -169,6 +171,25 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             Map<String, String> otherParams = new HashMap<>();
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, null);
+
+            // Get and sort groups using canned query.
+            ListResponse<Group> respCannedQuery = getGroups(paging, otherParams);
+
+            // Get and sort groups using postprocessing.
+            otherParams.put("where", "(isRoot=true)");
+            ListResponse<Group> respPostProcess = getGroups(paging, otherParams);
+
+            List<Group> expected = respCannedQuery.getList();
+            expected.retainAll(respPostProcess.getList());
+
+            checkList(expected, respPostProcess.getPaging(), respPostProcess);
+        }
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+            Map<String, String> otherParams = new HashMap<>();
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, null);
 
             // Get and sort groups using canned query.
             ListResponse<Group> respCannedQuery = getGroups(paging, otherParams);
@@ -613,5 +634,81 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         {
             clearAuthorityContext();
         }
+    }
+
+    @Test
+    public void testCreateGroup() throws Exception
+    {
+        final Groups groupsProxy = publicApiClient.groups();
+
+        // User without admin rights can't create a group.
+        {
+            setRequestContext(user1);
+
+            Group group = generateGroup();
+            groupsProxy.createGroup(group, null, HttpServletResponse.SC_FORBIDDEN);
+        }
+
+        // Invalid auth.
+        {
+            setRequestContext(networkOne.getId(), GUID.generate(), "password");
+            groupsProxy.createGroup(generateGroup(), null, HttpServletResponse.SC_UNAUTHORIZED);
+        }
+
+        // Create group and subgroup.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
+
+            Group group = generateGroup();
+
+            Group createdGroup01 = groupsProxy.createGroup(group, null, HttpServletResponse.SC_CREATED);
+
+            assertNotNull(createdGroup01);
+            assertNotNull(createdGroup01.getId());
+            assertTrue(createdGroup01.getIsRoot());
+            assertNull(createdGroup01.getParentIds());
+
+            Set<String> subGroup01Parents = new HashSet<>();
+            subGroup01Parents.add(createdGroup01.getId());
+
+            Group subGroup01 = generateGroup();
+            subGroup01.setParentIds(subGroup01Parents);
+
+            Group createdSubGroup01 = groupsProxy.createGroup(subGroup01, otherParams, HttpServletResponse.SC_CREATED);
+            assertNotNull(createdSubGroup01);
+            assertNotNull(createdSubGroup01.getId());
+            assertFalse(createdSubGroup01.getIsRoot());
+            assertNotNull(createdSubGroup01.getParentIds());
+            assertEquals(subGroup01Parents, createdSubGroup01.getParentIds());
+        }
+
+        // Group id is missing.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            Group group = new Group();
+            groupsProxy.createGroup(group, null, HttpServletResponse.SC_BAD_REQUEST);
+        }
+
+        // Id clashes with an existing group.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            Group group = generateGroup();
+
+            groupsProxy.createGroup(group, null, HttpServletResponse.SC_CREATED);
+            groupsProxy.createGroup(group, null, HttpServletResponse.SC_CONFLICT);
+        }
+    }
+
+    private Group generateGroup()
+    {
+        Group group = new Group();
+        group.setId("TST" + GUID.generate());
+
+        return group;
     }
 }

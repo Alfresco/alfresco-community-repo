@@ -6,7 +6,7 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.2.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-content-services-community-distribution</artifactId>
+    <artifactId>alfresco-community-distribution</artifactId>
     <packaging>jar</packaging>
     <name>Alfresco Full Distribution (Community Edition)</name>
 

@@ -45,7 +45,7 @@
         <!-- Import the dependencies from the Community installer -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-content-services-community-installer</artifactId>
+            <artifactId>alfresco-community-installer</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>

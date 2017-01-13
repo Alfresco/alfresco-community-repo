@@ -246,6 +246,16 @@
       <filter-name>CSRF Token Filter</filter-name>
       <url-pattern>/s/enterprise/admin/*</url-pattern>
    </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/service/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/s/admin/*</url-pattern>
+   </filter-mapping>
 
    <!-- Enterprise filter-mapping placeholder -->
 

@@ -25,12 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +40,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Groups;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
+import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.data.Group;
 import org.alfresco.rest.api.tests.client.data.GroupMember;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
@@ -54,6 +50,8 @@ import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * V1 REST API tests for managing Groups
@@ -420,6 +418,12 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         return groupsProxy.getGroupMembers(groupId, createParams(paging, otherParams), errorMessage, expectedStatus);
     }
 
+    private ListResponse<Group> getGroupsByPersonId(String userId, final PublicApiClient.Paging paging, Map<String, String> otherParams, String errorMessage, int expectedStatus) throws Exception
+    {
+        final Groups groupsProxy = publicApiClient.groups();
+        return groupsProxy.getGroupsByPersonId(userId, createParams(paging, otherParams), errorMessage, expectedStatus);
+    }
+
     private ListResponse<GroupMember> getGroupMembers(String groupId, final PublicApiClient.Paging paging, Map<String, String> otherParams) throws Exception
     {
         return getGroupMembers(groupId, paging, otherParams, "Failed to get group members", HttpServletResponse.SC_OK);
@@ -443,6 +447,29 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         {
             clearAuthorityContext();
         }
+    }
+
+    @Test
+    public void testGetGroupsByUserId() throws Exception
+    {
+        try
+        {
+            createAuthorityContext(user1);
+            setRequestContext(networkAdmin);
+            canGetGroupsForUserId();
+            // TODO: get details for -me- without 403
+        }
+        finally
+        {
+            clearAuthorityContext();
+        }
+    }
+
+    private void canGetGroupsForUserId() throws ParseException, PublicApiException
+    {
+        Groups groupsProxy = publicApiClient.groups();
+        ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(user1, null, "Couldn't get user's groups", 200);
+        assertEquals(5L, (long) groups.getPaging().getCount());
     }
 
     private void testGetGroupMembersByGroupId() throws Exception

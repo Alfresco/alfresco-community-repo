@@ -63,7 +63,6 @@ public class PersonGroupsRelation implements RelationshipResourceAction.Read<Gro
     @Override
     public CollectionWithPagingInfo<Group> readAll(String personId, Parameters params)
     {
-        // TODO: temp, this just gets all the groups, not by person ID...
-        return groups.getGroups(params);
+        return groups.getGroupsByPersonId(personId, params);
     }
 }

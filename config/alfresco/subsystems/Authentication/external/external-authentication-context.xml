@@ -3,6 +3,9 @@
 <beans>
    <bean id="authenticationComponent" class="org.alfresco.repo.security.authentication.SimpleAcceptOrRejectAllAuthenticationComponentImpl"
       parent="authenticationComponentBase">
+      <property name="authenticationDao">
+         <ref bean="authenticationDao" />
+      </property>
       <property name="nodeService">
          <ref bean="nodeService" />
       </property>
@@ -60,6 +63,9 @@
       <property name="protectionPeriodSeconds">
          <value>${authentication.protection.periodSeconds}</value>
       </property>
+      <property name="personService">
+         <ref bean="PersonService" />
+      </property>
    </bean>
 
    <!-- Enable control over mapping between request and user ID -->
@@ -81,4 +87,17 @@
       </property>
    </bean>
 
+   <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
+      <property name="nodeService" ref="nodeService" />
+      <property name="authorityService" ref="authorityService" />
+      <property name="tenantService" ref="tenantService" />
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="compositePasswordEncoder" ref="compositePasswordEncoder" />
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="authenticationCache" ref="authenticationCache" />
+      <property name="singletonCache" ref="immutableSingletonCache"/>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+   </bean>
 </beans>

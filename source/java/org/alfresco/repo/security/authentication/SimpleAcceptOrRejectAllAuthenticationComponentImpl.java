@@ -25,10 +25,14 @@
  */
 package org.alfresco.repo.security.authentication;
 
-import net.sf.acegisecurity.Authentication;
-
+import net.sf.acegisecurity.providers.dao.UsernameNotFoundException;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+
+import net.sf.acegisecurity.Authentication;
+import net.sf.acegisecurity.UserDetails;
+import net.sf.acegisecurity.context.ContextHolder;
+import net.sf.acegisecurity.providers.dao.AuthenticationDao;
 
 
 /**
@@ -48,9 +52,16 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
     private boolean accept = false;
     private boolean supportNtlm = false;
 
+    private AuthenticationDao authenticationDao;
+
     public SimpleAcceptOrRejectAllAuthenticationComponentImpl()
     {
         super();
+    }
+
+    public void setAuthenticationDao(AuthenticationDao authenticationDao)
+    {
+        this.authenticationDao = authenticationDao;
     }
 
     public void setAccept(boolean accept)
@@ -105,5 +116,52 @@ public class SimpleAcceptOrRejectAllAuthenticationComponentImpl extends Abstract
     public Authentication authenticate(Authentication token) throws AuthenticationException
     {
         throw new AlfrescoRuntimeException("Authentication via token not supported");
+    }
+
+    /**
+     * We actually have an acegi object so override the default method.
+     */
+    @Override
+    protected UserDetails getUserDetails(String userName)
+    {
+        UserDetails userDetails = null;
+        if (AuthenticationUtil.isMtEnabled())
+        {
+            // ALF-9403 - "manual" runAs to avoid clearing ticket, eg. when called via "validate" (->setCurrentUser->CheckCurrentUser)
+            Authentication originalFullAuthentication = AuthenticationUtil.getFullAuthentication();
+            try
+            {
+                if (originalFullAuthentication == null)
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(getSystemUserName(getUserDomain(userName)));
+                }
+                userDetails = authenticationDao.loadUserByUsername(userName);
+            }
+            catch (UsernameNotFoundException unfe)
+            {
+                // the user was not created beforehand
+                userDetails = super.getUserDetails(userName);
+            }
+            finally
+            {
+                if (originalFullAuthentication == null)
+                {
+                    ContextHolder.setContext(null); // note: does not clear ticket (unlike AuthenticationUtil.clearCurrentSecurityContext())
+                }
+            }
+        }
+        else
+        {
+            try
+            {
+                userDetails = authenticationDao.loadUserByUsername(userName);
+            }
+            catch (UsernameNotFoundException unfe)
+            {
+                // the user was not created beforehand
+                userDetails = super.getUserDetails(userName);
+            }
+        }
+        return userDetails;
     }
 }

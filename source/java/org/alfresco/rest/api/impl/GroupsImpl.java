@@ -49,6 +49,7 @@ import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Groups;
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.api.model.GroupMember;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -588,7 +589,7 @@ public class GroupsImpl implements Groups
             throw new InvalidArgumentException("groupId is null or empty");
         }
 
-        if (!authorityService.authorityExists(groupId))
+        if (!groupAuthorityExists(groupId))
         {
             throw new EntityNotFoundException(groupId);
         }
@@ -605,5 +606,22 @@ public class GroupsImpl implements Groups
         {
             throw new InvalidArgumentException("groupId is null or empty");
         }
+
+        if (groupAuthorityExists(group.getId()))
+        {
+            throw new ConstraintViolatedException("Group '" + group.getId() + "' already exists.");
+        }
+    }
+
+    private boolean groupAuthorityExists(String shortName)
+    {
+        return authorityExists(AuthorityType.GROUP, shortName);
+    }
+
+    private boolean authorityExists(AuthorityType authorityType, String shortName)
+    {
+        String name = authorityService.getName(authorityType, shortName);
+
+        return (name != null && authorityService.authorityExists(name));
     }
 }

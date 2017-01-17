@@ -791,6 +791,10 @@
 	 <bean class="org.alfresco.rest.api.people.PeopleEntityResource">
 		<property name="people" ref="People" />
 	 </bean>
+
+    <bean class="org.alfresco.rest.api.people.PersonGroupsRelation">
+        <property name="groups" ref="Groups" />
+    </bean>
 	
 	 <bean class="org.alfresco.rest.api.tags.TagsEntityResource">
         <property name="tags" ref="Tags" />

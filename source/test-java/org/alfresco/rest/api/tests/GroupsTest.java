@@ -586,6 +586,51 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         {
             getGroupsByPersonId(personAlice.getId(), getPaging(-1, null), null, HttpServletResponse.SC_BAD_REQUEST);
         }
+
+        // orderBy=sortColumn should be the same to orderBy=sortColumn ASC
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+            Map<String, String> otherParams = new HashMap<>();
+
+            // Default order.
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, null);
+
+            ListResponse<Group> resp = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+            List<Group> groups = resp.getList();
+            assertTrue("groups order not valid", groups.indexOf(groupA) < groups.indexOf(groupB));
+
+            // Ascending order.
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+            ListResponse<Group> respOrderAsc = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+            checkList(respOrderAsc.getList(), resp.getPaging(), resp);
+        }
+
+        // Sort by id.
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+            Map<String, String> otherParams = new HashMap<>();
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, false);
+
+            // list sites
+            ListResponse<Group> resp = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+
+            List<Group> groups = resp.getList();
+            assertTrue("groups order not valid", groups.indexOf(groupB) < groups.indexOf(groupA));
+        }
+
+        // Multiple sort fields not allowed.
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("orderBy", org.alfresco.rest.api.Groups.PARAM_ID + " ASC," + org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME + " ASC");
+
+            getGroupsByPersonId(personAlice.getId(), paging, otherParams, HttpServletResponse.SC_BAD_REQUEST);
+        }
     }
 
     private void testGetGroupMembersByGroupId() throws Exception

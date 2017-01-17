@@ -35,6 +35,6 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.6
  */
 @AlfrescoPublicApi
-public interface SortField
+public interface QueryField
 {
 }

@@ -26,7 +26,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util.dao;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -41,14 +40,24 @@ import org.alfresco.util.Pair;
  * @since 2.6
  */
 @AlfrescoPublicApi
-public class QueryParams<T extends SortField>
+public class QueryParams<T extends QueryField>
 {
     /** The ordered list of columns to sort on (and their sort direction). */
-    private List<Pair<T, Boolean>> sortProps = Collections.emptyList();
+    private List<Pair<T, Boolean>> sortProps;
     /** The number of items to skip before creating the list. */
     private int skipCount = 0;
     /** The total number of items to return (assuming enough are available). */
     private int maxItems = 10;
+
+    /**
+     * Constructor that takes the sort order.
+     *
+     * @param sortProps A list of fields to sort on, and the direction to sort in.
+     */
+    public QueryParams(List<Pair<T, Boolean>> sortProps)
+    {
+        setSortProps(sortProps);
+    }
 
     /** Sets the skip count required. */
     public QueryParams<T> withSkipCount(final int skipCount)

@@ -114,7 +114,7 @@ public class GroupsImpl implements Groups
 
     public Group create(Group group, Parameters parameters)
     {
-        validateGroup(group);
+        validateGroup(group, false);
 
         // Create authority with default zones.
         final Set<String> authorityZones = authorityService.getDefaultZones();
@@ -134,6 +134,16 @@ public class GroupsImpl implements Groups
         }
 
         return getGroup(authority, parameters);
+    }
+
+    public Group update(String groupId, Group group, Parameters parameters)
+    {
+        validateGroupId(groupId);
+        validateGroup(group, true);
+
+        authorityService.setAuthorityDisplayName(groupId, group.getDisplayName());
+
+        return getGroup(groupId, parameters);
     }
 
     public Group getGroup(String groupId, Parameters parameters) throws EntityNotFoundException
@@ -649,21 +659,46 @@ public class GroupsImpl implements Groups
         }
     }
 
-    private void validateGroup(Group group)
+    private void validateGroup(Group group, boolean isUpdate)
     {
         if (group == null)
         {
             throw new InvalidArgumentException("group is null");
         }
 
-        if (group.getId() == null || group.getId().isEmpty())
+        if (!isUpdate)
         {
-            throw new InvalidArgumentException("groupId is null or empty");
-        }
+            if (group.getId() == null || group.getId().isEmpty())
+            {
+                throw new InvalidArgumentException("groupId is null or empty");
+            }
 
-        if (groupAuthorityExists(group.getId()))
+            if (groupAuthorityExists(group.getId()))
+            {
+                throw new ConstraintViolatedException("Group '" + group.getId() + "' already exists.");
+            }
+        }
+        else
         {
-            throw new ConstraintViolatedException("Group '" + group.getId() + "' already exists.");
+            if (group.wasSet(Group.ID))
+            {
+                throw new InvalidArgumentException("Group update does not support field: id");
+            }
+
+            if (group.wasSet(Group.IS_ROOT))
+            {
+                throw new InvalidArgumentException("Group update does not support field: isRoot");
+            }
+
+            if (group.wasSet(Group.PARENT_IDS))
+            {
+                throw new InvalidArgumentException("Group update does not support field: parentIds");
+            }
+
+            if (group.wasSet(Group.ZONES))
+            {
+                throw new InvalidArgumentException("Group update does not support field: zones");
+            }
         }
     }
 

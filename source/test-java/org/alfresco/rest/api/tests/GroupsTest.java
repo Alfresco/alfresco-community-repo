@@ -892,6 +892,73 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         }
     }
 
+    @Test
+    public void testUpdateGroup() throws Exception
+    {
+        final Groups groupsProxy = publicApiClient.groups();
+
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
+
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+        Group group = groupsProxy.createGroup(generateGroup(), null, HttpServletResponse.SC_CREATED);
+
+        Set<String> subGroupParents = new HashSet<>();
+        subGroupParents.add(group.getId());
+
+        Group generatedSubGroup = generateGroup();
+        generatedSubGroup.setParentIds(subGroupParents);
+
+        Group subGroup = groupsProxy.createGroup(generatedSubGroup, otherParams, HttpServletResponse.SC_CREATED);
+
+        // User without admin rights can't update a group.
+        {
+            setRequestContext(user1);
+            groupsProxy.updateGroup(group.getId(), new Group(), null, HttpServletResponse.SC_FORBIDDEN);
+        }
+
+        // Invalid auth.
+        {
+            setRequestContext(networkOne.getId(), GUID.generate(), "password");
+            groupsProxy.updateGroup(group.getId(), new Group(), null, HttpServletResponse.SC_UNAUTHORIZED);
+        }
+
+        // Update group and subgroup.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+
+            String displayName = "newDisplayName";
+
+            Group mySubGroup = new Group();
+            mySubGroup.setDisplayName(displayName);
+
+            Group updateGroup = groupsProxy.updateGroup(subGroup.getId(), mySubGroup, otherParams, HttpServletResponse.SC_OK);
+
+            // Validate default response and additional information (parentIds).
+            assertNotNull(updateGroup);
+            assertNotNull(updateGroup.getId());
+            assertFalse(updateGroup.getIsRoot());
+            assertNotNull(updateGroup.getParentIds());
+
+            // Check that only display name changed.
+            assertEquals(displayName, updateGroup.getDisplayName());
+
+            // Check that nothing else changed.
+            assertEquals(subGroup.getId(), updateGroup.getId());
+            assertEquals(subGroup.getIsRoot(), updateGroup.getIsRoot());
+            assertEquals(subGroup.getParentIds(), updateGroup.getParentIds());
+        }
+
+        // Group id doesn't exist.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            groupsProxy.updateGroup("invalidId", group, null, HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
     private Group generateGroup()
     {
         Group group = new Group();

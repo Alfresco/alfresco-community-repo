@@ -534,7 +534,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             ListResponse<Group> groups = groupsProxy.getGroupsByPersonId("-me-", null, "Couldn't get user's groups", 200);
             assertEquals(6L, (long) groups.getPaging().getCount());
             Iterator<Group> it = groups.getList().iterator();
-            assertEquals("GROUP_EVERYONE", it.next().getId());
+            assertEquals("GROUP_ALFRESCO_ADMINISTRATORS", it.next().getId());
         }
 
         // -ve test: attempt to get groups for non-existent person

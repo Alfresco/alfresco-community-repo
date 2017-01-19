@@ -64,6 +64,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.extensions.webscripts.servlet.FormData;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
@@ -205,14 +207,14 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         boolean isSpecialContainer = isFilePlan || isTransferContainer || isUnfiledContainer || isHoldsContainer;
 
         // DELETE
-        if(!isSpecialContainer && 
+        if(!isSpecialContainer &&
                 capabilityService.getCapability("Delete").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
         {
             allowableOperations.add(OP_DELETE);
         }
 
         // CREATE
-        if(type != RMNodeType.FILE &&  
+        if(type != RMNodeType.FILE &&
                 !isTransferContainer &&
                 capabilityService.getCapability("FillingPermissionOnly").evaluate(nodeRef) == AccessDecisionVoter.ACCESS_GRANTED)
         {
@@ -350,9 +352,39 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
         NodeRef parentNodeRef = getOrCreatePath(parentFolderNodeId, relativePath, nodeTypeQName);
 
         // Set relative path to null as we pass the last element from the path
-        nodeInfo.setRelativePath(null); 
+        nodeInfo.setRelativePath(null);
 
         return super.createNode(parentNodeRef.getId(), nodeInfo, parameters);
+    }
+
+    @Override
+    public Node upload(String parentFolderNodeId, FormData formData, Parameters parameters)
+    {
+        if (formData == null || !formData.getIsMultiPart())
+        {
+            throw new InvalidArgumentException("The request content-type is not multipart: "+parentFolderNodeId);
+        }
+
+        for (FormData.FormField field : formData.getFields())
+        {
+            if(field.getName().equalsIgnoreCase("relativepath"))
+            {
+                // Create the path if it does not exist
+                getOrCreatePath(parentFolderNodeId, getStringOrNull(field.getValue()), ContentModel.TYPE_CONTENT);
+                break;
+            }
+        }
+
+        return super.upload(parentFolderNodeId, formData, parameters);
+    }
+
+    private String getStringOrNull(String value)
+    {
+        if (StringUtils.isNotEmpty(value))
+        {
+            return value.equalsIgnoreCase("null") ? null : value;
+        }
+        return null;
     }
 
     @Override
@@ -407,7 +439,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
          * Starting from the latest existing element create the rest of the elements
          */
         QName parentNodeType = nodeService.getType(parentNodeRef);
-        if(dictionaryService.isSubClass(parentNodeType, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER) || 
+        if(dictionaryService.isSubClass(parentNodeType, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER) ||
            dictionaryService.isSubClass(parentNodeType, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER))
         {
             for (String pathElement : pathElements)
@@ -416,9 +448,9 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
                 parentNodeRef = fileFolderService.create(parentNodeRef, pathElement, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
             }
         }
-        else 
+        else
         {
-            /* Outside the unfiled record container the path elements are record categories 
+            /* Outside the unfiled record container the path elements are record categories
              * except the last element which is a record folder if the created node is of type content
              */
             Iterator<String> iterator = pathElements.iterator();

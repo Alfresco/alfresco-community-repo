@@ -229,7 +229,7 @@ paths:
 
         This API method also supports node creation using application/json.
 
-        You must specify at least a **name** and **nodeType**.
+        You must specify at least a **name** and **nodeType**. 
 
         You can create a category like this:
         ```JSON
@@ -306,7 +306,7 @@ paths:
         }
         ```
         The **relativePath** specifies the container structure to create relative to the node **nodeId**. Containers in the
-        **relativePath** that do not exist are created before the node is created. The container type is decided considering
+        **relativePath** that do not exist are created before the node is created. The container type is decided considering 
         the type of the parent container and the type of the node to be created.
 
         You can set properties when creating a new fileplan component:
@@ -324,7 +324,7 @@ paths:
 
         Any missing aspects are applied automatically. You can set aspects explicitly, if needed, using an **aspectNames** field.
 
-        **Note:** You can create more than one child by
+        **Note:** You can create more than one child by 
         specifying a list of nodes in the JSON body. For example, the following JSON
         body creates two folders inside the specified **nodeId**, if the **nodeId** identifies
         a folder:
@@ -341,7 +341,7 @@ paths:
         ]
         ```
         If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
-
+        
         ```JSON
         {
           "list": {
@@ -599,11 +599,11 @@ paths:
             $ref: '#/definitions/Error'
   '/records/{recordId}/file':
     post:
-      tags:
+      tags: 
         - records
       summary: File a record
       description: |
-        Files the record **recordId** in the target record folder.
+        Files the record **recordId** in the target record folder. 
 
         You can specify the target record folder by providing its id **targetParentId**
         or by providing the id of a parent container **targetParentId** and a relative path **relativePath**.
@@ -613,9 +613,9 @@ paths:
         The relativePath is made of record containers and a record folder as the last element.
         Containers that are missing from relativePath will be created before filing.
 
-        If the record is already filed, a link to the target record folder is created.
+        If the record is already filed, a link to the target record folder is created. 
       operationId: fileRecord
-      parameters:
+      parameters: 
         - $ref: '#/parameters/recordIdParam'
         - $ref: '#/parameters/IGNodeEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
@@ -654,12 +654,12 @@ paths:
             $ref: '#/definitions/Error'
   '/files/{fileId}/declare':
     post:
-      tags:
+      tags: 
         - files
       summary: Declare as record
       description: Declares the file **fileId** in the unfiled record container.
       operationId: declareRecord
-      parameters:
+      parameters: 
         - name: fileId
           in: path
           description: The identifier of a non-record file.

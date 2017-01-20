@@ -65,7 +65,7 @@ public class FilesAPI extends RMModelRequest
     public FilePlanComponent declareAsRecord(String fileId, String parameters) throws Exception
     {
         mandatoryString("fileId", fileId);
-        
+
         return getRMRestWrapper().processModel(FilePlanComponent.class, simpleRequest(
             POST,
             "/files/{fileId}/declare?{parameters}",
@@ -73,7 +73,7 @@ public class FilesAPI extends RMModelRequest
             parameters
         ));
     }
-    
+
     /**
      * A no-parameter version of {@link FilesAPI#declareAsRecord}
      * @param fileId The Id of a file to declare as record

@@ -30,7 +30,6 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -46,9 +45,8 @@ public class PojoUtility
      * Converting object to JSON string
      *
      * @param model  The java object model to convert
-     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
      */
-    public static String toJson(Object model) throws JsonProcessingException
+    public static String toJson(Object model)
     {
         ObjectMapper mapper = new ObjectMapper();
         //include only values that differ from default settings to be included

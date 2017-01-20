@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static com.jayway.restassured.RestAssured.given;
-
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;

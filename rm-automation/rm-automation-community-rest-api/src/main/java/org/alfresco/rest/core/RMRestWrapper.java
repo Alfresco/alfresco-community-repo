@@ -50,4 +50,19 @@ public class RMRestWrapper extends RestWrapper
     {
         return new RestIGCoreAPI(this, rmRestProperties);
     }
+
+    @Override
+    public <T> T processModel(Class<T> classz, RestRequest restRequest)
+    {
+        try
+        {
+            return super.processModel(classz, restRequest);
+        }
+        catch (Exception e)
+        {
+            // TODO Hopefully remove this check when TAS stops using checked exceptions.
+            // See https://gitlab.alfresco.com/tas/alfresco-tas-restapi-test/merge_requests/392
+            throw new RuntimeException(e);
+        }
+    }
 }

@@ -28,7 +28,6 @@ package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
 import static com.jayway.restassured.RestAssured.basic;
 import static com.jayway.restassured.RestAssured.given;
-
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;

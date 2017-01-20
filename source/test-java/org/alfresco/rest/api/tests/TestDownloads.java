@@ -75,6 +75,10 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestDownloads extends AbstractBaseApiTest
 { 
+    private static final int STATUS_CHECK_SLEEP_TIME = 5;
+
+    private static final int NUMBER_OF_TIMES_TO_CHECK_STATUS = 400;
+
     public static final String NODES_SECONDARY_CHILDREN = "nodes/%s/secondary-children";
 
     public static final String API_DOWNLOADS = "downloads";
@@ -370,14 +374,14 @@ public class TestDownloads extends AbstractBaseApiTest
 
     private void assertDoneDownload(Download download, int expectedFilesAdded, int expectedTotal) throws Exception, InterruptedException
     {
-        for(int i = 0; i<=40; i++){
-            if (i == 40)
+        for(int i = 0; i<=NUMBER_OF_TIMES_TO_CHECK_STATUS; i++){
+            if (i == NUMBER_OF_TIMES_TO_CHECK_STATUS)
             {
                 fail("Download should be DONE by now.");
             }
             Download downloadStatus = getDownload(download.getDownloadId());
             if (!downloadStatus.getStatus().equals(DownloadStatus.Status.DONE)){
-                Thread.sleep(50);
+                Thread.sleep(STATUS_CHECK_SLEEP_TIME);
             }else{
                 assertTrue("The number of bytes added in the archive does not match the total", downloadStatus.getDone() == downloadStatus.getTotal());
                 assertEquals("The number of files added in the archive should be " + expectedFilesAdded, expectedFilesAdded, downloadStatus.getFilesAdded());
@@ -391,14 +395,14 @@ public class TestDownloads extends AbstractBaseApiTest
     protected void assertCancelledDownload(Download download, int expectedTotalFiles, int expectedTotal) throws PublicApiException, Exception, InterruptedException
     {
         cancel(download.getDownloadId());
-        for(int i = 0; i<=40; i++){
-            if (i == 40)
+        for(int i = 0; i<=NUMBER_OF_TIMES_TO_CHECK_STATUS; i++){
+            if (i == NUMBER_OF_TIMES_TO_CHECK_STATUS)
             {
                 fail("Download should be CANCELLED by now.");
             }
             Download downloadStatus = getDownload(download.getDownloadId());
             if (!downloadStatus.getStatus().equals(DownloadStatus.Status.CANCELLED)){
-                Thread.sleep(50);
+                Thread.sleep(STATUS_CHECK_SLEEP_TIME);
             }else{
                 assertTrue("The total bytes added to the archive by now should be greater than 0", downloadStatus.getDone() > 0 && downloadStatus.getDone() <= downloadStatus.getTotal());
                 assertTrue("The download is in progress, there should still be files to be added.", downloadStatus.getFilesAdded() < downloadStatus.getTotalFiles());
@@ -411,14 +415,14 @@ public class TestDownloads extends AbstractBaseApiTest
 
     private void assertInProgressDownload(Download download, int expectedTotalFiles, int expectedTotal) throws Exception, InterruptedException
     {
-        for(int i = 0; i<=40; i++){
-            if (i == 40)
+        for(int i = 0; i<=NUMBER_OF_TIMES_TO_CHECK_STATUS; i++){
+            if (i == NUMBER_OF_TIMES_TO_CHECK_STATUS)
             {
                 fail("Download creation is taking too long.Download status should be at least IN_PROGRESS by now.");
             }
             Download downloadStatus = getDownload(download.getDownloadId());
             if (!downloadStatus.getStatus().equals(DownloadStatus.Status.IN_PROGRESS)){
-                Thread.sleep(50);
+                Thread.sleep(STATUS_CHECK_SLEEP_TIME);
             }else{
                 //'done' can be equal to the 'total' even though the status is IN_PROGRESS. See ZipDownloadExporter line 239
                 assertTrue("The total bytes added to the archive by now should be greater than 0", downloadStatus.getDone() > 0 && downloadStatus.getDone() <= downloadStatus.getTotal());

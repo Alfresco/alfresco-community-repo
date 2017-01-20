@@ -47,8 +47,8 @@ import java.util.List;
  * @author cturlica
  */
 @EntityResource(name = "groups", title = "Groups")
-public class GroupsEntityResource
-        implements EntityResourceAction.Read<Group>, EntityResourceAction.ReadById<Group>, EntityResourceAction.Create<Group>, EntityResourceAction.Update<Group>, InitializingBean
+public class GroupsEntityResource implements EntityResourceAction.Read<Group>, EntityResourceAction.ReadById<Group>, EntityResourceAction.Create<Group>,
+        EntityResourceAction.Update<Group>, EntityResourceAction.Delete, InitializingBean
 {
     private Groups groups;
 
@@ -93,5 +93,12 @@ public class GroupsEntityResource
     public Group update(String groupId, Group group, Parameters parameters)
     {
         return groups.update(groupId, group, parameters);
+    }
+
+    @Override
+    @WebApiDescription(title = "Delete group", description = "Delete group")
+    public void delete(String groupId, Parameters parameters)
+    {
+        groups.delete(groupId, parameters);
     }
 }

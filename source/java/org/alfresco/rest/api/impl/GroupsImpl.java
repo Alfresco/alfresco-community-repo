@@ -30,6 +30,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.AuthorityException;
 import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -138,7 +139,7 @@ public class GroupsImpl implements Groups
 
     public Group update(String groupId, Group group, Parameters parameters)
     {
-        validateGroupId(groupId);
+        validateGroupId(groupId, false);
         validateGroup(group, true);
 
         authorityService.setAuthorityDisplayName(groupId, group.getDisplayName());
@@ -525,9 +526,31 @@ public class GroupsImpl implements Groups
         }
     }
 
+    public void delete(String groupId, Parameters parameters)
+    {
+        // Get cascade param - default false (if not provided).
+        boolean cascade = Boolean.valueOf(parameters.getParameter(PARAM_CASCADE));
+
+        try
+        {
+            authorityService.deleteAuthority(groupId, cascade);
+        }
+        catch (AuthorityException ae)
+        {
+            if (ae.getMsgId().equals("Trying to modify a fixed authority"))
+            {
+                throw new ConstraintViolatedException("Trying to modify a fixed authority");
+            }
+            else
+            {
+                throw ae;
+            }
+        }
+    }
+
     public CollectionWithPagingInfo<GroupMember> getGroupMembers(String groupId, final Parameters parameters)
     {
-        validateGroupId(groupId);
+        validateGroupId(groupId, false);
 
         Paging paging = parameters.getPaging();
 
@@ -646,14 +669,14 @@ public class GroupsImpl implements Groups
         return groupMember;
     }
 
-    private void validateGroupId(String groupId)
+    private void validateGroupId(String groupId, boolean inferPrefix)
     {
         if (groupId == null || groupId.isEmpty())
         {
             throw new InvalidArgumentException("groupId is null or empty");
         }
 
-        if (!groupAuthorityExists(groupId))
+        if (!groupAuthorityExists(groupId, inferPrefix))
         {
             throw new EntityNotFoundException(groupId);
         }
@@ -702,14 +725,19 @@ public class GroupsImpl implements Groups
         }
     }
 
-    private boolean groupAuthorityExists(String shortName)
+    private boolean groupAuthorityExists(String authorityName)
     {
-        return authorityExists(AuthorityType.GROUP, shortName);
+        return groupAuthorityExists(authorityName, true);
     }
 
-    private boolean authorityExists(AuthorityType authorityType, String shortName)
+    private boolean groupAuthorityExists(String authorityName, boolean inferPrefix)
     {
-        String name = authorityService.getName(authorityType, shortName);
+        return authorityExists(AuthorityType.GROUP, authorityName, inferPrefix);
+    }
+
+    private boolean authorityExists(AuthorityType authorityType, String authorityName, boolean inferPrefix)
+    {
+        String name = inferPrefix ? authorityService.getName(authorityType, authorityName) : authorityName;
 
         return (name != null && authorityService.authorityExists(name));
     }

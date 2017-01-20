@@ -43,6 +43,7 @@ public interface Groups
     String PARAM_INCLUDE_PARENT_IDS = "parentIds";
     String PARAM_INCLUDE_ZONES = "zones";
     String PARAM_IS_ROOT = "isRoot";
+    String PARAM_CASCADE = "cascade";
     String PARAM_MEMBER_TYPE = "memberType";
     String PARAM_MEMBER_TYPE_GROUP = "GROUP";
     String PARAM_MEMBER_TYPE_PERSON = "PERSON";
@@ -106,6 +107,18 @@ public interface Groups
      * @return a paged list of {@code org.alfresco.rest.api.model.Group} objects
      */
     CollectionWithPagingInfo<Group> getGroupsByPersonId(String personId, Parameters parameters);
+
+    /**
+     * Delete the given group.
+     *
+     * @param groupId
+     *            the group ID
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed
+     *            into the request including: - include param (parentIds, zones)
+     * @return Updated group
+     */
+    void delete(String groupId, Parameters parameters);
 
     /**
      * Gets a list of groups.

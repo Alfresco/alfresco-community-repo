@@ -509,7 +509,26 @@
           </list>
        </property>
     </bean>
+    <bean id="downloads" class="org.alfresco.rest.api.impl.DownloadsImpl">
+        <property name="downloadService" ref="DownloadService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="nodes" ref="Nodes" />
+        <property name="permissionService" ref="permissionService"/>
+    </bean>
 
+    <bean id="Downloads" class="org.springframework.aop.framework.ProxyFactoryBean">
+            <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Downloads</value>
+        </property>
+        <property name="target">
+            <ref bean="downloads" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
     <bean id="deletedNodes" class="org.alfresco.rest.api.impl.DeletedNodesImpl">
         <property name="nodes" ref="Nodes" />
         <property name="nodeService" ref="NodeService" />
@@ -771,6 +790,10 @@
     </bean>
 
     <!-- API webscripts -->
+    
+     <bean class="org.alfresco.rest.api.downloads.DownloadsEntityResource">
+        <property name="downloads" ref="Downloads" />
+     </bean>
 
 	 <bean class="org.alfresco.rest.api.sites.SiteEntityResource">
 		<property name="sites" ref="Sites" />

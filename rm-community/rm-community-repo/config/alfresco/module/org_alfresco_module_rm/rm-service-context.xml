@@ -569,9 +569,9 @@
           parent="baseService">
         <property name="nodeService" ref="nodeService"/>
         <property name="filePlanService" ref="filePlanService" />
-        <property name="filePlanRoleService" ref="filePlanRoleService" />        
-        <property name="authorityService" ref="authorityService"/>        
-        <property name="permissionService" ref="permissionService"/>   
+        <property name="filePlanRoleService" ref="filePlanRoleService" />
+        <property name="authorityService" ref="authorityService"/>
+        <property name="permissionService" ref="permissionService"/>
         <property name="transactionService" ref="transactionService"/>
     </bean>
 
@@ -1060,7 +1060,23 @@
         <property name="renditionService" ref="RenditionService" />
         <property name="dispositionService" ref="DispositionService"/>
         <property name="recordableVersionService" ref="RecordableVersionService"/>
+        <property name="alwaysEditURIs" ref="recordService_alwaysEditURIs" />
     </bean>
+
+   <bean id="recordService_alwaysEditURIs" class="java.util.ArrayList">
+      <constructor-arg index="0">
+         <list>
+            <value>http://www.alfresco.org/model/security/1.0</value>
+            <value>http://www.alfresco.org/model/system/1.0</value>
+            <value>http://www.alfresco.org/model/workflow/1.0</value>
+            <value>http://www.alfresco.org/model/application/1.0</value>
+            <value>http://www.alfresco.org/model/datalist/1.0</value>
+            <value>http://www.alfresco.org/model/dictionary/1.0</value>
+            <value>http://www.alfresco.org/model/bpm/1.0</value>
+            <value>http://www.alfresco.org/model/rendition/1.0</value>
+         </list>
+      </constructor-arg>
+   </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
     	<property name="recordService" ref="recordService"/>

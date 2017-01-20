@@ -289,7 +289,7 @@ paths:
         }
         ```
 
-        You can create an empty electronic record and use the record endpoint to create content:
+        You can create an empty electronic record:
         ```JSON
         {
           "name":"My Electronic Record",

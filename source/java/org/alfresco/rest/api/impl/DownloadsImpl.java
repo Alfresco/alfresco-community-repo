@@ -163,12 +163,12 @@ public class DownloadsImpl implements Downloads
     {
         DownloadStatus status = downloadService.getDownloadStatus(downloadNodeRef);
         Download downloadInfo = new Download();
-        downloadInfo.setDownloadId(downloadNodeRef.getId());
-        downloadInfo.setDone(status.getDone());
+        downloadInfo.setId(downloadNodeRef.getId());
+        downloadInfo.setBytesAdded(status.getDone());
         downloadInfo.setFilesAdded(status.getFilesAdded());
         downloadInfo.setStatus(status.getStatus());
         downloadInfo.setTotalFiles(status.getTotalFiles());
-        downloadInfo.setTotal(status.getTotal());
+        downloadInfo.setTotalBytes(status.getTotal());
         return downloadInfo;
     }
 

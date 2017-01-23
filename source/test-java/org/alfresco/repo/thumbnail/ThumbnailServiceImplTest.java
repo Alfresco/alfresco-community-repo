@@ -49,12 +49,15 @@ import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -70,6 +73,8 @@ import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -81,6 +86,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -108,6 +114,9 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     private TransactionService transactionService;
     private ServiceRegistry services;
     private FailureHandlingOptions failureHandlingOptions;
+    private Repository repositoryHelper;
+    private PermissionService permissionService;
+    private LockService lockService;
 
     private NodeRef folder;
     private static final String TEST_FAILING_MIME_TYPE = "application/vnd.alfresco.test.transientfailure";
@@ -134,6 +143,9 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         this.services = (ServiceRegistry) this.applicationContext.getBean("ServiceRegistry");
         this.transactionService = (TransactionService) this.applicationContext.getBean("transactionService");
         this.failureHandlingOptions = (FailureHandlingOptions) this.applicationContext.getBean("standardFailureOptions");
+        this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        this.permissionService = (PermissionService) applicationContext.getBean("PermissionService");
+        this.lockService = (LockService) applicationContext.getBean("lockService");
 
         // Create a folder and some content
         Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
@@ -446,7 +458,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Inbound rule must not be applied on failed thumbnail
      * 
-     * @see https://issues.alfresco.com/jira/browse/MNT-10914
+     * @see MNT-10914
      */
     public void testRuleExecutionOnFailedThumbnailChild() throws Exception
     {
@@ -628,7 +640,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     }
 
     /**
-     * See MNT-17113
+     * See REPO-1580, MNT-17113, REPO-1644 (and related)
      */
     public void testLastThumbnailModificationDataContentUpdates() throws Exception
     {
@@ -665,6 +677,68 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
         // Check if property "Last thumbnail modification data" has changed
         assertFalse("Property 'Last thumbnail modification data' has not changed", lastThumbnailDataV1.equals(lastThumbnailDataV2));
+    }
+
+    /**
+     * See REPO-1580, MNT-17113 (and related)
+     */
+    public void testLockedContent() throws Exception
+    {
+        NodeRef sharedHomeNodeRef = repositoryHelper.getSharedHome();
+        
+        String user1 = "bob" + GUID.generate();
+        createUser(user1);
+
+        String user2 = "fred" + GUID.generate();
+        createUser(user2);
+        
+        authenticationComponent.setCurrentUser(user1);
+        
+        NodeRef pdfOrig = createOriginalContent(sharedHomeNodeRef, "testLockedContent-"+GUID.generate(), MimetypeMap.MIMETYPE_PDF);
+        
+        lockService.lock(pdfOrig, LockType.READ_ONLY_LOCK);
+
+        setComplete();
+        endTransaction();
+        
+        startNewTransaction();
+
+        authenticationComponent.setCurrentUser(user2);
+        
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(pdfOrig, PermissionService.READ));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(pdfOrig, PermissionService.WRITE));
+        
+        QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
+        
+        assertNull(thumbnailService.getThumbnailByName(pdfOrig, ContentModel.PROP_CONTENT, qname.getLocalName()));
+        assertNull(secureNodeService.getProperty(pdfOrig, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA));
+                
+        ThumbnailDefinition details = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(qname.getLocalName());
+        NodeRef thumbnail = thumbnailService.createThumbnail(pdfOrig, ContentModel.PROP_CONTENT, MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                details.getTransformationOptions(), "doclib");
+        assertNotNull(thumbnail);
+
+        setComplete();
+        endTransaction();
+
+        Thread.sleep(1000);
+
+        startNewTransaction();
+
+        authenticationComponent.setCurrentUser(user1);
+
+        assertNotNull(thumbnailService.getThumbnailByName(pdfOrig, ContentModel.PROP_CONTENT, qname.getLocalName()));
+        assertNotNull(secureNodeService.getProperty(pdfOrig, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA));
+        
+        // cleanup
+
+        lockService.unlock(pdfOrig, false);
+        secureNodeService.deleteNode(pdfOrig);
+
+        setComplete();
+        endTransaction();
+
+        startNewTransaction();
     }
 
     private void setNewContent(NodeRef noderef, String quickFileName, String mimetype) throws IOException
@@ -805,7 +879,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * This method creates a node under the specified folder whose content is
      * taken from the quick file corresponding to the specified MIME type.
-     * 
+     *
      * @param parentFolder
      * @param mimetype
      * @return
@@ -813,11 +887,16 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
      */
     private NodeRef createOriginalContent(NodeRef parentFolder, String mimetype) throws IOException
     {
+        return createOriginalContent(parentFolder, "original", mimetype);
+    }
+
+    private NodeRef createOriginalContent(NodeRef parentFolder, String baseName, String mimetype) throws IOException
+    {
         String ext = this.mimetypeMap.getExtension(mimetype);
         File origFile = AbstractContentTransformerTest.loadQuickTestFile(ext);
 
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-        props.put(ContentModel.PROP_NAME, "origional." + ext);
+        props.put(ContentModel.PROP_NAME, baseName + "." + ext);
         NodeRef node = this.secureNodeService.createNode(parentFolder, ContentModel.ASSOC_CONTAINS,
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "original." + ext),
                     ContentModel.TYPE_CONTENT, props).getChildRef();

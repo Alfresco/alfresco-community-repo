@@ -1196,25 +1196,7 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
                 });
         
     }
-    
-    private void createUser(String userName)
-    {
-        if (this.authenticationService.authenticationExists(userName) == false)
-        {
-            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
-            
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
-            PersonService personService = (PersonService)applicationContext.getBean("personService");
-            personService.createPerson(ppOne);
-        }        
-    }
-    
+
     /**
      * http://issues.alfresco.com/jira/browse/ALF-5027
      */

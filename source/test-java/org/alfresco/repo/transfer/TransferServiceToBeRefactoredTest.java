@@ -2806,7 +2806,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
                 }
 
                 // Create users
-                createUser(USER_ONE, PASSWORD);
+                createUser(USER_ONE, USER_ONE, PASSWORD);
 
                 /**
                  * Now go ahead and create our first transfer target
@@ -4884,23 +4884,6 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             }
         });
     } // copy node
-
-    private void createUser(String userName, String password)
-    {
-        if (this.authenticationService.authenticationExists(userName) == false)
-        {
-            this.authenticationService.createAuthentication(userName, password.toCharArray());
-
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-
-            this.personService.createPerson(ppOne);
-        }
-    }
 
     private DescriptorService getMockDescriptorService(String repositoryId)
     {

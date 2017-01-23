@@ -109,21 +109,4 @@ public class CustomRoleTest extends BaseAlfrescoSpringTest
         String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
         return result;
     }
-
-    private void createUser(String userName, String nameSuffix)
-    {
-        if (this.authenticationService.authenticationExists(userName) == false)
-        {
-            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
-
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName" + nameSuffix);
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName" + nameSuffix);
-            ppOne.put(ContentModel.PROP_EMAIL, "email" + nameSuffix + "@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-
-            this.personService.createPerson(ppOne);
-        }
-    }
 }

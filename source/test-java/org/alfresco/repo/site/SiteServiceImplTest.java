@@ -252,24 +252,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        siteServiceImpl.setSysAdminParams(sysAdminParams);
     }
 
-
-    private void createUser(String userName, String nameSuffix)
-    {
-        if (this.authenticationService.authenticationExists(userName) == false)
-        {
-            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
-            
-            PropertyMap ppOne = new PropertyMap(4);
-            ppOne.put(ContentModel.PROP_USERNAME, userName);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName"+nameSuffix);
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName"+nameSuffix);
-            ppOne.put(ContentModel.PROP_EMAIL, "email"+nameSuffix+"@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
-            this.personService.createPerson(ppOne);
-        }        
-    }
-    
     /**
      * This test method ensures that public sites can be created and that their site info is correct.
      * It also tests that a duplicate site cannot be created.

@@ -207,7 +207,7 @@ public class RMSitesImpl extends SitesImpl implements RMSites
      * @param site
      * @return
      */
-    private Site validateSite(Site site)
+    protected Site validateSite(Site site)
     {
         // site title - mandatory
         String siteTitle = site.getTitle();

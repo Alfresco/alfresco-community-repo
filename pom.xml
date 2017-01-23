@@ -65,23 +65,6 @@
       </snapshotRepository>
    </distributionManagement>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-platform-distribution</artifactId>
-            <version>${alfresco.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-         <dependency>
-             <groupId>org.reflections</groupId>
-             <artifactId>reflections</artifactId>
-             <version>0.9.10</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
-
    <modules>
       <module>rm-community</module>
    </modules>
@@ -116,6 +99,15 @@
 	  <license.verbose>false</license.verbose>
 
    </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>4.12</version>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
 
    <build>
       <finalName>${project.artifactId}-${project.version}</finalName>

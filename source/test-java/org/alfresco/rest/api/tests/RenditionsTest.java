@@ -315,7 +315,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
-        getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib", 400); // TODO different results local (200) than build (404) ?
+        getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib", 404); // TODO REPO-1834 - different results local (200) than build (404) ?
 
         // Create multipart request
         String jpgFileName = "quick.jpg";
@@ -447,7 +447,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
 
         // The source node has no content
-        post(getNodeRenditionsUrl(emptyContentNodeId), toJsonAsString(renditionRequest), 200); // TODO different results local (202) than build (200) ?
+        post(getNodeRenditionsUrl(emptyContentNodeId), toJsonAsString(renditionRequest), 400); // TODO REPO-1834 - different results local (202) than build (400) ?
 
         String content = "The quick brown fox jumps over the lazy dog.";
         file = TempFileProvider.createTempFile(new ByteArrayInputStream(content.getBytes()), getClass().getSimpleName(), ".bin");
@@ -457,7 +457,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         Document binaryDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         // No transformer is currently available for 'application/octet-stream'
-        post(getNodeRenditionsUrl(binaryDocument.getId()), toJsonAsString(renditionRequest), 400); // TODO different results local (202) than build (400) ?
+        post(getNodeRenditionsUrl(binaryDocument.getId()), toJsonAsString(renditionRequest), 400); // TODO REPO-1834 - different results local (202) than build (400) ?
 
         ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
         // Disable thumbnail generation

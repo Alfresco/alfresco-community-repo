@@ -19,7 +19,7 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.db.password>alfresco</alfresco.db.password>
       <alfresco.db.host>localhost</alfresco.db.host>
-      <alfresco.repo.artifactId>alfresco</alfresco.repo.artifactId>
+      <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
@@ -268,11 +268,11 @@
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
+         <version>${alfresco.version}</version>
       </dependency>
       <dependency>
           <groupId>javax.servlet</groupId>
           <artifactId>javax.servlet-api</artifactId>
-          <version>3.1.0</version>
           <scope>provided</scope>
       </dependency>
       <dependency>

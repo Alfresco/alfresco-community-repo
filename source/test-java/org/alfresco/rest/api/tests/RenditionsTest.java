@@ -36,6 +36,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Ordering;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.api.model.Site;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.client.HttpResponse;
@@ -89,6 +90,8 @@ public class RenditionsTest extends AbstractBaseApiTest
      * Private site of user one from network one
      */
     private Site userOneN1Site;
+    
+    private final static long DELAY_IN_MS = 500;
 
     @Before
     public void setup() throws Exception
@@ -275,6 +278,9 @@ public class RenditionsTest extends AbstractBaseApiTest
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
+        // pause briefly
+        Thread.sleep(DELAY_IN_MS);
+
         // Get rendition (not created yet) information for node
         response = getSingle(getNodeRenditionsUrl(contentNodeId), "doclib", 200);
         Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
@@ -309,7 +315,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
-        getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib", 404); // TODO different results local (200) than build (404) ?
+        getSingle(getNodeRenditionsUrl(emptyContentNodeId), "doclib", 400); // TODO different results local (200) than build (404) ?
 
         // Create multipart request
         String jpgFileName = "quick.jpg";
@@ -359,11 +365,25 @@ public class RenditionsTest extends AbstractBaseApiTest
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
+        // pause briefly
+        Thread.sleep(DELAY_IN_MS);
+
         // Get rendition (not created yet) information for node
         response = getSingle(getNodeRenditionsUrl(contentNodeId), "imgpreview", 200);
         Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
         assertNotNull(rendition);
         assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
+
+        // Try to download non-existent rendition (and no placeholder)
+        Map<String, String> params = new HashMap<>();
+        params.put("placeholder", "false");
+        getSingle(getNodeRenditionsUrl(contentNodeId), ("doclib/content"), params, 404);
+
+        // Download placeholder instead
+        params = new HashMap<>();
+        params.put("placeholder", "true");
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), ("doclib/content"), params, 200);
+        assertNotNull(response.getResponseAsBytes());
 
         // Create and get 'imgpreview' rendition
         rendition = createAndGetRendition(contentNodeId, "imgpreview");
@@ -376,7 +396,10 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNotNull(contentInfo.getEncoding());
         assertTrue(contentInfo.getSizeInBytes() > 0);
 
+        //
         // -ve Tests
+        //
+        
         // The rendition requested already exists
         response = post(getNodeRenditionsUrl(contentNodeId), toJsonAsString(new Rendition().setId("imgpreview")), 409);
         ExpectedErrorResponse errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
@@ -389,6 +412,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // Create 'doclib' rendition request
         Rendition renditionRequest = new Rendition().setId("doclib");
+        
         // nodeId in the path parameter does not represent a file
         post(getNodeRenditionsUrl(folder_Id), toJsonAsString(renditionRequest), 400);
 
@@ -414,18 +438,16 @@ public class RenditionsTest extends AbstractBaseApiTest
         post(getNodeRenditionsUrl(contentNodeId), toJsonAsString(new Rendition().setId("")), 400);
 
         // -ve test - we do not currently accept multiple create entities
-        List<Rendition> request = new ArrayList<>(2);
-        request.add(new Rendition().setId("doclib"));
-        request.add(new Rendition().setId("imgpreview"));
-        post(getNodeRenditionsUrl(contentNodeId), toJsonAsString(request), 400);
+        List<Rendition> multipleRenditionRequest = new ArrayList<>(2);
+        multipleRenditionRequest.add(new Rendition().setId("doclib"));
+        multipleRenditionRequest.add(new Rendition().setId("imgpreview"));
+        post(getNodeRenditionsUrl(contentNodeId), toJsonAsString(multipleRenditionRequest), 400);
 
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
 
         // The source node has no content
-        request = new ArrayList<>(2);
-        request.add(new Rendition().setId("doclib"));
-        post(getNodeRenditionsUrl(emptyContentNodeId), toJsonAsString(renditionRequest), 400); // TODO different results local (202) than build (400) ?
+        post(getNodeRenditionsUrl(emptyContentNodeId), toJsonAsString(renditionRequest), 200); // TODO different results local (202) than build (200) ?
 
         String content = "The quick brown fox jumps over the lazy dog.";
         file = TempFileProvider.createTempFile(new ByteArrayInputStream(content.getBytes()), getClass().getSimpleName(), ".bin");
@@ -435,7 +457,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         Document binaryDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         // No transformer is currently available for 'application/octet-stream'
-        post(getNodeRenditionsUrl(binaryDocument.getId()), toJsonAsString(renditionRequest), 400);
+        post(getNodeRenditionsUrl(binaryDocument.getId()), toJsonAsString(renditionRequest), 400); // TODO different results local (202) than build (400) ?
 
         ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
         // Disable thumbnail generation
@@ -500,6 +522,11 @@ public class RenditionsTest extends AbstractBaseApiTest
         Rendition rendition = waitAndGetRendition(contentNodeId, renditionName);
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+
+        Map<String, String> params = new HashMap<>();
+        params.put("placeholder", "false");
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), ("doclib/content"), params, 200);
+        assertNotNull(response.getResponseAsBytes());
 
         /* TODO fails on build machine but not locally
          * returns 400 instead of 201, apparently: Unable to create thumbnail 'doclib' for application/msword as no transformer is currently available.
@@ -590,6 +617,120 @@ public class RenditionsTest extends AbstractBaseApiTest
     }
 
     /**
+     * Tests create rendition after uploading new version(s)
+     *
+     */
+    @Test
+    public void testCreateRenditionForNewVersion() throws Exception
+    {
+        String PROP_LTM = "cm:lastThumbnailModification";
+        
+        String RENDITION_NAME = "imgpreview";
+        
+        String userId = userOneN1.getId();
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userId);
+
+        // Create multipart request - pdf file
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file))
+                .build();
+        Map<String, String> params = Collections.singletonMap("include", "properties");
+
+        // Upload quick.pdf file into 'folder' - do not include request to create 'doclib' thumbnail
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), params, null, "alfresco", reqBody.getContentType(), 201);
+        Document document1 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document1.getId();
+        assertNotNull(document1.getProperties());
+        assertNull(document1.getProperties().get(PROP_LTM));
+        
+        // pause briefly
+        Thread.sleep(DELAY_IN_MS);
+
+        // Get rendition (not created yet) information for node
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), RENDITION_NAME, 200);
+        Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
+
+        params = new HashMap<>();
+        params.put("placeholder", "false");
+        getSingle(getNodeRenditionsUrl(contentNodeId), (RENDITION_NAME+"/content"), params, 404);
+        
+        // TODO add test to request creation of rendition as another user (that has read-only access on the content, not write)
+
+        // Create and get 'imgpreview' rendition
+        rendition = createAndGetRendition(contentNodeId, RENDITION_NAME);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+        ContentInfo contentInfo = rendition.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_JPEG, contentInfo.getMimeType());
+        assertEquals("JPEG Image", contentInfo.getMimeTypeName());
+        assertNotNull(contentInfo.getEncoding());
+        assertTrue(contentInfo.getSizeInBytes() > 0);
+
+        params = new HashMap<>();
+        params.put("placeholder", "false");
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), (RENDITION_NAME+"/content"), params, 200);
+        
+        byte[] renditionBytes1 = response.getResponseAsBytes();
+        assertNotNull(renditionBytes1);
+        
+        // check node details ...
+        params = Collections.singletonMap("include", "properties");
+        response = getSingle(NodesEntityResource.class, contentNodeId, params, 200);
+        Document document1b = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        
+        assertEquals(document1b.getModifiedAt(), document1.getModifiedAt());
+        assertEquals(document1b.getModifiedByUser().getId(), document1.getModifiedByUser().getId());
+        assertEquals(document1b.getModifiedByUser().getDisplayName(), document1.getModifiedByUser().getDisplayName());
+        
+        assertNotEquals(document1b.getProperties().get(PROP_LTM), document1.getProperties().get(PROP_LTM));
+        
+        // upload another version of "quick.pdf" and check again
+        
+        fileName = "quick-2.pdf";
+        file = getResourceFile(fileName);
+        reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData("quick.pdf", file))
+                .setOverwrite(true)
+                .build();
+
+        response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, null, "alfresco", reqBody.getContentType(), 201);
+        Document document2 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(contentNodeId, document2.getId());
+
+        // wait to allow new version of the rendition to be created ...
+        Thread.sleep(DELAY_IN_MS * 4);
+
+        params = new HashMap<>();
+        params.put("placeholder", "false");
+        response = getSingle(getNodeRenditionsUrl(contentNodeId), (RENDITION_NAME+"/content"), params, 200);
+        assertNotNull(response.getResponseAsBytes());
+        
+        // check rendition binary has changed
+        assertNotEquals(renditionBytes1, response.getResponseAsBytes());
+
+        // check node details ...
+        params = Collections.singletonMap("include", "properties");
+        response = getSingle(NodesEntityResource.class, contentNodeId, params, 200);
+        Document document2b = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertTrue(document2b.getModifiedAt().after(document1.getModifiedAt()));
+        assertEquals(document2b.getModifiedByUser().getId(), document1.getModifiedByUser().getId());
+        assertEquals(document2b.getModifiedByUser().getDisplayName(), document1.getModifiedByUser().getDisplayName());
+        
+        // check last thumbnail modification property has changed ! (REPO-1644)
+        assertNotEquals(document2b.getProperties().get(PROP_LTM), document1b.getProperties().get(PROP_LTM));
+    }
+
+    /**
      * Tests download rendition.
      * <p>GET:</p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/renditions/<renditionId>/content}
@@ -614,6 +755,9 @@ public class RenditionsTest extends AbstractBaseApiTest
         HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
+
+        // pause briefly
+        Thread.sleep(DELAY_IN_MS);
 
         // Get rendition (not created yet) information for node
         response = getSingle(getNodeRenditionsUrl(contentNodeId), "doclib", 200);

@@ -50,11 +50,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.*;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.usage.ContentUsageService;
@@ -87,7 +83,12 @@ public class PeopleImpl implements People
 	private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
 	private static final List<QName> EXCLUDED_PROPS = Arrays.asList();
     private static final int USERNAME_MAXLENGTH = 100;
-	protected Nodes nodes;
+    private static final String[] RESERVED_AUTHORITY_PREFIXES =
+    {
+            PermissionService.GROUP_PREFIX,
+            PermissionService.ROLE_PREFIX
+    };
+    protected Nodes nodes;
 	protected Sites sites;
 
 	protected SiteService siteService;
@@ -512,12 +513,14 @@ public class PeopleImpl implements People
 
 	private void validateCreatePersonData(Person person)
 	{
-        validateUsername(person.getUserName());
-        validateNamespaces(person.getAspectNames(), person.getProperties());
+	    // Mandatory field checks first
 		checkRequiredField("id", person.getUserName());
 		checkRequiredField("firstName", person.getFirstName());
 		checkRequiredField("email", person.getEmail());
 		checkRequiredField("password", person.getPassword());
+
+        validateUsername(person.getUserName());
+        validateNamespaces(person.getAspectNames(), person.getProperties());
 	}
 
     private void validateUsername(String username)
@@ -530,6 +533,14 @@ public class PeopleImpl implements People
         if (username.indexOf('/') != -1)
         {
             throw new IllegalArgumentException("Username contains characters that are not permitted.");
+        }
+
+        for (String prefix : RESERVED_AUTHORITY_PREFIXES)
+        {
+            if (username.toUpperCase().startsWith(prefix))
+            {
+                throw new IllegalArgumentException("Username cannot start with the reserved prefix '"+prefix+"'.");
+            }
         }
     }
 

@@ -51,11 +51,9 @@ import static org.testng.Assert.assertNotNull;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.RMUserAPI;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -67,9 +65,6 @@ import org.testng.annotations.Test;
  */
 public class RMSiteTests extends BaseRMRestTest
 {
-    @Autowired
-    private RMUserAPI rmUserAPI;
-
     /**
      * Given that RM module is installed
      * When I want to create the RM site with specific title, description and compliance
@@ -208,7 +203,7 @@ public class RMSiteTests extends BaseRMRestTest
         }
 
         // Create user
-        rmUserAPI.createUser(ANOTHER_ADMIN);
+        getRestAPIFactory().getRMUserAPI().createUser(ANOTHER_ADMIN);
 
         // Create the RM site
         RMSite rmSiteModel = getRestAPIFactory().getRMSiteAPI(new UserModel(ANOTHER_ADMIN, DEFAULT_PASSWORD)).createRMSite(createDOD5015RMSiteModel());

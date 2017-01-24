@@ -26,9 +26,11 @@
  */
 package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
+import static com.jayway.restassured.RestAssured.basic;
 import static com.jayway.restassured.RestAssured.given;
 
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
+import static org.springframework.http.HttpStatus.OK;
 
 import com.google.gson.JsonObject;
 import com.jayway.restassured.builder.RequestSpecBuilder;
@@ -38,12 +40,13 @@ import com.jayway.restassured.specification.RequestSpecification;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.dataprep.UserService;
-import org.alfresco.rest.core.RestAPI;
+import org.alfresco.rest.core.RMRestProperties;
+import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.utility.data.DataUser;
+import org.alfresco.rest.rm.community.model.user.UserPermissions;
+import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -58,21 +61,36 @@ import org.springframework.stereotype.Component;
 // "old-style" API calls.
 @Component
 @Scope (value = "prototype")
-public class RMUserAPI extends RestAPI<RMUserAPI>
+public class RMUserAPI extends RMModelRequest
 {
-    @Autowired
-    private UserService userService;
+//    @Autowired
+//    private UserService userService;
+    
+    private UserModel dataUser = new UserModel("admin", "admin");
+    
+    /**
+     * @param rmRestWrapper
+     */
+    public RMUserAPI(RMRestWrapper rmRestWrapper)
+    {
+        super(rmRestWrapper);
+    }
 
-    @Autowired
-    private DataUser dataUser;
-
-    @Autowired
-    private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
-
+    private AlfrescoHttpClient getAlfrescoHttpClient()
+    {
+        RMRestProperties properties = getRMRestWrapper().getRmRestProperties();
+        AlfrescoHttpClientFactory factory = new AlfrescoHttpClientFactory();
+        factory.setHost(properties.getServer());
+        factory.setPort(Integer.parseInt(properties.getPort()));
+        factory.setScheme(properties.getScheme());
+        
+        return factory.getObject();
+    }
+    
     public void assignRoleToUser(String userName, String userRole) throws Exception
     {
         // get an "old-style" REST API client
-        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        AlfrescoHttpClient client = getAlfrescoHttpClient();
 
         // override v1 baseURI and basePath
         RequestSpecification spec = new RequestSpecBuilder()
@@ -85,13 +103,13 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
             .log().all()
             .pathParam("role", userRole)
             .pathParam("authority", userName)
-            .param("alf_ticket", client.getAlfTicket(
-                dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword()))
+            .param("alf_ticket", client.getAlfTicket(dataUser.getUsername(), 
+                dataUser.getPassword()))
         .when()
             .post("/rm/roles/{role}/authorities/{authority}")
             .prettyPeek()
             .andReturn();
-        usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+        getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
 
     /**
@@ -103,7 +121,7 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
     public void addUserPermission(FilePlanComponent component, UserModel user, String permission)
     {
         // get an "old-style" REST API client
-        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        AlfrescoHttpClient client = getAlfrescoHttpClient();
 
         JsonObject bodyJson = buildObject()
             .addArray("permissions")
@@ -118,11 +136,11 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
             .setBaseUri(client.getApiUrl())
             .setBasePath("/")
             .build();
-
+        
         // execute an "old-style" API call
         Response response = given()
             .spec(spec)
-            .auth().basic(dataUser.getAdminUser().getUsername(), dataUser.getAdminUser().getPassword())
+            .auth().basic(dataUser.getUsername(), dataUser.getPassword())
             .contentType(ContentType.JSON)
             .body(bodyJson.toString())
             .pathParam("nodeId", component.getId())
@@ -131,7 +149,7 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
             .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
             .prettyPeek()
             .andReturn();
-        usingRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+        getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
     }
 
     /**
@@ -142,12 +160,40 @@ public class RMUserAPI extends RestAPI<RMUserAPI>
      */
     public boolean createUser(String userName)
     {
-        return userService.create(dataUser.getAdminUser().getUsername(),
-                dataUser.getAdminUser().getPassword(),
-                userName,
-                "password",
-                "default@alfresco.com",
-                userName,
-                userName);
+        AlfrescoHttpClient client = getAlfrescoHttpClient();
+        
+        JsonObject body = buildObject()
+            .add("userName", userName)
+            .add("firstName", userName)
+            .add("lastName", userName)
+            .add("password", TestData.DEFAULT_PASSWORD)
+            .add("email", TestData.DEFAULT_EMAIL)
+            .getJson();
+        
+        RequestSpecification spec = new RequestSpecBuilder()
+            .setBaseUri(client.getApiUrl())
+            .setBasePath("/")
+            .setAuth(basic(dataUser.getUsername(), dataUser.getPassword()))
+            .setContentType(ContentType.JSON)
+            .setBody(body.toString())
+            .build();
+        
+        // create POST request to "people" endpoint
+        Response response = given()
+            .spec(spec)
+            .log().all()
+        .when()
+            .post("people")
+            .prettyPeek()
+            .andReturn();
+        
+        if (response.getStatusCode() == OK.value())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

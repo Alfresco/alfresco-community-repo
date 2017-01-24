@@ -47,7 +47,6 @@ import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -59,10 +58,7 @@ import org.testng.annotations.Test;
  * @since 2.6
  */
 public class UpdateRecordsTests extends BaseRMRestTest
-{
-    @Autowired
-    private RMUserAPI rmUserAPI;
-    
+{    
     /* to be used to append to modifications */
     private final String MODIFIED_PREFIX = "modified_";
     
@@ -132,6 +128,8 @@ public class UpdateRecordsTests extends BaseRMRestTest
     @AlfrescoTest(jira="RM-4362")
     public void userWithEditMetadataCapsCanUpdateMetadata() throws Exception
     {   
+        RMUserAPI rmUserAPI = getRestAPIFactory().getRMUserAPI();
+        
         // create test user and add it with collab. privileges
         UserModel updateUser = getDataUser().createRandomTestUser("updateuser");
         updateUser.setUserRole(UserRole.SiteCollaborator);
@@ -139,7 +137,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
 
         // RM Security Officer is the lowest role with Edit Record Metadata capabilities
         rmUserAPI.assignRoleToUser(updateUser.getUsername(), UserRoles.ROLE_RM_SECURITY_OFFICER);
-        rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        assertStatusCode(OK);
 
         // create random folder
         FilePlanComponent randomFolder = createCategoryFolderInFilePlan();
@@ -150,7 +148,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
         FilePlanComponentAPI filePlanComponentsAPIAsAdmin = getRestAPIFactory().getFilePlanComponentsAPI();
         rmUserAPI.addUserPermission(filePlanComponentsAPIAsAdmin.getFilePlanComponent(randomFolder.getParentId()),
             updateUser, UserPermissions.PERMISSION_FILING);
-        rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        assertStatusCode(OK);
         
         // create electronic and non-electronic records in a folder
         FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();

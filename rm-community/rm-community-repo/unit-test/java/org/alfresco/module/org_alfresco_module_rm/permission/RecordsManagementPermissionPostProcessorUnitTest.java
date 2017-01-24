@@ -152,7 +152,7 @@ public class RecordsManagementPermissionPostProcessorUnitTest
         PermissionReference childOne = mock(PermissionReference.class);
         when(childOne.getName()).thenReturn("Not this one");
         PermissionReference childTwo = mock(PermissionReference.class);
-        when(childOne.getName()).thenReturn("This is the requested permission");
+        when(childTwo.getName()).thenReturn("This is the requested permission");
         PermissionReference childThree = mock(PermissionReference.class);
         when(childThree.getName()).thenReturn("Not this one either");
         when(mockPermissionModel.getGranteePermissions(mockWritePropsPermRef)).thenReturn(Sets.newHashSet(childOne, childTwo, childThree));

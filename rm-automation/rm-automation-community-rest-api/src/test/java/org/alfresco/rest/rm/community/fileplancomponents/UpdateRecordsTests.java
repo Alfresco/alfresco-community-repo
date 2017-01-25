@@ -29,8 +29,8 @@ package org.alfresco.rest.rm.community.fileplancomponents;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 
@@ -62,10 +62,10 @@ public class UpdateRecordsTests extends BaseRMRestTest
 {
     @Autowired
     private RMUserAPI rmUserAPI;
-    
+
     /* to be used to append to modifications */
     private final String MODIFIED_PREFIX = "modified_";
-    
+
     /**
      * <pre>
      * Given an incomplete record
@@ -83,14 +83,14 @@ public class UpdateRecordsTests extends BaseRMRestTest
     public void incompleteRecordsCanBeUpdated(FilePlanComponent recordFolder) throws Exception
     {
         FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
-        
+
         // create electronic and non-electronic records in a folder
         FilePlanComponent electronicRecord = filePlanComponentsAPI.createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, recordFolder.getId());
         assertStatusCode(CREATED);
         FilePlanComponent nonElectronicRecord = filePlanComponentsAPI.createFilePlanComponent(createNonElectronicRecordModel(), recordFolder.getId());
         assertStatusCode(CREATED);
-        
-        for (FilePlanComponent record: Arrays.asList(electronicRecord, nonElectronicRecord)) {            
+
+        for (FilePlanComponent record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
             // generate update metadata
             String newName = getModifiedPropertyValue(record.getName());
             String newTitle = getModifiedPropertyValue(record.getProperties().getTitle());
@@ -115,7 +115,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
             assertEquals(updatedRecord.getProperties().getDescription(), newDescription);
         }
     }
-    
+
     /**
      * <pre>
      * Given an incomplete record
@@ -131,7 +131,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
     )
     @AlfrescoTest(jira="RM-4362")
     public void userWithEditMetadataCapsCanUpdateMetadata() throws Exception
-    {   
+    {
         // create test user and add it with collab. privileges
         UserModel updateUser = getDataUser().createRandomTestUser("updateuser");
         updateUser.setUserRole(UserRole.SiteCollaborator);
@@ -151,21 +151,21 @@ public class UpdateRecordsTests extends BaseRMRestTest
         rmUserAPI.addUserPermission(filePlanComponentsAPIAsAdmin.getFilePlanComponent(randomFolder.getParentId()),
             updateUser, UserPermissions.PERMISSION_FILING);
         rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
-        
+
         // create electronic and non-electronic records in a folder
         FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         FilePlanComponent electronicRecord = filePlanComponentsAPI.createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, randomFolder.getId());
         assertStatusCode(CREATED);
         FilePlanComponent nonElectronicRecord = filePlanComponentsAPI.createFilePlanComponent(createNonElectronicRecordModel(), randomFolder.getId());
         assertStatusCode(CREATED);
-        
+
         // get FilePlanComponentAPI instance initialised to updateUser
         FilePlanComponentAPI filePlanComponentsAPIAsUser = getRestAPIFactory().getFilePlanComponentsAPI(updateUser);
-        
+
         for (FilePlanComponent record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
             filePlanComponentsAPIAsUser.getFilePlanComponent(record.getId());
             assertStatusCode(OK);
-            
+
             // generate update metadata
             String newName = getModifiedPropertyValue(record.getName());
             String newTitle = getModifiedPropertyValue(record.getProperties().getTitle());
@@ -191,7 +191,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
             assertEquals(updatedRecord.getModifiedByUser().getId(), updateUser.getUsername());
         }
     }
-    
+
     /**
      * <pre>
      * Given a complete record
@@ -210,16 +210,16 @@ public class UpdateRecordsTests extends BaseRMRestTest
     public void completeRecordsCantBeUpdated(FilePlanComponent recordFolder) throws Exception
     {
         FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
-        
+
         // create electronic and non-electronic records in a folder
         FilePlanComponent electronicRecord = filePlanComponentsAPI.createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, recordFolder.getId());
         assertStatusCode(CREATED);
         closeRecord(electronicRecord);
-       
+
         FilePlanComponent nonElectronicRecord = filePlanComponentsAPI.createFilePlanComponent(createNonElectronicRecordModel(), recordFolder.getId());
         assertStatusCode(CREATED);
         closeRecord(nonElectronicRecord);
-        
+
         for (FilePlanComponent record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
             // generate update metadata
             String newName = getModifiedPropertyValue(record.getName());
@@ -236,7 +236,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
 
             // attempt to update record
             filePlanComponentsAPI.updateFilePlanComponent(updateRecord, record.getId());
-            assertStatusCode(BAD_REQUEST);
+            assertStatusCode(FORBIDDEN);
 
             // verify the original record metatada has been retained
             FilePlanComponent updatedRecord = filePlanComponentsAPI.getFilePlanComponent(record.getId());
@@ -245,7 +245,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
             assertEquals(updatedRecord.getProperties().getDescription(), record.getProperties().getTitle());
         }
     }
-    
+
     /**
      * Helper method to generate modified property value based on original value
      * @param originalValue original value

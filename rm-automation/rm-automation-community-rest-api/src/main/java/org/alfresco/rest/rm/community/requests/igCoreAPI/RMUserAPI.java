@@ -42,7 +42,6 @@ import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.rest.core.RMRestProperties;
 import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
@@ -156,9 +155,11 @@ public class RMUserAPI extends RMModelRequest
      * Creates a user with the given name using the old APIs
      *
      * @param userName The user name
+     * @param userPassword The user's password
+     * @param userEmail The user's e-mail address
      * @return <code>true</code> if the user was created successfully, <code>false</code> otherwise.
      */
-    public boolean createUser(String userName)
+    public boolean createUser(String userName, String userPassword, String userEmail)
     {
         AlfrescoHttpClient client = getAlfrescoHttpClient();
         
@@ -166,8 +167,8 @@ public class RMUserAPI extends RMModelRequest
             .add("userName", userName)
             .add("firstName", userName)
             .add("lastName", userName)
-            .add("password", TestData.DEFAULT_PASSWORD)
-            .add("email", TestData.DEFAULT_EMAIL)
+            .add("password", userPassword)
+            .add("email", userEmail)
             .getJson();
         
         RequestSpecification spec = new RequestSpecBuilder()

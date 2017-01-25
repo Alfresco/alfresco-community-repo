@@ -95,7 +95,7 @@ public class RMUserAPI extends RMModelRequest
      */
     public void assignRoleToUser(String userName, String userRole) throws Exception
     {
-        UserModel dataUser = getRMRestWrapper().getTestUser();
+        UserModel adminUser = getRMRestWrapper().getTestUser();
             
         // get an "old-style" REST API client
         AlfrescoHttpClient client = getAlfrescoHttpClient();
@@ -111,8 +111,8 @@ public class RMUserAPI extends RMModelRequest
             .log().all()
             .pathParam("role", userRole)
             .pathParam("authority", userName)
-            .param("alf_ticket", client.getAlfTicket(dataUser.getUsername(), 
-                dataUser.getPassword()))
+            .param("alf_ticket", client.getAlfTicket(adminUser.getUsername(), 
+                adminUser.getPassword()))
         .when()
             .post("/rm/roles/{role}/authorities/{authority}")
             .prettyPeek()
@@ -128,7 +128,7 @@ public class RMUserAPI extends RMModelRequest
      */
     public void addUserPermission(FilePlanComponent component, UserModel user, String permission)
     {
-        UserModel dataUser = getRMRestWrapper().getTestUser();
+        UserModel adminUser = getRMRestWrapper().getTestUser();
         
         // get an "old-style" REST API client
         AlfrescoHttpClient client = getAlfrescoHttpClient();
@@ -150,7 +150,7 @@ public class RMUserAPI extends RMModelRequest
         // execute an "old-style" API call
         Response response = given()
             .spec(spec)
-            .auth().basic(dataUser.getUsername(), dataUser.getPassword())
+            .auth().basic(adminUser.getUsername(), adminUser.getPassword())
             .contentType(ContentType.JSON)
             .body(bodyJson.toString())
             .pathParam("nodeId", component.getId())
@@ -172,7 +172,7 @@ public class RMUserAPI extends RMModelRequest
      */
     public boolean createUser(String userName, String userPassword, String userEmail)
     {
-        UserModel dataUser = getRMRestWrapper().getTestUser();
+        UserModel adminUser = getRMRestWrapper().getTestUser();
         AlfrescoHttpClient client = getAlfrescoHttpClient();
         
         JsonObject body = buildObject()
@@ -186,7 +186,7 @@ public class RMUserAPI extends RMModelRequest
         RequestSpecification spec = new RequestSpecBuilder()
             .setBaseUri(client.getApiUrl())
             .setBasePath("/")
-            .setAuth(basic(dataUser.getUsername(), dataUser.getPassword()))
+            .setAuth(basic(adminUser.getUsername(), adminUser.getPassword()))
             .setContentType(ContentType.JSON)
             .setBody(body.toString())
             .build();

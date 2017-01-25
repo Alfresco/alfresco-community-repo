@@ -26,9 +26,6 @@
  */
 package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
-import static com.jayway.restassured.RestAssured.basic;
-import static com.jayway.restassured.RestAssured.given;
-
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
 import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
@@ -50,13 +47,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.ContentModel;
+import org.alfresco.utility.model.RepoTestModel;
 
 /**
  * File plan component REST API Wrapper
@@ -250,41 +247,41 @@ public class FilePlanComponentAPI extends RMModelRequest
         {
             fail("Only electronic records are supported");
         }
-
-        UserModel currentUser = getRMRestWrapper().getTestUser();
-
+        
+        RepoTestModel parentNode = new ContentModel();
+        // using getFilePlanComponent to work around RM special containers, unsupported in Core API usingNode()
+        parentNode.setNodeRef(getFilePlanComponent(parentId).getId());
+        
         /*
          * For file uploads nodeBodyCreate is ignored hence can't be used. Append all FilePlanComponent fields
          * to the request.
          */
-        RequestSpecBuilder builder = new RequestSpecBuilder();
-        builder.setAuth(basic(currentUser.getUsername(), currentUser.getPassword()));
-
+        RequestSpecBuilder builder = restWrapper.configureRequestSpec();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(toJson(electronicRecordModel));
 
+        // add request fields
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext())
         {
             String fieldName = fieldNames.next();
             builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
         }
-
+        
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
-
-        /*
-         * RestWrapper adds some headers which break multipart/form-data uploads and also assumes json POST requests.
-         * Upload the file using RestAssured library.
-         */
-        Response response = given()
-            .spec(builder.build())
-        .when()
-            .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getRMRestWrapper().getParameters())
-            .andReturn();
-        getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
-
-        /* return a FilePlanComponent object representing Response */
-        return response.jsonPath().getObject("entry", FilePlanComponent.class);
+        String nodeId = getRMRestWrapper().withCoreAPI().usingNode(parentNode).createNode().getId();
+        String createStatusCode = getRMRestWrapper().getStatusCode();
+        
+        // return FilePlanComponent for created node
+        FilePlanComponent createdComponent = getRMRestWrapper()
+            .withIGCoreAPI()
+            .usingFilePlanComponents()
+            .getFilePlanComponent(nodeId);
+        
+        // avoid getFilePlanComponent() overriding the createNode status code
+        getRMRestWrapper().setStatusCode(createStatusCode);
+        
+        return createdComponent;
     }
 
     /**

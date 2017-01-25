@@ -1642,9 +1642,4 @@
          </value>
       </property>
    </bean>
-
-   <!-- FIXME: Temporary workaround for RM-4617 -->
-   <bean id="protectedUsersCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.protectedUsersCache"/>
-   </bean>
 </beans>

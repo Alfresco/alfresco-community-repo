@@ -26,16 +26,15 @@
  */
 package org.alfresco.rest.rm.community.requests.igCoreAPI;
 
-import static com.jayway.restassured.RestAssured.given;
-
 import static org.alfresco.rest.core.RestRequest.requestWithBody;
+import static org.alfresco.rest.core.RestRequest.simpleRequest;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 
-import com.jayway.restassured.response.Response;
 import com.jayway.restassured.response.ResponseBody;
 
 import org.alfresco.rest.core.RMRestWrapper;
@@ -79,14 +78,11 @@ public class RecordsAPI extends RMModelRequest
     public ResponseBody<?> getRecordContent(String recordId) throws Exception
     {
         mandatoryString("recordId", recordId);
-        Response response = given()
-                                .auth().basic(getRMRestWrapper().getTestUser().getUsername(),
-                                    getRMRestWrapper().getTestUser().getPassword())
-                            .when()
-                                   .get("records/{recordId}/content", recordId)
-                                   .andReturn();
-        getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
-        return response.getBody();
+        
+        return getRMRestWrapper()
+            .processHtmlResponse(simpleRequest(GET,"records/{recordId}/content", recordId))
+            .getBody();
+      
     }
 
     /**

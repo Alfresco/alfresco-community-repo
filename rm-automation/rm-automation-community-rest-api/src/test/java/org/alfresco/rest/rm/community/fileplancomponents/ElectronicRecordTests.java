@@ -313,9 +313,10 @@ public class ElectronicRecordTests extends BaseRMRestTest
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(FILE_PLAN_ALIAS, FilePlanComponentFields.RELATIVE_PATH + "=" + RELATIVE_PATH + "/" + recordCreated.getName())
                                         .getId().equals(recordCreated.getId()));
 
-        String categoryId =filePlanComponentsAPI.getFilePlanComponent(FILE_PLAN_ALIAS, FilePlanComponentFields.RELATIVE_PATH + "="+CATEGORY_NAME)
+        //create the container structure relative to the  categoryId
+        String categoryId = filePlanComponentsAPI.getFilePlanComponent(FILE_PLAN_ALIAS, FilePlanComponentFields.RELATIVE_PATH + "="+CATEGORY_NAME)
                                                 .getId();
-        RELATIVE_PATH="Category two/"+FOLDER_NAME;
+        RELATIVE_PATH = CATEGORY_NAME+ CATEGORY_NAME+"/"+FOLDER_NAME;
         electronicRecord.setRelativePath(RELATIVE_PATH);
         recordCreated = filePlanComponentsAPI.createElectronicRecord(electronicRecord,
                                                 createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME),categoryId);
@@ -324,6 +325,5 @@ public class ElectronicRecordTests extends BaseRMRestTest
         // get newly created electronic record and verify its properties
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(recordCreated.getId()).getName().startsWith(ELECTRONIC_RECORD_NAME));
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(recordCreated.getParentId()).getName().startsWith(FOLDER_NAME));
-
     }
 }

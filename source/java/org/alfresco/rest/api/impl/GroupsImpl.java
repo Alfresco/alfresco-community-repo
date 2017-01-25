@@ -528,6 +528,11 @@ public class GroupsImpl implements Groups
 
     public void delete(String groupId, Parameters parameters)
     {
+        if (!isGroupAuthority(groupId))
+        {
+            throw new InvalidArgumentException("Invalid group id: " + groupId);
+        }
+
         // Get cascade param - default false (if not provided).
         boolean cascade = Boolean.valueOf(parameters.getParameter(PARAM_CASCADE));
 
@@ -740,5 +745,11 @@ public class GroupsImpl implements Groups
         String name = inferPrefix ? authorityService.getName(authorityType, authorityName) : authorityName;
 
         return (name != null && authorityService.authorityExists(name));
+    }
+
+    private boolean isGroupAuthority(String authorityName)
+    {
+        AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
+        return AuthorityType.GROUP.equals(authorityType) || AuthorityType.EVERYONE.equals(authorityType);
     }
 }

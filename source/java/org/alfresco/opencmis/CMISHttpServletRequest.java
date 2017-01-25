@@ -473,24 +473,16 @@ public class CMISHttpServletRequest implements HttpServletRequest
 
         if(networkId != null && networkId.length() > 0)
         {
-            if (reqQueryString == null)
+            if (reqQueryString != null)
             {
-                queryString.append("repositoryId=");
-                queryString.append(networkId);
+	            queryString.append(reqQueryString + "&");
             }
-            else
-            {
-                queryString.append(reqQueryString);
-                queryString.append("&repositoryId=");
-                queryString.append(networkId);
-            }
-            String cmisselector = httpReq.getParameter("cmisselector");
-            if(cmisselector == null || cmisselector.isEmpty())
+	        queryString.append("repositoryId=" + networkId);
+            if(operation == null || operation.isEmpty())
             {
             	queryString.append("&cmisselector=");
 	            queryString.append(Constants.SELECTOR_REPOSITORY_INFO);
             }
-            
             return queryString.toString();
         }
         return reqQueryString;

@@ -25,9 +25,14 @@
  */
 package org.alfresco.rest.api.groups;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.rest.api.Groups;
 import org.alfresco.rest.api.model.GroupMember;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -40,7 +45,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author cturlica
  */
 @RelationshipResource(name = "members", entityResource = GroupsEntityResource.class, title = "Group Members")
-public class GroupMembersRelation implements RelationshipResourceAction.Read<GroupMember>, InitializingBean
+public class GroupMembersRelation implements RelationshipResourceAction.Read<GroupMember>, RelationshipResourceAction.Create<GroupMember>, InitializingBean
 {
     private Groups groups;
 
@@ -56,9 +61,19 @@ public class GroupMembersRelation implements RelationshipResourceAction.Read<Gro
     }
 
     @Override
-    @WebApiDescription(title="A paged list of all the members of the group 'groupId'.")
+    @WebApiDescription(title = "A paged list of all the members of the group 'groupId'.")
     public CollectionWithPagingInfo<GroupMember> readAll(String groupId, Parameters params)
     {
         return groups.getGroupMembers(groupId, params);
+    }
+
+    @Override
+    @WebApiDescription(title = "Create group membership.")
+    @WebApiParam(name = "entity", title = "A single group member", description = "A single group member, multiple groups members are not supported.", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple = false)
+    public List<GroupMember> create(String groupId, List<GroupMember> entity, Parameters params)
+    {
+        List<GroupMember> result = new ArrayList<>(1);
+        result.add(groups.createGroupMember(groupId, entity.get(0)));
+        return result;
     }
 }

@@ -70,8 +70,6 @@ import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.Tag;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -2287,6 +2285,25 @@ public class PublicApiClient
         {
             HttpResponse response = create("groups", null, null, null, group.toJSON().toString(), "Failed to create group " + group.getId(), expectedStatus, params);
             return parseGroupEntity(response);
+        }
+
+        public GroupMember createGroupMember(String groupId, GroupMember groupMember) throws PublicApiException
+        {
+            return createGroupMember(groupId, groupMember, HttpServletResponse.SC_OK);
+        }
+
+        public GroupMember createGroupMember(String groupId, GroupMember groupMember, int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = create("groups", groupId, "members", null, groupMember.toJSON().toString(), "Failed to create group membership", expectedStatus);
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonEntity = (JSONObject) response.getJsonResponse().get("entry");
+                if (jsonEntity != null)
+                {
+                    return GroupMember.parseGroupMember(response.getJsonResponse());
+                }
+            }
+            return null;
         }
 
         public Group updateGroup(String groupId, Group group, Map<String, String> params, int expectedStatus) throws PublicApiException

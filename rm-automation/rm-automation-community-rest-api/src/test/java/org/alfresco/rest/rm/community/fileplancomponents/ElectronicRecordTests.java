@@ -49,6 +49,7 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentContent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.alfresco.utility.report.Bug;
 import org.testng.annotations.DataProvider;
@@ -266,6 +267,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
                                                               .name(ELECTRONIC_RECORD_NAME)
                                                               .nodeType(CONTENT_TYPE.toString())
                                                               .content(FilePlanComponentContent.builder().mimeType("text/plain").build())
+                                                              .properties(FilePlanComponentProperties.builder().description("Description").build())
                                                               .relativePath(RELATIVE_PATH)
                                                               .build();
 

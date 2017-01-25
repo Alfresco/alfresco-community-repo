@@ -44,6 +44,7 @@ import org.alfresco.rest.core.RMRestProperties;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
+import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.context.annotation.Scope;
@@ -62,11 +63,6 @@ import org.springframework.stereotype.Component;
 @Scope (value = "prototype")
 public class RMUserAPI extends RMModelRequest
 {
-//    @Autowired
-//    private UserService userService;
-    
-    private UserModel dataUser = new UserModel("admin", "admin");
-    
     /**
      * @param rmRestWrapper
      */
@@ -75,9 +71,14 @@ public class RMUserAPI extends RMModelRequest
         super(rmRestWrapper);
     }
 
+    /**
+     * Helper method to obtain {@link AlfrescoHttpClient}
+     * @return Initialized {@link AlfrescoHttpClient} instance
+     */
     private AlfrescoHttpClient getAlfrescoHttpClient()
     {
         RMRestProperties properties = getRMRestWrapper().getRmRestProperties();
+        
         AlfrescoHttpClientFactory factory = new AlfrescoHttpClientFactory();
         factory.setHost(properties.getServer());
         factory.setPort(Integer.parseInt(properties.getPort()));
@@ -86,8 +87,16 @@ public class RMUserAPI extends RMModelRequest
         return factory.getObject();
     }
     
+    /**
+     * Assign RM role to user
+     * @param userName User's username
+     * @param userRole User's RM role, one of {@link UserRoles} roles
+     * @throws Exception for failed requests
+     */
     public void assignRoleToUser(String userName, String userRole) throws Exception
     {
+        UserModel dataUser = getRMRestWrapper().getTestUser();
+            
         // get an "old-style" REST API client
         AlfrescoHttpClient client = getAlfrescoHttpClient();
 
@@ -119,6 +128,8 @@ public class RMUserAPI extends RMModelRequest
      */
     public void addUserPermission(FilePlanComponent component, UserModel user, String permission)
     {
+        UserModel dataUser = getRMRestWrapper().getTestUser();
+        
         // get an "old-style" REST API client
         AlfrescoHttpClient client = getAlfrescoHttpClient();
 
@@ -161,6 +172,7 @@ public class RMUserAPI extends RMModelRequest
      */
     public boolean createUser(String userName, String userPassword, String userEmail)
     {
+        UserModel dataUser = getRMRestWrapper().getTestUser();
         AlfrescoHttpClient client = getAlfrescoHttpClient();
         
         JsonObject body = buildObject()
@@ -188,13 +200,6 @@ public class RMUserAPI extends RMModelRequest
             .prettyPeek()
             .andReturn();
         
-        if (response.getStatusCode() == OK.value())
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (response.getStatusCode() == OK.value());
     }
 }

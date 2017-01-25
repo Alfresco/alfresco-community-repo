@@ -237,7 +237,7 @@ public class FilePlanComponentAPI extends RMModelRequest
      * @param recordContent {@link File} pointing to the content of the electronic record to be created
      * @param parentId parent container id
      * @return newly created {@link FilePlanComponent}
-     * @throws Exception if operation failed
+     * @throws Exception if electronic record couldn't be created
      */
     public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent, String parentId) throws Exception
     {
@@ -256,9 +256,8 @@ public class FilePlanComponentAPI extends RMModelRequest
          * For file uploads nodeBodyCreate is ignored hence can't be used. Append all FilePlanComponent fields
          * to the request.
          */
-        RequestSpecBuilder builder = restWrapper.configureRequestSpec();
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(toJson(electronicRecordModel));
+        RequestSpecBuilder builder = getRMRestWrapper().configureRequestSpec();
+        JsonNode root = new ObjectMapper().readTree(toJson(electronicRecordModel));
 
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
@@ -267,8 +266,9 @@ public class FilePlanComponentAPI extends RMModelRequest
             String fieldName = fieldNames.next();
             builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
         }
-        
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
+        
+        // create node with given content using core Node API
         String nodeId = getRMRestWrapper().withCoreAPI().usingNode(parentNode).createNode().getId();
         String createStatusCode = getRMRestWrapper().getStatusCode();
         

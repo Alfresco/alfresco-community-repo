@@ -52,7 +52,7 @@ public abstract class RMModelRequest extends ModelRequest
      */
     public RMModelRequest(RMRestWrapper rmRestWrapper)
     {
-        super(rmRestWrapper);
+        super(rmRestWrapper.getRestWrapper());
         this.rmRestWrapper = rmRestWrapper;
     }
 }

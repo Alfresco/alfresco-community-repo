@@ -49,6 +49,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
 import org.alfresco.utility.data.RandomData;
@@ -203,7 +204,7 @@ public class RMSiteTests extends BaseRMRestTest
         }
 
         // Create user
-        getRestAPIFactory().getRMUserAPI().createUser(ANOTHER_ADMIN);
+        getRestAPIFactory().getRMUserAPI().createUser(ANOTHER_ADMIN, TestData.DEFAULT_PASSWORD, TestData.DEFAULT_EMAIL);
 
         // Create the RM site
         RMSite rmSiteModel = getRestAPIFactory().getRMSiteAPI(new UserModel(ANOTHER_ADMIN, DEFAULT_PASSWORD)).createRMSite(createDOD5015RMSiteModel());

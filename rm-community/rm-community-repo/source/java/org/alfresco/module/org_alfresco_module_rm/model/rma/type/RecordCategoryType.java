@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
@@ -107,18 +108,31 @@ public class RecordCategoryType extends    BaseBehaviourBean
     @Override
     @Behaviour
     (
-       kind = BehaviourKind.ASSOCIATION
+       kind = BehaviourKind.ASSOCIATION,
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        NodeRef nodeRef = childAssocRef.getChildRef();
+        NodeRef child = childAssocRef.getChildRef();
         NodeRef parentRef = childAssocRef.getParentRef();
-        validateNewChildAssociation(parentRef, nodeRef, ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        QName childType = nodeService.getType(child);
+
+        // We need to automatically cast the created folder to record folder if it is a plain folder
+        // This occurs if the RM folder has been created via IMap, WebDav, etc
+        // Ignore hidden files. Some modules use hidden files to store information (see RM-3283)
+        if ( childType == ContentModel.TYPE_FOLDER &&
+                !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
+        {
+            nodeService.setType(child, TYPE_RECORD_FOLDER);
+        }
+
         if (bNew)
         {
             // setup the record folder
-            recordFolderService.setupRecordFolder(nodeRef);
+            recordFolderService.setupRecordFolder(child);
         }
+
+        validateNewChildAssociation(parentRef, child, ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     /**

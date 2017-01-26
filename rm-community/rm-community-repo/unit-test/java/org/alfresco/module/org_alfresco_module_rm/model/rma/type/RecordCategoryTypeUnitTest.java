@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
@@ -107,5 +108,29 @@ public class RecordCategoryTypeUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER, true);
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
         recordCategoryType.onCreateChildAssociation(childAssocRef, true);
+    }
+
+    /**
+     * Given that we try to add "cm:folder" type to a record category,
+     * Then operation is successful and the folder is automatically converted to a record folder
+     */
+    @Test
+    public void testConversionToRecordFolder() throws Exception
+    {
+        NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
+        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER, true);
+        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
+
+        try
+        {
+            recordCategoryType.onCreateChildAssociation(childAssocRef, true);
+        }
+        catch(IntegrityException ex)
+        {
+            // this will throw an exception because unit tests can't detect type change
+        }
+
+        verify(mockedNodeService).setType(nodeRef, TYPE_RECORD_FOLDER);
+        verify(mockedRecordFolderService).setupRecordFolder(nodeRef);
     }
 }

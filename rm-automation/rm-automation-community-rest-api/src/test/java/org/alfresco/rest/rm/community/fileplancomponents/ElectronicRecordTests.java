@@ -49,7 +49,6 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentContent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.alfresco.utility.report.Bug;
 import org.testng.annotations.DataProvider;
@@ -270,17 +269,11 @@ public class ElectronicRecordTests extends BaseRMRestTest
                                                                       .mimeType("text/plain")
                                                                       .build()
                                                                       )
-                                                              .properties(FilePlanComponentProperties
-                                                                      .builder()
-                                                                      .description("Description")
-                                                                      .build()
-                                                                         )
                                                               .relativePath(RELATIVE_PATH)
                                                               .build();
 
         FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
-        FilePlanComponent recordCreated = filePlanComponentsAPI.createElectronicRecord(electronicRecord, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME), FILE_PLAN_ALIAS
-                                                                                      );
+        FilePlanComponent recordCreated = filePlanComponentsAPI.createElectronicRecord(electronicRecord, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME), FILE_PLAN_ALIAS);
         // verify the create request status code
         assertStatusCode(CREATED);
 

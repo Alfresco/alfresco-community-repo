@@ -269,6 +269,7 @@
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
          <version>${alfresco.version}</version>
+         <scope>provided</scope>
       </dependency>
       <dependency>
           <groupId>javax.servlet</groupId>
@@ -344,6 +345,7 @@
       <dependency>
           <groupId>org.reflections</groupId>
           <artifactId>reflections</artifactId>
+          <version>0.9.10</version>
           <scope>test</scope>
       </dependency>
    </dependencies>

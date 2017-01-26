@@ -93,11 +93,8 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
-
-	  <!-- license properties -->
-	  <license.update.dryrun>true</license.update.dryrun>
-	  <license.verbose>false</license.verbose>
-
+      <license.update.dryrun>true</license.update.dryrun>
+      <license.verbose>false</license.verbose>
    </properties>
 
    <dependencies>
@@ -324,7 +321,6 @@
                 </configuration>
             </plugin>
 
-			<!-- License header generation -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>

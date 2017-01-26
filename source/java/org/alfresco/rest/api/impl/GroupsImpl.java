@@ -623,6 +623,12 @@ public class GroupsImpl implements Groups
             throw new EntityNotFoundException("Group member with id " + groupMember.getId() + " does not exists");
         }
 
+        AuthorityType existingAuthorityType = AuthorityType.getAuthorityType(groupMember.getId());
+        if (existingAuthorityType != authorityType)
+        {
+            throw new IllegalArgumentException("Incorrect group member type, " + existingAuthorityType + " exists with the given id");
+        }
+
         authorityService.addAuthority(groupId, groupMember.getId());
         String authority = authorityService.getName(authorityType, groupMember.getId());
 
@@ -728,7 +734,7 @@ public class GroupsImpl implements Groups
             throw new EntityNotFoundException(groupId);
         }
     }
-
+    
     private void validateGroup(Group group, boolean isUpdate)
     {
         if (group == null)

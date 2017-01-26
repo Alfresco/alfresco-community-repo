@@ -956,14 +956,14 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 people.create(personAlice);
             }
 
+            GroupMember personMember = new GroupMember();
+            personMember.setId(personAlice.getId());
+            personMember.setMemberType(MEMBER_TYPE_PERSON);
+
             // +ve tests
             // Create a group membership (for a existing person and a sub-group)
             // within a group groupId
             {
-                GroupMember personMember = new GroupMember();
-                personMember.setId(personAlice.getId());
-                personMember.setMemberType(MEMBER_TYPE_PERSON);
-
                 // Add person as groupB member
                 groupsProxy.createGroupMember(groupB.getId(), personMember, HttpServletResponse.SC_CREATED);
                 // Add group as groupB sub-group
@@ -984,6 +984,13 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 groupsProxy.createGroupMember(groupB.getId(), groupMember, HttpServletResponse.SC_CREATED);
                 Group subGroup = groupsProxy.getGroup(groupMember.getId());
                 assertFalse("Group was expected to be sub-group.", subGroup.getIsRoot());
+            }
+
+            // -ve tests
+            // Id clashes with an existing group member
+            {
+                //Add a group member that has been already added
+                groupsProxy.createGroupMember(groupB.getId(), groupMemberA, HttpServletResponse.SC_CONFLICT);
             }
 
             // Person or group with given id does not exists
@@ -1014,12 +1021,40 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 groupsProxy.createGroupMember(groupA.getId(), invalidGroupMember, HttpServletResponse.SC_BAD_REQUEST);
             }
 
-            // -ve tests
-            // Add group with non-admin user
+            // Validation tests
+            {
+                // Add group as groupB sub-group with member id null
+                personMember.setId(null);
+                groupsProxy.createGroupMember(groupB.getId(), personMember, HttpServletResponse.SC_BAD_REQUEST);
+                // Add group as groupB sub-group with member display name null
+                personMember.setDisplayName(null);
+                groupsProxy.createGroupMember(groupB.getId(), personMember, HttpServletResponse.SC_BAD_REQUEST);
+                // Add group as groupB sub-group with member type null
+                personMember.setMemberType(null);
+                groupsProxy.createGroupMember(groupB.getId(), personMember, HttpServletResponse.SC_BAD_REQUEST);
+            }
+
+            // Add group member with a different type from the existing one
+            {
+                // Add person as groupB member with member type GROUP
+                personMember.setMemberType(MEMBER_TYPE_GROUP);
+                groupsProxy.createGroupMember(groupB.getId(), personMember, HttpServletResponse.SC_BAD_REQUEST);
+                // Add group as groupB sub-group with member type PERSON
+                groupMemberA.setMemberType(MEMBER_TYPE_PERSON);
+                groupsProxy.createGroupMember(groupB.getId(), groupMemberA, HttpServletResponse.SC_BAD_REQUEST);
+            }
+
+            // User does not have admin permission to create a group membership
             {
                 setRequestContext(user1);
-                groupsProxy.createGroupMember(groupA.getId(), groupMemberA, HttpServletResponse.SC_FORBIDDEN);
+                groupsProxy.createGroupMember(groupB.getId(), groupMemberB, HttpServletResponse.SC_FORBIDDEN);
             }
+            //Authentication failed
+            {
+                setRequestContext(networkOne.getId(), GUID.generate(), "password");
+                groupsProxy.createGroupMember(groupB.getId(), groupMemberB, HttpServletResponse.SC_UNAUTHORIZED);
+            }
+
         }
         finally
         {

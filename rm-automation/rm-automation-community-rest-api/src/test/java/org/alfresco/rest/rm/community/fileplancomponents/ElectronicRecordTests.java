@@ -273,16 +273,16 @@ public class ElectronicRecordTests extends BaseRMRestTest
 
         FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         FilePlanComponent recordCreated = filePlanComponentsAPI.createElectronicRecord(electronicRecord,
-                                                                    createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME), FILE_PLAN_ALIAS);
+                                                    createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME), FILE_PLAN_ALIAS);
         // verify the create request status code
-       assertStatusCode(CREATED);
+        assertStatusCode(CREATED);
 
         // get newly created electronic record and verify its properties
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(recordCreated.getId()).getName().startsWith(ELECTRONIC_RECORD_NAME));
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(recordCreated.getParentId()).getName().equals(FOLDER_NAME));
         //get newly created electronic record using the relativePath
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(FILE_PLAN_ALIAS,
-                                                                FilePlanComponentFields.RELATIVE_PATH + "=" + RELATIVE_PATH + "/" + recordCreated.getName())
+                                        FilePlanComponentFields.RELATIVE_PATH + "=" + RELATIVE_PATH + "/" + recordCreated.getName())
                                         .getId().equals(recordCreated.getId()));
 
         //the category specified via the RELATIVE_PATH exist, folder doesn't exist
@@ -296,7 +296,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(recordCreated.getParentId()).getName().startsWith(FOLDER_NAME));
         //get newly created electronic record using the relativePath
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(FILE_PLAN_ALIAS,
-                                                FilePlanComponentFields.RELATIVE_PATH+"="+RELATIVE_PATH+"/"+recordCreated.getName())
+                                        FilePlanComponentFields.RELATIVE_PATH+"="+RELATIVE_PATH+"/"+recordCreated.getName())
                                         .getId().equals(recordCreated.getId()));
 
         //the containers from the RELATIVE PATH exists

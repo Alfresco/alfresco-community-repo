@@ -1,7 +1,18 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:util="http://www.springframework.org/schema/util"
+   xsi:schemaLocation="
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context-3.0.xsd
+      http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/aop
+      http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+      http://www.springframework.org/schema/util
+      http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
    <!--  Helper beans -->
 
@@ -569,9 +580,9 @@
           parent="baseService">
         <property name="nodeService" ref="nodeService"/>
         <property name="filePlanService" ref="filePlanService" />
-        <property name="filePlanRoleService" ref="filePlanRoleService" />        
-        <property name="authorityService" ref="authorityService"/>        
-        <property name="permissionService" ref="permissionService"/>   
+        <property name="filePlanRoleService" ref="filePlanRoleService" />
+        <property name="authorityService" ref="authorityService"/>
+        <property name="permissionService" ref="permissionService"/>
         <property name="transactionService" ref="transactionService"/>
     </bean>
 
@@ -1060,7 +1071,20 @@
         <property name="renditionService" ref="RenditionService" />
         <property name="dispositionService" ref="DispositionService"/>
         <property name="recordableVersionService" ref="RecordableVersionService"/>
+        <property name="alwaysEditURIs" ref="recordService_alwaysEditURIs" />
     </bean>
+
+   <!-- Defines a list of namespace URIs for properties, which should be always editable -->
+   <util:list id="recordService_alwaysEditURIs" value-type="java.lang.String">
+      <value>http://www.alfresco.org/model/security/1.0</value>
+      <value>http://www.alfresco.org/model/system/1.0</value>
+      <value>http://www.alfresco.org/model/workflow/1.0</value>
+      <value>http://www.alfresco.org/model/application/1.0</value>
+      <value>http://www.alfresco.org/model/datalist/1.0</value>
+      <value>http://www.alfresco.org/model/dictionary/1.0</value>
+      <value>http://www.alfresco.org/model/bpm/1.0</value>
+      <value>http://www.alfresco.org/model/rendition/1.0</value>
+   </util:list>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
     	<property name="recordService" ref="recordService"/>

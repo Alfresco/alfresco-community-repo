@@ -1161,7 +1161,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             // Check that delete with cascade worked.
             groupsProxy.getGroup(groupLevel2.getId(), HttpServletResponse.SC_NOT_FOUND);
-            groupsProxy.getGroup(groupLevel2.getId(), HttpServletResponse.SC_NOT_FOUND);
+            groupsProxy.getGroup(groupLevel3.getId(), HttpServletResponse.SC_NOT_FOUND);
         }
     }
 

@@ -27,11 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -178,6 +180,29 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
 
         when(mockedNodeService.getChildAssocs(filePlanContainer, Sets.newHashSet(TYPE_UNFILED_RECORD_CONTAINER))).thenReturn(Arrays.asList(existingHoldAssoc, childAssoc));
         filePlanType.onCreateChildAssociation(childAssoc, true);
+    }
+
+    /**
+     * Given that we try to add "cm:folder" type to a record category,
+     * Then operation is successful and the folder is automatically converted to a record folder
+     */
+    @Test
+    public void testConversionToRecordFolder() throws Exception
+    {
+        NodeRef fileplan = AlfMock.generateNodeRef(mockedNodeService, TYPE_FILE_PLAN);
+        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER, true);
+        ChildAssociationRef childAssocRef = generateChildAssociationRef(fileplan, nodeRef);
+
+        try
+        {
+            filePlanType.onCreateChildAssociation(childAssocRef, true);
+        }
+        catch(IntegrityException ex)
+        {
+            // this will throw an exception because unit tests can't detect type change
+        }
+
+        verify(mockedNodeService).setType(nodeRef, TYPE_RECORD_CATEGORY);
     }
 
     /**

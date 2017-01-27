@@ -99,7 +99,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
     )
     public void cantCreateElectronicRecordsInInvalidContainers(FilePlanComponent container) throws Exception
     {
-        // Build object the filePlan
+        // Build object the filePlan, this should throw an IllegalArgumentException
         getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId());
 
         // verify the create request status code
@@ -116,7 +116,10 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * </pre>
      * @throws Exception
      */
-    @Test(description = "Electronic record can't be created in closed record folder")
+    @Test
+    (
+        description = "Electronic record can't be created in closed record folder"
+    )
     public void cantCreateElectronicRecordInClosedFolder() throws Exception
     {
         FilePlanComponent recordFolder = createCategoryFolderInFilePlan();
@@ -127,7 +130,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
         // close the folder
         closeFolder(recordFolder.getId());
 
-        // try to create it, this should fail
+        // try to create it, this should throw IllegalArgumentException
         getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, recordFolder.getId());
 
         // verify the status code

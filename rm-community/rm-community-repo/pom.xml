@@ -147,6 +147,24 @@
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
                <execution>
+                  <id>fetch-share-services-amp</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>copy</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.alfresco</groupId>
+                           <artifactId>alfresco-share-services</artifactId>
+                           <version>${share.version}</version>
+                           <type>amp</type>
+                        </artifactItem>
+                     </artifactItems>
+                     <outputDirectory>${project.build.directory}</outputDirectory>
+                  </configuration>
+               </execution>
+               <execution>
                   <id>unpack-alfresco</id>
                   <phase>prepare-package</phase>
                   <goals>
@@ -187,6 +205,18 @@
                   <goals>
                      <goal>install</goal>
                   </goals>
+               </execution>
+               <execution>
+                  <id>install-share-services-amp</id>
+                  <goals>
+                     <goal>install</goal>
+                  </goals>
+                  <phase>prepare-package</phase>
+                  <configuration>
+                     <backup>true</backup>
+                     <ampLocation>${project.build.directory}/alfresco-share-services-${share.version}.amp</ampLocation>
+                     <warLocation>${app.amp.client.war.folder}</warLocation>
+                  </configuration>
                </execution>
             </executions>
          </plugin>

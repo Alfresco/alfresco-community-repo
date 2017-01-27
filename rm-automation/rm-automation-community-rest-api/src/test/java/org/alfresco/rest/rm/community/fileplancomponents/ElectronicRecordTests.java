@@ -95,8 +95,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
     @Test
     (
         dataProvider = "invalidParentContainers",
-        description = "Electronic records can't be created in invalid parent containers",
-        expectedExceptions = IllegalArgumentException.class
+        description = "Electronic records can't be created in invalid parent containers"
     )
     public void cantCreateElectronicRecordsInInvalidContainers(FilePlanComponent container) throws Exception
     {
@@ -119,8 +118,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
      */
     @Test
     (
-        description = "Electronic record can't be created in closed record folder",
-        expectedExceptions = IllegalArgumentException.class
+        description = "Electronic record can't be created in closed record folder"
     )
     public void cantCreateElectronicRecordInClosedFolder() throws Exception
     {

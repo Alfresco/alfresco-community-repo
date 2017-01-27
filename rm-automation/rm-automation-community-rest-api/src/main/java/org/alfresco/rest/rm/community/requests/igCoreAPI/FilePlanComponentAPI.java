@@ -52,8 +52,6 @@ import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
-import org.alfresco.utility.model.ContentModel;
-import org.alfresco.utility.model.RepoTestModel;
 
 /**
  * File plan component REST API Wrapper
@@ -233,13 +231,15 @@ public class FilePlanComponentAPI extends RMModelRequest
 
     /**
      * Create electronic record from file resource
+     * 
      * @param electronicRecordModel {@link FilePlanComponent} for electronic record to be created
      * @param recordContent {@link File} pointing to the content of the electronic record to be created
      * @param parentId parent container id
      * @return newly created {@link FilePlanComponent}
-     * @throws Exception if electronic record couldn't be created
+     * @throws Exception for invalid electronicRecordModel JSON strings
      */
-    public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent, String parentId) throws Exception
+    public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent,
+        String parentId) throws Exception
     {
         mandatoryObject("electronicRecordModel", electronicRecordModel);
         mandatoryString("parentId", parentId);
@@ -247,11 +247,7 @@ public class FilePlanComponentAPI extends RMModelRequest
         {
             fail("Only electronic records are supported");
         }
-        
-        RepoTestModel parentNode = new ContentModel();
-        // using getFilePlanComponent to work around RM special containers, unsupported in Core API usingNode()
-        parentNode.setNodeRef(getFilePlanComponent(parentId).getId());
-        
+
         /*
          * For file uploads nodeBodyCreate is ignored hence can't be used. Append all FilePlanComponent fields
          * to the request.
@@ -267,21 +263,9 @@ public class FilePlanComponentAPI extends RMModelRequest
             builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
         }
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
-        
-        // create node with given content using core Node API
-        String nodeId = getRMRestWrapper().withCoreAPI().usingNode(parentNode).createNode().getId();
-        String createStatusCode = getRMRestWrapper().getStatusCode();
-        
-        // return FilePlanComponent for created node
-        FilePlanComponent createdComponent = getRMRestWrapper()
-            .withIGCoreAPI()
-            .usingFilePlanComponents()
-            .getFilePlanComponent(nodeId);
-        
-        // avoid getFilePlanComponent() overriding the createNode status code
-        getRMRestWrapper().setStatusCode(createStatusCode);
-        
-        return createdComponent;
+
+        // create node with given content
+        return createFilePlanComponent(electronicRecordModel, parentId);
     }
 
     /**

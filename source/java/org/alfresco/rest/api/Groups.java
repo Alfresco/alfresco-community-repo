@@ -116,7 +116,6 @@ public interface Groups
      * @param parameters
      *            the {@link Parameters} object to get the parameters passed
      *            into the request including: - include param (parentIds, zones)
-     * @return Updated group
      */
     void delete(String groupId, Parameters parameters);
 
@@ -139,4 +138,13 @@ public interface Groups
      * @return a {@code org.alfresco.rest.api.model.GroupMember} object
      */
     GroupMember createGroupMember(String groupId, GroupMember groupMember);
+
+    /**
+     *
+     * Delete group membership
+     *
+     * @param groupId
+     * @param groupMemberId
+     */
+    void deleteGroupMembership(String groupId, String groupMemberId);
 }

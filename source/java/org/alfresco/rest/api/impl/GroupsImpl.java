@@ -620,19 +620,28 @@ public class GroupsImpl implements Groups
 
         if (!authorityService.authorityExists(groupMember.getId()))
         {
-            throw new EntityNotFoundException("Group member with id " + groupMember.getId() + " does not exists");
+            throw new EntityNotFoundException(groupMember.getId());
         }
 
         AuthorityType existingAuthorityType = AuthorityType.getAuthorityType(groupMember.getId());
         if (existingAuthorityType != authorityType)
         {
-            throw new IllegalArgumentException("Incorrect group member type, " + existingAuthorityType + " exists with the given id");
+            throw new IllegalArgumentException("Incorrect group member type, "
+                    + (AuthorityType.USER.equals(existingAuthorityType) ? Groups.PARAM_MEMBER_TYPE_PERSON : existingAuthorityType) + " exists with the given id");
         }
 
         authorityService.addAuthority(groupId, groupMember.getId());
         String authority = authorityService.getName(authorityType, groupMember.getId());
 
         return getGroupMember(authority);
+    }
+
+    public void deleteGroupMembership(String groupId, String groupMemberId)
+    {
+        validateGroupId(groupId, false);
+        validateGroupMemberId(groupMemberId);
+        // TODO: Verify if groupMemberId is member of groupId
+        authorityService.removeAuthority(groupId, groupMemberId);
     }
 
     private AuthorityType getAuthorityType(String memberType)
@@ -735,6 +744,18 @@ public class GroupsImpl implements Groups
         }
     }
     
+    private void validateGroupMemberId(String groupMemberId)
+    {
+        if (groupMemberId == null || groupMemberId.isEmpty())
+        {
+            throw new InvalidArgumentException("group member id is null or empty");
+        }
+        if (!(personAuthorityExists(groupMemberId) || groupAuthorityExists(groupMemberId, false)))
+        {
+            throw new EntityNotFoundException(groupMemberId);
+        }
+    }
+
     private void validateGroup(Group group, boolean isUpdate)
     {
         if (group == null)
@@ -809,6 +830,11 @@ public class GroupsImpl implements Groups
     private boolean groupAuthorityExists(String authorityName, boolean inferPrefix)
     {
         return authorityExists(AuthorityType.GROUP, authorityName, inferPrefix);
+    }
+
+    private boolean personAuthorityExists(String authorityName)
+    {
+        return authorityExists(AuthorityType.USER, authorityName, false);
     }
 
     private boolean authorityExists(AuthorityType authorityType, String authorityName, boolean inferPrefix)

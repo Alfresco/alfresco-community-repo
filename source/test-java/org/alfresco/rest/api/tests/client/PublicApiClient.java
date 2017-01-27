@@ -2335,7 +2335,12 @@ public class PublicApiClient
             {
                 params = Collections.singletonMap("cascade", "true");
             }
-            remove("groups", groupId, null, null, params, "Failed to remove site", expectedStatus);
+            remove("groups", groupId, null, null, params, "Failed to remove group", expectedStatus);
+        }
+
+        public void deleteGroupMembership(String groupId, String groupMemberId, int expectedStatus) throws PublicApiException
+        {
+	        remove("groups", groupId, "members", groupMemberId, null, "Failed to remove group member", expectedStatus);
         }
 
         private Group parseGroupEntity(HttpResponse response)

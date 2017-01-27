@@ -45,7 +45,8 @@ import org.springframework.beans.factory.InitializingBean;
  * @author cturlica
  */
 @RelationshipResource(name = "members", entityResource = GroupsEntityResource.class, title = "Group Members")
-public class GroupMembersRelation implements RelationshipResourceAction.Read<GroupMember>, RelationshipResourceAction.Create<GroupMember>, InitializingBean
+public class GroupMembersRelation
+        implements RelationshipResourceAction.Read<GroupMember>, RelationshipResourceAction.Create<GroupMember>, RelationshipResourceAction.Delete, InitializingBean
 {
     private Groups groups;
 
@@ -75,5 +76,12 @@ public class GroupMembersRelation implements RelationshipResourceAction.Read<Gro
         List<GroupMember> result = new ArrayList<>(1);
         result.add(groups.createGroupMember(groupId, entity.get(0)));
         return result;
+    }
+
+    @Override
+    @WebApiDescription(title = "Delete group membership")
+    public void delete(String entityResourceId, String id, Parameters parameters)
+    {
+        groups.deleteGroupMembership(entityResourceId, id);
     }
 }

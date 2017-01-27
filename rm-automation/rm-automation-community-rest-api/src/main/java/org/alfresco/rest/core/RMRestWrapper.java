@@ -50,4 +50,12 @@ public class RMRestWrapper extends RestWrapper
     {
         return new RestIGCoreAPI(this, rmRestProperties);
     }
+
+    /**
+     * @return the rmRestProperties
+     */
+    public RMRestProperties getRmRestProperties()
+    {
+        return this.rmRestProperties;
+    }
 }

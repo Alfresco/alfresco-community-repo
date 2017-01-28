@@ -15,7 +15,7 @@
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
       <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
       <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
-      <tas.restapi.version>5.2.0-0</tas.restapi.version>
+      <tas.restapi.version>5.2.0-2</tas.restapi.version>
       <fluent.json.version>2.0.0</fluent.json.version>
    </properties>
 

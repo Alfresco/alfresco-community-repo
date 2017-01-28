@@ -52,5 +52,5 @@ public interface PermissionPostProcessor
 	 * @return {@link AccessStatus}
 	 */
 	AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm,
-						List configuredReadPermissions, List configuredFilePermissions);
+						List<String> configuredReadPermissions, List<String> configuredFilePermissions);
 }

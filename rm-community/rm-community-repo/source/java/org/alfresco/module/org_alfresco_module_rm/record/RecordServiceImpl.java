@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.record;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -158,18 +156,22 @@ public class RecordServiceImpl extends BaseBehaviourBean
     };
 
     /** always edit model URI's */
+    private List<String> alwaysEditURIs;
+
+    /**
+     * @param alwaysEditURIs the alwaysEditURIs to set
+     */
+    public void setAlwaysEditURIs(List<String> alwaysEditURIs)
+    {
+        this.alwaysEditURIs = alwaysEditURIs;
+    }
+
+    /**
+     * @return the alwaysEditURIs
+     */
     protected List<String> getAlwaysEditURIs()
     {
-        return newArrayList(
-            NamespaceService.SECURITY_MODEL_1_0_URI,
-            NamespaceService.SYSTEM_MODEL_1_0_URI,
-            NamespaceService.WORKFLOW_MODEL_1_0_URI,
-            NamespaceService.APP_MODEL_1_0_URI,
-            NamespaceService.DATALIST_MODEL_1_0_URI,
-            NamespaceService.DICTIONARY_MODEL_1_0_URI,
-            NamespaceService.BPM_MODEL_1_0_URI,
-            NamespaceService.RENDITION_MODEL_1_0_URI
-        );
+        return this.alwaysEditURIs;
     }
 
     /** record model URI's */

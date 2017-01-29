@@ -108,23 +108,12 @@ public class RecordCategoryType extends    BaseBehaviourBean
     @Override
     @Behaviour
     (
-       kind = BehaviourKind.ASSOCIATION,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+       kind = BehaviourKind.ASSOCIATION
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef child = childAssocRef.getChildRef();
         NodeRef parentRef = childAssocRef.getParentRef();
-        QName childType = nodeService.getType(child);
-
-        // We need to automatically cast the created folder to record folder if it is a plain folder
-        // This occurs if the RM folder has been created via IMap, WebDav, etc
-        // Ignore hidden files. Some modules use hidden files to store information (see RM-3283)
-        if ( childType == ContentModel.TYPE_FOLDER &&
-                !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
-        {
-            nodeService.setType(child, TYPE_RECORD_FOLDER);
-        }
 
         if (bNew)
         {
@@ -148,7 +137,17 @@ public class RecordCategoryType extends    BaseBehaviourBean
     )
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        final NodeRef recordCategory = childAssocRef.getChildRef();
+        final NodeRef child = childAssocRef.getChildRef();
+        QName childType = nodeService.getType(child);
+
+        // We need to automatically cast the created folder to record folder if it is a plain folder
+        // This occurs if the RM folder has been created via IMap, WebDav, etc
+        // Ignore hidden files. Some modules use hidden files to store information (see RM-3283)
+        if ( childType == ContentModel.TYPE_FOLDER &&
+                !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
+        {
+            nodeService.setType(child, TYPE_RECORD_FOLDER);
+        }
 
         behaviourFilter.disableBehaviour();
         try
@@ -159,7 +158,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
                 public Void doWork()
                 {
                     // setup vital record definition
-                    vitalRecordService.setupVitalRecordDefinition(recordCategory);
+                    vitalRecordService.setupVitalRecordDefinition(child);
 
                     return null;
                 }

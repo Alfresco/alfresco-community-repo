@@ -123,7 +123,7 @@ public class RecordCategoryTypeUnitTest extends BaseUnitTest
 
         try
         {
-            recordCategoryType.onCreateChildAssociation(childAssocRef, true);
+            recordCategoryType.onCreateChildAssociationOnCommit(childAssocRef, true);
         }
         catch(IntegrityException ex)
         {
@@ -131,6 +131,5 @@ public class RecordCategoryTypeUnitTest extends BaseUnitTest
         }
 
         verify(mockedNodeService).setType(nodeRef, TYPE_RECORD_FOLDER);
-        verify(mockedRecordFolderService).setupRecordFolder(nodeRef);
     }
 }

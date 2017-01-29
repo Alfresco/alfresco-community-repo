@@ -35,7 +35,7 @@ import org.alfresco.rest.requests.ModelRequest;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public abstract class RMModelRequest extends ModelRequest
+public abstract class RMModelRequest extends ModelRequest<RMModelRequest>
 {
     private RMRestWrapper rmRestWrapper;
 

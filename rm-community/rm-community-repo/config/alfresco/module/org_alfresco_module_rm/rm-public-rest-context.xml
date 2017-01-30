@@ -93,8 +93,7 @@
     <bean id="records" class="org.alfresco.rm.rest.api.impl.RecordsImpl">
         <property name="recordService" ref="RecordService"/>
         <property name="filePlanService" ref="FilePlanService"/>
-        <property name="rmNodes" ref="rm.nodes"/>
-        <property name="nodes" ref="nodes"/>
+        <property name="nodes" ref="rm.nodes"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="fileFolderService" ref="FileFolderService"/>
         <property name="dictionaryService" ref="DictionaryService"/>

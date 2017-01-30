@@ -245,6 +245,63 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             getGroups(paging, otherParams, "", HttpServletResponse.SC_BAD_REQUEST);
         }
+
+        {
+            Group aardvark = new Group();
+            Group gecko = new Group();
+            try
+            {
+                aardvark.setId("GROUP_AARDVARK");
+                aardvark.setDisplayName("Aardvark");
+                authorityService.createAuthority(AuthorityType.GROUP, aardvark.getId());
+                authorityService.setAuthorityDisplayName(aardvark.getId(), aardvark.getDisplayName());
+
+                gecko.setId("GROUP_GECKO");
+                gecko.setDisplayName("Aaaaah, a gecko!");
+                authorityService.createAuthority(AuthorityType.GROUP, gecko.getId());
+                authorityService.setAuthorityDisplayName(gecko.getId(), gecko.getDisplayName());
+
+                // Check sorting by ID when groups have no display name (REPO-1844)
+                // We don't want the GROUP_EVERYONE group to be sorted as an empty string, for example,
+                // which is what happens when the "short" name is used for sorting.
+                Map<String, String> params = new HashMap<>();
+                addOrderBy(params, org.alfresco.rest.api.Groups.PARAM_ID, true);
+
+                ListResponse<Group> response = getGroups(getPaging(0, Integer.MAX_VALUE),
+                        params, "Couldn't get user's groups", 200);
+
+                Group groupEveryone = new Group();
+                groupEveryone.setId(PermissionService.ALL_AUTHORITIES);
+                List<Group> groups = response.getList();
+                assertFalse(groups.isEmpty());
+
+                // At time of writing, GROUP_EVERYONE is never present. When REPO-1878
+                // is implemented, GROUP_EVERYONE will be included in the results and
+                // this must be reflected in the ordering.
+                //
+                // The expected ordering, when sorting by ID ASC:
+                //
+                // GROUP_AARDVARK
+                // ...
+                // GROUP_EVERYONE
+                // ...
+                // GROUP_GECKO
+                //
+                if (groups.contains(groupEveryone))
+                {
+                    assertTrue(groups.indexOf(aardvark) < groups.indexOf(groupEveryone));
+                    assertTrue(groups.indexOf(groupEveryone) < groups.indexOf(gecko));
+                }
+
+                // The display name ordering would be reversed, i.e. "Aaaaah, a gecko!" < "Aardvark"
+                assertTrue(groups.indexOf(aardvark) < groups.indexOf(gecko));
+            }
+            finally
+            {
+                authorityService.deleteAuthority(aardvark.getId());
+                authorityService.deleteAuthority(gecko.getId());
+            }
+        }
     }
 
     private void testGetGroupsWithInclude() throws Exception
@@ -356,9 +413,9 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             // We know exactly which groups are in the selected zone.
             assertEquals(3, groups.size());
-            assertEquals(rootGroup, groups.get(0));
-            assertEquals(groupA, groups.get(1));
-            assertEquals(groupB, groups.get(2));
+            assertEquals(groupA, groups.get(0));
+            assertEquals(groupB, groups.get(1));
+            assertEquals(rootGroup, groups.get(2));
             groups.forEach(group -> assertTrue(group.getZones().contains("APITEST.MYZONE")));
 
             otherParams.put("where", "(zones in ('APITEST.ANOTHER'))");
@@ -387,9 +444,9 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             // We know exactly which groups are in the selected zone.
             assertEquals(3, groups.size());
-            assertEquals(rootGroup, groups.get(0));
-            assertEquals(groupA, groups.get(1));
-            assertEquals(groupB, groups.get(2));
+            assertEquals(groupA, groups.get(0));
+            assertEquals(groupB, groups.get(1));
+            assertEquals(rootGroup, groups.get(2));
             // We haven't included the zones info.
             groups.forEach(group -> assertNull(group.getZones()));
         }
@@ -510,12 +567,15 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, groupName);
             authorityService.addAuthorityToZones(rootGroupName, zoneSet("APITEST.MYZONE"));
+            authorityService.setAuthorityDisplayName(rootGroupName, "Root Group");
 
             String groupBAuthorityName = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupB" + GUID.generate());
+            authorityService.setAuthorityDisplayName(groupBAuthorityName, "B Group");
             authorityService.addAuthority(rootGroupName, groupBAuthorityName);
             authorityService.addAuthorityToZones(groupBAuthorityName, zoneSet("APITEST.MYZONE"));
 
             String groupAAuthorityName = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupA" + GUID.generate());
+            authorityService.setAuthorityDisplayName(groupAAuthorityName, "A Group");
             authorityService.addAuthority(rootGroupName, groupAAuthorityName);
             authorityService.addAuthorityToZones(groupAAuthorityName, zoneSet("APITEST.MYZONE", "APITEST.ANOTHER"));
 
@@ -524,12 +584,15 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             rootGroup = new Group();
             rootGroup.setId(rootGroupName);
+            rootGroup.setDisplayName("Root Group");
 
             groupA = new Group();
             groupA.setId(groupAAuthorityName);
+            groupA.setDisplayName("A Group");
 
             groupB = new Group();
             groupB.setId(groupBAuthorityName);
+            groupB.setDisplayName("B Group");
 
             groupMemberA = new GroupMember();
             groupMemberA.setId(groupAAuthorityName);
@@ -705,10 +768,51 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(personAlice.getId(), null, "Couldn't get user's groups", 200);
             assertEquals(4L, (long) groups.getPaging().getTotalItems());
             Iterator<Group> it = groups.getList().iterator();
-            assertEquals(GROUP_EVERYONE, it.next().getId());
-            assertEquals(rootGroupName, it.next().getId());
             assertEquals(groupA, it.next());
             assertEquals(groupB, it.next());
+            assertEquals(GROUP_EVERYONE, it.next().getId());
+            assertEquals(rootGroup, it.next());
+        }
+
+        {
+            Group aardvark = new Group();
+            try
+            {
+                aardvark.setId("GROUP_AARDVARK");
+                aardvark.setDisplayName("Aardvark");
+                authorityService.createAuthority(AuthorityType.GROUP, aardvark.getId());
+                authorityService.setAuthorityDisplayName(aardvark.getId(), aardvark.getDisplayName());
+
+                Person personBob;
+                personBob = new Person();
+                String bobId = "bob-" + UUID.randomUUID() + "@" + networkOne.getId();
+                personBob.setUserName(bobId);
+                personBob.setId(bobId);
+                personBob.setFirstName("Bob");
+                personBob.setEmail("bob.cratchet@example.com");
+                personBob.setPassword("password");
+                personBob.setEnabled(true);
+                PublicApiClient.People people = publicApiClient.people();
+                people.create(personBob);
+
+                authorityService.addAuthority(aardvark.getId(), personBob.getId());
+
+                // Check sorting by ID when groups have no display name (REPO-1844)
+                // We don't want the GROUP_EVERYONE group to be sorted as an empty string, for example,
+                // which is what the comparator was doing.
+                Map<String, String> params = new HashMap<>();
+                addOrderBy(params, org.alfresco.rest.api.Groups.PARAM_ID, true);
+
+                ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(personBob.getId(), params, "Couldn't get user's groups", 200);
+                assertEquals(2L, (long) groups.getPaging().getTotalItems());
+                Iterator<Group> it = groups.getList().iterator();
+                assertEquals(aardvark.getId(), it.next().getId());
+                assertEquals("GROUP_EVERYONE", it.next().getId());
+            }
+            finally
+            {
+                authorityService.deleteAuthority(aardvark.getId());
+            }
         }
 
         // Get network admin's groups by explicit ID.
@@ -757,10 +861,10 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             ListResponse<Group> groups = groupsProxy.getGroupsByPersonId("-me-", null, "Couldn't get user's groups", 200);
             assertEquals(4L, (long) groups.getPaging().getCount());
             Iterator<Group> it = groups.getList().iterator();
-            assertEquals(GROUP_EVERYONE, it.next().getId());
-            assertEquals(rootGroupName, it.next().getId());
             assertEquals(groupA, it.next());
             assertEquals(groupB, it.next());
+            assertEquals(GROUP_EVERYONE, it.next().getId());
+            assertEquals(rootGroup, it.next());
         }
 
         // +ve: check skip count.
@@ -841,7 +945,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         {
             // paging
             Paging paging = getPaging(0, Integer.MAX_VALUE);
-
             Map<String, String> otherParams = new HashMap<>();
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, null);
 
@@ -862,17 +965,32 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
         // Sort by id.
         {
-            // paging
             Paging paging = getPaging(0, Integer.MAX_VALUE);
 
             Map<String, String> otherParams = new HashMap<>();
-            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, false);
 
-            // list sites
+            Group groupEveryone = new Group();
+            groupEveryone.setId(PermissionService.ALL_AUTHORITIES);
+
+            // Sort by ID ascending
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, true);
             ListResponse<Group> resp = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+            assertEquals(4, resp.getList().size());
+            Iterator<Group> it = resp.getList().iterator();
+            assertEquals(groupEveryone, it.next()); // GROUP_EVERYONE
+            assertEquals(rootGroup, it.next());     // GROUP_Group_ROOT<UUID>
+            assertEquals(groupA, it.next());        // GROUP_Test_GroupA<UUID>
+            assertEquals(groupB, it.next());        // GROUP_Test_GroupB<UUID>
 
-            List<Group> groups = resp.getList();
-            assertTrue("groups order not valid", groups.indexOf(groupB) < groups.indexOf(groupA));
+            // Sort by ID descending
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, false);
+            resp = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+            assertEquals(4, resp.getList().size());
+            it = resp.getList().iterator();
+            assertEquals(groupB, it.next());        // GROUP_Test_GroupB<UUID>
+            assertEquals(groupA, it.next());        // GROUP_Test_GroupA<UUID>
+            assertEquals(rootGroup, it.next());     // GROUP_Group_ROOT<UUID>
+            assertEquals(groupEveryone, it.next()); // GROUP_EVERYONE
         }
 
         // Multiple sort fields not allowed.
@@ -898,14 +1016,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Iterator<Group> it = resp.getList().iterator();
 
             Group group = it.next();
-            assertEquals(PermissionService.ALL_AUTHORITIES, group.getId());
-            assertEquals(0, group.getParentIds().size());
-
-            group = it.next();
-            assertEquals(rootGroup.getId(), group.getId());
-            assertEquals(0, group.getParentIds().size());
-
-            group = it.next();
             assertEquals(groupA.getId(), group.getId());
             assertEquals(1, group.getParentIds().size());
             assertTrue(group.getParentIds().contains(rootGroup.getId()));
@@ -914,6 +1024,14 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertEquals(groupB.getId(), group.getId());
             assertEquals(1, group.getParentIds().size());
             assertTrue(group.getParentIds().contains(rootGroup.getId()));
+
+            group = it.next();
+            assertEquals(PermissionService.ALL_AUTHORITIES, group.getId());
+            assertEquals(0, group.getParentIds().size());
+
+            group = it.next();
+            assertEquals(rootGroup.getId(), group.getId());
+            assertEquals(0, group.getParentIds().size());
         }
 
         // Filter by zone, use the -me- alias.
@@ -1609,9 +1727,9 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(personMember.getId(), null, "Cannot retrieve user groups", 200);
                 assertEquals(3L, (long) groups.getPaging().getTotalItems());
                 Iterator<Group> it = groups.getList().iterator();
-                assertEquals(GROUP_EVERYONE, it.next().getId());
-                assertEquals(rootGroupName, it.next().getId());
                 assertEquals(groupA, it.next());
+                assertEquals(GROUP_EVERYONE, it.next().getId());
+                assertEquals(rootGroup, it.next());
                 groupsProxy.deleteGroupMembership(groupA.getId(), personMember.getId(), HttpServletResponse.SC_NO_CONTENT);
                 groups = groupsProxy.getGroupsByPersonId(personMember.getId(), null, "Cannot retrieve user groups", 200);
                 assertEquals(1L, (long) groups.getPaging().getTotalItems());

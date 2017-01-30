@@ -40,7 +40,6 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMNodes;
 import org.alfresco.rm.rest.api.Records;
@@ -78,9 +77,7 @@ public class RecordsImplUnitTest
     @Mock
     protected AuthenticationUtil mockedAuthenticationUtil;
     @Mock
-    protected RMNodes mockedRMNodes;
-    @Mock
-    protected Nodes mockedNodes;
+    protected RMNodes mockedNodes;
 
     @InjectMocks
     private RecordsImpl recordsImpl;
@@ -122,7 +119,7 @@ public class RecordsImplUnitTest
          * Then a record is created under the existing fileplan from the provided file
          */
         verify(mockedRecordService).createRecord(fileplan, mockedFile, false);
-        verify(mockedRMNodes).getFolderOrDocument(mockedFile.getId(), params);
+        verify(mockedNodes).getFolderOrDocument(mockedFile.getId(), params);
     }
 
     /**
@@ -137,7 +134,7 @@ public class RecordsImplUnitTest
          * Given a record
          */
         NodeRef mockedRecord = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
+        when(mockedNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
 
         /*
          * When trying to filing a record providing a blank destination path
@@ -160,7 +157,7 @@ public class RecordsImplUnitTest
          */
         // mock the record to file
         NodeRef mockedRecord = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
+        when(mockedNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
 
         // mock the current primary parent
         NodeRef mockedPrimaryParent = AlfMock.generateNodeRef(mockedNodeService);
@@ -172,7 +169,7 @@ public class RecordsImplUnitTest
 
         // mock the target record folder to file the record into
         NodeRef mockedTargetRecordFolder = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.getOrCreatePath(mockedTargetRecordFolder.getId(), null, TYPE_CONTENT)).thenReturn(mockedTargetRecordFolder);
+        when(mockedNodes.getOrCreatePath(mockedTargetRecordFolder.getId(), null, TYPE_CONTENT)).thenReturn(mockedTargetRecordFolder);
         when(mockedNodeService.getType(mockedTargetRecordFolder)).thenReturn(TYPE_RECORD_FOLDER);
         when(mockedDictionaryService.isSubClass(TYPE_RECORD_FOLDER, TYPE_RECORD_FOLDER)).thenReturn(true);
 
@@ -188,7 +185,7 @@ public class RecordsImplUnitTest
         /*
          * Then the record is moved under the destination folder
          */
-        verify(mockedRMNodes).getOrCreatePath(mockedTargetRecordFolder.getId(), null, TYPE_CONTENT);
+        verify(mockedNodes).getOrCreatePath(mockedTargetRecordFolder.getId(), null, TYPE_CONTENT);
         verify(mockedFileFolderService).moveFrom(mockedRecord, mockedPrimaryParent, mockedTargetRecordFolder, null);
     }
 
@@ -206,7 +203,7 @@ public class RecordsImplUnitTest
          */
         // mock the record to file
         NodeRef mockedRecord = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
+        when(mockedNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
 
         // mock the current primary parent
         NodeRef mockedPrimaryParent = AlfMock.generateNodeRef(mockedNodeService);
@@ -223,7 +220,7 @@ public class RecordsImplUnitTest
         // mock the target record folder to file the record into
         String relativePath = "category/recordFolder";
         NodeRef mockedTargetRecordFolder = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.getOrCreatePath(fileplan.getId(), relativePath, TYPE_CONTENT)).thenReturn(mockedTargetRecordFolder);
+        when(mockedNodes.getOrCreatePath(fileplan.getId(), relativePath, TYPE_CONTENT)).thenReturn(mockedTargetRecordFolder);
         when(mockedNodeService.getType(mockedTargetRecordFolder)).thenReturn(TYPE_RECORD_FOLDER);
         when(mockedDictionaryService.isSubClass(TYPE_RECORD_FOLDER, TYPE_RECORD_FOLDER)).thenReturn(true);
 
@@ -239,7 +236,7 @@ public class RecordsImplUnitTest
         /*
          * Then the record is moved under the destination folder relative to the fileplan
          */
-        verify(mockedRMNodes).getOrCreatePath(fileplan.getId(), relativePath, TYPE_CONTENT);
+        verify(mockedNodes).getOrCreatePath(fileplan.getId(), relativePath, TYPE_CONTENT);
         verify(mockedFileFolderService).moveFrom(mockedRecord, mockedPrimaryParent, mockedTargetRecordFolder, null);
     }
 
@@ -257,7 +254,7 @@ public class RecordsImplUnitTest
          */
         // mock the record to file
         NodeRef mockedRecord = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
+        when(mockedNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
 
         // mock the current primary parent
         NodeRef mockedPrimaryParent = AlfMock.generateNodeRef(mockedNodeService);
@@ -273,7 +270,7 @@ public class RecordsImplUnitTest
         // mock the target record folder to file the record into
         String relativePath = "category/recordFolder";
         NodeRef mockedTargetRecordFolder = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.getOrCreatePath(mockedTargetCategory.getId(), relativePath, TYPE_CONTENT)).thenReturn(mockedTargetRecordFolder);
+        when(mockedNodes.getOrCreatePath(mockedTargetCategory.getId(), relativePath, TYPE_CONTENT)).thenReturn(mockedTargetRecordFolder);
         when(mockedNodeService.getType(mockedTargetRecordFolder)).thenReturn(TYPE_RECORD_FOLDER);
         when(mockedDictionaryService.isSubClass(TYPE_RECORD_FOLDER, TYPE_RECORD_FOLDER)).thenReturn(true);
 
@@ -290,7 +287,7 @@ public class RecordsImplUnitTest
         /*
          * Then the record is moved under the correct destination folder
          */
-        verify(mockedRMNodes).getOrCreatePath(mockedTargetCategory.getId(), relativePath, TYPE_CONTENT);
+        verify(mockedNodes).getOrCreatePath(mockedTargetCategory.getId(), relativePath, TYPE_CONTENT);
         verify(mockedFileFolderService).moveFrom(mockedRecord, mockedPrimaryParent, mockedTargetRecordFolder, null);
     }
 
@@ -307,7 +304,7 @@ public class RecordsImplUnitTest
          */
         // mock the record to link
         NodeRef mockedRecord = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
+        when(mockedNodes.validateNode(mockedRecord.getId())).thenReturn(mockedRecord);
 
         // mock the current primary parent
         NodeRef mockedPrimaryParent = AlfMock.generateNodeRef(mockedNodeService);
@@ -319,7 +316,7 @@ public class RecordsImplUnitTest
 
         // mock the target record folder to file the record into
         NodeRef mockedTargetRecordFolder = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedRMNodes.getOrCreatePath(mockedTargetRecordFolder.getId(), null, TYPE_CONTENT)).thenReturn(mockedTargetRecordFolder);
+        when(mockedNodes.getOrCreatePath(mockedTargetRecordFolder.getId(), null, TYPE_CONTENT)).thenReturn(mockedTargetRecordFolder);
         when(mockedNodeService.getType(mockedTargetRecordFolder)).thenReturn(TYPE_RECORD_FOLDER);
 
         /*
@@ -334,7 +331,7 @@ public class RecordsImplUnitTest
         /*
          * Then the record is linked to the destination folder
          */
-        verify(mockedRMNodes).getOrCreatePath(mockedTargetRecordFolder.getId(), null, TYPE_CONTENT);
+        verify(mockedNodes).getOrCreatePath(mockedTargetRecordFolder.getId(), null, TYPE_CONTENT);
         verify(mockedRecordService).link(mockedRecord, mockedTargetRecordFolder);
     }
 }

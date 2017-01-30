@@ -36,7 +36,6 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -68,8 +67,7 @@ public class RecordsImpl implements Records, InitializingBean
     protected FileFolderService fileFolderService;
     protected DictionaryService dictionaryService;
     protected AuthenticationUtil authenticationUtil;
-    protected RMNodes rmNodes;
-    protected Nodes nodes;
+    protected RMNodes nodes;
 
     public void setRecordService(RecordService recordService)
     {
@@ -101,12 +99,7 @@ public class RecordsImpl implements Records, InitializingBean
         this.authenticationUtil = authenticationUtil;
     }
 
-    public void setRmNodes(RMNodes rmNodes)
-    {
-        this.rmNodes = rmNodes;
-    }
-
-    public void setNodes(Nodes nodes)
+    public void setNodes(RMNodes nodes)
     {
         this.nodes = nodes;
     }
@@ -115,7 +108,6 @@ public class RecordsImpl implements Records, InitializingBean
     public Node declareFileAsRecord(String fileId, Parameters parameters)
     {
         // Get file to be declared
-        // Use nodes instead of rmNodes because the file is not a record yet
         NodeRef fileNodeRef = nodes.validateNode(fileId) ;
 
         // Get fileplan
@@ -135,7 +127,7 @@ public class RecordsImpl implements Records, InitializingBean
         recordService.createRecord(filePlan, fileNodeRef, !hideRecord);
 
         // Get information about the new record
-        return rmNodes.getFolderOrDocument(fileId, parameters);
+        return nodes.getFolderOrDocument(fileId, parameters);
     }
 
     @Override
@@ -147,7 +139,7 @@ public class RecordsImpl implements Records, InitializingBean
         }
 
         // Get record
-        NodeRef record = rmNodes.validateNode(recordId);
+        NodeRef record = nodes.validateNode(recordId);
 
         // Get record folder to file/link the record to
         String parentContainerId = target.getTargetParentId();
@@ -163,7 +155,7 @@ public class RecordsImpl implements Records, InitializingBean
                 }
             });
         }
-        NodeRef parentRecordFolder = rmNodes.getOrCreatePath(parentContainerId, target.getRelativePath(), ContentModel.TYPE_CONTENT);
+        NodeRef parentRecordFolder = nodes.getOrCreatePath(parentContainerId, target.getRelativePath(), ContentModel.TYPE_CONTENT);
 
         // Check if the target is a record folder
         if(!dictionaryService.isSubClass(nodeService.getType(parentRecordFolder), RecordsManagementModel.TYPE_RECORD_FOLDER))
@@ -194,7 +186,7 @@ public class RecordsImpl implements Records, InitializingBean
         }
 
         // Get the record info
-        return rmNodes.getFolderOrDocument(recordId, parameters);
+        return nodes.getFolderOrDocument(recordId, parameters);
     }
 
     @Override
@@ -202,7 +194,7 @@ public class RecordsImpl implements Records, InitializingBean
     {
         ParameterCheck.mandatory("recordService", recordService);
         ParameterCheck.mandatory("filePlanService", filePlanService);
-        ParameterCheck.mandatory("nodes", rmNodes);
+        ParameterCheck.mandatory("nodes", nodes);
         ParameterCheck.mandatory("nodeService",  nodeService);
         ParameterCheck.mandatory("fileFolderService", fileFolderService);
         ParameterCheck.mandatory("dictionaryService", dictionaryService);

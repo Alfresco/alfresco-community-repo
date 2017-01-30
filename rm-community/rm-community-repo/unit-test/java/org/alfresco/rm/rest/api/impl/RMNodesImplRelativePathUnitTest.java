@@ -85,7 +85,6 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
          * Given any parent node
          */
         NodeRef parentNode = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.isFilePlanComponent(parentNode)).thenReturn(true);
 
         /*
          *  When trying to create a node in the parent node with no relative path
@@ -113,7 +112,6 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
          * Given a parent node and an existing path c1/f1 under it
          */
         NodeRef parentNode = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.isFilePlanComponent(parentNode)).thenReturn(true);
 
         String category = "c1";
         NodeRef categoryNode = AlfMock.generateNodeRef(mockedNodeService);
@@ -156,7 +154,6 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
         String category1 = "c1";
         NodeRef categoryNode1 = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getChildByName(fileplanNodeRef, ContentModel.ASSOC_CONTAINS, category1)).thenReturn(categoryNode1);
-        when(mockedFilePlanService.isFilePlanComponent(fileplanNodeRef)).thenReturn(true);
 
         // create c2
         String category2 = "c2";
@@ -203,7 +200,6 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
          */
         NodeRef unfiledRecordContainer = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getType(unfiledRecordContainer)).thenReturn(TYPE_UNFILED_RECORD_CONTAINER);
-        when(mockedFilePlanService.isFilePlanComponent(unfiledRecordContainer)).thenReturn(true);
 
         /*
          *  When trying to create a content node in the relative path f1/f2/f3
@@ -259,7 +255,6 @@ public class RMNodesImplRelativePathUnitTest  extends BaseUnitTest
          */
         NodeRef fileplanNodeRef = AlfMock.generateNodeRef(mockedNodeService);
         when(mockedNodeService.getType(fileplanNodeRef)).thenReturn(TYPE_FILE_PLAN);
-        when(mockedFilePlanService.isFilePlanComponent(fileplanNodeRef)).thenReturn(true);
 
         /*
          *  When trying to create a folder node in the relative path c1/c2/c3

@@ -318,9 +318,10 @@ public class RMNodesImplUnitTest extends BaseUnitTest
         setupCompanyHomeAndPrimaryParent(nodeRef);
 
         when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(false);
+        List<String> includeParamList = new ArrayList<String>();
         try
         {
-            rmNodesImpl.validateNode(nodeRef.getId());
+            rmNodesImpl.getFolderOrDocument(nodeRef, null, null, includeParamList, null);
             fail("Expected exception since the requested node is not a fileplan component.");
         }
         catch(InvalidParameterException ex)
@@ -627,7 +628,6 @@ public class RMNodesImplUnitTest extends BaseUnitTest
     public void testValidateNode() throws Exception
     {
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService);
-        when(mockedFilePlanService.isFilePlanComponent(nodeRef)).thenReturn(true);
         NodeRef validateOrLookupNode = rmNodesImpl.validateNode(nodeRef.getId());
         assertEquals(nodeRef, validateOrLookupNode);
     }

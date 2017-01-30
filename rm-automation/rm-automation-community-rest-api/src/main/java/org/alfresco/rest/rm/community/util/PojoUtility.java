@@ -84,9 +84,11 @@ public class PojoUtility
     public static String toJsonElectronicRecord(Object model) throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
+
         //inject the "mix-in" annotations  from FilePlanComponentMix to
         // FilePlanComponent POJO class when converting to json
         mapper.addMixIn(FilePlanComponent.class, FilePlanComponentMix.class);
+
         //include only values that differ from default settings to be included
         mapper.setSerializationInclusion(Include.NON_DEFAULT);
         try
@@ -95,13 +97,16 @@ public class PojoUtility
             //return the json object
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
 
-        } catch (JsonGenerationException e)
+        }
+        catch (JsonGenerationException e)
         {
             return e.toString();
-        } catch (JsonMappingException e)
+        }
+        catch (JsonMappingException e)
         {
             return e.toString();
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             return e.toString();
         }

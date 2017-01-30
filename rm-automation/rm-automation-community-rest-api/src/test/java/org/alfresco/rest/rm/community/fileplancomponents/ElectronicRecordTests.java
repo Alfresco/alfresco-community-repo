@@ -49,6 +49,7 @@ import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentContent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.alfresco.utility.report.Bug;
 import org.testng.annotations.DataProvider;
@@ -272,6 +273,11 @@ public class ElectronicRecordTests extends BaseRMRestTest
                                                                       .mimeType("text/plain")
                                                                       .build()
                                                                       )
+                                                              .properties(FilePlanComponentProperties
+                                                                        .builder()
+                                                                        .description(ELECTRONIC_RECORD_NAME)
+                                                                        .build()
+                                                                          )
                                                               .relativePath(RELATIVE_PATH)
                                                               .build();
 
@@ -283,6 +289,8 @@ public class ElectronicRecordTests extends BaseRMRestTest
         // get newly created electronic record and verify its properties
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(recordCreated.getId())
                                         .getName().startsWith(ELECTRONIC_RECORD_NAME));
+        assertTrue(filePlanComponentsAPI.getFilePlanComponent(recordCreated.getId())
+                                        .getProperties().getDescription().equals(ELECTRONIC_RECORD_NAME));
         assertTrue(filePlanComponentsAPI.getFilePlanComponent(recordCreated.getParentId())
                                         .getName().equals(FOLDER_NAME));
         //get newly created electronic record using the relativePath

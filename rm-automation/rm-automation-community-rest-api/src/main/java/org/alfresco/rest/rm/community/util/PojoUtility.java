@@ -34,6 +34,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
+
 /**
  * Utility class for creating the json object
  *
@@ -67,6 +69,39 @@ public class PojoUtility
             return e.toString();
         }
         catch (IOException e)
+        {
+            return e.toString();
+        }
+    }
+
+
+    /**
+     * Converting object to JSON string for electronic records
+     *
+     * @param model The java object model to convert
+     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
+     */
+    public static String toJsonElectronicRecord(Object model) throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        //inject the "mix-in" annotations  from FilePlanComponentMix to
+        // FilePlanComponent POJO class when converting to json
+        mapper.addMixIn(FilePlanComponent.class, FilePlanComponentMix.class);
+        //include only values that differ from default settings to be included
+        mapper.setSerializationInclusion(Include.NON_DEFAULT);
+        try
+        {
+
+            //return the json object
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
+
+        } catch (JsonGenerationException e)
+        {
+            return e.toString();
+        } catch (JsonMappingException e)
+        {
+            return e.toString();
+        } catch (IOException e)
         {
             return e.toString();
         }

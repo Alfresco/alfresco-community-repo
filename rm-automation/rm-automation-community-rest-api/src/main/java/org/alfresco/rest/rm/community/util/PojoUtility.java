@@ -87,7 +87,7 @@ public class PojoUtility
 
         //inject the "mix-in" annotations  from FilePlanComponentMix to
         // FilePlanComponent POJO class when converting to json
-        mapper.addMixIn(FilePlanComponent.class, FilePlanComponentMix.class);
+        mapper.addMixIn(FilePlanComponent.class, FilePlanComponentMixIn.class);
 
         //include only values that differ from default settings to be included
         mapper.setSerializationInclusion(Include.NON_DEFAULT);

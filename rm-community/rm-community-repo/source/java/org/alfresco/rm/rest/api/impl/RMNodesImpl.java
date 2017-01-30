@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -275,6 +276,11 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
             {
                 throw new EntityNotFoundException(nodeId);
             }
+        }
+
+        if(!filePlanService.isFilePlanComponent(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId)))
+        {
+            throw new InvalidParameterException("The provided node is not a fileplan component");
         }
 
         return super.validateNode(nodeId);

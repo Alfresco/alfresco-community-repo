@@ -123,7 +123,7 @@ public class RecordCategoryTypeUnitTest extends BaseUnitTest
 
         try
         {
-            recordCategoryType.onCreateChildAssociationOnCommit(childAssocRef, true);
+            recordCategoryType.onCreateChildAssociation(childAssocRef, true);
         }
         catch(IntegrityException ex)
         {

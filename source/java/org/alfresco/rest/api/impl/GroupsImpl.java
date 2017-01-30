@@ -79,6 +79,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class GroupsImpl implements Groups
 {
+    private static final int MAX_ZONES = 1;
     private static final String DISPLAY_NAME = "displayName";
     private static final String SHORT_NAME = "shortName";
     // private static final String AUTHORITY_NAME = "authorityName";
@@ -180,18 +181,42 @@ public class GroupsImpl implements Groups
         // Parse where clause properties.
         Boolean isRootParam = null;
         Query q = parameters.getQuery();
+
+        String zoneFilter = null;
         if (q != null)
         {
-            MapBasedQueryWalkerOrSupported propertyWalker = new MapBasedQueryWalkerOrSupported(LIST_GROUPS_EQUALS_QUERY_PROPERTIES, null);
+            GroupsQueryWalker propertyWalker = new GroupsQueryWalker(LIST_GROUPS_EQUALS_QUERY_PROPERTIES, null);
             QueryHelper.walk(q, propertyWalker);
 
             isRootParam = propertyWalker.getProperty(PARAM_IS_ROOT, WhereClauseParser.EQUALS, Boolean.class);
+            List<String> zonesParam = propertyWalker.getZones();
+            if (zonesParam != null)
+            {
+                if (zonesParam.size() > MAX_ZONES)
+                {
+                    throw new IllegalArgumentException("A maximum of " + MAX_ZONES + " zones may be specified.");
+                }
+                else if (zonesParam.isEmpty())
+                {
+                    throw new IllegalArgumentException("Zones filter list cannot be empty.");
+                }
+                // Validate each zone name
+                zonesParam.forEach(zone -> {
+                    if (zone.isEmpty())
+                    {
+                        throw new IllegalArgumentException("Zone name cannot be empty (i.e. '')");
+                    }
+                });
+
+                zoneFilter = zonesParam.get(0);
+            }
+
         }
 
         final AuthorityType authorityType = AuthorityType.GROUP;
         final Set<String> rootAuthorities = getAllRootAuthorities(authorityType);
 
-        PagingResults<AuthorityInfo> pagingResult = getAuthoritiesInfo(authorityType, isRootParam, rootAuthorities, sortProp, paging);
+        PagingResults<AuthorityInfo> pagingResult = getAuthoritiesInfo(authorityType, isRootParam, zoneFilter, rootAuthorities, sortProp, paging);
 
         // Create response.
         final List<AuthorityInfo> page = pagingResult.getPage();
@@ -214,6 +239,25 @@ public class GroupsImpl implements Groups
 
         return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
     }
+
+//    private boolean groupInZones(Group group, List<String> zonesFilter)
+//    {
+//        Set<String> groupZones = group.getZones();
+//        // The zones may not have been "included" in the request.
+//        if (groupZones == null)
+//        {
+//            groupZones = authorityService.getAuthorityZones(group.getId());
+//        }
+//
+//        for (String zone : zonesFilter)
+//        {
+//            if (groupZones.contains(zone))
+//            {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     @Override
     public CollectionWithPagingInfo<Group> getGroupsByPersonId(String requestedPersonId, Parameters parameters)
@@ -258,6 +302,8 @@ public class GroupsImpl implements Groups
 
         // Transform the page of results into Group objects
         final Set<String> rootAuthorities = getAllRootAuthorities(AuthorityType.GROUP);
+        // Zone filter not supported currently.
+        final String zoneFilter = null;
         List<Group> groups = page.stream().
                 map(authority -> getGroup(authority, includeParam, rootAuthorities)).
                 collect(Collectors.toList());
@@ -265,10 +311,11 @@ public class GroupsImpl implements Groups
         return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
     }
 
-    private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, Boolean isRootParam, Set<String> rootAuthorities, Pair<String, Boolean> sortProp,
+    private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, Boolean isRootParam, String zoneFilter, Set<String> rootAuthorities, Pair<String, Boolean> sortProp,
             Paging paging)
     {
         PagingResults<AuthorityInfo> pagingResult;
+        // TODO: make sure impl works for isRootParam = true,false,null.
         if (isRootParam != null)
         {
             List<AuthorityInfo> groupList;
@@ -314,6 +361,7 @@ public class GroupsImpl implements Groups
             }
 
             // Post process paging - this should be moved to service layer.
+            // TODO: filter groupList to remove zones NOT matching the zoneFilter
             pagingResult = Util.wrapPagingResults(paging, groupList);
         }
         else
@@ -321,7 +369,7 @@ public class GroupsImpl implements Groups
             PagingRequest pagingRequest = Util.getPagingRequest(paging);
 
             // Get authorities using canned query.
-            pagingResult = authorityService.getAuthoritiesInfo(authorityType, null, null, sortProp.getFirst(), sortProp.getSecond(), pagingRequest);
+            pagingResult = authorityService.getAuthoritiesInfo(authorityType, zoneFilter, null, sortProp.getFirst(), sortProp.getSecond(), pagingRequest);
         }
         return pagingResult;
     }
@@ -743,7 +791,7 @@ public class GroupsImpl implements Groups
             throw new EntityNotFoundException(groupId);
         }
     }
-    
+
     private void validateGroupMemberId(String groupMemberId)
     {
         if (groupMemberId == null || groupMemberId.isEmpty())
@@ -848,5 +896,34 @@ public class GroupsImpl implements Groups
     {
         AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
         return AuthorityType.GROUP.equals(authorityType) || AuthorityType.EVERYONE.equals(authorityType);
+    }
+
+    private static class GroupsQueryWalker extends MapBasedQueryWalkerOrSupported
+    {
+        private List<String> zones;
+
+        @Override
+        public void in(String propertyName, boolean negated, String... propertyValues)
+        {
+            if (propertyName.equalsIgnoreCase("zones"))
+            {
+                zones = Arrays.asList(propertyValues);
+            }
+        }
+
+        public GroupsQueryWalker(Set<String> supportedEqualsParameters, Set<String> supportedMatchesParameters)
+        {
+            super(supportedEqualsParameters, supportedMatchesParameters);
+        }
+
+        /**
+         * The list of zones specified in the where clause.
+         *
+         * @return The zones list if specified, or null if not.
+         */
+        public List<String> getZones()
+        {
+            return zones;
+        }
     }
 }

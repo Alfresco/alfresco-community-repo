@@ -31,13 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -108,6 +102,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             testGetGroupsSkipPaging();
             testGetGroupsByIsRoot(true);
             testGetGroupsByIsRoot(false);
+            testGetGroupsWithZoneFilter();
         }
         finally
         {
@@ -331,6 +326,118 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         });
     }
 
+    private void testGetGroupsWithZoneFilter() throws Exception
+    {
+        // Filter by zone
+        {
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+
+            otherParams.put("where", "(zones in ('APP.DEFAULT'))");
+
+            ListResponse<Group> response = getGroups(paging, otherParams);
+            List<Group> groups = response.getList();
+
+            assertFalse(groups.isEmpty());
+            // All groups should contain the selected zone.
+            groups.forEach(group -> assertTrue(group.getZones().contains("APP.DEFAULT")));
+        }
+
+        // Filter by zone - custom zones, "include" them in the response.
+        {
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            // Ensure predictable result ordering
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+
+            otherParams.put("where", "(zones in ('APITEST.MYZONE'))");
+
+            ListResponse<Group> response = getGroups(paging, otherParams);
+            List<Group> groups = response.getList();
+
+            // We know exactly which groups are in the selected zone.
+            assertEquals(2, groups.size());
+            assertEquals(groupA, groups.get(0));
+            assertEquals(groupB, groups.get(1));
+            groups.forEach(group -> assertTrue(group.getZones().contains("APITEST.MYZONE")));
+
+            otherParams.put("where", "(zones in ('APITEST.ANOTHER'))");
+            response = getGroups(paging, otherParams);
+            groups = response.getList();
+
+            // We know exactly which groups are in the selected zone.
+            assertEquals(1, groups.size());
+            assertEquals(groupA, groups.get(0));
+            assertTrue(groups.get(0).getZones().contains("APITEST.MYZONE"));
+            assertTrue(groups.get(0).getZones().contains("APITEST.ANOTHER"));
+        }
+
+        // Filter without "include"-ing zones
+        {
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            // Ensure predictable result ordering
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+
+            otherParams.put("where", "(zones in ('APITEST.MYZONE'))");
+
+            assertFalse(otherParams.containsKey("include"));
+            ListResponse<Group> response = getGroups(paging, otherParams);
+            List<Group> groups = response.getList();
+
+            // We know exactly which groups are in the selected zone.
+            assertEquals(2, groups.size());
+            assertEquals(groupA, groups.get(0));
+            assertEquals(groupB, groups.get(1));
+            // We haven't included the zones info.
+            groups.forEach(group -> assertNull(group.getZones()));
+        }
+
+        // Filter zones while using where isRoot=true
+        // (this causes a different query path to be used)
+        /*{
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            // Ensure predictable result ordering
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+
+            // TODO: how will we support all possible boolean operators? AND, OR...?
+            otherParams.put("where", "(isRoot=true AND zones in ('APITEST.SPECIAL'))");
+
+            ListResponse<Group> response = getGroups(paging, otherParams);
+            List<Group> groups = response.getList();
+
+            assertEquals(1, groups.size());
+            assertEquals(rootGroupName, groups.get(0));
+            assertTrue(groups.get(0).getZones().contains("APITEST.SPECIAL"));
+        }*/
+
+        // -ve test: invalid zones clause
+        {
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+
+            // Empty zone list
+            otherParams.put("where", "(zones in ())");
+            getGroups(paging, otherParams, "Incorrect response", 400);
+
+            // Empty zone name
+            otherParams.put("where", "(zones in (''))");
+            getGroups(paging, otherParams, "Incorrect response", 400);
+
+            // Too many zones
+            otherParams.put("where", "(zones in ('APP.DEFAULT', 'APITEST.MYZONE'))");
+            getGroups(paging, otherParams, "Incorrect response", 400);
+
+            // "A series of unfortunate errors"
+            otherParams.put("where", "(zones in ('', 'APP.DEFAULT', '', 'APITEST.MYZONE'))");
+            getGroups(paging, otherParams, "Incorrect response", 400);
+        }
+    }
+
     private ListResponse<Group> getGroups(final PublicApiClient.Paging paging, Map<String, String> otherParams, String errorMessage, int expectedStatus) throws Exception
     {
         final Groups groupsProxy = publicApiClient.groups();
@@ -368,12 +475,15 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
             rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, groupName);
+            authorityService.addAuthorityToZones(rootGroupName, zoneSet("APITEST.SPECIAL"));
 
             String groupBAuthorityName = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupB" + GUID.generate());
             authorityService.addAuthority(rootGroupName, groupBAuthorityName);
+            authorityService.addAuthorityToZones(groupBAuthorityName, zoneSet("APITEST.MYZONE"));
 
             String groupAAuthorityName = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupA" + GUID.generate());
             authorityService.addAuthority(rootGroupName, groupAAuthorityName);
+            authorityService.addAuthorityToZones(groupAAuthorityName, zoneSet("APITEST.MYZONE", "APITEST.ANOTHER"));
 
             authorityService.addAuthority(groupAAuthorityName, user1);
             authorityService.addAuthority(groupBAuthorityName, user2);
@@ -409,6 +519,13 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             personMember.setId(personAlice.getId());
             personMember.setMemberType(MEMBER_TYPE_PERSON);
         }
+    }
+
+    private Set<String> zoneSet(String... zones)
+    {
+        Set<String> zoneSet = new HashSet<>(zones.length);
+        zoneSet.addAll(Arrays.asList(zones));
+        return zoneSet;
     }
 
     /**

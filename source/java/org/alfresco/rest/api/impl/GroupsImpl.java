@@ -59,6 +59,7 @@ import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -84,6 +85,7 @@ public class GroupsImpl implements Groups
     private static final int MAX_ZONES = 1;
     private static final String DISPLAY_NAME = "displayName";
     private static final String AUTHORITY_NAME = "authorityName";
+    private static final String ERR_MSG_MODIFY_FIXED_AUTHORITY = "Trying to modify a fixed authority";
 
     private final static Map<String, String> SORT_PARAMS_TO_NAMES;
     static
@@ -154,7 +156,14 @@ public class GroupsImpl implements Groups
         validateGroupId(groupId, false);
         validateGroup(group, true);
 
-        authorityService.setAuthorityDisplayName(groupId, group.getDisplayName());
+        try
+        {
+            authorityService.setAuthorityDisplayName(groupId, group.getDisplayName());
+        }
+        catch (AuthorityException ae)
+        {
+            handleAuthorityException(ae);
+        }
 
         return getGroup(groupId, parameters);
     }
@@ -686,20 +695,31 @@ public class GroupsImpl implements Groups
         }
         catch (AuthorityException ae)
         {
-            if (ae.getMsgId().equals("Trying to modify a fixed authority"))
-            {
-                throw new ConstraintViolatedException("Trying to modify a fixed authority");
-            }
-            else
-            {
-                throw ae;
-            }
+            handleAuthorityException(ae);
+        }
+    }
+
+    private void handleAuthorityException(AuthorityException ae)
+    {
+        if (ae.getMsgId().equals("Trying to modify a fixed authority"))
+        {
+            throw new ConstraintViolatedException(ERR_MSG_MODIFY_FIXED_AUTHORITY);
+        }
+        else
+        {
+            throw ae;
         }
     }
 
     public CollectionWithPagingInfo<GroupMember> getGroupMembers(String groupId, final Parameters parameters)
     {
         validateGroupId(groupId, false);
+
+        // Not allowed to list all members.
+        if (PermissionService.ALL_AUTHORITIES.equals(groupId))
+        {
+            throw new UnsupportedResourceOperationException();
+        }
 
         Paging paging = parameters.getPaging();
 
@@ -748,6 +768,13 @@ public class GroupsImpl implements Groups
     public GroupMember createGroupMember(String groupId, GroupMember groupMember)
     {
         validateGroupId(groupId, false);
+
+        // Not allowed to modify a GROUP_EVERYONE member.
+        if (PermissionService.ALL_AUTHORITIES.equals(groupId))
+        {
+            throw new ConstraintViolatedException(ERR_MSG_MODIFY_FIXED_AUTHORITY);
+        }
+
         validateGroupMember(groupMember);
 
         AuthorityType authorityType = getAuthorityType(groupMember.getMemberType());
@@ -773,6 +800,13 @@ public class GroupsImpl implements Groups
     public void deleteGroupMembership(String groupId, String groupMemberId)
     {
         validateGroupId(groupId, false);
+
+        // Not allowed to modify a GROUP_EVERYONE member.
+        if (PermissionService.ALL_AUTHORITIES.equals(groupId))
+        {
+            throw new ConstraintViolatedException(ERR_MSG_MODIFY_FIXED_AUTHORITY);
+        }
+
         validateGroupMemberId(groupMemberId);
         // TODO: Verify if groupMemberId is member of groupId
         authorityService.removeAuthority(groupId, groupMemberId);
@@ -872,7 +906,7 @@ public class GroupsImpl implements Groups
             throw new InvalidArgumentException("groupId is null or empty");
         }
 
-        if (!groupAuthorityExists(groupId, inferPrefix))
+        if (!PermissionService.ALL_AUTHORITIES.equals(groupId) && !groupAuthorityExists(groupId, inferPrefix))
         {
             throw new EntityNotFoundException(groupId);
         }

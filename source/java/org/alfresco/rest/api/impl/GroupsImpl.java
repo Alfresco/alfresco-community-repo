@@ -541,7 +541,14 @@ public class GroupsImpl implements Groups
         {
             if (includeParam.contains(PARAM_INCLUDE_PARENT_IDS))
             {
-                Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, authorityInfo.getAuthorityName(), true);
+                String authority = authorityInfo.getAuthorityName();
+                Set<String> containingAuthorities = Collections.emptySet();
+                // Workaround for AuthorityDAO.listAuthorities, where although AuthorityType.GUEST
+                // is a special case, AuthorityType.EVERYONE is not, and an exception is thrown.
+                if (!authority.equalsIgnoreCase(PermissionService.ALL_AUTHORITIES))
+                {
+                    containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, authority, true);
+                }
                 group.setParentIds(containingAuthorities);
             }
 

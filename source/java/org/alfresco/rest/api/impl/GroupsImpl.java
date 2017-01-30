@@ -42,6 +42,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alfresco.query.CannedQueryPageDetails;
+import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -193,22 +194,7 @@ public class GroupsImpl implements Groups
             List<String> zonesParam = propertyWalker.getZones();
             if (zonesParam != null)
             {
-                if (zonesParam.size() > MAX_ZONES)
-                {
-                    throw new IllegalArgumentException("A maximum of " + MAX_ZONES + " zones may be specified.");
-                }
-                else if (zonesParam.isEmpty())
-                {
-                    throw new IllegalArgumentException("Zones filter list cannot be empty.");
-                }
-                // Validate each zone name
-                zonesParam.forEach(zone -> {
-                    if (zone.isEmpty())
-                    {
-                        throw new IllegalArgumentException("Zone name cannot be empty (i.e. '')");
-                    }
-                });
-
+                validateZonesParam(zonesParam);
                 zoneFilter = zonesParam.get(0);
             }
 
@@ -224,7 +210,8 @@ public class GroupsImpl implements Groups
         }
         catch (UnknownAuthorityException e)
         {
-            throw new EntityNotFoundException("Zone "+zoneFilter+" does not exist.");
+            // Non-existent zone
+            pagingResult = new EmptyPagingResults<>();
         }
 
         // Create response.
@@ -249,6 +236,25 @@ public class GroupsImpl implements Groups
         return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
     }
 
+    private void validateZonesParam(List<String> zonesParam)
+    {
+        if (zonesParam.size() > MAX_ZONES)
+        {
+            throw new IllegalArgumentException("A maximum of " + MAX_ZONES + " zones may be specified.");
+        }
+        else if (zonesParam.isEmpty())
+        {
+            throw new IllegalArgumentException("Zones filter list cannot be empty.");
+        }
+        // Validate each zone name
+        zonesParam.forEach(zone -> {
+            if (zone.isEmpty())
+            {
+                throw new IllegalArgumentException("Zone name cannot be empty (i.e. '')");
+            }
+        });
+    }
+
     @Override
     public CollectionWithPagingInfo<Group> getGroupsByPersonId(String requestedPersonId, Parameters parameters)
     {
@@ -265,6 +271,20 @@ public class GroupsImpl implements Groups
             throw new PermissionDeniedException();
         }
 
+        Query q = parameters.getQuery();
+        List<String> zonesParam = null;
+        if (q != null)
+        {
+            GroupsQueryWalker propertyWalker = new GroupsQueryWalker(LIST_GROUPS_EQUALS_QUERY_PROPERTIES, null);
+            QueryHelper.walk(q, propertyWalker);
+            zonesParam = propertyWalker.getZones();
+            if (zonesParam != null)
+            {
+                validateZonesParam(zonesParam);
+            }
+        }
+        final String zoneFilter = zonesParam != null ? zonesParam.get(0) : null;
+
         final List<String> includeParam = parameters.getInclude();
         Paging paging = parameters.getPaging();
 
@@ -280,6 +300,7 @@ public class GroupsImpl implements Groups
         // a suitable list of AuthorityInfo objects.
         List<AuthorityInfo> groupAuthorities = userAuthorities.stream().
                 filter(a -> a.startsWith(AuthorityType.GROUP.getPrefixString())).
+                filter(a -> zonePredicate(a, zoneFilter)).
                 map(this::getAuthorityInfo).
                 sorted(new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond())).
                 collect(Collectors.toList());
@@ -292,8 +313,7 @@ public class GroupsImpl implements Groups
 
         // Transform the page of results into Group objects
         final Set<String> rootAuthorities = getAllRootAuthorities(AuthorityType.GROUP);
-        // Zone filter not supported currently.
-        final String zoneFilter = null;
+
         List<Group> groups = page.stream().
                 map(authority -> getGroup(authority, includeParam, rootAuthorities)).
                 collect(Collectors.toList());
@@ -316,7 +336,7 @@ public class GroupsImpl implements Groups
                 // list of root authorities.
                 List<AuthorityInfo> authorities = rootAuthorities.stream().
                         map(this::getAuthorityInfo).
-                        filter(auth -> matchZoneFilter(auth, zoneFilter)).
+                        filter(auth -> zonePredicate(auth.getAuthorityName(), zoneFilter)).
                         collect(Collectors.toList());
                 groupList = new ArrayList<>(rootAuthorities.size());
                 groupList.addAll(authorities);
@@ -367,12 +387,44 @@ public class GroupsImpl implements Groups
         return pagingResult;
     }
 
-    private boolean matchZoneFilter(AuthorityInfo authority, String zone)
+    /**
+     * Checks to see if the named group authority should be included in results
+     * when filtered by zone.
+     *
+     * @see #zonePredicate(Set, String)
+     * @param groupName
+     * @param zone
+     * @return true if result should be included.
+     */
+    private boolean zonePredicate(String groupName, String zone)
     {
+        Set<String> zones = null;
         if (zone != null)
         {
-            Set<String> zones = authorityService.getAuthorityZones(authority.getAuthorityName());
-            return zones.contains(zone);
+            // Don't bother doing this lookup unless the zone filter is non-null.
+            zones = authorityService.getAuthorityZones(groupName);
+        }
+        return zonePredicate(zones, zone);
+    }
+
+    /**
+     * Checks a list of zones to see if it matches the supplied zone filter
+     * ({@code requiredZone} parameter).
+     * <p>
+     * If the requiredZone parameter is null, then the filter will not be applied (returns true.)
+     * <p>
+     * If the requiredZone parameter is not null (i.e. a filter must be applied) and the
+     * {@code zones}) list is {@code null} then the predicate will return false.
+     *
+     * @param zones
+     * @param requiredZone
+     * @return true if result should be included.
+     */
+    private boolean zonePredicate(Set<String> zones, String requiredZone)
+    {
+        if (requiredZone != null)
+        {
+            return zones != null && zones.contains(requiredZone);
         }
         return true;
     }

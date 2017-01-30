@@ -29,7 +29,6 @@ package org.alfresco.rest.core;
 import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RestIGCoreAPI;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,8 +70,7 @@ public class RMRestWrapper
     }
 
     /** Process responses for a collection of models as {@link RestSiteModelsCollection}. */
-    public FilePlanComponentsCollection processModels(Class<FilePlanComponentsCollection> classz,
-                RestRequest simpleRequest)
+    public <T> T processModels(Class<T> classz, RestRequest simpleRequest)
     {
         try
         {

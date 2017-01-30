@@ -181,23 +181,21 @@ public class GroupsImpl implements Groups
         Pair<String, Boolean> sortProp = getGroupsSortProp(parameters);
 
         // Parse where clause properties.
-        Boolean isRootParam = null;
         Query q = parameters.getQuery();
-
+        Boolean isRootParam = null;
         String zoneFilter = null;
         if (q != null)
         {
-            GroupsQueryWalker propertyWalker = new GroupsQueryWalker(LIST_GROUPS_EQUALS_QUERY_PROPERTIES, null);
+            GroupsQueryWalker propertyWalker = new GroupsQueryWalker();
             QueryHelper.walk(q, propertyWalker);
 
-            isRootParam = propertyWalker.getProperty(PARAM_IS_ROOT, WhereClauseParser.EQUALS, Boolean.class);
+            isRootParam = propertyWalker.getIsRoot();
             List<String> zonesParam = propertyWalker.getZones();
             if (zonesParam != null)
             {
                 validateZonesParam(zonesParam);
                 zoneFilter = zonesParam.get(0);
             }
-
         }
 
         final AuthorityType authorityType = AuthorityType.GROUP;
@@ -272,18 +270,21 @@ public class GroupsImpl implements Groups
         }
 
         Query q = parameters.getQuery();
-        List<String> zonesParam = null;
+        Boolean isRootParam = null;
+        String zoneFilter = null;
         if (q != null)
         {
-            GroupsQueryWalker propertyWalker = new GroupsQueryWalker(LIST_GROUPS_EQUALS_QUERY_PROPERTIES, null);
+            GroupsQueryWalker propertyWalker = new GroupsQueryWalker();
             QueryHelper.walk(q, propertyWalker);
-            zonesParam = propertyWalker.getZones();
+
+            isRootParam = propertyWalker.getIsRoot();
+            List<String> zonesParam = propertyWalker.getZones();
             if (zonesParam != null)
             {
                 validateZonesParam(zonesParam);
+                zoneFilter = zonesParam.get(0);
             }
         }
-        final String zoneFilter = zonesParam != null ? zonesParam.get(0) : null;
 
         final List<String> includeParam = parameters.getInclude();
         Paging paging = parameters.getPaging();
@@ -296,11 +297,16 @@ public class GroupsImpl implements Groups
         Set<String> userAuthorities = runAsSystem(
                 () -> authorityService.getAuthoritiesForUser(personId));
 
+        final Set<String> rootAuthorities = getAllRootAuthorities(AuthorityType.GROUP);
+
         // Filter, transform and sort the list of user authorities into
         // a suitable list of AuthorityInfo objects.
+        final String finalZoneFilter = zoneFilter;
+        final Boolean finalIsRootParam = isRootParam;
         List<AuthorityInfo> groupAuthorities = userAuthorities.stream().
                 filter(a -> a.startsWith(AuthorityType.GROUP.getPrefixString())).
-                filter(a -> zonePredicate(a, zoneFilter)).
+                filter(a -> isRootPredicate(finalIsRootParam, rootAuthorities, a)).
+                filter(a -> zonePredicate(a, finalZoneFilter)).
                 map(this::getAuthorityInfo).
                 sorted(new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond())).
                 collect(Collectors.toList());
@@ -312,8 +318,6 @@ public class GroupsImpl implements Groups
         int totalItems = pagingResult.getTotalResultCount().getFirst();
 
         // Transform the page of results into Group objects
-        final Set<String> rootAuthorities = getAllRootAuthorities(AuthorityType.GROUP);
-
         List<Group> groups = page.stream().
                 map(authority -> getGroup(authority, includeParam, rootAuthorities)).
                 collect(Collectors.toList());
@@ -405,6 +409,27 @@ public class GroupsImpl implements Groups
             zones = authorityService.getAuthorityZones(groupName);
         }
         return zonePredicate(zones, zone);
+    }
+
+    /**
+     * Test to see if a result should be included, using the isRoot parameter.
+     * <p>
+     * If isRootParam is null, then no results will be filtered. Otherwise
+     * results will be filtered to return only those that are root or non-root,
+     * depending on the value of isRootParam.
+     *
+     * @param isRootParam
+     * @param rootAuthorities
+     * @param authority
+     * @return
+     */
+    private boolean isRootPredicate(Boolean isRootParam, Set<String> rootAuthorities, String authority)
+    {
+        if (isRootParam != null)
+        {
+            return isRootParam == isRootAuthority(rootAuthorities, authority);
+        }
+        return true;
     }
 
     /**
@@ -957,6 +982,11 @@ public class GroupsImpl implements Groups
     {
         private List<String> zones;
 
+        public GroupsQueryWalker()
+        {
+            super(LIST_GROUPS_EQUALS_QUERY_PROPERTIES, null);
+        }
+
         @Override
         public void and()
         {
@@ -972,11 +1002,6 @@ public class GroupsImpl implements Groups
             }
         }
 
-        public GroupsQueryWalker(Set<String> supportedEqualsParameters, Set<String> supportedMatchesParameters)
-        {
-            super(supportedEqualsParameters, supportedMatchesParameters);
-        }
-
         /**
          * The list of zones specified in the where clause.
          *
@@ -985,6 +1010,16 @@ public class GroupsImpl implements Groups
         public List<String> getZones()
         {
             return zones;
+        }
+
+        /**
+         * Get the value of the isRoot clause, if specified.
+         *
+         * @return The isRoot param if specified, null if not.
+         */
+        public Boolean getIsRoot()
+        {
+            return getProperty(PARAM_IS_ROOT, WhereClauseParser.EQUALS, Boolean.class);
         }
     }
 }

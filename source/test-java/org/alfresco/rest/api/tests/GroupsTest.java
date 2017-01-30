@@ -435,6 +435,10 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // "A series of unfortunate errors"
             otherParams.put("where", "(zones in ('', 'APP.DEFAULT', '', 'APITEST.MYZONE'))");
             getGroups(paging, otherParams, "Incorrect response", 400);
+
+            // A zone that isn't in use or doesn't exist
+            otherParams.put("where", "(zones in ('NON.EXISTENT'))");
+            getGroups(paging, otherParams, "Incorrect response", 404);
         }
     }
 

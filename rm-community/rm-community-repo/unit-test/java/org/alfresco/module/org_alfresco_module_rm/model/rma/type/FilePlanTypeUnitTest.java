@@ -195,7 +195,7 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
 
         try
         {
-            filePlanType.onCreateChildAssociation(childAssocRef, true);
+            filePlanType.onCreateChildAssociationOnCommit(childAssocRef, true);
         }
         catch(IntegrityException ex)
         {

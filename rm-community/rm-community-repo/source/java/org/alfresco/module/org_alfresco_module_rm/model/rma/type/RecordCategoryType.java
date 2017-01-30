@@ -65,7 +65,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
                                            NodeServicePolicies.OnCreateNodePolicy
 {
     private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = new ArrayList<QName>();
-    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, TYPE_RECORD_FOLDER);
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, TYPE_RECORD_FOLDER, ContentModel.TYPE_FOLDER);
 
     /** vital record service */
     protected VitalRecordService vitalRecordService;
@@ -112,16 +112,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        NodeRef child = childAssocRef.getChildRef();
-        NodeRef parentRef = childAssocRef.getParentRef();
-
-        if (bNew)
-        {
-            // setup the record folder
-            recordFolderService.setupRecordFolder(child);
-        }
-
-        validateNewChildAssociation(parentRef, child, ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     /**
@@ -135,19 +126,10 @@ public class RecordCategoryType extends    BaseBehaviourBean
        policy = "alf:onCreateChildAssociation",
        notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
+    public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, final boolean bNew)
     {
         final NodeRef child = childAssocRef.getChildRef();
-        QName childType = nodeService.getType(child);
-
-        // We need to automatically cast the created folder to record folder if it is a plain folder
-        // This occurs if the RM folder has been created via IMap, WebDav, etc
-        // Ignore hidden files. Some modules use hidden files to store information (see RM-3283)
-        if ( childType == ContentModel.TYPE_FOLDER &&
-                !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
-        {
-            nodeService.setType(child, TYPE_RECORD_FOLDER);
-        }
+        final QName childType = nodeService.getType(child);
 
         behaviourFilter.disableBehaviour();
         try
@@ -157,6 +139,21 @@ public class RecordCategoryType extends    BaseBehaviourBean
                 @Override
                 public Void doWork()
                 {
+                    // We need to automatically cast the created folder to record folder if it is a plain folder
+                    // This occurs if the RM folder has been created via IMap, WebDav, etc
+                    // Ignore hidden files. Some modules use hidden files to store information (see RM-3283)
+                    if ( childType.equals(ContentModel.TYPE_FOLDER) &&
+                            !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
+                    {
+                        nodeService.setType(child, TYPE_RECORD_FOLDER);
+                    }
+
+                    if (bNew)
+                    {
+                        // setup the record folder
+                        recordFolderService.setupRecordFolder(child);
+                    }
+
                     // setup vital record definition
                     vitalRecordService.setupVitalRecordDefinition(child);
 

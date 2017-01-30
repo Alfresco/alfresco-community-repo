@@ -67,7 +67,7 @@ public class FilePlanType extends    BaseBehaviourBean
                                      NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
-    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, ContentModel.TYPE_FOLDER);
     private static final String BEHAVIOUR_NAME = "onDeleteFilePlan";
 
     /** file plan service */
@@ -209,25 +209,38 @@ public class FilePlanType extends    BaseBehaviourBean
      */
     @Behaviour
     (
-       kind = BehaviourKind.ASSOCIATION,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+       kind = BehaviourKind.ASSOCIATION
     )
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
+    {
+        // check the created child is of an accepted type
+        validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+    }
+
+    /**
+     * On transaction commit
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     */
+    @Behaviour
+    (
+       kind = BehaviourKind.ASSOCIATION,
+       policy = "alf:onCreateChildAssociation",
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef child = childAssocRef.getChildRef();
 
         // We need to automatically cast the created folder to category if it is a plain folder
         // This occurs if the RM folder has been created via IMap, WebDav, etc
         // Ignore hidden files. Some modules use hidden files to store information (see RM-3283)
-        if (nodeService.getType(child) == ContentModel.TYPE_FOLDER &&
+        if (nodeService.getType(child).equals(ContentModel.TYPE_FOLDER) &&
                 !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
         {
             nodeService.setType(child, TYPE_RECORD_CATEGORY);
         }
-
-        // check the created child is of an accepted type
-        validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     /**

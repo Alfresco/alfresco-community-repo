@@ -138,14 +138,7 @@ public class RMNodesImpl extends NodesImpl implements RMNodes
 
         if (type == null)
         {
-            if (filePlanService.isFilePlanComponent(nodeRef))
-            {
-                node = new FileplanComponentNode(originalNode);
-            }
-            else
-            {
-                throw new InvalidParameterException("The provided node is not a fileplan component");
-            }
+            node = new FileplanComponentNode(originalNode);
         }
         else
         {

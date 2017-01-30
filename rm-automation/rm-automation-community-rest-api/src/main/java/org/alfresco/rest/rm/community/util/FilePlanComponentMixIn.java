@@ -38,7 +38,7 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
  * @author Rodica Sutu
  * @since 2.6
  */
-public abstract class FilePlanComponentMix
+public abstract class FilePlanComponentMixIn
 {
     /**
      * Annotation used to indicate that a property should be serialized "unwrapped"

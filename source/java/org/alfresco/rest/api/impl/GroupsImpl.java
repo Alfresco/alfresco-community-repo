@@ -64,6 +64,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
+import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -248,25 +249,6 @@ public class GroupsImpl implements Groups
         return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
     }
 
-//    private boolean groupInZones(Group group, List<String> zonesFilter)
-//    {
-//        Set<String> groupZones = group.getZones();
-//        // The zones may not have been "included" in the request.
-//        if (groupZones == null)
-//        {
-//            groupZones = authorityService.getAuthorityZones(group.getId());
-//        }
-//
-//        for (String zone : zonesFilter)
-//        {
-//            if (groupZones.contains(zone))
-//            {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
     @Override
     public CollectionWithPagingInfo<Group> getGroupsByPersonId(String requestedPersonId, Parameters parameters)
     {
@@ -323,7 +305,7 @@ public class GroupsImpl implements Groups
             Paging paging)
     {
         PagingResults<AuthorityInfo> pagingResult;
-        // TODO: make sure impl works for isRootParam = true,false,null.
+
         if (isRootParam != null)
         {
             List<AuthorityInfo> groupList;
@@ -369,7 +351,18 @@ public class GroupsImpl implements Groups
             }
 
             // Post process paging - this should be moved to service layer.
-            // TODO: filter groupList to remove zones NOT matching the zoneFilter
+
+            if (zoneFilter != null)
+            {
+                // Only AND (e.g. isRoot=true AND zones IN ('MY.APP')) currently supported,
+                // as we can easily post-filter for zones.
+                // If we introduce OR, then a different approach will be needed.
+                groupList = groupList.stream().
+                    filter(authority -> {
+                        Set<String> zones = authorityService.getAuthorityZones(authority.getAuthorityName());
+                        return zones.contains(zoneFilter);
+                    }).collect(Collectors.toList());
+            }
             pagingResult = Util.wrapPagingResults(paging, groupList);
         }
         else
@@ -906,9 +899,15 @@ public class GroupsImpl implements Groups
         return AuthorityType.GROUP.equals(authorityType) || AuthorityType.EVERYONE.equals(authorityType);
     }
 
-    private static class GroupsQueryWalker extends MapBasedQueryWalkerOrSupported
+    private static class GroupsQueryWalker extends MapBasedQueryWalker
     {
         private List<String> zones;
+
+        @Override
+        public void and()
+        {
+            // allow AND, e.g. isRoot=true AND zones in ('BLAH')
+        }
 
         @Override
         public void in(String propertyName, boolean negated, String... propertyValues)

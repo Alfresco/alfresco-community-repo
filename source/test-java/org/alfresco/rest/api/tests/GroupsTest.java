@@ -68,6 +68,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
     protected AuthorityService authorityService;
 
     private String rootGroupName = null;
+    private Group rootGroup = null;
     private Group groupA = null;
     private Group groupB = null;
     private GroupMember groupMemberA = null;
@@ -358,9 +359,10 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             List<Group> groups = response.getList();
 
             // We know exactly which groups are in the selected zone.
-            assertEquals(2, groups.size());
-            assertEquals(groupA, groups.get(0));
-            assertEquals(groupB, groups.get(1));
+            assertEquals(3, groups.size());
+            assertEquals(rootGroup, groups.get(0));
+            assertEquals(groupA, groups.get(1));
+            assertEquals(groupB, groups.get(2));
             groups.forEach(group -> assertTrue(group.getZones().contains("APITEST.MYZONE")));
 
             otherParams.put("where", "(zones in ('APITEST.ANOTHER'))");
@@ -388,31 +390,51 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             List<Group> groups = response.getList();
 
             // We know exactly which groups are in the selected zone.
-            assertEquals(2, groups.size());
-            assertEquals(groupA, groups.get(0));
-            assertEquals(groupB, groups.get(1));
+            assertEquals(3, groups.size());
+            assertEquals(rootGroup, groups.get(0));
+            assertEquals(groupA, groups.get(1));
+            assertEquals(groupB, groups.get(2));
             // We haven't included the zones info.
             groups.forEach(group -> assertNull(group.getZones()));
         }
 
         // Filter zones while using where isRoot=true
         // (this causes a different query path to be used)
-        /*{
+        {
             Paging paging = getPaging(0, Integer.MAX_VALUE);
             Map<String, String> otherParams = new HashMap<>();
             // Ensure predictable result ordering
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
 
-            // TODO: how will we support all possible boolean operators? AND, OR...?
-            otherParams.put("where", "(isRoot=true AND zones in ('APITEST.SPECIAL'))");
+            otherParams.put("where", "(isRoot=true AND zones in ('APITEST.MYZONE'))");
 
             ListResponse<Group> response = getGroups(paging, otherParams);
             List<Group> groups = response.getList();
 
             assertEquals(1, groups.size());
-            assertEquals(rootGroupName, groups.get(0));
-            assertTrue(groups.get(0).getZones().contains("APITEST.SPECIAL"));
-        }*/
+            assertEquals(rootGroup, groups.get(0));
+            assertTrue(groups.get(0).getZones().contains("APITEST.MYZONE"));
+        }
+
+        // Filter zones while using where isRoot=false
+        {
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            // Ensure predictable result ordering
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+
+            otherParams.put("where", "(isRoot=false AND zones in ('APITEST.MYZONE'))");
+
+            ListResponse<Group> response = getGroups(paging, otherParams);
+            List<Group> groups = response.getList();
+
+            assertEquals(2, groups.size());
+            assertEquals(groupA, groups.get(0));
+            assertEquals(groupB, groups.get(1));
+            // We haven't included the zones info.
+            groups.forEach(group -> assertNull(group.getZones()));
+        }
 
         // -ve test: invalid zones clause
         {
@@ -439,6 +461,10 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // A zone that isn't in use or doesn't exist
             otherParams.put("where", "(zones in ('NON.EXISTENT'))");
             getGroups(paging, otherParams, "Incorrect response", 404);
+
+            // OR operator not currently supported
+            otherParams.put("where", "(isRoot=true OR zones in ('APP.DEFAULT'))");
+            getGroups(paging, otherParams, "Incorrect response", 400);
         }
     }
 
@@ -479,7 +505,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
             rootGroupName = authorityService.createAuthority(AuthorityType.GROUP, groupName);
-            authorityService.addAuthorityToZones(rootGroupName, zoneSet("APITEST.SPECIAL"));
+            authorityService.addAuthorityToZones(rootGroupName, zoneSet("APITEST.MYZONE"));
 
             String groupBAuthorityName = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupB" + GUID.generate());
             authorityService.addAuthority(rootGroupName, groupBAuthorityName);
@@ -491,6 +517,9 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             authorityService.addAuthority(groupAAuthorityName, user1);
             authorityService.addAuthority(groupBAuthorityName, user2);
+
+            rootGroup = new Group();
+            rootGroup.setId(rootGroupName);
 
             groupA = new Group();
             groupA.setId(groupAAuthorityName);

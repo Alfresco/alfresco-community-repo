@@ -11,8 +11,8 @@ Below is the list of licenses and modules used under corresponding licenses,
 === Apache 2.0 License ====
 acegi   http://sourceforge.net/projects/acegisecurity/
 ActiveMQ    http://activemq.apache.org/
-Activiti    http://activiti.org/
-Activiti webapp explorer    http://activiti.org/
+Activiti:    If shipped or included with the commercial version of Alfresco software, the Activiti component is licensed under the terms of the associated Alfresco Master Services Agreement; If shipped or included with the open-source Community version of Alfresco software, then it will be governed by the Apache open source license specified at http://activiti.org/
+Activiti Webapp Explorer: If shipped or included with the commercial version of Alfresco software, the Activiti component is licensed under the terms of the associated Alfresco Master Services Agreement; If shipped or included with the open-source Community version of Alfresco software, then it will be governed by the Apache open source license specified at http://activiti.org/
 Alfresco OpenCMIS Extension http://code.google.com/a/apache-extras.org/p/alfresco-opencmis-extension/
 Apache Mime http://james.apache.org/mime4j/index.html
 Apache Avalon   http://excalibur.apache.org/

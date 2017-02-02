@@ -195,7 +195,7 @@ public class PeopleImpl implements People
     	return personId;
 	}
 
-    protected void processPersonProperties(final Map<QName, Serializable> nodeProps)
+    protected void processPersonProperties(String userName, final Map<QName, Serializable> nodeProps)
     {
 		if(!contentUsageService.getEnabled())
 		{
@@ -368,7 +368,7 @@ public class PeopleImpl implements People
         if (personNode != null)
         {
             Map<QName, Serializable> nodeProps = nodeService.getProperties(personNode);
-            processPersonProperties(nodeProps);
+            processPersonProperties(personId, nodeProps);
             // TODO this needs to be run as admin but should we do this here?
             final String pId = personId;
             Boolean enabled = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()

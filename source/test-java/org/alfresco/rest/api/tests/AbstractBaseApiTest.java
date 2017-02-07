@@ -218,6 +218,23 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return response;
     }
 
+    protected HttpResponse post(String url, byte[] body, Map<String, String> params, Map<String, String> headers, String apiName, String contentType, int expectedStatus) throws Exception
+    {
+        RequestBuilder requestBuilder = httpClient.new PostRequestBuilder()
+                .setBodyAsByteArray(body)
+                .setContentType(contentType)
+                .setRequestContext(publicApiClient.getRequestContext())
+                .setScope(getScope())
+                .setApiName(apiName)
+                .setEntityCollectionName(url)
+                .setHeaders(headers)
+                .setParams(params);
+        HttpResponse response = publicApiClient.execute(requestBuilder);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
     protected HttpResponse post(String url, String body, Map<String, String> params, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
     {
         RequestBuilder requestBuilder = httpClient.new PostRequestBuilder()
@@ -270,6 +287,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return response;
     }
 
+    // TODO unused queryString - fix-up usages and then remove
     protected HttpResponse post(String entityCollectionName, String entityId, String relationCollectionName, byte[] body, String queryString, String contentType, int expectedStatus) throws Exception
     {
         HttpResponse response = publicApiClient.post(getScope(), entityCollectionName, entityId, relationCollectionName, null, body, contentType);
@@ -825,8 +843,13 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected Rendition waitAndGetRendition(String sourceNodeId, String renditionId) throws Exception
     {
+        return waitAndGetRendition(sourceNodeId, renditionId, MAX_RETRY, PAUSE_TIME);
+    }
+
+    protected Rendition waitAndGetRendition(String sourceNodeId, String renditionId, int maxRetry, long pauseTime) throws Exception
+    {
         int retryCount = 0;
-        while (retryCount < MAX_RETRY)
+        while (retryCount < maxRetry)
         {
             try
             {
@@ -843,7 +866,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
                 retryCount++;
 
                 System.out.println("waitAndGetRendition: "+retryCount);
-                Thread.sleep(PAUSE_TIME);
+                Thread.sleep(pauseTime);
             }
         }
 

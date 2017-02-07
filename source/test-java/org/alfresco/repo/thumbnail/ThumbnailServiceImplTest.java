@@ -644,7 +644,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
      */
     public void testLastThumbnailModificationDataContentUpdates() throws Exception
     {
-        NodeRef pdfOrig = createOriginalContent(this.folder, MimetypeMap.MIMETYPE_PDF);
+        final NodeRef pdfOrig = createOriginalContent(this.folder, MimetypeMap.MIMETYPE_PDF);
         QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
 
         ThumbnailDefinition details = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(qname.getLocalName());

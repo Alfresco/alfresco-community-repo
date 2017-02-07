@@ -26,8 +26,6 @@
 
 package org.alfresco.repo.thumbnail;
 
-import static org.junit.Assume.assumeFalse;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -629,6 +627,57 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         assertNull("The thumbnail 'anotherone' should have been missing", result3);
     }
 
+    /**
+     * See MNT-17113
+     */
+    public void testLastThumbnailModificationDataContentUpdates() throws Exception
+    {
+        NodeRef pdfOrig = createOriginalContent(this.folder, MimetypeMap.MIMETYPE_PDF);
+        QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
+
+        ThumbnailDefinition details = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(qname.getLocalName());
+        NodeRef thumbnail = this.thumbnailService.createThumbnail(pdfOrig, ContentModel.PROP_CONTENT, MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                details.getTransformationOptions(), "doclib");
+        assertNotNull(thumbnail);
+
+        setComplete();
+        endTransaction();
+        
+        Thread.sleep(1000);
+
+        // Get initial value of property "Last thumbnail modification data"
+        String lastThumbnailDataV1 = ((List<String>) this.secureNodeService.getProperty(pdfOrig, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA)).get(0);
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Update file content
+                setNewContent(pdfOrig, "quick-size-limit.", MimetypeMap.MIMETYPE_PDF);
+                return null;
+            }
+        }, false, true);
+        
+        Thread.sleep(1000);
+
+        // Get modified value of property "Last thumbnail modification data"
+        String lastThumbnailDataV2 = ((List<String>) this.secureNodeService.getProperty(pdfOrig, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA)).get(0);
+
+        // Check if property "Last thumbnail modification data" has changed
+        assertFalse("Property 'Last thumbnail modification data' has not changed", lastThumbnailDataV1.equals(lastThumbnailDataV2));
+    }
+
+    private void setNewContent(NodeRef noderef, String quickFileName, String mimetype) throws IOException
+    {
+        String ext = this.mimetypeMap.getExtension(mimetype);
+        File origFile = AbstractContentTransformerTest.loadNamedQuickTestFile(quickFileName + ext);
+
+        ContentWriter writer = this.contentService.getWriter(noderef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(mimetype);
+        writer.setEncoding("UTF-8");
+        writer.putContent(origFile);
+    }
+    
     private static class ExpectedAssoc
     {
         private QNamePattern assocTypeQName;

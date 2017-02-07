@@ -702,6 +702,13 @@
                <protected>true</protected>
                <mandatory>false</mandatory>
             </property>
+             <!-- This aspect can only be used by the system to allow the rma:identifier to be explicitly set in the upload transaction -->
+            <property name="rma:idIsTemporarilyEditable">
+                <title>Record Component Identifier Temporarily Editable Indicator</title>
+                <type>d:boolean</type>
+                <protected>true</protected>
+                <mandatory>false</mandatory>
+            </property>
          </properties>
          <mandatory-aspects>
             <aspect>rma:filePlanComponent</aspect>

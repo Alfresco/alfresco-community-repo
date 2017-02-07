@@ -130,6 +130,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentExcep
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
+import org.apache.chemistry.opencmis.commons.impl.Constants;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -219,6 +220,26 @@ public class TestCMIS extends EnterpriseTestApi
         {
             assertTrue("Expected missing secondary types but at least one is still present: " + secondaryTypes, !secondaryTypes.containsAll(expectedMissingSecondaryTypes));
         }
+    }
+
+    /**
+     * ACE-5753 / REPO-1815 Check the return from http://localhost:8080/alfresco/api/-default-/public/cmis/versions/1.1/browser/root
+     * @throws Exception
+     */
+    @Test
+    public void testBrowserBindingRoot() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+        Iterator<String> personIt = network1.getPersonIds().iterator();
+        final String personId = personIt.next();
+        assertNotNull(personId);
+        Person person = repoService.getPerson(personId);
+        assertNotNull(person);
+
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+
+        HttpResponse response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", null);
+        assertEquals(200, response.getStatusCode());
     }
 
     /**

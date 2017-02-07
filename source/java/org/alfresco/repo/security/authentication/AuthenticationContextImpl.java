@@ -37,6 +37,8 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.repo.tenant.TenantService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Andy Hind
@@ -44,6 +46,8 @@ import org.alfresco.repo.tenant.TenantService;
  */
 public class AuthenticationContextImpl implements AuthenticationContext
 {
+    private final Log logger = LogFactory.getLog(getClass());
+    
     private TenantService tenantService;
 
     public void setTenantService(TenantService tenantService)
@@ -60,6 +64,8 @@ public class AuthenticationContextImpl implements AuthenticationContext
      */
     public Authentication setUserDetails(UserDetails ud)
     {
+        String userId = ud.getUsername();
+
         try
         {
             // Apply the same validation that ACEGI would have to the user details - we may be going through a 'back
@@ -88,6 +94,18 @@ public class AuthenticationContextImpl implements AuthenticationContext
         }
         catch (net.sf.acegisecurity.AuthenticationException ae)
         {
+            if (logger.isWarnEnabled())
+            {
+                // Shows only first 2 symbols of the username and masks all other character with '*' [see also ProtectedUser]
+                StringBuilder sb = new StringBuilder();
+                sb.append(ae.getMessage());
+                sb.append(" [");
+                sb.append(userId.substring(0,2));
+                sb.append(new String(new char[(userId.length() - 2)]).replace("\0", "*"));
+                sb.append("] - cannot set details for user");
+
+                logger.warn(sb.toString());
+            }
             throw new AuthenticationException(ae.getMessage(), ae);
         }
         finally

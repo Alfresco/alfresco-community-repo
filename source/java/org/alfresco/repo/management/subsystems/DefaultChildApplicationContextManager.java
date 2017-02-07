@@ -209,6 +209,21 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
         }
     }
 
+    public ChildApplicationContextFactory getChildApplicationContextFactory(String id)
+    {
+        lock.readLock().lock();
+        try
+        {
+            DefaultChildApplicationContextManager.ApplicationContextManagerState state =
+                    (DefaultChildApplicationContextManager.ApplicationContextManagerState)getState(true);
+            return state.getApplicationContextFactory(id);
+        }
+        finally
+        {
+            lock.readLock().unlock();
+        }
+    }
+
     /**
      * The Class ApplicationContextManagerState.
      */

@@ -27,11 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;

@@ -484,6 +484,12 @@ public class CMISHttpServletRequest implements HttpServletRequest
                 queryString.append("&repositoryId=");
                 queryString.append(networkId);
             }
+            String cmisselector = httpReq.getParameter("cmisselector");
+            if(cmisselector == null || cmisselector.isEmpty())
+            {
+            	queryString.append("&cmisselector=");
+	            queryString.append(Constants.SELECTOR_REPOSITORY_INFO);
+            }
             
             return queryString.toString();
         }

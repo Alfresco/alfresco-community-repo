@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -122,4 +123,31 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         return childAssoc.getChildRef();
     }
 
+    protected void createUser(String userName)
+    {
+        createUser(userName, userName);
+    }
+
+    protected void createUser(String userName, String nameSuffix)
+    {
+        createUser(userName, userName, "PWD");
+    }
+
+    protected void createUser(String userName, String nameSuffix, String password)
+    {
+        if (this.authenticationService.authenticationExists(userName) == false)
+        {
+            this.authenticationService.createAuthentication(userName, password.toCharArray());
+
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName"+nameSuffix);
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName"+nameSuffix);
+            ppOne.put(ContentModel.PROP_EMAIL, "email"+nameSuffix+"@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+
+            PersonService personService = (PersonService)applicationContext.getBean("personService");
+            personService.createPerson(ppOne);
+        }
+    }
 }

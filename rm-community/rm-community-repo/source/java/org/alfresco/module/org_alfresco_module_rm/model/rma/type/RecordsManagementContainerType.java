@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -44,7 +43,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordsManagementContainer behaviour bean.
@@ -152,32 +150,6 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                         }
                         else
                         {
-                            // We need to automatically cast the created folder to RM type if it is a plain folder
-                            // This occurs if the RM folder has been created via IMap, WebDav, etc
-                            if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
-                            {
-                                // Throw exception if the type is not cm:folder
-                                if (!ContentModel.TYPE_FOLDER.equals(childType))
-                                {
-                                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE));
-                                }
-                                // check the type of the parent to determine what 'kind' of artifact to create
-                                NodeRef parent = childAssocRef.getParentRef();
-                                QName parentType = nodeService.getType(parent);
-
-                                if (dictionaryService.isSubClass(parentType, TYPE_FILE_PLAN))
-                                {
-                                    // create a rma:recordCategoty since we are in the root of the file plan
-                                    nodeService.setType(child, TYPE_RECORD_CATEGORY);
-                                }
-                                else
-                                {
-                                    // create a rma:recordFolder and initialise record folder
-                                    nodeService.setType(child, TYPE_RECORD_FOLDER);
-                                    recordFolderService.setupRecordFolder(child);
-                                }
-                            }
-
                             // Catch all to generate the rm id (assuming it doesn't already have one!)
                             setIdenifierProperty(child);
                         }

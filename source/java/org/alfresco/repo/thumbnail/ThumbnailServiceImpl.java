@@ -265,8 +265,8 @@ public class ThumbnailServiceImpl implements ThumbnailService,
 
         if (logger.isDebugEnabled())
         {
-        	logger.debug("Thumbnail created " + childAssoc + " for sourceNodeRef " + sourceNodeRef + ", thumbnail " + thumbnailName
-        			+ ", thumbnailNodeRef " + thumbnailNodeRef);
+            logger.debug("Thumbnail created " + childAssoc + " for sourceNodeRef " + sourceNodeRef + ", thumbnail " + thumbnailName
+                          + ", thumbnailNodeRef " + thumbnailNodeRef);
         }
 
         // MNT-15135: Cache the associations between parent nodes and updated thumbnails,
@@ -279,6 +279,22 @@ public class ThumbnailServiceImpl implements ThumbnailService,
             }
             TransactionalResourceHelper.getSet(THUMBNAIL_PARENT_NODES).add(childAssoc);
             TransactionSupportUtil.bindListener(this.transactionListener, 0);
+            
+            // For new version/content the child association contains a temporary thumbnail node, that gets removed later.
+            // We need to add the original thumbnail node to the TransactionalResourceHelper instead.
+            QName thumbnailQname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, thumbnailName);
+            if (!childAssoc.getQName().equals(thumbnailQname)) 
+            {
+                List<ChildAssociationRef> allAssocList = nodeService.getChildAssocs(childAssoc.getParentRef(), RegexQNamePattern.MATCH_ALL, thumbnailQname);
+                for (ChildAssociationRef aChildAssoc : allAssocList)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Caching original thumbnail " + aChildAssoc + " in transaction resources, thumbnail " + thumbnailName);
+                    }
+                    TransactionalResourceHelper.getSet(THUMBNAIL_PARENT_NODES).add(aChildAssoc);
+                }
+            }
         }
         else
         {
@@ -759,122 +775,108 @@ public class ThumbnailServiceImpl implements ThumbnailService,
      * @param nodeRef A {@link NodeRef} representing a thumbnail to provide last modification data for.
      */
     @SuppressWarnings("unchecked")
-    public void addThumbnailModificationData(final NodeRef nodeRef, final String thumbnailName)
+    private void addThumbnailModificationData(final NodeRef nodeRef, final String thumbnailName)
     {
         if (nodeService.exists(nodeRef))
         {
-           if (thumbnailName != null && !nodeRef.toString().endsWith(thumbnailName))
-           {
-               Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-               if (modified != null)
-               {
-                   // Get the last modified value as a timestamp...
-                   Long timestamp = modified.getTime();
-                   
-                   // Create the value we want to set...
-                   final String lastModifiedValue = thumbnailName + ":" + timestamp;
+            if (thumbnailName != null && !nodeRef.toString().endsWith(thumbnailName))
+            {
+                Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+                if (modified != null)
+                {
+                    // Get the last modified value as a timestamp...
+                    Long timestamp = modified.getTime();
 
-                   RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-                   txnHelper.setForceWritable(true);
+                    // Create the value we want to set...
+                    final String lastModifiedValue = thumbnailName + ":" + timestamp;
 
-                   // MNT-15135: Do the property update in a new transaction, in case the parent node was already changed (has a different version) in another transaction.
-                   // This way the failures will not propagate up the retry stack.
-                   txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                   {
-                       @Override
-                       public Void execute() throws Throwable
-                       {
-                           // Get the parent node (there should be only one) and apply the aspect and
-                           // set the property to indicate which thumbnail the checksum refers to...
-                           for (ChildAssociationRef parent: nodeService.getParentAssocs(nodeRef))
-                           {
-                               List<String> thumbnailMods = null;
+                    // Get the parent node (there should be only one) and apply the aspect and
+                    // set the property to indicate which thumbnail the checksum refers to...
+                    for (ChildAssociationRef parent: nodeService.getParentAssocs(nodeRef))
+                    {
+                        List<String> thumbnailMods = null;
 
-                               NodeRef parentNode = parent.getParentRef();
+                        NodeRef parentNode = parent.getParentRef();
 
-                               // we don't want to audit any changes to the parent here.
-                               behaviourFilter.disableBehaviour(parentNode, ContentModel.ASPECT_AUDITABLE);
-                               try
-                               {
-	                               if (nodeService.hasAspect(parentNode, ContentModel.ASPECT_THUMBNAIL_MODIFICATION))
-	                               {
-	                                   // The node already has the aspect, check to see if the current thumbnail modification exists...
-	                                   thumbnailMods = (List<String>) nodeService.getProperty(parentNode, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA);
-	
-	                                   // If we have previously set last modified thumbnail data then it will exist as part of the multi-value
-	                                   // property. The value will consist of the "cm:thumbnailName" value delimited with a ":" and then the
-	                                   // timestamp. We need to find the appropriate entry in the multivalue property and then update it
-	                                   String target = null;
-	                                   for (String currThumbnailMod: thumbnailMods)
-	                                   {
-	                                       if (currThumbnailMod.startsWith(thumbnailName))
-	                                       {
-	                                           target = currThumbnailMod;
-	                                       }
-	                                   }
-	
-	                                   // Remove the previous value
-	                                   if (target != null)
-	                                   {
-	                                       thumbnailMods.remove(target);
-	                                   }
-	
-	                                   // Add the timestamp...
-	                                   thumbnailMods.add(lastModifiedValue);
-	
-	                                   // Set the property...
-	                                   if (logger.isDebugEnabled())
-	                                   {
-	                                       logger.debug("Setting thumbnail last modified date to " + lastModifiedValue +
-	                                               " on parent node: " + parentNode);
-	                                   }
-	                                   ruleService.disableRuleType(RuleType.UPDATE);
-	                                   try
-	                                   {
-	                                       nodeService.setProperty(parentNode, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
-	                                   }
-	                                   finally
-	                                   {
-	                                       ruleService.enableRuleType(RuleType.UPDATE);
-	                                   }
-	                               }
-	                               else
-	                               {
-	                                   // If the aspect has not previously been added then we'll need to set it now...
-	                                   thumbnailMods = new ArrayList<String>();
-	                                   thumbnailMods.add(lastModifiedValue);
-	
-	                                   // Add the aspect with the new property...
-	                                   Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-	                                   properties.put(ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
-	
-	                                   if (logger.isDebugEnabled())
-	                                   {
-	                                       logger.debug("Adding " + ContentModel.ASPECT_THUMBNAIL_MODIFICATION +
-	                                               " aspect to parent node: " + parentNode);
-	                                   }
-	                                   ruleService.disableRuleType(RuleType.UPDATE);
-	                                   try
-	                                   {
-	                                       nodeService.addAspect(parentNode, ContentModel.ASPECT_THUMBNAIL_MODIFICATION, properties);
-	                                   }
-	                                   finally
-	                                   {
-	                                       ruleService.enableRuleType(RuleType.UPDATE);
-	                                   }
-	                               }
-                               }
-                               finally
-                               {
-                                   behaviourFilter.enableBehaviour(parentNode, ContentModel.ASPECT_AUDITABLE);
-                               }
-                           }
+                        // we don't want to audit any changes to the parent here.
+                        behaviourFilter.disableBehaviour(parentNode, ContentModel.ASPECT_AUDITABLE);
+                        behaviourFilter.disableBehaviour(parentNode, ContentModel.ASPECT_VERSIONABLE);
+                        try
+                        {
+                            if (nodeService.hasAspect(parentNode, ContentModel.ASPECT_THUMBNAIL_MODIFICATION))
+                            {
+                                // The node already has the aspect, check to see if the current thumbnail modification exists...
+                                thumbnailMods = (List<String>) nodeService.getProperty(parentNode, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA);
 
-                           return null;
-                       }
-                   }, false, true);
-               }
-           }
+                                // If we have previously set last modified thumbnail data then it will exist as part of the multi-value
+                                // property. The value will consist of the "cm:thumbnailName" value delimited with a ":" and then the
+                                // timestamp. We need to find the appropriate entry in the multivalue property and then update it
+                                String target = null;
+                                for (String currThumbnailMod: thumbnailMods)
+                                {
+                                    if (currThumbnailMod.startsWith(thumbnailName))
+                                    {
+                                        target = currThumbnailMod;
+                                    }
+                                }
+
+                                // Remove the previous value
+                                if (target != null)
+                                {
+                                    thumbnailMods.remove(target);
+                                }
+
+                                // Add the timestamp...
+                                thumbnailMods.add(lastModifiedValue);
+
+                                // Set the property...
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Setting thumbnail last modified date to " + lastModifiedValue +" on parent node: " + parentNode);
+                                }
+                                ruleService.disableRuleType(RuleType.UPDATE);
+                                try
+                                {
+                                    nodeService.setProperty(parentNode, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
+                                }
+                                finally
+                                {
+                                    ruleService.enableRuleType(RuleType.UPDATE);
+                                }
+                            }
+                            else
+                            {
+                                // If the aspect has not previously been added then we'll need to set it now...
+                                thumbnailMods = new ArrayList<String>();
+                                thumbnailMods.add(lastModifiedValue);
+
+                                // Add the aspect with the new property...
+                                Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                                properties.put(ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA, (Serializable) thumbnailMods);
+
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Adding " + ContentModel.ASPECT_THUMBNAIL_MODIFICATION + " aspect to parent node: " + parentNode);
+                                }
+                                ruleService.disableRuleType(RuleType.UPDATE);
+                                try
+                                {
+                                    nodeService.addAspect(parentNode, ContentModel.ASPECT_THUMBNAIL_MODIFICATION, properties);
+                                }
+                                finally
+                                {
+                                    ruleService.enableRuleType(RuleType.UPDATE);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            behaviourFilter.enableBehaviour(parentNode, ContentModel.ASPECT_AUDITABLE);
+                            behaviourFilter.enableBehaviour(parentNode, ContentModel.ASPECT_VERSIONABLE);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -887,29 +889,43 @@ public class ThumbnailServiceImpl implements ThumbnailService,
             {
                 logger.debug("Starting aftercommit listener execution.");
             }
-            Set<ChildAssociationRef> childAssocs =  TransactionalResourceHelper.getSet(THUMBNAIL_PARENT_NODES);
-            for (ChildAssociationRef childAssoc : childAssocs)
-            {
-                NodeRef thumbnailNodeRef = childAssoc.getChildRef();
-                NodeRef sourceNodeRef = childAssoc.getParentRef();
+            final Set<ChildAssociationRef> childAssocs =  TransactionalResourceHelper.getSet(THUMBNAIL_PARENT_NODES);
 
-                String thumbnailName = (String) nodeService.getProperty(thumbnailNodeRef, ContentModel.PROP_NAME);
-                try
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
                 {
-                    behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
-                    // Update the parent node with the thumbnail update...
-                    if (logger.isDebugEnabled())
+                    // MNT-15135: Do the property update in a new transaction, in case the parent node was already changed (has a different version) in another transaction.
+                    // This way the failures will not propagate up the retry stack.
+                    RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                    txnHelper.setForceWritable(true);
+                    txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
                     {
-                        logger.debug("Found cached parent node " + sourceNodeRef + " in transactional resources");
-                        logger.debug("Adding thumbnail modification data.");
-                    }
-                    addThumbnailModificationData(thumbnailNodeRef, thumbnailName);
+                        @Override
+                        public Void execute() throws Throwable
+                        {
+                            for (ChildAssociationRef childAssoc : childAssocs)
+                            {
+                                NodeRef thumbnailNodeRef = childAssoc.getChildRef();
+                                NodeRef sourceNodeRef = childAssoc.getParentRef();
+
+                                String thumbnailName = (String) nodeService.getProperty(thumbnailNodeRef, ContentModel.PROP_NAME);
+                                //behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
+                                // Update the parent node with the thumbnail update...
+                                if (logger.isDebugEnabled())
+                                {
+                                    logger.debug("Found cached parent node " + sourceNodeRef + " in transactional resources");
+                                    logger.debug("Adding thumbnail modification data.");
+                                }
+                                addThumbnailModificationData(thumbnailNodeRef, thumbnailName);
+                            }
+                            return null;
+                        }
+                    }, false, true);
+                    return null;
                 }
-                finally
-                {
-                    behaviourFilter.enableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
-                }
-            }
+            }, AuthenticationUtil.getSystemUserName());
         }
     }
 }

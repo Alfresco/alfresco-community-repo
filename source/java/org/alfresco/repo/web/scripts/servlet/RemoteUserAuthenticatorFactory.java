@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.servlet;
 
 import javax.servlet.http.HttpSession;
 
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -42,6 +43,8 @@ import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
+
+import net.sf.acegisecurity.DisabledException;
 
 /**
  * Authenticator to provide Remote User based Header authentication dropping back to Basic Auth otherwise. 
@@ -99,9 +102,25 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
             final String userId = getRemoteUser();
             if (userId != null)
             {
-                authenticationComponent.setCurrentUser(userId);
-                listener.userAuthenticated(new TicketCredentials(authenticationService.getCurrentTicket()));
-                authenticated = true;
+                try
+                {
+                    authenticationComponent.setCurrentUser(userId);
+                    listener.userAuthenticated(new TicketCredentials(authenticationService.getCurrentTicket()));
+                    authenticated = true;
+                }
+                catch (AuthenticationException authErr)
+                {
+                    // don't propagate if the user is disabled
+                    Throwable disabledCause = ExceptionStackUtil.getCause(authErr, DisabledException.class);
+                    if(disabledCause != null)
+                    {
+                    	listener.authenticationFailed(new WebCredentials() {});
+                    }
+                    else
+                    {
+                        throw authErr;
+                    }
+                }
             }
             else
             {

@@ -61,6 +61,7 @@ public class RemoteApi01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.management.subsystems.test.SubsystemsTest.class);
         suite.addTestSuite(org.alfresco.repo.remoteticket.RemoteAlfrescoTicketServiceTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.api.tests.TestCustomModelExport.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.web.scripts.servlet.RemoteAuthenticatorFactoryTest.class));
     }
     
     static void tests2(TestSuite suite) // 

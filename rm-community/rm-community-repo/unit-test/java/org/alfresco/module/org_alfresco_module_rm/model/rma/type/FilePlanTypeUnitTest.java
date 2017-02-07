@@ -183,29 +183,6 @@ public class FilePlanTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add "cm:folder" type to a record category,
-     * Then operation is successful and the folder is automatically converted to a record folder
-     */
-    @Test
-    public void testConversionToRecordFolder() throws Exception
-    {
-        NodeRef fileplan = AlfMock.generateNodeRef(mockedNodeService, TYPE_FILE_PLAN);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(fileplan, nodeRef);
-
-        try
-        {
-            filePlanType.onCreateChildAssociation(childAssocRef, true);
-        }
-        catch(IntegrityException ex)
-        {
-            // this will throw an exception because unit tests can't detect type change
-        }
-
-        verify(mockedNodeService).setType(nodeRef, TYPE_RECORD_CATEGORY);
-    }
-
-    /**
      * Helper method that creates a child of the fileplan container with the provided type
      * @param childType the node type of the child to be created
      * @return the child association between the fileplan and the created node

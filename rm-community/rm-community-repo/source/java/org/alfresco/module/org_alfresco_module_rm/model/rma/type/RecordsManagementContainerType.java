@@ -122,7 +122,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     @Behaviour
     (
        kind = BehaviourKind.ASSOCIATION,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT,
+       // Execute on first event to make all type conversions and set all the properties before transaction ends and response is returned 
+       notificationFrequency = NotificationFrequency.EVERY_EVENT,
        name = BEHAVIOUR_NAME
     )
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)
@@ -195,8 +196,10 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                 if (nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) &&
                     nodeService.getProperty(nodeRef, PROP_IDENTIFIER) == null)
                 {
+                    // Generate identifier and leave it editable until the transaction ends
                     String id = identifierService.generateIdentifier(nodeRef);
                     nodeService.setProperty(nodeRef, RecordsManagementModel.PROP_IDENTIFIER, id);
+                    nodeService.setProperty(nodeRef, RecordsManagementModel.PROP_ID_IS_TEMPORARILY_EDITABLE, true);
                 }
                 return null;
             }

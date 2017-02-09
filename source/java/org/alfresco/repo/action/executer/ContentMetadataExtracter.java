@@ -245,7 +245,19 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
             }
             tags.add((String) rawValue);
         }
-        taggingService.addTags(actionedUponNodeRef, tags);
+
+        try
+        {
+            taggingService.addTags(actionedUponNodeRef, tags);
+        }
+        catch (IllegalArgumentException iae)
+        {
+            // defensive catch-all - do not prevent uploads due to unexpected failure in "addTags"
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Cannot add tags '"+tags+"' - "+iae.getMessage());
+            }
+        }
     }
     
     /**

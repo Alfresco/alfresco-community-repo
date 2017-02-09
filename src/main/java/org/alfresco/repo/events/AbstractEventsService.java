@@ -53,6 +53,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.FileFilterMode;
+import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -718,7 +719,11 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 		{
 			events = new TxnEvents();
 			AlfrescoTransactionSupport.bindResource(EVENTS_KEY, events);
-			AlfrescoTransactionSupport.bindListener(this);
+
+			// Setting a lower priority for this Transaction Listener (0 - higher; 1 - lower)
+			// so it will give a chance to other listeners to finish execution and have all events generated before sending them.
+			// See MNT-17302
+			TransactionSupportUtil.bindListener(this, 1);
 		}
 		return events;
     }

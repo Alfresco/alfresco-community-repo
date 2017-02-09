@@ -316,6 +316,7 @@ public class RecordCategoryTest extends BaseRMRestTest
 
                 // Verify properties
                 // FIXME: Verify properties
+                assertNotNull(createdComponent.getProperties().getRmIdentifier());
             }
             catch (NoSuchElementException e)
             {
@@ -336,7 +337,7 @@ public class RecordCategoryTest extends BaseRMRestTest
         dataProvider = "childrenNotAllowedForCategory"
 
     )
-    @Bug (id="RM-4367")
+    @Bug (id="RM-4367, RM-4572")
     public void createTypesNotAllowedInCategory(String nodeType) throws Exception
     {
         String COMPONENT_NAME = "Component"+getRandomAlphanumeric();

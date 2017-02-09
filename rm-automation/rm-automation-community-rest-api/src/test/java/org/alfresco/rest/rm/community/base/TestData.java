@@ -32,8 +32,10 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.HOLD_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.TRANSFER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
@@ -122,12 +124,12 @@ public interface TestData
      * The default electronic record  name used when creating electronic records
      */
     public static String ELECTRONIC_RECORD_NAME = "Record electronic" + getRandomAlphanumeric();
-    
+
     /**
      * The default Non electronic record name used when creating non-electronic records
      */
     public static String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
-    
+
     /**
      * Data Provider with:
      * with the object types not allowed as children for a record category
@@ -146,6 +148,21 @@ public interface TestData
             { HOLD_TYPE },
             { TRANSFER_TYPE },
             { CONTENT_TYPE }
+        };
+    }
+
+    /**
+     * Data Provider with:
+     * with the object types  for creating a Record Folder
+     *
+     * @return file plan component alias
+     */
+    @DataProvider
+    public static Object[][] folderTypes()
+    {
+        return new Object[][] {
+            {RECORD_FOLDER_TYPE},
+            {FOLDER_TYPE}
         };
     }
 }

@@ -413,6 +413,7 @@ public abstract class TikaPoweredMetadataExtracter
             //  keys onto their own content model
             for(String tikaKey : metadata.names()) 
             {
+                // TODO review this change (part of MNT-15267) - should we really force string concatenation here !?
                putRawValue(tikaKey, getMetadataValue(metadata, tikaKey), rawProperties);
             }
             

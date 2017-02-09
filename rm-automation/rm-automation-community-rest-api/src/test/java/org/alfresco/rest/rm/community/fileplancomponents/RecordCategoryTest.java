@@ -70,12 +70,21 @@ public class RecordCategoryTest extends BaseRMRestTest
      * Given that a file plan exists
      * When I ask the API to create a root record category
      * Then it is created as a root record category
+     *
+     *
+     * Given that a file plan exists
+     * When I use the API to create a folder (cm:folder type) into the fileplan
+     * Then the folder is converted to rma:recordCategory
+     * (see RM-4572 comments)
+     *
      */
     @Test
     (
-        description = "Create root category"
+        description = "Create root category",
+        dataProviderClass= TestData.class,
+        dataProvider = "categoryTypes"
     )
-    public void createCategoryTest() throws Exception
+    public void createCategoryTest(String nodeType) throws Exception
     {
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
@@ -83,7 +92,7 @@ public class RecordCategoryTest extends BaseRMRestTest
         // Build the record category properties
         FilePlanComponent recordCategory = FilePlanComponent.builder()
             .name(categoryName)
-            .nodeType(RECORD_CATEGORY_TYPE)
+            .nodeType(nodeType)
             .properties(
                     FilePlanComponentProperties.builder()
                         .title(categoryTitle)
@@ -109,7 +118,7 @@ public class RecordCategoryTest extends BaseRMRestTest
         // Verify the returned file plan component properties
         FilePlanComponentProperties filePlanComponentProperties = filePlanComponent.getProperties();
         assertEquals(filePlanComponentProperties.getTitle(), categoryTitle);
-
+        assertNotNull(filePlanComponentProperties.getRmIdentifier());
         logger.info("Aspects: " + filePlanComponent.getAspectNames());
     }
 

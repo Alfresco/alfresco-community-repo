@@ -35,6 +35,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.HOLD_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.TRANSFER_TYPE;
@@ -151,6 +152,8 @@ public interface TestData
         };
     }
 
+
+
     /**
      * Data Provider with:
      * with the object types  for creating a Record Folder
@@ -161,8 +164,23 @@ public interface TestData
     public static Object[][] folderTypes()
     {
         return new Object[][] {
-            {RECORD_FOLDER_TYPE},
-            {FOLDER_TYPE}
+            { RECORD_FOLDER_TYPE },
+            { FOLDER_TYPE }
+        };
+    }
+
+    /**
+     * Data Provider with:
+     * with the object types  for creating a Record Category
+     *
+     * @return file plan component alias
+     */
+    @DataProvider
+    public static Object[][] categoryTypes()
+    {
+        return new Object[][] {
+            { FOLDER_TYPE },
+            { RECORD_CATEGORY_TYPE }
         };
     }
 }

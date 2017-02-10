@@ -136,7 +136,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
 
         // verify the new name has the form of "<original name> (<record Id>).<original extension>"
         String recordName = filesAfterRename.get(0).onModel().getName();
-        assertEquals(recordName, document.getName().replace(".", String.format(" (%s).", record.getProperties().getRecordId())));
+        assertEquals(recordName, document.getName().replace(".", String.format(" (%s).", record.getProperties().getRmIdentifier())));
 
         // verify the document in collaboration site is now a record, note the file is now renamed hence folder + doc. name concatenation
         // this also verifies the document is still in the initial folder

@@ -221,6 +221,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
         // created record will have record identifier inserted in its name but will be prefixed with
         // the name it was created as
         assertTrue(electronicRecord.getName().startsWith(record.getName()));
+        assertTrue(electronicRecord.getName().contains(electronicRecord.getProperties().getRmIdentifier()));
     }
 
     /**
@@ -252,6 +253,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
         // record will have record identifier inserted in its name but will for sure start with file name
         // and end with its extension
         assertTrue(electronicRecord.getName().startsWith(IMAGE_FILE.substring(0, IMAGE_FILE.indexOf("."))));
+        assertTrue(electronicRecord.getName().contains(electronicRecord.getProperties().getRmIdentifier()));
     }
 
     @Test

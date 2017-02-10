@@ -107,7 +107,7 @@ public class FilePlanComponentProperties
 
     @JsonProperty(value = PROPERTIES_PHYSICAL_SIZE, required = false)
     private Integer physicalSize;
-    
+
     @JsonProperty(value = PROPERTIES_RECORD_ID, required = false)
-    private String recordId;
+    private String rmIdentifier;
 }

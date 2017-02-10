@@ -44,6 +44,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -355,7 +356,16 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         
         if (groupResult.getFirst() == null)
         {
-            group = createIPRGroup(groupPrefix, authorities, groupResult.getSecond());
+            try
+            {
+                group = createIPRGroup(groupPrefix, authorities, groupResult.getSecond());
+            }
+            catch(DuplicateChildNodeNameException ex)
+            {
+                // the group was concurrently created, try to get it again
+                groupResult = findIPRGroup(groupPrefix, authorities);
+                group = groupResult.getFirst();
+            }
         }
         else
         {

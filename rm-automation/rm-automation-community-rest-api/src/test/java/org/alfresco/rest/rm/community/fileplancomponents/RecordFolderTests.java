@@ -74,12 +74,21 @@ public class RecordFolderTests extends BaseRMRestTest
      * Given that a record category exists
      * When I use the API to create a new record folder
      * Then it is created within the record category
+     *
+     * Given that a record category exists
+     * When I use the API to create a folder (cm:folder type)
+     * Then the folder is converted to rma:recordFolder within the record category
+     * (see RM-4572 comments)
+     *
      */
     @Test
     (
-        description = "Create a folder into a record category"
+        description = "Create a folder into a record category.",
+        dataProviderClass = TestData.class,
+        dataProvider = "folderTypes"
     )
-    public void createFolderTest() throws Exception
+    @Bug (id = "RM-4572")
+    public void createFolderTest(String folderType) throws Exception
     {
         String CATEGORY = CATEGORY_NAME + getRandomAlphanumeric();
 
@@ -88,7 +97,7 @@ public class RecordFolderTests extends BaseRMRestTest
 
         FilePlanComponent recordFolder = FilePlanComponent.builder()
                 .name(FOLDER_NAME)
-                .nodeType(RECORD_FOLDER_TYPE)
+                .nodeType(folderType)
                 .properties(FilePlanComponentProperties.builder()
                         .title(FOLDER_TITLE)
                         .build())
@@ -113,6 +122,7 @@ public class RecordFolderTests extends BaseRMRestTest
         // Verify the returned file plan component properties
         FilePlanComponentProperties folderProperties = folder.getProperties();
         assertEquals(folderProperties.getTitle(), FOLDER_TITLE);
+        assertNotNull(folderProperties.getRmIdentifier());
     }
 
     /**

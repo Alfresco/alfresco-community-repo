@@ -85,7 +85,7 @@ public class ReadRecordTests extends BaseRMRestTest
                                                           .nodeType(CONTENT_TYPE.toString())
                                                           .content(FilePlanComponentContent.builder().mimeType("text/plain").build())
                                                           .build();
-    
+
     private  FilePlanComponent nonelectronicRecord = FilePlanComponent.builder()
                                                              .properties(FilePlanComponentProperties.builder()
                                                                                                     .description(NONELECTRONIC_RECORD_NAME)
@@ -178,6 +178,8 @@ public class ReadRecordTests extends BaseRMRestTest
         assertNotNull(recordWithContent.getContent().getEncoding());
         assertNotNull(recordWithContent.getContent().getMimeType());
         assertNotNull(recordWithContent.getAspectNames());
+        assertFalse(recordWithContent.getName().equals(ELECTRONIC_RECORD_NAME));
+        assertTrue(recordWithContent.getName().contains(recordWithContent.getProperties().getRmIdentifier()));
         assertStatusCode(OK);
 
         //create non-electronic record
@@ -196,6 +198,8 @@ public class ReadRecordTests extends BaseRMRestTest
         assertNotNull(nonElectronicRecord.getContent().getMimeType());
         assertNotNull(nonElectronicRecord.getAspectNames());
         assertEquals(nonElectronicRecord.getProperties().getDescription(), NONELECTRONIC_RECORD_NAME);
+        assertFalse(nonElectronicRecord.getName().equals(NONELECTRONIC_RECORD_NAME));
+        assertTrue(nonElectronicRecord.getName().contains(nonElectronicRecord.getProperties().getRmIdentifier()));
         assertStatusCode(OK);
     }
 
@@ -209,11 +213,11 @@ public class ReadRecordTests extends BaseRMRestTest
     {
         FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        
+
         String RECORD_ELECTRONIC = "Record " + getRandomAlphanumeric();
         String RECORD_ELECTRONIC_BINARY = "Binary Record" + getRandomAlphanumeric();
         String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric() + "/folder";
-        
+
         // create the containers from the relativePath
         FilePlanComponent recordFolder = FilePlanComponent.builder()
                                                     .name(FOLDER_NAME)
@@ -221,7 +225,7 @@ public class ReadRecordTests extends BaseRMRestTest
                                                     .relativePath(RELATIVE_PATH)
                                                     .build();
         String folderId = filePlanComponentAPI.createFilePlanComponent(recordFolder, FILE_PLAN_ALIAS).getId();
-               
+
         // text file as an electronic record
         FilePlanComponent recordText = FilePlanComponent.builder()
                                                     .name(RECORD_ELECTRONIC)
@@ -237,19 +241,19 @@ public class ReadRecordTests extends BaseRMRestTest
             .name(RECORD_ELECTRONIC_BINARY)
             .nodeType(CONTENT_TYPE)
             .build();
-       
+
         String binaryRecordId = filePlanComponentAPI.createElectronicRecord(recordBinary, IMAGE_FILE, folderId).getId();
         // binary content, therefore compare respective SHA1 checksums in order to verify this is identical content
         try
         (
             InputStream recordContentStream = recordsAPI.getRecordContent(binaryRecordId).asInputStream();
             FileInputStream localFileStream = new FileInputStream(new File(Resources.getResource(IMAGE_FILE).getFile()));
-        ) 
+        )
         {
             assertEquals(DigestUtils.sha1(recordContentStream), DigestUtils.sha1(localFileStream));
         }
         assertStatusCode(OK);
-        
+
         // electronic record with no content
         FilePlanComponent recordNoContent = FilePlanComponent.builder()
                                                     .name(RECORD_ELECTRONIC)
@@ -390,8 +394,9 @@ public class ReadRecordTests extends BaseRMRestTest
                     assertFalse(filePlanComponent.getIsRecordFolder());
                     assertFalse(filePlanComponent.getIsCategory());
 
-                    //assertEquals(createdComponent.getName(), filePlanComponent.getName());
-                    assertTrue(filePlanComponent.getName().startsWith(createdComponent.getName()));
+                    //check the record name
+                    assertTrue(filePlanComponent.getName().equals(createdComponent.getName()));
+                    assertTrue(createdComponent.getName().contains(createdComponent.getProperties().getRmIdentifier()));
                     assertEquals(createdComponent.getNodeType(), filePlanComponent.getNodeType());
 
                 }

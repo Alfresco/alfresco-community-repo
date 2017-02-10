@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.core;
 
+import org.alfresco.rest.requests.Node;
+import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilesAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
@@ -33,6 +35,7 @@ import org.alfresco.rest.rm.community.requests.igCoreAPI.RMUserAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RestIGCoreAPI;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -68,6 +71,22 @@ public class RestAPIFactory
         return getRmRestWrapper().withIGCoreAPI();
     }
 
+    private RestCoreAPI getRestCoreAPI(UserModel userModel)
+    {
+        getRmRestWrapper().authenticateUser(userModel != null ? userModel : dataUser.getAdminUser());
+        return getRmRestWrapper().withCoreAPI();
+    }
+
+    public Node getNodeAPI(RepoTestModel model) throws Exception
+    {
+        return getRestCoreAPI(null).usingNode(model);
+    }
+
+    public Node getNodeAPI(UserModel userModel, RepoTestModel model) throws Exception
+    {
+        return getRestCoreAPI(userModel).usingNode(model);
+    }
+
     public RMSiteAPI getRMSiteAPI()
     {
         return getRestIGCoreAPI(null).usingRMSite();
@@ -97,7 +116,7 @@ public class RestAPIFactory
     {
         return getRestIGCoreAPI(userModel).usingRecords();
     }
-    
+
     public FilesAPI getFilesAPI()
     {
         return getRestIGCoreAPI(null).usingFiles();
@@ -107,12 +126,12 @@ public class RestAPIFactory
     {
         return getRestIGCoreAPI(userModel).usingFiles();
     }
-    
+
     public RMUserAPI getRMUserAPI()
     {
         return getRestIGCoreAPI(null).usingRMUser();
     }
-    
+
     public RMUserAPI getRMUserAPI(UserModel userModel)
     {
         return getRestIGCoreAPI(userModel).usingRMUser();

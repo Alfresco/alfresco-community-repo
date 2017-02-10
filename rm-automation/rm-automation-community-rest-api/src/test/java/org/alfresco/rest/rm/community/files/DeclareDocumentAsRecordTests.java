@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.alfresco.dataprep.CMISUtil;
+import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentEntry;
@@ -125,23 +126,23 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         assertEquals(matchingRecords.size(), 1, "More than one record matching document name");
 
         // verify the original file in collaboration site has been renamed to reflect the record identifier
-        // FIXME: this call uses the FilePlanComponentAPI due to no TAS support for Node API in TAS restapi v 5.2.0-0. See RM-4585 for details.
-        List<FilePlanComponentEntry> filesAfterRename = filePlanComponentAPI.listChildComponents(testFolder.getNodeRefWithoutVersion())
-            .getEntries()
-            .stream()
-            .filter(f -> f.getFilePlanComponentModel().getId().equals(document.getNodeRefWithoutVersion()))
-            .collect(Collectors.toList());
+        List<RestNodeModel> filesAfterRename = getRestAPIFactory().getNodeAPI(testFolder)
+                .listChildren()
+                .getEntries()
+                .stream()
+                .filter(f -> f.onModel().getId().equals(document.getNodeRefWithoutVersion()))
+                .collect(Collectors.toList());
         assertEquals(filesAfterRename.size(), 1, "There should be only one file in folder " + testFolder.getName());
 
         // verify the new name has the form of "<original name> (<record Id>).<original extension>"
-        assertEquals(filesAfterRename.get(0).getFilePlanComponentModel().getName(),
-            document.getName().replace(".", String.format(" (%s).", record.getProperties().getRmIdentifier())));
+        String recordName = filesAfterRename.get(0).onModel().getName();
+        assertEquals(recordName, document.getName().replace(".", String.format(" (%s).", record.getProperties().getRmIdentifier())));
 
         // verify the document in collaboration site is now a record, note the file is now renamed hence folder + doc. name concatenation
         // this also verifies the document is still in the initial folder
         Document documentPostFiling = dataContent.usingSite(testSite)
             .usingUser(testUser)
-            .getCMISDocument(testFolder.getCmisLocation() + "/" + filesAfterRename.get(0).getFilePlanComponentModel().getName());
+            .getCMISDocument(testFolder.getCmisLocation() + "/" + recordName);
 
         // a document is a record if "Record" is one of its secondary types
         List<SecondaryType> documentSecondary = documentPostFiling.getSecondaryTypes()
@@ -185,13 +186,12 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         assertStatusCode(FORBIDDEN);
 
         // verify the document is still in the original folder
-        // FIXME: this call uses the FilePlanComponentAPI due to no TAS support for Node API in TAS restapi v 5.2.0-0. See RM-4585 for details.
-        List<FilePlanComponentEntry> filesAfterRename = getRestAPIFactory().getFilePlanComponentsAPI()
-            .listChildComponents(testFolder.getNodeRefWithoutVersion())
-            .getEntries()
-            .stream()
-            .filter(f -> f.getFilePlanComponentModel().getId().equals(document.getNodeRefWithoutVersion()))
-            .collect(Collectors.toList());
+        List<RestNodeModel> filesAfterRename = getRestAPIFactory().getNodeAPI(testFolder)
+                .listChildren()
+                .getEntries()
+                .stream()
+                .filter(f -> f.onModel().getId().equals(document.getNodeRefWithoutVersion()))
+                .collect(Collectors.toList());
        assertEquals(filesAfterRename.size(), 1, "Declare as record failed but original document is missing");
     }
 

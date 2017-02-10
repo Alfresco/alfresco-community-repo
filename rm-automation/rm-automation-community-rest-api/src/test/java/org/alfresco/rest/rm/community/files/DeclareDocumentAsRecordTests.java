@@ -79,15 +79,15 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         // create test user and test collaboration site to store documents in
         testUser = dataUser.createRandomTestUser();
         testUserReadOnly = dataUser.createRandomTestUser();
-        
+
         testSite = dataSite.usingAdmin().createPublicRandomSite();
-        
+
         dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
         dataUser.addUserToSite(testUserReadOnly, testSite, UserRole.SiteConsumer);
-        
+
         testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
     }
-    
+
     /**
      * <pre>
      * Given a document that is not a record
@@ -103,17 +103,17 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     @Test(description = "User with correct permissions can declare document as a record")
     @AlfrescoTest(jira = "RM-4429")
     public void userWithPrivilegesCanDeclareDocumentAsRecord() throws Exception
-    {        
-        // create document in a folder in a collaboration site       
+    {
+        // create document in a folder in a collaboration site
         FileModel document = dataContent.usingSite(testSite)
             .usingUser(testUser)
             .usingResource(testFolder)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-    
+
         // declare document as record
         FilePlanComponent record = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(document.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
-       
+
         // verify the declared record is in Unfiled Records folder
         FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
         List<FilePlanComponentEntry> matchingRecords = filePlanComponentAPI.listChildComponents(UNFILED_RECORDS_CONTAINER_ALIAS)
@@ -134,8 +134,8 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         assertEquals(filesAfterRename.size(), 1, "There should be only one file in folder " + testFolder.getName());
 
         // verify the new name has the form of "<original name> (<record Id>).<original extension>"
-        assertEquals(filesAfterRename.get(0).getFilePlanComponentModel().getName(), 
-            document.getName().replace(".", String.format(" (%s).", record.getProperties().getRecordId())));
+        assertEquals(filesAfterRename.get(0).getFilePlanComponentModel().getName(),
+            document.getName().replace(".", String.format(" (%s).", record.getProperties().getRmIdentifier())));
 
         // verify the document in collaboration site is now a record, note the file is now renamed hence folder + doc. name concatenation
         // this also verifies the document is still in the initial folder
@@ -151,7 +151,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         assertFalse(documentSecondary.isEmpty(), "Document is not a record");
 
         // verify the document is readable and has same content as corresponding record
-        try 
+        try
         (
             InputStream recordInputStream = getRestAPIFactory().getRecordsAPI().getRecordContent(record.getId()).asInputStream();
             InputStream documentInputStream = documentPostFiling.getContentStream().getStream();
@@ -160,7 +160,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
             assertEquals(DigestUtils.sha1(recordInputStream), DigestUtils.sha1(documentInputStream));
         }
     }
-    
+
     /**
      * <pre>
      * Given a document that is not a record
@@ -172,18 +172,18 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      */
     @Test(description = "User with read-only permissions can't declare document a record")
     @AlfrescoTest(jira = "RM-4429")
-    public void userWithReadPermissionsCantDeclare() throws Exception 
+    public void userWithReadPermissionsCantDeclare() throws Exception
     {
         // create document in a folder in a collaboration site
         FileModel document = dataContent.usingSite(testSite)
             .usingUser(testUser)
             .usingResource(testFolder)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-    
+
         // declare document as record as testUserReadOnly
         getRestAPIFactory().getFilesAPI(testUserReadOnly).declareAsRecord(document.getNodeRefWithoutVersion());
         assertStatusCode(FORBIDDEN);
-        
+
         // verify the document is still in the original folder
         // FIXME: this call uses the FilePlanComponentAPI due to no TAS support for Node API in TAS restapi v 5.2.0-0. See RM-4585 for details.
         List<FilePlanComponentEntry> filesAfterRename = getRestAPIFactory().getFilePlanComponentsAPI()
@@ -219,15 +219,15 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         FilePlanComponent record = getRestAPIFactory().getFilePlanComponentsAPI()
             .createFilePlanComponent(nonelectronicRecord, createCategoryFolderInFilePlan().getId());
         assertStatusCode(CREATED);
-        
+
         // try to declare it as a record
         getRestAPIFactory().getFilesAPI().declareAsRecord(record.getId());
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
-    
+
     /**
      * <pre>
-     * Given a node that is NOT a document 
+     * Given a node that is NOT a document
      * When I declare the node as a record
      * Then I get a invalid operation exception
      * </pre>
@@ -238,7 +238,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     public void nonDocumentCantBeDeclaredARecord() throws Exception
     {
         FolderModel otherTestFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
-        
+
         // try to declare otherTestFolder as a record
         getRestAPIFactory().getFilesAPI().declareAsRecord(otherTestFolder.getNodeRefWithoutVersion());
         assertStatusCode(UNPROCESSABLE_ENTITY);

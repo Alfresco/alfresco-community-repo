@@ -197,11 +197,16 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
      */
     protected void addTags(NodeRef actionedUponNodeRef, PropertyDefinition propertyDef, Serializable rawValue)
     {
+        if (rawValue == null)
+        {
+            return;
+        }
+
         List<String> tags = new ArrayList<String>();
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("converting " + rawValue.toString() + " of type " + rawValue.getClass().getCanonicalName() + " to tags");
+            logger.debug("converting " + rawValue + " of type " + rawValue.getClass().getCanonicalName() + " to tags");
         }
 
         if (rawValue instanceof Collection<?>)
@@ -274,7 +279,7 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("adding tags '" + tags + "' to " + actionedUponNodeRef.toString());
+            logger.debug("adding tags '" + tags + "' to " + actionedUponNodeRef);
         }
 
         try

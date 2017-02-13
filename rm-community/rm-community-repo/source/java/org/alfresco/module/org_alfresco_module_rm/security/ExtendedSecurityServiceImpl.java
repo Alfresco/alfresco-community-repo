@@ -56,6 +56,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil; 
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork; 
@@ -356,16 +357,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         
         if (groupResult.getFirst() == null)
         {
-            try
-            {
-                group = createIPRGroup(groupPrefix, authorities, groupResult.getSecond());
-            }
-            catch(DuplicateChildNodeNameException ex)
-            {
-                // the group was concurrently created, try to get it again
-                groupResult = findIPRGroup(groupPrefix, authorities);
-                group = groupResult.getFirst();
-            }
+            group = createIPRGroup(groupPrefix, authorities, groupResult.getSecond());
         }
         else
         {
@@ -525,32 +517,40 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     private String createIPRGroup(String groupNamePrefix, Set<String> children, int index)
     {
         ParameterCheck.mandatory("groupNamePrefix", groupNamePrefix);
-        
+
         // get the group name
         String groupShortName = getIPRGroupShortName(groupNamePrefix, children, index);
-        
+
         // create group
-        String group = authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, Collections.singleton(RMAuthority.ZONE_APP_RM)); 
-        
-        // add root parent
-        authorityService.addAuthority(getRootIRPGroup(), group);
-        
-        // add children if provided
-        if (children != null)
+        String group;
+        try
         {
-            for (String child : children)
+            group = authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, Collections.singleton(RMAuthority.ZONE_APP_RM));
+
+            // add root parent
+            authorityService.addAuthority(getRootIRPGroup(), group);
+
+            // add children if provided
+            if (children != null)
             {
-                if (authorityService.authorityExists(child) &&
-                    !PermissionService.ALL_AUTHORITIES.equals(child))
+                for (String child : children)
                 {
-                    authorityService.addAuthority(group, child);
+                    if (authorityService.authorityExists(child) && !PermissionService.ALL_AUTHORITIES.equals(child))
+                    {
+                        authorityService.addAuthority(group, child);
+                    }
                 }
             }
         }
-        
+        catch(DuplicateChildNodeNameException ex)
+        {
+            // the group was concurrently created
+            group = authorityService.getName(AuthorityType.GROUP, groupShortName);
+        }
+
         return group;
     }
-    
+
     /**
      * Assign IPR groups to a node reference with the correct permissions.
      * 

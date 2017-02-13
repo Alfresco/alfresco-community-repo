@@ -56,7 +56,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil; 
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork; 

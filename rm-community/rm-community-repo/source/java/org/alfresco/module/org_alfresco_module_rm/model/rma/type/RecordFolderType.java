@@ -64,6 +64,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 )
 public class RecordFolderType extends    AbstractDisposableItem
                               implements NodeServicePolicies.OnMoveNodePolicy,
+                                         NodeServicePolicies.OnCreateNodePolicy,
                                          NodeServicePolicies.OnCreateChildAssociationPolicy
 {
     /** record service */
@@ -123,6 +124,7 @@ public class RecordFolderType extends    AbstractDisposableItem
 
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
+                    @Override
                     public Object doWork()
                     {
                         // clean record folder
@@ -269,5 +271,41 @@ public class RecordFolderType extends    AbstractDisposableItem
         {
             behaviourFilter.enableBehaviour();
         }
+    }
+
+    /** {@inheritDoc}} */
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS,
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onCreateNode(final ChildAssociationRef childAssocRef)
+    {
+        // execute behaviour code as system user
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                if (childAssocRef.isPrimary())
+                {
+                    // Check the primary parent is a category.
+                    if (!isRecordFolder(childAssocRef.getParentRef()))
+                    {
+                        throw new AlfrescoRuntimeException("Operation failed: Record folders must go under categories.");
+                    }
+                }
+                else
+                {
+                    // Check the secondary parent is a hold or transfer.
+                    if (!isHold(childAssocRef.getParentRef()) && !isTransfer(childAssocRef.getParentRef()))
+                    {
+                        throw new AlfrescoRuntimeException("Operation failed: Record folders can only have secondary parents of holds or transfers.");
+                    }
+                }
+                return null;
+            }
+        });
     }
 }

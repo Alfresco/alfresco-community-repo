@@ -178,13 +178,18 @@ public class RecordCategoryType extends    BaseBehaviourBean
             @Override
             public Void doWork()
             {
+                // Check the parent is either a file plan or a category.
+                if (!isFilePlan(childAssocRef.getParentRef()) && !isRecordCategory(childAssocRef.getParentRef()))
+                {
+                    throw new AlfrescoRuntimeException("Operation failed: Record categories must go under file plans or categories.");
+                }
+
                 // setup record category permissions
                 filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef());
 
                 return null;
             }
         });
-
     }
 
     /**

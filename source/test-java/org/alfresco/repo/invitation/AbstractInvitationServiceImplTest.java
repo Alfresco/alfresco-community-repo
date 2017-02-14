@@ -47,6 +47,7 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.WorkflowAdminServiceImpl;
 import org.alfresco.service.cmr.invitation.Invitation;
 import org.alfresco.service.cmr.invitation.Invitation.ResourceType;
+import org.alfresco.service.cmr.invitation.InvitationExceptionUserError;
 import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
@@ -62,6 +63,7 @@ import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ReflectionUtils;
+
 
 /**
  * Unit tests of Invitation Service
@@ -230,11 +232,16 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         this.authenticationComponent.setCurrentUser(USER_MANAGER);
 
         // Invite our existing user
-        NominatedInvitation nominatedInvitation = invitationService.inviteNominated(
-                inviteeUserName, resourceType, resourceName, inviteeRole, acceptUrl, rejectUrl);
-
-        // Cancel the invite
-        invitationService.cancel(nominatedInvitation.getInviteId());
+        try
+        {
+            invitationService.inviteNominated(inviteeUserName, resourceType, resourceName, inviteeRole, acceptUrl, rejectUrl);
+            fail("An exception of type " + InvitationExceptionUserError.class.getName() + " should be thrown");
+        }
+        catch (Exception ex)
+        {
+            assertTrue("Incorrect exception was thrown", ex instanceof InvitationExceptionUserError);
+        }
+       
 
         // Our User and associated Authentication still exists
         assertNotNull("User Exists", personService.getPersonOrNull(USER_ONE));
@@ -416,7 +423,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
          * Check that system generated invitations can work as well
          */
         {
-           Field faf = mailService.getClass().getDeclaredField("fromAddress");
+           Field faf = mailService.getClass().getDeclaredField("fromDefaultAddress");
            faf.setAccessible(true);
            String defaultFromAddress = (String)ReflectionUtils.getField(faf, mailService);
            
@@ -1156,25 +1163,24 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         invitationService.inviteModerated(comments, USER_TWO, resourceType, SITE_SHORT_NAME_RED, inviteeRole);
 
         /**
-         * Search for invitations for BLUE
+         * Search for invitations for BLUE - no pending invite since the user is added directly without waiting for the user to accept it
          */
         List<Invitation> resOne = invitationService.listPendingInvitationsForResource(ResourceType.WEB_SITE,
                     SITE_SHORT_NAME_BLUE);
-        assertEquals("blue invites not 1", 1, resOne.size());
-        assertEquals("blue id wrong", threeId, resOne.get(0).getInviteId());
+        assertEquals("blue invites not 0", 0, resOne.size());
 
         /**
-         * Search for invitations for RED
+         * Search for invitations for RED - no pending nominated invites since the user is added directly without waiting for the user to accept it
          */
         List<Invitation> resTwo = invitationService.listPendingInvitationsForResource(ResourceType.WEB_SITE,
                     SITE_SHORT_NAME_RED);
-        assertEquals("red invites not 3", 3, resTwo.size());
+        assertEquals("red invites not 2", 2, resTwo.size());
 
         /**
          * Search for invitations for USER_ONE
          */
         List<Invitation> resThree = invitationService.listPendingInvitationsForInvitee(USER_ONE);
-        assertEquals("user one does not have 3 invitations", 3, resThree.size());
+        assertEquals("user one does not have 1 invitations", 1, resThree.size());
 
         /**
          * Search for invitations for USER_TWO
@@ -1190,33 +1196,33 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         crit1.setInvitationType(InvitationSearchCriteria.InvitationType.NOMINATED);
 
         List<Invitation> resFive = invitationService.searchInvitation(crit1);
-        assertEquals("user one does not have 2 nominated", 2, resFive.size());
+        assertEquals("user one should not have any nominated invites", 0, resFive.size());
 
         // now limit the search to 1 returned value
         List<Invitation> limitRes = invitationService.searchInvitation(crit1, 1);
-        assertEquals("user one does not have 1 nominated", 1, limitRes.size());
+        assertEquals("user one should not have any nominated invites", 0, limitRes.size());
 
         /**
          * Search with an empty criteria - should find all open invitations
          */
         InvitationSearchCriteria crit2 = new InvitationSearchCriteriaImpl();
-        invitationService.searchInvitation(crit2);
-        assertTrue("search everything returned 0 elements", resFive.size() > 0);
+        List<Invitation> searchInvitation = invitationService.searchInvitation(crit2);
+        assertTrue("2 moderated invitations should be found", searchInvitation.size() == 2);
 
         // now search everything but limit the results to 3
-        invitationService.searchInvitation(crit2, 3);
-        assertTrue("search everything returned 0 or more than 3 elements", resFive.size() > 0 && resFive.size() <=3);
+        searchInvitation = invitationService.searchInvitation(crit2, 2);
+        assertTrue("search everything returned 0 or more than 2 elements", searchInvitation.size() > 0 && searchInvitation.size() <=2);
 
         InvitationSearchCriteriaImpl crit3 = new InvitationSearchCriteriaImpl();
         crit3.setInviter(USER_MANAGER);
         crit3.setInvitationType(InvitationSearchCriteria.InvitationType.NOMINATED);
 
         List<Invitation> res3 = invitationService.searchInvitation(crit3);
-        assertEquals("user one does not have 2 nominated", 2, res3.size());
+        assertEquals("user one should not have any nominated invites", 0, res3.size());
 
         //now limit the search to 1 result
         res3 = invitationService.searchInvitation(crit3, 1);
-        assertEquals("user one does not have 1 nominated", 1, res3.size());
+        assertEquals("user one should not have any nominated invites", 0, res3.size());
     }
 
     /**

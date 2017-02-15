@@ -59,7 +59,8 @@ import org.alfresco.service.namespace.QName;
 )
 public class RecordCategoryType extends    BaseBehaviourBean
                                 implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                           NodeServicePolicies.OnCreateNodePolicy
+                                           NodeServicePolicies.OnCreateNodePolicy,
+                                           NodeServicePolicies.OnMoveNodePolicy
 {
     /** vital record service */
     protected VitalRecordService vitalRecordService;
@@ -178,13 +179,14 @@ public class RecordCategoryType extends    BaseBehaviourBean
             @Override
             public Void doWork()
             {
+                checkParentType(childAssocRef);
+
                 // setup record category permissions
                 filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef());
 
                 return null;
             }
         });
-
     }
 
     /**
@@ -212,5 +214,41 @@ public class RecordCategoryType extends    BaseBehaviourBean
                 return nodeService.getType(copyDetails.getTargetParentNodeRef()).equals(TYPE_RECORD_FOLDER) ? false : true;
             }
         };
+    }
+
+    /** Record category move behaviour. {@inheritDoc} */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        checkParentType(newChildAssocRef);
+    }
+
+    /**
+     * Check the parent of a record category. The parent must be a file plan or another category.
+     *
+     * @param childAssocRef The parent-child association.
+     * @throws UnsupportedOperationException If the parent type is invalid.
+     */
+    private void checkParentType(final ChildAssociationRef childAssocRef)
+    {
+        // execute behaviour code as system user
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                // Check the parent is either a file plan or a category.
+                if (!isFilePlan(childAssocRef.getParentRef()) && !isRecordCategory(childAssocRef.getParentRef()))
+                {
+                    throw new AlfrescoRuntimeException("Operation failed: Record categories must go under file plans or categories.");
+                }
+                return null;
+            }
+        });
     }
 }

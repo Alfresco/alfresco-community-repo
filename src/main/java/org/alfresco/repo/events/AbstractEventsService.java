@@ -187,7 +187,18 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
 	protected Client getAlfrescoClient(Client knownClientType)
 	{
-		String alfrescoClientId = null;
+		// The following is a HACK in order to fix MNT-17302:
+		//
+		// "RuleServiceImpl.ExecutedRules" is a resource bond to the transaction by RuleServiceImpl;
+		// We can use this information to avoid setting "alfrescoClientId" in this case, otherwise its presence
+		// will cause the filtering-out of the events that are generated as a result of a rule execution;
+		//
+		// We should find a better, cleaner solution in the future...
+		Object noAlfrescoClientIdHint = AlfrescoTransactionSupport.getResource("RuleServiceImpl.ExecutedRules");
+		if (noAlfrescoClientIdHint != null)
+		{
+			return null;
+		}
 
 		CallContext context = AlfrescoCmisServiceCall.get();
 		if(context != null)
@@ -195,7 +206,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 			HttpServletRequest request = (HttpServletRequest)context.get(CallContext.HTTP_SERVLET_REQUEST);
 			if(request != null)
 			{
-				alfrescoClientId = (String)request.getHeader("alfrescoClientId");
+				String alfrescoClientId = (String)request.getHeader("alfrescoClientId");
 				return new Client(Client.ClientType.cmis, alfrescoClientId);
 			}
 		}

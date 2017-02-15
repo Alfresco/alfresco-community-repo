@@ -116,41 +116,36 @@ public class RecordFolderType extends    AbstractDisposableItem
     )
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
-        if (!nodeService.getType(newChildAssocRef.getParentRef()).equals(TYPE_RECORD_FOLDER))
+        checkParentType(newChildAssocRef);
+
+        if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
         {
-            if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
+            final NodeRef newNodeRef = newChildAssocRef.getChildRef();
+
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
-                final NodeRef newNodeRef = newChildAssocRef.getChildRef();
-
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+                @Override
+                public Object doWork()
                 {
-                    @Override
-                    public Object doWork()
+                    // clean record folder
+                    cleanDisposableItem(nodeService, newNodeRef);
+
+                    // re-initialise the record folder
+                    recordFolderService.setupRecordFolder(newNodeRef);
+
+                    // sort out the child records
+                    for (NodeRef record : recordService.getRecords(newNodeRef))
                     {
-                        // clean record folder
-                        cleanDisposableItem(nodeService, newNodeRef);
+                        // clean record
+                        cleanDisposableItem(nodeService, record);
 
-                        // re-initialise the record folder
-                        recordFolderService.setupRecordFolder(newNodeRef);
-
-                        // sort out the child records
-                        for (NodeRef record : recordService.getRecords(newNodeRef))
-                        {
-                            // clean record
-                            cleanDisposableItem(nodeService, record);
-
-                            // Re-initiate the records in the new folder.
-                            recordService.file(record);
-                        }
-
-                        return null;
+                        // Re-initiate the records in the new folder.
+                        recordService.file(record);
                     }
-                }, AuthenticationUtil.getSystemUserName());
-            }
-        }
-        else
-        {
-            throw new UnsupportedOperationException("Cannot move record folder into another record folder.");
+
+                    return null;
+                }
+            }, AuthenticationUtil.getSystemUserName());
         }
     }
 
@@ -282,18 +277,36 @@ public class RecordFolderType extends    AbstractDisposableItem
     )
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
+        checkParentType(childAssocRef);
+    }
+
+    /**
+     * Check the parent of a record folder. The primary parent must be a category and a secondary parent may be a hold or a transfer.
+     *
+     * @param childAssocRef The parent-child association.
+     * @throws UnsupportedOperationException If the parent type is invalid.
+     */
+    private void checkParentType(final ChildAssociationRef childAssocRef)
+    {
         // execute behaviour code as system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()
             {
-                if (childAssocRef.isPrimary())
+                if (nodeService.getType(childAssocRef.getParentRef()).equals(TYPE_RECORD_FOLDER))
+                {
+                    // Return slightly more helpful exception in this case.
+                    throw new UnsupportedOperationException("Cannot move record folder into another record folder.");
+                }
+                else if (childAssocRef.isPrimary())
                 {
                     // Check the primary parent is a category.
-                    if (!isRecordFolder(childAssocRef.getParentRef()))
+                    if (!isRecordCategory(childAssocRef.getParentRef()))
                     {
-                        throw new AlfrescoRuntimeException("Operation failed: Record folders must go under categories.");
+                        throw new UnsupportedOperationException(
+                                "Operation failed: Record folders must go under categories, not "
+                                            + nodeService.getType(childAssocRef.getParentRef()));
                     }
                 }
                 else
@@ -301,7 +314,9 @@ public class RecordFolderType extends    AbstractDisposableItem
                     // Check the secondary parent is a hold or transfer.
                     if (!isHold(childAssocRef.getParentRef()) && !isTransfer(childAssocRef.getParentRef()))
                     {
-                        throw new AlfrescoRuntimeException("Operation failed: Record folders can only have secondary parents of holds or transfers.");
+                        throw new UnsupportedOperationException(
+                                "Operation failed: Record folders can only have secondary parents of holds or transfers, not "
+                                            + nodeService.getType(childAssocRef.getParentRef()));
                     }
                 }
                 return null;

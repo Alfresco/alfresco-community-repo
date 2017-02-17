@@ -44,6 +44,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -515,32 +516,40 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     private String createIPRGroup(String groupNamePrefix, Set<String> children, int index)
     {
         ParameterCheck.mandatory("groupNamePrefix", groupNamePrefix);
-        
+
         // get the group name
         String groupShortName = getIPRGroupShortName(groupNamePrefix, children, index);
-        
+
         // create group
-        String group = authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, Collections.singleton(RMAuthority.ZONE_APP_RM)); 
-        
-        // add root parent
-        authorityService.addAuthority(getRootIRPGroup(), group);
-        
-        // add children if provided
-        if (children != null)
+        String group;
+        try
         {
-            for (String child : children)
+            group = authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, Collections.singleton(RMAuthority.ZONE_APP_RM));
+
+            // add root parent
+            authorityService.addAuthority(getRootIRPGroup(), group);
+
+            // add children if provided
+            if (children != null)
             {
-                if (authorityService.authorityExists(child) &&
-                    !PermissionService.ALL_AUTHORITIES.equals(child))
+                for (String child : children)
                 {
-                    authorityService.addAuthority(group, child);
+                    if (authorityService.authorityExists(child) && !PermissionService.ALL_AUTHORITIES.equals(child))
+                    {
+                        authorityService.addAuthority(group, child);
+                    }
                 }
             }
         }
-        
+        catch(DuplicateChildNodeNameException ex)
+        {
+            // the group was concurrently created
+            group = authorityService.getName(AuthorityType.GROUP, groupShortName);
+        }
+
         return group;
     }
-    
+
     /**
      * Assign IPR groups to a node reference with the correct permissions.
      * 

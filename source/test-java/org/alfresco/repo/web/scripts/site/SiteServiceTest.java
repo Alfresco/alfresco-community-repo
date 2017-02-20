@@ -960,7 +960,7 @@ public class SiteServiceTest extends AbstractSiteServiceTest
             String rejectURL = "page/reject-invite";
 
             authenticationService.setAuthenticationEnabled(username, false);
-            createNominatedInvitation(siteShortName, firstName, lastName, email, username, SiteModel.SITE_CONSUMER, serverPath, acceptURL, rejectURL, 500);
+            createNominatedInvitation(siteShortName, firstName, lastName, email, username, SiteModel.SITE_CONSUMER, serverPath, acceptURL, rejectURL, 409);
             fail("The user " + username + " is disabled and cannot be invited");
         }
         catch (JSONException e)

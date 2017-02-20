@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.web.scripts.invitation;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -563,6 +565,69 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         createdInvitations.add(new Tracker(inviteId, siteName));
 
         return inviteId;
+    }
+
+    public void testDeleteInvitation() throws Exception
+    {
+        String nominatedId = null;
+        String shortNameSiteA = GUID.generate();
+
+        // Create a site where the action will take place
+        createSite("myPreset", shortNameSiteA, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+
+        // create an invitation for an external user
+        {
+            String inviteeFirstName = "Buffy" + GUID.generate();
+            String inviteeLastName = "Summers";
+            String inviteeEmail = "inviteeVA3Rtu@alfrescotesting.com";
+            // set null in order to create an InvitationWorkflowType.NOMINATED_EXTERNAL invitation
+            String inviteeUserName = null;
+            String serverPath = "http://localhost:8081/share/";
+            String acceptURL = "page/accept-invite";
+            String rejectURL = "page/reject-invite";
+
+            // Create an external nominated invitation on SiteA
+            nominatedId = createNominatedInvitation(shortNameSiteA, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName,
+                    SiteModel.SITE_COLLABORATOR, serverPath, acceptURL, rejectURL);
+        }
+        // search for all invitations to site A: one nominated should be found for user Buffy... Summers
+        {
+            JSONArray data = queryCurrentInvitationList(shortNameSiteA);
+            assertEquals("Wrong number of invitations!", 1, data.length());
+            JSONObject nominatedInv = getInvitation(nominatedId, data);
+            assertNotNull("Nominated invitation to Site A not present!", nominatedInv);
+        }
+
+        // now delete it
+        deleteInvitation(nominatedId, shortNameSiteA, 200);
+
+        // list the pending invitations and check that it is empty
+        {
+            JSONArray data = queryCurrentInvitationList(shortNameSiteA);
+            assertEquals("Wrong number of invitations!", 0, data.length());
+            JSONObject nominatedInv = getInvitation(nominatedId, data);
+            assertNull("Nominated invitation to Site A present!", nominatedInv);
+        }
+        // deleting the invitation was successful
+    }
+
+    private JSONArray queryCurrentInvitationList(String shortNameSiteA) throws IOException, JSONException, UnsupportedEncodingException
+    {
+        String allSiteAUrl = URL_SITES + "/" + shortNameSiteA + "/invitations";
+        Response response = sendRequest(new GetRequest(allSiteAUrl), 200);
+        JSONObject top = new JSONObject(response.getContentAsString());
+        return top.getJSONArray("data");
+    }
+
+    void deleteInvitation(String invitationID, String siteShortName, int expectedStatus) throws Exception
+    {
+        assertNotNull(invitationID);
+        assertNotNull(siteShortName);
+        assertFalse(invitationID.isEmpty());
+        assertFalse(siteShortName.isEmpty());
+
+        Response response = sendRequest(new DeleteRequest(URL_SITES + "/" + siteShortName + "/invitations/" + invitationID), expectedStatus);
+        assertNotNull(new JSONObject(response.getContentAsString()));
     }
 
     private String createModeratedInvitation(String siteName, String inviteeComments, String inviteeUserName,

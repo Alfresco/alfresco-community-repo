@@ -454,6 +454,7 @@
         <property name="authorityService" ref="AuthorityService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">

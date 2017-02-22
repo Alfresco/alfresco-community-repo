@@ -110,7 +110,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private static Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
 
     private static final String ACCESS_AUDIT_CAPABILITY = "AccessAudit";
-    
+
     private static final String KEY_RM_AUDIT_NODE_RECORDS = "RMAUditNodeRecords";
 
     protected static final String RM_AUDIT_EVENT_LOGIN_SUCCESS = "Login.Success";
@@ -284,7 +284,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -292,9 +292,9 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         this.capabilityService = capabilityService;
     }
-    
-    
-    
+
+
+
 
     /**
      * @param ignoredAuditProperties
@@ -506,6 +506,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate, boolean removeIfNoPropertyChanged)
     {
+        logger.error("DEBUGGING: " + String.valueOf(before));
+        logger.error("ALSO     : " + String.valueOf(after));
         // deal with immediate auditing if required
         if (immediate)
         {
@@ -929,7 +931,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     // Skip it
                     return true;
                 }
-                
+
                 if(nodeRef != null && nodeService.exists(nodeRef) &&
                     !AccessStatus.ALLOWED.equals(
                         capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))

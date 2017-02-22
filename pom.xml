@@ -21,9 +21,9 @@
    </organization>
 
    <scm>
-      <connection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</connection>
-      <developerConnection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</developerConnection>
-      <url>https://gitlab.alfresco.com/records-management/records-management</url>
+      <connection>scm:git:https://git.alfresco.com/records-management/records-management.git</connection>
+      <developerConnection>scm:git:https://git.alfresco.com/records-management/records-management.git</developerConnection>
+      <url>https://git.alfresco.com/records-management/records-management</url>
       <tag>HEAD</tag>
    </scm>
 
@@ -112,9 +112,9 @@
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
 
 
-	  <!-- license properties -->
-	  <license.update.dryrun>true</license.update.dryrun>
-	  <license.verbose>false</license.verbose>
+     <!-- license properties -->
+     <license.update.dryrun>true</license.update.dryrun>
+     <license.verbose>false</license.verbose>
 
    </properties>
 
@@ -333,7 +333,7 @@
                 </configuration>
             </plugin>
 
-			<!-- License header generation -->
+         <!-- License header generation -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>

@@ -82,6 +82,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                                                       RMPermissionModel,
                                                       NodeServicePolicies.OnMoveNodePolicy
 {
+    /** An audit key for the set permission event. */
     private static final String AUDIT_SET_PERMISSION = "set-permission";
 
     /** An namespace to use when constructing QNames to use for auditing changes to permissions. */

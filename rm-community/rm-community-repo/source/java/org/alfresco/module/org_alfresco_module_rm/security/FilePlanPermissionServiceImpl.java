@@ -620,10 +620,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             if (setPermission.getAuthority().equals(authority) && setPermission.getPermission().equals(permission))
             {
-                return new HashMap<>(singletonMap(auditProperty, true));
+                return new HashMap<>(singletonMap(auditProperty, (Serializable) true));
             }
         }
-        return new HashMap<>(singletonMap(auditProperty, false));
+        return new HashMap<>(singletonMap(auditProperty, (Serializable) false));
     }
 
     /**

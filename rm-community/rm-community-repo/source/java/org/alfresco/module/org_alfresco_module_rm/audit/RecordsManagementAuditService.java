@@ -129,6 +129,21 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
                     boolean removeIfNoPropertyChanged);
 
     /**
+     * Supply incremental changes as part of an event. This will either create a new event or update the existing details to put any supplied properties into the map.
+     *
+     * @param nodeRef                      node reference
+     * @param eventName                    event name
+     * @param before                       additional property values before event (this must be modifiable and may be changed by the method).
+     * @param after                        additional property values after event (this must be modifiable and may be changed by the method).
+     * @param removeIfNoPropertyChanged    true if event is not audited when there are no properties changed, false otherwise
+     */
+    void auditOrUpdateEvent(NodeRef nodeRef,
+                            String eventName,
+                            Map<QName, Serializable> before,
+                            Map<QName, Serializable> after,
+                            boolean removeIfNoPropertyChanged);
+
+    /**
      * Determines whether the RM audit log is currently enabled.
      *
      * @param  filePlan	file plan

@@ -583,14 +583,13 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 if (canPerformPermissionAction(nodeRef))
                 {
-                    // Construct a QName so that the authority and permission are visible in the log.
-                    QName auditProperty = QName.createQName(AUDIT_NAMESPACE, authority + "_" + permission);
+                    QName auditProperty = constructAuditEventName(authority, permission);
                     Map<QName, Serializable> oldPermission = getCurrentPermissionForAuthority(nodeRef, authority, permission, auditProperty);
                     // Set the permission on the node
                     getPermissionService().setPermission(nodeRef, authority, permission, true);
                     // Add an entry in the audit log.
-                    recordsManagementAuditService.auditEvent(nodeRef, AUDIT_SET_PERMISSION,
-                                oldPermission, new HashMap<>(singletonMap(auditProperty, (Serializable) true)));
+                    recordsManagementAuditService.auditOrUpdateEvent(nodeRef, AUDIT_SET_PERMISSION, oldPermission,
+                                new HashMap<>(singletonMap(auditProperty, (Serializable) true)), true);
                 }
                 else
                 {
@@ -643,14 +642,13 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 if (canPerformPermissionAction(nodeRef))
                 {
-                    // Construct a QName so that the authority and permission are visible in the log.
-                    QName auditProperty = QName.createQName(AUDIT_NAMESPACE, authority + "_" + permission);
+                    QName auditProperty = constructAuditEventName(authority, permission);
                     Map<QName, Serializable> oldPermission = getCurrentPermissionForAuthority(nodeRef, authority, permission, auditProperty);
                     // Delete permission on this node
                     getPermissionService().deletePermission(nodeRef, authority, permission);
                     // Add an entry in the audit log.
-                    recordsManagementAuditService.auditEvent(nodeRef, AUDIT_SET_PERMISSION,
-                                oldPermission, new HashMap<>(singletonMap(auditProperty, (Serializable) false)));
+                    recordsManagementAuditService.auditOrUpdateEvent(nodeRef, AUDIT_SET_PERMISSION, oldPermission,
+                                new HashMap<>(singletonMap(auditProperty, (Serializable) false)), true);
                 }
                 else
                 {
@@ -663,6 +661,19 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 return null;
             }
         });
+    }
+
+    /**
+     * Construct a QName so that the authority and permission are visible in the log.
+     *
+     * @param authority The authority whose permission is being changed.
+     * @param permission The name of the permission being changed.
+     * @return A QName such that the local name will make sense to the end user.
+     */
+    private QName constructAuditEventName(String authority, String permission)
+    {
+        QName auditProperty = QName.createQName(AUDIT_NAMESPACE, permission + " " + authority);
+        return auditProperty;
     }
 
     private boolean canPerformPermissionAction(NodeRef nodeRef)

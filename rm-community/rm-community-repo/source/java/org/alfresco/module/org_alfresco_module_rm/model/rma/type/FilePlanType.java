@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -213,6 +214,14 @@ public class FilePlanType extends    BaseBehaviourBean
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
+        // We need to automatically cast the created folder to category if it is a plain folder
+        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
+        // Some modules use hidden files to store information (see RM-3283)
+        if (nodeService.getType(childAssocRef.getChildRef()).equals(ContentModel.TYPE_FOLDER))
+        {
+            nodeService.setType(childAssocRef.getChildRef(), TYPE_RECORD_CATEGORY);
+        }
+
         // check the created child is of an accepted type
         validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }

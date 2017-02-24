@@ -78,6 +78,7 @@
    <bean id="recordsManagementPermissionPostProcessor" class="org.alfresco.module.org_alfresco_module_rm.permission.RecordsManagementPermissionPostProcessor" parent="parentPermissionPostProcessor">
       <property name="nodeService" ref="nodeService"/>
       <property name="permissionService" ref="permissionService"/>
+      <property name="permissionModel" ref="permissionsModelDAO"/>
    </bean>
 
    <!-- Import RM model -->

@@ -26,9 +26,13 @@
  */
 package org.alfresco.rest.core;
 
+import com.jayway.restassured.builder.RequestSpecBuilder;
+
 import org.alfresco.rest.exception.EmptyJsonResponseException;
+import org.alfresco.rest.model.RestHtmlResponse;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
+import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.RestIGCoreAPI;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,5 +146,45 @@ public class RMRestWrapper
     public UserModel getTestUser()
     {
         return restWrapper.getTestUser();
+    }
+
+    /** Get the Alfresco Core API. */
+    public RestCoreAPI withCoreAPI()
+    {
+        return restWrapper.withCoreAPI();
+    }
+
+    /**
+     * You can handle the request sent to server by calling this method.
+     * If for example you want to sent multipart form data you can use: <pre>
+     * restClient.configureRequestSpec()
+     *              .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
+     *              .addFormParam("renditions", "doclib")
+     *              .addFormParam("autoRename", true);
+     *
+     * restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();
+     * </pre> This will create the node using the multipart data defined.
+     */
+    public RequestSpecBuilder configureRequestSpec()
+    {
+        return restWrapper.configureRequestSpec();
+    }
+
+    /**
+     * Process a response that returns a html
+     *
+     * @throws EmptyJsonResponseException If there is no response from the server.
+     */
+    public RestHtmlResponse processHtmlResponse(RestRequest simpleRequest)
+    {
+        return restWrapper.processHtmlResponse(simpleRequest);
+    }
+
+    /**
+     * @return the rmRestProperties
+     */
+    public RMRestProperties getRmRestProperties()
+    {
+        return this.rmRestProperties;
     }
 }

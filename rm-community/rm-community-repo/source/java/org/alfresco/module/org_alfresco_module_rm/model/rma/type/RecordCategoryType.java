@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
@@ -111,13 +112,22 @@ public class RecordCategoryType extends    BaseBehaviourBean
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        NodeRef parentRef = childAssocRef.getParentRef();
-        validateNewChildAssociation(parentRef, nodeRef, ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        QName childType = nodeService.getType(childAssocRef.getChildRef());
+
+        // We need to automatically cast the created folder to record folder if it is a plain folder
+        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
+        // Some modules use hidden folders to store information (see RM-3283).
+        if (childType.equals(ContentModel.TYPE_FOLDER))
+        {
+            nodeService.setType(childAssocRef.getChildRef(), TYPE_RECORD_FOLDER);
+        }
+
+        validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+
         if (bNew)
         {
             // setup the record folder
-            recordFolderService.setupRecordFolder(nodeRef);
+            recordFolderService.setupRecordFolder(childAssocRef.getChildRef());
         }
     }
 
@@ -132,9 +142,9 @@ public class RecordCategoryType extends    BaseBehaviourBean
        policy = "alf:onCreateChildAssociation",
        notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
+    public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, final boolean bNew)
     {
-        final NodeRef recordCategory = childAssocRef.getChildRef();
+        final NodeRef child = childAssocRef.getChildRef();
 
         behaviourFilter.disableBehaviour();
         try
@@ -145,7 +155,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
                 public Void doWork()
                 {
                     // setup vital record definition
-                    vitalRecordService.setupVitalRecordDefinition(recordCategory);
+                    vitalRecordService.setupVitalRecordDefinition(child);
 
                     return null;
                 }

@@ -24,33 +24,27 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.rest.rm.community.util;
 
-package org.alfresco.repo.security.permissions.processor;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-import java.util.List;
-
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessStatus;
-
-
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
 
 /**
- * Permission Post Processor.
- * 
- * @author Roy Wetherall
- * @since 2.4.a
+ * Mix class for FilePlanComponent POJO class
+ * Mix-in annotations are: a way to associate annotations with classes
+ * without modifying (target) classes themselves.
+ *
+ * @author Rodica Sutu
+ * @since 2.6
  */
-public interface PermissionPostProcessor
+public abstract class FilePlanComponentMixIn
 {
-	/**
-	 * Process permission.
-	 * 
-	 * @param  accessStatus			current access status
-	 * @param  nodeRef				node reference
-	 * @param  perm					permission
-	 *
-	 * @return {@link AccessStatus}
-	 */
-	AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm,
-						List<String> configuredReadPermissions, List<String> configuredFilePermissions);
+    /**
+     * Annotation used to indicate that a property should be serialized "unwrapped"
+     * Its properties are instead included as properties of its containing Object
+     */
+    @JsonUnwrapped
+    abstract FilePlanComponentProperties getProperties();
+
 }

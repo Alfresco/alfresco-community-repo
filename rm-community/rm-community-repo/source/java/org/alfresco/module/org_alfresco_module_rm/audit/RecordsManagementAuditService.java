@@ -49,8 +49,6 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
 {
     public enum ReportFormat { HTML, JSON }
 
-
-
     /**
      * Retrieves a list of audit events.
      *
@@ -91,8 +89,8 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
      *
      * @param nodeRef   node reference
      * @param eventName event name
-     * @param before    property values before event
-     * @param after     property values after event
+     * @param before    property values before event (this must be modifiable and may be changed by the method).
+     * @param after     property values after event (this must be modifiable and may be changed by the method).
      */
     void auditEvent(NodeRef nodeRef,
             		String eventName,
@@ -104,8 +102,8 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
      *
      * @param nodeRef                      node reference
      * @param eventName                    event name
-     * @param before                       property values before event
-     * @param after                        property values after event
+     * @param before                       property values before event (this must be modifiable and may be changed by the method).
+     * @param after                        property values after event (this must be modifiable and may be changed by the method).
      * @param immediate                    true if event is to be audited immediately, false otherwise
      */
     void auditEvent(NodeRef nodeRef,
@@ -119,8 +117,8 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
      *
      * @param nodeRef                      node reference
      * @param eventName                    event name
-     * @param before                       property values before event
-     * @param after                        property values after event
+     * @param before                       property values before event (this must be modifiable and may be changed by the method).
+     * @param after                        property values after event (this must be modifiable and may be changed by the method).
      * @param immediate                    true if event is to be audited immediately, false otherwise
      * @param removeIfNoPropertyChanged    true if event is not audited when there are no properties changed, false otherwise
      */
@@ -130,6 +128,21 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
                     Map<QName, Serializable> after,
                     boolean immediate,
                     boolean removeIfNoPropertyChanged);
+
+    /**
+     * Supply incremental changes as part of an event. This will either create a new event or update the existing details to put any supplied properties into the map.
+     *
+     * @param nodeRef                      node reference
+     * @param eventName                    event name
+     * @param before                       additional property values before event (this must be modifiable and may be changed by the method).
+     * @param after                        additional property values after event (this must be modifiable and may be changed by the method).
+     * @param removeIfNoPropertyChanged    true if event is not audited when there are no properties changed, false otherwise
+     */
+    void auditOrUpdateEvent(NodeRef nodeRef,
+                            String eventName,
+                            Map<QName, Serializable> before,
+                            Map<QName, Serializable> after,
+                            boolean removeIfNoPropertyChanged);
 
     /**
      * Determines whether the RM audit log is currently enabled.
@@ -152,7 +165,6 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
      * @param filePlan	file plan
      */
     void stopAuditLog(NodeRef filePlan);
-
 
     /**
      * Clears the RM audit.

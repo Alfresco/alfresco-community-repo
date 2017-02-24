@@ -449,6 +449,7 @@
         <property name="authorityService" ref="AuthorityService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -967,6 +968,7 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.registerAuditEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.auditEvent=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.auditOrUpdateEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.clearAuditLog=RM_CAP.0.rma:filePlanComponent.DeleteAudit
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrail=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrailFile=RM_ALLOW

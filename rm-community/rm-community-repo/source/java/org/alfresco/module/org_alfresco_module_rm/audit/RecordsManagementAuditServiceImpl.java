@@ -577,22 +577,20 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      *
      * @param nodeRef The node the event is against.
      * @param eventName The name of the event.
-     * @param auditDetails The complete set of events for the transaction.
      * @return The pre-existing event node, or null if none exists.
      */
     private RMAuditNode findExistingEventNode(NodeRef nodeRef, String eventName)
     {
         AlfrescoTransactionSupport.bindListener(txnListener);
         Set<RMAuditNode> auditDetails = TransactionalResourceHelper.getSet(KEY_RM_AUDIT_NODE_RECORDS);
-        RMAuditNode existingEventNode = null;
         for (RMAuditNode existingRMAuditNode : auditDetails)
         {
             if (existingRMAuditNode.getNodeRef().equals(nodeRef) && existingRMAuditNode.getEventName().equals(eventName))
             {
-                existingEventNode = existingRMAuditNode;
+                return existingRMAuditNode;
             }
         }
-        return existingEventNode;
+        return null;
     }
 
     /**

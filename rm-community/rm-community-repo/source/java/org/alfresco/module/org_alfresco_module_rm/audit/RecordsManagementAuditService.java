@@ -46,8 +46,6 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
 {
     public enum ReportFormat { HTML, JSON }
 
-
-
     /**
      * Retrieves a list of audit events.
      *
@@ -164,7 +162,6 @@ public interface RecordsManagementAuditService extends RecordsManagementAuditSer
      * @param filePlan	file plan
      */
     void stopAuditLog(NodeRef filePlan);
-
 
     /**
      * Clears the RM audit.

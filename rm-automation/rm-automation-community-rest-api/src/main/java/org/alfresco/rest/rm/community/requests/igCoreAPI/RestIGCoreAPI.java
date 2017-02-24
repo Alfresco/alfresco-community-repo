@@ -56,6 +56,7 @@ public class RestIGCoreAPI extends RMModelRequest
         RestAssured.baseURI = format("%s://%s", rmRestProperties.getScheme(), rmRestProperties.getServer());
         RestAssured.port = parseInt(rmRestProperties.getPort());
         RestAssured.basePath = rmRestProperties.getRestRmPath();
+        restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }
 
     /**
@@ -96,5 +97,15 @@ public class RestIGCoreAPI extends RMModelRequest
     public FilesAPI usingFiles()
     {
         return new FilesAPI(getRMRestWrapper());
+    }
+    
+    /**
+     * Provides DSL for RM user management API
+     *
+     * @return {@link RMUserAPI}
+     */
+    public RMUserAPI usingRMUser()
+    {
+        return new RMUserAPI(getRMRestWrapper());
     }
 }

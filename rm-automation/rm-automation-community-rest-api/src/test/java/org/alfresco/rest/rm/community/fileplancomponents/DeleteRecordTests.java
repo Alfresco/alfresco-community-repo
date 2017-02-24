@@ -41,12 +41,10 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.RMUserAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
 /**
@@ -60,9 +58,6 @@ import org.testng.annotations.Test;
  */
 public class DeleteRecordTests extends BaseRMRestTest
 {
-    @Autowired
-    private RMUserAPI rmUserAPI;
-
     /**
      * <pre>
      * Given a record
@@ -149,8 +144,8 @@ public class DeleteRecordTests extends BaseRMRestTest
         getDataUser().addUserToSite(deleteUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), UserRole.SiteCollaborator);
 
         // add RM role to user
-        rmUserAPI.assignRoleToUser(deleteUser.getUsername(), UserRoles.ROLE_RM_POWER_USER);
-        rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(deleteUser.getUsername(), UserRoles.ROLE_RM_POWER_USER);
+        assertStatusCode(OK);
 
         // try to delete newRecord
         getRestAPIFactory().getFilePlanComponentsAPI(deleteUser).deleteFilePlanComponent(newRecord.getId());
@@ -183,8 +178,8 @@ public class DeleteRecordTests extends BaseRMRestTest
         logger.info("test user: " + deleteUser.getUsername());
 
         // add RM role to user, RM Power User doesn't have the Delete Record capabilities
-        rmUserAPI.assignRoleToUser(deleteUser.getUsername(), UserRoles.ROLE_RM_POWER_USER);
-        rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(deleteUser.getUsername(), UserRoles.ROLE_RM_POWER_USER);
+        assertStatusCode(OK);
 
         // create random folder
         FilePlanComponent randomFolder = createCategoryFolderInFilePlan();
@@ -193,9 +188,9 @@ public class DeleteRecordTests extends BaseRMRestTest
         // grant deleteUser Filing privileges on randomFolder category, this will be
         // inherited to randomFolder
         FilePlanComponentAPI filePlanComponentsAPIAsAdmin = getRestAPIFactory().getFilePlanComponentsAPI();
-        rmUserAPI.addUserPermission(filePlanComponentsAPIAsAdmin.getFilePlanComponent(randomFolder.getParentId()),
+        getRestAPIFactory().getRMUserAPI().addUserPermission(filePlanComponentsAPIAsAdmin.getFilePlanComponent(randomFolder.getParentId()),
             deleteUser, UserPermissions.PERMISSION_FILING);
-        rmUserAPI.usingRestWrapper().assertStatusCodeIs(OK);
+        assertStatusCode(OK);
 
         // create a non-electronic record in randomFolder
         FilePlanComponent newRecord = filePlanComponentsAPIAsAdmin.createFilePlanComponent(createNonElectronicRecordModel(), randomFolder.getId());

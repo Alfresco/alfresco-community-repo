@@ -44,6 +44,7 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import java.util.Random;
 
@@ -142,6 +143,7 @@ public class NonElectronicRecordTests extends BaseRMRestTest
         String file = "File " + getRandomAlphanumeric();
         String shelf = "Shelf " + getRandomAlphanumeric();
         String location = "Location " + getRandomAlphanumeric();
+        String name = "Record " + getRandomAlphanumeric();
 
         Random random = new Random();
         Integer copies = random.nextInt(Integer.MAX_VALUE);
@@ -149,7 +151,7 @@ public class NonElectronicRecordTests extends BaseRMRestTest
 
         // set values of all available properties for the non electronic records
         FilePlanComponent filePlanComponent = FilePlanComponent.builder()
-                                                           .name("Record " + getRandomAlphanumeric())
+                                                           .name(name)
                                                            .nodeType(NON_ELECTRONIC_RECORD_TYPE)
                                                            .properties(FilePlanComponentProperties.builder()
                                                                                                   .title(title)
@@ -183,6 +185,8 @@ public class NonElectronicRecordTests extends BaseRMRestTest
         assertEquals(location, nonElectronicRecord.getProperties().getLocation());
         assertEquals(copies, nonElectronicRecord.getProperties().getNumberOfCopies());
         assertEquals(size, nonElectronicRecord.getProperties().getPhysicalSize());
+        assertTrue(nonElectronicRecord.getName().contains(nonElectronicRecord.getProperties().getRmIdentifier()));
+        assertTrue(nonElectronicRecord.getName().contains(name));
     }
 
     /**

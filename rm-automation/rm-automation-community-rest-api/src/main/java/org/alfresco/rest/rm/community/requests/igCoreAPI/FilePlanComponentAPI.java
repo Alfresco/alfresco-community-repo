@@ -34,6 +34,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJsonElectronicRecord;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
@@ -49,13 +50,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
-import com.jayway.restassured.response.Response;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentsCollection;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
-import org.alfresco.utility.model.UserModel;
 
 /**
  * File plan component REST API Wrapper
@@ -235,13 +234,15 @@ public class FilePlanComponentAPI extends RMModelRequest
 
     /**
      * Create electronic record from file resource
+     *
      * @param electronicRecordModel {@link FilePlanComponent} for electronic record to be created
      * @param recordContent {@link File} pointing to the content of the electronic record to be created
      * @param parentId parent container id
      * @return newly created {@link FilePlanComponent}
-     * @throws Exception if operation failed
+     * @throws Exception for invalid electronicRecordModel JSON strings
      */
-    public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent, String parentId) throws Exception
+    public FilePlanComponent createElectronicRecord(FilePlanComponent electronicRecordModel, File recordContent,
+        String parentId) throws Exception
     {
         mandatoryObject("electronicRecordModel", electronicRecordModel);
         mandatoryString("parentId", parentId);
@@ -250,40 +251,23 @@ public class FilePlanComponentAPI extends RMModelRequest
             fail("Only electronic records are supported");
         }
 
-        UserModel currentUser = getRMRestWrapper().getTestUser();
-
         /*
          * For file uploads nodeBodyCreate is ignored hence can't be used. Append all FilePlanComponent fields
          * to the request.
          */
-        RequestSpecBuilder builder = new RequestSpecBuilder();
-        builder.setAuth(basic(currentUser.getUsername(), currentUser.getPassword()));
-
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode root = mapper.readTree(toJson(electronicRecordModel));
-
+        RequestSpecBuilder builder = getRMRestWrapper().configureRequestSpec();
+        JsonNode root = new ObjectMapper().readTree(toJsonElectronicRecord(electronicRecordModel));
+        // add request fields
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext())
         {
             String fieldName = fieldNames.next();
             builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
         }
-
         builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
 
-        /*
-         * RestWrapper adds some headers which break multipart/form-data uploads and also assumes json POST requests.
-         * Upload the file using RestAssured library.
-         */
-        Response response = given()
-            .spec(builder.build())
-        .when()
-            .post("fileplan-components/{fileplanComponentId}/children?{parameters}", parentId, getRMRestWrapper().getParameters())
-            .andReturn();
-        getRMRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
-
-        /* return a FilePlanComponent object representing Response */
-        return response.jsonPath().getObject("entry", FilePlanComponent.class);
+        // create node with given content
+        return createFilePlanComponent(electronicRecordModel, parentId);
     }
 
     /**

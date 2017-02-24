@@ -209,7 +209,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
         {
         	// post process permission
         	result = postProcessor.process(result, nodeRef, perm);
-		}
+        }
 
         return result;
     }

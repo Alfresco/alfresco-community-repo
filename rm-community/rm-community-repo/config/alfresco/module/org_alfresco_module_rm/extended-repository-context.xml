@@ -120,6 +120,7 @@
       <property name="configuredFilePermissions">
          <value>${rm.haspermissionmap.write}</value>
       </property>
+      <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="permissionServiceImpl"/>

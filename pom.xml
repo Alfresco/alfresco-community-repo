@@ -42,8 +42,8 @@
 
    <repositories>
       <repository>
-         <id>alfresco-internal</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+         <id>alfresco-public</id>
+         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
       </repository>
    </repositories>
 
@@ -99,6 +99,18 @@
             <module>rm-automation</module>
             <module>rm-benchmark</module>
          </modules>
+         <repositories>
+            <repository>
+               <id>alfresco-internal</id>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+            </repository>
+         </repositories>
+         <pluginRepositories>
+            <pluginRepository>
+               <id>alfresco-private</id>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+            </pluginRepository>
+         </pluginRepositories>
       </profile>
    </profiles>
 

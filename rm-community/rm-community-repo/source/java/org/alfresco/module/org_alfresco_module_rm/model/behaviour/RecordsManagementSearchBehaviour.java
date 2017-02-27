@@ -434,12 +434,12 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
     }
 
     /**
-     * On update type to or from record folder behaviour implmentation
+     * On update type to or from record folder behaviour implementation
      * @param nodeRef the updated node
      * @param oldType the type the node had before update
      * @param newType the type the node has after update
      */
-    public void convertedToOrFromRecordFolder(NodeRef nodeRef, QName oldType, QName newType)
+    public void convertedToOrFromRecordFolder(final NodeRef nodeRef, final QName oldType, final QName newType)
     {
         AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {

@@ -137,7 +137,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                 final NodeRef child = childAssocRef.getChildRef();
                 if (nodeService.exists(child))
                 {
-                    QName childType = nodeService.getType(child);
+                    QName childType = convertNodeToFileplanComponent(child, nodeService.getType(child), nodeService.getType(childAssocRef.getParentRef()));
 
                     // We only care about "folder" or sub-types that are not hidden.
                     // Some modules use hidden files to store information (see RM-3283)
@@ -204,5 +204,38 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                 return null;
             }
         });
+    }
+
+    /**
+     * Converted the child node to a fileplan component
+     * The conversion is needed here to be able to generate the identifier
+     * If there is no conversion rule for the created type nothing happens and the current type is returned
+     * 
+     * @param child ref to the new child
+     * @param childType the type of the new child
+     * @param parentType the type of the parent node
+     * @return the new type of the child node
+     */
+    protected QName convertNodeToFileplanComponent(final NodeRef child, final QName childType, final QName parentType)
+    {
+        if(childType.equals(ContentModel.TYPE_FOLDER))
+        {
+            if(parentType.equals(TYPE_FILE_PLAN))
+            {
+                nodeService.setType(child, TYPE_RECORD_CATEGORY);
+                return TYPE_RECORD_CATEGORY;
+            }
+            if(parentType.equals(TYPE_RECORD_CATEGORY))
+            {
+                nodeService.setType(child, TYPE_RECORD_FOLDER);
+                return TYPE_RECORD_FOLDER;
+            }
+            if(parentType.equals(TYPE_UNFILED_RECORD_CONTAINER) || parentType.equals(TYPE_UNFILED_RECORD_FOLDER))
+            {
+                nodeService.setType(child, TYPE_UNFILED_RECORD_FOLDER);
+                return TYPE_UNFILED_RECORD_FOLDER;
+            }
+        }
+        return childType;
     }
 }

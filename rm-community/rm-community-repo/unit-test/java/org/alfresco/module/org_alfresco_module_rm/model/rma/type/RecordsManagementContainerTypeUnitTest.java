@@ -37,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 
@@ -51,16 +52,18 @@ public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
     private @InjectMocks RecordsManagementContainerType recordManagementContainerType;
 
     /**
-     * Having the Unfilled Record container and a folder having the aspect ASPECT_HIDDEN
+     * Having the Unfilled Record container and a non RM folder subtype node
      * When adding a child association between the folder and the container
      * Then the new folder should not be altered
+     * 
+     * Outlook creates a hidden folder subtype to store attachments and we don't want to change the type of those folders
      */
      @Test
-    public void testAddHiddenFolderToRMContainer()
+    public void testAddNonRMFolderSubtypeToRMContainer()
     {
-        /* Having a RM container and a folder with ASPECT_HIDDEN applied */
+        /* Having a RM container and a non RM folder subtype node */
         NodeRef rmContainer = generateRMContainer();
-        NodeRef rmFolder = generateFolderNode(true);
+        NodeRef rmFolder = generateNonRmFolderSubtypeNode();
 
         /*
          * When adding a child association between the folder and the container
@@ -86,22 +89,21 @@ public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Generates a folder node
-     * @param hasHiddenAspect does the folder node have the aspect ASPECT_HIDDEN
+     * Generates a folder subtype node
      * @return reference to the created folder
      */
-    private NodeRef generateFolderNode(boolean hasHiddenAspect)
+    private NodeRef generateNonRmFolderSubtypeNode()
     {
-        NodeRef rmFolder = generateNodeRef();
-        when(mockedDictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_FOLDER)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(ContentModel.TYPE_FOLDER, ContentModel.TYPE_SYSTEM_FOLDER)).thenReturn(false);
-        when(mockedNodeService.getType(rmFolder)).thenReturn(ContentModel.TYPE_FOLDER);
-        when(mockedNodeService.exists(rmFolder)).thenReturn(true);
-        when(mockedNodeService.hasAspect(rmFolder, ContentModel.ASPECT_HIDDEN)).thenReturn(hasHiddenAspect);
-        when(mockedNodeService.hasAspect(rmFolder, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(false);
-        return rmFolder;
+        NodeRef folder = generateNodeRef();
+        QName folderSubtype = QName.createQName("test", "folderSubtype");
+        when(mockedDictionaryService.isSubClass(folderSubtype, ContentModel.TYPE_FOLDER)).thenReturn(true);
+        when(mockedDictionaryService.isSubClass(folderSubtype, ContentModel.TYPE_SYSTEM_FOLDER)).thenReturn(false);
+        when(mockedNodeService.getType(folder)).thenReturn(folderSubtype);
+        when(mockedNodeService.exists(folder)).thenReturn(true);
+        when(mockedNodeService.hasAspect(folder, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(false);
+        return folder;
     }
-    
+
     /**
      * Generates a folder node
      * @return reference to the created folder

@@ -55,7 +55,8 @@ public class RM4619Test extends BaseRMTestCase
             public Void run() throws Exception
             {
                 FileInfo info = fileFolderService.create(filePlan, GUID.generate(), TYPE_FOLDER);
-                assertEquals(info.getType(), TYPE_RECORD_CATEGORY);
+                assertEquals(TYPE_RECORD_CATEGORY, info.getType());
+                assertNotNull(info.getProperties().get(PROP_IDENTIFIER));
                 return null;
             }
             
@@ -75,7 +76,36 @@ public class RM4619Test extends BaseRMTestCase
             public Void run() throws Exception
             {
                 FileInfo info = fileFolderService.create(rmContainer, GUID.generate(), TYPE_FOLDER);
-                assertEquals(info.getType(), TYPE_RECORD_FOLDER);
+                assertEquals(TYPE_RECORD_FOLDER, info.getType());
+                assertNotNull(info.getProperties().get(PROP_IDENTIFIER));
+                return null;
+            }
+            
+        }, ADMIN_USER);
+    }
+
+    /**
+     * Given the RM site is created
+     * When we create a regular folder in the unfiled record container
+     * Then the folder is immediately converted to a unfiled record folder
+     * 
+     * And when we create another regular folder in that unfiled record folder
+     * Then the folder is also immediately converted to a unfiled record folder
+     */
+    public void testConvertFolderToUnfiledRecordFolder() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                FileInfo folder1 = fileFolderService.create(unfiledContainer, GUID.generate(), TYPE_FOLDER);
+                assertEquals(TYPE_UNFILED_RECORD_FOLDER, folder1.getType());
+                assertNotNull(folder1.getProperties().get(PROP_IDENTIFIER));
+
+                FileInfo folder2 = fileFolderService.create(folder1.getNodeRef(), GUID.generate(), TYPE_FOLDER);
+                assertEquals(TYPE_UNFILED_RECORD_FOLDER, folder2.getType());
+                assertNotNull(folder2.getProperties().get(PROP_IDENTIFIER));
                 return null;
             }
             

@@ -57,14 +57,22 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     private AlfrescoCmisStreamInterceptor cmisStreams;
     private AuthorityService authorityService;
 
-    public void setMemoryThreshold(int memoryThreshold)
+    /**
+     *
+     * @param memoryThreshold in KB
+     */
+    public void setMemoryThreshold(double memoryThreshold)
     {
-        this.memoryThreshold = memoryThreshold;
+        this.memoryThreshold = ((int) memoryThreshold) * 1024;
     }
 
-    public void setMaxContentSize(long maxContentSize)
+    /**
+     *
+     * @param maxContentSize in MB
+     */
+    public void setMaxContentSize(double maxContentSize)
     {
-        this.maxContentSize = maxContentSize;
+        this.maxContentSize = ((long) maxContentSize) * 1024 * 1024;
     }
 
     @Override

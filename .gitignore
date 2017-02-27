@@ -5,6 +5,7 @@
 .idea
 .project
 .settings
+.history
 *.eml
 *.iml
 *.log*

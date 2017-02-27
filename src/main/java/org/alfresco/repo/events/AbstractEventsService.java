@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Alfresco Software, Ltd.  All rights reserved.
+ * Copyright 2017 Alfresco Software, Ltd.  All rights reserved.
  *
  * License rights for this program may be obtained from Alfresco Software, Ltd. 
  * pursuant to a written agreement and any use of this program without such an 
@@ -69,7 +69,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 {
     private static Log logger = LogFactory.getLog(AbstractEventsService.class);
 
-	private static final String EVENTS_KEY = "camel.events";
+    private static final String EVENTS_KEY = "camel.events";
 
     private MessageProducer messageProducer;
 
@@ -79,422 +79,422 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
     protected PermissionService permissionService;
-	protected HiddenAspect hiddenAspect;
-	protected EventRegistry eventRegistry;
-	protected FileFolderService fileFolderService;
-	protected TransactionService transactionService;
+    protected HiddenAspect hiddenAspect;
+    protected EventRegistry eventRegistry;
+    protected FileFolderService fileFolderService;
+    protected TransactionService transactionService;
 
-	protected Set<String> includeEventTypes;
-	protected Set<QName> matchingTypes = new HashSet<QName>();
+    protected Set<String> includeEventTypes;
+    protected Set<QName> matchingTypes = new HashSet<QName>();
 
-	protected boolean sendEventsBeforeCommit = true;
+    protected boolean sendEventsBeforeCommit = true;
 
-	public void setCociService(CheckOutCheckInService cociService)
-	{
-		this.cociService = cociService;
-	}
+    public void setCociService(CheckOutCheckInService cociService)
+    {
+        this.cociService = cociService;
+    }
 
-	public void setHiddenAspect(HiddenAspect hiddenAspect)
-	{
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
+    {
         this.hiddenAspect = hiddenAspect;
     }
 
     public void setSendEventsBeforeCommit(boolean sendEventsBeforeCommit)
-	{
+    {
         this.sendEventsBeforeCommit = sendEventsBeforeCommit;
     }
 
-	public void setTransactionService(TransactionService transactionService)
-	{
-		this.transactionService = transactionService;
-	}
-
-	public void setIncludeEventTypes(String includeEventTypesStr)
-	{
-		StringTokenizer st = new StringTokenizer(includeEventTypesStr, ",");
-		this.includeEventTypes = new HashSet<String>();
-		while(st.hasMoreTokens())
-		{
-			String eventType = st.nextToken().trim();
-			this.includeEventTypes.add(eventType);
-		}
-	}
-
-	public void setFileFolderService(FileFolderService fileFolderService)
-	{
-		this.fileFolderService = fileFolderService;
-	}
-
-	public void setEventRegistry(EventRegistry eventRegistry)
-	{
-		this.eventRegistry = eventRegistry;
-	}
-
-	public void setNamespaceService(NamespaceService namespaceService)
-	{
-		this.namespaceService = namespaceService;
-	}
-
-	public void setPermissionService(PermissionService permissionService)
-	{
-		this.permissionService = permissionService;
-	}
-
-	public void setMessageProducer(MessageProducer messageProducer)
-	{
-		this.messageProducer = messageProducer;
-	}
-
-	public void setDictionaryService(DictionaryService dictionaryService)
-	{
-		this.dictionaryService = dictionaryService;
-	}
-
-	public void setNodeService(NodeService nodeService)
-	{
-		this.nodeService = nodeService;
-	}
-
-	public void setSiteService(SiteService siteService)
-	{
-		this.siteService = siteService;
-	}
-
-	public void init()
-	{
-	}
-
-	protected long nextSequenceNumber()
-	{
-    	TxnEvents events = getTxnEvents();
-    	long seqNumber = events.nextSeqNumber();
-    	return seqNumber;
-	}
-
-	@Override
-    public void beforeCommit(boolean readOnly)
+    public void setTransactionService(TransactionService transactionService)
     {
-	    if(sendEventsBeforeCommit)
-	    {
-	        // send all events
-    		final TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-    		if(events != null)
-    		{
-    			events.sendEvents();
-    		}
-	    }
+        this.transactionService = transactionService;
     }
 
-	protected Client getAlfrescoClient(Client knownClientType)
-	{
-		// The following is a HACK in order to fix MNT-17302:
-		//
-		// "RuleServiceImpl.ExecutedRules" is a resource bond to the transaction by RuleServiceImpl;
-		// We can use this information to avoid setting "alfrescoClientId" in this case, otherwise its presence
-		// will cause the filtering-out of the events that are generated as a result of a rule execution;
-		//
-		// We should find a better, cleaner solution in the future...
-		Object noAlfrescoClientIdHint = AlfrescoTransactionSupport.getResource("RuleServiceImpl.ExecutedRules");
-		if (noAlfrescoClientIdHint != null)
-		{
-			return null;
-		}
+    public void setIncludeEventTypes(String includeEventTypesStr)
+    {
+        StringTokenizer st = new StringTokenizer(includeEventTypesStr, ",");
+        this.includeEventTypes = new HashSet<String>();
+        while(st.hasMoreTokens())
+        {
+            String eventType = st.nextToken().trim();
+            this.includeEventTypes.add(eventType);
+        }
+    }
 
-		CallContext context = AlfrescoCmisServiceCall.get();
-		if(context != null)
-		{
-			HttpServletRequest request = (HttpServletRequest)context.get(CallContext.HTTP_SERVLET_REQUEST);
-			if(request != null)
-			{
-				String alfrescoClientId = (String)request.getHeader("alfrescoClientId");
-				return new Client(Client.ClientType.cmis, alfrescoClientId);
-			}
-		}
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
 
-		return knownClientType;
-	}
+    public void setEventRegistry(EventRegistry eventRegistry)
+    {
+        this.eventRegistry = eventRegistry;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    public void setMessageProducer(MessageProducer messageProducer)
+    {
+        this.messageProducer = messageProducer;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+
+    public void init()
+    {
+    }
+
+    protected long nextSequenceNumber()
+    {
+        TxnEvents events = getTxnEvents();
+        long seqNumber = events.nextSeqNumber();
+        return seqNumber;
+    }
+
+    @Override
+    public void beforeCommit(boolean readOnly)
+    {
+        if(sendEventsBeforeCommit)
+        {
+            // send all events
+            final TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+            if(events != null)
+            {
+                events.sendEvents();
+            }
+        }
+    }
+
+    protected Client getAlfrescoClient(Client knownClientType)
+    {
+        // The following is a HACK in order to fix MNT-17302:
+        //
+        // "RuleServiceImpl.ExecutedRules" is a resource bond to the transaction by RuleServiceImpl;
+        // We can use this information to avoid setting "alfrescoClientId" in this case, otherwise its presence
+        // will cause the filtering-out of the events that are generated as a result of a rule execution;
+        //
+        // We should find a better, cleaner solution in the future...
+        Object noAlfrescoClientIdHint = AlfrescoTransactionSupport.getResource("RuleServiceImpl.ExecutedRules");
+        if (noAlfrescoClientIdHint != null)
+        {
+            return null;
+        }
+
+        CallContext context = AlfrescoCmisServiceCall.get();
+        if(context != null)
+        {
+            HttpServletRequest request = (HttpServletRequest)context.get(CallContext.HTTP_SERVLET_REQUEST);
+            if(request != null)
+            {
+                String alfrescoClientId = (String)request.getHeader("alfrescoClientId");
+                return new Client(Client.ClientType.cmis, alfrescoClientId);
+            }
+        }
+
+        return knownClientType;
+    }
 
     @Override
     public void afterCommit()
     {
-	    if(sendEventsBeforeCommit)
-	    {
-	        // send txn committed event
-    		String txnId = AlfrescoTransactionSupport.getTransactionId();
-        	long timestamp = System.currentTimeMillis();
+        if(sendEventsBeforeCommit)
+        {
+            // send txn committed event
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            long timestamp = System.currentTimeMillis();
             String networkId = TenantUtil.getCurrentDomain();
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
             Client alfrescoClient = getAlfrescoClient(null);
 
-    		final Event event = new TransactionCommittedEvent(nextSequenceNumber(), txnId, networkId, timestamp, username,
-    				alfrescoClient);
+            final Event event = new TransactionCommittedEvent(nextSequenceNumber(), txnId, networkId, timestamp, username,
+                    alfrescoClient);
 
-    		if (logger.isDebugEnabled())
-    		{
-    			logger.debug("sendEvent "+event);
-    		}
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("sendEvent "+event);
+            }
 
-    		// Need to execute this in another read txn because Camel/JMS expects it (the config now seems to
-    		// require a txn)
-    		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-			{
-				@Override
-				public Void execute() throws Throwable
-				{
-					messageProducer.send(event);
+            // Need to execute this in another read txn because Camel/JMS expects it (the config now seems to
+            // require a txn)
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    messageProducer.send(event);
 
-	                return null;
+                    return null;
                 }
-			}, true, false);
-	    }
-	    else
-	    {
-	        // send all events
+            }, true, false);
+        }
+        else
+        {
+            // send all events
             final TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
             if(events != null)
             {
-            	events.sendEvents();
+                events.sendEvents();
             }
-	    }
+        }
     }
 
-	@Override
-	public void afterRollback()
-	{
-		String txnId = AlfrescoTransactionSupport.getTransactionId();
-		long timestamp = System.currentTimeMillis();
-		String networkId = TenantUtil.getCurrentDomain();
-		String username = AuthenticationUtil.getFullyAuthenticatedUser();
-		Client alfrescoClient = getAlfrescoClient(null);
+    @Override
+    public void afterRollback()
+    {
+        String txnId = AlfrescoTransactionSupport.getTransactionId();
+        long timestamp = System.currentTimeMillis();
+        String networkId = TenantUtil.getCurrentDomain();
+        String username = AuthenticationUtil.getFullyAuthenticatedUser();
+        Client alfrescoClient = getAlfrescoClient(null);
 
-		Event event = new TransactionRolledBackEvent(nextSequenceNumber(), txnId, networkId, timestamp, username,
-				alfrescoClient);
+        Event event = new TransactionRolledBackEvent(nextSequenceNumber(), txnId, networkId, timestamp, username,
+                alfrescoClient);
 
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("sendEvent "+event);
-		}
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("sendEvent "+event);
+        }
 
-		try
-		{
-			messageProducer.send(event);
-		}
-		catch (MessagingException e)
-		{
+        try
+        {
+            messageProducer.send(event);
+        }
+        catch (MessagingException e)
+        {
 //			throw new AlfrescoRuntimeException("Failed to send event", e);
-			// TODO just log for now. How to deal with no running ActiveMQ?
-			logger.error("Failed to send event " + event, e);
-		}
-		finally
-		{
-			TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-			if(events != null)
-			{
-				events.clear();
-			}
-		}
+            // TODO just log for now. How to deal with no running ActiveMQ?
+            logger.error("Failed to send event " + event, e);
+        }
+        finally
+        {
+            TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+            if(events != null)
+            {
+                events.clear();
+            }
+        }
     }
 
-	protected boolean includeEventType(String eventType)
-	{
-		return includeEventTypes.contains(eventType);
-	}
+    protected boolean includeEventType(String eventType)
+    {
+        return includeEventTypes.contains(eventType);
+    }
 
-	protected class NodeInfo
-	{
-	    private String txnId;
-	    private String name;
-		private NodeRef nodeRef;
-		private List<Path> nodePaths;
-		private Long modificationTimestamp;
-		private QName type;
-		private String siteId;
-		private Status status;
-		private Client client;
-		private Boolean nodeExists;
-		private boolean include;
-		private Boolean isVisible;
-		private Boolean typeMatches;
-		private String eventType;
-		private List<String> stringPaths;
-		private List<List<String>> parentNodeIds;
-		private Set<QName> aspects;
+    protected class NodeInfo
+    {
+        private String txnId;
+        private String name;
+        private NodeRef nodeRef;
+        private List<Path> nodePaths;
+        private Long modificationTimestamp;
+        private QName type;
+        private String siteId;
+        private Status status;
+        private Client client;
+        private Boolean nodeExists;
+        private boolean include;
+        private Boolean isVisible;
+        private Boolean typeMatches;
+        private String eventType;
+        private List<String> stringPaths;
+        private List<List<String>> parentNodeIds;
+        private Set<QName> aspects;
 
-		public NodeInfo(String eventType, String txnId, String name, NodeRef nodeRef, Status status, List<Path> nodePaths,
-				Long modificationTimestamp, QName type, Set<QName> aspects, String siteId, Client client, Boolean nodeExists, boolean include,
-				Boolean isVisible, Boolean typeMatches)
-		{
-			super();
-			this.eventType = eventType;
-			this.txnId = txnId;
-			this.name = name;
-			this.nodeRef = nodeRef;
-			this.status = status;
-			this.nodePaths = nodePaths;
-			this.modificationTimestamp = modificationTimestamp;
-			this.type = type;
-			this.aspects = aspects;
-			this.siteId = siteId;
-			this.client = client;
-			this.nodeExists = nodeExists;
-			this.include = include;
-			this.isVisible = isVisible;
-			this.typeMatches = typeMatches;
-		}
+        public NodeInfo(String eventType, String txnId, String name, NodeRef nodeRef, Status status, List<Path> nodePaths,
+                Long modificationTimestamp, QName type, Set<QName> aspects, String siteId, Client client, Boolean nodeExists, boolean include,
+                Boolean isVisible, Boolean typeMatches)
+        {
+            super();
+            this.eventType = eventType;
+            this.txnId = txnId;
+            this.name = name;
+            this.nodeRef = nodeRef;
+            this.status = status;
+            this.nodePaths = nodePaths;
+            this.modificationTimestamp = modificationTimestamp;
+            this.type = type;
+            this.aspects = aspects;
+            this.siteId = siteId;
+            this.client = client;
+            this.nodeExists = nodeExists;
+            this.include = include;
+            this.isVisible = isVisible;
+            this.typeMatches = typeMatches;
+        }
 
-		public Map<String, Serializable> getProperties()
-		{
-	    	Map<String, Serializable> properties = new HashMap<>();
+        public Map<String, Serializable> getProperties()
+        {
+            Map<String, Serializable> properties = new HashMap<>();
 
-	    	String workingCopyOwner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
-	    	if(workingCopyOwner != null)
-	    	{
-	    		 properties.put(ContentModel.PROP_WORKING_COPY_OWNER.toPrefixString(namespaceService),
-	    				 workingCopyOwner);
-	    	}
+            String workingCopyOwner = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_OWNER);
+            if(workingCopyOwner != null)
+            {
+                 properties.put(ContentModel.PROP_WORKING_COPY_OWNER.toPrefixString(namespaceService),
+                         workingCopyOwner);
+            }
 
-	    	return properties;
-		}
+            return properties;
+        }
 
-	    public boolean checkNodeInfo()
-	    {
-	    	boolean ret = true;
+        public boolean checkNodeInfo()
+        {
+            boolean ret = true;
 
-	    	if(!nodeExists)
-	    	{
-				logger.warn("Unable to send event of type " + eventType + ", node not found: " + this.toString());
-				ret = false;
-	    	}
-	    	else if(!include)
-	    	{
-				logger.warn("Unable to send event of type " + eventType + ", node not included: " + this.toString());
-				ret = false;
-	    	}
-	    	else if(!typeMatches)
-	    	{
-				logger.warn("Unable to send event of type " + eventType + ", node type filtered: " + this.toString());
-				ret = false;
-	    	}
-	    	else if(!isVisible)
-	    	{
-				logger.warn("Unable to send event of type " + eventType + ", node is not visible: " + this.toString());
-				ret = false;
-	    	}
+            if(!nodeExists)
+            {
+                logger.warn("Unable to send event of type " + eventType + ", node not found: " + this.toString());
+                ret = false;
+            }
+            else if(!include)
+            {
+                logger.warn("Unable to send event of type " + eventType + ", node not included: " + this.toString());
+                ret = false;
+            }
+            else if(!typeMatches)
+            {
+                logger.warn("Unable to send event of type " + eventType + ", node type filtered: " + this.toString());
+                ret = false;
+            }
+            else if(!isVisible)
+            {
+                logger.warn("Unable to send event of type " + eventType + ", node is not visible: " + this.toString());
+                ret = false;
+            }
 
-	    	return ret;
-	    }
+            return ret;
+        }
 
-		public Set<QName> getAspects()
-		{
-			return aspects;
-		}
+        public Set<QName> getAspects()
+        {
+            return aspects;
+        }
 
-		public Set<String> getAspectsAsStrings()
-		{
-			Set<String> strAspects = new HashSet<>();
-			for(QName aspect : aspects)
-			{
-				strAspects.add(aspect.toPrefixString(namespaceService));
-			}
-			return strAspects;
-		}
+        public Set<String> getAspectsAsStrings()
+        {
+            Set<String> strAspects = new HashSet<>();
+            for(QName aspect : aspects)
+            {
+                strAspects.add(aspect.toPrefixString(namespaceService));
+            }
+            return strAspects;
+        }
 
-		public Boolean getTypeMatches()
-		{
-			return typeMatches;
-		}
+        public Boolean getTypeMatches()
+        {
+            return typeMatches;
+        }
 
-		public String getEventType()
-		{
-			return eventType;
-		}
+        public String getEventType()
+        {
+            return eventType;
+        }
 
-		public boolean isInclude()
-		{
-			return include;
-		}
+        public boolean isInclude()
+        {
+            return include;
+        }
 
-		public Boolean getIsVisible()
-		{
-			return isVisible;
-		}
+        public Boolean getIsVisible()
+        {
+            return isVisible;
+        }
 
-		public Boolean isNodeExists()
-		{
-			return nodeExists;
-		}
+        public Boolean isNodeExists()
+        {
+            return nodeExists;
+        }
 
-		public String getTxnId()
-		{
+        public String getTxnId()
+        {
             return txnId;
         }
 
         public String getName()
-		{
+        {
             return name;
         }
 
         public String getNodeId()
-		{
-        	String nodeId = nodeRef.getId();
-        	return nodeId;
-		}
-		
-		public Status getStatus()
-		{
-			return status;
-		}
+        {
+            String nodeId = nodeRef.getId();
+            return nodeId;
+        }
 
-		List<String> getToAppend()
-		{
-			List<String> ret = null;
+        public Status getStatus()
+        {
+            return status;
+        }
 
-			if(name != null)
-			{
-				ret = Arrays.asList(name);
-			}
-			else
-			{
-				ret = Collections.emptyList();
-			}
+        List<String> getToAppend()
+        {
+            List<String> ret = null;
 
-			return ret;
-		}
+            if(name != null)
+            {
+                ret = Arrays.asList(name);
+            }
+            else
+            {
+                ret = Collections.emptyList();
+            }
 
-		public List<String> getPaths()
-		{
-		    if(stringPaths == null && nodePaths != null)
-		    {
-		        stringPaths = AbstractEventsService.this.getPaths(nodePaths, getToAppend());
-		    }
+            return ret;
+        }
 
-	        return stringPaths;
-		}
+        public List<String> getPaths()
+        {
+            if(stringPaths == null && nodePaths != null)
+            {
+                stringPaths = AbstractEventsService.this.getPaths(nodePaths, getToAppend());
+            }
 
-		public List<List<String>> getParentNodeIds()
-		{
-		    if(parentNodeIds == null && nodePaths != null)
-		    {
-		        parentNodeIds = AbstractEventsService.this.getNodeIdsFromParent(nodePaths);
-		    }
+            return stringPaths;
+        }
 
-		    return parentNodeIds;
-		}
+        public List<List<String>> getParentNodeIds()
+        {
+            if(parentNodeIds == null && nodePaths != null)
+            {
+                parentNodeIds = AbstractEventsService.this.getNodeIdsFromParent(nodePaths);
+            }
 
-		public Long getModificationTimestamp()
-		{
-			return modificationTimestamp;
-		}
-		
-		public QName getType()
-		{
-			return type;
-		}
+            return parentNodeIds;
+        }
 
-		public String getSiteId()
-		{
-			return siteId;
-		}
+        public Long getModificationTimestamp()
+        {
+            return modificationTimestamp;
+        }
+
+        public QName getType()
+        {
+            return type;
+        }
+
+        public String getSiteId()
+        {
+            return siteId;
+        }
 
         public Client getClient()
         {
@@ -503,73 +503,73 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
         void updateName(String name)
         {
-        	this.name = name;
-			stringPaths = null;
+            this.name = name;
+            stringPaths = null;
         }
 
-		@Override
-		public String toString()
-		{
-			return "NodeInfo [txnId=" + txnId + ", name=" + name + ", nodeRef="
-					+ nodeRef+ ", nodePaths=" + nodePaths
-					+ ", modificationTimestamp=" + modificationTimestamp
-					+ ", type=" + type + ", siteId=" + siteId + ", status="
-					+ status + ", client=" + client + ", nodeExists="
-					+ nodeExists + ", include=" + include + ", isVisible="
-					+ isVisible + ", typeMatches=" + typeMatches
-					+ ", eventType=" + eventType + ", stringPaths="
-					+ stringPaths + ", parentNodeIds=" + parentNodeIds + "]";
-		}
-	}
+        @Override
+        public String toString()
+        {
+            return "NodeInfo [txnId=" + txnId + ", name=" + name + ", nodeRef="
+                    + nodeRef+ ", nodePaths=" + nodePaths
+                    + ", modificationTimestamp=" + modificationTimestamp
+                    + ", type=" + type + ", siteId=" + siteId + ", status="
+                    + status + ", client=" + client + ", nodeExists="
+                    + nodeExists + ", include=" + include + ", isVisible="
+                    + isVisible + ", typeMatches=" + typeMatches
+                    + ", eventType=" + eventType + ", stringPaths="
+                    + stringPaths + ", parentNodeIds=" + parentNodeIds + "]";
+        }
+    }
 
-	// TODO cache parents?
+    // TODO cache parents?
     private boolean parentMatches(QName type)
     {
-    	boolean matches = false;
+        boolean matches = false;
 
-    	QName t = type;
-    	while(t != null)
-    	{
-	    	TypeDefinition typeDef = dictionaryService.getType(t);
-	    	t = typeDef.getParentName();
-	    	if(t != null)
-	    	{
-	    		if(matchingTypes.contains(t))
-	    		{
-	    			matches = true;
-	    			matchingTypes.add(type);
-	    			break;
-	    		}
-	    	}
-    	}
+        QName t = type;
+        while(t != null)
+        {
+            TypeDefinition typeDef = dictionaryService.getType(t);
+            t = typeDef.getParentName();
+            if(t != null)
+            {
+                if(matchingTypes.contains(t))
+                {
+                    matches = true;
+                    matchingTypes.add(type);
+                    break;
+                }
+            }
+        }
 
-    	return matches;
+        return matches;
     }
 
     private boolean typeMatches(QName type)
     {
-    	boolean matches = false;
+        boolean matches = false;
 
-    	if(type != null)
-    	{
-	    	if(matchingTypes == null || matchingTypes.size() == 0)
-	    	{
-	    		matches = true;
-	    	}
-	    	else
-	    	{
-		    	if(matchingTypes.contains(type))
-		    	{
-		    		matches = true;
-		    	}
-		    	else
-		    	{
-		    		matches = parentMatches(type);
-		    	}
-	    	}
-    	}
+        if(type != null)
+        {
+            if(matchingTypes == null || matchingTypes.size() == 0)
+            {
+                matches = true;
+            }
+            else
+            {
+                if(matchingTypes.contains(type))
+                {
+                    matches = true;
+                }
+                else
+                {
+                    matches = parentMatches(type);
+                }
+            }
+        }
 
-    	return matches;
+        return matches;
     }
 
     protected List<String> getPaths(List<Path> nodePaths, List<String> toAppend)
@@ -674,148 +674,148 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
     class TxnEvents
     {
-    	private long seqNumber;
-    	private List<Event> events;
+        private long seqNumber;
+        private List<Event> events;
 
-    	TxnEvents()
-    	{
-    		this.seqNumber = 0;
-    		this.events = new LinkedList<>();
-    	}
+        TxnEvents()
+        {
+            this.seqNumber = 0;
+            this.events = new LinkedList<>();
+        }
 
-    	void addEvent(Event event)
-    	{
-    		events.add(event);
-    	}
-    	
-    	void clear()
-    	{
-    		events.clear();
-    		seqNumber = 0;
-    	}
+        void addEvent(Event event)
+        {
+            events.add(event);
+        }
 
-		long nextSeqNumber()
-		{
-			return seqNumber++;
-		}
+        void clear()
+        {
+            events.clear();
+            seqNumber = 0;
+        }
 
-		List<Event> getEvents()
-		{
-			return events;
-		}
+        long nextSeqNumber()
+        {
+            return seqNumber++;
+        }
 
-		void sendEvents()
-		{
-    		if(events != null && events.size() > 0)
-    		{
-    			try
-    			{
-    				for(Event event : events)
-    				{
-    					messageProducer.send(event);
-    				}
-    			}
-    			finally
-    			{
-    				events.clear();
-    			}
-    		}
-		}
+        List<Event> getEvents()
+        {
+            return events;
+        }
+
+        void sendEvents()
+        {
+            if(events != null && events.size() > 0)
+            {
+                try
+                {
+                    for(Event event : events)
+                    {
+                        messageProducer.send(event);
+                    }
+                }
+                finally
+                {
+                    events.clear();
+                }
+            }
+        }
     }
 
     protected TxnEvents getTxnEvents()
     {
-		TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-		if(events == null)
-		{
-			events = new TxnEvents();
-			AlfrescoTransactionSupport.bindResource(EVENTS_KEY, events);
+        TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+        if(events == null)
+        {
+            events = new TxnEvents();
+            AlfrescoTransactionSupport.bindResource(EVENTS_KEY, events);
 
-			// Setting a lower priority for this Transaction Listener (0 - higher; 1 - lower)
-			// so it will give a chance to other listeners to finish execution and have all events generated before sending them.
-			// See MNT-17302
-			TransactionSupportUtil.bindListener(this, 1);
-		}
-		return events;
+            // Setting a lower priority for this Transaction Listener (0 - higher; 1 - lower)
+            // so it will give a chance to other listeners to finish execution and have all events generated before sending them.
+            // See MNT-17302
+            TransactionSupportUtil.bindListener(this, 1);
+        }
+        return events;
     }
 
-	protected void sendEvent(Event event)
-	{
-		String eventType = event.getType();
-		if(!eventRegistry.isEventTypeRegistered(eventType))
-		{
-			eventRegistry.addEventType(eventType);
-		}
+    protected void sendEvent(Event event)
+    {
+        String eventType = event.getType();
+        if(!eventRegistry.isEventTypeRegistered(eventType))
+        {
+            eventRegistry.addEventType(eventType);
+        }
 
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("sendEvent "+event);
-		}
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("sendEvent "+event);
+        }
 
-		TxnEvents events = getTxnEvents();
-		events.addEvent(event);
-	}
+        TxnEvents events = getTxnEvents();
+        events.addEvent(event);
+    }
 
-	protected NodeInfo getNodeInfo(final NodeRef nodeRef, final String eventType)
-	{
-		NodeInfo nodeInfo = AuthenticationUtil.runAsSystem(new RunAsWork<NodeInfo>()
-		{
-			public NodeInfo doWork() throws Exception
-			{
-				NodeInfo nodeInfo = null;
+    protected NodeInfo getNodeInfo(final NodeRef nodeRef, final String eventType)
+    {
+        NodeInfo nodeInfo = AuthenticationUtil.runAsSystem(new RunAsWork<NodeInfo>()
+        {
+            public NodeInfo doWork() throws Exception
+            {
+                NodeInfo nodeInfo = null;
 
-				String txnId = AlfrescoTransactionSupport.getTransactionId();
+                String txnId = AlfrescoTransactionSupport.getTransactionId();
 
-				if(!includeEventType(eventType))
-				{
-					nodeInfo = new NodeInfo(eventType, null, null, nodeRef, null, null, null, null, null, null, null, null,
-							false, null, null);
-				}
-				else if(nodeRef == null || !nodeService.exists(nodeRef))
-				{
-					nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null, null, false,
-							true, false, null);
-				}
-				else
-				{
-				    FileFilterMode.Client filterclient = FileFilterMode.getClient();
-					Visibility visibility = hiddenAspect.getVisibility(filterclient, nodeRef);
-					QName type = nodeService.getType(nodeRef);
+                if(!includeEventType(eventType))
+                {
+                    nodeInfo = new NodeInfo(eventType, null, null, nodeRef, null, null, null, null, null, null, null, null,
+                            false, null, null);
+                }
+                else if(nodeRef == null || !nodeService.exists(nodeRef))
+                {
+                    nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null, null, false,
+                            true, false, null);
+                }
+                else
+                {
+                    FileFilterMode.Client filterclient = FileFilterMode.getClient();
+                    Visibility visibility = hiddenAspect.getVisibility(filterclient, nodeRef);
+                    QName type = nodeService.getType(nodeRef);
 
-					if(!typeMatches(type))
-					{
-						nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null,
-								null, true, true, false, false);
-					}
-					else if(!visibility.equals(Visibility.Visible))
-					{
-						nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null,
-								null, true, true, true, true);
-					}
-					else
-					{
-						SiteInfo siteInfo = siteService.getSite(nodeRef);
-				    	String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
+                    if(!typeMatches(type))
+                    {
+                        nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null,
+                                null, true, true, false, false);
+                    }
+                    else if(!visibility.equals(Visibility.Visible))
+                    {
+                        nodeInfo = new NodeInfo(eventType, txnId, null, nodeRef, null, null, null, null, null, null,
+                                null, true, true, true, true);
+                    }
+                    else
+                    {
+                        SiteInfo siteInfo = siteService.getSite(nodeRef);
+                        String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
 
-				    	Set<QName> aspects = nodeService.getAspects(nodeRef);
-				    	
-						final String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-						List<Path> nodePaths = Collections.singletonList(nodeService.getPath(nodeRef));
-	
-						Date modifiedTime = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-						Long modificationTimestamp = ( modifiedTime != null ? modifiedTime.getTime() : null);
-	
-						Status status = nodeService.getNodeStatus(nodeRef);
-						Client client = ClientUtil.from(filterclient);
-				    	nodeInfo = new NodeInfo(eventType, txnId, name, nodeRef, status, nodePaths, modificationTimestamp,
-				    			type, aspects, siteId, client, true, true, true, true);
-					}
-				}
+                        Set<QName> aspects = nodeService.getAspects(nodeRef);
 
- 				return nodeInfo;
-			}
-		});
+                        final String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                        List<Path> nodePaths = Collections.singletonList(nodeService.getPath(nodeRef));
 
-		return nodeInfo;
-	}
+                        Date modifiedTime = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+                        Long modificationTimestamp = ( modifiedTime != null ? modifiedTime.getTime() : null);
+
+                        Status status = nodeService.getNodeStatus(nodeRef);
+                        Client client = ClientUtil.from(filterclient);
+                        nodeInfo = new NodeInfo(eventType, txnId, name, nodeRef, status, nodePaths, modificationTimestamp,
+                                type, aspects, siteId, client, true, true, true, true);
+                    }
+                }
+
+                return nodeInfo;
+            }
+        });
+
+        return nodeInfo;
+    }
 }

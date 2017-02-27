@@ -74,6 +74,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -84,6 +85,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.registry.NamedObjectRegistry;
@@ -212,7 +214,7 @@ public class GetChildrenCannedQueryTest extends TestCase
             bootstrap.setTenantService(tenantService);
             bootstrap.bootstrap();
             
-            createUser(TEST_USER_PREFIX, TEST_USER, TEST_USER);
+            createUser(TEST_USER, TEST_USER, TEST_USER);
             
             createUser(TEST_USER_PREFIX+"aaaa", TEST_USER_PREFIX+"bbbb", TEST_USER_PREFIX+"cccc");
             createUser(TEST_USER_PREFIX+"cccc", TEST_USER_PREFIX+"dddd", TEST_USER_PREFIX+"eeee");
@@ -1507,6 +1509,70 @@ public class GetChildrenCannedQueryTest extends TestCase
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
             
             personService.createPerson(ppOne);
+        }
+    }
+
+    // REPO-1204 / MNT-16742 (fallout from MNT-12894)
+    public void testPagingGetChildrenCannedQueryWithoutProps() throws Exception
+    {
+        try
+        {
+            long startTime = System.currentTimeMillis();
+
+            int itemCount = 1500;
+            int repeatListCount = 5;
+
+            Set<QName> assocTypeQNames = new HashSet<>(1);
+            assocTypeQNames.add(ContentModel.ASSOC_CONTAINS);
+
+            Set<QName> childTypeQNames = new HashSet<>(1);
+            childTypeQNames.add(ContentModel.TYPE_FOLDER);
+
+            AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+            NodeRef testFolder = repositoryHelper.getCompanyHome();
+
+            NodeRef parentFolder = createFolder(testFolder, "testCreateList-"+ GUID.generate(), ContentModel.TYPE_FOLDER);
+
+            for (int i = 1; i <= itemCount; i++)
+            {
+                String folderName = "folder_" + GUID.generate();
+                createFolder(parentFolder, folderName, ContentModel.TYPE_FOLDER);
+            }
+
+            for (int j = 1; j <= repeatListCount; j++)
+            {
+                // page/iterate through the children
+                boolean hasMore = true;
+                int skipCount = 0;
+                int maxItems = 100;
+
+                int count = 0;
+                Set<String> docIds = new HashSet<>(itemCount);
+
+                while (hasMore)
+                {
+                    // note: mimic similar to AlfrescoServiceCmisServiceImpl
+                    PagingResults<NodeRef> results = list(parentFolder, skipCount, maxItems, skipCount + 10000, assocTypeQNames, childTypeQNames, null, null, null, null);
+                    hasMore = results.hasMoreItems();
+                    skipCount = skipCount + maxItems;
+
+                    for (NodeRef nodeRef : results.getPage())
+                    {
+                        docIds.add(nodeRef.getId());
+                        count++;
+                    }
+                }
+
+                assertEquals(itemCount, count);
+                assertEquals(itemCount, docIds.size());
+            }
+
+            System.out.println("Test time: " + (System.currentTimeMillis() - startTime) + " ms");
+        } 
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
 }

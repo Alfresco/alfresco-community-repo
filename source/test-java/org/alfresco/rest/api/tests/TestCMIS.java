@@ -288,7 +288,7 @@ public class TestCMIS extends EnterpriseTestApi
         properties.put(PropertyIds.NAME, fileName);
 
         // change maxContentSize so that the file will be to big
-        long maxContentSize = 5242880L;  // 5MB
+        double maxContentSize = 5.8;  // 5MB
         PublicApiAlfrescoCmisServiceFactory publicApiAlfrescoCmisServiceFactory = (PublicApiAlfrescoCmisServiceFactory) ctx.getBean("publicApiCMISServiceFactory");
         publicApiAlfrescoCmisServiceFactory.setMaxContentSize(maxContentSize);
 
@@ -320,7 +320,7 @@ public class TestCMIS extends EnterpriseTestApi
         }
 
         // increase maxContensize so that the file is not to big
-        maxContentSize = 10485760L; // 10MB
+        maxContentSize = 10.6; // 10MB
         publicApiAlfrescoCmisServiceFactory.setMaxContentSize(maxContentSize);
 
         // for atom
@@ -334,7 +334,7 @@ public class TestCMIS extends EnterpriseTestApi
         assertNotNull(result);
 
         // ignore the size check
-        maxContentSize = -1L;
+        maxContentSize = -1;
         publicApiAlfrescoCmisServiceFactory.setMaxContentSize(maxContentSize);
 
         // for atom

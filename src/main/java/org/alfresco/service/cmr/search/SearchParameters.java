@@ -189,6 +189,8 @@ public class SearchParameters implements BasicSearchParameters
 
     private GeneralHighlightParameters highlight;
 
+    private IntervalParameters interval;
+
     /**
      * Default constructor
      */
@@ -234,6 +236,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.searchTerm = this.searchTerm;
         sp.spellCheck = this.spellCheck;
         sp.highlight = this.highlight;
+        sp.interval = this.interval;
         return sp;
     }
     
@@ -281,12 +284,26 @@ public class SearchParameters implements BasicSearchParameters
     }
 
     /**
-      Sets parameters used for search highlighing
+     Sets parameters used for search highlighing
      * @param highlight GeneralHighlightParameters
      */
     public void setHighlight(GeneralHighlightParameters highlight)
     {
         this.highlight = highlight;
+    }
+
+    public IntervalParameters getInterval()
+    {
+        return interval;
+    }
+
+    /**
+     Sets parameters used for Intervals
+     * @param interval IntervalParameters
+     */
+    public void setInterval(IntervalParameters interval)
+    {
+        this.interval = interval;
     }
 
     /**
@@ -1253,6 +1270,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(", queryConsistency=").append(this.queryConsistency).append(", sinceTxId=")
                     .append(this.sinceTxId).append(", searchTerm=").append(this.searchTerm)
                     .append(", highlight=").append(this.highlight)
+                    .append(", interval=").append(this.interval)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();
     }

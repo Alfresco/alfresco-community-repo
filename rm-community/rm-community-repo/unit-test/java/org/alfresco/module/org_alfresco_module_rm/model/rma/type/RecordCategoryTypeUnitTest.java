@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;

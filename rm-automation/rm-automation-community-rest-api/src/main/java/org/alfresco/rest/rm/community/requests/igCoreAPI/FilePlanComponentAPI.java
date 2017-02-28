@@ -32,6 +32,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
+import static org.alfresco.rest.rm.community.util.PojoUtility.toJsonElectronicRecord;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
@@ -231,7 +232,7 @@ public class FilePlanComponentAPI extends RMModelRequest
 
     /**
      * Create electronic record from file resource
-     * 
+     *
      * @param electronicRecordModel {@link FilePlanComponent} for electronic record to be created
      * @param recordContent {@link File} pointing to the content of the electronic record to be created
      * @param parentId parent container id
@@ -253,8 +254,7 @@ public class FilePlanComponentAPI extends RMModelRequest
          * to the request.
          */
         RequestSpecBuilder builder = getRMRestWrapper().configureRequestSpec();
-        JsonNode root = new ObjectMapper().readTree(toJson(electronicRecordModel));
-
+        JsonNode root = new ObjectMapper().readTree(toJsonElectronicRecord(electronicRecordModel));
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext())

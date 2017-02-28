@@ -43,7 +43,7 @@
    </dependencyManagement>
 
    <properties>
-      <alfresco.version>5.2.e</alfresco.version>
-      <share.version>5.2.d</share.version>
+      <alfresco.version>5.2.f</alfresco.version>
+      <share.version>5.2.e</share.version>
    </properties>
 </project>

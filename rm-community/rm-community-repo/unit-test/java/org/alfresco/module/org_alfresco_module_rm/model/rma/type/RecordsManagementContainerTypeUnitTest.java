@@ -26,13 +26,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -53,32 +51,9 @@ public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
     private @InjectMocks RecordsManagementContainerType recordManagementContainerType;
 
     /**
-     * Having the Unfilled Record container and a folder
-     * When adding a child association between the folder and the container
-     * Then the folder type shouldn't be renamed
-     */
-    @Test
-    public void testAddFolderToRMContainer()
-    {
-        /* Having a RM container and a folder */
-        NodeRef rmContainer = generateRMContainer();
-        NodeRef rmFolder = generateFolderNode(false);
-
-        /*
-         * When adding a child association between the folder and the container
-         */
-        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rmContainer, ContentModel.ASSOC_CONTAINS, rmFolder);
-        recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
-
-        /* Then the node type should not be changed to TYPE_RECORD_FOLDER */
-        verify(mockedNodeService).setType(rmFolder, TYPE_RECORD_FOLDER);
-        verify(mockedRecordFolderService).setupRecordFolder(rmFolder);
-    }
-
-    /**
      * Having the Unfilled Record container and a folder having the aspect ASPECT_HIDDEN
      * When adding a child association between the folder and the container
-     * Then the folder type shouldn't be renamed
+     * Then the new folder should not be altered
      */
      @Test
     public void testAddHiddenFolderToRMContainer()
@@ -93,31 +68,9 @@ public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
         ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rmContainer, ContentModel.ASSOC_CONTAINS, rmFolder);
         recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
 
-        /* Then the node type should not be changed to TYPE_RECORD_FOLDER */
-        verify(mockedNodeService, never()).setType(rmFolder, TYPE_RECORD_FOLDER);
-        verify(mockedRecordFolderService, never()).setupRecordFolder(rmFolder);
-    }
-
-    /**
-     * Trying to create a RM folder and its sub-types via SFDC, IMap, WebDav, etc
-     * Check that exception is thrown on creating child associations
-     */
-    @Test
-    public void testRM3450()
-    {
-        NodeRef rmContainer = generateRMContainer();
-        NodeRef nonRmFolder = generateNonRmFolderNode();
-
-        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rmContainer, TestModel.NOT_RM_FOLDER_TYPE, nonRmFolder);
-        try
-        {
-            recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
-            fail("Expected to throw exception on create child association.");
-        }
-        catch (Throwable e)
-        {
-            assertTrue(e instanceof AlfrescoRuntimeException);
-        }
+        /* The type should not be changed and no aspects should be added */
+        verify(mockedNodeService, never()).setType(any(), any());
+        verify(mockedNodeService, never()).addAspect(any(), any(), any());
     }
 
     /**

@@ -104,7 +104,6 @@ public class RM4619Test extends BaseRMTestCase
 
         /*
          * Check that when the transaction ends the identifier is no longer editable
-         * And the record folder has the ASPECT_RM_SEARCH aspect
          */
         doTestInTransaction(new Test<Void>()
         {
@@ -112,7 +111,6 @@ public class RM4619Test extends BaseRMTestCase
             public Void run() throws Exception
             {
                 assertFalse((Boolean)nodeService.getProperty(recordFolder, PROP_ID_IS_TEMPORARILY_EDITABLE));
-                assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
                 return null;
             }
             

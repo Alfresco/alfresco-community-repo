@@ -234,11 +234,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 TYPE_RECORD_FOLDER,
                 new JavaBehaviour(this, "recordFolderCreate", NotificationFrequency.TRANSACTION_COMMIT));
 
-        this.policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onSetNodeType"),
-                TYPE_RECORD_FOLDER,
-                new JavaBehaviour(this, "convertedToOrFromRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));
-
         // Vital Records Review Details Rollup
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
@@ -433,30 +428,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         });
     }
 
-    /**
-     * On update type to or from record folder behaviour implementation
-     * @param nodeRef the updated node
-     * @param oldType the type the node had before update
-     * @param newType the type the node has after update
-     */
-    public void convertedToOrFromRecordFolder(final NodeRef nodeRef, final QName oldType, final QName newType)
-    {
-        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                // If the node has been updated to a record folder
-                if (newType.equals(TYPE_RECORD_FOLDER) && nodeService.exists(nodeRef))
-                {
-                    applySearchAspect(nodeRef);
-                    setupDispositionScheduleProperties(nodeRef);
-                }
-
-                return null;
-            }
-        });
-    }
     /**
      * Helper method to setup the disposition schedule properties
      *

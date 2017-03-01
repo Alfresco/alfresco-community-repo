@@ -89,10 +89,17 @@ public class IntervalSet
             sb.append(" key="+label);
         }
         sb.append("}")
-        .append(startInclusive?"[":"(")
-        .append(start)
-        .append(","+end)
-        .append(endInclusive?"]":")");
+          .append(toRange());
+        return sb.toString();
+    }
+
+    public String toRange()
+    {
+        StringBuilder sb = new StringBuilder("");
+        sb.append(startInclusive?"[":"(")
+          .append(start)
+          .append(","+end)
+          .append(endInclusive?"]":")");
         return sb.toString();
     }
 

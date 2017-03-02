@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.surf.util.URLEncoder;
 
 /**
  * Implements the WebDAV GET method
@@ -259,6 +260,8 @@ public class GetMethod extends WebDAVMethod
                 long modDate = DefaultTypeConverter.INSTANCE.longValue(modifiedDate);
                 m_response.setHeader(WebDAV.HEADER_LAST_MODIFIED, WebDAV.formatHeaderDate(modDate));
             }
+            
+            m_response.setHeader("Content-Disposition", getContentDispositionHeader(nodeInfo));
 
             ContentReader reader = fileFolderService.getReader(realNodeInfo.getNodeRef());
             // ensure that we generate something, even if the content is missing
@@ -348,6 +351,42 @@ public class GetMethod extends WebDAVMethod
                 reader.getContent(m_response.getOutputStream());
             }
         }
+    }
+
+    protected String getContentDispositionHeader(FileInfo nodeInfo)
+    {
+        String filename = nodeInfo.getName();
+        StringBuilder sb = new StringBuilder();
+        sb.append("attachment; filename=\"");
+        for(int i = 0; i < filename.length(); i++)
+        {
+            char c = filename.charAt(i);
+            if(isValidQuotedStringHeaderParamChar(c))
+            {
+                sb.append(c);
+            }
+            else
+            {
+                sb.append(" ");
+            }
+        }
+        sb.append("\"; filename*=UTF-8''");
+        sb.append(URLEncoder.encode(filename));
+        return sb.toString();
+    }
+    
+    protected boolean isValidQuotedStringHeaderParamChar(char c)
+    {
+        // see RFC2616 section 2.2: 
+        // qdtext         = <any TEXT except <">>
+        // TEXT           = <any OCTET except CTLs, but including LWS>
+        // CTL            = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
+        // A CRLF is allowed in the definition of TEXT only as part of a header field continuation.
+        // Note: we dis-allow header field continuation
+        return     (c < 256)  // message header param fields must be ISO-8859-1. Lower 256 codepoints of Unicode represent ISO-8859-1
+                && (c != 127) // CTL - see RFC2616 section 2.2
+                && (c != '"') // <">
+                && (c > 31);  // CTL - see RFC2616 section 2.2
     }
 
     /**

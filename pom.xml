@@ -21,9 +21,9 @@
    </organization>
 
    <scm>
-      <connection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</connection>
-      <developerConnection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</developerConnection>
-      <url>https://gitlab.alfresco.com/records-management/records-management</url>
+      <connection>scm:git:https://git.alfresco.com/records-management/records-management.git</connection>
+      <developerConnection>scm:git:https://git.alfresco.com/records-management/records-management.git</developerConnection>
+      <url>https://git.alfresco.com/records-management/records-management</url>
       <tag>HEAD</tag>
    </scm>
 
@@ -42,8 +42,8 @@
 
    <repositories>
       <repository>
-         <id>alfresco-internal</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+         <id>alfresco-public</id>
+         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
       </repository>
    </repositories>
 
@@ -65,23 +65,6 @@
       </snapshotRepository>
    </distributionManagement>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-platform-distribution</artifactId>
-            <version>${alfresco.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-         <dependency>
-             <groupId>org.reflections</groupId>
-             <artifactId>reflections</artifactId>
-             <version>0.9.10</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
-
    <modules>
       <module>rm-community</module>
    </modules>
@@ -99,6 +82,18 @@
             <module>rm-automation</module>
             <module>rm-benchmark</module>
          </modules>
+         <repositories>
+            <repository>
+               <id>alfresco-internal</id>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+            </repository>
+         </repositories>
+         <pluginRepositories>
+            <pluginRepository>
+               <id>alfresco-private</id>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+            </pluginRepository>
+         </pluginRepositories>
       </profile>
    </profiles>
 
@@ -110,12 +105,18 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
-
-	  <!-- license properties -->
-	  <license.update.dryrun>true</license.update.dryrun>
-	  <license.verbose>false</license.verbose>
-
+      <license.update.dryrun>true</license.update.dryrun>
+      <license.verbose>false</license.verbose>
    </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>4.12</version>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
 
    <build>
       <finalName>${project.artifactId}-${project.version}</finalName>
@@ -332,7 +333,6 @@
                 </configuration>
             </plugin>
 
-			<!-- License header generation -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>

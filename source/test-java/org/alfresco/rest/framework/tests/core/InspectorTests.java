@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -41,7 +41,6 @@ import java.util.Map;
 
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.nodes.NodeCommentsRelation;
-import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.OperationResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspector;
@@ -76,9 +75,7 @@ import org.alfresco.rest.framework.tests.api.mocks3.GrassEntityResourceNowDelete
 import org.alfresco.rest.framework.tests.api.mocks3.SheepBlackSheepResourceIsNoMore;
 import org.alfresco.rest.framework.tests.api.mocks3.SheepEntityResourceWithDeletedMethods;
 import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
-import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.tools.ResponseWriter;
-import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.Pair;
 import org.junit.Test;
@@ -459,7 +456,7 @@ public class InspectorTests
 
         GrassEntityResource grassEntityResource = new GrassEntityResource();
         ResourceInspector.inspectOperations(api, GrassEntityResource.class,"-root-", metainfo);
-        assertTrue(metainfo.size()==2);
+        assertEquals(3, metainfo.size());
 
         for (ResourceMetadata resourceMetadata : metainfo)
         {
@@ -480,6 +477,7 @@ public class InspectorTests
                     Object paramObj = paramType.newInstance();
                     result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
                     assertEquals("Growing well",result);
+                    assertFalse(operationResourceMetaData.isNoAuth(null));
                     break;
                 case "/-root-/{id}/cut":
                     assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
@@ -489,6 +487,16 @@ public class InspectorTests
                     assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
                     result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
                     assertEquals("All done",result);
+                    assertFalse(operationResourceMetaData.isNoAuth(null));
+                    break;
+                case "/-root-/{id}/cut-noAuth":
+                    assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
+                    op = resourceMetadata.getOperation(HttpMethod.POST);
+                    assertNull(resourceMetadata.getObjectType(op));
+                    assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
+                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
+                    assertEquals("All done without Auth",result);
+                    assertTrue(operationResourceMetaData.isNoAuth(null));
                     break;
                 default:
                     fail("Invalid action information.");

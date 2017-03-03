@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -308,7 +308,7 @@ public class ResourceInspector
             {
                 if (! (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.POST)))
                 {
-                    throw new IllegalArgumentException("@WebApiNoAuth should only be on GET methods: "+operation.getTitle()+" Or POST method for creating a ticket.");
+                    throw new IllegalArgumentException("@WebApiNoAuth should only be on GET or POST methods: " + operation.getTitle());
                 }
                 helper.whenOperationNoAuth(resourceInterfaceWithOneMethod, aMethod);
             }
@@ -327,7 +327,7 @@ public class ResourceInspector
         Annotation annot = AnnotationUtils.findAnnotation(aMethod, WebApiDescription.class);
         List<ResourceParameter> parameters = new ArrayList<ResourceParameter>();
         parameters.addAll(inspectParameters(resource, aMethod, httpMethod));
- 
+
         if (annot != null)
         {
             Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
@@ -638,6 +638,7 @@ public class ResourceInspector
      * Inspect a resource to find operations on it.
      * @param api Api
      * @param entityPath String
+     * @param metainfo resource metadata
      */
     public static void inspectOperations(Api api, Class<?> resource, final String entityPath, List<ResourceMetadata> metainfo)
     {
@@ -646,13 +647,16 @@ public class ResourceInspector
         {
             for (Entry<String, Pair<ResourceOperation, Method>> opera : operations.entrySet())
             {
-                if (isDeleted(opera.getValue().getSecond()))
+                Method annotatedMethod = opera.getValue().getSecond();
+                final boolean isNoAuthRequired = isNoAuth(annotatedMethod);
+
+                if (isDeleted(annotatedMethod))
                 {
-                    metainfo.add(new OperationResourceMetaData(opera.getKey(), api, new HashSet(Arrays.asList(opera.getValue().getFirst()))));
+                    metainfo.add(new OperationResourceMetaData(opera.getKey(), api, new HashSet(Arrays.asList(opera.getValue().getFirst())), isNoAuthRequired));
                 }
                 else
                 {
-                    metainfo.add(new OperationResourceMetaData(opera.getKey(), Arrays.asList(opera.getValue().getFirst()), api, opera.getValue().getSecond()));
+                    metainfo.add(new OperationResourceMetaData(opera.getKey(), Arrays.asList(opera.getValue().getFirst()), api, annotatedMethod, isNoAuthRequired));
                 }
             }
         }

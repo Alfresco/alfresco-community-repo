@@ -1,8 +1,9 @@
 /*
+/*
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -86,16 +87,17 @@ public class ResourceMetadata
     }
 
     /**
-     * Indicates if this resource can support the specified HTTPMethod
-     * @param supportedMethod HttpMethod
-     * @return true if can support it
+     * Gets the data type of the resource parameter
+     *
+     * @param operation {@code ResourceOperation} object
+     * @return The data type of the resource parameter
      */
-    @SuppressWarnings("rawtypes")
     public Class getObjectType(ResourceOperation operation)
     {
         for (ResourceParameter param : operation.getParameters())
         {
-            if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType())) {
+            if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
+            {
                 return param.getDataType();
             }
         }

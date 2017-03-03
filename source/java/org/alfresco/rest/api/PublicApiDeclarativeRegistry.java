@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,9 +28,11 @@ package org.alfresco.rest.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 
-import org.alfresco.rest.api.authentications.AuthenticationTicketsEntityResource;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
@@ -53,13 +55,14 @@ import org.springframework.http.HttpMethod;
  *
  * @author steveglover
  * @author janv
+ * @author Jamal Kaabi-Mofrad
  * @since PublicApi1.0
  */
 public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
 {
-	private WebScript getNetworksWebScript;
-	private WebScript getNetworkWebScript;
-	private Container container;
+    private WebScript getNetworksWebScript;
+    private WebScript getNetworkWebScript;
+    private Container container;
 
     private ResourceLocator locator;
 
@@ -70,21 +73,21 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
 
     public void setGetNetworksWebScript(WebScript getNetworksWebScript)
     {
-		this.getNetworksWebScript = getNetworksWebScript;
-	}
+        this.getNetworksWebScript = getNetworksWebScript;
+    }
 
-	public void setGetNetworkWebScript(WebScript getNetworkWebScript)
-	{
-		this.getNetworkWebScript = getNetworkWebScript;
-	}
-
-	public void setContainer(Container container)
+    public void setGetNetworkWebScript(WebScript getNetworkWebScript)
     {
-    	super.setContainer(container);
+        this.getNetworkWebScript = getNetworkWebScript;
+    }
+
+    public void setContainer(Container container)
+    {
+        super.setContainer(container);
         this.container = container;
     }
     
-	/* (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.alfresco.web.scripts.Registry#findWebScript(java.lang.String, java.lang.String)
      */
     public Match findWebScript(String method, String uri)
@@ -189,17 +192,46 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
         else if (HttpMethod.POST.equals(httpMethod))
         {
             match = super.findWebScript(method, uri);
-            if (match != null && uri.endsWith(AuthenticationTicketsEntityResource.COLLECTION_RESOURCE_NAME))
+            if (match != null)
             {
                 ResourceWithMetadata rwm = getResourceWithMetadataOrNull(match.getTemplateVars(), httpMethod);
-                if (rwm != null && AuthenticationTicketsEntityResource.class.equals(rwm.getResource().getClass()))
+                if (rwm != null)
                 {
                     Class<? extends ResourceAction> resAction = null;
-                    if (EntityResourceAction.Create.class.isAssignableFrom(rwm.getResource().getClass()))
+                    Boolean noAuth = null;
+                    switch (rwm.getMetaData().getType())
                     {
-                        resAction = EntityResourceAction.Create.class;
+                        case ENTITY:
+                            if (EntityResourceAction.Create.class.isAssignableFrom(rwm.getResource().getClass()))
+                            {
+                                resAction = EntityResourceAction.Create.class;
+                            }
+                            else if (EntityResourceAction.CreateWithResponse.class.isAssignableFrom(rwm.getResource().getClass()))
+                            {
+                                resAction = EntityResourceAction.CreateWithResponse.class;
+                            }
+                            break;
+                        case RELATIONSHIP:
+                            if (RelationshipResourceAction.Create.class.isAssignableFrom(rwm.getResource().getClass()))
+                            {
+                                resAction = RelationshipResourceAction.Create.class;
+                            }
+                            else if (RelationshipResourceAction.CreateWithResponse.class.isAssignableFrom(rwm.getResource().getClass()))
+                            {
+                                resAction = RelationshipResourceAction.CreateWithResponse.class;
+                            }
+                            break;
+                        case OPERATION:
+                            noAuth = rwm.getMetaData().isNoAuth(null);
+                            break;
+                        default:
+                            break;
                     }
-                    final boolean noAuth = (resAction != null && rwm.getMetaData().isNoAuth(resAction));
+
+                    if (noAuth == null)
+                    {
+                        noAuth = (resAction != null && rwm.getMetaData().isNoAuth(resAction));
+                    }
                     if (noAuth)
                     {
                         // override match with noAuth
@@ -224,7 +256,7 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
     {
         if (templateVars.get("apiName") != null)
         {
-            // NOTE: noAuth currently only exposed for GET or Create Ticket (login)
+            // NOTE: noAuth currently only exposed for GET or POST
             Api api = ApiAssistant.determineApi(templateVars);
 
             // TODO can we avoid locating resource more than once (or at least provide a common code to determine the GET resourceAction) ?
@@ -439,23 +471,23 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
 
     private void initWebScript(WebScript webScript, String name)
     {
-    	DescriptionImpl serviceDesc = new DescriptionImpl(name, name, name, name);
-    	serviceDesc.setRequiredAuthentication(RequiredAuthentication.user);
-    	TransactionParameters transactionParameters = new TransactionParameters();
-    	transactionParameters.setRequired(RequiredTransaction.required);
-    	transactionParameters.setCapability(TransactionCapability.readonly);
-    	serviceDesc.setRequiredTransactionParameters(transactionParameters);
-    	serviceDesc.setFormatStyle(FormatStyle.argument);
-    	serviceDesc.setDefaultFormat("json");
-    	serviceDesc.setUris(new String[] { name });
+        DescriptionImpl serviceDesc = new DescriptionImpl(name, name, name, name);
+        serviceDesc.setRequiredAuthentication(RequiredAuthentication.user);
+        TransactionParameters transactionParameters = new TransactionParameters();
+        transactionParameters.setRequired(RequiredTransaction.required);
+        transactionParameters.setCapability(TransactionCapability.readonly);
+        serviceDesc.setRequiredTransactionParameters(transactionParameters);
+        serviceDesc.setFormatStyle(FormatStyle.argument);
+        serviceDesc.setDefaultFormat("json");
+        serviceDesc.setUris(new String[] { name });
         webScript.init(container, serviceDesc);
     }
 
     public void reset()
     {
-    	super.reset();
-    	initWebScript(getNetworksWebScript, "networks");
-    	initWebScript(getNetworkWebScript, "network");
+        super.reset();
+        initWebScript(getNetworksWebScript, "networks");
+        initWebScript(getNetworkWebScript, "network");
     }
 }
 

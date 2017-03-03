@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,6 +27,7 @@ package org.alfresco.rest.framework.tests.api.mocks;
 
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiNoAuth;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.EntityResource;
@@ -72,5 +73,12 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
     public void delete(String id, Parameters parameters)
     {
         //I did a delete
+    }
+
+    @Operation("cut-noAuth")
+    @WebApiNoAuth
+    @WebApiDescription(title = "Cut the grass",successStatus = Status.STATUS_NOT_IMPLEMENTED)
+    public String cutLawnWithoutAuth(String id, Void notused, Parameters parameters, WithResponse withResponse) {
+        return "All done without Auth";
     }
 }

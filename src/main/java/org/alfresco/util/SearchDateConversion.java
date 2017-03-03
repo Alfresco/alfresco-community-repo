@@ -170,7 +170,8 @@ public class SearchDateConversion
                         : (theSet.isStartInclusive() ? getDateStart(dateAndResolution1) : getDateEnd(dateAndResolution1));
             String end = dateAndResolution2 == null ?  theSet.getEnd()
                         : (theSet.isEndInclusive() ? getDateEnd(dateAndResolution2) : getDateStart(dateAndResolution2));
-            return new IntervalSet(start, end, theSet.getLabel(), false, true);
+            return new IntervalSet(start, end, theSet.getLabel(), theSet.isStartInclusive(), theSet.isEndInclusive());
+
         }
         return theSet;
     }

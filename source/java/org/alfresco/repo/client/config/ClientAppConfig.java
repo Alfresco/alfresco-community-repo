@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.repo.quickshare;
+package org.alfresco.repo.client.config;
 
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.StringUtils;
@@ -45,13 +45,24 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * This class picks up all the loaded properties passed to it and uses a naming
  * convention to isolate the client's name and the related values.
- * So, if a new client (e.g. MyClientName) is required to send a shared-link email, then the following
+ * <p>
+ * The naming convention must confirm to the following:
+ * <p>
+ * <i>repo.client-app.{@literal <client-name>.<propertyName>}</i>
+ * <p>
+ * Also, the client-name or property name ({@literal <propertyName>}) must not contain a dot {@literal ('.')}
+ * <p>
+ * Note also, that any property without a value is ignored and the client will not be registered
+ * if all the properties of that client have no values.
+ * <p>
+ * So, if a new client (e.g. MyClientName) is required to send a shared-link email and the service or the API requires,
+ * for example, <i>sharedLinkBaseUrl</i> and <i>templateAssetsUrl</i> properties, then the following
  * needs to be put into a properties file.
  * <ul>
- * <li>quickshare.client.MyClientName.sharedLinkBaseUrl=http://localhost:8080/MyClientName/s</li>
- * <li>quickshare.client.MyClientName.templateAssetsUrl=http://localhost:8080/MyClientName/assets</li>
+ * <li>repo.client-app.MyClientName.sharedLinkBaseUrl=http://localhost:8080/MyClientName/s</li>
+ * <li>repo.client-app.MyClientName.templateAssetsUrl=http://localhost:8080/MyClientName/assets</li>
  * </ul>
- * The default property file is <b>alfresco/quickshare/quickshare-clients.properties</b> which
+ * The default property file is <b>alfresco/client/config/repo-clients-apps.properties</b> which
  * could be overridden (or add new clients) by <b>alfresco-global</b> properties file.
  *
  * @author Jamal Kaabi-Mofrad
@@ -60,8 +71,7 @@ public class ClientAppConfig extends AbstractLifecycleBean
 {
     private static final Log logger = LogFactory.getLog(ClientAppConfig.class);
 
-    public static final String PREFIX = "quickshare.client.";
-    public static final String PROP_SHARED_LINK_BASE_URL = "sharedLinkBaseUrl";
+    public static final String PREFIX = "repo.client-app.";
     public static final String PROP_TEMPLATE_ASSETS_URL = "templateAssetsUrl";
 
     private Properties defaultProperties;
@@ -111,12 +121,15 @@ public class ClientAppConfig extends AbstractLifecycleBean
     protected void onBootstrap(ApplicationEvent event)
     {
         Map<String, String> mergedProperties = getAndMergeProperties();
-        Set<String> clientsNames = processPropertyKeys(mergedProperties);
-        clients.putAll(processClients(clientsNames, mergedProperties));
+
+        Set<String> clientsNames = new HashSet<>();
+        Set<String> propsNames = new HashSet<>();
+        processPropertyKeys(mergedProperties, clientsNames, propsNames);
+        clients.putAll(processClients(clientsNames, propsNames, mergedProperties));
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("All bootstrapped quickShare clients: " + clients);
+            logger.debug("All bootstrapped repo clients apps: " + clients);
         }
     }
 
@@ -130,11 +143,11 @@ public class ClientAppConfig extends AbstractLifecycleBean
      * Processes the property's key and extracts the clients' names.
      *
      * @param allProps the merged properties
-     * @return a set of clients' names
+     * @param  clientsNames a set of strings which will be populated with client names
+     * @param  propsNames a set of strings which will be populated with properties names (i.e.the property after the client name)
      */
-    protected Set<String> processPropertyKeys(Map<String, String> allProps)
+    protected void processPropertyKeys(Map<String, String> allProps, Set<String> clientsNames, Set<String> propsNames)
     {
-        Set<String> clientsNames = new HashSet<>();
         for (String key : allProps.keySet())
         {
             String propKey = key;
@@ -157,13 +170,15 @@ public class ClientAppConfig extends AbstractLifecycleBean
                 }
                 String clientName = propKey.substring(0, clientNameControlDot);
                 String propName = propKey.substring((clientNameControlDot + 1));
-                if (PROP_SHARED_LINK_BASE_URL.equals(propName) || PROP_TEMPLATE_ASSETS_URL.equals(propName))
+                // the property name (the property after the client name) must not contain a '.'
+                if (propName.indexOf('.') == -1)
                 {
                     clientsNames.add(clientName);
+                    propsNames.add(propName);
                 }
                 else
                 {
-                    logMalformedPropertyKey(key);
+                    logMalformedPropertyKey(key, "The property name " + propName + " must not contain a '.'");
                 }
             }
             else
@@ -171,7 +186,6 @@ public class ClientAppConfig extends AbstractLifecycleBean
                 logMalformedPropertyKey(propKey);
             }
         }
-        return clientsNames;
     }
 
     /**
@@ -179,32 +193,51 @@ public class ClientAppConfig extends AbstractLifecycleBean
      * a map of {@code ClientApp} with the client's name as the key.
      *
      * @param clientsNames the processed clients' names
+     * @param propsNames the processed properties names
      * @param allProps     the merged properties
      * @return a map of {@code ClientApp} with the client's name as the key.
      */
-    protected Map<String, ClientApp> processClients(Set<String> clientsNames, Map<String, String> allProps)
+    protected Map<String, ClientApp> processClients(Set<String> clientsNames, Set<String> propsNames, Map<String, String> allProps)
     {
         Map<String, ClientApp> clientApps = new HashMap<>(clientsNames.size());
-        for (String name : clientsNames)
+        for (String clientName : clientsNames)
         {
-            String propKey = getPropertyKey(name, PROP_SHARED_LINK_BASE_URL);
-            String sharedLinkBaseUrl = allProps.get(propKey);
-            if (isValidString(sharedLinkBaseUrl))
+            Map<String, String> config = new HashMap<>();
+            String templateAssetsUrl = null;
+            for (String propName : propsNames)
             {
-                logInvalidPropertyValue(propKey, sharedLinkBaseUrl);
-                continue;
-            }
+                String propKey = getPropertyKey(clientName, propName);
+                if (!allProps.containsKey(propKey))
+                {
+                    // if the constructed property key does not exist, skip this iteration.
+                    continue;
+                }
 
-            propKey = getPropertyKey(name, PROP_TEMPLATE_ASSETS_URL);
-            String templateAssetsUrl = allProps.get(propKey);
-            if (isValidString(templateAssetsUrl))
+                String propValue = allProps.get(propKey);
+
+                if (StringUtils.isEmpty(propValue))
+                {
+                    logInvalidPropertyValue(propKey, propValue);
+                    continue;
+                }
+
+                if (PROP_TEMPLATE_ASSETS_URL.equals(propName))
+                {
+                    templateAssetsUrl = propValue;
+                }
+                else
+                {
+                    config.put(propName, propValue);
+                }
+            }
+            if (StringUtils.isEmpty(templateAssetsUrl) && config.isEmpty())
             {
-                logInvalidPropertyValue(propKey, templateAssetsUrl);
+                logger.warn("Client-app [" + clientName + "] can not be registered as it needs at least one property with a valid value.");
                 continue;
             }
             // As the required values are valid, create the client data
-            ClientApp client = new ClientApp(name, sharedLinkBaseUrl, templateAssetsUrl);
-            clientApps.put(name, client);
+            ClientApp client = new ClientApp(clientName, templateAssetsUrl, config);
+            clientApps.put(clientName, client);
         }
         return clientApps;
     }
@@ -227,7 +260,7 @@ public class ClientAppConfig extends AbstractLifecycleBean
             {
                 String value = globalProperties.getProperty(propKey);
                 // before overriding the key, validate the property value
-                if (isValidString(value))
+                if (StringUtils.isEmpty(value))
                 {
                     logInvalidPropertyValue(propKey, value);
                     continue;
@@ -239,14 +272,20 @@ public class ClientAppConfig extends AbstractLifecycleBean
         return allProperties;
     }
 
+    private void logMalformedPropertyKey(String propName, String reason)
+    {
+        reason = (StringUtils.isBlank(reason)) ? "" : " " + reason;
+        logger.warn("Ignoring client app config (malformed property key) [" + propName + "]." + reason);
+    }
+
     private void logMalformedPropertyKey(String propName)
     {
-        logger.warn("Ignoring quickShare client (malformed property key): " + propName);
+        logMalformedPropertyKey(propName, null);
     }
 
     private void logInvalidPropertyValue(String propName, String propValue)
     {
-        logger.warn("Ignoring quickShare client (invalid value) [" + propValue + "] for the property:" + propName);
+        logger.warn("Ignoring client app config (invalid value) [" + propValue + "] for the property:" + propName);
     }
 
     private String getPropertyKey(String clientName, String clientProp)
@@ -254,22 +293,17 @@ public class ClientAppConfig extends AbstractLifecycleBean
         return PREFIX + clientName + '.' + clientProp;
     }
 
-    private boolean isValidString(String str)
-    {
-        return StringUtils.isEmpty(str);
-    }
-
     public static class ClientApp
     {
         private final String name;
-        private final String sharedLinkBaseUrl;
         private final String templateAssetsUrl;
+        private final Map<String, String> properties;
 
-        public ClientApp(String name, String sharedLinkBaseUrl, String templateAssetsUrl)
+        public ClientApp(String name, String templateAssetsUrl, Map<String, String> properties)
         {
             this.name = name;
-            this.sharedLinkBaseUrl = sharedLinkBaseUrl;
             this.templateAssetsUrl = templateAssetsUrl;
+            this.properties = new HashMap<>(properties);
         }
 
         public String getName()
@@ -277,14 +311,19 @@ public class ClientAppConfig extends AbstractLifecycleBean
             return name;
         }
 
-        public String getSharedLinkBaseUrl()
-        {
-            return sharedLinkBaseUrl;
-        }
-
         public String getTemplateAssetsUrl()
         {
             return templateAssetsUrl;
+        }
+
+        public Map<String, String> getProperties()
+        {
+            return Collections.unmodifiableMap(properties);
+        }
+
+        public String getProperty(String propName)
+        {
+            return properties.get(propName);
         }
 
         @Override
@@ -314,8 +353,8 @@ public class ClientAppConfig extends AbstractLifecycleBean
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("ClientApp [name=").append(name)
-                        .append(", sharedLinkBaseUrl=").append(sharedLinkBaseUrl)
                         .append(", templateAssetsUrl=").append(templateAssetsUrl)
+                        .append(", properties=").append(properties)
                         .append(']');
             return sb.toString();
         }

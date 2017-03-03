@@ -1,8 +1,8 @@
-/*
+/*-
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,23 +24,23 @@
  * #L%
  */
 
-package org.alfresco.repo.quickshare;
+package org.alfresco.repo.client.config;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * @author Jamal Kaabi-Mofrad
  */
-public class QuickShareClientNotFoundException extends AlfrescoRuntimeException
+public class ClientAppNotFoundException extends AlfrescoRuntimeException
 {
-    private static final long serialVersionUID = -2567136374291827783L;
+    private static final long serialVersionUID = 1112329540603622387L;
 
-    public QuickShareClientNotFoundException(String msgId)
+    public ClientAppNotFoundException(String msgId)
     {
         super(msgId);
     }
 
-    public QuickShareClientNotFoundException(String msgId, Object[] msgParams)
+    public ClientAppNotFoundException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
     }

@@ -268,7 +268,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                  * When creating a new record the identifier is writable to allow the upload in multiple steps.
                  * On transaction commit make the identifier read only (remove the editable aspect).
                  */
-                if(nodeService.exists(nodeRef))
+                if(nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, aspectTypeQName))
                 {
                     nodeService.setProperty(nodeRef, RecordsManagementModel.PROP_ID_IS_TEMPORARILY_EDITABLE, false);
                 }

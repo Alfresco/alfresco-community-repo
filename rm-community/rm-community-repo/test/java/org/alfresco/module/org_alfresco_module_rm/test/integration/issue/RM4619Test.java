@@ -28,6 +28,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.GUID;
 
 /**
@@ -49,13 +50,30 @@ public class RM4619Test extends BaseRMTestCase
      */
     public void testConvertFolderToCategory() throws Exception
     {
+        /*
+         * Create a folder in the unfiled record container and check it is immediately converted
+         */
+        final NodeRef recordCategory = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                FileInfo info = fileFolderService.create(filePlan, GUID.generate(), TYPE_FOLDER);
+                assertEquals(TYPE_RECORD_CATEGORY, info.getType());
+                assertNotNull(info.getProperties().get(PROP_IDENTIFIER));
+                return info.getNodeRef();
+            }
+        }, ADMIN_USER);
+
+        /*
+         * Check that when the transaction ends the identifier is no longer editable
+         */
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run() throws Exception
             {
-                FileInfo info = fileFolderService.create(filePlan, GUID.generate(), TYPE_FOLDER);
-                assertEquals(info.getType(), TYPE_RECORD_CATEGORY);
+                assertFalse((Boolean)nodeService.getProperty(recordCategory, PROP_ID_IS_TEMPORARILY_EDITABLE));
                 return null;
             }
             
@@ -69,13 +87,101 @@ public class RM4619Test extends BaseRMTestCase
      */
     public void testConvertFolderToRecordFolder() throws Exception
     {
+        /*
+         * Create a folder in a record category and check it is immediately converted
+         */
+        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                FileInfo info = fileFolderService.create(rmContainer, GUID.generate(), TYPE_FOLDER);
+                assertEquals(TYPE_RECORD_FOLDER, info.getType());
+                assertNotNull(info.getProperties().get(PROP_IDENTIFIER));
+                return info.getNodeRef();
+            }
+        }, ADMIN_USER);
+
+        /*
+         * Check that when the transaction ends the identifier is no longer editable
+         * And the record folder has the ASPECT_RM_SEARCH aspect
+         */
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run() throws Exception
             {
-                FileInfo info = fileFolderService.create(rmContainer, GUID.generate(), TYPE_FOLDER);
-                assertEquals(info.getType(), TYPE_RECORD_FOLDER);
+                assertFalse((Boolean)nodeService.getProperty(recordFolder, PROP_ID_IS_TEMPORARILY_EDITABLE));
+                assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
+                return null;
+            }
+            
+        }, ADMIN_USER);
+    }
+
+    /**
+     * Given the RM site is created
+     * When we create a regular folder in the unfiled record container
+     * Then the folder is immediately converted to a unfiled record folder
+     * 
+     * And when we create another regular folder in that unfiled record folder
+     * Then the folder is also immediately converted to a unfiled record folder
+     */
+    public void testConvertFolderToUnfiledRecordFolder() throws Exception
+    {
+        /*
+         * Create a folder in the unfiled record container and check it is immediately converted
+         */
+        final NodeRef folder1 = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                FileInfo folder = fileFolderService.create(unfiledContainer, GUID.generate(), TYPE_FOLDER);
+                assertEquals(TYPE_UNFILED_RECORD_FOLDER, folder.getType());
+                assertNotNull(folder.getProperties().get(PROP_IDENTIFIER));
+                return folder.getNodeRef();
+            }
+        }, ADMIN_USER);
+
+        /*
+         * Check that when the transaction ends the identified is no longer editable
+         */
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                assertFalse((Boolean)nodeService.getProperty(folder1, PROP_ID_IS_TEMPORARILY_EDITABLE));
+                return null;
+            }
+            
+        }, ADMIN_USER);
+
+        /*
+         * Create a folder in the unfiled record folder and check it is immediately converted
+         */
+        final NodeRef folder2 = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                FileInfo folder = fileFolderService.create(folder1, GUID.generate(), TYPE_FOLDER);
+                assertEquals(TYPE_UNFILED_RECORD_FOLDER, folder.getType());
+                assertNotNull(folder.getProperties().get(PROP_IDENTIFIER));
+                return folder.getNodeRef();
+            }
+        }, ADMIN_USER);
+
+        /*
+         * Check that when the transaction ends the identified is no longer editable
+         */
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                assertFalse((Boolean)nodeService.getProperty(folder2, PROP_ID_IS_TEMPORARILY_EDITABLE));
                 return null;
             }
             

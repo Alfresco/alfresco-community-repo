@@ -76,6 +76,15 @@ public class UnfiledRecordContainerType extends BaseBehaviourBean
     @Behaviour(kind = BehaviourKind.ASSOCIATION)
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
+        // We need to automatically cast the created folder to record folder if it is a plain folder
+        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
+        // Some modules use hidden folder subtypes to store information (see RM-3283).
+        QName childType = nodeService.getType(childAssocRef.getChildRef());
+        if (childType.equals(ContentModel.TYPE_FOLDER))
+        {
+            nodeService.setType(childAssocRef.getChildRef(), TYPE_UNFILED_RECORD_FOLDER);
+        }
+
         // check the created child is of an accepted type
         validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }

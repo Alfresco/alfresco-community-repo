@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.search;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,7 +48,7 @@ public class Interval
     {
         this.field = field;
         this.label = label;
-        this.sets = sets;
+        this.sets = sets == null ? new ArrayList<>() :sets;
     }
 
     public String getField()

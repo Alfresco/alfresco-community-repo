@@ -27,13 +27,17 @@ package org.alfresco.opencmis;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,10 +48,12 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.ServletRegistration;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.descriptor.JspConfigDescriptor;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletResponse;
 
@@ -83,6 +89,8 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 	protected String version;
 	protected CmisVersion cmisVersion;
 	protected TenantAdminService tenantAdminService;
+
+    private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
 	public void setTenantAdminService(TenantAdminService tenantAdminService)
 	{
@@ -127,6 +135,11 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 	public void setCmisVersion(String cmisVersion)
     {
         this.cmisVersion = CmisVersion.fromValue(cmisVersion);
+    }
+
+    public void setNonAttachContentTypes(Set<String> nonAttachWhiteList)
+    {
+        this.nonAttachContentTypes = nonAttachWhiteList;
     }
 
     protected synchronized Descriptor getCurrentDescriptor()
@@ -191,16 +204,22 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
     	return httpReqWrapper;
 	}
 
+	protected CMISHttpServletResponse getHttpResponse(WebScriptResponse res)
+	{
+		CMISHttpServletResponse httpResWrapper = new CMISHttpServletResponse(res, nonAttachContentTypes);
+
+		return httpResWrapper;
+	}
+
 	public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
 	{
 		try
 		{
-	        HttpServletResponse httpResp = WebScriptServletRuntime.getHttpServletResponse(res);
-
-			// fake a servlet request.
+			// wrap request & response
+			CMISHttpServletResponse httpResWrapper = getHttpResponse(res);
 	    	CMISHttpServletRequest httpReqWrapper = getHttpRequest(req);
 
-	    	servlet.service(httpReqWrapper, httpResp);
+	    	servlet.service(httpReqWrapper, httpResWrapper);
 		}
 		catch(ServletException e)
 		{

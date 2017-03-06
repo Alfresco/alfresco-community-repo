@@ -51,7 +51,10 @@ public class CMISHttpServletResponse implements HttpServletResponse
     protected Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
     private final static String HDR_CONTENT_DISPOSITION = "Content-Disposition";
-    
+
+    private final static String ATTACHMENT = "attachment";
+    private final static String INLINE = "inline";
+
 	public CMISHttpServletResponse(WebScriptResponse res, Set<String> nonAttachContentTypes)
 	{
 		httpResp = WebScriptServletRuntime.getHttpServletResponse(res);
@@ -135,6 +138,8 @@ public class CMISHttpServletResponse implements HttpServletResponse
     {
         httpResp.addHeader(name, getStringHeaderValue(name, value, httpResp.getContentType()));
     }
+    
+    
 
     private String getStringHeaderValue(String name, String value, String contentType)
     {
@@ -142,14 +147,14 @@ public class CMISHttpServletResponse implements HttpServletResponse
         {
             if (! nonAttachContentTypes.contains(contentType))
             {
-                if (value.startsWith("inline"))
+                if (value.startsWith(INLINE))
                 {
                     // force attachment
-                    value = value.replace("inline", "attachment");
+                    value = ATTACHMENT+value.substring(INLINE.length());
                 }
-                else if (! value.startsWith("attachment"))
+                else if (! value.startsWith(ATTACHMENT))
                 {
-                    throw new AlfrescoRuntimeException("Unexpected - attachment header could not be set: "+name+" = "+value);
+                    throw new AlfrescoRuntimeException("Unexpected - header could not be set: "+name+" = "+value);
                 }
             }
         }

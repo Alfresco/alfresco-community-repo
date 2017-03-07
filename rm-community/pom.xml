@@ -23,8 +23,27 @@
       <module>rm-community-share</module>
    </modules>
 
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-parent</artifactId>
+            <version>${alfresco.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+         <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-share-parent</artifactId>
+            <version>${share.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
    <properties>
-      <alfresco.version>5.2.b-EA</alfresco.version>
-      <share.version>${alfresco.version}</share.version>
+      <alfresco.version>5.2.f</alfresco.version>
+      <share.version>5.2.e</share.version>
    </properties>
 </project>

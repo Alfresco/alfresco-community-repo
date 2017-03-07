@@ -12,7 +12,8 @@ The enhancements can be submitted as an issue on GitHub.
 #### Pull requests
 * Describe what is in the code and include the JIRA number of the reported bug if applicable.
 * Follow the [Style guides](#style-guides)
-* Add/modify the tests to check the new code
+* Add/modify the tests to check the new code. The test coverage should be enough to support all of the changes to prevent regressions in future.
+Please, pay attention to the level of test being done. It is preferred to create unit tests as opposing to system/integration tests. Unit tests are simpler, easier to maintain and take less time to run.
 
 #### Style guides
 
@@ -28,6 +29,7 @@ The enhancements can be submitted as an issue on GitHub.
 * All new public methods have JavaDoc
 * The JavaDoc should be compliant with [Java8 DocLint](http://openjdk.java.net/jeps/172)
 * Comments are added only where very necessary
+* The strings which are shown to the user (in the UI) should be put in localization property bundles. Our localization team will handle the translations if required.
 
 ##### Commit message
 * Separate subject from body with a blank line

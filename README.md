@@ -1,5 +1,6 @@
 ### DATA MODEL
-Data model is a library packaged as a jar file, which contains the following:
+Data model is a library packaged as a jar file which is part of [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
+The library contains the following:
 * Dictionary, Repository and Search Services interfaces
 * Models for data types and Dictionary implementation
 * Parsers

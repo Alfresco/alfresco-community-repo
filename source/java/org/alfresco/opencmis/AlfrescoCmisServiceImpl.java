@@ -3113,7 +3113,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
     }
 
-    protected void closeInputStream(InputStream tfis)
+    private void closeInputStream(InputStream tfis)
     {
         if (tfis != null)
         {

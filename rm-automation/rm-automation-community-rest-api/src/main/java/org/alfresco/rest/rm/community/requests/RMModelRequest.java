@@ -48,7 +48,7 @@ public abstract class RMModelRequest extends ModelRequest<RMModelRequest>
     }
 
     /**
-     * @param restWrapper
+     * @param rmRestWrapper
      */
     public RMModelRequest(RMRestWrapper rmRestWrapper)
     {

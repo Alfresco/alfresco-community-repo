@@ -33,7 +33,10 @@ public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
         finally
         {
             recordService.enablePropertyEditableCheck();
-            recordService.disablePropertyEditableCheck(result.getNodeRef());
+            if (result != null)
+            {
+                recordService.disablePropertyEditableCheck(result.getNodeRef());
+            }
         }
 
         return result;
@@ -52,7 +55,10 @@ public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
         finally
         {
             recordService.enablePropertyEditableCheck();
-            recordService.disablePropertyEditableCheck(result.getNodeRef());
+            if (result != null)
+            {
+                recordService.disablePropertyEditableCheck(result.getNodeRef());
+            }
         }
 
         return result;

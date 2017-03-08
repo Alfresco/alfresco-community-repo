@@ -1,4 +1,4 @@
-### DATA MODEL
+### Alfresco Data Model
 Data model is a library packaged as a jar file which is part of [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
 The library contains the following:
 * Dictionary, Repository and Search Services interfaces
@@ -36,13 +36,3 @@ The history for older versions can be found in [Alfresco SVN](https://svn.alfres
 
 ### Contributing guide
 Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.
-
-### License
-This project is part of the Alfresco software. 
-If the software was purchased under a paid Alfresco license, the terms of the paid license agreement will prevail.  Otherwise, the software is provided under the following open source license terms:
- 
-Alfresco is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
- 
-Alfresco is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
- 
-You should have received a copy of the GNU Lesser General Public License along with Alfresco. If not, see <http://www.gnu.org/licenses/>.

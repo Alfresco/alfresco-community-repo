@@ -3,6 +3,8 @@ Thanks for taking the time to contribute!
 
 The following is a set of guidelines for contributing to this library. Most of them will make the life of the reviewer easier and therefore decrease the time required for the patch go to the next version of the library.
 
+Please, take a look at the contribution information in the [Community Site](https://community.alfresco.com/docs/DOC-6385-project-overview-repository)
+
 #### Reporting bugs
 The bug can be submitted as an issue on GitHub. But the best way to report a bug is to create an issue in [JIRA tracker](https://issues.alfresco.com). Ideally supported by a good pull request.
 

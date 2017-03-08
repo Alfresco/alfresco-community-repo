@@ -36,12 +36,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.repo.cache.SimpleCache;
-
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
@@ -67,6 +70,11 @@ import org.springframework.context.ApplicationEvent;
  */
 public class ExtendedPermissionServiceImpl extends PermissionServiceImpl implements ExtendedPermissionService
 {
+    /** An audit key for the enable permission inheritance event. */
+    private static final String AUDIT_ENABLE_INHERIT_PERMISSION = "enable-inherit-permission";
+    /** An audit key for the disable permission inheritance event. */
+    private static final String AUDIT_DISABLE_INHERIT_PERMISSION = "disable-inherit-permission";
+
     /** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
 
@@ -89,6 +97,26 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
 
     /** Permission processor registry */
     private PermissionProcessorRegistry permissionProcessorRegistry;
+
+    /** The RM audit service. */
+    private RecordsManagementAuditService recordsManagementAuditService;
+
+    /** {@inheritDoc} Register the audit events. */
+    @Override
+    public void init()
+    {
+        super.init();
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                recordsManagementAuditService.registerAuditEvent(new AuditEvent(AUDIT_ENABLE_INHERIT_PERMISSION, "rm.audit.enable-inherit-permission"));
+                recordsManagementAuditService.registerAuditEvent(new AuditEvent(AUDIT_DISABLE_INHERIT_PERMISSION, "rm.audit.disable-inherit-permission"));
+                return null;
+            }
+        });
+    }
 
     /**
      * Gets the file plan service
@@ -118,6 +146,16 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     public void setPermissionProcessorRegistry(PermissionProcessorRegistry permissionProcessorRegistry)
     {
         this.permissionProcessorRegistry = permissionProcessorRegistry;
+    }
+
+    /**
+     * Set the RM audit service.
+     *
+     * @param recordsManagementAuditService The RM audit service.
+     */
+    public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
+    {
+        this.recordsManagementAuditService = recordsManagementAuditService;
     }
 
     /**
@@ -300,6 +338,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
      * @param aclId
      * @return
      */
+    @Override
     public Set<String> getReadersDenied(Long aclId)
     {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
@@ -335,6 +374,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
     /**
      * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#getWriters(java.lang.Long)
      */
+    @Override
     public Set<String> getWriters(Long aclId)
     {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
@@ -378,12 +418,17 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         {
             setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
         }
-        super.setInheritParentPermissions(nodeRef, inheritParentPermissions);
+        if (inheritParentPermissions != super.getInheritParentPermissions(nodeRef))
+        {
+            super.setInheritParentPermissions(nodeRef, inheritParentPermissions);
+            String auditEvent = (inheritParentPermissions ? AUDIT_ENABLE_INHERIT_PERMISSION : AUDIT_DISABLE_INHERIT_PERMISSION);
+            recordsManagementAuditService.auditEvent(nodeRef, auditEvent);
+        }
     }
 
     /**
      * Helper method to the RM admin role scoped by the correct file plan.
-     * 
+     *
      * @param nodeRef   node reference
      * @return String   RM admin role
      */
@@ -398,7 +443,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         }
         return adminRole;
     }
-    
+
     /**
      * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#getReadersAndWriters(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -411,15 +456,15 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> writers = getWriters(aclId);
 
         // add the current owner to the list of extended writers
-        Set<String> modifiedWrtiers = new HashSet<String>(writers);    
+        Set<String> modifiedWrtiers = new HashSet<String>(writers);
         String owner = ownableService.getOwner(nodeRef);
-        if (StringUtils.isNotBlank(owner) && 
+        if (StringUtils.isNotBlank(owner) &&
             !owner.equals(OwnableService.NO_OWNER) &&
             authorityService.authorityExists(owner))
         {
             modifiedWrtiers.add(owner);
-        }        
-        
+        }
+
         return new Pair<Set<String>, Set<String>> (readers, modifiedWrtiers);
     }
 }

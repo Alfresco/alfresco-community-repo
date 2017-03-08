@@ -65,7 +65,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                                              implements NodeServicePolicies.OnUpdatePropertiesPolicy,
                                                         NodeServicePolicies.BeforeDeleteNodePolicy,
-                                                        NodeServicePolicies.OnCreateNodePolicy,
+                                                        NodeServicePolicies.OnAddAspectPolicy,
                                                         CopyServicePolicies.OnCopyCompletePolicy
 {
     /** I18N */
@@ -258,7 +258,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
        notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
     @Override
-    public void onCreateNode(final ChildAssociationRef childAssocRef)
+    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
         {
@@ -268,10 +268,9 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                  * When creating a new record the identifier is writable to allow the upload in multiple steps.
                  * On transaction commit make the identifier read only (remove the editable aspect).
                  */
-                NodeRef newNode = childAssocRef.getChildRef();
-                if(nodeService.exists(newNode))
+                if(nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, aspectTypeQName))
                 {
-                    nodeService.setProperty(newNode, RecordsManagementModel.PROP_ID_IS_TEMPORARILY_EDITABLE, false);
+                    nodeService.setProperty(nodeRef, RecordsManagementModel.PROP_ID_IS_TEMPORARILY_EDITABLE, false);
                 }
                 return null;
             }

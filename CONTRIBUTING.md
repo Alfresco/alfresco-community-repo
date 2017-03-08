@@ -30,7 +30,7 @@ Please, pay attention to the level of test being done. It is preferred to create
 * Empty lines do not have tabs/spaces
 * All new public methods have JavaDoc
 * The JavaDoc should be compliant with [Java8 DocLint](http://openjdk.java.net/jeps/172)
-* Comments are added only where very necessary
+* If the code is not self explanatory, then comments/JavaDoc should be added as appropriate. Excessive comments should be avoided.
 * The strings which are shown to the user (in the UI) should be put in localization property bundles. Our localization team will handle the translations if required.
 
 ##### Commit message

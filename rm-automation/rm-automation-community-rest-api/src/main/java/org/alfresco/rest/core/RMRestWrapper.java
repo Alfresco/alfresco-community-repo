@@ -29,6 +29,7 @@ package org.alfresco.rest.core;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 
 import org.alfresco.rest.exception.EmptyJsonResponseException;
+import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestHtmlResponse;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
@@ -71,6 +72,12 @@ public class RMRestWrapper
     public void authenticateUser(UserModel userModel)
     {
         restWrapper.authenticateUser(userModel);
+    }
+
+    /** Get the last error thrown (if any). */
+    public RestErrorModel assertLastError()
+    {
+        return restWrapper.assertLastError();
     }
 
     /** Process responses for a collection of models as {@link RestSiteModelsCollection}. */

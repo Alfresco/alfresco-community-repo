@@ -42,6 +42,7 @@ import java.util.Locale;
 
 import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -53,6 +54,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.VersionNumber;
@@ -752,7 +754,7 @@ public class DefaultTypeConverter extends TypeConverter
         addDynamicTwoStageConverter(Path.class, String.class, InputStream.class);
         
         //
-        // Content Reader
+        // ContentReader
         //
         addConverter(ContentReader.class, InputStream.class, new TypeConverter.Converter<ContentReader, InputStream>()
         {
@@ -771,7 +773,7 @@ public class DefaultTypeConverter extends TypeConverter
         });
 
         //
-        // Content Writer
+        // ContentWriter
         //
         addConverter(ContentWriter.class, String.class, new TypeConverter.Converter<ContentWriter, String>()
         {
@@ -782,7 +784,7 @@ public class DefaultTypeConverter extends TypeConverter
         });
 
         //
-        // Input Stream
+        // InputStream
         //
         addConverter(InputStream.class, String.class, new TypeConverter.Converter<InputStream, String>()
         {
@@ -824,6 +826,7 @@ public class DefaultTypeConverter extends TypeConverter
                 }
             }
         });
+
         addDynamicTwoStageConverter(InputStream.class, String.class, Date.class);
         
         addDynamicTwoStageConverter(InputStream.class, String.class, Double.class);
@@ -837,7 +840,26 @@ public class DefaultTypeConverter extends TypeConverter
         addDynamicTwoStageConverter(InputStream.class, String.class, Path.class);
 
         addDynamicTwoStageConverter(InputStream.class, String.class, NodeRef.class);
+
         
+        //
+        // SearchParameters & CMISQuery (for audit)
+        //
+
+        addConverter(SearchParameters.class, String.class, new TypeConverter.Converter<SearchParameters, String>()
+        {
+            public String convert(SearchParameters source)
+            {
+                return source.toAuditString();
+            }
+        });
+        addConverter(CMISQueryOptions.class, String.class, new TypeConverter.Converter<CMISQueryOptions, String>()
+        {
+            public String convert(CMISQueryOptions source)
+            {
+                return source.getAsSearchParmeters().toAuditString();
+            }
+        });
     }
 
 }

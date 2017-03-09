@@ -1227,6 +1227,7 @@ public class SearchParameters implements BasicSearchParameters
     @Override
     public String toString()
     {
+        // used for debug logging
         StringBuilder builder = new StringBuilder(1000);
         builder.append("SearchParameters [language=").append(this.language).append(", query=").append(this.query)
                     .append(", stores=").append(this.stores).append(", queryParameterDefinitions=")
@@ -1245,7 +1246,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(", maxPermissionCheckTimeMillis=").append(this.maxPermissionCheckTimeMillis)
                     .append(", defaultFieldName=").append(this.defaultFieldName).append(", fieldFacets=")
                     .append(this.fieldFacets).append(", facetQueries=").append(this.facetQueries)
-                    .append(this.filterQueries).append(", filterQueries=").append(this.filterQueries)
+                    .append(", filterQueries=").append(this.filterQueries)
                     .append(", useInMemorySort=").append(this.useInMemorySort)
                     .append(", maxRawResultSetSizeForInMemorySort=").append(this.maxRawResultSetSizeForInMemorySort)
                     .append(", extraParameters=").append(this.extraParameters).append(", excludeTenantFilter=")
@@ -1254,6 +1255,36 @@ public class SearchParameters implements BasicSearchParameters
                     .append(this.sinceTxId).append(", searchTerm=").append(this.searchTerm)
                     .append(", highlight=").append(this.highlight)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
+        return builder.toString();
+    }
+    
+    public String toAuditString()
+    {
+        // used for repository audit (note: will trimmed if it exceeds 1024 chars)
+        StringBuilder builder = new StringBuilder(1000);
+        builder.append("{lang=").append(this.language)
+                .append(", query=").append(this.query)
+                .append(", stores=").append(this.stores)
+                .append(", defaultFTSOp=").append(this.defaultFTSOperator)
+                .append(", defaultFTSFieldOp=").append(this.defaultFTSFieldOperator);
+
+        if ((queryTemplates != null) && (! queryTemplates.isEmpty()))
+        {
+            builder.append(", queryTemplates=").append(this.queryTemplates);
+        }
+
+        if ((filterQueries != null) && (! filterQueries.isEmpty()))
+        {
+            builder.append(", filterQueries=").append(this.filterQueries);
+        }
+
+        if ((searchTerm != null) && (! searchTerm.isEmpty()))
+        {
+            builder.append(", searchTerm=").append(this.searchTerm);
+        }
+
+        builder.append("}");
+        
         return builder.toString();
     }
 

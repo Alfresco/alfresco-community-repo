@@ -1289,6 +1289,8 @@ public class SearchParameters implements BasicSearchParameters
     public static class FieldFacet
     {
         String field;
+        String label;
+        List<String> excludeFilters;
         String prefix = null;
         FieldFacetSort sort = null;
         Integer limitOrNull = null;
@@ -1411,70 +1413,78 @@ public class SearchParameters implements BasicSearchParameters
             this.enumMethodCacheMinDF = enumMethodCacheMinDF;
         }
 
-        @Override
-        public int hashCode()
+        public String getLabel()
         {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + (countDocsMissingFacetField ? 1231 : 1237);
-            result = prime * result + enumMethodCacheMinDF;
-            result = prime * result + ((field == null) ? 0 : field.hashCode());
-            result = prime * result + ((limitOrNull == null) ? 0 : limitOrNull.hashCode());
-            result = prime * result + ((method == null) ? 0 : method.hashCode());
-            result = prime * result + minCount;
-            result = prime * result + offset;
-            result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
-            result = prime * result + ((sort == null) ? 0 : sort.hashCode());
-            return result;
+            return label;
+        }
+
+        public void setLabel(String label)
+        {
+            this.label = label;
+        }
+
+        public List<String> getExcludeFilters()
+        {
+            return excludeFilters;
+        }
+
+        public void setExcludeFilters(List<String> excludeFilters)
+        {
+            this.excludeFilters = excludeFilters;
         }
 
         @Override
-        public boolean equals(Object obj)
+        public boolean equals(Object o)
         {
-            if (this == obj)
+            if (this == o)
                 return true;
-            if (obj == null)
+            if (o == null || getClass() != o.getClass())
                 return false;
-            if (getClass() != obj.getClass())
+
+            FieldFacet that = (FieldFacet) o;
+
+            if (offset != that.offset)
                 return false;
-            FieldFacet other = (FieldFacet) obj;
-            if (countDocsMissingFacetField != other.countDocsMissingFacetField)
+            if (minCount != that.minCount)
                 return false;
-            if (enumMethodCacheMinDF != other.enumMethodCacheMinDF)
+            if (countDocsMissingFacetField != that.countDocsMissingFacetField)
                 return false;
-            if (field == null)
-            {
-                if (other.field != null)
-                    return false;
-            }
-            else if (!field.equals(other.field))
+            if (enumMethodCacheMinDF != that.enumMethodCacheMinDF)
                 return false;
-            if (limitOrNull == null)
-            {
-                if (other.limitOrNull != null)
-                    return false;
-            }
-            else if (!limitOrNull.equals(other.limitOrNull))
+            if (!field.equals(that.field))
                 return false;
-            if (method != other.method)
+            if (label != null ? !label.equals(that.label) : that.label != null)
                 return false;
-            if (minCount != other.minCount)
+            if (excludeFilters != null ? !excludeFilters.equals(that.excludeFilters) : that.excludeFilters != null)
                 return false;
-            if (offset != other.offset)
+            if (prefix != null ? !prefix.equals(that.prefix) : that.prefix != null)
                 return false;
-            if (prefix == null)
-            {
-                if (other.prefix != null)
-                    return false;
-            }
-            else if (!prefix.equals(other.prefix))
+            if (sort != that.sort)
                 return false;
-            if (sort != other.sort)
+            if (limitOrNull != null ? !limitOrNull.equals(that.limitOrNull) : that.limitOrNull != null)
                 return false;
+            if (method != that.method)
+                return false;
+
             return true;
         }
-        
-        
+
+        @Override
+        public int hashCode()
+        {
+            int result = field.hashCode();
+            result = 31 * result + (label != null ? label.hashCode() : 0);
+            result = 31 * result + (excludeFilters != null ? excludeFilters.hashCode() : 0);
+            result = 31 * result + (prefix != null ? prefix.hashCode() : 0);
+            result = 31 * result + (sort != null ? sort.hashCode() : 0);
+            result = 31 * result + (limitOrNull != null ? limitOrNull.hashCode() : 0);
+            result = 31 * result + offset;
+            result = 31 * result + minCount;
+            result = 31 * result + (countDocsMissingFacetField ? 1 : 0);
+            result = 31 * result + (method != null ? method.hashCode() : 0);
+            result = 31 * result + enumMethodCacheMinDF;
+            return result;
+        }
     }
     
     /**

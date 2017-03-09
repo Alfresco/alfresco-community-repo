@@ -161,9 +161,10 @@
                <value>${ldap.authentication.java.naming.read.timeout}</value>
             </entry>
 
-            <!-- Automatically follow referrals -->
+            <!-- Follow referrals, can be: ignore, follow, throw -->
+            <!-- the default one is "follow" -->
             <entry key="java.naming.referral">
-               <value>follow</value>
+               <value>${ldap.authentication.java.naming.referral}</value>
             </entry>
 
             <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
@@ -222,12 +223,13 @@
                <value>${ldap.authentication.java.naming.read.timeout}</value>
             </entry>
 
-            <!-- Automatically follow referrals -->
+            <!-- Follow referrals, can be: ignore, follow, throw -->
+            <!-- the default one is "follow" -->
             <entry key="java.naming.referral">
-               <value>follow</value>
+               <value>${ldap.authentication.java.naming.referral}</value>
             </entry>
 
-           <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
+            <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
             <entry key="java.naming.security.protocol">
                <value>${ldap.authentication.java.naming.security.protocol}</value>
             </entry>

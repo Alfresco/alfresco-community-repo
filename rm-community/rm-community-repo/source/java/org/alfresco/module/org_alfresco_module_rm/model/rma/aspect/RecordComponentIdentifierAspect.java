@@ -230,7 +230,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
             // Do a blanket removal in case this is a contextual nodes
             attributeService.removeAttributes(CONTEXT_VALUE, nodeRef);
         }
-        else
+        else if(!beforeId.equals(afterId))
         {
             // This is a full update
             attributeService.updateOrCreateAttribute(

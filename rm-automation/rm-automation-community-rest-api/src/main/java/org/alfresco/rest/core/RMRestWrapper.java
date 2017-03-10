@@ -83,46 +83,19 @@ public class RMRestWrapper
     /** Process responses for a collection of models as {@link RestSiteModelsCollection}. */
     public <T> T processModels(Class<T> classz, RestRequest simpleRequest)
     {
-        try
-        {
-            return restWrapper.processModels(classz, simpleRequest);
-        }
-        catch (Exception e)
-        {
-            // TODO Hopefully remove this check when TAS stops using checked exceptions.
-            // See https://gitlab.alfresco.com/tas/alfresco-tas-restapi-test/merge_requests/392
-            throw new RuntimeException(e);
-        }
+        return restWrapper.processModels(classz, simpleRequest);
     }
 
     /** Process responses for a single model as {@link RestSiteModel}. */
     public <T> T processModel(Class<T> classz, RestRequest restRequest)
     {
-        try
-        {
-            return restWrapper.processModel(classz, restRequest);
-        }
-        catch (Exception e)
-        {
-            // TODO Hopefully remove this check when TAS stops using checked exceptions.
-            // See https://gitlab.alfresco.com/tas/alfresco-tas-restapi-test/merge_requests/392
-            throw new RuntimeException(e);
-        }
+        return restWrapper.processModel(classz, restRequest);
     }
 
     /** Process a response that has no body - basically will need only the status code from it. */
     public void processEmptyModel(RestRequest simpleRequest)
     {
-        try
-        {
-            restWrapper.processEmptyModel(simpleRequest);
-        }
-        catch (EmptyJsonResponseException e)
-        {
-            // TODO Hopefully remove this check when TAS stops using checked exceptions.
-            // See https://gitlab.alfresco.com/tas/alfresco-tas-restapi-test/merge_requests/392
-            throw new RuntimeException(e);
-        }
+        restWrapper.processEmptyModel(simpleRequest);
     }
 
     /** Get the most recently returned status code. */

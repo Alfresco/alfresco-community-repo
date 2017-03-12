@@ -30,7 +30,9 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import static com.google.common.collect.Lists.newArrayList;
 
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.FIRST_EVENT;
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 import static org.alfresco.repo.policy.annotation.BehaviourKind.ASSOCIATION;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -72,6 +74,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -126,8 +129,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                           RecordsManagementModel,
                                           RecordsManagementCustomModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                          NodeServicePolicies.OnRemoveAspectPolicy,
-                                          NodeServicePolicies.OnUpdatePropertiesPolicy
+                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                          ContentServicePolicies.OnContentUpdatePolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
@@ -397,56 +400,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // bind policies
         beforeFileRecord = policyComponent.registerClassPolicy(BeforeFileRecord.class);
         onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
-    @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            type = "sys:noContent"
-    )
-    public void onRemoveAspect(NodeRef nodeRef, QName aspect)
-    {
-        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
-        {
-            // get the record id
-            String recordId = (String) nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
-
-            // get the record name
-            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-
-            // rename the record
-            int dotIndex = name.lastIndexOf('.');
-            String prefix = name;
-            String postfix = "";
-            if (dotIndex > 0)
-            {
-                prefix = name.substring(0, dotIndex);
-                postfix = name.substring(dotIndex);
-            }
-            String recordName = prefix + " (" + recordId + ")" + postfix;
-            behaviourFilter.disableBehaviour();
-            try
-            {
-                fileFolderService.rename(nodeRef, recordName);
-            }
-            catch (FileNotFoundException e)
-            {
-                throw new AlfrescoRuntimeException("Unable to make record, because rename failed.", e);
-            }
-            finally
-            {
-                behaviourFilter.enableBehaviour();
-            }
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Rename " + name + " to " + recordName);
-            }
-        }
     }
 
     /**
@@ -853,6 +806,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                         // make the document a record
                         makeRecord(nodeRef);
+                        renameRecord(nodeRef);
 
                         if (latestVersionRecord != null)
                         {
@@ -948,6 +902,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     
                     // make record
                     makeRecord(record);
+                    renameRecord(record);
 
                     // remove added copy assocs
                     List<AssociationRef> recordAssocs = nodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
@@ -1082,6 +1037,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     		        {
     		            // make record
     		            makeRecord(record);
+                        renameRecord(record);
     		        }
 
     				return record;
@@ -1129,6 +1085,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             // remove the owner
             ownableService.setOwner(document, OwnableService.NO_OWNER);
+
+            if (TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(document)))
+            {
+                renameRecord(document);
+            }
         }
         finally
         {
@@ -1712,5 +1673,53 @@ public class RecordServiceImpl extends BaseBehaviourBean
             // can only unlink a record from a record folder
             throw new RecordLinkRuntimeException("Can only unlink a record from a record folder.");
         }
-    }    
+    }
+
+    /*
+     * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "rma:record",
+            notificationFrequency = TRANSACTION_COMMIT
+    )
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
+    {
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+        {
+            renameRecord(nodeRef);
+        }
+    }
+
+    private void renameRecord(NodeRef nodeRef)
+    {
+        // get the record id
+        String recordId = (String) nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
+
+        if (isNotBlank(recordId))
+        {
+            // get the record name
+            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+
+            // rename the record
+            int dotIndex = name.lastIndexOf('.');
+            String prefix = name;
+            String postfix = "";
+            if (dotIndex > 0)
+            {
+                prefix = name.substring(0, dotIndex);
+                postfix = name.substring(dotIndex);
+            }
+            String recordName = prefix + " (" + recordId + ")" + postfix;
+
+            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, recordName);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Rename " + name + " to " + recordName);
+            }
+        }
+    }
 }

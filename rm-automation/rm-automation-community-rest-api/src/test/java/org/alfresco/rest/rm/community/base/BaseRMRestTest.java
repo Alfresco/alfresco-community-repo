@@ -100,7 +100,7 @@ public class BaseRMRestTest extends RestTest
      */
     protected void assertStatusCode(HttpStatus statusCode)
     {
-        getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(statusCode);
+        restAPIFactory.getRmRestWrapper().assertStatusCodeIs(statusCode);
     }
 
     /**
@@ -145,7 +145,7 @@ public class BaseRMRestTest extends RestTest
      */
     public void createRMSiteIfNotExists() throws Exception
     {
-        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+        RMSiteAPI rmSiteAPI = restAPIFactory.getRMSiteAPI();
 
         // Check RM site doesn't exist
         if (!rmSiteAPI.existsRMSite())
@@ -294,16 +294,16 @@ public class BaseRMRestTest extends RestTest
         assertTrue(aspects.contains(RECORD_TYPE));
         // a record mustn't be closed
         assertFalse(aspects.contains(ASPECTS_CLOSED_RECORD));
-        
+
         // add closed record aspect
         aspects.add(ASPECTS_CLOSED_RECORD);
-        
-        FilePlanComponent updatedComponent = filePlanComponentsAPI.updateFilePlanComponent(FilePlanComponent.builder().aspectNames(aspects).build(), 
+
+        FilePlanComponent updatedComponent = filePlanComponentsAPI.updateFilePlanComponent(FilePlanComponent.builder().aspectNames(aspects).build(),
             recordToClose.getId());
         assertStatusCode(OK);
         return updatedComponent;
     }
-    
+
     /**
      * Helper method to create a randomly-named <category>/<folder> structure in file plan
      *

@@ -365,7 +365,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                         req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
             
             // Send back a request for SPNEGO authentication
-            logonStartAgain(context, req, resp, true);
+            // if the fallback is ignored - the browser will go into an infinite loop
+            // see MNT-16931
+            logonStartAgain(context, req, resp, false);
             return false;
         }
         else

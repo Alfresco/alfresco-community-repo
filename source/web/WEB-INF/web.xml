@@ -256,6 +256,26 @@
       <filter-name>CSRF Token Filter</filter-name>
       <url-pattern>/s/admin/*</url-pattern>
    </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/wcservice/enterprise/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/wcs/enterprise/admin/*</url-pattern>
+   </filter-mapping>
+   
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/wcservice/admin/*</url-pattern>
+   </filter-mapping>
+
+   <filter-mapping>
+      <filter-name>CSRF Token Filter</filter-name>
+      <url-pattern>/wcs/admin/*</url-pattern>
+   </filter-mapping>
 
    <!-- Enterprise filter-mapping placeholder -->
 

@@ -79,6 +79,66 @@
                <param name="cookie">{token}</param>
             </action>
          </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/wcservice/enterprise/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/wcs/enterprise/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/service/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/s/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/wcservice/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/wcs/admin/.*</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
 
          <!--
             Verify multipart requests contain the token as a parameter

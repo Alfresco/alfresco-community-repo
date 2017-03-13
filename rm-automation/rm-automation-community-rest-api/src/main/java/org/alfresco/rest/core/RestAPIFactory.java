@@ -67,6 +67,11 @@ public class RestAPIFactory
         return this.rmRestWrapper;
     }
 
+    public void setRmRestWrapper(RMRestWrapper rmRestWrapper)
+    {
+        this.rmRestWrapper = rmRestWrapper;
+    }
+
     private RestIGCoreAPI getRestIGCoreAPI(UserModel userModel)
     {
         getRmRestWrapper().authenticateUser(userModel != null ? userModel : dataUser.getAdminUser());

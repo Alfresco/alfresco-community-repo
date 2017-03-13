@@ -10,7 +10,7 @@
    
    <div class="column-full">
       <@section label=msg("tenantconsole.result") />
-      <pre>${cmd.output}</pre>
+      <pre>${cmd.output?html}</pre>
    </div>
    
    <script type="text/javascript">//<![CDATA[

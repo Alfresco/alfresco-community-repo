@@ -36,6 +36,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -184,6 +185,14 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
         PersistedType type = persistenceMapping.get(clazz);
         if (type != null)
         {
+            // MNT-17523: Loss of information, field values truncated
+            if (value instanceof String)
+            {
+                if (((String) value).length() > SchemaBootstrap.getMaxStringLength())
+                {
+                    return PropertyValueEntity.PersistedType.SERIALIZABLE;
+                }
+            }
             return type;
         }
         // Before we give up, check if it is constructable

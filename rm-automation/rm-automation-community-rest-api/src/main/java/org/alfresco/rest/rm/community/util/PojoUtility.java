@@ -26,12 +26,8 @@
  */
 package org.alfresco.rest.rm.community.util;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
@@ -48,9 +44,8 @@ public class PojoUtility
      * Converting object to JSON string
      *
      * @param model  The java object model to convert
-     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
      */
-    public static String toJson(Object model) throws JsonProcessingException
+    public static String toJson(Object model)
     {
         ObjectMapper mapper = new ObjectMapper();
         //include only values that differ from default settings to be included
@@ -60,15 +55,7 @@ public class PojoUtility
             //return the json object
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
         }
-        catch (JsonGenerationException e)
-        {
-            return e.toString();
-        }
-        catch (JsonMappingException e)
-        {
-            return e.toString();
-        }
-        catch (IOException e)
+        catch (JsonProcessingException e)
         {
             return e.toString();
         }
@@ -81,7 +68,7 @@ public class PojoUtility
      * @param model The java object model to convert
      * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
      */
-    public static String toJsonElectronicRecord(Object model) throws JsonProcessingException
+    public static String toJsonElectronicRecord(Object model)
     {
         ObjectMapper mapper = new ObjectMapper();
 
@@ -93,20 +80,10 @@ public class PojoUtility
         mapper.setSerializationInclusion(Include.NON_DEFAULT);
         try
         {
-
             //return the json object
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
-
         }
-        catch (JsonGenerationException e)
-        {
-            return e.toString();
-        }
-        catch (JsonMappingException e)
-        {
-            return e.toString();
-        }
-        catch (IOException e)
+        catch (JsonProcessingException e)
         {
             return e.toString();
         }

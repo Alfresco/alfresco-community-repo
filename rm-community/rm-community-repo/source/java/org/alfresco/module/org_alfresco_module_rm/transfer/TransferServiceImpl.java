@@ -222,14 +222,13 @@ public class TransferServiceImpl extends ServiceBaseImpl
                         nodeRef,
                         ASSOC_TRANSFERRED,
                         ASSOC_TRANSFERRED);
+            // Set PDF indicator flag
+            setPDFIndicationFlag(transferNodeRef, nodeRef);
         }
         finally
         {
             transferType.enable();
         }
-
-        // Set PDF indicator flag
-        setPDFIndicationFlag(transferNodeRef, nodeRef);
 
         // Set the transferring indicator aspect
         nodeService.addAspect(nodeRef, ASPECT_TRANSFERRING, null);

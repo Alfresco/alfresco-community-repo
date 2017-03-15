@@ -13,9 +13,9 @@
     <version>6.9-SNAPSHOT</version>
 
     <scm>
-        <connection>scm:git:https://gitlab.alfresco.com/platform/alfresco-data-model.git</connection>
-        <developerConnection>scm:git:https://gitlab.alfresco.com/platform/alfresco-data-model.git</developerConnection>
-        <url>https://gitlab.alfresco.com/platform/alfresco-data-model</url>
+        <connection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</connection>
+        <developerConnection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</developerConnection>
+        <url>https://github.com/Alfresco/alfresco-data-model</url>
         <tag>HEAD</tag>
     </scm>
 

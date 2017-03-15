@@ -60,9 +60,9 @@
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.TransferredCapabilityCondition">
     </bean>
 
-    <bean id="capabilityCondition.movable"
+    <bean id="capabilityCondition.movableRecordFolder"
           parent="capabilityCondition.base"
-          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.MovableCapabilityCondition">
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.MovableRecordFolderCapabilityCondition">
     </bean>
 
     <bean id="capabilityCondition.destroyed"

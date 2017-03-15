@@ -1695,6 +1695,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
     }
 
+    /**
+     * Appends the record identifier to the name of the record
+     *
+     * @param nodeRef The node reference of the record.
+     */
     private void renameRecord(NodeRef nodeRef)
     {
         // get the record id

@@ -116,8 +116,8 @@
        <dependency>
             <groupId>org.alfresco.services</groupId>
             <artifactId>alfresco-messaging-repo</artifactId>
-            <version>1.2.5</version>
-        </dependency>
+            <version>1.2.8</version>
+        </dependency> 
 
         <!-- CORS Filter Libraries -->
         <dependency>

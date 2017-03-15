@@ -510,6 +510,46 @@ public class MoveRecordFolderTest extends BaseRMTestCase
 
     }
 
+    /**
+     * Given a closed folder
+     * When we evaluate the move capability on it
+     * The access is denied
+     */
+    public void testMoveClosedFolder()
+    {
+        final NodeRef destination = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run()
+            {
+                // create a record category
+                return filePlanService.createRecordCategory(filePlan, GUID.generate());
+            }
+        });
+
+        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run()
+            {
+                // create folder
+                NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
+
+                // close folder
+                recordFolderService.closeRecordFolder(testFolder);
+
+                return testFolder;
+            }
+
+            @Override
+            public void test(NodeRef testFolder) throws Exception
+            {
+                Capability moveCapability = capabilityService.getCapability("MoveRecordFolder");
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, moveCapability.evaluate(testFolder, destination));
+            }
+        });
+    }
+
     private NodeRef createRecordCategory(boolean recordLevel)
     {
         NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());

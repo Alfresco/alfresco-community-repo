@@ -256,11 +256,15 @@ public abstract class AbstractContentTransformerTest extends TestCase
                // attempt to convert to every other mimetype
                for (String targetMimetype : mimetypes)
                {
-               	if (sourceMimetype.equals(targetMimetype))
-               	{
-               		// Don't test like-to-like transformations
-               		continue;
-               	}
+               	   if (sourceMimetype.equals(targetMimetype))
+               	   {
+               		   // Don't test like-to-like transformations
+               		   continue;
+               	   }
+               	   if (!doTestTransformation(quickFile, sourceMimetype, targetMimetype))
+               	   {
+               		   continue;
+               	   }
                    ContentWriter targetWriter = null;
                    // construct a reader onto the source file
                    String targetExtension = mimetypeService.getExtension(targetMimetype);
@@ -373,7 +377,19 @@ public abstract class AbstractContentTransformerTest extends TestCase
         outputWriter.setEncoding("UTF8");
         outputWriter.putContent(sb.toString());
     }
-    
+
+    /**
+     * Allows a subclass to skip selected transformations.
+     * @param quickFile name
+     * @param sourceMimetype of the quickFile
+     * @param targetMimetype of the transformation
+     * @return false to skip the transformation.
+     */
+    protected boolean doTestTransformation(String quickFile, String sourceMimetype, String targetMimetype)
+    {
+        return false;
+    }
+
     /**
      * Allows implementations to do some extra checks on the 
      *  results of the content as found by 

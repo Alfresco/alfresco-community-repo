@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.email.ExtendedMailActionExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ReflectionUtils;
@@ -123,8 +124,8 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         this.authenticationComponent = (AuthenticationComponent) this.applicationContext
                     .getBean("authenticationComponent");
         this.invitationServiceImpl = (InvitationServiceImpl) applicationContext.getBean("invitationService");
-        this.workflowAdminService = (WorkflowAdminServiceImpl)applicationContext.getBean(WorkflowAdminServiceImpl.NAME); 
-        
+        this.workflowAdminService = (WorkflowAdminServiceImpl)applicationContext.getBean(WorkflowAdminServiceImpl.NAME);
+
         this.templateService = (TemplateServiceImpl)applicationContext.getBean("templateService");
         
         this.startSendEmails = invitationServiceImpl.isSendEmails();
@@ -423,9 +424,17 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
          * Check that system generated invitations can work as well
          */
         {
-           Field faf = mailService.getClass().getDeclaredField("fromDefaultAddress");
-           faf.setAccessible(true);
-           String defaultFromAddress = (String)ReflectionUtils.getField(faf, mailService);
+            Field faf;
+            if (mailService instanceof ExtendedMailActionExecutor)
+            {
+                faf = mailService.getClass().getSuperclass().getDeclaredField("fromDefaultAddress");
+            }
+            else
+            {
+                faf = mailService.getClass().getDeclaredField("fromDefaultAddress");
+            }
+            faf.setAccessible(true);
+            String defaultFromAddress = (String) ReflectionUtils.getField(faf, mailService);
            
            AuthenticationUtil.setFullyAuthenticatedUser(USER_NOEMAIL);
 
@@ -446,7 +455,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
            assertEquals(USER_TWO_EMAIL, msg.getAllRecipients()[0].toString());
            
            assertEquals(1, msg.getFrom().length);
-           assertEquals(defaultFromAddress, msg.getFrom()[0].toString());           
+           assertEquals(defaultFromAddress, msg.getFrom()[0].toString());
         }
     }
 

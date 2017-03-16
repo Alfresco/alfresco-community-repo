@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -271,9 +271,13 @@ public class PublicApiHttpClient
             {
                 response = authenticatedHttp.executeHttpMethodAuthenticated(req, rq.getRunAsUser(), rq.getPassword(), callback);
             }
-            else
+            else if (rq.getRunAsUser() != null)
             {
                 response = authenticatedHttp.executeHttpMethodAuthenticated(req, rq.getRunAsUser(), callback);
+            }
+            else
+            {
+                response = authenticatedHttp.executeHttpMethodUnAuthenticated(req, callback);
             }
             return response;
         }

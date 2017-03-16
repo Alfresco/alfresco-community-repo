@@ -32,10 +32,9 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.ResetPasswordService;
-import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.InvalidResetPasswordWorkflowException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
+import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowInvalidUserException;
-import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowNotFoundException;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
@@ -44,7 +43,6 @@ import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -768,8 +766,8 @@ public class PeopleImpl implements People
         checkRequiredField("userId", userId);
         checkRequiredField("client", client);
 
-        // This is an un-authenticated API call so we wrap it to run as Admin
-        AuthenticationUtil.runAs(() -> {
+        // This is an un-authenticated API call so we wrap it to run as System
+        AuthenticationUtil.runAsSystem(() -> {
             try
             {
                 resetPasswordService.requestReset(userId, client);
@@ -787,7 +785,7 @@ public class PeopleImpl implements People
             }
 
             return null;
-        }, AuthenticationUtil.getAdminUserName());
+        });
     }
 
     @Override
@@ -803,21 +801,23 @@ public class PeopleImpl implements People
                     .setWorkflowKey(passwordReset.getKey());
         try
         {
-            // This is an un-authenticated API call so we wrap it to run as Admin
-            AuthenticationUtil.runAs(() -> {
-                resetPasswordService.resetPassword(resetDetails);
+            // This is an un-authenticated API call so we wrap it to run as System
+            AuthenticationUtil.runAsSystem(() -> {
+                resetPasswordService.initiateResetPassword(resetDetails);
 
                 return null;
-            }, AuthenticationUtil.getAdminUserName());
+            });
 
         }
-        catch (InvalidResetPasswordWorkflowException iex)
+        catch (ResetPasswordWorkflowException ex)
         {
-            throw new InvalidArgumentException(iex.getMessage());
-        }
-        catch (ResetPasswordWorkflowNotFoundException ex)
-        {
-            throw new NotFoundException(ex.getMessage());
+            // we don't throw an exception.
+            // For security reason, the endpoint returns a 202 response
+            // See APPSREPO-35 acceptance criteria
+            if (LOGGER.isWarnEnabled())
+            {
+                LOGGER.warn(ex.getMessage());
+            }
         }
     }
 

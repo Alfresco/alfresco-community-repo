@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -132,7 +132,41 @@ public class AuthenticatedHttp extends AbstractHttp
             return executeWithBasicAuthentication(method, userName, password, callback);
         }
     }
-    
+
+    public <T extends Object> T executeHttpMethodUnAuthenticated(HttpMethod method, HttpRequestCallback<T> callback)
+    {
+        try
+        {
+            // Try executing the method
+            httpProvider.getHttpClient().executeMethod(null, method);
+            if (callback != null)
+            {
+                return callback.onCallSuccess(method);
+            }
+            return null;
+        }
+        catch (Throwable t)
+        {
+            boolean handled = false;
+            // Delegate to callback to handle error. If not available, throw exception
+            if (callback != null)
+            {
+                handled = callback.onError(method, t);
+            }
+
+            if (!handled)
+            {
+                throw new RuntimeException("Error while executing an un-authenticated HTTP-call (" + method.getPath() + ")", t);
+            }
+            return null;
+
+        }
+        finally
+        {
+            method.releaseConnection();
+        }
+    }
+
     /**
      * Execute the given method, authenticated as the Alfresco Administrator.
      * 

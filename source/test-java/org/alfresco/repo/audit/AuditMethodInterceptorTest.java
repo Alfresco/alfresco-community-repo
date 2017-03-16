@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -201,26 +202,62 @@ public class AuditMethodInterceptorTest extends TestCase
 
     /**
      * Test for <a href="https://issues.alfresco.com/jira/browse/MNT-16748">MNT-16748</a> <br>
-     * Use {@link SearchService} to perform a query.
+     * Use {@link SearchService#query(StoreRef, String, String)} to perform a query.
      */
-    public void testAuditSearchService_MNT16748() throws Exception
+    public void testAuditSearchServiceQuery() throws Exception
     {
         // Run as admin
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
-            // Perform a search
+        // Perform a search
         @SuppressWarnings("unused")
         ResultSet rs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<ResultSet>()
         {
             @Override
             public ResultSet execute() throws Throwable
             {
-                return searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, "/company_home");
+                return searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, "/app:company_home");
             }
 
         }, true, false);
 
-        // Search for audit
+        // Check the audit entries
+        checkAuditEntries(APPLICATION_NAME_MNT_16748, SearchService.LANGUAGE_XPATH, "/app:company_home", 1);
+    }
+
+    /**
+     * Test for <a href="https://issues.alfresco.com/jira/browse/MNT-16748">MNT-16748</a> <br>
+     * Use {@link SearchService#query(SearchParameters)} to perform a query.
+     */
+    public void testAuditSearchServiceSearchParametersQuery() throws Exception
+    {
+        // Run as admin
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+        // Create SearchParameters to be used in query
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_XPATH);
+        sp.setQuery("/app:company_home/app:dictionary");
+        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+
+        // Perform a search
+        @SuppressWarnings("unused")
+        ResultSet rs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<ResultSet>()
+        {
+            @Override
+            public ResultSet execute() throws Throwable
+            {
+                return searchService.query(sp);
+            }
+
+        }, true, false);
+
+        // Check the audit entries
+        checkAuditEntries(APPLICATION_NAME_MNT_16748, SearchService.LANGUAGE_XPATH, "/app:company_home/app:dictionary", 1);
+    }
+
+    private void checkAuditEntries(String applicationName, String language, String query, int resultsNumber)
+    {
         final StringBuilder sb = new StringBuilder();
         final MutableInt rowCount = new MutableInt();
         AuditQueryCallback callback = new AuditQueryCallback()
@@ -257,21 +294,20 @@ public class AuditMethodInterceptorTest extends TestCase
         AuditQueryParameters params = new AuditQueryParameters();
         params.setForward(true);
         params.setUser(AuthenticationUtil.getAdminUserName());
-        params.setApplicationName(APPLICATION_NAME_MNT_16748);
+        params.setApplicationName(applicationName);
 
         rowCount.setValue(0);
         auditComponent.auditQuery(callback, params, Integer.MAX_VALUE);
 
-        assertEquals("Incorrect number of audit entries", 1, rowCount.intValue());
-        assertTrue(
-                "The requested language should be in the audit entry.",
-                sb.toString().contains(SearchService.LANGUAGE_XPATH));
-        assertTrue(
-                "The requested language should be in the audit entry.",
-                sb.toString().contains("/company_home"));
+        assertEquals("Incorrect number of audit entries", resultsNumber, rowCount.intValue());
+        assertTrue("The requested language should be in the audit entry.",
+                sb.toString().contains(language));
+        assertTrue("The used query should be in the audit entry.",
+                sb.toString().contains(query));
         if (logger.isDebugEnabled())
         {
             logger.debug(sb.toString());
         }
     }
+
 }

@@ -215,6 +215,14 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
+
+                <!-- Activiti reset password workflow definition -->
+                <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/reset-password_processdefinition.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+                    <prop key="redeploy">false</prop>
+                </props>
             </list>
         </property>
         <property name="models">
@@ -223,6 +231,7 @@
                <value>alfresco/workflow/invitation-nominated-workflow-model.xml</value>
                <value>alfresco/workflow/invitation-moderated-workflow-model.xml</value>
                <value>alfresco/workflow/publishingWorkflowModel.xml</value>
+               <value>alfresco/workflow/reset-password-workflow-model.xml</value>
             </list>
         </property>
         <property name="labels">

@@ -42,4 +42,5 @@
     <import resource="classpath*:alfresco/repo-clients-apps-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
     <import resource="classpath*:alfresco/smartfolder-context.xml" />
+    <import resource="classpath*:alfresco/reset-password-context.xml" />
 </beans>

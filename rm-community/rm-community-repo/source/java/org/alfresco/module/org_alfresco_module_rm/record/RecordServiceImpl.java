@@ -27,6 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.FIRST_EVENT;
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
+import static org.alfresco.repo.policy.annotation.BehaviourKind.ASSOCIATION;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,10 +73,9 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
-import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -82,16 +87,13 @@ import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -126,9 +128,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                           RecordsManagementModel,
                                           RecordsManagementCustomModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                          NodeServicePolicies.OnAddAspectPolicy,
-                                          NodeServicePolicies.OnRemoveAspectPolicy,
-                                          NodeServicePolicies.OnUpdatePropertiesPolicy
+                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                          ContentServicePolicies.OnContentUpdatePolicy
 {
     /** Logger */
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordServiceImpl.class);
@@ -141,7 +142,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** transation data key */
     private static final String KEY_IGNORE_ON_UPDATE = "ignoreOnUpdate";
-    private static final String KEY_PENDING_FILLING = "pendingFilling";
     public static final String KEY_NEW_RECORDS = "newRecords";
 
     /** I18N */
@@ -256,12 +256,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /** policies */
     private ClassPolicyDelegate<BeforeFileRecord> beforeFileRecord;
     private ClassPolicyDelegate<OnFileRecord> onFileRecord;
-
-    /** Behaviours */
-    private JavaBehaviour onCreateChildAssociation = new JavaBehaviour(
-                                                            this,
-                                                            "onCreateChildAssociation",
-                                                            NotificationFrequency.FIRST_EVENT);
 
     /**
      * @param identifierService identifier service
@@ -396,8 +390,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
      */
     public void setRecordsManagementContainerType(RecordsManagementContainerType recordsManagementContainerType)
     {
-		this.recordsManagementContainerType = recordsManagementContainerType;
-	}
+        this.recordsManagementContainerType = recordsManagementContainerType;
+    }
 
     /**
      * @param recordableVersionService  recordable version service
@@ -415,13 +409,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // bind policies
         beforeFileRecord = policyComponent.registerClassPolicy(BeforeFileRecord.class);
         onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);
-
-        // bind behaviours
-        policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
-                TYPE_RECORD_FOLDER,
-                ContentModel.ASSOC_CONTAINS,
-                onCreateChildAssociation);
     }
 
     /**
@@ -430,88 +417,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     @Behaviour
     (
-            kind = BehaviourKind.CLASS,
-            type = "sys:noContent"
+       kind = ASSOCIATION,
+       type = "rma:recordFolder",
+       notificationFrequency = FIRST_EVENT
     )
-    public void onRemoveAspect(NodeRef nodeRef, QName aspect)
-    {
-
-        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
-        {
-            ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-
-            // Only switch name back to the format of "name (identifierId)" if content size is non-zero, else leave it as the original name to avoid CIFS shuffling issues.
-            if (contentData != null && contentData.getSize() > 0)
-            {
-                switchNames(nodeRef);
-            }
-        }
-        else
-        {
-            // check whether filling is pending aspect removal
-            Set<NodeRef> pendingFilling = transactionalResourceHelper.getSet(KEY_PENDING_FILLING);
-            if (pendingFilling.contains(nodeRef))
-            {
-                file(nodeRef);
-            }
-        }
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
-    @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            type = "sys:noContent"
-    )
-    public void onAddAspect(NodeRef nodeRef, QName aspect)
-    {
-        switchNames(nodeRef);
-    }
-
-    /**
-     * Helper method to switch the name of the record around.  Used to support record creation via
-     * file protocols.
-     *
-     * @param nodeRef   node reference (record)
-     */
-    private void switchNames(NodeRef nodeRef)
-    {
-        try
-        {
-            if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
-            {
-                String origionalName =  (String)nodeService.getProperty(nodeRef, PROP_ORIGIONAL_NAME);
-                if (origionalName != null)
-                {
-                    String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                    fileFolderService.rename(nodeRef, origionalName);
-                    nodeService.setProperty(nodeRef, PROP_ORIGIONAL_NAME, name);
-                }
-            }
-        }
-        catch (FileExistsException e)
-        {
-            LOGGER.debug(e.getMessage());
-        }
-        catch (InvalidNodeRefException e)
-        {
-            LOGGER.debug(e.getMessage());
-        }
-        catch (FileNotFoundException e)
-        {
-            LOGGER.debug(e.getMessage());
-        }
-    }
-
-    /**
-     * Behaviour executed when a new item is added to a record folder.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
-     */
-    @Override
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, final boolean bNew)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -519,7 +428,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
             @Override
             public Void doWork()
             {
-                onCreateChildAssociation.disable();
                 try
                 {
                     NodeRef nodeRef = childAssocRef.getChildRef();
@@ -528,38 +436,29 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         !nodeService.getType(nodeRef).equals(TYPE_RECORD_FOLDER) &&
                         !nodeService.getType(nodeRef).equals(TYPE_RECORD_CATEGORY))
                     {
-                        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
+                        // store information about the 'new' record in the transaction
+                        // @since 2.3
+                        // @see https://issues.alfresco.com/jira/browse/RM-1956
+                        if (bNew)
                         {
-                            // we need to postpone filling until the NO_CONTENT aspect is removed
-                            Set<NodeRef> pendingFilling = transactionalResourceHelper.getSet(KEY_PENDING_FILLING);
-                            pendingFilling.add(nodeRef);
+                            Set<NodeRef> newRecords = transactionalResourceHelper.getSet(KEY_NEW_RECORDS);
+                            newRecords.add(nodeRef);
                         }
                         else
                         {
-                            // store information about the 'new' record in the transaction
-                            // @since 2.3
-                            // @see https://issues.alfresco.com/jira/browse/RM-1956
-                            if (bNew)
+                            // if we are linking a record
+                            NodeRef parentNodeRef = childAssocRef.getParentRef();
+                            if (isRecord(nodeRef) && isRecordFolder(parentNodeRef))
                             {
-                                Set<NodeRef> newRecords = transactionalResourceHelper.getSet(KEY_NEW_RECORDS);
-                                newRecords.add(nodeRef);
+                                // validate the link conditions
+                                validateLinkConditions(nodeRef, parentNodeRef);
                             }
-                            else
-                            {
-                                // if we are linking a record
-                                NodeRef parentNodeRef = childAssocRef.getParentRef();
-                                if (isRecord(nodeRef) && isRecordFolder(parentNodeRef))
-                                {
-                                    // validate the link conditions
-                                    validateLinkConditions(nodeRef, parentNodeRef);
-                                }
-                            }
-
-                            // create and file the content as a record
-                            file(nodeRef);
-                            // recalculate disposition schedule for the record when linking it
-                            dispositionService.recalculateNextDispositionStep(nodeRef);
                         }
+
+                        // create and file the content as a record
+                        file(nodeRef);
+                        // recalculate disposition schedule for the record when linking it
+                        dispositionService.recalculateNextDispositionStep(nodeRef);
                     }
                 }
                 catch (RecordLinkRuntimeException e)
@@ -571,10 +470,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 {
                     // do nothing but log error
                     LOGGER.warn("Unable to file pending record.", e);
-                }
-                finally
-                {
-                    onCreateChildAssociation.enable();
                 }
 
                 return null;
@@ -651,20 +546,20 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 if (beforeValue instanceof Date && afterValue instanceof Date)
                 {
                     // deal with date values, remove the seconds and milliseconds for the
-                	// comparison as they are removed from the submitted for data
-                	Calendar beforeCal = Calendar.getInstance();
-                	beforeCal.setTime((Date)beforeValue);
-                	Calendar afterCal = Calendar.getInstance();
-                	afterCal.setTime((Date)afterValue);
-                	beforeCal.set(Calendar.SECOND, 0);
-                	beforeCal.set(Calendar.MILLISECOND, 0);
-                	afterCal.set(Calendar.SECOND, 0);
-                	afterCal.set(Calendar.MILLISECOND, 0);
-                	propertyUnchanged = (beforeCal.compareTo(afterCal) == 0);
+                    // comparison as they are removed from the submitted for data
+                    Calendar beforeCal = Calendar.getInstance();
+                    beforeCal.setTime((Date)beforeValue);
+                    Calendar afterCal = Calendar.getInstance();
+                    afterCal.setTime((Date)afterValue);
+                    beforeCal.set(Calendar.SECOND, 0);
+                    beforeCal.set(Calendar.MILLISECOND, 0);
+                    afterCal.set(Calendar.SECOND, 0);
+                    afterCal.set(Calendar.MILLISECOND, 0);
+                    propertyUnchanged = (beforeCal.compareTo(afterCal) == 0);
                 }
                 else if ((afterValue instanceof Boolean) && (beforeValue == null) && (afterValue.equals(Boolean.FALSE)))
                 {
-            		propertyUnchanged = true;
+                    propertyUnchanged = true;
                 }
                 else
                 {
@@ -891,12 +786,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         behaviourFilter.disableBehaviour();
                         try
                         {
-                        	// move the document into the file plan
-                        	nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+                            // move the document into the file plan
+                            nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
                         }
                         finally
                         {
-                        	behaviourFilter.enableBehaviour();
+                            behaviourFilter.enableBehaviour();
                         }
 
                         // save the information about the originating details
@@ -908,6 +803,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                         // make the document a record
                         makeRecord(nodeRef);
+                        renameRecord(nodeRef);
 
                         if (latestVersionRecord != null)
                         {
@@ -1093,13 +989,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     recordsManagementContainerType.disable();
                     try
                     {
-	                    // create a copy of the original state and add it to the unfiled record container
-	                    FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
-	                    record = recordInfo.getNodeRef();
+                        // create a copy of the original state and add it to the unfiled record container
+                        FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
+                        record = recordInfo.getNodeRef();
                     }
                     finally
                     {
-                    	recordsManagementContainerType.enable();
+                        recordsManagementContainerType.enable();
                     }
 
                     // if versionable, then remove without destroying version history,
@@ -1116,6 +1012,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                     // make record
                     makeRecord(record);
+                    renameRecord(record);
 
                     // remove added copy assocs
                     List<AssociationRef> recordAssocs = nodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
@@ -1240,20 +1137,21 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             result = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
             {
-    			public NodeRef doWork() throws Exception
-    			{
-    				// Check if the "record" aspect has been applied already.
-    		        // In case of filing a report the created node will be made
-    		        // a record within the "onCreateChildAssociation" method if
-    		        // a destination for the report has been selected.
-    		        if (!nodeService.hasAspect(record, ASPECT_RECORD))
-    		        {
-    		            // make record
-    		            makeRecord(record);
-    		        }
+                public NodeRef doWork() throws Exception
+                {
+                    // Check if the "record" aspect has been applied already.
+                    // In case of filing a report the created node will be made
+                    // a record within the "onCreateChildAssociation" method if
+                    // a destination for the report has been selected.
+                    if (!nodeService.hasAspect(record, ASPECT_RECORD))
+                    {
+                        // make record
+                        makeRecord(record);
+                        renameRecord(record);
+                    }
 
-    				return record;
-    			}
+                    return record;
+                }
 
             });
         }
@@ -1286,28 +1184,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
             // get the record name
             String name = (String)nodeService.getProperty(document, ContentModel.PROP_NAME);
 
-            // rename the record
-            int dotIndex = name.lastIndexOf('.');
-            String prefix = name;
-            String postfix = "";
-            if (dotIndex != -1)
-            {
-                prefix = name.substring(0, dotIndex);
-                postfix = name.substring(dotIndex);
-            }
-            String recordName = prefix + " (" + recordId + ")" + postfix;
-            behaviourFilter.disableBehaviour();
-            try
-            {
-            	fileFolderService.rename(document, recordName);
-            }
-            finally
-            {
-            	behaviourFilter.enableBehaviour();
-            }
-
-            LOGGER.debug("Rename {} to {}", name, recordName);
-
             // add the record aspect
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
             props.put(PROP_IDENTIFIER, recordId);
@@ -1319,10 +1195,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             // remove the owner
             ownableService.setOwner(document, OwnableService.NO_OWNER);
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new AlfrescoRuntimeException("Unable to make record, because rename failed.", e);
+
+            if (TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(document)))
+            {
+                renameRecord(document);
+            }
         }
         finally
         {
@@ -1344,13 +1221,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         if (isRecord(nodeRef))
         {
-        	result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-        	{
-				public Boolean doWork() throws Exception
-				{
-		            return (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
-				}
-        	});
+            result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
+            {
+                public Boolean doWork() throws Exception
+                {
+                    return (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
+                }
+            });
         }
 
         return result;
@@ -1873,6 +1750,51 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             // can only unlink a record from a record folder
             throw new RecordLinkRuntimeException("Can only unlink a record from a record folder.");
+        }
+    }
+
+    /*
+     * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "rma:record",
+            notificationFrequency = TRANSACTION_COMMIT
+    )
+    public void onContentUpdate(NodeRef nodeRef, boolean newContent)
+    {
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+        {
+            renameRecord(nodeRef);
+        }
+    }
+
+    private void renameRecord(NodeRef nodeRef)
+    {
+        // get the record id
+        String recordId = (String) nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
+
+        if (isNotBlank(recordId))
+        {
+            // get the record name
+            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+
+            // rename the record
+            int dotIndex = name.lastIndexOf('.');
+            String prefix = name;
+            String postfix = "";
+            if (dotIndex > 0)
+            {
+                prefix = name.substring(0, dotIndex);
+                postfix = name.substring(dotIndex);
+            }
+            String recordName = prefix + " (" + recordId + ")" + postfix;
+
+            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, recordName);
+
+            LOGGER.debug("Rename " + name + " to " + recordName);
         }
     }
 }

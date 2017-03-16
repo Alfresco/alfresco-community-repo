@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.core;
 
+import javax.annotation.Resource;
+
 import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
@@ -54,7 +56,7 @@ public class RestAPIFactory
     @Autowired
     private DataUser dataUser;
 
-    @Autowired
+    @Resource(name = "RMRestWrapper")
     private RMRestWrapper rmRestWrapper;
 
     /**
@@ -63,6 +65,11 @@ public class RestAPIFactory
     public RMRestWrapper getRmRestWrapper()
     {
         return this.rmRestWrapper;
+    }
+
+    public void setRmRestWrapper(RMRestWrapper rmRestWrapper)
+    {
+        this.rmRestWrapper = rmRestWrapper;
     }
 
     private RestIGCoreAPI getRestIGCoreAPI(UserModel userModel)

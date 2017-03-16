@@ -30,7 +30,6 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
 import org.alfresco.repo.client.config.ClientAppNotFoundException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
-import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordEmailDetails;
 
 /**
  * Reset password service.
@@ -54,7 +53,7 @@ public interface ResetPasswordService
      *
      * @param resetDetails the {@code ResetPasswordDetails} object
      */
-    void resetPassword(ResetPasswordDetails resetDetails);
+    void initiateResetPassword(ResetPasswordDetails resetDetails);
 
     /**
      * Sends reset password email.
@@ -68,18 +67,18 @@ public interface ResetPasswordService
     /**
      * Updates the user's new password.
      *
+     * @param execution the {@code DelegateExecution} object
+     */
+    void performResetPassword(DelegateExecution execution);
+
+    /**
+     * Updates the user's new password.
+     *
      * @param execution                 the {@code DelegateExecution} object
      * @param fallbackEmailTemplatePath the class path of the fallback email template (confirmation email)
      * @param emailSubject              the email subject key
      */
-    void performResetPassword(DelegateExecution execution, String fallbackEmailTemplatePath, String emailSubject);
-
-    /**
-     * Sends an email.
-     *
-     * @param emailDetails the {@code ResetPasswordEmailDetails} object
-     */
-    void sendEmail(ResetPasswordEmailDetails emailDetails);
+    void sendResetPasswordConfirmationEmail(DelegateExecution execution, String fallbackEmailTemplatePath, String emailSubject);
 
     /**
      * Gets the registered client.

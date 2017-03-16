@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api;
 
+import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -35,15 +36,15 @@ import java.util.List;
 
 public interface People
 {
-	String DEFAULT_USER = "-me-";
+    String DEFAULT_USER = "-me-";
     String PARAM_INCLUDE_ASPECTNAMES = "aspectNames";
     String PARAM_INCLUDE_PROPERTIES = "properties";
     String PARAM_FIRST_NAME = "firstName";
     String PARAM_LAST_NAME = "lastName";
     String PARAM_ID = "id";
 
-	String validatePerson(String personId);
-	String validatePerson(String personId, boolean validateIsCurrentUser);
+    String validatePerson(String personId);
+    String validatePerson(String personId, boolean validateIsCurrentUser);
     NodeRef getAvatar(String personId);
 
     /**
@@ -85,4 +86,20 @@ public interface People
      * @return CollectionWithPagingInfo<Person>
      */
     CollectionWithPagingInfo<Person> getPeople(Parameters parameters);
+
+    /**
+     * Request password reset (an email will be sent to the registered email of the given {@code userId}).
+     * The API returns a 202 response for a valid, as well as the invalid (does not exist or disabled) userId
+     *
+     * @param userId     the user id of the person requesting the password reset
+     * @param client the client name which is registered to send emails
+     */
+    void requestPasswordReset(String userId, String client);
+
+    /**
+     * Performs password reset
+     *
+     * @param passwordReset the password reset details
+     */
+    void resetPassword(String personId, PasswordReset passwordReset);
 }

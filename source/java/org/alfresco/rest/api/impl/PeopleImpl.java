@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -31,13 +31,20 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authentication.ResetPasswordService;
+import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.InvalidResetPasswordWorkflowException;
+import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordDetails;
+import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowInvalidUserException;
+import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowNotFoundException;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
+import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -57,6 +64,8 @@ import org.alfresco.service.cmr.usage.ContentUsageService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.Serializable;
 import java.util.AbstractList;
@@ -76,6 +85,8 @@ import java.util.Set;
  */
 public class PeopleImpl implements People
 {
+    private static final Log LOGGER = LogFactory.getLog(PeopleImpl.class);
+
     private static final List<String> EXCLUDED_NS = Arrays.asList(
             NamespaceService.SYSTEM_MODEL_1_0_URI,
             "http://www.alfresco.org/model/user/1.0",
@@ -99,6 +110,7 @@ public class PeopleImpl implements People
     protected ContentUsageService contentUsageService;
     protected ContentService contentService;
     protected ThumbnailService thumbnailService;
+    protected ResetPasswordService resetPasswordService;
 
     private final static Map<String, QName> sort_params_to_qnames;
     static
@@ -160,17 +172,24 @@ public class PeopleImpl implements People
 		this.thumbnailService = thumbnailService;
 	}
 
+    public void setResetPasswordService(ResetPasswordService resetPasswordService)
+    {
+        this.resetPasswordService = resetPasswordService;
+    }
+
     /**
      * Validate, perform -me- substitution and canonicalize the person ID.
      * 
      * @param personId
      * @return The validated and processed ID.
      */
+    @Override
 	public String validatePerson(String personId)
 	{
 		return validatePerson(personId, false);
 	}
 
+    @Override
 	public String validatePerson(final String requestedPersonId, boolean validateIsCurrentUser)
 	{
         String personId = requestedPersonId;
@@ -237,7 +256,7 @@ public class PeopleImpl implements People
 			});
 		}
     }
-    
+
     public boolean hasAvatar(NodeRef personNodeRef)
     {
     	if(personNodeRef != null)
@@ -251,6 +270,7 @@ public class PeopleImpl implements People
     	}
     }
 
+    @Override
     public NodeRef getAvatar(String personId)
     {
     	NodeRef avatar = null;
@@ -292,6 +312,7 @@ public class PeopleImpl implements People
      * @throws NoSuchPersonException
      *             if personId does not exist
      */
+    @Override
     public Person getPerson(String personId)
     {
         personId = validatePerson(personId);
@@ -311,6 +332,7 @@ public class PeopleImpl implements People
         return person;
     }
 
+    @Override
     public CollectionWithPagingInfo<Person> getPeople(final Parameters parameters)
     {
         Paging paging = parameters.getPaging();
@@ -585,6 +607,7 @@ public class PeopleImpl implements People
         }
 	}
 
+    @Override
     public Person update(String personId, final Person person)
     {
         // Validate, perform -me- substitution and canonicalize the person ID.
@@ -736,5 +759,72 @@ public class PeopleImpl implements People
     private boolean isAdminAuthority(String authorityName)
     {
         return authorityService.isAdminAuthority(authorityName);
+    }
+
+    @Override
+    public void requestPasswordReset(String userId, String client)
+    {
+        // Validate the userId and the client
+        checkRequiredField("userId", userId);
+        checkRequiredField("client", client);
+
+        // This is an un-authenticated API call so we wrap it to run as Admin
+        AuthenticationUtil.runAs(() -> {
+            try
+            {
+                resetPasswordService.requestReset(userId, client);
+            }
+            catch (ResetPasswordWorkflowInvalidUserException ex)
+            {
+                // we don't throw an exception.
+                // For security reason (prevent the attackers to determine that userId exists in the system or not),
+                // the endpoint returns a 202 response if the userId does not exist or
+                // if the user is disabled by an Administrator.
+                if (LOGGER.isDebugEnabled())
+                {
+                    LOGGER.debug("Invalid user. " + ex.getMessage());
+                }
+            }
+
+            return null;
+        }, AuthenticationUtil.getAdminUserName());
+    }
+
+    @Override
+    public void resetPassword(String personId, final PasswordReset passwordReset)
+    {
+        checkResetPasswordData(passwordReset);
+        checkRequiredField("personId", personId);
+
+        ResetPasswordDetails resetDetails = new ResetPasswordDetails()
+                    .setUserId(personId)
+                    .setPassword(passwordReset.getPassword())
+                    .setWorkflowId(passwordReset.getId())
+                    .setWorkflowKey(passwordReset.getKey());
+        try
+        {
+            // This is an un-authenticated API call so we wrap it to run as Admin
+            AuthenticationUtil.runAs(() -> {
+                resetPasswordService.resetPassword(resetDetails);
+
+                return null;
+            }, AuthenticationUtil.getAdminUserName());
+
+        }
+        catch (InvalidResetPasswordWorkflowException iex)
+        {
+            throw new InvalidArgumentException(iex.getMessage());
+        }
+        catch (ResetPasswordWorkflowNotFoundException ex)
+        {
+            throw new NotFoundException(ex.getMessage());
+        }
+    }
+
+    private void checkResetPasswordData(PasswordReset data)
+    {
+        checkRequiredField("password", data.getPassword());
+        checkRequiredField("id", data.getId());
+        checkRequiredField("key", data.getKey());
     }
 }

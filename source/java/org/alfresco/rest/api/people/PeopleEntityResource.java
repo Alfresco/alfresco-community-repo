@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,8 +27,12 @@ package org.alfresco.rest.api.people;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.People;
+import org.alfresco.rest.api.model.Client;
+import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiNoAuth;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -36,11 +40,13 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.util.ParameterCheck;
+import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,17 +63,17 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     
     private People people;
     
-	public void setPeople(People people)
-	{
-		this.people = people;
-	}
+    public void setPeople(People people)
+    {
+        this.people = people;
+    }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
-        ParameterCheck.mandatory("people", this.people);
+        PropertyCheck.mandatory(this, "people", people);
     }
-	
+
     /**
      * Get a person by userName.
      * 
@@ -145,5 +151,22 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     public CollectionWithPagingInfo<Person> readAll(Parameters params)
     {
         return people.getPeople(params);
+    }
+
+    @Operation("request-password-reset")
+    @WebApiDescription(title = "Request Password Reset", description = "Request password reset",
+                       successStatus = HttpServletResponse.SC_ACCEPTED)
+    @WebApiNoAuth
+    public void requestPasswordReset(String personId, Client client, Parameters parameters, WithResponse withResponse)
+    {
+        people.requestPasswordReset(personId, client.getClient());
+    }
+
+    @Operation("reset-password")
+    @WebApiDescription(title = "Reset Password", description = "Performs password reset", successStatus = HttpServletResponse.SC_ACCEPTED)
+    @WebApiNoAuth
+    public void resetPassword(String personId, PasswordReset passwordReset, Parameters parameters, WithResponse withResponse)
+    {
+        people.resetPassword(personId, passwordReset);
     }
 }

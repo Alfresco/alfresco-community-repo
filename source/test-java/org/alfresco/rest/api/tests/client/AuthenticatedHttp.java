@@ -133,7 +133,7 @@ public class AuthenticatedHttp extends AbstractHttp
         }
     }
 
-    public <T extends Object> T executeHttpMethodUnAuthenticated(HttpMethod method, HttpRequestCallback<T> callback)
+    public <T extends Object> T executeHttpMethodUnauthenticated(HttpMethod method, HttpRequestCallback<T> callback)
     {
         try
         {

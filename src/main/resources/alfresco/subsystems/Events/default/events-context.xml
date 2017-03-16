@@ -40,6 +40,7 @@
         <property name="eventsService" ref="eventsService"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="namespaceService" ref="namespaceService"/>
+        <property name="nodeService" ref="nodeService"/>
     </bean>
 
     <bean id="eventsService" class="org.alfresco.repo.events.EventsServiceImpl" parent="abstractEventsService" init-method="init">

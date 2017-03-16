@@ -35,12 +35,12 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+
+import static org.alfresco.repo.site.SiteModel.TYPE_SITE;
 
 /**
  * 
@@ -65,6 +65,7 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
 	protected EventsService eventsService;
 	protected DictionaryService dictionaryService;
 	protected NamespaceService namespaceService;
+	protected NodeService nodeService;
 
 	public void setDictionaryService(DictionaryService dictionaryService)
 	{
@@ -79,6 +80,11 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
 	public void setEventsService(EventsService eventsService)
 	{
 		this.eventsService = eventsService;
+	}
+
+	public void setNodeService(NodeService nodeService)
+	{
+		this.nodeService = nodeService;
 	}
 
 	public void init()
@@ -280,12 +286,12 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
 	/*
 	 * Checks whether a property has changed value (not including being null before)
 	 */
-	private boolean propertyChanged(Map<QName, Serializable> before, Map<QName, Serializable> after, QName propertyQName)
+	private <T> boolean propertyChanged(Map<QName, Serializable> before, Map<QName, Serializable> after, QName propertyQName)
 	{
 		boolean isChanged = false;
 
-		String valueBefore = (String)before.get(propertyQName);
-		String valueAfter = (String)after.get(propertyQName);
+		T valueBefore = (T)before.get(propertyQName);
+		T valueAfter = (T)after.get(propertyQName);
 
 		if(valueBefore != null && valueAfter != null)
 		{
@@ -298,20 +304,50 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
 	@Override
 	public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
 	{
-		// handle renames
-		if(propertyChanged(before, after, ContentModel.PROP_NAME))
+		checkNamePropertyRenamed(nodeRef, before, after);
+
+		checkSiteTitlePropertyRenamed(nodeRef, before, after);
+
+		checkNodeUpdatedEventIncluded(nodeRef, before, after);
+	}
+
+	private void checkSiteTitlePropertyRenamed(NodeRef nodeRef, Map<QName, Serializable> before,
+			Map<QName, Serializable> after)
+	{
+		QName nodeRefType = nodeService.getType(nodeRef);
+
+		if (dictionaryService.isSubClass(nodeRefType, TYPE_SITE)
+				&& propertyChanged(before, after, ContentModel.PROP_TITLE))
 		{
-			String oldName = (String)before.get(ContentModel.PROP_NAME);
-			String newName = (String)after.get(ContentModel.PROP_NAME);
+			String oldName = ((MLText) before.get(ContentModel.PROP_TITLE)).getDefaultValue();
+			String newName = ((MLText) after.get(ContentModel.PROP_TITLE)).getDefaultValue();
+
 			eventsService.nodeRenamed(nodeRef, oldName, newName);
 		}
+	}
 
+	private void checkNodeUpdatedEventIncluded(NodeRef nodeRef, Map<QName, Serializable> before,
+			Map<QName, Serializable> after)
+	{
 		if(includeEventType(NodeUpdatedEvent.EVENT_TYPE))
 		{
 			Map<String, Property> propertiesAdded = getAdds(before, after);
 			Set<String> propertiesRemoved = getRemoves(before, after);
 			Map<String, Property> propertiesChanged = getChanges(before, after);
+
 			eventsService.nodeUpdated(nodeRef, propertiesAdded, propertiesRemoved, propertiesChanged, null, null);
+		}
+	}
+
+	private void checkNamePropertyRenamed(NodeRef nodeRef, Map<QName, Serializable> before,
+			Map<QName, Serializable> after)
+	{
+		if(propertyChanged(before, after, ContentModel.PROP_NAME))
+		{
+			String oldName = (String)before.get(ContentModel.PROP_NAME);
+			String newName = (String)after.get(ContentModel.PROP_NAME);
+
+			eventsService.nodeRenamed(nodeRef, oldName, newName);
 		}
 	}
 

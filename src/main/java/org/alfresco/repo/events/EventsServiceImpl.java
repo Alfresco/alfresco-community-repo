@@ -13,28 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.events.types.Event;
-import org.alfresco.events.types.NodeAddedEvent;
-import org.alfresco.events.types.NodeCheckOutCancelledEvent;
-import org.alfresco.events.types.NodeCheckedInEvent;
-import org.alfresco.events.types.NodeCheckedOutEvent;
-import org.alfresco.events.types.NodeCommentedEvent;
-import org.alfresco.events.types.NodeContentGetEvent;
-import org.alfresco.events.types.NodeContentPutEvent;
-import org.alfresco.events.types.NodeFavouritedEvent;
-import org.alfresco.events.types.NodeLikedEvent;
-import org.alfresco.events.types.NodeMovedEvent;
-import org.alfresco.events.types.NodeRemovedEvent;
-import org.alfresco.events.types.NodeRenamedEvent;
-import org.alfresco.events.types.NodeTaggedEvent;
-import org.alfresco.events.types.NodeUnFavouritedEvent;
-import org.alfresco.events.types.NodeUnLikedEvent;
-import org.alfresco.events.types.NodeUnTaggedEvent;
-import org.alfresco.events.types.NodeUpdatedEvent;
-import org.alfresco.events.types.Property;
+import org.alfresco.events.types.*;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -66,13 +49,23 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
     	String txnId = AlfrescoTransactionSupport.getTransactionId();
     	long timestamp = System.currentTimeMillis();
     	Long modificationTime = nodeInfo.getModificationTimestamp();
-    	String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
+    	QName nodeTypeQName = nodeInfo.getType();
+    	String nodeType = nodeTypeQName.toPrefixString(namespaceService);
 		List<List<String>> parentNodeIds = nodeInfo.getParentNodeIds();
 
 		List<String> newPaths = nodeInfo.getPaths();
+		List<String> paths = null;
 
-    	nodeInfo.updateName(oldName);
-		List<String> paths = nodeInfo.getPaths();
+		// For site display name (title) rename events we don't want the path to be changed to the display name (title); leave it to name (id)
+		if (nodeTypeQName.equals(SiteModel.TYPE_SITE))
+		{
+			paths = newPaths;
+		}
+		else
+		{
+			nodeInfo.updateName(oldName);
+			paths = nodeInfo.getPaths();
+		}
 
     	Set<String> aspects = nodeInfo.getAspectsAsStrings();
     	Map<String, Serializable> properties = nodeInfo.getProperties();

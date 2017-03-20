@@ -462,7 +462,7 @@ public class RecordFolderTests extends BaseRMRestTest
         // Get the file plan component API
         FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
 
-        // Create a record folder model to closed it
+        // Create a record folder model to close it
         FilePlanComponent recordFolderModel = FilePlanComponent.builder()
                                                 .properties(FilePlanComponentProperties.builder()
                                                         .isClosed(true)

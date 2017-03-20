@@ -24,7 +24,6 @@
       <connection>scm:git:https://git.alfresco.com/records-management/records-management.git</connection>
       <developerConnection>scm:git:https://git.alfresco.com/records-management/records-management.git</developerConnection>
       <url>https://git.alfresco.com/records-management/records-management</url>
-      <tag>HEAD</tag>
    </scm>
 
    <issueManagement>
@@ -42,8 +41,8 @@
 
    <repositories>
       <repository>
-         <id>alfresco-internal</id>
-         <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+         <id>alfresco-public</id>
+         <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
       </repository>
    </repositories>
 
@@ -79,12 +78,36 @@
 
    <modules>
       <module>rm-community</module>
-      <module>rm-enterprise</module>
-      <module>rm-automation</module>
    </modules>
 
+   <profiles>
+      <profile>
+         <id>enterprise</id>
+         <activation>
+            <property>
+               <name>!community</name>
+            </property>
+         </activation>
+         <modules>
+            <module>rm-enterprise</module>
+            <module>rm-automation</module>
+         </modules>
+         <repositories>
+            <repository>
+               <id>alfresco-internal</id>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+            </repository>
+         </repositories>
+         <pluginRepositories>
+            <pluginRepository>
+               <id>alfresco-private</id>
+               <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
+            </pluginRepository>
+         </pluginRepositories>
+      </profile>
+   </profiles>
+
    <properties>
-      <alfresco.rm.version>${project.version}</alfresco.rm.version>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.7</maven.build.sourceVersion>
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
@@ -141,7 +164,7 @@
                         </regexPropertySetting>
                         <regexPropertySetting>
                            <name>rm.module.version</name>
-                           <value>${alfresco.rm.version}</value>
+                           <value>${project.version}</value>
                            <regex>([0-9\.]*[0-9]).*</regex>
                            <replacement>$1</replacement>
                            <failIfNoMatch>false</failIfNoMatch>

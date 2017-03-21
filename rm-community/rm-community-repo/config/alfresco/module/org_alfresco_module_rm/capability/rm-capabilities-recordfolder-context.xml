@@ -94,7 +94,6 @@
             <entry key="capabilityCondition.filling" value="true"/>
             <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.closed" value="false"/>
          </map>
       </property>
    </bean>

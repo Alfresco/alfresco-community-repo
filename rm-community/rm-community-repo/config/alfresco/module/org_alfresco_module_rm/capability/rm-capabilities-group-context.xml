@@ -61,7 +61,6 @@
             <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>
             <ref bean="rmEditDeclaredRecordMetadataCapability"/>
             <ref bean="rmEditNonRecordMetadataCapability"/>
-            <ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
             <ref bean="rmEditRecordMetadataCapability"/>
             <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmEditHoldCapability"/>

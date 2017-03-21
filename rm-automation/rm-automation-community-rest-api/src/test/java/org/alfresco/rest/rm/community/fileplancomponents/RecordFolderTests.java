@@ -441,6 +441,54 @@ public class RecordFolderTests extends BaseRMRestTest
         assertTrue(folder2.getPath().getName().contains(NEW_RELATIVE_PATH));
     }
 
+    /**
+     * Given that a record folder exists
+     * When the record folder is closed
+     * Then a request can be made to reopen it
+     */
+    @Test
+    (
+        description = "A closed record folder can be reopened"
+    )
+    @Bug(id="RM-4808")
+    public void openClosedRecordFolder() throws Exception
+    {
+        // Create a record folder
+        FilePlanComponent recordFolder = createCategoryFolderInFilePlan();
+
+        // Assert that the record folder is not closed
+        assertFalse(recordFolder.getProperties().getIsClosed());
+
+        // Get the file plan component API
+        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+
+        // Create a record folder model to close it
+        FilePlanComponent recordFolderModel = FilePlanComponent.builder()
+                                                .properties(FilePlanComponentProperties.builder()
+                                                        .isClosed(true)
+                                                        .build())
+                                                .build();
+
+        // Make a request to close the record folder
+        FilePlanComponent updatedRecordFolder = filePlanComponentsAPI.updateFilePlanComponent(recordFolderModel, recordFolder.getId());
+
+        // Verify that the record folder is closed now
+        assertTrue(updatedRecordFolder.getProperties().getIsClosed());
+
+        // Create a record folder model to reopen it
+        recordFolderModel = FilePlanComponent.builder()
+                                .properties(FilePlanComponentProperties.builder()
+                                        .isClosed(false)
+                                        .build())
+                                .build();
+
+        // Make a request to reopen the record folder
+        updatedRecordFolder = filePlanComponentsAPI.updateFilePlanComponent(recordFolderModel, recordFolder.getId());
+
+        // Verify that the record folder is open now
+        assertFalse(updatedRecordFolder.getProperties().getIsClosed());
+    }
+
     @AfterClass (alwaysRun = true)
     public void tearDown() throws Exception
     {

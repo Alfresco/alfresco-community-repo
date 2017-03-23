@@ -31,7 +31,7 @@
         <installer.postgresql.version>9.4.4-20151016</installer.postgresql.version>
         <installer.libreoffice.version>5.2.1-alfresco</installer.libreoffice.version>
         <installer.ghostscript.version>8.64</installer.ghostscript.version>
-        <installer.imagemagick.version>6.9.1</installer.imagemagick.version>
+        <installer.imagemagick.version>7.0.5</installer.imagemagick.version>
         <installer.manager.version>1.0</installer.manager.version>
 
         <!-- Build timestamp for installer file name -->

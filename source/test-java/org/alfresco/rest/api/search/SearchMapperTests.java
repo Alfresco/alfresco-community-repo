@@ -521,19 +521,6 @@ public class SearchMapperTests
     }
 
     @Test
-    public void fromMultiSelectFacetFields() throws Exception
-    {
-        SearchParameters searchParameters = new SearchParameters();
-        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"INDEX","ENUM",null,null,null,null,Arrays.asList("tag1"),null))));
-        FieldFacet ff = searchParameters.getFieldFacets().get(0);
-        assertEquals("{!afts ex=tag1}myfield" , ff.getField());
-        searchParameters = new SearchParameters();
-        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("{!afts}thefield",null,null,null,null,null,null,null,null,Arrays.asList("tag5"),null))));
-        ff = searchParameters.getFieldFacets().get(0);
-        assertEquals("{!afts ex=tag5}thefield" , ff.getField());
-    }
-
-    @Test
     public void fromLimits() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();

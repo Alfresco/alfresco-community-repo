@@ -357,11 +357,6 @@ public class SearchMapper
                 {
                     ParameterCheck.mandatoryString("facetFields facet field", facet.getField());
                     String field = facet.getField();
-                    if (facet.getExcludeFilters() != null && !facet.getExcludeFilters().isEmpty())
-                    {
-                        int startIndex = field.startsWith("{!afts")?7:0;
-                        field = "{!afts ex="+String.join(",", facet.getExcludeFilters())+"}"+field.substring(startIndex);
-                    }
 
                     FieldFacet ff = new FieldFacet(field);
 
@@ -390,6 +385,8 @@ public class SearchMapper
                     }
 
                     ff.setPrefix(facet.getPrefix());
+                    ff.setLabel(facet.getLabel());
+                    ff.setExcludeFilters(facet.getExcludeFilters());
                     ff.setCountDocsMissingFacetField(facet.getMissing());
                     ff.setLimitOrNull(facet.getLimit());
                     ff.setOffset(facet.getOffset());

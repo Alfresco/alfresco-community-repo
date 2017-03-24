@@ -25,8 +25,8 @@
  */
 package org.alfresco.rest.api.search;
 
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -39,7 +39,6 @@ import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.framework.tools.RequestReader;
 import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
-import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -53,7 +52,6 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -92,14 +90,17 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             //Parse the parameters
             Params params = getParams(webScriptRequest, searchQuery.getFields(), searchQuery.getInclude(), searchQuery.getPaging());
 
+            //Make a copy of the request
+            SearchRequestContext searchRequestContext = SearchRequestContext.from(searchQuery);
+
             //Turn the SearchQuery json into the Java SearchParameters object
-            SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery);
+            SearchParameters searchParams = searchMapper.toSearchParameters(params, searchQuery, searchRequestContext);
 
             //Call searchService
             ResultSet results = searchService.query(searchParams);
 
             //Turn solr results into JSON
-            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, searchQuery, results);
+            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, searchRequestContext, searchQuery, results);
             //Post-process the request and pass in params, eg. params.getFilter()
             Object toRender = helper.processAdditionsToTheResponse(null, null, null, params, resultJson);
 

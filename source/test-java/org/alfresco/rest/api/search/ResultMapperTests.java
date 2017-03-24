@@ -38,11 +38,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric.METRIC_TYPE;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.impl.NodesImpl;
+import org.alfresco.rest.api.lookups.PersonPropertyLookup;
 import org.alfresco.rest.api.lookups.PropertyLookupRegistry;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
@@ -50,11 +55,10 @@ import org.alfresco.rest.api.nodes.NodeVersionsRelation;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.api.search.context.SearchContext;
+import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
-import org.alfresco.rest.api.search.context.facetsresponse.GenericFacetResponse;
-import org.alfresco.rest.api.search.context.facetsresponse.GenericFacetResponse.FACET_TYPE;
-import org.alfresco.rest.api.search.context.facetsresponse.Metric.METRIC_TYPE;
 import org.alfresco.rest.api.search.impl.ResultMapper;
+import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -92,6 +96,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Tests the ResultMapper class
@@ -101,11 +106,13 @@ import java.util.stream.Collectors;
 public class ResultMapperTests
 {
     static ResultMapper mapper;
+    static SearchMapper searchMapper = new SearchMapper();
     public static final String JSON_REPONSE = "{\"responseHeader\":{\"status\":0,\"QTime\":9},\"_original_parameters_\":\"org.apache.solr.common.params.DefaultSolrParams:{params(df=TEXT&alternativeDic=DEFAULT_DICTIONARY&fl=DBID,score&start=0&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=1000&locale=en_US&wt=json),defaults(carrot.url=id&spellcheck.collateExtendedResults=true&carrot.produceSummary=true&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.alternativeTermCount=2&spellcheck.extendedResults=false&defType=afts&spellcheck.maxResultsForSuggest=5&spellcheck=false&carrot.outputSubClusters=false&spellcheck.count=5&carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&spellcheck.collate=true)}\",\"_field_mappings_\":{},\"_date_mappings_\":{},\"_range_mappings_\":{},\"_pivot_mappings_\":{},\"_interval_mappings_\":{},\"_stats_field_mappings_\":{},\"_stats_facet_mappings_\":{},\"_facet_function_mappings_\":{},\"response\":{\"numFound\":6,\"start\":0,\"maxScore\":0.7849362,\"docs\":[{\"DBID\":565,\"score\":0.7849362},{\"DBID\":566,\"score\":0.7849362},{\"DBID\":521,\"score\":0.3540957},{\"DBID\":514,\"score\":0.33025497},{\"DBID\":420,\"score\":0.32440513},{\"DBID\":415,\"score\":0.2780319}]},"
                 + "\"facet_counts\":{\"facet_queries\":{\"small\":0,\"large\":0,\"xtra small\":3,\"xtra large\":0,\"medium\":8,\"XX large\":0},"
                 + "\"facet_fields\":{\"content.size\":[\"Big\",8,\"Brown\",3,\"Fox\",5,\"Jumped\",2,\"somewhere\",3]},"
                 +"\"facet_dates\":{},"
                 +"\"facet_ranges\":{},"
+                +"\"facet_pivot\":{\"creator,modifier\":[{\"field\":\"creator\",\"count\":7,\"pivot\":[{\"field\":\"modifier\",\"count\":3,\"value\":\"mjackson\"},{\"field\":\"modifier\",\"count\":4,\"value\":\"admin\"}],\"value\":\"mjackson\"}]},"
                 +"\"facet_intervals\":{\"creator\":{\"last\":4,\"first\":0},\"datetime@sd@{http://www.alfresco.org/model/content/1.0}created\":{\"earlier\":5,\"lastYear\":0,\"currentYear\":0}}"
                 + "},"
                 + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
@@ -205,10 +212,21 @@ public class ResultMapperTests
                 return new Node(aNode, new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,"unknown"), nodeProps, mapUserInfo, sr);
             }
         });
+
+        PersonPropertyLookup propertyLookups = mock(PersonPropertyLookup.class);
+        when(propertyLookups.supports()).thenReturn(Stream.of("creator","modifier").collect(Collectors.toSet()));
+        when(propertyLookups.lookup(notNull(String.class))).thenAnswer(invocation -> {
+            Object[] args = invocation.getArguments();
+            String value = (String)args[0];
+            if ("mjackson".equals(value)) return "Michael Jackson";
+            return null;
+        });
+        PropertyLookupRegistry propertyLookupRegistry = new PropertyLookupRegistry();
+        propertyLookupRegistry.setLookups(Arrays.asList(propertyLookups));
         mapper = new ResultMapper();
         mapper.setNodes(nodes);
         mapper.setStoreMapper(new StoreMapper());
-        mapper.setPropertyLookup(new PropertyLookupRegistry());
+        mapper.setPropertyLookup(propertyLookupRegistry);
         mapper.setDeletedNodes(deletedNodes);
         mapper.setServiceRegistry(sr);
         NodeVersionsRelation nodeVersionsRelation = new NodeVersionsRelation();
@@ -218,12 +236,13 @@ public class ResultMapperTests
         mapper.setNodeVersions(nodeVersionsRelation);
 
         helper = new SerializerTestHelper();
+        searchMapper.setStoreMapper(new StoreMapper());
     }
 
     @Test
     public void testNoResults() throws Exception
     {
-        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, null, new EmptyResultSet());
+        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, null, null, new EmptyResultSet());
         assertNotNull(collection);
         assertFalse(collection.hasMoreItems());
         assertTrue(collection.getTotalItems() < 1);
@@ -234,7 +253,8 @@ public class ResultMapperTests
     public void testToCollectionWithPagingInfo() throws Exception
     {
         ResultSet results = mockResultset(Arrays.asList(514l), Arrays.asList(566l, VERSIONED_ID));
-        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, SearchQuery.EMPTY, results);
+        SearchRequestContext searchRequest = SearchRequestContext.from(SearchQuery.EMPTY);
+        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, searchRequest, SearchQuery.EMPTY, results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
@@ -263,7 +283,9 @@ public class ResultMapperTests
     {
         ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
         SearchQuery searchQuery = helper.searchQueryFromJson();
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchQuery, 0);
+        SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
+        SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(6, searchContext.getFacetQueries().size());
         assertEquals(0,searchContext.getFacetQueries().get(0).getCount());
@@ -288,6 +310,30 @@ public class ResultMapperTests
         //Requests search Query
         assertNotNull(searchContext.getRequest());
         assertEquals("great", searchContext.getRequest().getQuery().getUserQuery());
+
+        //Pivot
+        assertEquals(3, searchContext.getFacets().size());
+        GenericFacetResponse pivotFacet = searchContext.getFacets().get(2);
+        assertEquals(FACET_TYPE.pivot,pivotFacet.getType());
+        assertEquals("creator",pivotFacet.getLabel());
+        assertEquals(1, pivotFacet.getBuckets().size());
+        GenericBucket pivotBucket = pivotFacet.getBuckets().get(0);
+        assertEquals("mjackson",pivotBucket.getLabel());
+        assertEquals("creator:mjackson",pivotBucket.getFilterQuery());
+        assertEquals("{count=7}",pivotBucket.getMetrics().get(0).getValue().toString());
+        assertEquals(1,pivotBucket.getFacets().size());
+        GenericFacetResponse nestedFacet = pivotBucket.getFacets().get(0);
+        assertEquals(FACET_TYPE.pivot,nestedFacet.getType());
+        assertEquals("mylabel",nestedFacet.getLabel());
+        assertEquals(2,nestedFacet.getBuckets().size());
+        GenericBucket nestedBucket = nestedFacet.getBuckets().get(0);
+        assertEquals("mjackson",nestedBucket.getLabel());
+        assertEquals("modifier:mjackson",nestedBucket.getFilterQuery());
+        assertEquals("{count=3}",nestedBucket.getMetrics().get(0).getValue().toString());
+        GenericBucket nestedBucket2 = nestedFacet.getBuckets().get(1);
+        assertEquals("admin",nestedBucket2.getLabel());
+        assertEquals("modifier:admin",nestedBucket2.getFilterQuery());
+        assertEquals("{count=4}",nestedBucket2.getMetrics().get(0).getValue().toString());
     }
 
     @Test
@@ -347,7 +393,8 @@ public class ResultMapperTests
 
         ResultSet results = mockResultset(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchQuery, 0);
+        SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(null, searchContext.getFacetQueries());
         assertEquals(1, searchContext.getFacetsFields().size());

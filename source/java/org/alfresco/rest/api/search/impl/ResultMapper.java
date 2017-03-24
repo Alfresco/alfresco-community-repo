@@ -30,6 +30,10 @@ import static org.alfresco.rest.api.search.impl.StoreMapper.DELETED;
 import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
 import static org.alfresco.rest.api.search.impl.StoreMapper.VERSIONS;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.MetricCount;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.Nodes;
@@ -41,11 +45,8 @@ import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.api.search.context.SearchContext;
+import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
-import org.alfresco.rest.api.search.context.facetsresponse.GenericBucket;
-import org.alfresco.rest.api.search.context.facetsresponse.GenericFacetResponse;
-import org.alfresco.rest.api.search.context.facetsresponse.GenericFacetResponse.FACET_TYPE;
-import org.alfresco.rest.api.search.context.facetsresponse.MetricCount;
 import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.HighlightEntry;
@@ -77,7 +78,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-
+import java.util.stream.Collectors;
 
 /**
  * Maps from a ResultSet to a json public api representation.
@@ -134,7 +135,7 @@ public class ResultMapper
      * @param searchQuery
      *@param results  @return CollectionWithPagingInfo<Node>
      */
-    public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, SearchQuery searchQuery, ResultSet results)
+    public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, SearchRequestContext searchRequestContext, SearchQuery searchQuery, ResultSet results)
     {
         SearchContext context = null;
         Integer total = null;
@@ -176,7 +177,7 @@ public class ResultMapper
         if (solrResultSet != null)
         {
             //We used Solr for this query
-            context = toSearchContext(solrResultSet, searchQuery, notFound);
+            context = toSearchContext(solrResultSet, searchRequestContext, searchQuery, notFound);
             total = setTotal(solrResultSet);
         }
         else
@@ -273,7 +274,7 @@ public class ResultMapper
      * @param searchQuery
      * @return SearchContext
      */
-    public SearchContext toSearchContext(SolrJSONResultSet solrResultSet, SearchQuery searchQuery, int notFound)
+    public SearchContext toSearchContext(SolrJSONResultSet solrResultSet, SearchRequestContext searchRequestContext, SearchQuery searchQuery, int notFound)
     {
         SearchContext context = null;
         Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
@@ -316,6 +317,9 @@ public class ResultMapper
         Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
         facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
 
+        List<GenericFacetResponse> pimped = getPivots(searchRequestContext, solrResultSet.getPivotFacets());
+        facets.addAll(pimped);
+
         //Spelling
         SpellCheckResult spell = solrResultSet.getSpellCheckResult();
         if (spell != null && spell.getResultName() != null && !spell.getResults().isEmpty())
@@ -324,7 +328,7 @@ public class ResultMapper
         }
 
         //Put it all together
-        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchQuery.includeRequest()?searchQuery:null);
+        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest()?searchQuery:null);
         return isNullContext(context)?null:context;
     }
     /**
@@ -369,6 +373,29 @@ public class ResultMapper
             groups.forEach((a,v) -> facetResults.add(new FacetFieldContext(a,v)));
         }
         return facetResults;
+    }
+
+    protected List<GenericFacetResponse> getPivots(SearchRequestContext searchRequest, List<GenericFacetResponse> pivots)
+    {
+        if(pivots != null && !pivots.isEmpty())
+        {
+            Map<String, String> pivotKeys = searchRequest.getPivotKeys();
+
+            return pivots.stream().map(aFacet -> {
+
+                String pivotLabel = pivotKeys.containsKey(aFacet.getLabel())?pivotKeys.get(aFacet.getLabel()):aFacet.getLabel();
+
+                List<GenericBucket> bucks = aFacet.getBuckets().stream().map(genericBucket -> {
+                    Object display = propertyLookup.lookup(aFacet.getLabel(), genericBucket.getLabel());
+                    return new GenericBucket(genericBucket.getLabel(), genericBucket.getFilterQuery(),
+                                display,genericBucket.getMetrics(), getPivots(searchRequest, genericBucket.getFacets()));
+                }).collect(Collectors.toList());
+
+                return new GenericFacetResponse(aFacet.getType(), pivotLabel, bucks);
+            }).collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
     }
 
     protected List<FacetFieldContext> getFacetBucketsForFacetFields(Map<String, List<Pair<String, Integer>>> facetFields, SearchQuery searchQuery)
@@ -448,7 +475,7 @@ public class ResultMapper
                                 }
                             }
                         }
-                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , Arrays.asList(new MetricCount(buck.getSecond())));
+                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , Arrays.asList(new MetricCount(buck.getSecond())), null);
                         buckets.add(bucket);
                     }
                     ffcs.add(new GenericFacetResponse(FACET_TYPE.interval, facet.getKey(), buckets));

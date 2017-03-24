@@ -321,7 +321,7 @@ public class ResultMapper
                     List<Bucket> buckets = new ArrayList<>(facet.getValue().size());
                     for (Pair<String, Integer> buck:facet.getValue())
                     {
-                        Object display = propertyLookup.lookup(facet.getKey(), buck.getFirst());
+                        Object display = null;
                         String filterQuery = null;
                         if (searchQuery != null
                                     && searchQuery.getFacetFields() != null
@@ -332,6 +332,7 @@ public class ResultMapper
                                         queryable -> facet.getKey().equals(queryable.getLabel()!=null?queryable.getLabel():queryable.getField())).findFirst();
                             if (found.isPresent())
                             {
+                                display = propertyLookup.lookup(found.get().getField(), buck.getFirst());
                                 String fq = found.get().toFilterQuery(buck.getFirst());
                                 if (fq != null)
                                 {

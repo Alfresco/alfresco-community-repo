@@ -10,7 +10,7 @@
     <artifactId>alfresco-data-model</artifactId>
     <name>Alfresco Data Model</name>
     <description>Alfresco Data Model classes</description>
-    <version>6.9-searchbcr-SNAPSHOT</version>
+    <version>6.10-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://gitlab.alfresco.com/platform/alfresco-data-model.git</connection>

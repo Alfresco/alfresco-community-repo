@@ -38,14 +38,21 @@ import java.util.List;
  */
 public class FilterQuery
 {
+    private final List<String> queries;
     private final String query;
     private final List<String> tags;
 
     @JsonCreator
-    public FilterQuery(@JsonProperty("query")  String query, @JsonProperty("tags") List<String> tags)
+    public FilterQuery(@JsonProperty("query")  String query, @JsonProperty("tags") List<String> tags, @JsonProperty("queries") List<String> queries)
     {
         this.query = query;
         this.tags = tags;
+        this.queries = queries;
+    }
+
+    public List<String> getQueries()
+    {
+        return queries;
     }
 
     public String getQuery()

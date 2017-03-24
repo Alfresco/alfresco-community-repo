@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,6 +35,10 @@ import java.util.Map;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.MetricCount;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -84,7 +89,9 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
 
     private Map<NodeRef, List<Pair<String, List<String>>>> highlighting = new HashMap<>();
 
-    private HashMap<String, List<Pair<String, Integer>>> facetIntervals = new HashMap<String, List<Pair<String, Integer>>>(1);
+    private Map<String, List<Pair<String, Integer>>> facetIntervals = new HashMap<String, List<Pair<String, Integer>>>(1);
+
+    private List<GenericFacetResponse> pivotFacets = new ArrayList<>();
 
     private NodeDAO nodeDao;
     
@@ -285,6 +292,15 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                         facetIntervals.put(fieldkey,intervalValues);
                     }
                 }
+                if(facet_counts.has("facet_pivot"))
+                {
+                    JSONObject facet_pivot = facet_counts.getJSONObject("facet_pivot");
+                    for(Iterator it = facet_pivot.keys(); it.hasNext(); /**/)
+                    {
+                        String pivotName = (String)it.next();
+                        pivotFacets = buildPivot(facet_pivot, pivotName);
+                    }
+                }
 
             }
             // process Spell check 
@@ -328,7 +344,35 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 maxResults > 0 && numberFound < maxResults ? LimitBy.UNLIMITED : limitBy,
                 PermissionEvaluationMode.EAGER, searchParameters);
     }
-    
+
+    protected List<GenericFacetResponse> buildPivot(JSONObject facet_pivot, String pivotName) throws JSONException
+    {
+        if (!facet_pivot.has(pivotName)) return null;
+
+        JSONArray pivots = facet_pivot.getJSONArray(pivotName);
+        Map<String,List<GenericBucket>> pivotBuckets = new HashMap<>(pivots.length());
+        List<GenericFacetResponse> facetResponses = new ArrayList<>();
+        for(int i = 0; i < pivots.length(); i++)
+        {
+            JSONObject piv = pivots.getJSONObject(i);
+            String field = piv.getString("field");
+            String value = piv.getString("value");
+            Integer count = Integer.parseInt(piv.getString("count"));
+            List<GenericFacetResponse> innerPivot = buildPivot(piv, "pivot");
+            GenericBucket buck = new GenericBucket(piv.getString("value"), field+":"+value, null, Arrays.asList(new MetricCount(count)), innerPivot);
+            List<GenericBucket> listBucks = pivotBuckets.containsKey(field)?pivotBuckets.get(field):new ArrayList<>();
+            listBucks.add(buck);
+            pivotBuckets.put(field, listBucks);
+        }
+
+        for (Map.Entry<String, List<GenericBucket>> entry : pivotBuckets.entrySet()) {
+            facetResponses.add(new GenericFacetResponse(FACET_TYPE.pivot,entry.getKey(),entry.getValue()));
+        }
+
+        if (!facetResponses.isEmpty()) return facetResponses;
+
+        return null;
+    }
 
     public NodeService getNodeService()
     {
@@ -549,6 +593,11 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     public Map<String, List<Pair<String, Integer>>> getFacetIntervals()
     {
         return Collections.unmodifiableMap(facetIntervals);
+    }
+
+    public List<GenericFacetResponse> getPivotFacets()
+    {
+        return pivotFacets;
     }
 
     public long getLastIndexedTxId()

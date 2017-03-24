@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.RepositoryState;
@@ -242,6 +243,9 @@ public class SolrQueryHTTPClientTest
     @Test
     public void testBuildFacetIntervalQuery() throws UnsupportedEncodingException
     {
+        TimeZone defaultTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("bob");
 
@@ -276,8 +280,10 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains(encoder.encode("{!key=Created}cm:created", "UTF-8")));
         assertTrue(url.contains("f.Created.facet.interval.set"));
         assertTrue(url.contains(encoder.encode("{!afts key=numbers}", "UTF-8")));
-        assertTrue(url.contains(encoder.encode("(2015-12-31T22:59:59.999Z", "UTF-8")));
-        assertTrue(url.contains(encoder.encode("2016-12-31T22:59:59.999Z]", "UTF-8")));
+        assertTrue(url.contains(encoder.encode("(2015-12-31T23:59:59.999Z", "UTF-8")));
+        assertTrue(url.contains(encoder.encode("2016-12-31T23:59:59.999Z]", "UTF-8")));
+
+        TimeZone.setDefault(defaultTimeZone);
     }
 
 }

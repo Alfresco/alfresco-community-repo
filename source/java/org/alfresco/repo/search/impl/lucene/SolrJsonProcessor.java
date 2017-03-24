@@ -32,6 +32,7 @@ import org.json.JSONObject;
  *
  * @author Gethin James
  */
+@FunctionalInterface
 public interface SolrJsonProcessor<T extends JSONResult>
 {
     public T getResult(JSONObject json);

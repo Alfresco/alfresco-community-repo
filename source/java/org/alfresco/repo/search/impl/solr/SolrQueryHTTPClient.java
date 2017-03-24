@@ -283,14 +283,9 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 throw new AlfrescoRuntimeException("No http client for store " + store.toString());
             }
             
-            return (SolrStatsResult) postSolrQuery(httpClient, url, body, new SolrJsonProcessor<SolrStatsResult>() {
-
-                @Override
-                public SolrStatsResult getResult(JSONObject json)
-                {
-                    return new SolrStatsResult(json, searchParameters.isDateSearch());
-                }
-                
+            return (SolrStatsResult) postSolrQuery(httpClient, url, body, json ->
+            {
+                return new SolrStatsResult(json, searchParameters.isDateSearch());
             });
             
         }
@@ -546,16 +541,9 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
 
             final int maximumResults = maxResults;  //just needed for the final parameter
             
-           
-            
-            return (ResultSet) postSolrQuery(httpClient, url.toString(), body, new SolrJsonProcessor<SolrJSONResultSet>() {
-
-                @Override
-                public SolrJSONResultSet getResult(JSONObject json)
-                {
-                    return new SolrJSONResultSet(json, searchParameters, nodeService, nodeDAO, limitBy, maximumResults);
-                }
-                
+            return (ResultSet) postSolrQuery(httpClient, url.toString(), body, json ->
+            {
+                return new SolrJSONResultSet(json, searchParameters, nodeService, nodeDAO, limitBy, maximumResults);
             }, spellCheckQueryStr);
         }
         catch (UnsupportedEncodingException e)

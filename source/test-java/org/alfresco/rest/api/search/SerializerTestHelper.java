@@ -64,7 +64,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"facetQueries\": [{\"query\": \"cm:created:bob\",\"label\": \"small\"}],"
                 + "\"facetIntervals\": {\"sets\": [{ \"label\": \"king\", \"start\": \"1\", \"end\": \"2\",\"startInclusive\": true,\"endInclusive\": false}]"
                 + ",\"intervals\": [{\"field\": \"creator\",\"label\": \"Creator\","
-                + "\"sets\": [{\"label\": \"bob\",\"start\": \"a\",\"end\": \"b\",\"startInclusive\": false}]"
+                + "\"sets\": [{\"label\": \"last\",\"start\": \"a\",\"end\": \"b\",\"startInclusive\": false}]"
                 + "}]},"
                 + "\"spellcheck\": {\"query\": \"alfrezco\"},"
                 + "\"limits\": {\"permissionEvaluationCount\": \"2000\",\"permissionEvaluationTime\": \"5000\"},"

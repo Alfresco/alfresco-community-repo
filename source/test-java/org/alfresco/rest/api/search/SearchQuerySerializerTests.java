@@ -159,7 +159,7 @@ public class SearchQuerySerializerTests
         assertEquals("Creator", interval.getLabel());
         assertEquals("creator", interval.getField());
         is = interval.getSets().get(0);
-        assertEquals("bob", is.getLabel());
+        assertEquals("last", is.getLabel());
         assertEquals("a", is.getStart());
         assertEquals("b", is.getEnd());
         assertEquals(false, is.isStartInclusive());

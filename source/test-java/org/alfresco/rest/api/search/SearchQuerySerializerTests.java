@@ -99,7 +99,7 @@ public class SearchQuerySerializerTests
         assertEquals("alfrezco", searchQuery.getSpellcheck().getQuery());
         assertEquals(1, searchQuery.getScope().getLocations().size());
         assertEquals(StoreMapper.LIVE_NODES, searchQuery.getScope().getLocations().get(0));
-        assertEquals(2, searchQuery.getFacetFields().getFacets().size());
+        assertEquals(3, searchQuery.getFacetFields().getFacets().size());
         FacetField ff = searchQuery.getFacetFields().getFacets().get(0);
         assertEquals("cm:creator", ff.getField());
         assertEquals("myquery2", ff.getPrefix());
@@ -163,6 +163,9 @@ public class SearchQuerySerializerTests
         assertEquals("b", is.getEnd());
         assertEquals(false, is.isStartInclusive());
         assertEquals(true, is.isEndInclusive());
+
+        assertEquals(1,searchQuery.getPivots().size());
+        assertEquals("mylabel",searchQuery.getPivots().get(0).getKey());
     }
 
     @Test

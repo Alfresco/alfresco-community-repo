@@ -34,6 +34,7 @@ import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESC
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.Default;
@@ -42,6 +43,7 @@ import org.alfresco.rest.api.search.model.FacetFields;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Limits;
+import org.alfresco.rest.api.search.model.Pivot;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.Scope;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -87,13 +89,15 @@ public class SearchMapperTests
     @Test(expected = IllegalArgumentException.class)
     public void testMandatory() throws Exception
     {
-        SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, SearchQuery.EMPTY);
+        SearchRequestContext searchRequest = SearchRequestContext.from(SearchQuery.EMPTY);
+        SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, SearchQuery.EMPTY, searchRequest);
     }
 
     @Test
     public void toSearchParameters() throws Exception
     {
-        SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, minimalQuery());
+        SearchRequestContext searchRequest = SearchRequestContext.from(minimalQuery());
+        SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, minimalQuery(), searchRequest);
         assertNotNull(searchParameters);
 
         //Test defaults
@@ -102,7 +106,7 @@ public class SearchMapperTests
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
         assertEquals(100, searchParameters.getLimit());
 
-        searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, helper.searchQueryFromJson());
+        searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, helper.searchQueryFromJson(), searchRequest);
         assertNotNull(searchParameters);
     }
 
@@ -581,6 +585,67 @@ public class SearchMapperTests
     }
 
     @Test
+    public void fromPivot() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchMapper.fromPivot(searchParameters,null, null, null);
+
+        List<FacetField> facets = new ArrayList<>(1);
+        facets.add(new FacetField("myfield",null,null,null,null,null,null,null,null,null,null));
+        FacetFields ff = new FacetFields(facets);
+        searchMapper.fromFacetFields(searchParameters,ff);
+        searchMapper.fromPivot(searchParameters,ff, null, null);
+        assertEquals(1 ,searchParameters.getFieldFacets().size());
+        assertEquals(0 ,searchParameters.getPivots().size());
+
+        //Handle unknown pivot.
+        searchParameters = new SearchParameters();
+
+        try
+        {
+            searchMapper.fromPivot(searchParameters,ff, Arrays.asList(new Pivot(null)), null);
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            //"bob" doesn't refer to a field facet
+            assertNotNull(iae);
+        }
+
+        try
+        {
+            searchMapper.fromPivot(searchParameters,ff, Arrays.asList(new Pivot("")), null);
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            //"bob" doesn't refer to a field facet
+            assertNotNull(iae);
+        }
+
+        try
+        {
+            searchMapper.fromPivot(searchParameters,ff, Arrays.asList(new Pivot("bob")), null);
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //"bob" doesn't refer to a field facet
+            assertNotNull(iae);
+        }
+
+        searchParameters = new SearchParameters();
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
+        searchMapper.fromPivot(searchParameters,ff, Arrays.asList(new Pivot("myfield")), searchRequestContext);
+        searchMapper.fromFacetFields(searchParameters,ff);
+        //Moved from a field facet to a pivot
+        assertEquals(0 ,searchParameters.getFieldFacets().size());
+        assertEquals(1 ,searchParameters.getPivots().size());
+        assertEquals("myfield" ,searchParameters.getPivots().get(0));
+
+    }
+
+    @Test
     public void fromInterval() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
@@ -652,7 +717,7 @@ public class SearchMapperTests
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         return sq;
     }
     @Test

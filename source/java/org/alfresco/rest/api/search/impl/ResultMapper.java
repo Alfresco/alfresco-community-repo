@@ -281,7 +281,7 @@ public class ResultMapper
                 if (searchQuery != null)
                 {
                     Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
-                    if (found.isPresent()) filterQuery = found.get().getQuery();
+                    filterQuery = found.isPresent()? found.get().getQuery():fq.getKey();
                 }
                 facetResults.add(new FacetQueryContext(fq.getKey(), filterQuery, fq.getValue()));
             }

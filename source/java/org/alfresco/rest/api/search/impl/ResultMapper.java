@@ -276,7 +276,7 @@ public class ResultMapper
             facetResults = new ArrayList<>(facetQueries.size());
             for (Entry<String, Integer> fq:facetQueries.entrySet())
             {
-                facetResults.add(new FacetQueryContext(fq.getKey(), fq.getValue()));
+                facetResults.add(new FacetQueryContext(fq.getKey(), ":NOT_DONE", fq.getValue()));
             }
         }
 
@@ -312,7 +312,7 @@ public class ResultMapper
                     for (Pair<String, Integer> buck:facet.getValue())
                     {
                         Object display = withDisplay?propertyLookup.lookup(facet.getKey(), buck.getFirst()):null;
-                        buckets.add(new Bucket(buck.getFirst(), buck.getSecond(), display));
+                        buckets.add(new Bucket(buck.getFirst(), facet.getKey()+":NOT_DONE", buck.getSecond(), display));
                     }
                     ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
                 }

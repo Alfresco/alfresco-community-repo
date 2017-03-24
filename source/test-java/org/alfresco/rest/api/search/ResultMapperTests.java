@@ -268,7 +268,7 @@ public class ResultMapperTests
         assertTrue(mapper.isNullContext(new SearchContext(0l,null,null,null,null)));
         assertFalse(mapper.isNullContext(new SearchContext(1l,null,null,null,null)));
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,null,new SpellCheckContext(null, null))));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new FacetQueryContext(null, 0)),null,null,null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new FacetQueryContext(null, null, 0)),null,null,null)));
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,Arrays.asList(new FacetFieldContext(null, null)),null,null)));
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,Arrays.asList(new FacetFieldContext(null, null)),null)));
     }

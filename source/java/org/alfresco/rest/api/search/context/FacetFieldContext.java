@@ -54,14 +54,21 @@ public class FacetFieldContext
     public static class Bucket
     {
         private final String label;
+        private final String filterQuery;
         private final int count;
         private final Object display;
 
-        public Bucket(String label, int count, Object display)
+        public Bucket(String label, String filterQuery, int count, Object display)
         {
             this.label = label;
+            this.filterQuery = filterQuery;
             this.count = count;
             this.display = display;
+        }
+
+        public String getFilterQuery()
+        {
+            return filterQuery;
         }
 
         public Object getDisplay()
@@ -77,6 +84,49 @@ public class FacetFieldContext
         public int getCount()
         {
             return count;
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            Bucket bucket = (Bucket) o;
+
+            if (count != bucket.count)
+                return false;
+            if (label != null ? !label.equals(bucket.label) : bucket.label != null)
+                return false;
+            if (filterQuery != null ? !filterQuery.equals(bucket.filterQuery) : bucket.filterQuery != null)
+                return false;
+            if (display != null ? !display.equals(bucket.display) : bucket.display != null)
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int result = label != null ? label.hashCode() : 0;
+            result = 31 * result + (filterQuery != null ? filterQuery.hashCode() : 0);
+            result = 31 * result + count;
+            result = 31 * result + (display != null ? display.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "Bucket{" +
+                        "label='" + label + '\'' +
+                        ", filterQuery='" + filterQuery + '\'' +
+                        ", count=" + count +
+                        ", display=" + display +
+                        '}';
         }
     }
 }

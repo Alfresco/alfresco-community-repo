@@ -169,6 +169,8 @@ public class SearchParameters implements BasicSearchParameters
     
     private List<String> filterQueries = new ArrayList<String>();
 
+    private List<String> pivots = new ArrayList<String>();
+
     private Boolean useInMemorySort;
     
     private Integer maxRawResultSetSizeForInMemorySort;
@@ -233,6 +235,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.sinceTxId = this.sinceTxId;
         sp.facetQueries.addAll(this.facetQueries);
         sp.filterQueries.addAll(this.filterQueries);
+        sp.pivots.addAll(this.pivots);
         sp.searchTerm = this.searchTerm;
         sp.spellCheck = this.spellCheck;
         sp.highlight = this.highlight;
@@ -930,8 +933,18 @@ public class SearchParameters implements BasicSearchParameters
     public void addFilterQuery(String filterQuery)
     {
         filterQueries.add(filterQuery);
-    } 
-    
+    }
+
+    public List<String> getPivots()
+    {
+        return pivots;
+    }
+
+    public void addPivot(String pivotField)
+    {
+        pivots.add(pivotField);
+    }
+
     public Locale getSortLocale()
     {
         List<Locale> locales = getLocales();
@@ -1071,6 +1084,7 @@ public class SearchParameters implements BasicSearchParameters
         result = prime * result + ((sinceTxId == null) ? 0 : sinceTxId.hashCode());
         result = prime * result + ((facetQueries.isEmpty()) ? 0 : facetQueries.hashCode());
         result = prime * result + ((filterQueries.isEmpty()) ? 0 : filterQueries.hashCode());
+        result = prime * result + ((pivots.isEmpty()) ? 0 : pivots.hashCode());
         result = prime * result + ((searchTerm == null) ? 0 : searchTerm.hashCode());
         result = prime * result + (spellCheck ? 1231 : 1237);
         return result;
@@ -1224,6 +1238,8 @@ public class SearchParameters implements BasicSearchParameters
             return false;
         if (!filterQueries.equals(other.filterQueries))
             return false;
+        if (!pivots.equals(other.pivots))
+            return false;
         if (searchTerm == null)
         {
             if (other.searchTerm != null)
@@ -1263,6 +1279,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(", defaultFieldName=").append(this.defaultFieldName).append(", fieldFacets=")
                     .append(this.fieldFacets).append(", facetQueries=").append(this.facetQueries)
                     .append(this.filterQueries).append(", filterQueries=").append(this.filterQueries)
+                    .append(this.pivots).append(", pivots=").append(this.pivots)
                     .append(", useInMemorySort=").append(this.useInMemorySort)
                     .append(", maxRawResultSetSizeForInMemorySort=").append(this.maxRawResultSetSizeForInMemorySort)
                     .append(", extraParameters=").append(this.extraParameters).append(", excludeTenantFilter=")

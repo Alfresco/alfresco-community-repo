@@ -43,6 +43,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.BasicSearchParameters;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
+import org.alfresco.service.cmr.search.Interval;
+import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -599,6 +601,25 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             url.append("&fq=").append(encoder.encode("{!afts}TENANT_FILTER_FROM_JSON", "UTF-8"));
         }
 
+
+        // filter queries
+        for(String filterQuery : searchParameters.getFilterQueries())
+        {
+            if (!filterQuery.startsWith("{!afts"))
+            {
+                filterQuery = "{!afts}"+filterQuery;
+            }
+            url.append("&fq=").append(encoder.encode(filterQuery, "UTF-8"));
+        }
+
+        buildFacetParameters(searchParameters, mapping, encoder, url);
+        buildFacetIntervalParameters(searchParameters, encoder, url);
+        buildHightlightParameters(searchParameters, encoder, url);
+    }
+
+    protected void buildFacetParameters(SearchParameters searchParameters, SolrStoreMappingWrapper mapping, URLCodec encoder, StringBuilder url)
+                throws UnsupportedEncodingException
+    {
         if(searchParameters.getFieldFacets().size() > 0 || searchParameters.getFacetQueries().size() > 0)
         {
             url.append("&facet=").append(encoder.encode("true", "UTF-8"));
@@ -661,19 +682,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 url.append("&facet.query=").append(encoder.encode(facetQuery, "UTF-8"));
             }
         }
+    }
 
-        // filter queries
-        for(String filterQuery : searchParameters.getFilterQueries())
-        {
-            if (!filterQuery.startsWith("{!afts"))
-            {
-                filterQuery = "{!afts}"+filterQuery;
-            }
-            url.append("&fq=").append(encoder.encode(filterQuery, "UTF-8"));
-        }
-
-        // end of field facets
-
+    protected void buildHightlightParameters(SearchParameters searchParameters, URLCodec encoder, StringBuilder url) throws UnsupportedEncodingException
+    {
         if (searchParameters.getHighlight() != null)
         {
             url.append("&").append(HighlightParams.HIGHLIGHT+"=true");
@@ -774,6 +786,46 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 url.append("&")
                    .append(HighlightParams.FIELDS+"=")
                    .append(encoder.encode(String.join(",", fieldNames), "UTF-8"));
+            }
+        }
+    }
+
+    protected void buildFacetIntervalParameters(SearchParameters searchParameters, URLCodec encoder, StringBuilder url) throws UnsupportedEncodingException
+    {
+        if (searchParameters.getInterval() != null)
+        {
+            url.append("&facet=").append(encoder.encode("true", "UTF-8"));
+
+            if (searchParameters.getInterval().getSets() != null)
+            {
+                for (IntervalSet aSet:searchParameters.getInterval().getSets())
+                {
+                    url.append("&facet.interval.set=").append(encoder.encode(aSet.toParam(), "UTF-8"));
+                }
+            }
+
+            if (searchParameters.getInterval().getIntervals() != null)
+            {
+                for (Interval interval:searchParameters.getInterval().getIntervals())
+                {
+                    url.append("&facet.interval=");
+                    String intervalField = interval.getField();
+
+                    if (interval.getLabel() != null && !interval.getLabel().isEmpty())
+                    {
+                        url.append(encoder.encode("{!key="+interval.getLabel()+"}", "UTF-8"));
+                        intervalField = interval.getLabel();
+                    }
+                    url.append(encoder.encode(interval.getField(), "UTF-8"));
+
+                    if (interval.getSets() != null)
+                    {
+                        for (IntervalSet aSet:interval.getSets())
+                        {
+                            url.append("&").append(encoder.encode("f."+intervalField+".facet.interval.set", "UTF-8")).append("=").append(encoder.encode(aSet.toParam(), "UTF-8"));
+                        }
+                    }
+                }
             }
         }
     }

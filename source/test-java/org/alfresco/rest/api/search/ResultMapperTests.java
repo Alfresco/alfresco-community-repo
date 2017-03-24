@@ -276,7 +276,7 @@ public class ResultMapperTests
         assertEquals(2, searchContext.getFacetIntervals().size());
         assertEquals("creator",searchContext.getFacetIntervals().get(0).getLabel());
         assertEquals("last",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getLabel());
-        assertEquals("creator:(a,b]",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("cm:creator:(a,b]",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getFilterQuery());
         assertEquals(4,searchContext.getFacetIntervals().get(0).getBuckets().get(0).getCount());
     }
 

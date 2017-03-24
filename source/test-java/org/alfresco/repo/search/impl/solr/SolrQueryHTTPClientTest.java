@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_PREFIX;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyString;
@@ -58,6 +59,7 @@ import org.alfresco.service.cmr.search.Interval;
 import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsParameters;
@@ -102,7 +104,7 @@ public class SolrQueryHTTPClientTest
         when(dictionaryService.getProperty(notNull(QName.class))).thenAnswer(invocation ->
         {
             Object[] args = invocation.getArguments();
-            QName qName = (QName)args[0];
+            QName qName = (QName) args[0];
             if (qName.getLocalName().contains("created"))
             {
                 return MockClassAttributeDefinition.mockPropertyDefinition(qName, DataTypeDefinition.DATE);
@@ -138,7 +140,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("fq=ANCESTOR"));
 
     }
-    
+
     @Test
     public void testBuildStatsBody() throws JSONException
     {
@@ -147,15 +149,16 @@ public class SolrQueryHTTPClientTest
         JSONObject body = client.buildStatsBody(params, "myTenant", Locale.US);
         assertNotNull(body);
         JSONArray tenant = body.getJSONArray("tenants");
-        assertEquals("myTenant",tenant.get(0).toString());
+        assertEquals("myTenant", tenant.get(0).toString());
         JSONArray locale = body.getJSONArray("locales");
-        assertEquals("en_US",locale.get(0).toString());
+        assertEquals("en_US", locale.get(0).toString());
         String query = body.getString("query");
         assertTrue(query.contains("TYPE:"));
         assertTrue(query.contains("{http://www.alfresco.org/model/content/1.0}content"));
     }
-    
-    private StatsParameters getParameters() {
+
+    private StatsParameters getParameters()
+    {
 
         StringBuilder luceneQuery = new StringBuilder();
         luceneQuery.append(" +TYPE:\"" + ContentModel.TYPE_CONTENT + "\"");
@@ -163,9 +166,9 @@ public class SolrQueryHTTPClientTest
         StatsParameters params = new StatsParameters(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO, luceneQuery.toString(), filterQuery, false);
         params.addSort(new SortDefinition(SortDefinition.SortType.FIELD, "contentsize", false));
         params.addStatsParameter(StatsParameters.PARAM_FIELD, "contentsize");
-        params.addStatsParameter(StatsParameters.PARAM_FACET, StatsParameters.FACET_PREFIX+ContentModel.PROP_CREATED.toString());
-        params.addStatsParameter("Test1", StatsParameters.FACET_PREFIX+"author. .u");
-        params.addStatsParameter("Test2", StatsParameters.FACET_PREFIX+"creator. .u");
+        params.addStatsParameter(StatsParameters.PARAM_FACET, StatsParameters.FACET_PREFIX + ContentModel.PROP_CREATED.toString());
+        params.addStatsParameter("Test1", StatsParameters.FACET_PREFIX + "author. .u");
+        params.addStatsParameter("Test2", StatsParameters.FACET_PREFIX + "creator. .u");
         return params;
     }
 
@@ -175,7 +178,7 @@ public class SolrQueryHTTPClientTest
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("bob");
         StringBuilder urlBuilder = new StringBuilder();
-        client.buildUrlParameters(params, null, encoder, urlBuilder);
+        client.buildUrlParameters(params, false, encoder, urlBuilder);
         String url = urlBuilder.toString();
         assertNotNull(url);
         assertFalse(url.contains("&hl"));
@@ -183,7 +186,7 @@ public class SolrQueryHTTPClientTest
         urlBuilder = new StringBuilder();
         GeneralHighlightParameters highlightParameters = new GeneralHighlightParameters(null, null, null, null, null, null, null, null);
         params.setHighlight(highlightParameters);
-        client.buildUrlParameters(params, null, encoder, urlBuilder);
+        client.buildUrlParameters(params, true, encoder, urlBuilder);
         url = urlBuilder.toString();
         assertTrue(url.contains("&hl=true"));
         assertTrue(url.contains("&hl.q=bob"));
@@ -191,7 +194,7 @@ public class SolrQueryHTTPClientTest
         urlBuilder = new StringBuilder();
         highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, null);
         params.setHighlight(highlightParameters);
-        client.buildUrlParameters(params, null, encoder, urlBuilder);
+        client.buildUrlParameters(params, false, encoder, urlBuilder);
         url = urlBuilder.toString();
         assertTrue(url.contains("&hl=true"));
         assertTrue(url.contains("&hl.q=bob"));
@@ -201,42 +204,43 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&hl.mergeContiguous=false"));
         assertTrue(url.contains("&hl.usePhraseHighlighter=true"));
 
-        assertTrue(url.contains("&hl.simple.pre="+encoder.encode("{", "UTF-8")));
-        assertTrue(url.contains("&hl.simple.post="+encoder.encode("}", "UTF-8")));
+        assertTrue(url.contains("&hl.simple.pre=" + encoder.encode("{", "UTF-8")));
+        assertTrue(url.contains("&hl.simple.post=" + encoder.encode("}", "UTF-8")));
 
-        List<FieldHighlightParameters> fields = Arrays.asList(new FieldHighlightParameters(null,null,null,null,null,null));
+        List<FieldHighlightParameters> fields = Arrays.asList(new FieldHighlightParameters(null, null, null, null, null, null));
         urlBuilder = new StringBuilder();
         highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
         params.setHighlight(highlightParameters);
 
         try
         {
-            client.buildUrlParameters(params, null, encoder, urlBuilder);
+            client.buildUrlParameters(params, false, encoder, urlBuilder);
             fail();
         }
         catch (IllegalArgumentException iae)
         {
-            assertNotNull("no fieldname specfied so invalid",iae);
+            assertNotNull("no fieldname specfied so invalid", iae);
         }
 
-        fields = Arrays.asList(new FieldHighlightParameters("desc",50,100,false,"@","#"), new FieldHighlightParameters("title",55,105,true,"*","¿"));
+        fields = Arrays.asList(new FieldHighlightParameters("desc", 50, 100, false, "@", "#"),
+                    new FieldHighlightParameters("title", 55, 105, true, "*", "¿"));
         urlBuilder = new StringBuilder();
         highlightParameters = new GeneralHighlightParameters(5, 10, false, "{", "}", 20, true, fields);
         params.setHighlight(highlightParameters);
-        client.buildUrlParameters(params, null, encoder, urlBuilder);
+        client.buildUrlParameters(params, false, encoder, urlBuilder);
         url = urlBuilder.toString();
         assertTrue(url.contains("&hl=true"));
-        assertTrue(url.contains("&hl.fl="+encoder.encode("desc,title", "UTF-8")));
+        assertTrue(url.contains("&hl.fl=" + encoder.encode("desc,title", "UTF-8")));
         assertTrue(url.contains("&f.desc.hl.snippets=50"));
         assertTrue(url.contains("&f.title.hl.snippets=55"));
         assertTrue(url.contains("&f.desc.hl.fragsize=100"));
         assertTrue(url.contains("&f.title.hl.fragsize=105"));
         assertTrue(url.contains("&f.desc.hl.mergeContiguous=false"));
         assertTrue(url.contains("&f.title.hl.mergeContiguous=true"));
-        assertTrue(url.contains("&f.desc.hl.simple.pre="+encoder.encode("@", "UTF-8")));
-        assertTrue(url.contains("&f.desc.hl.simple.post="+encoder.encode("#", "UTF-8")));
-        assertTrue(url.contains("&f.title.hl.simple.pre="+encoder.encode("*", "UTF-8")));
-        assertTrue(url.contains("&f.title.hl.simple.post="+encoder.encode("¿", "UTF-8")));
+        assertTrue(url.contains("&f.desc.hl.simple.pre=" + encoder.encode("@", "UTF-8")));
+        assertTrue(url.contains("&f.desc.hl.simple.post=" + encoder.encode("#", "UTF-8")));
+        assertTrue(url.contains("&f.title.hl.simple.pre=" + encoder.encode("*", "UTF-8")));
+        assertTrue(url.contains("&f.title.hl.simple.post=" + encoder.encode("¿", "UTF-8")));
 
     }
 
@@ -267,7 +271,8 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains(encoder.encode("{!afts key=numbers}(1,10]", "UTF-8")));
 
-        List<Interval> intervalList = Arrays.asList(new Interval("cm:price", "Price", null), new Interval("cm:created", "Created", Arrays.asList(new IntervalSet("2015", "2016-12", "special", false, true))));
+        List<Interval> intervalList = Arrays.asList(new Interval("cm:price", "Price", null),
+                    new Interval("cm:created", "Created", Arrays.asList(new IntervalSet("2015", "2016-12", "special", false, true))));
         params.setInterval(new IntervalParameters(Arrays.asList(intervalSet), intervalList));
         urlBuilder = new StringBuilder();
         client.buildFacetIntervalParameters(params, encoder, urlBuilder);
@@ -286,4 +291,67 @@ public class SolrQueryHTTPClientTest
         TimeZone.setDefault(defaultTimeZone);
     }
 
+    @Test
+    public void testBuildFieldFacets() throws UnsupportedEncodingException
+    {
+        SearchParameters params = new SearchParameters();
+        params.setSearchTerm("bob");
+
+        SearchParameters.FieldFacet prefixff = new SearchParameters.FieldFacet("{!afts something=right}modifier");
+        SearchParameters.FieldFacet ff = new SearchParameters.FieldFacet("creator");
+        params.addFieldFacet(prefixff);
+        params.addFieldFacet(ff);
+
+        StringBuilder urlBuilder = new StringBuilder();
+        client.buildFacetParameters(params, false, encoder, urlBuilder);
+        String url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains("facet.field=creator"));
+        assertTrue(url.contains("f.creator.facet.limit=100"));
+        assertTrue(url.contains("facet.field="+encoder.encode("{!afts something=right}modifier", "UTF-8")));
+        assertTrue(url.contains("f.modifier.facet.limit=100"));
+
+        prefixff.setLabel("myLabel");
+        ff.setLabel("yourLabel");
+
+        urlBuilder = new StringBuilder();
+        client.buildFacetParameters(params, false, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains("facet.field="+encoder.encode("{!afts key=yourLabel}creator", "UTF-8")));
+        assertTrue(url.contains("f.creator.facet.limit=100"));
+        assertTrue(url.contains("facet.field="+encoder.encode("{!afts key=myLabel something=right}modifier", "UTF-8")));
+        assertTrue(url.contains("f.modifier.facet.limit=100"));
+
+        prefixff.setExcludeFilters(Arrays.asList("x", "y"));
+        ff.setExcludeFilters(Arrays.asList("B"));
+
+        urlBuilder = new StringBuilder();
+        client.buildFacetParameters(params, false, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains("facet.field="+encoder.encode("{!afts ex=B key=yourLabel}creator", "UTF-8")));
+        assertTrue(url.contains("f.creator.facet.limit=100"));
+        assertTrue(url.contains("facet.field="+encoder.encode("{!afts ex=x,y key=myLabel something=right}modifier", "UTF-8")));
+        assertTrue(url.contains("f.modifier.facet.limit=100"));
+
+        prefixff.setField("bill");
+        prefixff.setExcludeFilters(Collections.emptyList());
+        ff.setField("{!afts}ben");
+        ff.setLabel(null);
+
+        urlBuilder = new StringBuilder();
+        client.buildFacetParameters(params, false, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains("facet.field="+encoder.encode("{!afts ex=B}ben", "UTF-8")));
+        assertTrue(url.contains("f.ben.facet.limit=100"));
+        assertTrue(url.contains("facet.field="+encoder.encode("{!afts key=myLabel}bill", "UTF-8")));
+        assertTrue(url.contains("f.bill.facet.limit=100"));
+
+    }
 }

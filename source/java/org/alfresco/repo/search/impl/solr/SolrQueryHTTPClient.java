@@ -474,7 +474,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 }
             }
 
-            buildUrlParameters(searchParameters, mapping, encoder, url);
+            buildUrlParameters(searchParameters, mapping.isSharded(), encoder, url);
 
             final String searchTerm = searchParameters.getSearchTerm();
             String spellCheckQueryStr = null;
@@ -590,12 +590,12 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     /**
      * Builds most of the Url parameters for a Solr Http request.
      * @param searchParameters
-     * @param mapping
+     * @param isSharded
      * @param encoder
      * @param url
      * @throws UnsupportedEncodingException
      */
-    public void buildUrlParameters(SearchParameters searchParameters, SolrStoreMappingWrapper mapping, URLCodec encoder, StringBuilder url)
+    public void buildUrlParameters(SearchParameters searchParameters, boolean isSharded, URLCodec encoder, StringBuilder url)
                 throws UnsupportedEncodingException
     {
         Locale locale = extractLocale(searchParameters);
@@ -633,12 +633,12 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             url.append("&fq=").append(encoder.encode(filterQuery, "UTF-8"));
         }
 
-        buildFacetParameters(searchParameters, mapping, encoder, url);
+        buildFacetParameters(searchParameters, isSharded, encoder, url);
         buildFacetIntervalParameters(searchParameters, encoder, url);
         buildHightlightParameters(searchParameters, encoder, url);
     }
 
-    protected void buildFacetParameters(SearchParameters searchParameters, SolrStoreMappingWrapper mapping, URLCodec encoder, StringBuilder url)
+    protected void buildFacetParameters(SearchParameters searchParameters, boolean isSharded, URLCodec encoder, StringBuilder url)
                 throws UnsupportedEncodingException
     {
         if(searchParameters.getFieldFacets().size() > 0 || searchParameters.getFacetQueries().size() > 0)
@@ -646,15 +646,45 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             url.append("&facet=").append(encoder.encode("true", "UTF-8"));
             for(FieldFacet facet : searchParameters.getFieldFacets())
             {
-                url.append("&facet.field=").append(encoder.encode(facet.getField(), "UTF-8"));
+                url.append("&facet.field=");
+                String field = facet.getField();
+                StringBuilder prefix = new StringBuilder("{!afts ");
+
+                int startIndex = field.startsWith("{!afts")?7:0;
+
+                if (facet.getExcludeFilters() != null && !facet.getExcludeFilters().isEmpty())
+                {
+                    prefix.append("ex="+String.join(",", facet.getExcludeFilters())+" ");
+                }
+
+                if (facet.getLabel() != null && !facet.getLabel().isEmpty())
+                {
+                    prefix.append("key="+facet.getLabel()+" ");
+                }
+
+                if (startIndex!=0)
+                {
+                    int endIndex = field.indexOf("}");
+                    prefix.append(field.substring(startIndex,endIndex>startIndex?endIndex:startIndex));
+                    field = field.substring(endIndex+1);
+                }
+
+                if (prefix.length() > 7)
+                {
+                    url.append(encoder.encode(prefix.toString().trim(), "UTF-8"));
+                    url.append(encoder.encode("}", "UTF-8"));
+                }
+
+                url.append(encoder.encode(field, "UTF-8"));
+
                 if(facet.getEnumMethodCacheMinDF() != 0)
                 {
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.enum.cache.minDf", "UTF-8")).append("=").append(encoder.encode(""+facet.getEnumMethodCacheMinDF(), "UTF-8"));
+                    url.append("&").append(encoder.encode("f."+field+".facet.enum.cache.minDf", "UTF-8")).append("=").append(encoder.encode(""+facet.getEnumMethodCacheMinDF(), "UTF-8"));
                 }
                 int facetLimit;
                 if(facet.getLimitOrNull() == null)
                 {
-                    if(mapping.isSharded())
+                    if(isSharded())
                     {
                         facetLimit = defaultShardedFacetLimit;
                     }
@@ -667,30 +697,30 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 {
                     facetLimit = facet.getLimitOrNull().intValue();
                 }
-                url.append("&").append(encoder.encode("f."+facet.getField()+".facet.limit", "UTF-8")).append("=").append(encoder.encode(""+facetLimit, "UTF-8"));
+                url.append("&").append(encoder.encode("f."+field+".facet.limit", "UTF-8")).append("=").append(encoder.encode(""+facetLimit, "UTF-8"));
                 if(facet.getMethod() != null)
                 {
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.method", "UTF-8")).append("=").append(encoder.encode(facet.getMethod()== FieldFacetMethod.ENUM ?  "enum" : "fc", "UTF-8"));
+                    url.append("&").append(encoder.encode("f."+field+".facet.method", "UTF-8")).append("=").append(encoder.encode(facet.getMethod()== FieldFacetMethod.ENUM ?  "enum" : "fc", "UTF-8"));
                 }
                 if(facet.getMinCount() != 0)
                 {
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.mincount", "UTF-8")).append("=").append(encoder.encode(""+facet.getMinCount(), "UTF-8"));
+                    url.append("&").append(encoder.encode("f."+field+".facet.mincount", "UTF-8")).append("=").append(encoder.encode(""+facet.getMinCount(), "UTF-8"));
                 }
                 if(facet.getOffset() != 0)
                 {
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.offset", "UTF-8")).append("=").append(encoder.encode(""+facet.getOffset(), "UTF-8"));
+                    url.append("&").append(encoder.encode("f."+field+".facet.offset", "UTF-8")).append("=").append(encoder.encode(""+facet.getOffset(), "UTF-8"));
                 }
                 if(facet.getPrefix() != null)
                 {
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.prefix", "UTF-8")).append("=").append(encoder.encode(""+facet.getPrefix(), "UTF-8"));
+                    url.append("&").append(encoder.encode("f."+field+".facet.prefix", "UTF-8")).append("=").append(encoder.encode(""+facet.getPrefix(), "UTF-8"));
                 }
                 if(facet.getSort() != null)
                 {
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.sort", "UTF-8")).append("=").append(encoder.encode(facet.getSort() == FieldFacetSort.COUNT ? "count" : "index", "UTF-8"));
+                    url.append("&").append(encoder.encode("f."+field+".facet.sort", "UTF-8")).append("=").append(encoder.encode(facet.getSort() == FieldFacetSort.COUNT ? "count" : "index", "UTF-8"));
                 }
                 if(facet.isCountDocsMissingFacetField() != false)
                 {
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.missing", "UTF-8")).append("=").append(encoder.encode(""+facet.isCountDocsMissingFacetField(), "UTF-8"));
+                    url.append("&").append(encoder.encode("f."+field+".facet.missing", "UTF-8")).append("=").append(encoder.encode(""+facet.isCountDocsMissingFacetField(), "UTF-8"));
                 }
 
             }

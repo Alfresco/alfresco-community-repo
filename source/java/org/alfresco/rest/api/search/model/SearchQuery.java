@@ -56,12 +56,14 @@ public class SearchQuery
     private final Limits limits;
     private final GeneralHighlightParameters highlight;
     private final IntervalParameters facetIntervals;
+    private final boolean includeRequest;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null,null, null, null, null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,null, null, null,null, null, null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
                 @JsonProperty("paging") Paging paging,
+                @JsonProperty("includeRequest") Boolean includeRequest,
                 @JsonProperty("include") List<String> include,
                 @JsonProperty("fields") List<String> fields,
                 @JsonProperty("sort") List<SortDef> sort,
@@ -77,6 +79,7 @@ public class SearchQuery
                 @JsonProperty("facetIntervals")IntervalParameters facetIntervals)
     {
         this.query = query;
+        this.includeRequest = includeRequest==null?false:includeRequest;
         this.paging = paging;
         this.include = include;
         this.fields = fields;
@@ -165,5 +168,10 @@ public class SearchQuery
     public Limits getLimits()
     {
         return limits;
+    }
+
+    public boolean includeRequest()
+    {
+        return includeRequest;
     }
 }

@@ -230,7 +230,7 @@ public class ResultMapperTests
     public void testToCollectionWithPagingInfo() throws Exception
     {
         ResultSet results = mockResultset(Arrays.asList(514l), Arrays.asList(566l, VERSIONED_ID));
-        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, null, results);
+        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, SearchQuery.EMPTY, results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
@@ -278,17 +278,21 @@ public class ResultMapperTests
         assertEquals("last",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getLabel());
         assertEquals("cm:creator:(a,b]",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getFilterQuery());
         assertEquals(4,searchContext.getFacetIntervals().get(0).getBuckets().get(0).getCount());
+
+        //Requests search Query
+        assertNotNull(searchContext.getRequest());
+        assertEquals("great", searchContext.getRequest().getQuery().getUserQuery());
     }
 
     @Test
     public void testIsNullContext() throws Exception
     {
-        assertTrue(mapper.isNullContext(new SearchContext(0l,null,null,null,null)));
-        assertFalse(mapper.isNullContext(new SearchContext(1l,null,null,null,null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,null,new SpellCheckContext(null, null))));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new FacetQueryContext(null, null, 0)),null,null,null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,null,Arrays.asList(new FacetFieldContext(null, null)),null,null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,Arrays.asList(new FacetFieldContext(null, null)),null)));
+        assertTrue(mapper.isNullContext(new SearchContext(0l,null,null,null,null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(1l,null,null,null,null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,null,new SpellCheckContext(null, null), null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new FacetQueryContext(null, null, 0)),null,null,null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,null,Arrays.asList(new FacetFieldContext(null, null)),null,null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,Arrays.asList(new FacetFieldContext(null, null)),null, null)));
     }
 
     @Test

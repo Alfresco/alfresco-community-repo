@@ -56,6 +56,7 @@ public class SerializerTestHelper implements RequestReader
 
     public static final String JSON = "{ \"query\": {\"query\": \"g*\",\"userQuery\": \"great\",\"language\": \"afts\"}, "
                 + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"},"
+                + "\"includeRequest\": true,"
                 + "\"sort\": {\"type\": \"FIELD\",\"field\": \"cm:title\",\"ascending\": \"true\"},"
                 + "\"templates\": [{\"name\": \"mytemp\",\"template\": \"ATEMP\"}, {\"name\": \"yourtemp\",\"template\": \"%cm:content\"}],"
                 + "\"defaults\": {\"namespace\": \"namesp\",\"defaultFieldName\": \"myfield\",\"defaultFTSOperator\": \"AND\", \"textAttributes\": [\"roy\", \"king\"]},"

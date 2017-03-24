@@ -50,7 +50,6 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Tests json -> SearchQuery deserialization
@@ -174,7 +173,7 @@ public class SearchQuerySerializerTests
         FacetFieldContext ffc = new FacetFieldContext("theLabel", Arrays.asList(new Bucket("b1", "name:b1", 23, "displayText1"), new Bucket("b2", null, 34, "displayText2")));
         SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryContext("f1", "creator:bob", 15), new FacetQueryContext("f2", null, 20)),
                     Arrays.asList(ffc), null,
-                    new SpellCheckContext("aFlag", Arrays.asList("bish", "bash")));
+                    new SpellCheckContext("aFlag", Arrays.asList("bish", "bash")), null);
         CollectionWithPagingInfo<ExecutionResult> coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         String out = helper.writeResponse(coll);
         assertTrue("There must 'context' json output", out.contains("\"context\":{\"consistency\":{\"lastTxId\":23}"));
@@ -186,7 +185,7 @@ public class SearchQuerySerializerTests
         assertTrue("There must 'bucket1' json output", out.contains("{\"label\":\"b1\",\"filterQuery\":\"name:b1\",\"count\":23,\"display\":\"displayText1\"}"));
         assertTrue("There must 'bucket2' json output", out.contains("{\"label\":\"b2\",\"count\":34,\"display\":\"displayText2\"}"));
 
-        searchContext = new SearchContext(-1, null, null,null, null);
+        searchContext = new SearchContext(-1, null, null,null, null, null);
         coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         out = helper.writeResponse(coll);
         assertTrue("There must NOT BE a 'context' json output", out.contains("\"context\":{}"));

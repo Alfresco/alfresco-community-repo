@@ -281,7 +281,7 @@ public class ResultMapper
             for (Entry<String, Integer> fq:facetQueries.entrySet())
             {
                 String filterQuery = null;
-                if (searchQuery != null)
+                if (searchQuery != null && searchQuery.getFacetQueries() != null)
                 {
                     Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
                     filterQuery = found.isPresent()? found.get().getQuery():fq.getKey();
@@ -305,7 +305,7 @@ public class ResultMapper
         }
 
         //Put it all together
-        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, ffcs, intervals, spellCheckContext);
+        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, ffcs, intervals, spellCheckContext, searchQuery.includeRequest()?searchQuery:null);
         return isNullContext(context)?null:context;
     }
 

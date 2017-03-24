@@ -278,7 +278,7 @@ public class SolrQueryHTTPClientTest
 
         assertTrue(url.contains(encoder.encode("{!key=Price}cm:price", "UTF-8")));
         assertTrue(url.contains(encoder.encode("{!key=Created}cm:created", "UTF-8")));
-        assertTrue(url.contains("f.Created.facet.interval.set"));
+        assertTrue(url.contains(encoder.encode("f.cm:created.facet.interval.set", "UTF-8")));
         assertTrue(url.contains(encoder.encode("{!afts key=numbers}", "UTF-8")));
         assertTrue(url.contains(encoder.encode("(2015-12-31T23:59:59.999Z", "UTF-8")));
         assertTrue(url.contains(encoder.encode("2016-12-31T23:59:59.999Z]", "UTF-8")));

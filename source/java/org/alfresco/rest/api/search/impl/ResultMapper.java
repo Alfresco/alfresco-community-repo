@@ -42,6 +42,7 @@ import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
+import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchEntry;
@@ -53,7 +54,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.Interval;
-import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -292,10 +292,10 @@ public class ResultMapper
 
         //Field Facets
         Map<String, List<Pair<String, Integer>>> facetFields = solrResultSet.getFieldFacets();
-        ffcs = getFacetBuckets(facetFields, true, null);
+        ffcs = getFacetBucketsForFacetFields(facetFields, searchQuery);
 
         Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
-        List<FacetFieldContext> intervals = getFacetBuckets(facetInterval, false, searchQuery);
+        List<FacetFieldContext> intervals = getFacetBucketsForIntervals(facetInterval, searchQuery);
 
         //Spelling
         SpellCheckResult spell = solrResultSet.getSpellCheckResult();
@@ -309,7 +309,7 @@ public class ResultMapper
         return isNullContext(context)?null:context;
     }
 
-    protected List<FacetFieldContext> getFacetBuckets(Map<String, List<Pair<String, Integer>>> facetFields, boolean withDisplay, SearchQuery searchQuery)
+    protected List<FacetFieldContext> getFacetBucketsForFacetFields(Map<String, List<Pair<String, Integer>>> facetFields, SearchQuery searchQuery)
     {
         if (facetFields != null && !facetFields.isEmpty())
         {
@@ -321,8 +321,24 @@ public class ResultMapper
                     List<Bucket> buckets = new ArrayList<>(facet.getValue().size());
                     for (Pair<String, Integer> buck:facet.getValue())
                     {
-                        Object display = withDisplay?propertyLookup.lookup(facet.getKey(), buck.getFirst()):null;
-                        String filterQuery = lookupQuery(facet.getKey(), buck.getFirst(), searchQuery);
+                        Object display = propertyLookup.lookup(facet.getKey(), buck.getFirst());
+                        String filterQuery = null;
+                        if (searchQuery != null
+                                    && searchQuery.getFacetFields() != null
+                                    && searchQuery.getFacetFields().getFacets() != null
+                                    && !searchQuery.getFacetFields().getFacets().isEmpty())
+                        {
+                            Optional<FacetField> found = searchQuery.getFacetFields().getFacets().stream().filter(
+                                        queryable -> facet.getKey().equals(queryable.getLabel()!=null?queryable.getLabel():queryable.getField())).findFirst();
+                            if (found.isPresent())
+                            {
+                                String fq = found.get().toFilterQuery(buck.getFirst());
+                                if (fq != null)
+                                {
+                                    filterQuery = fq;
+                                }
+                            }
+                        }
                         buckets.add(new Bucket(buck.getFirst(), filterQuery, buck.getSecond(), display));
                     }
                     ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
@@ -334,25 +350,45 @@ public class ResultMapper
         return null;
     }
 
-    protected String lookupQuery(String facetKey, String key, SearchQuery searchQuery)
+    protected List<FacetFieldContext> getFacetBucketsForIntervals(Map<String, List<Pair<String, Integer>>> facetFields, SearchQuery searchQuery)
     {
-        if (searchQuery != null
-                    && searchQuery.getFacetIntervals() != null
-                    && searchQuery.getFacetIntervals().getIntervals() != null
-                    && !searchQuery.getFacetIntervals().getIntervals().isEmpty())
+        if (facetFields != null && !facetFields.isEmpty())
         {
-            Optional<Interval> found = searchQuery.getFacetIntervals().getIntervals().stream().filter(
-                        interval -> facetKey.equals(interval.getLabel()!=null?interval.getLabel():interval.getField())).findFirst();
-            if (found.isPresent())
+            List<FacetFieldContext> ffcs = new ArrayList<>(facetFields.size());
+            for (Entry<String, List<Pair<String, Integer>>> facet:facetFields.entrySet())
             {
-                if (found.get().getSets() != null)
+                if (facet.getValue() != null && !facet.getValue().isEmpty())
                 {
-                    Optional<IntervalSet> foundSet = found.get().getSets().stream().filter(aSet -> key.equals(aSet.getLabel())).findFirst();
-                    if (foundSet.isPresent()) return found.get().getField()+":"+foundSet.get().toRange();
+                    List<Bucket> buckets = new ArrayList<>(facet.getValue().size());
+                    for (Pair<String, Integer> buck:facet.getValue())
+                    {
+                        String filterQuery = null;
+                        if (searchQuery != null
+                                    && searchQuery.getFacetIntervals() != null
+                                    && searchQuery.getFacetIntervals().getIntervals() != null
+                                    && !searchQuery.getFacetIntervals().getIntervals().isEmpty())
+                        {
+                            Optional<Interval> found = searchQuery.getFacetIntervals().getIntervals().stream().filter(
+                                        interval -> facet.getKey().equals(interval.getLabel()!=null?interval.getLabel():interval.getField())).findFirst();
+                            if (found.isPresent())
+                            {
+                                if (found.get().getSets() != null)
+                                {
+                                    Optional<IntervalSet> foundSet = found.get().getSets().stream().filter(aSet -> buck.getFirst().equals(aSet.getLabel())).findFirst();
+                                    if (foundSet.isPresent()) filterQuery = found.get().getField()+":"+foundSet.get().toRange();
+                                }
+                            }
+                        }
+                        Bucket bucket = new Bucket(buck.getFirst(), filterQuery, buck.getSecond(), null);
+                        buckets.add(bucket);
+                    }
+                    ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
                 }
             }
+
+            return ffcs;
         }
-        return key;
+        return null;
     }
 
     /**

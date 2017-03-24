@@ -27,6 +27,7 @@ package org.alfresco.rest.api.search;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
@@ -41,11 +42,15 @@ import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
+import org.alfresco.service.cmr.search.Interval;
+import org.alfresco.service.cmr.search.IntervalParameters;
+import org.alfresco.service.cmr.search.IntervalSet;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests json -> SearchQuery deserialization
@@ -137,6 +142,28 @@ public class SearchQuerySerializerTests
         assertEquals(3,  high2.getSnippetCount().intValue());
         assertEquals(15,  high2.getFragmentSize().intValue());
         assertEquals(false,high2.getMergeContiguous());
+
+        //Facet intervals
+        IntervalParameters ip = searchQuery.getFacetIntervals();
+        assertNotNull(ip);
+        assertEquals(1,ip.getSets().size());
+        IntervalSet is = ip.getSets().get(0);
+        assertEquals("king", is.getLabel());
+        assertEquals("1", is.getStart());
+        assertEquals("2", is.getEnd());
+        assertEquals(true, is.isStartInclusive());
+        assertEquals(false, is.isEndInclusive());
+
+        assertEquals(1,ip.getIntervals().size());
+        Interval interval = ip.getIntervals().get(0);
+        assertEquals("Creator", interval.getLabel());
+        assertEquals("creator", interval.getField());
+        is = interval.getSets().get(0);
+        assertEquals("bob", is.getLabel());
+        assertEquals("a", is.getStart());
+        assertEquals("b", is.getEnd());
+        assertEquals(false, is.isStartInclusive());
+        assertEquals(true, is.isEndInclusive());
     }
 
     @Test
@@ -146,7 +173,7 @@ public class SearchQuerySerializerTests
 
         FacetFieldContext ffc = new FacetFieldContext("theLabel", Arrays.asList(new Bucket("b1", 23, "displayText1"), new Bucket("b2", 34, "displayText2")));
         SearchContext searchContext = new SearchContext(23l, Arrays.asList(new FacetQueryContext("f1", 15), new FacetQueryContext("f2", 20)),
-                    Arrays.asList(ffc),
+                    Arrays.asList(ffc), null,
                     new SpellCheckContext("aFlag", Arrays.asList("bish", "bash")));
         CollectionWithPagingInfo<ExecutionResult> coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         String out = helper.writeResponse(coll);
@@ -159,7 +186,7 @@ public class SearchQuerySerializerTests
         assertTrue("There must 'bucket1' json output", out.contains("{\"label\":\"b1\",\"count\":23,\"display\":\"displayText1\"}"));
         assertTrue("There must 'bucket2' json output", out.contains("{\"label\":\"b2\",\"count\":34,\"display\":\"displayText2\"}"));
 
-        searchContext = new SearchContext(-1, null, null, null);
+        searchContext = new SearchContext(-1, null, null,null, null);
         coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
         out = helper.writeResponse(coll);
         assertTrue("There must NOT BE a 'context' json output", out.contains("\"context\":{}"));

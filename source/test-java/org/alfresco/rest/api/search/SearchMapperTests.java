@@ -53,6 +53,9 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
+import org.alfresco.service.cmr.search.Interval;
+import org.alfresco.service.cmr.search.IntervalParameters;
+import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
@@ -60,6 +63,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -569,10 +573,79 @@ public class SearchMapperTests
         assertEquals(searchParameters.getHighlight(), highlightParameters);
     }
 
+    @Test
+    public void fromInterval() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        IntervalParameters intervalParameters = new IntervalParameters(null, null);
+        try
+        {
+            searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            //intervals is required
+            assertNotNull(iae);
+        }
+
+        List<IntervalSet> intervalSets = Arrays.asList(new IntervalSet(null,"1", null, null, null));
+        List<Interval> intervalList = Arrays.asList(new Interval(null, "bob", null));
+        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+
+        try
+        {
+            searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            //facetIntervals intervals field is required
+            assertNotNull(iae);
+        }
+
+        intervalList = Arrays.asList(new Interval("aFileld", "bob", null));
+        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+        try
+        {
+            searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            //set start is required
+            assertNotNull(iae);
+        }
+
+        intervalSets = Arrays.asList(new IntervalSet("1",null, null, null, true));
+        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+
+        try
+        {
+            searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            //set end is required
+            assertNotNull(iae);
+        }
+
+        intervalSets =  new ArrayList<>();
+        intervalSets.add(new IntervalSet("0", "3", "bob", null, null));
+        intervalSets.add(new IntervalSet("30", "50", "bill", true,true));
+        List<IntervalSet> anIntervalSet = new ArrayList<>();
+        anIntervalSet.add(new IntervalSet("1", "10", "bert", false, false));
+        intervalList = Arrays.asList(new Interval("cm:price", "Price", null), new Interval("cm:price", "Price", anIntervalSet));
+        intervalParameters = new IntervalParameters(intervalSets,intervalList);
+        searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
+        assertEquals(searchParameters.getInterval(), intervalParameters);
+    }
+
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         return sq;
     }
 }

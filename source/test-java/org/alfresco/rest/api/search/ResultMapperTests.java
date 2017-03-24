@@ -54,6 +54,7 @@ import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.HighlightEntry;
+import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -109,6 +110,8 @@ public class ResultMapperTests
     public static final String FROZEN_ID = "frozen";
     public static final String FROZEN_VER = "1.1";
     private static final long VERSIONED_ID = 521l;
+
+    private static SerializerTestHelper helper;
 
     @BeforeClass
     public static void setupTests() throws Exception
@@ -205,12 +208,14 @@ public class ResultMapperTests
         nodeVersionsRelation.setServiceRegistry(sr);
         nodeVersionsRelation.afterPropertiesSet();
         mapper.setNodeVersions(nodeVersionsRelation);
+
+        helper = new SerializerTestHelper();
     }
 
     @Test
     public void testNoResults() throws Exception
     {
-        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS,new EmptyResultSet());
+        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, null, new EmptyResultSet());
         assertNotNull(collection);
         assertFalse(collection.hasMoreItems());
         assertTrue(collection.getTotalItems() < 1);
@@ -221,7 +226,7 @@ public class ResultMapperTests
     public void testToCollectionWithPagingInfo() throws Exception
     {
         ResultSet results = mockResultset(Arrays.asList(514l), Arrays.asList(566l, VERSIONED_ID));
-        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS,results);
+        CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, null, results);
         assertNotNull(collectionWithPage);
         Long found = results.getNumberFound();
         assertEquals(found.intValue(), collectionWithPage.getTotalItems().intValue());
@@ -249,11 +254,13 @@ public class ResultMapperTests
     public void testToSearchContext() throws Exception
     {
         ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
-        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, 0);
+        SearchQuery searchQuery = helper.searchQueryFromJson();
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchQuery, 0);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(6, searchContext.getFacetQueries().size());
-   //     assertEquals("{!afts}creator:admin",searchContext.getFacetQueries().get(0).getLabel());
-     //   assertEquals(1,searchContext.getFacetQueries().get(0).getCount());
+        assertEquals(0,searchContext.getFacetQueries().get(0).getCount());
+        assertEquals("cm:created:bob",searchContext.getFacetQueries().get(0).getFilterQuery());
+        assertEquals("small",searchContext.getFacetQueries().get(0).getLabel());
         assertEquals("searchInsteadFor",searchContext.getSpellCheck().getType());
         assertEquals(1,searchContext.getSpellCheck().getSuggestions().size());
         assertEquals("alfresco",searchContext.getSpellCheck().getSuggestions().get(0));
@@ -319,13 +326,5 @@ public class ResultMapperTests
         ResultSet results = new SolrJSONResultSet(json,sp,nodeService, null, LimitBy.FINAL_SIZE, 10);
         return results;
     }
-/**
-    private Params mockParams(SearchQuery searchQuery)
-    {
-        Params params = mock(Params.class);
-        when(params.getInclude()).thenReturn(new ArrayList<String>());
-        when(params.getPassedIn()).thenReturn(searchQuery);
-        return params;
-    }
-**/
+
 }

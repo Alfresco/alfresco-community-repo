@@ -99,7 +99,7 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
             ResultSet results = searchService.query(searchParams);
 
             //Turn solr results into JSON
-            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, results);
+            CollectionWithPagingInfo<Node> resultJson = resultMapper.toCollectionWithPagingInfo(params, searchQuery, results);
             //Post-process the request and pass in params, eg. params.getFilter()
             Object toRender = helper.processAdditionsToTheResponse(null, null, null, params, resultJson);
 

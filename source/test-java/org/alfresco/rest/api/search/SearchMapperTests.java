@@ -387,14 +387,14 @@ public class SearchMapperTests
         //Doesn't error
         searchMapper.fromFacetQuery(searchParameters, null);
 
-        searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null), new FacetQuery("pong", "table")));
+        searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null,null), new FacetQuery("pong", "table",null)));
         assertEquals(2 ,searchParameters.getFacetQueries().size());
         assertEquals("{!afts key='ping'}ping" ,searchParameters.getFacetQueries().get(0));
         assertEquals("{!afts key='table'}pong" ,searchParameters.getFacetQueries().get(1));
 
         try
         {
-            searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null),new FacetQuery("{!afts}pang", "tennis")));
+            searchMapper.fromFacetQuery(searchParameters, Arrays.asList(new FacetQuery("ping", null,null),new FacetQuery("{!afts}pang", "tennis",null)));
             fail();
         }
         catch (InvalidArgumentException iae)
@@ -654,5 +654,10 @@ public class SearchMapperTests
         Query query = new Query("cmis", "foo", "");
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         return sq;
+    }
+    @Test
+    public void facetGroup()
+    {
+        
     }
 }

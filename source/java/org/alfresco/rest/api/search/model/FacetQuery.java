@@ -35,12 +35,16 @@ public class FacetQuery
 {
     private final String query;
     private final String label;
+    private final String group;
 
     @JsonCreator
-    public FacetQuery(@JsonProperty("query")  String query, @JsonProperty("label") String label)
+    public FacetQuery(@JsonProperty("query") String query,
+                      @JsonProperty("label") String label,
+                      @JsonProperty("group") String group)
     {
         this.query = query;
         this.label = label;
+        this.group = group;
     }
 
     public String getQuery()
@@ -51,5 +55,9 @@ public class FacetQuery
     public String getLabel()
     {
         return label;
+    }
+    public String getGroup()
+    {
+        return group;
     }
 }

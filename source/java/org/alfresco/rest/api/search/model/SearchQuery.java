@@ -57,8 +57,9 @@ public class SearchQuery
     private final GeneralHighlightParameters highlight;
     private final IntervalParameters facetIntervals;
     private final boolean includeRequest;
+    private final List<Pivot> pivots;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,null, null, null,null, null, null, null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,null, null, null, null,null, null, null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -76,7 +77,8 @@ public class SearchQuery
                 @JsonProperty("scope") Scope scope,
                 @JsonProperty("limits")Limits limits,
                 @JsonProperty("highlight")GeneralHighlightParameters highlight,
-                @JsonProperty("facetIntervals")IntervalParameters facetIntervals)
+                @JsonProperty("facetIntervals")IntervalParameters facetIntervals,
+                @JsonProperty("pivots") List<Pivot> pivots)
     {
         this.query = query;
         this.includeRequest = includeRequest==null?false:includeRequest;
@@ -94,6 +96,7 @@ public class SearchQuery
         this.limits = limits;
         this.highlight = highlight;
         this.facetIntervals = facetIntervals;
+        this.pivots = pivots;
     }
 
     public Query getQuery()
@@ -173,5 +176,10 @@ public class SearchQuery
     public boolean includeRequest()
     {
         return includeRequest;
+    }
+
+    public List<Pivot> getPivots()
+    {
+        return pivots;
     }
 }

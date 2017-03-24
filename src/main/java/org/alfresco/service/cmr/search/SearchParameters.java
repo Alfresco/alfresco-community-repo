@@ -169,6 +169,8 @@ public class SearchParameters implements BasicSearchParameters
     
     private List<String> filterQueries = new ArrayList<String>();
 
+    private List<String> pivots = new ArrayList<String>();
+
     private Boolean useInMemorySort;
     
     private Integer maxRawResultSetSizeForInMemorySort;
@@ -188,6 +190,8 @@ public class SearchParameters implements BasicSearchParameters
     private boolean spellCheck;
 
     private GeneralHighlightParameters highlight;
+
+    private IntervalParameters interval;
 
     /**
      * Default constructor
@@ -231,9 +235,11 @@ public class SearchParameters implements BasicSearchParameters
         sp.sinceTxId = this.sinceTxId;
         sp.facetQueries.addAll(this.facetQueries);
         sp.filterQueries.addAll(this.filterQueries);
+        sp.pivots.addAll(this.pivots);
         sp.searchTerm = this.searchTerm;
         sp.spellCheck = this.spellCheck;
         sp.highlight = this.highlight;
+        sp.interval = this.interval;
         return sp;
     }
     
@@ -281,12 +287,26 @@ public class SearchParameters implements BasicSearchParameters
     }
 
     /**
-      Sets parameters used for search highlighing
+     Sets parameters used for search highlighing
      * @param highlight GeneralHighlightParameters
      */
     public void setHighlight(GeneralHighlightParameters highlight)
     {
         this.highlight = highlight;
+    }
+
+    public IntervalParameters getInterval()
+    {
+        return interval;
+    }
+
+    /**
+     Sets parameters used for Intervals
+     * @param interval IntervalParameters
+     */
+    public void setInterval(IntervalParameters interval)
+    {
+        this.interval = interval;
     }
 
     /**
@@ -913,8 +933,18 @@ public class SearchParameters implements BasicSearchParameters
     public void addFilterQuery(String filterQuery)
     {
         filterQueries.add(filterQuery);
-    } 
-    
+    }
+
+    public List<String> getPivots()
+    {
+        return pivots;
+    }
+
+    public void addPivot(String pivotField)
+    {
+        pivots.add(pivotField);
+    }
+
     public Locale getSortLocale()
     {
         List<Locale> locales = getLocales();
@@ -1054,6 +1084,7 @@ public class SearchParameters implements BasicSearchParameters
         result = prime * result + ((sinceTxId == null) ? 0 : sinceTxId.hashCode());
         result = prime * result + ((facetQueries.isEmpty()) ? 0 : facetQueries.hashCode());
         result = prime * result + ((filterQueries.isEmpty()) ? 0 : filterQueries.hashCode());
+        result = prime * result + ((pivots.isEmpty()) ? 0 : pivots.hashCode());
         result = prime * result + ((searchTerm == null) ? 0 : searchTerm.hashCode());
         result = prime * result + (spellCheck ? 1231 : 1237);
         return result;
@@ -1207,6 +1238,8 @@ public class SearchParameters implements BasicSearchParameters
             return false;
         if (!filterQueries.equals(other.filterQueries))
             return false;
+        if (!pivots.equals(other.pivots))
+            return false;
         if (searchTerm == null)
         {
             if (other.searchTerm != null)
@@ -1246,7 +1279,8 @@ public class SearchParameters implements BasicSearchParameters
                     .append(", maxPermissionCheckTimeMillis=").append(this.maxPermissionCheckTimeMillis)
                     .append(", defaultFieldName=").append(this.defaultFieldName).append(", fieldFacets=")
                     .append(this.fieldFacets).append(", facetQueries=").append(this.facetQueries)
-                    .append(", filterQueries=").append(this.filterQueries)
+                    .append(this.filterQueries).append(", filterQueries=").append(this.filterQueries)
+                    .append(this.pivots).append(", pivots=").append(this.pivots)
                     .append(", useInMemorySort=").append(this.useInMemorySort)
                     .append(", maxRawResultSetSizeForInMemorySort=").append(this.maxRawResultSetSizeForInMemorySort)
                     .append(", extraParameters=").append(this.extraParameters).append(", excludeTenantFilter=")
@@ -1254,10 +1288,11 @@ public class SearchParameters implements BasicSearchParameters
                     .append(", queryConsistency=").append(this.queryConsistency).append(", sinceTxId=")
                     .append(this.sinceTxId).append(", searchTerm=").append(this.searchTerm)
                     .append(", highlight=").append(this.highlight)
+                    .append(", interval=").append(this.interval)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();
     }
-    
+
     public String toAuditString()
     {
         // used for repository audit (note: will trimmed if it exceeds 1024 chars)
@@ -1284,7 +1319,7 @@ public class SearchParameters implements BasicSearchParameters
         }
 
         builder.append("}");
-        
+
         return builder.toString();
     }
 
@@ -1302,6 +1337,8 @@ public class SearchParameters implements BasicSearchParameters
     public static class FieldFacet
     {
         String field;
+        String label;
+        List<String> excludeFilters;
         String prefix = null;
         FieldFacetSort sort = null;
         Integer limitOrNull = null;
@@ -1424,70 +1461,78 @@ public class SearchParameters implements BasicSearchParameters
             this.enumMethodCacheMinDF = enumMethodCacheMinDF;
         }
 
-        @Override
-        public int hashCode()
+        public String getLabel()
         {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + (countDocsMissingFacetField ? 1231 : 1237);
-            result = prime * result + enumMethodCacheMinDF;
-            result = prime * result + ((field == null) ? 0 : field.hashCode());
-            result = prime * result + ((limitOrNull == null) ? 0 : limitOrNull.hashCode());
-            result = prime * result + ((method == null) ? 0 : method.hashCode());
-            result = prime * result + minCount;
-            result = prime * result + offset;
-            result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
-            result = prime * result + ((sort == null) ? 0 : sort.hashCode());
-            return result;
+            return label;
+        }
+
+        public void setLabel(String label)
+        {
+            this.label = label;
+        }
+
+        public List<String> getExcludeFilters()
+        {
+            return excludeFilters;
+        }
+
+        public void setExcludeFilters(List<String> excludeFilters)
+        {
+            this.excludeFilters = excludeFilters;
         }
 
         @Override
-        public boolean equals(Object obj)
+        public boolean equals(Object o)
         {
-            if (this == obj)
+            if (this == o)
                 return true;
-            if (obj == null)
+            if (o == null || getClass() != o.getClass())
                 return false;
-            if (getClass() != obj.getClass())
+
+            FieldFacet that = (FieldFacet) o;
+
+            if (offset != that.offset)
                 return false;
-            FieldFacet other = (FieldFacet) obj;
-            if (countDocsMissingFacetField != other.countDocsMissingFacetField)
+            if (minCount != that.minCount)
                 return false;
-            if (enumMethodCacheMinDF != other.enumMethodCacheMinDF)
+            if (countDocsMissingFacetField != that.countDocsMissingFacetField)
                 return false;
-            if (field == null)
-            {
-                if (other.field != null)
-                    return false;
-            }
-            else if (!field.equals(other.field))
+            if (enumMethodCacheMinDF != that.enumMethodCacheMinDF)
                 return false;
-            if (limitOrNull == null)
-            {
-                if (other.limitOrNull != null)
-                    return false;
-            }
-            else if (!limitOrNull.equals(other.limitOrNull))
+            if (!field.equals(that.field))
                 return false;
-            if (method != other.method)
+            if (label != null ? !label.equals(that.label) : that.label != null)
                 return false;
-            if (minCount != other.minCount)
+            if (excludeFilters != null ? !excludeFilters.equals(that.excludeFilters) : that.excludeFilters != null)
                 return false;
-            if (offset != other.offset)
+            if (prefix != null ? !prefix.equals(that.prefix) : that.prefix != null)
                 return false;
-            if (prefix == null)
-            {
-                if (other.prefix != null)
-                    return false;
-            }
-            else if (!prefix.equals(other.prefix))
+            if (sort != that.sort)
                 return false;
-            if (sort != other.sort)
+            if (limitOrNull != null ? !limitOrNull.equals(that.limitOrNull) : that.limitOrNull != null)
                 return false;
+            if (method != that.method)
+                return false;
+
             return true;
         }
-        
-        
+
+        @Override
+        public int hashCode()
+        {
+            int result = field.hashCode();
+            result = 31 * result + (label != null ? label.hashCode() : 0);
+            result = 31 * result + (excludeFilters != null ? excludeFilters.hashCode() : 0);
+            result = 31 * result + (prefix != null ? prefix.hashCode() : 0);
+            result = 31 * result + (sort != null ? sort.hashCode() : 0);
+            result = 31 * result + (limitOrNull != null ? limitOrNull.hashCode() : 0);
+            result = 31 * result + offset;
+            result = 31 * result + minCount;
+            result = 31 * result + (countDocsMissingFacetField ? 1 : 0);
+            result = 31 * result + (method != null ? method.hashCode() : 0);
+            result = 31 * result + enumMethodCacheMinDF;
+            return result;
+        }
     }
     
     /**

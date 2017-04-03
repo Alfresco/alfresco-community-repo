@@ -283,17 +283,12 @@
                 </dependencies>
                 <configuration>
                     <systemProperties>
+                        <index.subsystem.name>solr6</index.subsystem.name>
+                        <solr.port>8983</solr.port>
                         <dir.root>${dir.root}</dir.root>
-                        <index.subsystem.name>solr4</index.subsystem.name>
                         <solr.host>localhost</solr.host>
                         <solr.secureComms>none</solr.secureComms>
-                        <solr.port>8080</solr.port>
                         <solr.port.ssl></solr.port.ssl>
-                        <solr.backup.alfresco.numberToKeep>0</solr.backup.alfresco.numberToKeep>
-                        <solr.backup.archive.numberToKeep>0</solr.backup.archive.numberToKeep>
-                        <solr.solr.home>${runtime.solr.folder}</solr.solr.home>
-                        <solr.solr.model.dir>${runtime.solr.folder}/alfrescoModels</solr.solr.model.dir>
-                        <solr.solr.content.dir>${runtime.solr.folder}/content</solr.solr.content.dir>
                     </systemProperties>
                     <delegate>false</delegate>
                     <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
@@ -311,16 +306,6 @@
                             <!-- Workaround for https://issues.apache.org/jira/browse/MTOMCAT-269 -->
                             <!-- tomcat7-maven-plugin does not pick up the context.xml file from META-INF -->
                             <contextFile>${project.build.directory}/tomcat/webapps/alfresco-server-root/META-INF/context.xml</contextFile>
-                        </webapp>
-                        <!-- Run solr4 alongside the repo -->
-                        <webapp>
-                            <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-solr4</artifactId>
-                            <version>${project.version}</version>
-                            <contextPath>/solr4</contextPath>
-                            <type>war</type>
-                            <asWebapp>true</asWebapp>
-                            <contextFile>${runtime.tomcat.conf.folder}/solr-context.xml</contextFile>
                         </webapp>
                         <webapp>
                             <groupId>org.alfresco</groupId>
@@ -389,6 +374,46 @@
                                     <version>${runner.share.version}</version>
                                     <type>war</type>
                                     <asWebapp>true</asWebapp>
+                                </webapp>
+                            </webapps>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>solr4</id>
+            <activation>
+                <property>
+                    <name>withAss</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.tomcat.maven</groupId>
+                        <artifactId>tomcat7-maven-plugin</artifactId>
+                        <configuration>
+                            <systemProperties>
+                                <index.subsystem.name>solr4</index.subsystem.name>
+                                <solr.port>8080</solr.port>
+                                <solr.backup.alfresco.numberToKeep>0</solr.backup.alfresco.numberToKeep>
+                                <solr.backup.archive.numberToKeep>0</solr.backup.archive.numberToKeep>
+                                <solr.solr.home>${runtime.solr.folder}</solr.solr.home>
+                                <solr.solr.model.dir>${runtime.solr.folder}/alfrescoModels</solr.solr.model.dir>
+                                <solr.solr.content.dir>${runtime.solr.folder}/content</solr.solr.content.dir>
+                            </systemProperties>
+                            <webapps combine.children="append">
+                                <!-- Run solr4 alongside the repo -->
+                                <webapp>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr4</artifactId>
+                                    <version>${project.version}</version>
+                                    <contextPath>/solr4</contextPath>
+                                    <type>war</type>
+                                    <asWebapp>true</asWebapp>
+                                    <contextFile>${runtime.tomcat.conf.folder}/solr-context.xml</contextFile>
                                 </webapp>
                             </webapps>
                         </configuration>

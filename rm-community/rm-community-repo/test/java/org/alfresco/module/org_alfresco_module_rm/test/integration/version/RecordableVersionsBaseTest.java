@@ -245,7 +245,9 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
                      !PROP_RECORDABLE_VERSION_POLICY.equals(beforePropertyName) &&
                      !ContentModel.PROP_AUTO_VERSION_PROPS.equals(beforePropertyName) &&
                      !ContentModel.PROP_AUTO_VERSION.equals(beforePropertyName) &&
-                     !ContentModel.PROP_INITIAL_VERSION.equals(beforePropertyName))
+                     !ContentModel.PROP_INITIAL_VERSION.equals(beforePropertyName) &&
+                     !ContentModel.PROP_VERSION_TYPE.equals(beforePropertyName) &&
+                     !ContentModel.PROP_VERSION_LABEL.equals(beforePropertyName))
             {
                 fail("Property missing from frozen state .. " + beforePropertyName);
             }

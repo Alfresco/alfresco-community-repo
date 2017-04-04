@@ -91,12 +91,8 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                 // Query is for all records that are due for review and for which
                 // notification has not been sent.
                 StringBuilder queryBuffer = new StringBuilder();
-                queryBuffer.append("+ASPECT:\"rma:vitalRecord\" ");
-                queryBuffer.append("+(@rma\\:reviewAsOf:[MIN TO NOW] ) ");
-                queryBuffer.append("+( ");
-                queryBuffer.append("@rma\\:notificationIssued:false ");
-                queryBuffer.append("OR ISNULL:\"rma:notificationIssued\" ");
-                queryBuffer.append(") ");
+                queryBuffer.append("ASPECT:\"rma:vitalRecord\" ");
+                queryBuffer.append("AND @rma\\:reviewAsOf:[MIN TO NOW] ");
                 String query = queryBuffer.toString();
 
                 ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, query);

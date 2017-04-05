@@ -85,7 +85,7 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
             if (logger.isDebugEnabled())
             {
                 StringBuilder msg = new StringBuilder();
-                msg.append("Removind reviewAsOf property from")
+                msg.append("Removing reviewAsOf property from")
                    .append(nodeRef);
                 logger.debug(msg.toString());
             }

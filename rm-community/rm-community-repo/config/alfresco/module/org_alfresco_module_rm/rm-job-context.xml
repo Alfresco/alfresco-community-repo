@@ -47,7 +47,7 @@
       </property>
       <property name="cronExpression">
          <!-- <value>0 30 2 * * ?</value> -->
-         <value>0 0/15 * * * ?</value>
+         <value>${rm.notifyOfRecordsDueForReview.cronExpression}</value>
       </property>
    </bean>
 

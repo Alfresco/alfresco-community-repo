@@ -120,27 +120,12 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                         }
                     };
 
-                    RetryingTransactionCallback<Boolean> txUpdateNodesCallback = new RetryingTransactionCallback<Boolean>()
-                    {
-                        // Set the notification issued property.
-                        public Boolean execute()
-                        {
-                            for (NodeRef node : resultNodes)
-                            {
-                                nodeService.setProperty(node, RecordsManagementModel.PROP_NOTIFICATION_ISSUED, "true");
-                            }
-                            return Boolean.TRUE;
-                        }
-                    };
-
                     /**
                      * Now do the work, one action in each transaction
                      */
                     // don't retry the send email
                     retryingTransactionHelper.setMaxRetries(0);
                     retryingTransactionHelper.doInTransaction(txCallbackSendEmail);
-                    retryingTransactionHelper.setMaxRetries(10);
-                    retryingTransactionHelper.doInTransaction(txUpdateNodesCallback);
                 }
                 return null;
             }

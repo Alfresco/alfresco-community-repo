@@ -34,6 +34,7 @@ import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.MetricCount;
+import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.Nodes;
@@ -508,17 +509,18 @@ public class ResultMapper
      */
     protected SolrJSONResultSet findSolrResultSet(ResultSet results)
     {
-        //This may get more complicated if the results are wrapped in another ResultSet class
-        if (results instanceof SolrJSONResultSet)
+        ResultSet theResultSet = results;
+
+        if (results instanceof FilteringResultSet)
         {
-            return (SolrJSONResultSet) results;
+            theResultSet = ((FilteringResultSet) results).getUnFilteredResultSet();
         }
-/**
-        if (results instanceof PagingLuceneResultSet)
+
+        if (theResultSet instanceof SolrJSONResultSet)
         {
-            return findSolrResultSet(((PagingLuceneResultSet) results).getWrapped());
+            return (SolrJSONResultSet) theResultSet;
         }
-**/
+
         return null;
     }
 }

@@ -17,6 +17,7 @@ Configuring and starting Alfresco/Share:
 
   NOTE: If you have the enterprise code, see rm-enterprise/README.txt for instructions on how to build/start the enterprise code.
 
+
 Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
 --------------------------------------------------------------------
 
@@ -50,7 +51,16 @@ To run the automated UI tests, change to the rm-automation directory and run:
 
    mvn clean install -Dskip.automationtests=false
 
-Depending on your local Firefox version, you may need to modify the rm-automation/pom.xml to use version 1.7 of selenium-grid
+Note: due to Selenium Firefox driver changes, the highest supported Firefox version for UI tests is 43.0.4 (with Selenium 2.52.0). 
+
+It is possible to have multiple versions of Firefox installed onto your workstation (e.g. one for running the UI tests and the other, kept
+up to date, for everyday browsing) but beware Firefox auto-updates. In this scenario the best approach is to create a non-default profile 
+(default profiles will be shared between your Firefox installations!) for which auto-updates are disabled and forcing the use of this 
+profile in your tests (-Dwebdriver.firefox.profile="ProfileName"). If your Firefox 43 install isn't in your path, you can use the 
+-Dwebdriver.firefox.profile option set to the full path of its "firefox-bin" executable.
+
+MacOS X Sierra users: if you experience by order of magnitude slower performance when connected to a WiFi network (e.g. office WiFi)
+add your workstation to your local /etc/hosts file as described on https://github.com/SeleniumHQ/selenium/issues/2824.
 
 
 Updating License Headers:

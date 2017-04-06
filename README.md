@@ -32,5 +32,8 @@ and Alfresco repository:
 ~~~
 The SNAPSHOT version of the artifact is **never** published.
 
+### Old version history
+The history for older versions can be found in [Alfresco SVN](https://svn.alfresco.com/repos/alfresco-open-mirror/services/alfresco-core/)
+
 ### Contributing guide
 Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.

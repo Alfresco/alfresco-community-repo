@@ -91,6 +91,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -127,6 +128,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                           RecordsManagementModel,
                                           RecordsManagementCustomModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
+                                          NodeServicePolicies.OnRemoveAspectPolicy,
                                           NodeServicePolicies.OnUpdatePropertiesPolicy,
                                           ContentServicePolicies.OnContentUpdatePolicy
 {
@@ -402,6 +404,27 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // bind policies
         beforeFileRecord = policyComponent.registerClassPolicy(BeforeFileRecord.class);
         onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "sys:noContent"
+    )
+    public void onRemoveAspect(NodeRef nodeRef, QName aspect)
+    {
+        if (nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+        {
+            ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            if (ContentData.hasContent(contentData) && contentData.getSize() > 0)
+            {
+                renameRecord(nodeRef);
+            }
+        }
     }
 
     /**
@@ -1689,7 +1712,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     )
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN))
+        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
             renameRecord(nodeRef);
         }

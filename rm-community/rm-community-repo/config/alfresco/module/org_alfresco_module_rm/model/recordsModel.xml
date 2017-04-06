@@ -866,13 +866,6 @@
                <type>d:date</type>
                <mandatory>false</mandatory>
             </property>
-            <property name="rma:notificationIssued">
-               <title>Indicates whether a notification that this record is due for review has been issued</title>
-               <type>d:boolean</type>
-      		   <protected>true</protected>
-               <mandatory>false</mandatory>
-               <default>false</default>
-            </property>
          </properties>
          <mandatory-aspects>
             <aspect>rma:filePlanComponent</aspect>

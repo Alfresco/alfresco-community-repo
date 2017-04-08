@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.oldAPI;
+package org.alfresco.rest.core.oldAPI;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;

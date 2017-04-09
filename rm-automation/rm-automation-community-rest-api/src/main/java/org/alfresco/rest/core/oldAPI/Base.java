@@ -58,10 +58,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class BaseApi
+public abstract class Base
 {
     // logger
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseApi.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Base.class);
 
     /** exception key in JSON response body */
     private static final String EXCEPTION_KEY = "exception";

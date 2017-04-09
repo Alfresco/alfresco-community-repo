@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.core.oldAPI;
+package org.alfresco.rest.oldAPI;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.rest.core.oldAPI.BaseApi;
+import org.alfresco.rest.core.oldAPI.Base;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Component;
  * @since 2.5
  */
 @Component
-public class SearchApi extends BaseApi
+public class Search extends Base
 {
     /** http client factory */
     @Autowired private AlfrescoHttpClientFactory alfrescoHttpClientFactory;

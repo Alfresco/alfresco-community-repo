@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
@@ -198,6 +200,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                             if (!nodeService.hasAspect(child, ASPECT_RECORD))
                             {
                                 recordService.makeRecord(child);
+                                appendIdentifierToName(nodeService, child);
                             }
                         }
                     }

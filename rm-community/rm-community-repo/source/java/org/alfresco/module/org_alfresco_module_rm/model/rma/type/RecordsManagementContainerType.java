@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -57,9 +59,9 @@ import org.alfresco.service.namespace.QName;
 public class RecordsManagementContainerType extends    BaseBehaviourBean
                                             implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-	/** behaviour name */
-	private static final String BEHAVIOUR_NAME = "onCreateContainerType";
-	
+    /** behaviour name */
+    private static final String BEHAVIOUR_NAME = "onCreateContainerType";
+
     /** identifier service */
     protected IdentifierService identifierService;
 
@@ -95,25 +97,25 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * Disable the behaviours for this transaction
-     * 
+     *
      * @since 2.3
      */
     public void disable()
     {
-    	getBehaviour(BEHAVIOUR_NAME).disable();
+        getBehaviour(BEHAVIOUR_NAME).disable();
     }
-    
+
     /**
      * Enable behaviours for this transaction
-     * 
+     *
      * @since 2.3
      */
     public void enable()
     {
-    	getBehaviour(BEHAVIOUR_NAME).enable();    
+        getBehaviour(BEHAVIOUR_NAME).enable();
     }
 
     /**
@@ -122,7 +124,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     @Behaviour
     (
        kind = BehaviourKind.ASSOCIATION,
-       // Execute on first event to make all type conversions and set all the properties before transaction ends and response is returned 
+       // Execute on first event to make all type conversions and set all the properties before transaction ends and response is returned
        notificationFrequency = NotificationFrequency.EVERY_EVENT,
        name = BEHAVIOUR_NAME
     )
@@ -171,6 +173,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                             if (!nodeService.hasAspect(child, ASPECT_RECORD))
                             {
                                 recordService.makeRecord(child);
+                                appendIdentifierToName(nodeService, child);
                             }
                         }
                     }
@@ -210,7 +213,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
      * Converted the child node to a fileplan component
      * The conversion is needed here to be able to generate the identifier
      * If there is no conversion rule for the created type nothing happens and the current type is returned
-     * 
+     *
      * @param childAssocRef reference to the new association
      * @return the new type of the child node
      */

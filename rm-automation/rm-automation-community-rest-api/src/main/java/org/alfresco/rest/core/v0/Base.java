@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.core.oldAPI;
+package org.alfresco.rest.core.v0;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

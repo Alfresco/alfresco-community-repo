@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
+
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -88,6 +90,7 @@ public class NonElectronicRecordType extends BaseBehaviourBean implements NodeSe
                         if (!nodeService.hasAspect(child, ASPECT_RECORD))
                         {
                             recordService.makeRecord(child);
+                            appendIdentifierToName(nodeService, child);
                         }
                     }
                 }

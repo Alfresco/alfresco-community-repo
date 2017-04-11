@@ -27,11 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.record;
 
-
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.FIRST_EVENT;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 import static org.alfresco.repo.policy.annotation.BehaviourKind.ASSOCIATION;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -429,7 +428,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             if (ContentData.hasContent(contentData) && contentData.getSize() > 0)
             {
-                renameRecord(nodeRef);
+                appendIdentifierToName(nodeService, nodeRef);
             }
         }
     }
@@ -828,7 +827,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                         // make the document a record
                         makeRecord(nodeRef);
-                        renameRecord(nodeRef);
+                        appendIdentifierToName(nodeService, nodeRef);
 
                         if (latestVersionRecord != null)
                         {
@@ -1037,7 +1036,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                     // make record
                     makeRecord(record);
-                    renameRecord(record);
+                    appendIdentifierToName(nodeService, record);
 
                     // remove added copy assocs
                     List<AssociationRef> recordAssocs = nodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
@@ -1172,7 +1171,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                         // make record
                         makeRecord(record);
-                        renameRecord(record);
+                        appendIdentifierToName(nodeService, record);
                     }
 
                     return record;
@@ -1223,7 +1222,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(document)))
             {
-                renameRecord(document);
+                appendIdentifierToName(nodeService, document);
             }
         }
         finally
@@ -1792,34 +1791,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
-            renameRecord(nodeRef);
-        }
-    }
-
-    private void renameRecord(NodeRef nodeRef)
-    {
-        // get the record id
-        String recordId = (String) nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
-
-        if (isNotBlank(recordId))
-        {
-            // get the record name
-            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-
-            // rename the record
-            int dotIndex = name.lastIndexOf('.');
-            String prefix = name;
-            String postfix = "";
-            if (dotIndex > 0)
-            {
-                prefix = name.substring(0, dotIndex);
-                postfix = name.substring(dotIndex);
-            }
-            String recordName = prefix + " (" + recordId + ")" + postfix;
-
-            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, recordName);
-
-            LOGGER.debug("Rename " + name + " to " + recordName);
+            appendIdentifierToName(nodeService, nodeRef);
         }
     }
 }

@@ -26,8 +26,6 @@
  */
 package org.alfresco.rest.rm.community.model.site;
 
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.COMPLIANCE;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.model.RestSiteModel;
@@ -51,6 +49,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RMSite extends RestSiteModel
 {
-    @JsonProperty (value = COMPLIANCE, required = true)
+    @JsonProperty (required = true)
     private RMSiteCompliance compliance;
 }

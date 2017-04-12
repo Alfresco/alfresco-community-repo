@@ -27,11 +27,11 @@
 
 /**
  * Package info that defines the Information Governance Files REST API
- * 
+ *
  * @author Ana Bozianu
  * @since 2.6
  */
-@WebApi(name="ig", scope=Api.SCOPE.PUBLIC, version=1)
+@WebApi(name="gs", scope=Api.SCOPE.PUBLIC, version=1)
 package org.alfresco.rm.rest.api.files;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.WebApi;

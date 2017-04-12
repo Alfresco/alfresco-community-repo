@@ -26,9 +26,16 @@
  */
 package org.alfresco.rest.rm.community.fileplancomponents;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicUnfiledContainerChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicUnfiledContainerChildModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
+import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
@@ -37,16 +44,22 @@ import static org.testng.Assert.assertEquals;
 import java.util.Arrays;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.RMUserAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RMUserAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -58,9 +71,99 @@ import org.testng.annotations.Test;
  * @since 2.6
  */
 public class UpdateRecordsTests extends BaseRMRestTest
-{    
+{
     /* to be used to append to modifications */
     private final String MODIFIED_PREFIX = "modified_";
+
+    /** Incomplete electronic and non electronic records created in one record folder, unfiled records container and one unfiled record folder */
+    @DataProvider(name = "incompleteRecords")
+    public String[][] getIncompleteRecords() throws Exception
+    {
+        //create electronic and nonElectronic record in record folder
+        String recordFolderId = createCategoryFolderInFilePlan().getId();
+        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+
+        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId, getFile(IMAGE_FILE));
+        assertStatusCode(CREATED);
+
+        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
+        assertStatusCode(CREATED);
+
+        //create electronic record and nonElectronic record in unfiled records container
+        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
+        UnfiledContainerChild electronicRecord1 = unfiledContainersAPI.uploadRecord(createElectronicUnfiledContainerChildModel(), UNFILED_RECORDS_CONTAINER_ALIAS, getFile(IMAGE_FILE));
+        assertStatusCode(CREATED);
+
+        UnfiledContainerChild nonElectronicRecord1 = unfiledContainersAPI.createUnfiledContainerChild(createNonElectronicUnfiledContainerChildModel(), UNFILED_RECORDS_CONTAINER_ALIAS);
+        assertStatusCode(CREATED);
+
+        //create electronic record and nonElectronic record in unfiled record folder
+        String unfiledRecordFolderId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
+        UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
+        UnfiledContainerChild electronicRecord2 = unfiledRecordFoldersAPI.uploadRecord(createElectronicUnfiledContainerChildModel(), unfiledRecordFolderId, getFile(IMAGE_FILE));
+        assertStatusCode(CREATED);
+
+        UnfiledContainerChild nonElectronicRecord2 = unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(createNonElectronicUnfiledContainerChildModel(), unfiledRecordFolderId);
+        assertStatusCode(CREATED);
+
+        return new String[][]
+        {
+            // an arbitrary record folder
+            { electronicRecord.getId(), nonElectronicRecord.getId()},
+            // unfiled records root
+            { electronicRecord1.getId(), nonElectronicRecord1.getId()},
+            // an arbitrary unfiled records folder
+            { electronicRecord2.getId(), nonElectronicRecord2.getId()}
+        };
+    }
+
+    /** Complete electronic and non electronic records created in one record folder, unfiled records container and one unfiled record folder */
+    @DataProvider(name = "completeRecords")
+    public String[][] getCompleteRecords() throws Exception
+    {
+        //create electronic and nonElectronic record in record folder
+        String recordFolderId = createCategoryFolderInFilePlan().getId();
+        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+
+        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId, getFile(IMAGE_FILE));
+        assertStatusCode(CREATED);
+        completeRecord(electronicRecord.getId());
+
+        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
+        assertStatusCode(CREATED);
+        completeRecord(nonElectronicRecord.getId());
+
+        //create electronic record and nonElectronic record in unfiled records container
+        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
+        UnfiledContainerChild electronicRecord1 = unfiledContainersAPI.uploadRecord(createElectronicUnfiledContainerChildModel(), UNFILED_RECORDS_CONTAINER_ALIAS, getFile(IMAGE_FILE));
+        assertStatusCode(CREATED);
+        completeRecord(electronicRecord1.getId());
+
+        UnfiledContainerChild nonElectronicRecord1 = unfiledContainersAPI.createUnfiledContainerChild(createNonElectronicUnfiledContainerChildModel(), UNFILED_RECORDS_CONTAINER_ALIAS);
+        assertStatusCode(CREATED);
+        completeRecord(nonElectronicRecord1.getId());
+
+        //create electronic record and nonElectronic record in unfiled record folder
+        String unfiledRecordFolderId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
+        UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
+        UnfiledContainerChild electronicRecord2 = unfiledRecordFoldersAPI.uploadRecord(createElectronicUnfiledContainerChildModel(), unfiledRecordFolderId, getFile(IMAGE_FILE));
+        assertStatusCode(CREATED);
+        completeRecord(electronicRecord2.getId());
+
+        UnfiledContainerChild nonElectronicRecord2 = unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(createNonElectronicUnfiledContainerChildModel(), unfiledRecordFolderId);
+        assertStatusCode(CREATED);
+        completeRecord(nonElectronicRecord2.getId());
+
+        return new String[][]
+                    {
+                        // an arbitrary record folder
+                        { electronicRecord.getId(), nonElectronicRecord.getId()},
+                        // unfiled records root
+                        { electronicRecord1.getId(), nonElectronicRecord1.getId()},
+                        // an arbitrary unfiled records folder
+                        { electronicRecord2.getId(), nonElectronicRecord2.getId()}
+                    };
+    }
 
     /**
      * <pre>
@@ -72,40 +175,30 @@ public class UpdateRecordsTests extends BaseRMRestTest
      */
     @Test
     (
-        dataProvider = "validRootContainers",
+        dataProvider = "incompleteRecords",
         description = "Incomplete records can be updated"
     )
     @AlfrescoTest(jira="RM-4362")
-    public void incompleteRecordsCanBeUpdated(FilePlanComponent recordFolder) throws Exception
+    public void incompleteRecordsCanBeUpdated(String electronicRecordId, String nonElectronicRecordId) throws Exception
     {
-        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        // Get the recordsAPI
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
+        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
 
-        // create electronic and non-electronic records in a folder
-        FilePlanComponent electronicRecord = filePlanComponentsAPI.createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, recordFolder.getId());
-        assertStatusCode(CREATED);
-        FilePlanComponent nonElectronicRecord = filePlanComponentsAPI.createFilePlanComponent(createNonElectronicRecordModel(), recordFolder.getId());
-        assertStatusCode(CREATED);
-
-        for (FilePlanComponent record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
-            // generate update metadata
+        for (Record record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
+            // Generate update metadata
             String newName = getModifiedPropertyValue(record.getName());
             String newTitle = getModifiedPropertyValue(record.getProperties().getTitle());
             String newDescription = getModifiedPropertyValue(record.getProperties().getDescription());
+            Record recordModel = createRecordModel(newName, newDescription, newTitle);
 
-            FilePlanComponent updateRecord = FilePlanComponent.builder()
-                .name(newName)
-                .properties(FilePlanComponentProperties.builder()
-                    .description(newDescription)
-                    .title(newTitle)
-                    .build())
-                .build();
-
-            // update record
-            filePlanComponentsAPI.updateFilePlanComponent(updateRecord, record.getId());
+            // Update record
+            recordsAPI.updateRecord(recordModel, record.getId());
             assertStatusCode(OK);
 
-            // verify the update got applied
-            FilePlanComponent updatedRecord = filePlanComponentsAPI.getFilePlanComponent(record.getId());
+            // Verify the original record meta data has been retained
+            Record updatedRecord = recordsAPI.getRecord(record.getId());
             assertEquals(updatedRecord.getName(), newName);
             assertEquals(updatedRecord.getProperties().getTitle(), newTitle);
             assertEquals(updatedRecord.getProperties().getDescription(), newDescription);
@@ -127,9 +220,9 @@ public class UpdateRecordsTests extends BaseRMRestTest
     )
     @AlfrescoTest(jira="RM-4362")
     public void userWithEditMetadataCapsCanUpdateMetadata() throws Exception
-    {   
+    {
         RMUserAPI rmUserAPI = getRestAPIFactory().getRMUserAPI();
-        // create test user and add it with collab. privileges
+        // Create test user and add it with collab. privileges
         UserModel updateUser = getDataUser().createRandomTestUser("updateuser");
         updateUser.setUserRole(UserRole.SiteCollaborator);
         getDataUser().addUserToSite(updateUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), UserRole.SiteCollaborator);
@@ -138,50 +231,44 @@ public class UpdateRecordsTests extends BaseRMRestTest
         rmUserAPI.assignRoleToUser(updateUser.getUsername(), UserRoles.ROLE_RM_SECURITY_OFFICER);
         assertStatusCode(OK);
 
-        // create random folder
-        FilePlanComponent randomFolder = createCategoryFolderInFilePlan();
-        logger.info("random folder:" + randomFolder.getName());
+        // Create random folder
+        RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
+        logger.info("random folder:" + recordFolder.getName());
 
-        // grant updateUser Filing privileges on randomFolder category, this will be
-        // inherited to randomFolder
-        FilePlanComponentAPI filePlanComponentsAPIAsAdmin = getRestAPIFactory().getFilePlanComponentsAPI();
-        rmUserAPI.addUserPermission(filePlanComponentsAPIAsAdmin.getFilePlanComponent(randomFolder.getParentId()),
+        // Grant updateUser Filing privileges on randomFolder category, this will be
+        // Inherited to randomFolder
+        RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
+        rmUserAPI.addUserPermission(recordCategoryAPI.getRecordCategory(recordFolder.getParentId()).getId(),
             updateUser, UserPermissions.PERMISSION_FILING);
         assertStatusCode(OK);
-        
-        // create electronic and non-electronic records in a folder
-        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
-        FilePlanComponent electronicRecord = filePlanComponentsAPI.createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, randomFolder.getId());
+
+        // Create electronic and non-electronic records in a folder
+        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE));
         assertStatusCode(CREATED);
-        FilePlanComponent nonElectronicRecord = filePlanComponentsAPI.createFilePlanComponent(createNonElectronicRecordModel(), randomFolder.getId());
+        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder.getId());
         assertStatusCode(CREATED);
 
-        // get FilePlanComponentAPI instance initialised to updateUser
-        FilePlanComponentAPI filePlanComponentsAPIAsUser = getRestAPIFactory().getFilePlanComponentsAPI(updateUser);
+        // Get recordsAPI instance initialised to updateUser
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI(updateUser);
 
-        for (FilePlanComponent record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
-            filePlanComponentsAPIAsUser.getFilePlanComponent(record.getId());
+        for (Record record: Arrays.asList(electronicRecord, nonElectronicRecord))
+        {
+            recordsAPI.getRecord(record.getId());
             assertStatusCode(OK);
 
-            // generate update metadata
+            // Generate update metadata
             String newName = getModifiedPropertyValue(record.getName());
             String newTitle = getModifiedPropertyValue(record.getProperties().getTitle());
             String newDescription = getModifiedPropertyValue(record.getProperties().getDescription());
+            Record recordModel = createRecordModel(newName, newDescription, newTitle);
 
-            FilePlanComponent updateRecord = FilePlanComponent.builder()
-                .name(newName)
-                .properties(FilePlanComponentProperties.builder()
-                    .description(newDescription)
-                    .title(newTitle)
-                    .build())
-                .build();
-
-            // update record
-            filePlanComponentsAPIAsUser.updateFilePlanComponent(updateRecord, record.getId());
+            // Update record
+            recordsAPI.updateRecord(recordModel, record.getId());
             assertStatusCode(OK);
 
-            // verify the update got applied
-            FilePlanComponent updatedRecord = filePlanComponentsAPIAsUser.getFilePlanComponent(record.getId());
+            // Verify the update got applied
+            Record updatedRecord = recordsAPI.getRecord(record.getId());
             assertEquals(updatedRecord.getName(), newName);
             assertEquals(updatedRecord.getProperties().getTitle(), newTitle);
             assertEquals(updatedRecord.getProperties().getDescription(), newDescription);
@@ -200,46 +287,33 @@ public class UpdateRecordsTests extends BaseRMRestTest
      */
     @Test
     (
-        dataProvider = "validRootContainers",
+        dataProvider = "completeRecords",
         description = "Complete records can't be updated"
     )
     @AlfrescoTest(jira="RM-4362")
-    public void completeRecordsCantBeUpdated(FilePlanComponent recordFolder) throws Exception
+    public void completeRecordsCantBeUpdated(String electronicRecordId, String nonElectronicRecordId) throws Exception
     {
-        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        // Get the recordsAPI
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
+        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
 
-        // create electronic and non-electronic records in a folder
-        FilePlanComponent electronicRecord = filePlanComponentsAPI.createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, recordFolder.getId());
-        assertStatusCode(CREATED);
-        closeRecord(electronicRecord);
-
-        FilePlanComponent nonElectronicRecord = filePlanComponentsAPI.createFilePlanComponent(createNonElectronicRecordModel(), recordFolder.getId());
-        assertStatusCode(CREATED);
-        closeRecord(nonElectronicRecord);
-
-        for (FilePlanComponent record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
-            // generate update metadata
+        for (Record record: Arrays.asList(electronicRecord, nonElectronicRecord)) {
+            // Generate update metadata
             String newName = getModifiedPropertyValue(record.getName());
             String newTitle = getModifiedPropertyValue(record.getProperties().getTitle());
             String newDescription = getModifiedPropertyValue(record.getProperties().getDescription());
+            Record recordModel = createRecordModel(newName, newDescription, newTitle);
 
-            FilePlanComponent updateRecord = FilePlanComponent.builder()
-                .name(newName)
-                .properties(FilePlanComponentProperties.builder()
-                    .description(newDescription)
-                    .title(newTitle)
-                    .build())
-                .build();
-
-            // attempt to update record
-            filePlanComponentsAPI.updateFilePlanComponent(updateRecord, record.getId());
+            // Update record
+            recordsAPI.updateRecord(recordModel, record.getId());
             assertStatusCode(FORBIDDEN);
 
-            // verify the original record metatada has been retained
-            FilePlanComponent updatedRecord = filePlanComponentsAPI.getFilePlanComponent(record.getId());
+            // Verify the original record meta data has been retained
+            Record updatedRecord = recordsAPI.getRecord(record.getId());
             assertEquals(updatedRecord.getName(), record.getName());
             assertEquals(updatedRecord.getProperties().getTitle(), record.getProperties().getTitle());
-            assertEquals(updatedRecord.getProperties().getDescription(), record.getProperties().getTitle());
+            assertEquals(updatedRecord.getProperties().getDescription(), record.getProperties().getDescription());
         }
     }
 

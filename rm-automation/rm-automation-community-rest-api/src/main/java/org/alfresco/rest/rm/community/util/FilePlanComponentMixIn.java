@@ -28,10 +28,10 @@ package org.alfresco.rest.rm.community.util;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
+import org.alfresco.rest.rm.community.model.record.RecordProperties;
 
 /**
- * Mix class for FilePlanComponent POJO class
+ * Mix class for Record POJO class
  * Mix-in annotations are: a way to associate annotations with classes
  * without modifying (target) classes themselves.
  *
@@ -45,6 +45,5 @@ public abstract class FilePlanComponentMixIn
      * Its properties are instead included as properties of its containing Object
      */
     @JsonUnwrapped
-    abstract FilePlanComponentProperties getProperties();
-
+    abstract RecordProperties getProperties();
 }

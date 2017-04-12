@@ -30,32 +30,31 @@ package org.alfresco.rm.rest.api.sites;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
-
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.resource.parameters.Params;
-import org.alfresco.rm.rest.api.RMSites;
-import org.alfresco.rm.rest.api.model.RMSite;
-import org.alfresco.rm.rest.api.model.RMSiteCompliance;
-import org.alfresco.rm.rest.api.model.SiteUpdate;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.rest.api.model.SiteUpdate;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rm.rest.api.RMSites;
+import org.alfresco.rm.rest.api.model.RMSite;
+import org.alfresco.rm.rest.api.model.RMSiteCompliance;
+import org.alfresco.service.cmr.site.SiteVisibility;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Unit Test class for RMSiteEntityResource.

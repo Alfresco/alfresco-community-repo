@@ -11,7 +11,7 @@
    </parent>
 
    <properties>
-      <alfresco.api.explorer.version>1.4</alfresco.api.explorer.version>
+      <alfresco.api.explorer.version>5.2.0.1</alfresco.api.explorer.version>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -34,6 +34,6 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
  */
 public class FilePlanComponentAspects
 {
-    // aspect present on closed records
-    public static final String ASPECTS_CLOSED_RECORD = "rma:declaredRecord";
+    // aspect present on completed records
+    public static final String ASPECTS_COMPLETED_RECORD = "rma:declaredRecord";
 }

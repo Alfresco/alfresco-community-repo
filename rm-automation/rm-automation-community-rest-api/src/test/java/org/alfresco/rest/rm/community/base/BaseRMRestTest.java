@@ -214,7 +214,6 @@ public class BaseRMRestTest extends RestTest
      * @param recordCategoryId The id of the record category
      * @param name The name of the record category child
      * @param type The type of the record category child
-     * @param title The title of the record category child
      * @return The created {@link RecordCategoryChild}
      * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
      */
@@ -227,11 +226,9 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a record category child as the admin user
      *
-     * @param user The user under whose privileges the node is going to be created
      * @param recordCategoryId The id of the record category
      * @param name The name of the record category child
      * @param type The type of the record category child
-     * @param title The title of the record category child
      * @return The created {@link RecordCategoryChild}
      * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
      */
@@ -299,7 +296,6 @@ public class BaseRMRestTest extends RestTest
      *
      *@param user The user under whose privileges this structure is going to be created
      * @param parentId The id of the parent folder
-     * @param folderName The name of the folder
      * @param nodeType The child type
      * @return The created folder
      * @throws Exception on unsuccessful component creation
@@ -317,7 +313,6 @@ public class BaseRMRestTest extends RestTest
      * Helper method to create child unfiled record folder as the admin user
      *
      * @param parentId The id of the parent folder
-     * @param folderName The name of the folder
      * @param nodeType The child type
      * @return The created folder
      * @throws Exception on unsuccessful component creation

@@ -27,14 +27,11 @@
 package org.alfresco.rest.rm.community.base;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.HOLDS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.HOLD_CONTAINER_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.HOLD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.TRANSFER_CONTAINER_TYPE;
@@ -74,12 +71,11 @@ public interface TestData
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] getContainers()
+    public static String[][] getContainers()
     {
-        return new Object[][] {
+        return new String[][] {
                 { FILE_PLAN_ALIAS },
                 { TRANSFERS_ALIAS },
-                { HOLDS_ALIAS },
                 { UNFILED_RECORDS_CONTAINER_ALIAS },
         };
     }
@@ -91,43 +87,42 @@ public interface TestData
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] getContainersAndTypes()
+    public static String[][] getContainersAndTypes()
     {
-        return new Object[][] {
+        return new String[][] {
                 { FILE_PLAN_ALIAS, FILE_PLAN_TYPE },
                 { TRANSFERS_ALIAS, TRANSFER_CONTAINER_TYPE },
-                { HOLDS_ALIAS, HOLD_CONTAINER_TYPE },
                 { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE },
         };
     }
 
     /**
-     * The default CATEGORY name used when creating categories
+     * The default record category name used when creating categories
      */
-    public static String CATEGORY_NAME = "CATEGORY NAME" + getRandomAlphanumeric();
+    public static String RECORD_CATEGORY_NAME = "CATEGORY NAME" + getRandomAlphanumeric();
 
     /**
-     * The default CATEGORY title used when creating categories
+     * The default record category title used when creating categories
      */
-    public static String CATEGORY_TITLE = "CATEGORY TITLE" + getRandomAlphanumeric();
+    public static String RECORD_CATEGORY_TITLE = "CATEGORY TITLE" + getRandomAlphanumeric();
 
     /**
-     * The default FOLDER name used when creating folders
+     * The default record folder name used when creating folders
      */
-    public static String FOLDER_NAME = "FOLDER NAME" + getRandomAlphanumeric();
+    public static String RECORD_FOLDER_NAME = "FOLDER NAME" + getRandomAlphanumeric();
 
     /**
-     * The default FOLDER title used when creating folders
+     * The default record folder title used when creating folders
      */
-    public static  String FOLDER_TITLE = "FOLDER TITLE" + getRandomAlphanumeric();
+    public static  String RECORD_FOLDER_TITLE = "FOLDER TITLE" + getRandomAlphanumeric();
 
     /**
-     * The default electronic record  name used when creating electronic records
+     * The default electronic record name used when creating electronic records
      */
     public static String ELECTRONIC_RECORD_NAME = "Record electronic" + getRandomAlphanumeric();
 
     /**
-     * The default Non electronic record name used when creating non-electronic records
+     * The default non-electronic record name used when creating non-electronic records
      */
     public static String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
 
@@ -138,21 +133,17 @@ public interface TestData
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] childrenNotAllowedForCategory()
+    public static String[][] childrenNotAllowedForCategory()
     {
-        return new Object[][] {
+        return new String[][] {
             { FILE_PLAN_TYPE },
             { TRANSFER_CONTAINER_TYPE },
-            { HOLD_CONTAINER_TYPE },
             { UNFILED_CONTAINER_TYPE },
             { UNFILED_RECORD_FOLDER_TYPE },
-            { HOLD_TYPE },
             { TRANSFER_TYPE },
             { CONTENT_TYPE }
         };
     }
-
-
 
     /**
      * Data Provider with:
@@ -161,9 +152,9 @@ public interface TestData
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] folderTypes()
+    public static String[][] folderTypes()
     {
-        return new Object[][] {
+        return new String[][] {
             { RECORD_FOLDER_TYPE },
             { FOLDER_TYPE }
         };
@@ -176,9 +167,9 @@ public interface TestData
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] categoryTypes()
+    public static String[][] categoryTypes()
     {
-        return new Object[][] {
+        return new String[][] {
             { FOLDER_TYPE },
             { RECORD_CATEGORY_TYPE }
         };

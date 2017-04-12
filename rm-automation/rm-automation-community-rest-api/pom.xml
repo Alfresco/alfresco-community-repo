@@ -46,11 +46,6 @@
 
    <dependencies>
       <dependency>
-          <groupId>com.jayway.restassured</groupId>
-          <artifactId>rest-assured</artifactId>
-          <version>2.9.0</version>
-      </dependency>
-      <dependency>
          <groupId>org.alfresco.tas</groupId>
          <artifactId>restapi-test</artifactId>
          <version>${tas.restapi.version}</version>
@@ -62,15 +57,16 @@
          <type>test-jar</type>
       </dependency>
       <dependency>
+         <groupId>org.projectlombok</groupId>
+         <artifactId>lombok</artifactId>
+         <version>1.16.10</version>
+         <scope>provided</scope>
+      </dependency>
+      <!-- FIXME: Remove this dependency once RMUserAPI.java has been refactored -->
+      <dependency>
          <groupId>org.jglue.fluent-json</groupId>
          <artifactId>fluent-json</artifactId>
          <version>${fluent.json.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <version>1.16.10</version>
-        <scope>provided</scope>
-     </dependency>
    </dependencies>
 </project>

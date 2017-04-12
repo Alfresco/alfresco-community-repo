@@ -577,7 +577,7 @@
                                  <groupId>org.alfresco</groupId>
                                  <artifactId>alfresco-rm-community-rest-api-explorer</artifactId>
                                  <version>${project.version}</version>
-                                 <contextPath>/ig-api-explorer</contextPath>
+                                 <contextPath>/gs-api-explorer</contextPath>
                                  <type>war</type>
                                  <asWebapp>true</asWebapp>
                               </webapp>

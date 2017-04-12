@@ -26,16 +26,20 @@
  */
 package org.alfresco.rest.rm.community.base;
 
-import static org.alfresco.rest.rm.community.base.TestData.CATEGORY_TITLE;
-import static org.alfresco.rest.rm.community.base.TestData.FOLDER_TITLE;
+import static lombok.AccessLevel.PROTECTED;
+
+import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_CLOSED_RECORD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_COMPLETED_RECORD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createFilePlanComponentModel;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createUnfiledContainerChildModel;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -47,10 +51,18 @@ import java.util.List;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
+import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
+import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
+import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderProperties;
+import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
+import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,8 +70,10 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 
+import lombok.Getter;
+
 /**
- * Base class for all IG REST API Tests
+ * Base class for all GS REST API Tests
  *
  * @author Kristijan Conkas
  * @author Tuna Aksoy
@@ -68,30 +82,12 @@ import org.testng.annotations.DataProvider;
 public class BaseRMRestTest extends RestTest
 {
     @Autowired
+    @Getter (value = PROTECTED)
     private RestAPIFactory restAPIFactory;
 
     @Autowired
+    @Getter (value = PROTECTED)
     private DataUser dataUser;
-
-    /**
-     * Gets the REST API Factory
-     *
-     * @return the restAPIFactory The REST API Factory
-     */
-    protected RestAPIFactory getRestAPIFactory()
-    {
-        return this.restAPIFactory;
-    }
-
-    /**
-     * Gets the data user
-     *
-     * @return the dataUser The data user
-     */
-    protected DataUser getDataUser()
-    {
-        return this.dataUser;
-    }
 
     /**
      * Asserts the given status code
@@ -100,7 +96,7 @@ public class BaseRMRestTest extends RestTest
      */
     protected void assertStatusCode(HttpStatus statusCode)
     {
-        restAPIFactory.getRmRestWrapper().assertStatusCodeIs(statusCode);
+        getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(statusCode);
     }
 
     /**
@@ -115,16 +111,16 @@ public class BaseRMRestTest extends RestTest
 
     /** Valid root containers where electronic and non-electronic records can be created */
     @DataProvider(name = "validRootContainers")
-    public Object[][] getValidRootContainers() throws Exception
+    public String[][] getValidRootContainers() throws Exception
     {
-        return new Object[][]
+        return new String[][]
         {
             // an arbitrary record folder
-            { createCategoryFolderInFilePlan() },
+            { createCategoryFolderInFilePlan().getId(), RECORD_FOLDER_TYPE},
             // unfiled records root
-            { getFilePlanComponent(UNFILED_RECORDS_CONTAINER_ALIAS) },
+            { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE},
             // an arbitrary unfiled records folder
-            { createUnfiledRecordsFolder(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric()) }
+            { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), UNFILED_RECORD_FOLDER_TYPE }
         };
     }
 
@@ -145,7 +141,7 @@ public class BaseRMRestTest extends RestTest
      */
     public void createRMSiteIfNotExists() throws Exception
     {
-        RMSiteAPI rmSiteAPI = restAPIFactory.getRMSiteAPI();
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
 
         // Check RM site doesn't exist
         if (!rmSiteAPI.existsRMSite())
@@ -159,71 +155,162 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Helper method to create child category
+     * Helper method to create root category as the admin user
      *
-     * @param user The user under whose privileges this structure is going to be created
-     * @param parentCategoryId The id of the parent category
      * @param categoryName The name of the category
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
-    public FilePlanComponent createCategory(UserModel user, String parentCategoryId, String categoryName) throws Exception
+    public RecordCategory createRootCategory(String categoryName) throws Exception
     {
-        return createComponent(user, parentCategoryId, categoryName, RECORD_CATEGORY_TYPE, CATEGORY_TITLE);
+        return createRootCategory(getAdminUser(), categoryName, RECORD_CATEGORY_TITLE);
     }
 
     /**
-     * Helper method to create child category as the admin user
+     * Helper method to create root category
      *
-     * @param parentCategoryId The id of the parent category
+     * @param userModel The user under whose privileges this structure is going to be created
      * @param categoryName The name of the category
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
-    public FilePlanComponent createCategory(String parentCategoryId, String categoryName) throws Exception
+    public RecordCategory createRootCategory(UserModel userModel, String categoryName) throws Exception
     {
-        return createCategory(getAdminUser(), parentCategoryId, categoryName);
+        return createRootCategory(userModel, categoryName, RECORD_CATEGORY_TITLE);
     }
 
     /**
-     * Helper method to create child folder
+     * Helper method to create root category as the admin user
+     *
+     * @param categoryName The name of the category
+     * @param categoryTitle The title of the category
+     * @return The created category
+     * @throws Exception on unsuccessful component creation
+     */
+    public RecordCategory createRootCategory(String categoryName, String categoryTitle) throws Exception
+    {
+        return createRootCategory(getAdminUser(), categoryName, categoryTitle);
+    }
+
+    /**
+     * Helper method to create root category
+     *
+     * @param userModel The user under whose privileges this structure is going to be created
+     * @param categoryName The name of the category
+     * @param categoryTitle The title of the category
+     * @return The created category
+     * @throws Exception on unsuccessful component creation
+     */
+    public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle) throws Exception
+    {
+        RecordCategory recordCategoryModel = createRecordCategoryModel(categoryName, categoryTitle);
+        return getRestAPIFactory().getFilePlansAPI(userModel).createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS);
+    }
+
+    /**
+     * Helper method to create a record category child
+     *
+     * @param user The user under whose privileges the node is going to be created
+     * @param recordCategoryId The id of the record category
+     * @param name The name of the record category child
+     * @param type The type of the record category child
+     * @param title The title of the record category child
+     * @return The created {@link RecordCategoryChild}
+     * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
+     */
+    public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name, String type) throws Exception
+    {
+        RecordCategoryChild recordCategoryChildModel = createRecordCategoryChildModel(name, type);
+        return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordCategoryChildModel, recordCategoryId);
+    }
+
+    /**
+     * Helper method to create a record category child as the admin user
+     *
+     * @param user The user under whose privileges the node is going to be created
+     * @param recordCategoryId The id of the record category
+     * @param name The name of the record category child
+     * @param type The type of the record category child
+     * @param title The title of the record category child
+     * @return The created {@link RecordCategoryChild}
+     * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
+     */
+    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name, String type) throws Exception
+    {
+        return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, type);
+    }
+
+    /**
+     * Helper method to create a record category as the admin user
+     *
+     * @param recordCategoryId The id of the record category
+     * @param name The name of the record category child
+     * @return The created {@link RecordCategoryChild}
+     * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
+     */
+    public RecordCategoryChild createRecordCategory(String recordCategoryId, String name) throws Exception
+    {
+        return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, RECORD_CATEGORY_TYPE);
+    }
+
+    /**
+     * Helper method to create a record folder as the admin user
+     *
+     * @param recordCategoryId The id of the record category
+     * @param name The name of the record category child
+     * @return The created {@link RecordCategoryChild}
+     * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
+     */
+    public RecordCategoryChild createRecordFolder(String recordCategoryId, String name) throws Exception
+    {
+        return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, RECORD_FOLDER_TYPE);
+    }
+
+    /**
+     * Helper method to create record folder
      *
      * @param user The user under whose privileges this structure is going to be created
-     * @param parentCategoryId The id of the parent category
-     * @param folderName The name of the category
-     * @return The created category
+     * @param recordCategoryId The id of the record category
+     * @param name The name of the folder
+     * @return The created folder
      * @throws Exception on unsuccessful component creation
      */
-    public FilePlanComponent createFolder(UserModel user, String parentCategoryId, String folderName) throws Exception
+    public RecordCategoryChild createFolder(UserModel user, String recordCategoryId, String name) throws Exception
     {
-        return createComponent(user, parentCategoryId, folderName, RECORD_FOLDER_TYPE, FOLDER_TITLE);
+        RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(name, RECORD_FOLDER_TYPE);
+        return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordFolderModel, recordCategoryId);
     }
 
     /**
-     * Helper method to create child folder as the admin user
+     * Helper method to create record folder as the admin user
      *
-     * @param parentCategoryId The id of the parent category
-     * @param folderName The name of the category
-     * @return The created category
+     * @param recordCategoryId The id of the record category
+     * @param name The name of the folder
+     * @return The created folder
      * @throws Exception on unsuccessful component creation
      */
-    public FilePlanComponent createFolder(String parentCategoryId, String folderName) throws Exception
+    public RecordCategoryChild createFolder(String recordCategoryId, String name) throws Exception
     {
-        return createFolder(getAdminUser(), parentCategoryId, folderName);
+        return createFolder(getAdminUser(), recordCategoryId, name);
     }
 
     /**
      * Helper method to create child unfiled record folder
      *
-     * @param user The user under whose privileges this structure is going to be created
+     *@param user The user under whose privileges this structure is going to be created
      * @param parentId The id of the parent folder
      * @param folderName The name of the folder
+     * @param nodeType The child type
      * @return The created folder
      * @throws Exception on unsuccessful component creation
      */
-    public FilePlanComponent createUnfiledRecordsFolder(UserModel user, String parentId, String folderName) throws Exception
+    public UnfiledContainerChild createUnfiledRecordsFolderChild(UserModel user, String parentId, String childName, String nodeType) throws Exception
     {
-        return createComponent(user, parentId, folderName, UNFILED_RECORD_FOLDER_TYPE, FOLDER_TITLE);
+        UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
+        UnfiledContainerChild child = getRestAPIFactory().getUnfiledRecordFoldersAPI(user).createUnfiledRecordFolderChild(childModel, parentId);
+        assertStatusCode(CREATED);
+
+        return child;
     }
 
     /**
@@ -231,32 +318,46 @@ public class BaseRMRestTest extends RestTest
      *
      * @param parentId The id of the parent folder
      * @param folderName The name of the folder
+     * @param nodeType The child type
      * @return The created folder
      * @throws Exception on unsuccessful component creation
      */
-    public FilePlanComponent createUnfiledRecordsFolder(String parentId, String folderName) throws Exception
+    public UnfiledContainerChild createUnfiledRecordsFolderChild(String parentId, String childName, String nodeType) throws Exception
     {
-        return createUnfiledRecordsFolder(getAdminUser(), parentId, folderName);
+        return createUnfiledRecordsFolderChild(getAdminUser(), parentId, childName, nodeType);
     }
 
     /**
-     * Helper method to create generic child component
+     * Helper method to create a child to an unfiled record container
      *
-     * @param user user under whose privileges this structure is going to be created
-     * @param parentComponentId The id of the parent file plan component
-     * @param componentName The name of the file plan component
-     * @param componentType The type of the file plan component
-     * @param componentTitle The title of the file plan component
-     * @return The created file plan component
-     * @throws Exception
+     * @param user The user under whose privileges this structure is going to be created
+     * @param parentId The id of the parent container
+     * @param childName The name of the child
+     * @oaram nodeType the child type
+     * @return The created chid
+     * @throws Exception on unsuccessful child creation
      */
-    private FilePlanComponent createComponent(UserModel user, String parentComponentId, String componentName, String componentType, String componentTitle) throws Exception
+    public UnfiledContainerChild createUnfiledContainerChild(UserModel user, String parentId, String childName, String nodeType) throws Exception
     {
-        FilePlanComponent filePlanComponentModel = createFilePlanComponentModel(componentName, componentType, componentTitle);
-        FilePlanComponent filePlanComponent = getRestAPIFactory().getFilePlanComponentsAPI(user).createFilePlanComponent(filePlanComponentModel, parentComponentId);
+        UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
+        UnfiledContainerChild child = getRestAPIFactory().getUnfiledContainersAPI(user).createUnfiledContainerChild(childModel, parentId);
         assertStatusCode(CREATED);
 
-        return filePlanComponent;
+        return child;
+    }
+
+    /**
+     * Helper method to create a child to an unfiled record container as the admin user
+     *
+     * @param parentId The id of the parent container
+     * @param childName The name of the child
+     * @oaram nodeType the child type
+     * @return The created chid
+     * @throws Exception on unsuccessful child creation
+     */
+    public UnfiledContainerChild createUnfiledContainerChild(String parentId, String childName, String nodeType) throws Exception
+    {
+        return createUnfiledContainerChild(getAdminUser(), parentId, childName, nodeType);
     }
 
     /**
@@ -266,56 +367,55 @@ public class BaseRMRestTest extends RestTest
      * @return The closed folder
      * @throws Exception
      */
-    protected FilePlanComponent closeFolder(String folderId) throws Exception
+    protected RecordFolder closeFolder(String folderId) throws Exception
     {
-        // build file plan component + properties for update request
-        FilePlanComponentProperties properties = new FilePlanComponentProperties();
-        properties.setIsClosed(true);
-        FilePlanComponent filePlanComponent = new FilePlanComponent();
-        filePlanComponent.setProperties(properties);
-
-        FilePlanComponent updatedComponent = getRestAPIFactory().getFilePlanComponentsAPI().updateFilePlanComponent(filePlanComponent, folderId);
+        RecordFolder recordFolderModel = RecordFolder.builder()
+                                            .properties(RecordFolderProperties.builder()
+                                                    .isClosed(true)
+                                                    .build())
+                                            .build();
+        RecordFolder updateRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolderModel, folderId);
         assertStatusCode(OK);
-        return updatedComponent;
+
+        return updateRecordFolder;
     }
 
     /**
-     * Helper method to close record
+     * Helper method to complete record
      *
-     * @param recordToClose Record to close
-     * @return The closed record
+     * @param recordId The id of the record to complete
+     * @return The completed record
      * @throws Exception
      */
-    public FilePlanComponent closeRecord(FilePlanComponent recordToClose) throws Exception
+    public Record completeRecord(String recordId) throws Exception
     {
-        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
-        List<String> aspects = filePlanComponentsAPI.getFilePlanComponent(recordToClose.getId()).getAspectNames();
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        List<String> aspects = recordsAPI.getRecord(recordId).getAspectNames();
+
         // this operation is only valid for records
         assertTrue(aspects.contains(RECORD_TYPE));
-        // a record mustn't be closed
-        assertFalse(aspects.contains(ASPECTS_CLOSED_RECORD));
+        // a record mustn't be completed
+        assertFalse(aspects.contains(ASPECTS_COMPLETED_RECORD));
+        // add completed record aspect
+        aspects.add(ASPECTS_COMPLETED_RECORD);
 
-        // add closed record aspect
-        aspects.add(ASPECTS_CLOSED_RECORD);
-
-        FilePlanComponent updatedComponent = filePlanComponentsAPI.updateFilePlanComponent(FilePlanComponent.builder().aspectNames(aspects).build(),
-            recordToClose.getId());
+        Record updateRecord = recordsAPI.updateRecord(Record.builder().aspectNames(aspects).build(), recordId);
         assertStatusCode(OK);
-        return updatedComponent;
+
+        return updateRecord;
     }
 
     /**
      * Helper method to create a randomly-named <category>/<folder> structure in file plan
      *
      * @param user The user under whose privileges this structure is going to be created
-     * @param parentId parent container id
-     * @return record folder
+     * @return {@link RecordCategoryChild} which represents the record folder
      * @throws Exception on failed creation
      */
-    public FilePlanComponent createCategoryFolderInFilePlan(UserModel user) throws Exception
+    public RecordCategoryChild createCategoryFolderInFilePlan(UserModel user) throws Exception
     {
         // create root category
-        FilePlanComponent recordCategory = createCategory(user, FILE_PLAN_ALIAS, "Category " + getRandomAlphanumeric());
+        RecordCategory recordCategory = createRootCategory(user, "Category " + getRandomAlphanumeric());
 
         // and return a folder underneath
         return createFolder(user, recordCategory.getId(), "Folder " + getRandomAlphanumeric());
@@ -324,38 +424,41 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create a randomly-named <category>/<folder> structure in file plan as the admin user
      *
-     * @param parentId parent container id
-     * @return record folder
+     * @return {@link RecordCategoryChild} which represents the record folder
      * @throws Exception on failed creation
      */
-    public FilePlanComponent createCategoryFolderInFilePlan() throws Exception
+    public RecordCategoryChild createCategoryFolderInFilePlan() throws Exception
     {
         return createCategoryFolderInFilePlan(getAdminUser());
     }
 
-    /**
-     * Helper method to retrieve a file plan component with user's privilege
-     *
-     * @param user user under whose privileges a component is to be read
-     * @param componentId id of the component to read
-     * @return {@link FilePlanComponent} for given componentId
-     * @throws Exception if user doesn't have sufficient privileges
-     */
-    public FilePlanComponent getFilePlanComponentAsUser(UserModel user, String componentId) throws Exception
+    public UnfiledContainer getUnfiledContainerAsUser(UserModel user, String componentId) throws Exception
     {
-        return getRestAPIFactory().getFilePlanComponentsAPI(user).getFilePlanComponent(componentId);
+        return getRestAPIFactory().getUnfiledContainersAPI(user).getUnfiledContainer(componentId);
     }
 
-    /**
-     * Helper method to retrieve a file plan component with user's privilege as the admin user
-     *
-     * @param componentId id of the component to read
-     * @return {@link FilePlanComponent} for given componentId
-     * @throws Exception if user doesn't have sufficient privileges
-     */
-    public FilePlanComponent getFilePlanComponent(String componentId) throws Exception
+    public UnfiledContainer getUnfiledContainer(String componentId) throws Exception
     {
-        return getFilePlanComponentAsUser(getAdminUser(), componentId);
+        return getUnfiledContainerAsUser(getAdminUser(), componentId);
     }
 
+    public TransferContainer getTransferContainerAsUser(UserModel user, String componentId) throws Exception
+    {
+        return getRestAPIFactory().getTransferContainerAPI(user).getTransferContainer(componentId);
+    }
+
+    public TransferContainer getTransferContainer(String componentId) throws Exception
+    {
+        return getTransferContainerAsUser(getAdminUser(), componentId);
+    }
+
+    public FilePlan getFilePlanAsUser(UserModel user, String componentId) throws Exception
+    {
+        return getRestAPIFactory().getFilePlansAPI(user).getFilePlan(componentId);
+    }
+
+    public FilePlan getFilePlan(String componentId) throws Exception
+    {
+        return getFilePlanAsUser(getAdminUser(), componentId);
+    }
 }

@@ -36,7 +36,6 @@ package org.alfresco.rm.rest.api.model;
 public class TargetContainer
 {
     String targetParentId;
-    String relativePath;
 
     public TargetContainer()
     {
@@ -52,22 +51,11 @@ public class TargetContainer
         this.targetParentId = targetParentId;
     }
 
-    public String getRelativePath()
-    {
-        return relativePath;
-    }
-
-    public void setRelativePath(String relativePath)
-    {
-        this.relativePath = relativePath;
-    }
-
     @Override
     public String toString()
     {
-        final StringBuilder sb = new StringBuilder("NodeTarget{");
+        final StringBuilder sb = new StringBuilder("TargetContainer{");
         sb.append("targetParentId=").append(targetParentId);
-        sb.append(", relativePath='").append(relativePath).append('\'');
         sb.append('}');
         return sb.toString();
     }

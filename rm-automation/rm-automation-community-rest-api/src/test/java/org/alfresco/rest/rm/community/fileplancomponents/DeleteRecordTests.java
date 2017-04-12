@@ -27,9 +27,19 @@
 package org.alfresco.rest.rm.community.fileplancomponents;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicUnfiledContainerChildModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicUnfiledContainerChildModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -37,22 +47,21 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.rm.community.model.user.UserPermissions;
-import org.alfresco.rest.rm.community.model.user.UserRoles;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
+import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
-import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.testng.annotations.Test;
 
 /**
- * Create/File electronic records tests
- * <br>
- * These tests only test the creation and filing of electronic records, update at
- * present isn't implemented in the API under test.
- * <p>
+ * Delete records tests
+ *
  * @author Kristijan Conkas
  * @since 2.6
  */
@@ -60,15 +69,12 @@ public class DeleteRecordTests extends BaseRMRestTest
 {
     /**
      * <pre>
-     * Given a record
+     * Given an electronic record
      * And that I have the "Delete Record" capability
      * And write permissions
      * When I delete the record
      * Then it is deleted from the file plan
      * </pre>
-     *
-     * @param container
-     * @throws Exception
      */
     @Test
     (
@@ -76,26 +82,43 @@ public class DeleteRecordTests extends BaseRMRestTest
         description = "Admin user can delete an electronic record"
     )
     @AlfrescoTest(jira="RM-4363")
-    public void adminCanDeleteElectronicRecord(FilePlanComponent container) throws Exception
+    public void adminCanDeleteElectronicRecord(String folderId, String type) throws Exception
     {
-        FilePlanComponent newRecord = getRestAPIFactory().getFilePlanComponentsAPI().createElectronicRecord(createElectronicRecordModel(), IMAGE_FILE, container.getId());
+        // Create record
+        String recordId;
 
+        if(RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
+        {
+            recordId = getRestAPIFactory().getRecordFolderAPI().createRecord(createElectronicRecordModel(), folderId, getFile(IMAGE_FILE)).getId();
+        }
+        else if(UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
+        {
+            recordId = getRestAPIFactory().getUnfiledContainersAPI().uploadRecord(createElectronicUnfiledContainerChildModel(), folderId, getFile(IMAGE_FILE)).getId();
+        }
+        else if(UNFILED_RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
+        {
+            recordId = getRestAPIFactory().getUnfiledRecordFoldersAPI().uploadRecord(createElectronicUnfiledContainerChildModel(), folderId, getFile(IMAGE_FILE)).getId();
+        }
+        else
+        {
+            throw new Exception("Unsuported type = " + type);
+        }
+
+        // Assert status
         assertStatusCode(CREATED);
 
-        deleteAndVerify(newRecord);
+        // Delete record and verify successful deletion
+        deleteAndVerify(recordId);
     }
 
     /**
      * <pre>
-     * Given a record
+     * Given a non-electronic record
      * And that I have the "Delete Record" capability
      * And write permissions
      * When I delete the record
      * Then it is deleted from the file plan
      * </pre>
-     *
-     * @param container
-     * @throws Exception
      */
     @Test
     (
@@ -103,27 +126,43 @@ public class DeleteRecordTests extends BaseRMRestTest
         description = "Admin user can delete a non-electronic record"
     )
     @AlfrescoTest(jira="RM-4363")
-    public void adminCanDeleteNonElectronicRecord(FilePlanComponent container) throws Exception
+    public void adminCanDeleteNonElectronicRecord(String folderId, String type) throws Exception
     {
-        // create a non-electronic record
-        FilePlanComponent newRecord = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), container.getId());
+        // Create record
+        String nonElectronicRecordId;
 
+        if(RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
+        {
+            nonElectronicRecordId = getRestAPIFactory().getRecordFolderAPI().createRecord(createNonElectronicRecordModel(), folderId).getId();
+        }
+        else if(UNFILED_CONTAINER_TYPE.equalsIgnoreCase(type))
+        {
+            nonElectronicRecordId = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(createNonElectronicUnfiledContainerChildModel(), folderId).getId();
+        }
+        else if(UNFILED_RECORD_FOLDER_TYPE.equalsIgnoreCase(type))
+        {
+            nonElectronicRecordId = getRestAPIFactory().getUnfiledRecordFoldersAPI().createUnfiledRecordFolderChild(createNonElectronicUnfiledContainerChildModel(), folderId).getId();
+        }
+        else
+        {
+            throw new Exception("Unsuported type = " + type);
+        }
+
+        // Assert status
         assertStatusCode(CREATED);
 
-        deleteAndVerify(newRecord);
+        // Delete record and verify successful deletion
+        deleteAndVerify(nonElectronicRecordId);
     }
 
     /**
      * <pre>
-     * Given a record
+     * Given a non-electronic record
      * And that I don't have write permissions
      * When I try to delete the record
      * Then nothing happens
      * And error gets reported
      * </pre>
-     *
-     * @param container
-     * @throws Exception
      */
     @Test
     (
@@ -132,23 +171,27 @@ public class DeleteRecordTests extends BaseRMRestTest
     @AlfrescoTest(jira="RM-4363")
     public void userWithoutWritePermissionsCantDeleteRecord() throws Exception
     {
-        // create a non-electronic record in unfiled records
-        FilePlanComponent newRecord = getRestAPIFactory().getFilePlanComponentsAPI().createFilePlanComponent(createNonElectronicRecordModel(), UNFILED_RECORDS_CONTAINER_ALIAS);
+        // Create a non-electronic record in unfiled records
+        UnfiledContainerChild nonElectronicRecord = UnfiledContainerChild.builder()
+                .name("Record " + RandomData.getRandomAlphanumeric())
+                .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+                .build();
+        UnfiledContainerChild newRecord = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(nonElectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
 
         assertStatusCode(CREATED);
 
-        // create test user and add it with collab. privileges
+        // Create test user and add it with collaboration privileges
         UserModel deleteUser = getDataUser().createRandomTestUser("delnoperm");
-        deleteUser.setUserRole(UserRole.SiteCollaborator);
-        logger.info("test user: " + deleteUser.getUsername());
-        getDataUser().addUserToSite(deleteUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), UserRole.SiteCollaborator);
+        String username = deleteUser.getUsername();
+        logger.info("Test user: " + username);
+        getDataUser().addUserToSite(deleteUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), SiteCollaborator);
 
-        // add RM role to user
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(deleteUser.getUsername(), UserRoles.ROLE_RM_POWER_USER);
+        // Add RM role to user
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(username, ROLE_RM_POWER_USER);
         assertStatusCode(OK);
 
-        // try to delete newRecord
-        getRestAPIFactory().getFilePlanComponentsAPI(deleteUser).deleteFilePlanComponent(newRecord.getId());
+        // Try to delete newRecord
+        getRestAPIFactory().getRecordsAPI(deleteUser).deleteRecord(newRecord.getId());
         assertStatusCode(FORBIDDEN);
     }
 
@@ -160,9 +203,6 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then nothing happens
      * And error gets reported
      * </pre>
-     *
-     * @param container
-     * @throws Exception
      */
     @Test
     (
@@ -171,56 +211,55 @@ public class DeleteRecordTests extends BaseRMRestTest
     @AlfrescoTest(jira="RM-4363")
     public void userWithoutDeleteRecordsCapabilityCantDeleteRecord() throws Exception
     {
-        // create test user and add it with collab. privileges
+        // Create test user and add it with collaboration privileges
         UserModel deleteUser = getDataUser().createRandomTestUser("delnoperm");
-        deleteUser.setUserRole(UserRole.SiteCollaborator);
-        getDataUser().addUserToSite(deleteUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), UserRole.SiteCollaborator);
-        logger.info("test user: " + deleteUser.getUsername());
+        getDataUser().addUserToSite(deleteUser, new SiteModel(getRestAPIFactory().getRMSiteAPI().getSite().getId()), SiteCollaborator);
+        String username = deleteUser.getUsername();
+        logger.info("Test user: " + username);
 
-        // add RM role to user, RM Power User doesn't have the Delete Record capabilities
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(deleteUser.getUsername(), UserRoles.ROLE_RM_POWER_USER);
+        // Add RM role to user, RM Power User doesn't have the "Delete Record" capabilities
+        getRestAPIFactory().getRMUserAPI().assignRoleToUser(username, ROLE_RM_POWER_USER);
         assertStatusCode(OK);
 
-        // create random folder
-        FilePlanComponent randomFolder = createCategoryFolderInFilePlan();
-        logger.info("random folder:" + randomFolder.getName());
+        // Create random folder
+        RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
+        logger.info("Random folder:" + recordFolder.getName());
 
-        // grant deleteUser Filing privileges on randomFolder category, this will be
-        // inherited to randomFolder
-        FilePlanComponentAPI filePlanComponentsAPIAsAdmin = getRestAPIFactory().getFilePlanComponentsAPI();
-        getRestAPIFactory().getRMUserAPI().addUserPermission(filePlanComponentsAPIAsAdmin.getFilePlanComponent(randomFolder.getParentId()),
-            deleteUser, UserPermissions.PERMISSION_FILING);
+        // Grant "deleteUser" filing permissions on "randomFolder" parent, this will be inherited to randomFolder
+        RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
+        getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategoryAPI.getRecordCategory(recordFolder.getParentId()).getId(), deleteUser, PERMISSION_FILING);
         assertStatusCode(OK);
 
-        // create a non-electronic record in randomFolder
-        FilePlanComponent newRecord = filePlanComponentsAPIAsAdmin.createFilePlanComponent(createNonElectronicRecordModel(), randomFolder.getId());
+        // Create a non-electronic record in "randomFolder"
+        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+        Record newRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder.getId());
         assertStatusCode(CREATED);
 
-        // verify the user can see the newRecord
-        FilePlanComponentAPI filePlanComponentsAPIAsUser = getRestAPIFactory().getFilePlanComponentsAPI(deleteUser);
-        filePlanComponentsAPIAsUser.getFilePlanComponent(newRecord.getId());
+        // Verify the user can see "newRecord"
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI(deleteUser);
+        recordsAPI.getRecord(newRecord.getId());
         assertStatusCode(OK);
 
-        // try to delete newRecord
-        filePlanComponentsAPIAsUser.deleteFilePlanComponent(newRecord.getId());
+        // Try to delete "newRecord"
+        recordsAPI.deleteRecord(newRecord.getId());
         assertStatusCode(FORBIDDEN);
     }
 
     /**
      * Utility method to delete a record and verify successful deletion
-     * @param record
-     * @throws Exception
+     *
+     * @param recordId The id of the record
      */
-    private void deleteAndVerify(FilePlanComponent record) throws Exception
+    private void deleteAndVerify(String recordId)
     {
-        FilePlanComponentAPI filePlanComponentsAPI = getRestAPIFactory().getFilePlanComponentsAPI();
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
 
-        // delete it and verify status
-        filePlanComponentsAPI.deleteFilePlanComponent(record.getId());
+        // Delete record and verify status
+        recordsAPI.deleteRecord(recordId);
         assertStatusCode(NO_CONTENT);
 
-        // try to get deleted file plan component
-        filePlanComponentsAPI.getFilePlanComponent(record.getId());
+        // Try to get deleted record
+        recordsAPI.deleteRecord(recordId);
         assertStatusCode(NOT_FOUND);
     }
 }

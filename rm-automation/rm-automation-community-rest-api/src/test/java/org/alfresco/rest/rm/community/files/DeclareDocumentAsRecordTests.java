@@ -41,13 +41,12 @@ import java.util.stream.Collectors;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentEntry;
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentProperties;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.FilePlanComponentAPI;
+import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.record.RecordProperties;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildEntry;
+import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -55,7 +54,6 @@ import org.alfresco.utility.model.UserModel;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.SecondaryType;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -67,9 +65,6 @@ import org.testng.annotations.Test;
  */
 public class DeclareDocumentAsRecordTests extends BaseRMRestTest
 {
-    @Autowired
-    private DataUser dataUser;
-
     private UserModel testUser, testUserReadOnly;
     private SiteModel testSite;
     private FolderModel testFolder;
@@ -78,13 +73,13 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     public void declareDocumentAsRecordSetup() throws Exception
     {
         // create test user and test collaboration site to store documents in
-        testUser = dataUser.createRandomTestUser();
-        testUserReadOnly = dataUser.createRandomTestUser();
+        testUser = getDataUser().createRandomTestUser();
+        testUserReadOnly = getDataUser().createRandomTestUser();
 
         testSite = dataSite.usingAdmin().createPublicRandomSite();
 
-        dataUser.addUserToSite(testUser, testSite, UserRole.SiteContributor);
-        dataUser.addUserToSite(testUserReadOnly, testSite, UserRole.SiteConsumer);
+        getDataUser().addUserToSite(testUser, testSite, UserRole.SiteContributor);
+        getDataUser().addUserToSite(testUserReadOnly, testSite, UserRole.SiteConsumer);
 
         testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
     }
@@ -112,15 +107,15 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         // declare document as record
-        FilePlanComponent record = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(document.getNodeRefWithoutVersion());
+        Record record = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(document.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         // verify the declared record is in Unfiled Records folder
-        FilePlanComponentAPI filePlanComponentAPI = getRestAPIFactory().getFilePlanComponentsAPI();
-        List<FilePlanComponentEntry> matchingRecords = filePlanComponentAPI.listChildComponents(UNFILED_RECORDS_CONTAINER_ALIAS)
+        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
+        List<UnfiledContainerChildEntry> matchingRecords = unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
             .getEntries()
             .stream()
-            .filter(e -> e.getFilePlanComponentModel().getId().equals(document.getNodeRefWithoutVersion()))
+            .filter(e -> e.getEntry().getId().equals(document.getNodeRefWithoutVersion()))
             .collect(Collectors.toList());
         // there should be only one matching record corresponding this document
         assertEquals(matchingRecords.size(), 1, "More than one record matching document name");
@@ -136,7 +131,7 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
 
         // verify the new name has the form of "<original name> (<record Id>).<original extension>"
         String recordName = filesAfterRename.get(0).onModel().getName();
-        assertEquals(recordName, document.getName().replace(".", String.format(" (%s).", record.getProperties().getRmIdentifier())));
+        assertEquals(recordName, document.getName().replace(".", String.format(" (%s).", record.getProperties().getIdentifier())));
 
         // verify the document in collaboration site is now a record, note the file is now renamed hence folder + doc. name concatenation
         // this also verifies the document is still in the initial folder
@@ -208,16 +203,16 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     public void recordCantBeDeclaredARecord() throws Exception
     {
         // create a non-electronic record in a random folder
-        FilePlanComponent nonelectronicRecord = FilePlanComponent.builder()
-            .properties(FilePlanComponentProperties.builder()
+        Record nonelectronicRecord = Record.builder()
+            .properties(RecordProperties.builder()
                 .description("Description")
                 .title("Title")
                 .build())
             .name("Non-Electronic Record")
             .nodeType(NON_ELECTRONIC_RECORD_TYPE)
             .build();
-        FilePlanComponent record = getRestAPIFactory().getFilePlanComponentsAPI()
-            .createFilePlanComponent(nonelectronicRecord, createCategoryFolderInFilePlan().getId());
+        Record record = getRestAPIFactory().getRecordFolderAPI()
+            .createRecord(nonelectronicRecord, createCategoryFolderInFilePlan().getId());
         assertStatusCode(CREATED);
 
         // try to declare it as a record

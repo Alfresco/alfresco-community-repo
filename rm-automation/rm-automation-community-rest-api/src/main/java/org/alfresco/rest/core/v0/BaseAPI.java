@@ -38,6 +38,9 @@ import java.util.Map;
 
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
+import org.alfresco.dataprep.ContentService;
+import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -58,25 +61,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public abstract class Base
+/**
+ * The base API class containing common methods for making v0 API requests
+ *
+ * @author Kristijan Conkas
+ * @since 2.5
+ */
+public abstract class BaseAPI
 {
     // logger
-    private static final Logger LOGGER = LoggerFactory.getLogger(Base.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BaseAPI.class);
 
     /** exception key in JSON response body */
     private static final String EXCEPTION_KEY = "exception";
+    protected static final String FILE_PLAN_PATH = "Sites/rm/documentLibrary";
+    protected static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
+    protected static final String NODE_PREFIX = "workspace/SpacesStore/";
+    protected static final String UPDATE_METADATA_API = "{0}node/{1}/formprocessor";
+    protected static final String ACTIONS_API = "{0}actionQueue";
+    protected static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
+    protected static final String RM_SITE_ID = "rm";
 
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
 
+    @Autowired
+    private ContentService contentService;
+
     /**
      * Helper method to extract list of properties values from result.
      *
-     * @param result
+     * @param result the response
      * @return list of specified property values in result
      * @throws RuntimeException for malformed response
      */
-    public List<String> getPropertyValues(JSONObject result, String propertyName)
+    protected List<String> getPropertyValues(JSONObject result, String propertyName)
     {
         ArrayList<String> results = new ArrayList<String>();
         try
@@ -99,11 +118,11 @@ public abstract class Base
     /**
      * Helper method to extract property values from request result and put them in map as a list that corresponds to a unique property value.
      *
-     * @param requestResult
+     * @param requestResult the request response
      * @return a map containing information about multiple properties values that correspond to a unique one
      * @throws RuntimeException for malformed response
      */
-    public Map<String, List<String>> getPropertyValuesByUniquePropertyValue(JSONObject requestResult, String uniqueProperty, List<String> otherProperties)
+    protected Map<String, List<String>> getPropertyValuesByUniquePropertyValue(JSONObject requestResult, String uniqueProperty, List<String> otherProperties)
     {
         Map<String, List<String>> valuesByUniqueProperty = new HashMap<>();
         try
@@ -130,14 +149,50 @@ public abstract class Base
     }
 
     /**
+     * Retrieves the nodeRef of an item (category, folder or record) with the given path
+     *
+     * @param username the username
+     * @param password the password
+     * @param path     the path to the container eg. in case of a category it would be the category name,
+     *                 in case of a folder it would be /categoryName/folderName
+     *                 when trying to get File Plan, the path would be ""
+     * @return the container nodeRef
+     */
+    public String getItemNodeRef(String username, String password, String path)
+    {
+        return contentService.getNodeRefByPath(username, password, FILE_PLAN_PATH + path);
+    }
+
+    /**
+     * Retrieve a Cmis object by its path
+     *
+     * @param username the user's username
+     * @param password its password
+     * @param path     the object path
+     * @return the object in case it exists, null if its does not exist
+     */
+    protected CmisObject getObjectByPath(String username, String password, String path)
+    {
+        CmisObject object;
+        try
+        {
+            object = contentService.getCMISSession(username, password).getObjectByPath(path);
+        } catch (CmisObjectNotFoundException notFoundError)
+        {
+            return null;
+        }
+        return object;
+    }
+
+    /**
      * Generic faceted request.
      *
-     * @param username
-     * @param password
+     * @param username the username
+     * @param password the password
      * @param parameters if the request has parameters
      * @return result object (see API reference for more details), null for any errors
      */
-    public JSONObject facetedRequest(String username, String password, List<NameValuePair> parameters, String requestURI)
+    protected JSONObject facetedRequest(String username, String password, List<NameValuePair> parameters, String requestURI)
     {
         String requestURL;
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
@@ -166,7 +221,7 @@ public abstract class Base
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    public JSONObject doGetRequest(String adminUser,
+    protected JSONObject doGetRequest(String adminUser,
         String adminPassword,
         String urlTemplate,
         String ... urlTemplateParams)
@@ -195,7 +250,7 @@ public abstract class Base
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    public JSONObject doDeleteRequest(String adminUser,
+    protected JSONObject doDeleteRequest(String adminUser,
         String adminPassword,
         String urlTemplate,
         String ... urlTemplateParams)
@@ -225,7 +280,7 @@ public abstract class Base
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    public JSONObject doPutRequest(String adminUser,
+    protected JSONObject doPutRequest(String adminUser,
         String adminPassword,
         JSONObject requestParams,
         String urlTemplate,
@@ -256,7 +311,7 @@ public abstract class Base
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    public JSONObject doPostRequest(String adminUser,
+    protected JSONObject doPostRequest(String adminUser,
         String adminPassword,
         JSONObject requestParams,
         String urlTemplate,
@@ -288,7 +343,7 @@ public abstract class Base
      * @param urlTemplate       request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    public boolean doPostJsonRequest(String adminUser,
+    protected boolean doPostJsonRequest(String adminUser,
                                     String adminPassword,
                                     JSONObject requestParams,
                                     String urlTemplate,
@@ -435,5 +490,127 @@ public abstract class Base
         }
 
         return false;
+    }
+
+    /**
+     * Used to set RM items properties
+     * including records, categories and folders
+     */
+    public enum RMProperty
+    {
+        NAME,
+        TITLE,
+        CONTENT,
+        DESCRIPTION,
+        AUTHOR,
+        PHYSICAL_SIZE,
+        NUMBER_OF_COPIES,
+        STORAGE_LOCATION,
+        SHELF,
+        BOX,
+        FILE,
+    }
+
+    public enum RETENTION_SCHEDULE
+    {
+        NAME,
+        DESCRIPTION,
+        RETENTION_AUTHORITY,
+        RETENTION_INSTRUCTIONS,
+        RETENTION_PERIOD,
+        RETENTION_LOCATION,
+        RETENTION_PERIOD_PROPERTY,
+        RETENTION_GHOST,
+        RETENTION_ELIGIBLE_FIRST_EVENT,
+        RETENTION_EVENTS,
+
+    }
+
+    /**
+     * Used to execute rm actions on a node
+     */
+    public enum RM_ACTIONS
+    {
+        EDIT_DISPOSITION_DATE("editDispositionActionAsOfDate"),
+        CUT_OFF("cutoff"),
+        UNDO_CUT_OFF("undoCutoff"),
+        TRANSFER("transfer"),
+        DESTROY("destroy");
+        String action;
+
+        private RM_ACTIONS(String action)
+        {
+            this.action = action;
+        }
+
+        public String getAction()
+        {
+            return action;
+        }
+    }
+
+    public enum PermissionType
+    {
+        SET_READ,
+        REMOVE_READ,
+        SET_READ_AND_FILE,
+        REMOVE_READ_AND_FILE,
+    }
+
+    /**
+     * Util to return the property value from a map
+     *
+     * @param properties the map containing properties
+     * @param property   to get value for
+     * @return the property value
+     */
+    public <K extends Enum<?>> String getPropertyValue(Map<K, String> properties, Enum<?> property)
+    {
+        String value = properties.get(property);
+        if (value == null)
+        {
+            return "";
+        }
+        return value;
+    }
+
+    /**
+     * Retrieves the property value and decides if that gets to be added to the request
+     *
+     * @param requestParams        the request parameters
+     * @param propertyRequestValue the property name in the request, eg. "prop_cm_name"
+     * @param itemProperties       map of item's properties values
+     * @param property             the property in the property map to check value for
+     * @return the json object used in request with the property with its value added if that is not null or empty
+     */
+    protected <K extends Enum<?>> JSONObject addPropertyToRequest(JSONObject requestParams, String propertyRequestValue, Map<K, String> itemProperties, Enum<?> property) throws JSONException
+    {
+        String propertyValue = getPropertyValue(itemProperties, property);
+
+        if (!propertyValue.equals(""))
+        {
+            requestParams.put(propertyRequestValue, propertyValue);
+        }
+        return requestParams;
+    }
+
+    /**
+     * Deletes the category, folder or record given as parameter
+     *
+     * @param username the username with whom the delete is performed
+     * @param password the user's password
+     * @param itemPath the path to the item eg. in case of a category it would be the "/" + category name,
+     *                 in case of a folder or subCategory it would be /categoryName/folderName or /categoryName/subCategoryName/
+     *                 in case of a record /categoryName/folderName/recordName
+     * @return true if the deletion has been successful
+     */
+    protected boolean deleteItem(String username, String password, String itemPath)
+    {
+        CmisObject container = getObjectByPath(username, password, FILE_PLAN_PATH + itemPath);
+        if (container != null)
+        {
+            container.delete();
+        }
+        return getObjectByPath(username, password, itemPath) == null;
     }
 }

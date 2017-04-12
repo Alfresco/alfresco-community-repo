@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
-import org.alfresco.rest.core.v0.Base;
+import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
@@ -42,11 +42,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * Helper methods for performing search using various Alfresco search APIs.
+ *
  * @author Kristijan Conkas
  * @since 2.5
  */
 @Component
-public class Search extends Base
+public class SearchAPI extends BaseAPI
 {
     /** http client factory */
     @Autowired private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
@@ -101,14 +102,14 @@ public class Search extends Base
         String requestURL = MessageFormat.format(
             RM_SEARCH_ENDPOINT,
             alfrescoHttpClientFactory.getObject().getAlfrescoUrl(),
-            (site != null) ? site : "rm",
+            (site != null) ? site : RM_SITE_ID,
             URLEncodedUtils.format(searchParameters, "UTF-8"));
 
         return doSearch(requestURL, username, password);
     }
 
     /**
-     * Search as a user for records on site "rm" matching query, using RM_DEFAULT_RECORD_FILTERS.
+     * Search as a user for records on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS
      * <br>
      * If more fine-grained control of search parameters is required, use rmSearch() directly.
      * @param username

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -99,6 +99,16 @@ public class SpringExtensionBundle implements InitializingBean
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+    }
+
+    /**
+     * Returns whether the current bundle should be registered or not.
+     *
+     * @return {@code true} if the current bundle should be registered, otherwise {@code false}
+     */
+    public boolean isEnabled()
+    {
+        return enabled;
     }
 
     public void setExtensions(List<SpringBeanExtension<?, ?>> extensions)

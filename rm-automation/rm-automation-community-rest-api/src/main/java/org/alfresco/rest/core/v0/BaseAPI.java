@@ -61,6 +61,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * The base API class containing common methods for making v0 API requests
+ *
+ * @author Kristijan Conkas
+ * @since 2.5
+ */
 public abstract class BaseAPI
 {
     // logger
@@ -607,6 +613,4 @@ public abstract class BaseAPI
         }
         return getObjectByPath(username, password, itemPath) == null;
     }
-
-
 }

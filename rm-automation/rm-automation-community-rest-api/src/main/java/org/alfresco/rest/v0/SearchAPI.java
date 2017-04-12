@@ -42,6 +42,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Helper methods for performing search using various Alfresco search APIs.
+ *
  * @author Kristijan Conkas
  * @since 2.5
  */

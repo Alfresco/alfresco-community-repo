@@ -39,6 +39,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+/**
+ * Methods to make API requests using v0 API on records
+ *
+ * @author Oana Nechiforescu
+ * @since 2.5
+ */
 @Component
 public class RecordsAPI extends BaseAPI
 {

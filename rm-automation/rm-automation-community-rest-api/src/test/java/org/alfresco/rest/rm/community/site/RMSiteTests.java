@@ -51,7 +51,7 @@ import static org.testng.Assert.assertNotNull;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.site.RMSite;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.RMSiteAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;

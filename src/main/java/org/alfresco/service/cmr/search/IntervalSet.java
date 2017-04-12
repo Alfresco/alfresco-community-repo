@@ -103,6 +103,20 @@ public class IntervalSet
         return sb.toString();
     }
 
+    /**
+     * Returns a valid AFTS query for this Interval Set
+     * @return a query
+     */
+    public String toAFTSQuery()
+    {
+        StringBuilder sb = new StringBuilder("");
+        sb.append(startInclusive?"[":"<")
+                    .append(start)
+                    .append(" TO "+end)
+                    .append(endInclusive?"]":">");
+        return sb.toString();
+    }
+
     @Override
     public String toString()
     {

@@ -27,6 +27,9 @@
 
 package org.alfresco.rm.rest.api.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.service.cmr.site.SiteInfo;
 
@@ -38,7 +41,9 @@ import org.alfresco.service.cmr.site.SiteInfo;
  */
 public class RMSite extends Site
 {
+    public static final String COMPLIANCE = "compliance";
     private RMSiteCompliance compliance;
+    private Map<String, Boolean> setRMFields = new HashMap<>(7);
 
     public RMSiteCompliance getCompliance()
     {
@@ -48,6 +53,18 @@ public class RMSite extends Site
     public void setCompliance(RMSiteCompliance compliance)
     {
         this.compliance = compliance;
+        setRMFields.put(COMPLIANCE, true);
+    }
+
+    @Override
+    public boolean wasSet(String fieldName)
+    {
+        if(COMPLIANCE.equalsIgnoreCase(fieldName))
+        {
+            Boolean b = setRMFields.get(fieldName);
+            return (b != null ? b : false);
+        }
+        return super.wasSet(fieldName);
     }
 
     public RMSite()
@@ -57,19 +74,19 @@ public class RMSite extends Site
 
     public RMSite(Site site, RMSiteCompliance compliance)
     {
-        this.id = site.getId();
-        this.guid = site.getGuid();
-        this.title = site.getTitle();
-        this.description = site.getDescription();
-        this.visibility = site.getVisibility();
-        this.role = site.getRole();
-        this.compliance = compliance;
+        setId(site.getId());
+        setGuid(site.getGuid());
+        setTitle(site.getTitle());
+        setDescription(site.getDescription());
+        setVisibility(site.getVisibility());
+        setRole(site.getRole());
+        setCompliance(compliance);
     }
 
     public RMSite(SiteInfo siteInfo, String role, RMSiteCompliance compliance)
     {
         super(siteInfo, role);
-        this.compliance = compliance;
+        setCompliance(compliance);
     }
 
     @Override

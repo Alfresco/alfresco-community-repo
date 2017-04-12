@@ -26,11 +26,11 @@
  */
 package org.alfresco.rest.rm.community.util;
 
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent;
 
 /**
  * Utility class for creating the json object
@@ -41,51 +41,48 @@ import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponent
 public class PojoUtility
 {
     /**
-     * Converting object to JSON string
-     *
-     * @param model  The java object model to convert
+     * see {@link #toJson(Object, Class, Class)}
      */
     public static String toJson(Object model)
     {
-        ObjectMapper mapper = new ObjectMapper();
-        //include only values that differ from default settings to be included
-        mapper.setSerializationInclusion(Include.NON_DEFAULT);
-        try
-        {
-            //return the json object
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
-        }
-        catch (JsonProcessingException e)
-        {
-            return e.toString();
-        }
+        mandatoryObject("model", model);
+
+        return toJson(model, null, null);
     }
 
-
     /**
-     * Converting object to JSON string for electronic records
+     * Converting object to JSON string
      *
      * @param model The java object model to convert
-     * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
+     * @param target Class (or interface) whose annotations to effectively override
+     * @param mixinSource Class (or interface) whose annotations are to be "added" to target's annotations, overriding as necessary
+     * @return The converted java object as JSON string
+     * @throws JsonProcessingException  Throws exceptions if the given object doesn't match to the POJO class model
      */
-    public static String toJsonElectronicRecord(Object model)
+    public static String toJson(Object model, Class<?> target, Class<?> mixinSource)
     {
+        mandatoryObject("model", model);
+
         ObjectMapper mapper = new ObjectMapper();
 
-        //inject the "mix-in" annotations  from FilePlanComponentMix to
-        // FilePlanComponent POJO class when converting to json
-        mapper.addMixIn(FilePlanComponent.class, FilePlanComponentMixIn.class);
+        if (target != null && mixinSource != null)
+        {
+            //inject the "mix-in" annotations  from FilePlanComponentMix to
+            // FilePlanComponent POJO class when converting to json
+            mapper.addMixIn(target, mixinSource);
+        }
 
         //include only values that differ from default settings to be included
         mapper.setSerializationInclusion(Include.NON_DEFAULT);
+
+        //return the json object
         try
         {
-            //return the json object
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
         }
-        catch (JsonProcessingException e)
+        catch (JsonProcessingException error)
         {
-            return e.toString();
+            return error.toString();
         }
     }
 }

@@ -37,5 +37,4 @@ public class FilePlanComponentAlias
     public static final String FILE_PLAN_ALIAS = "-filePlan-";
     public static final String TRANSFERS_ALIAS = "-transfers-";
     public static final String UNFILED_RECORDS_CONTAINER_ALIAS = "-unfiled-";
-    public static final String HOLDS_ALIAS = "-holds-";
 }

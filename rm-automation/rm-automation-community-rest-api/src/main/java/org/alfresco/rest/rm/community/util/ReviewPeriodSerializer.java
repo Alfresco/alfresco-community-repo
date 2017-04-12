@@ -33,15 +33,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
-import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentReviewPeriod;
+import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
 
 /**
- * Utility class for serializing the  Review Period type
+ * Utility class for serializing @{FilePlanComponentReviewPeriod}
  *
  * @author Rodica Sutu
  * @since 2.6
  */
-public class ReviewPeriodSerializer extends JsonSerializer<FilePlanComponentReviewPeriod>
+public class ReviewPeriodSerializer extends JsonSerializer<ReviewPeriod>
 {
     /**
      * @param value The Review Period value that is being serialized.
@@ -51,7 +51,7 @@ public class ReviewPeriodSerializer extends JsonSerializer<FilePlanComponentRevi
      * @throws JsonProcessingException
      */
     @Override
-    public void serialize(FilePlanComponentReviewPeriod value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException
+    public void serialize(ReviewPeriod value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException
     {
         //create the custom  string value for the Review Period type
        gen.writeString(new StringBuilder().append(value.getPeriodType()).append("|").append(value.getExpression()).toString());

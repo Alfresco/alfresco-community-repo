@@ -30,12 +30,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import lombok.Getter;
+
 /**
  * Extends {@link RestProperties} to be able to change/add properties
  *
  * @author Tuna Aksoy
  * @since 2.6
  */
+@Getter
 @Configuration
 @PropertySource(value = {"classpath:default.properties", "classpath:config.properties"})
 @PropertySource(value = "classpath:module.properties", ignoreResourceNotFound = true)
@@ -53,36 +56,4 @@ public class RMRestProperties extends RestProperties
 
     @Value ("${rest.rmPath}")
     private String restRmPath;
-
-    /**
-     * @return the scheme
-     */
-    public String getScheme()
-    {
-        return this.scheme;
-    }
-
-    /**
-     * @return the server
-     */
-    public String getServer()
-    {
-        return this.server;
-    }
-
-    /**
-     * @return the port
-     */
-    public String getPort()
-    {
-        return this.port;
-    }
-
-    /**
-     * @return the restRmPath
-     */
-    public String getRestRmPath()
-    {
-        return this.restRmPath;
-    }
 }

@@ -43,10 +43,11 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.impl.SiteImportPackageHandler;
+import org.alfresco.rest.api.model.Site;
+import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.model.RMSite;
 import org.alfresco.rm.rest.api.model.RMSiteCompliance;
-import org.alfresco.rm.rest.api.model.SiteUpdate;
 import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -259,6 +260,8 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         when(mockedSiteUpdate.getDescription()).thenReturn(RM_SITE_DESCRIPTION_AFTER_UPDATE);
         when(mockedSiteUpdate.getTitle()).thenReturn(RM_SITE_TITLE_AFTER_UPDATE);
         when(mockedSiteUpdate.getVisibility()).thenReturn(null);
+        when(mockedSiteUpdate.wasSet(Site.TITLE)).thenReturn(true);
+        when(mockedSiteUpdate.wasSet(Site.DESCRIPTION)).thenReturn(true);
 
         //mock Parameters
         Parameters mockedParameters = mock(Parameters.class);

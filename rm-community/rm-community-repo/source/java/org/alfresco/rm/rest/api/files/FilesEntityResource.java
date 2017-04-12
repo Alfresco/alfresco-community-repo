@@ -27,14 +27,21 @@
 
 package org.alfresco.rm.rest.api.files;
 
-import org.alfresco.rest.api.model.Node;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.rm.rest.api.Records;
-import org.alfresco.rm.rest.api.model.TargetContainer;
+import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
+import org.alfresco.rm.rest.api.model.Record;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -47,23 +54,70 @@ import org.springframework.beans.factory.InitializingBean;
 @EntityResource(name="files", title = "Files")
 public class FilesEntityResource implements InitializingBean
 {
-    private Records records;
+    private ApiNodesModelFactory nodesModelFactory;
+    private AuthenticationUtil authenticationUtil;
+    private FilePlanService filePlanService;
+    private FileFolderService fileFolderService;
+    private RecordService recordService;
 
-    public void setRecords(Records records)
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
-        this.records = records;
+        this.authenticationUtil = authenticationUtil;
+    }
+
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
+
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
+    {
+        this.nodesModelFactory = nodesModelFactory;
     }
 
     @Operation("declare")
     @WebApiDescription(title = "Declare as record", description="Declare a file as record.")
-    public Node declareAsRecord(String fileId, Void body, Parameters parameters, WithResponse withResponse)
+    public Record declareAsRecord(String fileId, Void body, Parameters parameters, WithResponse withResponse)
     {
-        return records.declareFileAsRecord(fileId, parameters);
+        // Get fileplan
+        NodeRef filePlan = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork()
+            {
+                return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+            }
+        });
+
+        // default false (if not provided)
+        boolean hideRecord = Boolean.valueOf(parameters.getParameter(Record.PARAM_HIDE_RECORD));
+
+        // Create the record
+        NodeRef file = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, fileId);
+        recordService.createRecord(filePlan, file, !hideRecord);
+
+        // Return record state
+        FileInfo info = fileFolderService.getFileInfo(file);
+        return nodesModelFactory.createRecord(info, parameters, null, false);
     }
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        ParameterCheck.mandatory("records", this.records);
+        ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
+        ParameterCheck.mandatory("authenticationUtil", authenticationUtil);
+        ParameterCheck.mandatory("filePlanService", filePlanService);
+        ParameterCheck.mandatory("fileFolderService", fileFolderService);
+        ParameterCheck.mandatory("recordService", recordService);
     }
 }

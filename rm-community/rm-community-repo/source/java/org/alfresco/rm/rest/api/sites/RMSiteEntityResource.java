@@ -31,13 +31,14 @@ import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.rest.api.model.Site;
+import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMSites;
 import org.alfresco.rm.rest.api.model.RMSite;
-import org.alfresco.rm.rest.api.model.SiteUpdate;
 
 /**
  * RM Site operations
@@ -46,7 +47,7 @@ import org.alfresco.rm.rest.api.model.SiteUpdate;
  * @since 2.6
  *
  */
-@EntityResource(name = "ig-sites", title = "IG Sites")
+@EntityResource(name = "gs-sites", title = "GS Sites")
 public class RMSiteEntityResource implements EntityResourceAction.Delete, EntityResourceAction.Create<RMSite>,
             EntityResourceAction.Update<RMSite>, EntityResourceAction.ReadById<RMSite>
 {
@@ -90,38 +91,7 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
             throw new InvalidParameterException("The Update is supported only for siteId = rm.");
         }
 
-        // Until REPO-110 is solved, we need to explicitly test for the presence of fields
-        // on the Site object that aren't valid SiteUpdate fields. Once REPO-110 is solved,
-        // the update method will take a SiteUpdate as a parameter rather than a Site
-        // and only the correct fields will be exposed. Any attempt to access illegal fields
-        // should then result in the framework returning a 400 automatically.
-        if (site.getId() != null)
-        {
-            throw new InvalidArgumentException("Site update does not support field: id");
-        }
-        if (site.getGuid() != null)
-        {
-            throw new InvalidArgumentException("Site update does not support field: guid");
-        }
-        if (site.getRole() != null)
-        {
-            throw new InvalidArgumentException("Site update does not support field: role");
-        }
-        if (site.getCompliance() != null)
-        {
-            throw new InvalidArgumentException("Site update does not support field: compliance");
-        }
-        if (site.getVisibility() != null)
-        {
-            throw new InvalidArgumentException("Site update does not support field: visibility");
-        }
-
-        // Bind valid fields to a SiteUpdate instance.
-        final String title = site.getTitle();
-        final String description = site.getDescription();
-        SiteUpdate update = new SiteUpdate(title, description, null);
-
-        return sites.updateRMSite(siteId, update, parameters);
+        return sites.updateRMSite(siteId, convert(site), parameters);
     }
 
     @Override
@@ -132,5 +102,51 @@ public class RMSiteEntityResource implements EntityResourceAction.Delete, Entity
             throw new InvalidParameterException("GET is supported only for siteId = rm.");
         }
         return sites.getRMSite(siteId);
+    }
+
+    protected SiteUpdate convert(RMSite site)
+    {
+        // Until REPO-110 is solved, we need to explicitly test for the presence of fields
+        // on the Site object that aren't valid SiteUpdate fields. Once REPO-110 is solved,
+        // the update method will take a SiteUpdate as a parameter rather than a Site
+        // and only the correct fields will be exposed. Any attempt to access illegal fields
+        // should then result in the framework returning a 400 automatically.
+        if (site.wasSet(Site.ID))
+        {
+            throw new InvalidArgumentException("Site update does not support field: id");
+        }
+        if (site.wasSet(Site.GUID))
+        {
+            throw new InvalidArgumentException("Site update does not support field: guid");
+        }
+        if (site.wasSet(Site.ROLE))
+        {
+            throw new InvalidArgumentException("Site update does not support field: role");
+        }
+        if (site.wasSet(Site.PRESET))
+        {
+            throw new InvalidArgumentException("Site update does not support field: preset");
+        }
+        if (site.wasSet(RMSite.COMPLIANCE))
+        {
+            throw new InvalidArgumentException("Site update does not support field: compliance");
+        }
+        if (site.wasSet(Site.VISIBILITY))
+        {
+            throw new InvalidArgumentException("Site update does not support field: visibility");
+        }
+
+        // Bind valid fields to a SiteUpdate instance.
+        SiteUpdate siteUpdate = new SiteUpdate();
+        if (site.wasSet(Site.TITLE))
+        {
+            siteUpdate.setTitle(site.getTitle());
+        }
+        if (site.wasSet(Site.DESCRIPTION))
+        {
+            siteUpdate.setDescription(site.getDescription());
+        }
+
+        return siteUpdate;
     }
 }

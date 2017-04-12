@@ -26,8 +26,14 @@
  */
 package org.alfresco.rest.rm.community.requests;
 
+import static lombok.AccessLevel.PRIVATE;
+import static lombok.AccessLevel.PROTECTED;
+
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.requests.ModelRequest;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Extends {@link ModelRequest} to set {@link RMRestWrapper}
@@ -37,22 +43,16 @@ import org.alfresco.rest.requests.ModelRequest;
  */
 public abstract class RMModelRequest extends ModelRequest<RMModelRequest>
 {
+    @Getter (value = PROTECTED)
+    @Setter (value = PRIVATE)
     private RMRestWrapper rmRestWrapper;
 
     /**
-     * @return the rmRestWrapper
-     */
-    public RMRestWrapper getRMRestWrapper()
-    {
-        return this.rmRestWrapper;
-    }
-
-    /**
-     * @param rmRestWrapper
+     * @param restWrapper
      */
     public RMModelRequest(RMRestWrapper rmRestWrapper)
     {
         super(rmRestWrapper.getRestWrapper());
-        this.rmRestWrapper = rmRestWrapper;
+        setRmRestWrapper(rmRestWrapper);
     }
 }

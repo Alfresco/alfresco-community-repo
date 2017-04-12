@@ -34,15 +34,17 @@ import org.alfresco.rest.model.RestHtmlResponse;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
-import org.alfresco.rest.rm.community.requests.igCoreAPI.RestIGCoreAPI;
+import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import lombok.Getter;
+
 /**
- * Extends {@link RestWrapper} in order to call IG APIs with our own properties
+ * Extends {@link RestWrapper} in order to call GS APIs with our own properties
  *
  * @author Tuna Aksoy
  * @since 2.6
@@ -54,12 +56,14 @@ public class RMRestWrapper
     /** The class that wraps the ReST APIs from core. */
     @Autowired
     private RestWrapper restWrapper;
+
     @Autowired
+    @Getter
     private RMRestProperties rmRestProperties;
 
-    public RestIGCoreAPI withIGCoreAPI()
+    public GSCoreAPI withGSCoreAPI()
     {
-        return new RestIGCoreAPI(this, rmRestProperties);
+        return new GSCoreAPI(this, getRmRestProperties());
     }
 
     /** Get the core class that wraps the ReST APIs. */
@@ -158,13 +162,5 @@ public class RMRestWrapper
     public RestHtmlResponse processHtmlResponse(RestRequest simpleRequest)
     {
         return restWrapper.processHtmlResponse(simpleRequest);
-    }
-
-    /**
-     * @return the rmRestProperties
-     */
-    public RMRestProperties getRmRestProperties()
-    {
-        return this.rmRestProperties;
     }
 }

@@ -27,31 +27,19 @@
 
 package org.alfresco.rm.rest.api.impl;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.site.SiteServiceException;
-import org.alfresco.rest.api.impl.SiteImportPackageHandler;
 import org.alfresco.rest.api.impl.SitesImpl;
 import org.alfresco.rest.api.model.Site;
-import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rm.rest.api.RMSites;
 import org.alfresco.rm.rest.api.model.RMSite;
 import org.alfresco.rm.rest.api.model.RMSiteCompliance;
-import org.alfresco.rm.rest.api.model.SiteUpdate;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.cmr.view.ImportPackageHandler;
-import org.alfresco.service.cmr.view.ImporterBinding;
-import org.alfresco.service.cmr.view.ImporterContentCache;
-import org.alfresco.service.cmr.view.ImporterProgress;
-import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -79,134 +67,19 @@ public class RMSitesImpl extends SitesImpl implements RMSites
         return new RMSite(site, compliance);
     }
 
-    /**
-     * TODO remove when upgrading to 5.2.N. We'll need to only extend the extended method createSite(Site) and use the siteService method that gets site type as parameter
-     */
     @Override
-    public Site createSite(Site site, Parameters parameters)
+    protected SiteInfo createSite(Site site)
     {
-        site = validateSite(site);
-
-        SiteInfo siteInfo = null;
-        try
-        {
-            siteInfo = siteService.createSite(RM_SITE_PRESET, RM_SITE_ID, site.getTitle(), site.getDescription(),
-                        SiteVisibility.PUBLIC, getRMSiteType((RMSite) site));
-        }
-        catch (SiteServiceException sse)
-        {
-            if (sse.getMsgId().equals("site_service.unable_to_create"))
-            {
-                throw new ConstraintViolatedException(sse.getMessage());
-            }
-            else
-            {
-                throw sse;
-            }
-        }
-
-        String siteId = siteInfo.getShortName();
-        NodeRef siteNodeRef = siteInfo.getNodeRef();
-
-        // import default/fixed preset Share surf config
-        importSite(siteId, siteNodeRef);
-
-        // pre-create doclib
-        siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
-
-        // default false (if not provided)
-        boolean skipAddToFavorites = Boolean.valueOf(parameters.getParameter(PARAM_SKIP_ADDTOFAVORITES));
-        if (skipAddToFavorites == false)
-        {
-            String personId = AuthenticationUtil.getFullyAuthenticatedUser();
-            favouritesService.addFavourite(personId, siteNodeRef); // ignore result
-        }
-
-        return getSite(siteInfo, true);
+        return siteService.createSite(RM_SITE_PRESET, RM_SITE_ID, site.getTitle(), site.getDescription(), SiteVisibility.PUBLIC, getRMSiteType((RMSite) site));
     }
 
     /**
-     * Copied from SitesImpl since we didn't had access to it.
-     *
-     * TODO to remove when upgrading to 5.2.N
-     *
-     * @param siteInfo
-     * @param includeRole
-     * @return
-     */
-    private Site getSite(SiteInfo siteInfo, boolean includeRole)
-    {
-        // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-        String siteId = siteInfo.getShortName();
-        String role = null;
-        if (includeRole)
-        {
-            role = getSiteRole(siteId);
-        }
-        return new Site(siteInfo, role);
-    }
-
-    /**
-     * Copied from SitesImpl since we didn't had access to it.
-     *
-     * TODO to be removed when upgrading to 5.2.N
-     *
-     * @param siteId
-     * @param siteNodeRef
-     */
-    private void importSite(final String siteId, final NodeRef siteNodeRef)
-    {
-        ImportPackageHandler acpHandler = new SiteImportPackageHandler(siteSurfConfig, siteId);
-        Location location = new Location(siteNodeRef);
-        ImporterBinding binding = new ImporterBinding()
-        {
-            @Override
-            public String getValue(String key)
-            {
-                if (key.equals("siteId"))
-                {
-                    return siteId;
-                }
-                return null;
-            }
-
-            @Override
-            public UUID_BINDING getUUIDBinding()
-            {
-                return UUID_BINDING.CREATE_NEW;
-            }
-
-            @Override
-            public QName[] getExcludedClasses()
-            {
-                return null;
-            }
-
-            @Override
-            public boolean allowReferenceWithinTransaction()
-            {
-                return false;
-            }
-
-            @Override
-            public ImporterContentCache getImportConentCache()
-            {
-                return null;
-            }
-        };
-        importerService.importView(acpHandler, location, binding, (ImporterProgress)null);
-    }
-
-    /**
-     * This method is copied from SitesImpl since we could not access it since it is private.
-     *
-     * TODO change this to protected and override validate method from core when upgrading to 5.2.N
-     *
      * Even if the method it will be protected in core, we still need to override since we don't need to check if the visibility is set since for RM site it is always PUBLIC.
      * We also don't need to generate the id from title, or to check the id, since the id is always rm.
      * @param site
      * @return
      */
+    @Override
     protected Site validateSite(Site site)
     {
         // site title - mandatory
@@ -267,46 +140,6 @@ public class RMSitesImpl extends SitesImpl implements RMSites
             compliance = RMSiteCompliance.DOD5015;
         }
         return compliance;
-    }
-
-    /**
-     * TODO copied from core 5.2.N since we don't have it in 5.2.a-EA version. To be removed when upgrading.
-     * @param siteId
-     * @param update
-     * @param parameters
-     * @return
-     */
-    public Site updateSite(String siteId, SiteUpdate update, Parameters parameters)
-    {
-        // Get the site by ID (aka short name)
-        SiteInfo siteInfo = validateSite(siteId);
-        if (siteInfo == null)
-        {
-            // site does not exist
-            throw new EntityNotFoundException(siteId);
-        }
-
-        // Bind any provided values to the site info, allowing for "partial" updates.
-        if (update.getTitle() != null)
-        {
-            siteInfo.setTitle(update.getTitle());
-        }
-        if (update.getDescription() != null)
-        {
-            siteInfo.setDescription(update.getDescription());
-        }
-        if (update.getVisibility() != null)
-        {
-            siteInfo.setVisibility(update.getVisibility());
-        }
-
-        // Validate the new details
-        validateSite(new Site(siteInfo, null));
-
-        // Perform the actual update.
-        siteService.updateSite(siteInfo);
-
-        return getSite(siteId);
     }
 
     /**

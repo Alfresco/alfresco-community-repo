@@ -57,6 +57,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+/**
+ * Methods to make API requests using v0 API on RM items (move, update and other actions) including adding users to RM roles
+ *
+ * @author Oana Nechiforescu
+ * @since 2.5
+ */
 @Component
 public class RMRolesAndActionsAPI extends BaseAPI
 {

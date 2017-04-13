@@ -49,7 +49,9 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeFileRecord;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRecordDeclaration;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRecordDeclaration;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -70,6 +72,7 @@ import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.util.PoliciesUtil;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.content.ContentServicePolicies;
@@ -251,6 +254,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /** policies */
     private ClassPolicyDelegate<BeforeFileRecord> beforeFileRecord;
     private ClassPolicyDelegate<OnFileRecord> onFileRecord;
+    private ClassPolicyDelegate<BeforeRecordDeclaration> beforeRecordDeclarationDelegate;
+    private ClassPolicyDelegate<OnRecordDeclaration> onRecordDeclarationDelegate;
 
     /**
      * @param identifierService identifier service
@@ -404,6 +409,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // bind policies
         beforeFileRecord = policyComponent.registerClassPolicy(BeforeFileRecord.class);
         onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);
+        beforeRecordDeclarationDelegate = policyComponent.registerClassPolicy(BeforeRecordDeclaration.class);
+        onRecordDeclarationDelegate = policyComponent.registerClassPolicy(OnRecordDeclaration.class);
     }
 
     /**
@@ -779,7 +786,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                             nodeRef.toString());
         }
 
-
+        invokeBeforeRecordDeclaration(nodeRef);
         // do the work of creating the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
@@ -872,6 +879,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 return null;
             }
         });
+        invokeOnRecordDeclaration(nodeRef);
     }
 
     /**
@@ -1716,5 +1724,33 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             appendIdentifierToName(nodeService, nodeRef);
         }
+    }
+    
+    /**
+     * Invoke invokeBeforeRecordDeclaration policy
+     *
+     * @param nodeRef       node reference
+     */
+    protected void invokeBeforeRecordDeclaration(NodeRef nodeRef)
+    {
+        // get qnames to invoke against
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
+        // execute policy for node type and aspects
+        BeforeRecordDeclaration policy = beforeRecordDeclarationDelegate.get(qnames);
+        policy.beforeRecordDeclaration(nodeRef);
+    }
+
+    /**
+     * Invoke invokeOnRecordDeclaration policy
+     *
+     * @param nodeRef       node reference
+     */
+    protected void invokeOnRecordDeclaration(NodeRef nodeRef)
+    {
+        // get qnames to invoke against
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
+        // execute policy for node type and aspects
+        OnRecordDeclaration policy = onRecordDeclarationDelegate.get(qnames);
+        policy.onRecordDeclaration(nodeRef);
     }
 }

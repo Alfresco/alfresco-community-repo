@@ -26,8 +26,10 @@
 package org.alfresco.repo.search.impl.querymodel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -90,6 +92,8 @@ public class QueryOptions
     
     private Long sinceTxId;
 
+    private Map<String, String> queryTemplates = new HashMap<String, String>();
+
     public static QueryOptions create(SearchParameters searchParameters)
     {
         QueryOptions options = new QueryOptions(searchParameters.getQuery(), null);
@@ -119,9 +123,17 @@ public class QueryOptions
         options.setExcludeTenantFilter(searchParameters.getExcludeTenantFilter());
         options.setQueryConsistency(searchParameters.getQueryConsistency());
         options.setSinceTxId(searchParameters.getSinceTxId());
+        for(String name : searchParameters.getQueryTemplates().keySet())
+        {
+        	String template = searchParameters.getQueryTemplates().get(name);
+        	options.addQueryTemplate(name, template);
+        }
         return options;
     }
-    /**
+    
+   
+    
+	/**
      * Create a CMISQueryOptions instance with the default options other than the query and store ref. The query will be
      * run using the locale returned by I18NUtil.getLocale()
      * 
@@ -505,6 +517,30 @@ public class QueryOptions
     {
         this.sinceTxId = sinceTxId;
     }
+    
+    /**
+     * Get the query templates
+     * 
+     * @return - the query templates
+     */
+    public Map<String, String> getQueryTemplates()
+    {
+        return queryTemplates;
+    }
+
+    /**
+     * Add/replace a query template Not all languages support query templates
+     * 
+     * @param name String
+     * @param template String
+     * @return any removed template or null
+     */
+    public String addQueryTemplate(String name, String template)
+    {
+        return queryTemplates.put(name, template);
+    }
+    
+    
 
     /**
      * @return SearchParameters
@@ -548,6 +584,12 @@ public class QueryOptions
         //searchParameters.addTextAttribute()
         searchParameters.setQueryConsistency(this.getQueryConsistency());
         searchParameters.setSinceTxId(getSinceTxId());
+        for(String name : getQueryTemplates().keySet())
+        {
+        	String template = getQueryTemplates().get(name);
+        	searchParameters.addQueryTemplate(name, template);
+        }
+        
         return searchParameters;
     }
     

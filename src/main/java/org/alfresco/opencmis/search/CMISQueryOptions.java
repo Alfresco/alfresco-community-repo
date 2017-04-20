@@ -82,6 +82,11 @@ public class CMISQueryOptions extends QueryOptions
         options.setBulkFetchEnabled(searchParameters.isBulkFetchEnabled());
         options.setExcludeTenantFilter(searchParameters.getExcludeTenantFilter());
         options.setSinceTxId(searchParameters.getSinceTxId());
+        for(String name : searchParameters.getQueryTemplates().keySet())
+        {
+        	String template = searchParameters.getQueryTemplates().get(name);
+        	options.addQueryTemplate(name, template);
+        }
         return options;
     }
     
@@ -188,6 +193,11 @@ public class CMISQueryOptions extends QueryOptions
         searchParameters.setBulkFetchEnabled(isBulkFetchEnabled());
         searchParameters.setQueryConsistency(this.getQueryConsistency());
         searchParameters.setSinceTxId(getSinceTxId());
+        for(String name : getQueryTemplates().keySet())
+        {
+        	String template = getQueryTemplates().get(name);
+        	searchParameters.addQueryTemplate(name, template);
+        }
         return searchParameters;
     }
 }

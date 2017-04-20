@@ -477,7 +477,7 @@ public class CMISQueryParser
             } else
             {
                 ftsConstraint = FTSQueryParser.buildFTS(ftsExpression, factory, functionEvaluationContext, selector,
-                        columnMap, mode, defaultFieldConnective, null, options.getDefaultFieldName(), FTSQueryParser.RerankPhase.SINGLE_PASS);
+                        columnMap, mode, defaultFieldConnective, options.getQueryTemplates(), options.getDefaultFieldName(), FTSQueryParser.RerankPhase.SINGLE_PASS);
             }
             ftsConstraint.setBoost(1000.0f);
             hasContains = true;

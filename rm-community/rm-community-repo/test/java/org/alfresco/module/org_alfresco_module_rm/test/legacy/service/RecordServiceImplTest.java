@@ -797,11 +797,13 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
             {
                 assertFalse(recordService.isRecord(dmDocument));
 
-                BehaviourDefinition<ClassBehaviourBinding> beforeRecordDeclarationBehaviour = policyComponent.bindClassBehaviour(RecordsManagementPolicies.BEFORE_RECORD_DECLARATION, ContentModel.TYPE_CONTENT,
+                BehaviourDefinition<ClassBehaviourBinding> beforeRecordDeclarationBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.BEFORE_RECORD_DECLARATION, ContentModel.TYPE_CONTENT,
                         new JavaBehaviour(RecordServiceImplTest.this, "beforeRecordDeclaration", NotificationFrequency.EVERY_EVENT));
-                BehaviourDefinition<ClassBehaviourBinding> onRecordDeclarationBehaviour = policyComponent.bindClassBehaviour(RecordsManagementPolicies.ON_RECORD_DECLARATION, ASPECT_RECORD,
+                BehaviourDefinition<ClassBehaviourBinding> onRecordDeclarationBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.ON_RECORD_DECLARATION, ASPECT_RECORD,
                         new JavaBehaviour(RecordServiceImplTest.this, "onRecordDeclaration", NotificationFrequency.EVERY_EVENT));
-                
+
                 assertFalse(beforeRecordDeclaration);
                 assertFalse(onRecordDeclaration);
 

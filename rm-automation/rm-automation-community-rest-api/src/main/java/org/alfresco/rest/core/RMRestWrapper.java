@@ -35,6 +35,7 @@ import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
+import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -100,6 +101,12 @@ public class RMRestWrapper
     public void processEmptyModel(RestRequest simpleRequest)
     {
         restWrapper.processEmptyModel(simpleRequest);
+    }
+
+    /** Get the most recently returned status object. */
+    public StatusModel getLastStatus()
+    {
+        return restWrapper.getLastStatus();
     }
 
     /** Get the most recently returned status code. */

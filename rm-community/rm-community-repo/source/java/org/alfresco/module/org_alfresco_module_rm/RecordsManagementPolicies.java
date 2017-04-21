@@ -129,7 +129,6 @@ public interface RecordsManagementPolicies
         void onFileRecord(NodeRef nodeRef);
     }
 
-
     /**
      * Before record declaration
      * @since 2.5

@@ -252,7 +252,6 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
      */
     public void testCreateRecord() throws Exception
     {
-        System.out.println("testCreateRecord start:" + dmDocument);
         // show that users without WRITE can not create a record from a document
         doTestInTransaction(new FailureTest(
                 "Can not create a record from a document if you do not have WRITE permissions.",
@@ -385,12 +384,10 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
                 return null;
             }
         }, dmConsumer);
-        System.out.println("testCreateRecord stop:" + dmDocument);
     }
 
     public void testCreateRecordNoLink() throws Exception
     {
-        System.out.println("testCreateRecordNoLink start:" + dmDocument);
         // show that users without WRITE can not create a record from a document
         doTestInTransaction(new FailureTest(
                 "Can not create a record from a document if you do not have WRITE permissions.",
@@ -409,7 +406,6 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
             public NodeRef run()
             {
                 NodeRef originalLocation = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                System.out.println("originalLocation:" + originalLocation);
 
                 //assertFalse(recordService.isRecord(dmDocument));
                 //assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
@@ -529,7 +525,6 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
                 assertNotNull(nodeService.getProperty(record, PROP_DATE_FILED));
             }
         });
-        System.out.println("dmDocument  after xtestFileUnfiledrecord:" + dmDocument);
     }
 
     public void testFileDirectlyFromCollab() throws Exception
@@ -540,7 +535,6 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
             @Override
             public NodeRef run() throws Exception
             {
-                System.out.println("testFileDirectlyFromCollab start:" + dmDocument);
                 assertNull(nodeService.getProperty(dmDocument, PROP_DATE_FILED));
 
                 fileFolderService.move(dmDocument, rmFolder, "record.txt");
@@ -557,7 +551,6 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
                 assertNotNull(nodeService.getProperty(record, PROP_DATE_FILED));
             }
         }, AuthenticationUtil.getSystemUserName());
-        System.out.println("testFileDirectlyFromCollab stop:" + dmDocument);
     }
 
     private void checkPermissions(String permission, AccessStatus filePlanExpected, AccessStatus unfiledExpected,

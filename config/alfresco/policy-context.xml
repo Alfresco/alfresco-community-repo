@@ -68,4 +68,8 @@
       <property name="jobLockService" ref="jobLockService"/>
     </bean>
     
+    <bean id="policyIgnoreUtil" class="org.alfresco.util.PolicyIgnoreUtil">
+      <property name="tenantService" ref="tenantService"/>
+      <property name="storesToIgnorePolicies" ref="storesToIgnorePolicies"/>
+    </bean>
 </beans>

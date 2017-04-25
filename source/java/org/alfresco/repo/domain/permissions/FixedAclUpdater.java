@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.domain.permissions;
 
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,8 +43,13 @@ import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsDisabled;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,6 +57,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PolicyIgnoreUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -82,6 +90,10 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
     private int maxItemBatchSize = 100;
     private int numThreads = 4;
+
+    private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;    
+    private PolicyComponent policyComponent;    
+    private PolicyIgnoreUtil policyIgnoreUtil;
 
     public void setNumThreads(int numThreads)
     {
@@ -123,6 +135,21 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
     {
         this.lockTimeToLive = lockTimeToLive;
         this.lockRefreshTime = lockTimeToLive / 2;
+    }    
+    
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    public void setPolicyIgnoreUtil(PolicyIgnoreUtil policyIgnoreUtil)
+    {
+        this.policyIgnoreUtil = policyIgnoreUtil;
+    }
+
+    public void init()
+    {
+        onInheritPermissionsDisabledDelegate = policyComponent.registerClassPolicy(PermissionServicePolicies.OnInheritPermissionsDisabled.class);
     }
 
     private class GetNodesWithAspects
@@ -249,6 +276,14 @@ public class FixedAclUpdater extends TransactionListenerAdapter implements Appli
 
                     nodeDAO.removeNodeAspects(nodeId, aspects);
                     nodeDAO.removeNodeProperties(nodeId, PENDING_FIX_ACL_ASPECT_PROPS);
+                    
+                    if (!policyIgnoreUtil.ignorePolicy(nodeRef))
+                    {
+                        boolean transformedToAsyncOperation = toBoolean((Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));
+
+                        OnInheritPermissionsDisabled onInheritPermissionsDisabledPolicy = onInheritPermissionsDisabledDelegate.get(ContentModel.TYPE_BASE);
+                        onInheritPermissionsDisabledPolicy.onInheritPermissionsDisabled(nodeRef, transformedToAsyncOperation);
+                    }
 
                     if (log.isDebugEnabled())
                     {

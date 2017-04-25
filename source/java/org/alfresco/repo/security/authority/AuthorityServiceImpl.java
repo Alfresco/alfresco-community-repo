@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.security.authority;
 
+import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
+
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,10 +37,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnAuthorityAddedToGroup;
+import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnAuthorityRemovedFromGroup;
+import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnGroupDeleted;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.security.person.UserNameMatcher;
 import org.alfresco.repo.tenant.TenantService;
@@ -79,6 +86,11 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private Set<String> allSet = Collections.singleton(PermissionService.ALL_AUTHORITIES);
     private Set<String> adminGroups = Collections.emptySet();
     private Set<String> guestGroups = Collections.emptySet();
+    
+    private ClassPolicyDelegate<OnAuthorityAddedToGroup> onAuthorityAddedToGroups;
+    private ClassPolicyDelegate<OnAuthorityRemovedFromGroup> onAuthorityRemovedFromGroup;
+    private ClassPolicyDelegate<OnGroupDeleted> onGroupDeletedDelegate;
+    private PolicyComponent policyComponent;
 
     public AuthorityServiceImpl()
     {
@@ -123,6 +135,18 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public void setGuestGroups(Set<String> guestGroups)
     {
         this.guestGroups = guestGroups;
+    }
+    
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+    
+    public void init()
+    {
+        onAuthorityAddedToGroups = policyComponent.registerClassPolicy(AuthorityServicePolicies.OnAuthorityAddedToGroup.class);
+        onAuthorityRemovedFromGroup = policyComponent.registerClassPolicy(AuthorityServicePolicies.OnAuthorityRemovedFromGroup.class);
+        onGroupDeletedDelegate = policyComponent.registerClassPolicy(AuthorityServicePolicies.OnGroupDeleted.class);
     }
 
     @Override
@@ -461,6 +485,12 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public void addAuthority(Collection<String> parentNames, String childName)
     {
         authorityDAO.addAuthority(parentNames, childName);
+        
+        OnAuthorityAddedToGroup policy = onAuthorityAddedToGroups.get(ContentModel.TYPE_AUTHORITY);
+        for (String parentGroup : parentNames)
+        {
+            policy.onAuthorityAddedToGroup(parentGroup, childName);
+        }
     }
     
     private boolean containsMatch(Set<String> names, String name)
@@ -538,6 +568,17 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         }
         authorityDAO.deleteAuthority(name);
         permissionServiceSPI.deletePermissions(name);
+        
+        if (isGroup(type))
+        {
+            OnGroupDeleted onGroupDelete = onGroupDeletedDelegate.get(ContentModel.TYPE_AUTHORITY);
+            onGroupDelete.onGroupDeleted(name, cascade);
+        }
+    }
+
+    private boolean isGroup(AuthorityType authorityType)
+    {
+        return AuthorityType.GROUP == authorityType || AuthorityType.EVERYONE == authorityType;
     }
     
     /**
@@ -584,6 +625,9 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     public void removeAuthority(String parentName, String childName)
     {
         authorityDAO.removeAuthority(parentName, childName);
+        
+        OnAuthorityRemovedFromGroup policy = onAuthorityRemovedFromGroup.get(ContentModel.TYPE_AUTHORITY);
+        policy.onAuthorityRemovedFromGroup(parentName, childName);
     }
     
     /**

@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRecordDeclaration;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRecordDeclaration;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -40,6 +43,10 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.BehaviourDefinition;
+import org.alfresco.repo.policy.ClassBehaviourBinding;
+import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -55,7 +62,7 @@ import org.alfresco.util.GUID;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RecordServiceImplTest extends BaseRMTestCase
+public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecordDeclaration, OnRecordDeclaration
 {
     /**
      * This is a user test
@@ -522,6 +529,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
     public void testFileDirectlyFromCollab() throws Exception
     {
+        
         doTestInTransaction(new Test<NodeRef>()
         {
             @Override
@@ -769,5 +777,62 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 nodeService.setProperty(nodeRef, property, GUID.generate());
             }
         }, user);
+    }
+
+    /**
+     * RM-4611 - integration test for policies for record declaration
+     * @see RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef,
+     *      org.alfresco.service.cmr.repository.NodeRef)
+     */
+    private boolean beforeRecordDeclaration = false;
+    private boolean onRecordDeclaration = false;
+
+    public void testPolicyNotificationForRecordDeclaration() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+
+            @Override
+            public Void run()
+            {
+                assertFalse(recordService.isRecord(dmDocument));
+
+                BehaviourDefinition<ClassBehaviourBinding> beforeRecordDeclarationBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.BEFORE_RECORD_DECLARATION, ContentModel.TYPE_CONTENT,
+                        new JavaBehaviour(RecordServiceImplTest.this, "beforeRecordDeclaration", NotificationFrequency.EVERY_EVENT));
+                BehaviourDefinition<ClassBehaviourBinding> onRecordDeclarationBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.ON_RECORD_DECLARATION, ASPECT_RECORD,
+                        new JavaBehaviour(RecordServiceImplTest.this, "onRecordDeclaration", NotificationFrequency.EVERY_EVENT));
+
+                assertFalse(beforeRecordDeclaration);
+                assertFalse(onRecordDeclaration);
+
+                recordService.createRecord(filePlan, dmDocument);
+
+                assertTrue(beforeRecordDeclaration);
+                assertTrue(onRecordDeclaration);
+
+                assertTrue(recordService.isRecord(dmDocument));
+
+                policyComponent.removeClassDefinition(beforeRecordDeclarationBehaviour);
+                policyComponent.removeClassDefinition(onRecordDeclarationBehaviour);
+
+                return null;
+            }
+        }, dmCollaborator);
+    }
+
+    @Override
+    public void beforeRecordDeclaration(NodeRef nodeRef)
+    {
+        assertEquals(nodeRef, dmDocument);
+        beforeRecordDeclaration = true;
+    }
+
+    @Override
+    public void onRecordDeclaration(NodeRef nodeRef)
+    {
+        assertEquals(nodeRef, dmDocument);
+        onRecordDeclaration = true;
     }
 }

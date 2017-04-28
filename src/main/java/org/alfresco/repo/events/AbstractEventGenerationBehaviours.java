@@ -13,9 +13,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourDefinition;
 import org.alfresco.repo.policy.ClassBehaviourBinding;
+import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -82,4 +85,36 @@ public abstract class AbstractEventGenerationBehaviours
 	{
 		return includeEventTypes.contains(eventType);
 	}
+	
+
+    /**
+     * Bind a class policy to a JavaBehaviour if a specific event type is enabled
+     * 
+     * @param policyName the policy to implement or in other words the one we bind to the JavaBehaviour
+     * @param eventTypeToCheck implement the policy only if this event type is enabled
+     */
+    protected void bindClassPolicy(QName policyName, String eventTypeToCheck)
+    {
+        if(eventTypeToCheck != null && !includeEventType(eventTypeToCheck))
+        {
+            return;
+        }
+        
+        BehaviourDefinition<ClassBehaviourBinding> binding =
+                this.policyComponent.bindClassBehaviour(
+                        policyName,
+                        ContentModel.TYPE_BASE,
+                        new JavaBehaviour(this, policyName.getLocalName()));
+        addBehaviour(binding);
+    }
+    
+    /**
+     * Bind a class policy to a JavaBehaviour.
+     * 
+     * @param policyName the policy to implement or in other words the one we bind to the JavaBehaviour
+     */
+    protected void bindClassPolicy(QName policyName)
+    {
+        bindClassPolicy(policyName, null);
+    }
 }

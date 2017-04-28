@@ -14,6 +14,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.events.types.*;
+import org.alfresco.events.types.authority.AuthorityAddedToGroupEvent;
+import org.alfresco.events.types.authority.AuthorityRemovedFromGroupEvent;
+import org.alfresco.events.types.authority.GroupDeletedEvent;
+import org.alfresco.events.types.permission.InheritPermissionsDisabledEvent;
+import org.alfresco.events.types.permission.InheritPermissionsEnabledEvent;
+import org.alfresco.events.types.permission.LocalPermissionGrantedEvent;
+import org.alfresco.events.types.permission.LocalPermissionRevokedEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -25,6 +32,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -603,5 +611,181 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
                     properties);
             sendEvent(event);
         }
+    }
+
+    @Override
+    public void authorityRemovedFromGroup(String parentGroup, String childAuthority)
+    {        
+        if (includeEventType(AuthorityRemovedFromGroupEvent.EVENT_TYPE))
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            long timestamp = System.currentTimeMillis();
+            Client client = getAlfrescoClient(ClientUtil.from(FileFilterMode.getClient()));
+            
+            Event event = AuthorityRemovedFromGroupEvent.builder().parentGroup(parentGroup).authorityName(childAuthority)
+                    .seqNumber(nextSequenceNumber()).txnId(txnId).networkId(networkId).timestamp(timestamp).username(username).client(client).build();
+            
+            sendEvent(event);
+        }
+    }
+
+    @Override
+    public void authorityAddedToGroup(String parentGroup, String childAuthority)
+    {
+        if (includeEventType(AuthorityAddedToGroupEvent.EVENT_TYPE))
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            long timestamp = System.currentTimeMillis();
+            Client client = getAlfrescoClient(ClientUtil.from(FileFilterMode.getClient()));
+            
+            Event event = AuthorityAddedToGroupEvent.builder().parentGroup(parentGroup).authorityName(childAuthority).seqNumber(nextSequenceNumber())
+                    .txnId(txnId).networkId(networkId).timestamp(timestamp).username(username).client(client).build();
+                    
+            sendEvent(event);
+        }
+    }
+    
+    @Override
+    public void groupDeleted(String groupName, boolean cascade)
+    {
+        if (includeEventType(GroupDeletedEvent.EVENT_TYPE))
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            long timestamp = System.currentTimeMillis();
+            Client client = getAlfrescoClient(ClientUtil.from(FileFilterMode.getClient()));
+            
+            Event event = GroupDeletedEvent.builder().authorityName(groupName).cascade(cascade).seqNumber(nextSequenceNumber()).txnId(txnId)
+                    .networkId(networkId).timestamp(timestamp).username(username).client(client).build();
+            
+            sendEvent(event);
+        }        
+    }
+
+    @Override
+    public void inheritPermissionsEnabled(NodeRef nodeRef)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, InheritPermissionsEnabledEvent.EVENT_TYPE);
+        if (nodeInfo.checkNodeInfo())
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+            String name = nodeInfo.getName();
+            String nodeId = nodeInfo.getNodeId();
+            String siteId = nodeInfo.getSiteId();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            List<String> nodePaths = nodeInfo.getPaths();
+            List<List<String>> pathNodeIds = nodeInfo.getParentNodeIds();
+            long timestamp = System.currentTimeMillis();
+            Long modificationTime = nodeInfo.getModificationTimestamp();
+            String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
+            Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
+
+            Set<String> aspects = nodeInfo.getAspectsAsStrings();
+            Map<String, Serializable> properties = nodeInfo.getProperties();
+
+            Event event = InheritPermissionsEnabledEvent.builder().seqNumber(nextSequenceNumber()).name(name).txnId(txnId).timestamp(timestamp)
+                    .networkId(networkId).siteId(siteId).nodeId(nodeId).nodeType(nodeType).paths(nodePaths).parentNodeIds(pathNodeIds)
+                    .username(username).nodeModificationTime(modificationTime).client(alfrescoClient).aspects(aspects).nodeProperties(properties)
+                    .build();         
+                   
+            sendEvent(event);
+        }
+    }
+
+    @Override
+    public void inheritPermissionsDisabled(NodeRef nodeRef, boolean async)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, InheritPermissionsDisabledEvent.EVENT_TYPE);
+        if (nodeInfo.checkNodeInfo())
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+            String name = nodeInfo.getName();
+            String nodeId = nodeInfo.getNodeId();
+            String siteId = nodeInfo.getSiteId();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            List<String> nodePaths = nodeInfo.getPaths();
+            List<List<String>> pathNodeIds = nodeInfo.getParentNodeIds();
+            long timestamp = System.currentTimeMillis();
+            Long modificationTime = nodeInfo.getModificationTimestamp();
+            String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
+            Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
+
+            Set<String> aspects = nodeInfo.getAspectsAsStrings();
+            Map<String, Serializable> properties = nodeInfo.getProperties();
+
+            Event event = InheritPermissionsDisabledEvent.builder().async(async).seqNumber(nextSequenceNumber()).name(name).txnId(txnId)
+                    .timestamp(timestamp).networkId(networkId).siteId(siteId).nodeId(nodeId).nodeType(nodeType).paths(nodePaths)
+                    .parentNodeIds(pathNodeIds).username(username).nodeModificationTime(modificationTime).client(alfrescoClient).aspects(aspects)
+                    .nodeProperties(properties).build();      
+            sendEvent(event);
+        }
+    }
+
+    @Override
+    public void revokeLocalPermissions(NodeRef nodeRef, String authority, String permission)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, LocalPermissionRevokedEvent.EVENT_TYPE);
+        if (nodeInfo.checkNodeInfo())
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+            String name = nodeInfo.getName();
+            String nodeId = nodeInfo.getNodeId();
+            String siteId = nodeInfo.getSiteId();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            List<String> nodePaths = nodeInfo.getPaths();
+            List<List<String>> pathNodeIds = nodeInfo.getParentNodeIds();
+            long timestamp = System.currentTimeMillis();
+            Long modificationTime = nodeInfo.getModificationTimestamp();
+            String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
+            Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
+
+            Set<String> aspects = nodeInfo.getAspectsAsStrings();
+            Map<String, Serializable> properties = nodeInfo.getProperties();
+
+            Event event = LocalPermissionRevokedEvent.builder().authority(authority).permission(permission).seqNumber(nextSequenceNumber()).name(name)
+                    .txnId(txnId).timestamp(timestamp).networkId(networkId).siteId(siteId).nodeId(nodeId).nodeType(nodeType).paths(nodePaths).parentNodeIds(pathNodeIds)
+                    .username(username).nodeModificationTime(modificationTime).client(alfrescoClient).aspects(aspects).nodeProperties(properties).build();                  
+            sendEvent(event);
+        }
+        
+    }
+
+    @Override
+    public void grantLocalPermission(NodeRef nodeRef, String authority, String permission)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, LocalPermissionGrantedEvent.EVENT_TYPE);
+        if (nodeInfo.checkNodeInfo())
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+            String name = nodeInfo.getName();
+            String nodeId = nodeInfo.getNodeId();
+            String siteId = nodeInfo.getSiteId();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            List<String> nodePaths = nodeInfo.getPaths();
+            List<List<String>> pathNodeIds = nodeInfo.getParentNodeIds();
+            long timestamp = System.currentTimeMillis();
+            Long modificationTime = nodeInfo.getModificationTimestamp();
+            String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
+            Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
+
+            Set<String> aspects = nodeInfo.getAspectsAsStrings();
+            Map<String, Serializable> properties = nodeInfo.getProperties();
+
+            LocalPermissionGrantedEvent event = LocalPermissionGrantedEvent.builder().authority(authority).permission(permission).seqNumber(nextSequenceNumber())
+                    .name(name).txnId(txnId).timestamp(timestamp).networkId(networkId).siteId(siteId).nodeId(nodeId).nodeType(nodeType)
+                    .paths(nodePaths).parentNodeIds(pathNodeIds).username(username).nodeModificationTime(modificationTime).client(alfrescoClient)
+                    .aspects(aspects).nodeProperties(properties).build();
+            sendEvent(event);
+        }
+        
     }
 }

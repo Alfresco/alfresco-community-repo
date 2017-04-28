@@ -7,6 +7,8 @@
  */
 package org.alfresco.repo.events;
 
+import static org.alfresco.repo.site.SiteModel.TYPE_SITE;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,22 +27,30 @@ import org.alfresco.events.types.NodeMovedEvent;
 import org.alfresco.events.types.NodeRemovedEvent;
 import org.alfresco.events.types.NodeUpdatedEvent;
 import org.alfresco.events.types.Property;
+import org.alfresco.events.types.authority.AuthorityAddedToGroupEvent;
+import org.alfresco.events.types.authority.AuthorityRemovedFromGroupEvent;
+import org.alfresco.events.types.authority.GroupDeletedEvent;
+import org.alfresco.events.types.permission.InheritPermissionsDisabledEvent;
+import org.alfresco.events.types.permission.InheritPermissionsEnabledEvent;
+import org.alfresco.events.types.permission.LocalPermissionGrantedEvent;
+import org.alfresco.events.types.permission.LocalPermissionRevokedEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.BehaviourDefinition;
-import org.alfresco.repo.policy.ClassBehaviourBinding;
-import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.security.authority.AuthorityServicePolicies;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.MLText;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-
-import static org.alfresco.repo.site.SiteModel.TYPE_SITE;
 
 /**
  * 
@@ -59,7 +69,14 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         CheckOutCheckInServicePolicies.BeforeCheckOut,
         CheckOutCheckInServicePolicies.OnCheckOut,
         CheckOutCheckInServicePolicies.OnCheckIn,
-        CheckOutCheckInServicePolicies.OnCancelCheckOut
+        CheckOutCheckInServicePolicies.OnCancelCheckOut,
+        PermissionServicePolicies.OnGrantLocalPermission,
+        PermissionServicePolicies.OnRevokeLocalPermission,
+        PermissionServicePolicies.OnInheritPermissionsDisabled,
+        PermissionServicePolicies.OnInheritPermissionsEnabled,
+        AuthorityServicePolicies.OnAuthorityAddedToGroup,
+        AuthorityServicePolicies.OnAuthorityRemovedFromGroup,
+        AuthorityServicePolicies.OnGroupDeleted
 {
     protected EventsService eventsService;
     protected DictionaryService dictionaryService;
@@ -88,101 +105,41 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
 
     public void init()
     {
-        if(includeEventType(NodeContentPutEvent.EVENT_TYPE))
-        {
-            BehaviourDefinition<ClassBehaviourBinding> binding =
-                    this.policyComponent.bindClassBehaviour(
-                            ContentServicePolicies.OnContentPropertyUpdatePolicy.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "onContentPropertyUpdate"));
-            addBehaviour(binding);
-        }
+        bindClassPolicy(ContentServicePolicies.OnContentPropertyUpdatePolicy.QNAME, NodeContentPutEvent.EVENT_TYPE);
 
-        if(includeEventType(NodeContentGetEvent.EVENT_TYPE))
-        {
-            BehaviourDefinition<ClassBehaviourBinding> binding =
-                    this.policyComponent.bindClassBehaviour(
-                            ContentServicePolicies.OnContentReadPolicy.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "onContentRead"));
-            addBehaviour(binding);
-        }
+        bindClassPolicy(ContentServicePolicies.OnContentReadPolicy.QNAME, NodeContentGetEvent.EVENT_TYPE);
 
-        if(includeEventType(NodeAddedEvent.EVENT_TYPE))
-        {
-            BehaviourDefinition<ClassBehaviourBinding> binding =
-                    this.policyComponent.bindClassBehaviour(
-                            NodeServicePolicies.OnCreateNodePolicy.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "onCreateNode"));
-            addBehaviour(binding);
-        }
+        bindClassPolicy(NodeServicePolicies.OnCreateNodePolicy.QNAME, NodeAddedEvent.EVENT_TYPE);
 
-        if(includeEventType(NodeRemovedEvent.EVENT_TYPE))
-        {
-            // on before delete so that we have the relevant node details available
-            BehaviourDefinition<ClassBehaviourBinding> binding =
-                    this.policyComponent.bindClassBehaviour(
-                            NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "beforeDeleteNode"));
-            addBehaviour(binding);
-        }
+        // on before delete so that we have the relevant node details available
+        bindClassPolicy(NodeServicePolicies.BeforeDeleteNodePolicy.QNAME, NodeRemovedEvent.EVENT_TYPE);
 
-        if(includeEventType(NodeMovedEvent.EVENT_TYPE))
-        {
-            BehaviourDefinition<ClassBehaviourBinding> binding =
-                    this.policyComponent.bindClassBehaviour(
-                            NodeServicePolicies.OnMoveNodePolicy.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "onMoveNode"));
-            addBehaviour(binding);
-        }
+        bindClassPolicy(NodeServicePolicies.OnMoveNodePolicy.QNAME, NodeMovedEvent.EVENT_TYPE);
 
-        if(includeEventType(NodeCheckedOutEvent.EVENT_TYPE))
-        {
-            BehaviourDefinition<ClassBehaviourBinding> binding =
-                    this.policyComponent.bindClassBehaviour(
-                            CheckOutCheckInServicePolicies.BeforeCheckOut.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "beforeCheckOut"));
-            addBehaviour(binding);
+        bindClassPolicy(CheckOutCheckInServicePolicies.BeforeCheckOut.QNAME, NodeCheckedOutEvent.EVENT_TYPE);
+        
+        bindClassPolicy(CheckOutCheckInServicePolicies.OnCheckOut.QNAME, NodeCheckedOutEvent.EVENT_TYPE);
 
-            binding =
-                    this.policyComponent.bindClassBehaviour(
-                            CheckOutCheckInServicePolicies.OnCheckOut.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "onCheckOut"));
-            addBehaviour(binding);
-        }
+        bindClassPolicy(CheckOutCheckInServicePolicies.OnCheckIn.QNAME, NodeCheckedInEvent.EVENT_TYPE);
 
-        if(includeEventType(NodeCheckedInEvent.EVENT_TYPE))
-        {
-            BehaviourDefinition<ClassBehaviourBinding> binding =
-                    this.policyComponent.bindClassBehaviour(
-                            CheckOutCheckInServicePolicies.OnCheckIn.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "onCheckIn"));
-            addBehaviour(binding);
-        }
+        bindClassPolicy(CheckOutCheckInServicePolicies.OnCancelCheckOut.QNAME, NodeCheckOutCancelledEvent.EVENT_TYPE);
 
-        if(includeEventType(NodeCheckOutCancelledEvent.EVENT_TYPE))
-        {
-            BehaviourDefinition<ClassBehaviourBinding> binding =
-                    this.policyComponent.bindClassBehaviour(
-                            CheckOutCheckInServicePolicies.OnCancelCheckOut.QNAME,
-                            ContentModel.TYPE_BASE,
-                            new JavaBehaviour(this, "onCancelCheckOut"));
-            addBehaviour(binding);
-        }
-
-        BehaviourDefinition<ClassBehaviourBinding> binding =
-                this.policyComponent.bindClassBehaviour(
-                        NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
-                        ContentModel.TYPE_BASE,
-                        new JavaBehaviour(this, "onUpdateProperties"));
-        addBehaviour(binding);
-    }
+        bindClassPolicy(NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME);
+        
+        bindClassPolicy(PermissionServicePolicies.OnInheritPermissionsEnabled.QNAME, InheritPermissionsEnabledEvent.EVENT_TYPE);
+        
+        bindClassPolicy(PermissionServicePolicies.OnInheritPermissionsDisabled.QNAME, InheritPermissionsDisabledEvent.EVENT_TYPE);
+        
+        bindClassPolicy(PermissionServicePolicies.OnGrantLocalPermission.QNAME, LocalPermissionGrantedEvent.EVENT_TYPE);
+        
+        bindClassPolicy(PermissionServicePolicies.OnRevokeLocalPermission.QNAME, LocalPermissionRevokedEvent.EVENT_TYPE);
+        
+        bindClassPolicy(AuthorityServicePolicies.OnAuthorityAddedToGroup.QNAME, AuthorityAddedToGroupEvent.EVENT_TYPE);
+        
+        bindClassPolicy(AuthorityServicePolicies.OnAuthorityRemovedFromGroup.QNAME, AuthorityRemovedFromGroupEvent.EVENT_TYPE);
+        
+        bindClassPolicy(AuthorityServicePolicies.OnGroupDeleted.QNAME, GroupDeletedEvent.EVENT_TYPE);
+	}
 
     private DataType getPropertyType(QName propertyName)
     {
@@ -420,5 +377,47 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
             QName destinationAssocTypeQName, 
             QName destinationAssocQName)
     {
+    }
+
+    @Override
+    public void onAuthorityRemovedFromGroup(String parentGroup, String childAuthority)
+    {
+        eventsService.authorityRemovedFromGroup(parentGroup, childAuthority);
+    }
+
+    @Override
+    public void onAuthorityAddedToGroup(String parentGroup, String childAuthority)
+    {
+        eventsService.authorityAddedToGroup(parentGroup, childAuthority);
+    }
+
+    @Override
+    public void onInheritPermissionsEnabled(NodeRef nodeRef)
+    {
+        eventsService.inheritPermissionsEnabled(nodeRef);
+    }
+
+    @Override
+    public void onInheritPermissionsDisabled(NodeRef nodeRef, boolean async)
+    {
+        eventsService.inheritPermissionsDisabled(nodeRef, async);
+    }
+
+    @Override
+    public void onRevokeLocalPermission(NodeRef nodeRef, String authority, String permission)
+    {
+        eventsService.revokeLocalPermissions(nodeRef, authority, permission);
+    }
+
+    @Override
+    public void onGrantLocalPermission(NodeRef nodeRef, String authority, String permission)
+    {
+        eventsService.grantLocalPermission(nodeRef, authority, permission);
+    }
+
+    @Override
+    public void onGroupDeleted(String groupName, boolean cascade)
+    {
+        eventsService.groupDeleted(groupName, cascade);
     }
 }

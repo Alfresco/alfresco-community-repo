@@ -134,4 +134,61 @@ public interface EventsService
 	void nodeCheckOutCancelled(NodeRef nodeRef);
 
 	void nodeCheckedIn(NodeRef nodeRef);
+
+    /**
+     * Generate an authority removed from group event
+     * 
+     * @param parentGroup the group the authority is removed from
+     * @param childAuthority the authority which leaves a certain group
+     */
+    void authorityRemovedFromGroup(String parentGroup, String childAuthority);
+
+    /**
+     * Generate an authority added to a group
+     * 
+     * @param parentGroup the group the authority is added to
+     * @param childAuthority the authority which is added to the group
+     */
+    void authorityAddedToGroup(String parentGroup, String childAuthority);
+
+    /**
+     * Generate an inherit permissions enabled event
+     * 
+     * @param nodeRef the node which has the permission inheritance enabled
+     */
+    void inheritPermissionsEnabled(NodeRef nodeRef);
+
+    /** 
+     * Generate an inherit permissions disabled event
+     * 
+     * @param nodeRef the node which has the permission inheritance disabled
+     * @param async whether the disabling is done asynchronously or not
+     */
+    void inheritPermissionsDisabled(NodeRef nodeRef, boolean async);
+
+    /**
+     * Generate a revoke local permission event
+     * 
+     * @param nodeRef the node on which certain local permissions are revoked
+     * @param authority the authority which has the permissions revoked
+     * @param permission the permissions which are revoked
+     */
+    void revokeLocalPermissions(NodeRef nodeRef, String authority, String permission);
+
+    /**
+     * Generate a grant local permission event
+     * 
+     * @param nodeRef the node to which certain local permissions are granted
+     * @param authority the authority which has the permissions granted
+     * @param permission the permissions which are granted
+     */
+    void grantLocalPermission(NodeRef nodeRef, String authority, String permission);
+
+    /**
+     * Generate a group deleted event
+     * 
+     * @param groupName the group being deleted
+     * @param cascade whether it's a cascading delete or not
+     */
+    void groupDeleted(String groupName, boolean cascade);
 }

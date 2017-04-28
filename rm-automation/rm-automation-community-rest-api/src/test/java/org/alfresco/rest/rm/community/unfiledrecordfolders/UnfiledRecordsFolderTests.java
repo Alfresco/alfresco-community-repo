@@ -452,7 +452,7 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
         }
 
         // List children from API
-        UnfiledContainerChildCollection apiChildren = (UnfiledContainerChildCollection) unfiledRecordFoldersAPI.getUnfiledRecordFolderChildren(containerId).assertThat().entriesListIsNotEmpty();
+        UnfiledContainerChildCollection apiChildren = (UnfiledContainerChildCollection) unfiledRecordFoldersAPI.getUnfiledRecordFolderChildren(containerId,"include=properties").assertThat().entriesListIsNotEmpty();
 
         // Check status code
         assertStatusCode(OK);
@@ -484,7 +484,11 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
                 assertFalse(record.getIsUnfiledRecordFolder());
 
                 //check the record name
-                assertTrue(record.getName().contains(createdComponent.getName()));
+                assertTrue(record.getName().equals(createdComponent.getName()),
+                            "The record name "+ record.getName()+" is not equal with the record name returned when creating the record " + createdComponent
+                                        .getName());
+
+                assertTrue(record.getName().equals(record.getProperties().getIdentifier()));
                 assertTrue(createdComponent.getName().contains(createdComponent.getProperties().getIdentifier()));
                 assertEquals(createdComponent.getNodeType(), record.getNodeType());
 

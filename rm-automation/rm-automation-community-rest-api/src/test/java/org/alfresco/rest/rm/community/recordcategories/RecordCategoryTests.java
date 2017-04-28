@@ -67,7 +67,6 @@ import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.utility.report.Bug;
-import org.testng.AssertJUnit;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -162,6 +161,7 @@ public class RecordCategoryTests extends BaseRMRestTest
         // Create the root record category
         RecordCategory rootRecordCategory = createRootCategory(categoryName, categoryTitle);
 
+        int totalEntries= getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getPagination().getTotalItems();
         // Delete the record category
         RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
         String recordCategoryId = rootRecordCategory.getId();
@@ -173,6 +173,9 @@ public class RecordCategoryTests extends BaseRMRestTest
         // Deleted component should no longer be retrievable
         recordCategoryAPI.getRecordCategory(recordCategoryId);
         assertStatusCode(NOT_FOUND);
+        //check the number of entries after delete
+        int totalEntriesAfterDelete = getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getPagination().getTotalItems();
+        assertEquals(totalEntriesAfterDelete,(totalEntries-1));
     }
 
     /**
@@ -195,7 +198,7 @@ public class RecordCategoryTests extends BaseRMRestTest
         recordCategoryAPI.deleteRecordCategory(nodeId);
 
         // Verify the status code
-       assertStatusCode(BAD_REQUEST);
+        assertStatusCode(BAD_REQUEST);
 
     }
 
@@ -270,18 +273,18 @@ public class RecordCategoryTests extends BaseRMRestTest
         assertStatusCode(CREATED);
 
         // Check record folder has been created within the record category
-        AssertJUnit.assertEquals(rootRecordCategory.getId(), recordFolder.getParentId());
+        assertEquals(rootRecordCategory.getId(), recordFolder.getParentId());
 
         // Verify the returned values for the record folder
         assertFalse(recordFolder.getIsRecordCategory());
-        AssertJUnit.assertTrue(recordFolder.getIsRecordFolder());
-        AssertJUnit.assertEquals(recordFolder.getName(), RECORD_FOLDER_NAME);
-        AssertJUnit.assertEquals(recordFolder.getNodeType(), RECORD_FOLDER_TYPE);
-        AssertJUnit.assertEquals(recordFolder.getCreatedByUser().getId(), getAdminUser().getUsername());
+        assertTrue(recordFolder.getIsRecordFolder());
+        assertEquals(recordFolder.getName(), RECORD_FOLDER_NAME);
+        assertEquals(recordFolder.getNodeType(), RECORD_FOLDER_TYPE);
+        assertEquals(recordFolder.getCreatedByUser().getId(), getAdminUser().getUsername());
 
         // Verify the returned record folder properties
         RecordCategoryChildProperties folderProperties = recordFolder.getProperties();
-        AssertJUnit.assertEquals(folderProperties.getTitle(), TITLE_PREFIX + RECORD_FOLDER_NAME);
+        assertEquals(folderProperties.getTitle(), TITLE_PREFIX + RECORD_FOLDER_NAME);
         assertNotNull(folderProperties.getIdentifier());
     }
     /**
@@ -454,7 +457,7 @@ public class RecordCategoryTests extends BaseRMRestTest
                         assertEquals(recordCategoryChild.getParentId(), rootRecordCategory.getId());
 
                         // Boolean properties related to node type
-                        AssertJUnit.assertTrue(recordCategoryChild.getIsRecordFolder());
+                        assertTrue(recordCategoryChild.getIsRecordFolder());
                         assertFalse(recordCategoryChild.getIsRecordCategory());
 
                         assertEquals(createdComponent.getName(), recordCategoryChild.getName());

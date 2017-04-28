@@ -108,7 +108,7 @@ public class UnfiledContainerAPI extends RMModelRequest
     }
 
     /**
-     * see {@link #getRootRecordCategories(String, String)}
+     * see {@link #getUnfiledContainerChildren(String)} (String, String)}
      */
     public UnfiledContainerChildCollection getUnfiledContainerChildren(String unfiledContainerId)
     {

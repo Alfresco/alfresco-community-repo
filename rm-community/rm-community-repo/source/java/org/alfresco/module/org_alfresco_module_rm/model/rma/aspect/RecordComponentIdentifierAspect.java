@@ -47,7 +47,6 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.attributes.AttributeService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -65,7 +64,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                                              implements NodeServicePolicies.OnUpdatePropertiesPolicy,
                                                         NodeServicePolicies.BeforeDeleteNodePolicy,
-                                                        NodeServicePolicies.OnAddAspectPolicy,
                                                         CopyServicePolicies.OnCopyCompletePolicy
 {
     /** I18N */
@@ -129,7 +127,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                 if (newIdValue != null)
                 {
                     String oldIdValue = (String)before.get(PROP_IDENTIFIER);
-                    if (oldIdValue != null && !oldIdValue.equals(newIdValue) && !isRecordIdentifierEditable(nodeRef))
+                    if (oldIdValue != null && !oldIdValue.equals(newIdValue))
                     {
                         throw new IntegrityException(I18NUtil.getMessage(MSG_SET_ID, nodeRef.toString()), null);
                     }
@@ -140,17 +138,6 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * Utility method that checks if a record's identifier is temporarily editable
-     * @param record the record to check
-     * @return true if it is editable false otherwise
-     */
-    private boolean isRecordIdentifierEditable(NodeRef record)
-    {
-        Boolean isEditableProperty = (Boolean)nodeService.getProperty(record, RecordsManagementModel.PROP_ID_IS_TEMPORARILY_EDITABLE);
-        return isEditableProperty == null ? false : isEditableProperty;
     }
 
     /**
@@ -252,28 +239,4 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
         }
     }
 
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    @Override
-    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
-    {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                /*
-                 * When creating a new record the identifier is writable to allow the upload in multiple steps.
-                 * On transaction commit make the identifier read only (remove the editable aspect).
-                 */
-                if(nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, aspectTypeQName))
-                {
-                    nodeService.setProperty(nodeRef, RecordsManagementModel.PROP_ID_IS_TEMPORARILY_EDITABLE, false);
-                }
-                return null;
-            }
-        });
-    }
 }

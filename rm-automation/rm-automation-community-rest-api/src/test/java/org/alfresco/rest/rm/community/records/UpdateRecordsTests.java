@@ -26,7 +26,11 @@
  */
 package org.alfresco.rest.rm.community.records;
 
+import static org.alfresco.rest.rm.community.base.TestData.NONELECTRONIC_RECORD_NAME;
+import static org.alfresco.rest.rm.community.base.TestData.RECORD_FOLDER_NAME;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
@@ -39,16 +43,23 @@ import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
 import org.alfresco.rest.rm.community.model.user.UserPermissions;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
+import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMUserAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
@@ -59,6 +70,7 @@ import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -326,6 +338,95 @@ public class UpdateRecordsTests extends BaseRMRestTest
     {
         return MODIFIED_PREFIX + originalValue;
     }
+    /**
+     * <pre>
+     * Given a created record
+     * When I try to update the record aspects with an empty list
+     * Then it fails
+     * </pre>
+     * @throws Exception
+     */
+    @Test(description = "Cannot remove mandatory aspects from record")
+    @AlfrescoTest(jira = "RM-4926")
+    public void electronicRecordMandatoryAspectsCannotBeRemoved() throws Exception
+    {
+        // Get the recordsAPI
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
 
+        RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
 
+        // Create an electronic record
+        Record recordModel = createElectronicRecordModel();
+        String recordId = recordFolderAPI.createRecord(recordModel, recordFolder.getId(), getFile(IMAGE_FILE)).getId();
+
+        Record electronicRecord = recordsAPI.getRecord(recordId);
+        List<String> aspects = electronicRecord.getAspectNames();
+
+        // this operation is only valid for records
+        assertTrue(aspects.contains("rma:record"));
+        assertTrue(aspects.contains("rma:filePlanComponent"));
+        assertTrue(aspects.contains("rma:recordComponentIdentifier"));
+        assertTrue(aspects.contains("rma:commonRecordDetails"));
+
+        List<String> emptyAspectList = new ArrayList<String>();
+        Record recordModelToUpdate = Record.builder().aspectNames(emptyAspectList).build();
+
+        // Update record
+        recordsAPI.updateRecord(recordModelToUpdate, electronicRecord.getId());
+        assertStatusCode(UNPROCESSABLE_ENTITY);
+
+        // Get the recordsAPI
+        UnfiledRecordFolderAPI unfiledRecordFolderAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
+
+        // Create root unfiled record folder
+        UnfiledContainerChild unfiledFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, RECORD_FOLDER_NAME,
+                UNFILED_RECORD_FOLDER_TYPE);
+
+        // Create an electronic record
+        UnfiledContainerChild unfiledRecordModel = UnfiledContainerChild.builder()
+                .properties(UnfiledContainerChildProperties.builder().description(NONELECTRONIC_RECORD_NAME).title("Title").build())
+                .name(NONELECTRONIC_RECORD_NAME).nodeType(NON_ELECTRONIC_RECORD_TYPE.toString()).build();
+        UnfiledContainerChild unfiledRecord = unfiledRecordFolderAPI.createUnfiledRecordFolderChild(unfiledRecordModel,
+                unfiledFolder.getId());
+
+        aspects = unfiledRecord.getAspectNames();
+
+        assertTrue(aspects.contains("rma:record"));
+        assertTrue(aspects.contains("rma:filePlanComponent"));
+        assertTrue(aspects.contains("rma:recordComponentIdentifier"));
+        assertTrue(aspects.contains("rma:commonRecordDetails"));
+
+        Record recordModelToUpdateToUnfiled = Record.builder().aspectNames(emptyAspectList).build();
+        // Update record
+        recordsAPI.updateRecord(recordModelToUpdateToUnfiled, unfiledRecord.getId());
+        assertStatusCode(UNPROCESSABLE_ENTITY);
+    }
+
+    @AfterClass (alwaysRun = true)
+    public void tearDown() throws Exception
+    {
+        FilePlanAPI filePlansAPI = getRestAPIFactory().getFilePlansAPI();
+        RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
+
+        filePlansAPI.getRootRecordCategories(FILE_PLAN_ALIAS).getEntries().forEach(recordCategoryEntry ->
+        {
+            recordCategoryAPI.deleteRecordCategory(recordCategoryEntry.getEntry().getId());
+        });
+        
+        UnfiledContainerChildCollection listedChildren = getRestAPIFactory().getUnfiledContainersAPI()
+                .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS);
+
+        listedChildren.getEntries().forEach(UnfiledContainerChildEntry -> 
+        {
+            if (UnfiledContainerChildEntry.getEntry().getIsRecord())
+            {
+                getRestAPIFactory().getRecordsAPI().deleteRecord(UnfiledContainerChildEntry.getEntry().getId());
+            }
+            else
+            {
+                getRestAPIFactory().getUnfiledRecordFoldersAPI().deleteUnfiledRecordFolder(UnfiledContainerChildEntry.getEntry().getId());
+            }
+        });
+    }
 }

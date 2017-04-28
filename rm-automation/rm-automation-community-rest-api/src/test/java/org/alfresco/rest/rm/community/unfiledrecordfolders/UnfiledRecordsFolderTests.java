@@ -235,11 +235,14 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
         assertEquals(unfiledParentFolderName, unfiledParentFolder.getName());
 
         // Build the unfiled records folder properties
-        UnfiledContainerChild unfiledChildFolderModel = UnfiledContainerChild.builder().name(unfiledChildFolderName)
-                .nodeType(UNFILED_RECORD_FOLDER_TYPE)
-                .properties(UnfiledContainerChildProperties.builder().title(FilePlanComponentsUtil.TITLE_PREFIX + unfiledChildFolderName)
-                        .description(FilePlanComponentsUtil.DESCRIPTION_PREFIX + unfiledChildFolderName).build())
-                .build();
+        UnfiledContainerChild unfiledChildFolderModel =
+                    UnfiledContainerChild.builder()
+                                            .name(unfiledChildFolderName)
+                                            .nodeType(UNFILED_RECORD_FOLDER_TYPE)
+                                            .properties(UnfiledContainerChildProperties.builder()
+                                                                .title(FilePlanComponentsUtil.TITLE_PREFIX + unfiledChildFolderName)
+                                                                .description(FilePlanComponentsUtil.DESCRIPTION_PREFIX + unfiledChildFolderName).build())
+                                        .build();
 
         // Create it as a child of parentFolder
         UnfiledContainerChild unfiledChildFolder = getRestAPIFactory().getUnfiledRecordFoldersAPI()
@@ -305,15 +308,16 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
         assertEquals(unfiledFolderName, unfiledFolderToModify.getName());
 
         // Build the properties which will be updated
-        UnfiledRecordFolder unfiledChildFolderModel = UnfiledRecordFolder.builder()
-                                                                         .name(modified + unfiledFolderName)
-                                                                         .properties
-                                                                             (UnfiledContainerChildProperties.builder()
-                                                                                                                .title(modified + unfiledFolderToModify.getProperties().getTitle())
-                                                                                                                .description(modified + unfiledFolderToModify.getProperties().getDescription())
-                                                                                                                .build()
-                                                                             )
-                                                                         .build();
+        UnfiledRecordFolder unfiledChildFolderModel =
+                    UnfiledRecordFolder.builder()
+                                         .name(modified + unfiledFolderName)
+                                         .properties
+                                             (UnfiledContainerChildProperties.builder()
+                                                                                .title(modified + unfiledFolderToModify.getProperties().getTitle())
+                                                                                .description(modified + unfiledFolderToModify.getProperties().getDescription())
+                                                                                .build()
+                                             )
+                                       .build();
 
 
 
@@ -484,7 +488,8 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
                 assertTrue(createdComponent.getName().contains(createdComponent.getProperties().getIdentifier()));
                 assertEquals(createdComponent.getNodeType(), record.getNodeType());
 
-            } catch (NoSuchElementException e)
+            }
+            catch (NoSuchElementException e)
             {
                 fail("No child element for " + record.getId());
             }

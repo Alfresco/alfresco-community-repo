@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.fileplancomponents;
+package org.alfresco.rest.rm.community.records;
 
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.NONELECTRONIC_RECORD_NAME;
@@ -43,17 +43,12 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 
-import java.util.List;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.record.RecordBodyFile;
 import org.alfresco.rest.rm.community.model.record.RecordContent;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChildCollection;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChildEntry;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
-import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
@@ -89,7 +84,7 @@ public class FileRecordsTests extends BaseRMRestTest
     /**
      * Invalid  containers where electronic and non-electronic records can be filed
      */
-    @DataProvider (name = "invalidContainersForFile")
+    @DataProvider (name = "invalidContainersToFile")
     public String[][] getFolderContainers() throws Exception
     {
         return new String[][] {
@@ -399,11 +394,11 @@ public class FileRecordsTests extends BaseRMRestTest
                                            c.getEntry().getParentId().equals(parentFolderId)));
 
         // check the record doesn't exist into unfiled record container
-        // TODO add a check after the issue will be fixed RM-4578
         assertTrue(recordFolderAPI.getRecordFolderChildren(folderToLink)
                                       .getEntries().stream()
-                                      .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId())));
-
+                                      .anyMatch(c -> c.getEntry().getId().equals(recordFiled.getId()) &&
+                                         c.getEntry().getParentId().equals(parentFolderId) &&
+                                              !c.getEntry().getParentId().equals(folderToLink)));
         // check the record is added into the record folder
         assertTrue(recordFolderAPI.getRecordFolderChildren(parentFolderId)
                                       .getEntries()
@@ -412,21 +407,22 @@ public class FileRecordsTests extends BaseRMRestTest
                                           c.getEntry().getParentId().equals(parentFolderId)));
 
         // check the record doesn't exist into unfiled record container
-        // TODO add a check after the issue will be fixed RM-4578
         assertTrue(recordFolderAPI.getRecordFolderChildren(folderToLink)
                                       .getEntries().stream()
-                                      .anyMatch(c -> c.getEntry().getId().equals(nonElectronicFiled.getId())));
+                                      .anyMatch(c -> c.getEntry().getId().equals(nonElectronicFiled.getId()) &&
+                                        c.getEntry().getParentId().equals(parentFolderId) &&
+                                              !c.getEntry().getParentId().equals(folderToLink)));
     }
 
     /**
-     * Given an unfiled or filed record
+     * Given an unfiled container or filed record
      * And a container that is NOT a record folder
-     * When I file the unfiled or filed record to the container
+     * When I file the unfiled container or filed record to the container
      * Then I get an unsupported operation exception
      */
     @Test
     (
-        dataProvider = "invalidContainersForFile",
+        dataProvider = "invalidContainersToFile",
         description = "File the unfiled record to the container that is not a record folder"
     )
     public void invalidContainerToFile(String containerId) throws Exception

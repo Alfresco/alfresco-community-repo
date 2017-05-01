@@ -46,8 +46,8 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_PHYSICAL_SIZE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_PIXEL_X_DIMENSION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_PIXEL_Y_DIMENSION;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RESOLUTION_UNIT;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_PERIOD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SHELF;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_SOFTWARE;
@@ -55,7 +55,6 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VERSION_LABEL;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VERSION_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_X_RESOLUTION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_Y_RESOLUTION;
 
@@ -65,7 +64,6 @@ import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
 import org.alfresco.utility.model.TestModel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -93,9 +91,6 @@ public class UnfiledContainerChildProperties extends TestModel
     @JsonProperty (required = true, value = PROPERTIES_TITLE)
     private String title;
 
-    @JsonProperty (required = true, value = PROPERTIES_VITAL_RECORD_INDICATOR)
-    private Boolean vitalRecordIndicator;
-
     @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 
@@ -105,12 +100,11 @@ public class UnfiledContainerChildProperties extends TestModel
     @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
-    @JsonProperty (required = true, value = PROPERTIES_REVIEW_PERIOD)
-    @JsonSerialize (using = ReviewPeriodSerializer.class)
-    private ReviewPeriod reviewPeriod;
-
     @JsonProperty (required = true, value = PROPERTIES_DESCRIPTION)
     private String description;
+
+    @JsonProperty (value = PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
+    private Boolean recordSearchHasDispositionSchedule;
 
     /*********************************/
     /** Electronic record parameters */

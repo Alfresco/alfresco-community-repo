@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.fileplancomponents;
+package org.alfresco.rest.rm.community.records;
 
 import static org.alfresco.rest.rm.community.base.TestData.NONELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.RECORD_FOLDER_NAME;
@@ -89,7 +89,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
 
     /** Incomplete electronic and non electronic records created in one record folder, unfiled records container and one unfiled record folder */
     @DataProvider(name = "incompleteRecords")
-    public String[][] getIncompleteRecords() throws Exception
+    public Object[][] getIncompleteRecords() throws Exception
     {
         //create electronic and nonElectronic record in record folder
         String recordFolderId = createCategoryFolderInFilePlan().getId();
@@ -131,7 +131,7 @@ public class UpdateRecordsTests extends BaseRMRestTest
 
     /** Complete electronic and non electronic records created in one record folder, unfiled records container and one unfiled record folder */
     @DataProvider(name = "completeRecords")
-    public String[][] getCompleteRecords() throws Exception
+    public Object[][] getCompleteRecords() throws Exception
     {
         //create electronic and nonElectronic record in record folder
         String recordFolderId = createCategoryFolderInFilePlan().getId();

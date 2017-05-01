@@ -263,7 +263,7 @@ public class RecordFolderAPI extends RMModelRequest
      * Creates a record in a record folder child, i.e. a record.
      *
      * @param recordModel The record model which holds the information
-     * @param recordfolderId The identifier of a record folder
+     * @param recordFolderId The identifier of a record folder
      * @param parameters The URL parameters to add
      * @return The created {@link Record}
      * @throws Exception for the following cases:

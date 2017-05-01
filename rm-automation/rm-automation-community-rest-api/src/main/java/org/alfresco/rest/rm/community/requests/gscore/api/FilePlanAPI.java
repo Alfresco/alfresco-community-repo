@@ -34,6 +34,7 @@ import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.PUT;
 
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
@@ -172,4 +173,44 @@ public class FilePlanAPI extends RMModelRequest
                 parameters
         ));
     }
+
+    /**
+     * see {@link #updateFilePlan(FilePlan, String, String)
+     */
+    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId) throws Exception
+    {
+        mandatoryObject("filePlanModel", filePlanModel);
+        mandatoryString("filePlanId", filePlanId);
+
+        return updateFilePlan(filePlanModel, filePlanId, EMPTY);
+    }
+
+    /**
+     * Updates a file plan.
+     *
+     * @param filePlanModel The file plan  model which holds the information
+     * @param filePlanId    The identifier of the file plan
+     * @param parameters          The URL parameters to add
+     * @throws Exception for the following cases:
+     *                   <ul>
+     *                   <li>the update request is invalid or {@code filePlanId} is not a valid format or {@code filePlanModel} is invalid</li>
+     *                   <li>authentication fails</li>
+     *                   <li>current user does not have permission to update {@code filePlanId}</li>
+     *                   <li>{@code filePlanId} does not exist</li>
+     *                   <li>model integrity exception, including file name with invalid characters</li>
+     *                   </ul>
+     */
+    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId, String parameters) throws Exception
+    {
+        mandatoryObject("filePlanModel", filePlanModel);
+        mandatoryString("filePlanId", filePlanId);
+
+        return getRmRestWrapper().processModel(FilePlan.class, requestWithBody(
+                PUT,
+                toJson(filePlanModel),
+                "file-plans/{filePlanId}?{parameters}",
+                filePlanId,
+                parameters));
+    }
+
 }

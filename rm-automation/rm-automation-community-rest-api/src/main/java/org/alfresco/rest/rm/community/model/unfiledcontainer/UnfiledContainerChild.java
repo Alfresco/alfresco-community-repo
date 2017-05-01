@@ -97,9 +97,6 @@ public class UnfiledContainerChild extends TestModel
     private List<String> aspectNames;
 
     @JsonProperty
-    private Boolean hasRetentionSchedule;
-
-    @JsonProperty
     private Boolean isClosed;
 
     @JsonProperty

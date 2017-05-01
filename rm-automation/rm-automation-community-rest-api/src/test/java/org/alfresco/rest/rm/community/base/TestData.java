@@ -80,23 +80,7 @@ public interface TestData
         };
     }
 
-    /**
-     * Data Provider with:
-     * the special file plan components alias
-     * file plan component node type
-     * @return file plan component alias
-     */
-    @DataProvider
-    public static String[][] getContainersAndTypes()
-    {
-        return new String[][] {
-                { FILE_PLAN_ALIAS, FILE_PLAN_TYPE },
-                { TRANSFERS_ALIAS, TRANSFER_CONTAINER_TYPE },
-                { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE },
-        };
-    }
-
-    /**
+       /**
      * The default record category name used when creating categories
      */
     public static String RECORD_CATEGORY_NAME = "CATEGORY NAME" + getRandomAlphanumeric();
@@ -173,5 +157,21 @@ public interface TestData
             { FOLDER_TYPE },
             { RECORD_CATEGORY_TYPE }
         };
+    }
+
+    /**
+     * Invalid root level types, at unfiled record folder/unfiled containers container  level that shouldn't be possible to create
+     */
+    @DataProvider (name = "invalidRootTypes")
+    public static Object[][] getInvalidRootTypes()
+    {
+        return new String[][]
+                {
+                        { FILE_PLAN_TYPE },
+                        { RECORD_CATEGORY_TYPE },
+                        { RECORD_FOLDER_TYPE },
+                        { TRANSFER_CONTAINER_TYPE },
+                        { UNFILED_CONTAINER_TYPE }
+                };
     }
 }

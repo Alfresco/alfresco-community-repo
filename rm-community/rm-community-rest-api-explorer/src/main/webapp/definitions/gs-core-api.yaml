@@ -307,7 +307,6 @@ paths:
         - $ref: '#/parameters/filePlanIdWithAliasParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/orderByParam'
         - $ref: '#/parameters/recordCategoryEntryIncludeParam'
         - $ref: '#/parameters/filePlanIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
@@ -536,7 +535,6 @@ paths:
         - $ref: '#/parameters/unfiledContainerIdParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/orderByParam'
         - $ref: '#/parameters/unfiledRecordFolderAndContainerWhereParam'
         - $ref: '#/parameters/unfiledContainerEntryIncludeParam'
         - $ref: '#/parameters/unfiledContainerIncludeSourceParam'
@@ -839,7 +837,6 @@ paths:
         - $ref: '#/parameters/unfiledRecordFolderIdParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/orderByParam'
         - $ref: '#/parameters/unfiledRecordFolderAndContainerWhereParam'
         - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
         - $ref: '#/parameters/unfiledRecordFolderRelativePathParam'
@@ -1148,7 +1145,6 @@ paths:
         - $ref: '#/parameters/recordCategoryIdParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/orderByParam'
         - $ref: '#/parameters/recordCategoryWhereParam'
         - $ref: '#/parameters/recordCategoryChildIncludeParam'
         - $ref: '#/parameters/recordCategoryRelativePathParam'
@@ -1453,7 +1449,6 @@ paths:
         - $ref: '#/parameters/recordFolderIdParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/orderByParam'
         - $ref: '#/parameters/recordFolderWhereParam'
         - $ref: '#/parameters/recordFolderChildEntryIncludeParam'
         - $ref: '#/parameters/recordFolderIncludeSourceParam'
@@ -1962,7 +1957,6 @@ paths:
         - $ref: '#/parameters/transferContainerIdWithAliasParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/orderByParam'
         - $ref: '#/parameters/transferEntryIncludeParam'
         - $ref: '#/parameters/transferContainerIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
@@ -2037,7 +2031,6 @@ paths:
         - $ref: '#/parameters/transferIdParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/orderByParam'
         - $ref: '#/parameters/transferChildEntryIncludeParam'
         - $ref: '#/parameters/transferIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
@@ -2422,23 +2415,6 @@ parameters:
     required: false
     type: integer
     minimum: 1
-  ## Core parameter
-  orderByParam:
-    name: orderBy
-    in: query
-    description: |
-      A string to control the order of the entities returned in a list. You can use the **orderBy** parameter to
-      sort the list by one or more fields.
-
-      Each field has a default sort order, which is normally acending order. Read the API method implementation notes
-      above to check if any fields used in this method have a descending default search order.
-
-      To sort the entities in a specific order, you can use the **ASC** and **DESC** keywords for any field.
-    required: false
-    type: array
-    items:
-      type: string
-    collectionFormat: csv
   # Core definition
   attachmentParam:
     name: attachment

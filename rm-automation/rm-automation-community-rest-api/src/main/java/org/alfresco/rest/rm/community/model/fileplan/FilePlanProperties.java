@@ -28,8 +28,10 @@ package org.alfresco.rest.rm.community.model.fileplan;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_COMPONENT_ID;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_COUNT;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -71,4 +73,10 @@ public class FilePlanProperties extends TestModel
     /************************/
     @JsonProperty (PROPERTIES_COUNT)
     private Integer count;
+
+    @JsonProperty (PROPERTIES_TITLE)
+    private String title;
+
+    @JsonProperty (PROPERTIES_DESCRIPTION)
+    private String description;
 }

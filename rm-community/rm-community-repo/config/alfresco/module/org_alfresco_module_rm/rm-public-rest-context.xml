@@ -106,6 +106,7 @@
        <property name="searchTypesFactory" ref="searchTypesFactory" />
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderEntityResource">

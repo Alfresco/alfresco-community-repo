@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.fileplancomponents;
+package org.alfresco.rest.rm.community.recordfolders;
 
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
@@ -72,7 +72,7 @@ public class ElectronicRecordTests extends BaseRMRestTest
 
     /** Invalid parent containers where electronic records can't be created */
     @DataProvider(name = "invalidParentContainers")
-    public String[][] invalidParentContainers() throws Exception
+    public  Object[][] invalidParentContainers() throws Exception
     {
         return new String[][]
         {
@@ -326,8 +326,6 @@ public class ElectronicRecordTests extends BaseRMRestTest
         assertTrue(electronicRecord.getName().contains(electronicRecord.getProperties().getIdentifier()));
     }
 
-    @Test
-    @Bug (id = "RM-4568")
     /**
      * <pre>
      * Given that I want to create an electronic record in one unfiled record folder
@@ -335,6 +333,8 @@ public class ElectronicRecordTests extends BaseRMRestTest
      * Then the containers in the relativePath that don't exist are created before creating the electronic record
      * <pre>
      */
+    @Test
+    @Bug (id = "RM-4568")
     public void createElectronicRecordWithRelativePath() throws Exception
     {
         // The containers specified on the relativePath parameter don't exist on server

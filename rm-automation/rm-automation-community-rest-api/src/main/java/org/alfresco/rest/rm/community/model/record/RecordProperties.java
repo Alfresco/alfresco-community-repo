@@ -37,7 +37,6 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_FOCAL_LENGTH;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_F_NUMBER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ID_IS_TEMPORARILY_EDITABLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ISO_SPEED_RATINGS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_MANUFACTURER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_MODEL;
@@ -104,9 +103,6 @@ public class RecordProperties extends TestModel
 
     @JsonProperty (required = true, value = PROPERTIES_ORIGINAL_NAME)
     private String originalName;
-
-    @JsonProperty (required = true, value = PROPERTIES_ID_IS_TEMPORARILY_EDITABLE)
-    private Boolean idIsTemporarilyEditable;
 
     /*********************************/
     /** Electronic record parameters */

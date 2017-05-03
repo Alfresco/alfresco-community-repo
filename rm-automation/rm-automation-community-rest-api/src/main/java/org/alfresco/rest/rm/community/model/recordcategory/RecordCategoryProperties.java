@@ -28,7 +28,6 @@ package org.alfresco.rest.rm.community.model.recordcategory;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DESCRIPTION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ID_IS_TEMPORARILY_EDITABLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_OWNER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_PERIOD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
@@ -65,9 +64,6 @@ public class RecordCategoryProperties extends TestModel
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_ID_IS_TEMPORARILY_EDITABLE)
-    private Boolean idIsTemporarilyEditable;
-
     @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 

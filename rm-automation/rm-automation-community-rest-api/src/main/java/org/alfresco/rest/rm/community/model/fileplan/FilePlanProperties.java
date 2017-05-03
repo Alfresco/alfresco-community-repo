@@ -29,7 +29,6 @@ package org.alfresco.rest.rm.community.model.fileplan;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_COMPONENT_ID;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_COUNT;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ID_IS_TEMPORARILY_EDITABLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -58,9 +57,6 @@ public class FilePlanProperties extends TestModel
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_ID_IS_TEMPORARILY_EDITABLE)
-    private Boolean idIsTemporarilyEditable;
-
     @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 

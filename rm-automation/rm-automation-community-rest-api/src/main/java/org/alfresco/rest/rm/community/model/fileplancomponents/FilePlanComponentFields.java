@@ -37,7 +37,6 @@ public class FilePlanComponentFields
     /** Common properties for file plans, record categories, record folders and records */
     public static final String PROPERTIES_ROOT_NODE_REF = "rma:rootNodeRef";
     public static final String PROPERTIES_IDENTIFIER = "rma:identifier";
-    public static final String PROPERTIES_ID_IS_TEMPORARILY_EDITABLE = "rma:idIsTemporarilyEditable";
 
     /** Common properties for record categories, record folders and records */
     // Non-electronic record properties

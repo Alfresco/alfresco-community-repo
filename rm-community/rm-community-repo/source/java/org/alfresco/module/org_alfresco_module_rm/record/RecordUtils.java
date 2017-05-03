@@ -65,6 +65,12 @@ public class RecordUtils
             // get the record name
             String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
 
+            // skip this step if the record name already contains the identifier
+            if(name.contains(" (" + recordId + ")"))
+            {
+                return;
+            }
+
             // rename the record
             int dotIndex = name.lastIndexOf('.');
             String prefix = name;

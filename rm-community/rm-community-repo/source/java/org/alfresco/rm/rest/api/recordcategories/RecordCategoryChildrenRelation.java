@@ -189,7 +189,8 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
                                 RecordsManagementModel.TYPE_RECORD_CATEGORY);
                     }
                     // Create the node
-                    NodeRef newNode = apiUtils.createRMNode(nodeParent, nodeInfo.getName(), nodeInfo.getNodeType(), nodeInfo.getProperties(), nodeInfo.getAspectNames());
+                    NodeRef newNode = apiUtils.createRMNode(nodeParent, nodeInfo.getName(), nodeInfo.getNodeType(),
+                            nodeInfo.getProperties(), nodeInfo.getAspectNames());
                     createdNodes.add(newNode);
                 }
                 return createdNodes;

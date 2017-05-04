@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.fileplancomponents;
+package org.alfresco.rest.rm.community.recordfolders;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.util.Arrays.asList;

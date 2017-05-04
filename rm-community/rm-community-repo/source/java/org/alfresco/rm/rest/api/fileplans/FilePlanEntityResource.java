@@ -30,6 +30,7 @@ package org.alfresco.rm.rest.api.fileplans;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -43,6 +44,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -60,6 +62,7 @@ public class FilePlanEntityResource
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
+    private TransactionService transactionService;
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
@@ -74,6 +77,11 @@ public class FilePlanEntityResource
     public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
     {
         this.nodesModelFactory = nodesModelFactory;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     @Override
@@ -117,7 +125,16 @@ public class FilePlanEntityResource
             throw new EntityNotFoundException(filePlanId);
         }
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanType);
-        apiUtils.updateNode(nodeRef, filePlanInfo, parameters);
+
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                apiUtils.updateNode(nodeRef, filePlanInfo, parameters);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
         return nodesModelFactory.createFilePlan(info, parameters, null, false);

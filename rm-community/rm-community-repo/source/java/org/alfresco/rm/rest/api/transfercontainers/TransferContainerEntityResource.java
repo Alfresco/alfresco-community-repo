@@ -31,6 +31,7 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -43,6 +44,7 @@ import org.alfresco.rm.rest.api.model.TransferContainer;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -60,6 +62,7 @@ public class TransferContainerEntityResource implements
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
+    private TransactionService transactionService;
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
@@ -74,6 +77,11 @@ public class TransferContainerEntityResource implements
     public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
     {
         this.nodesModelFactory = nodesModelFactory;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     @Override
@@ -108,7 +116,17 @@ public class TransferContainerEntityResource implements
         mandatory("parameters", parameters);
 
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
-        apiUtils.updateTransferContainer(nodeRef, transferContainerInfo, parameters);
+
+        // update info
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                apiUtils.updateTransferContainer(nodeRef, transferContainerInfo, parameters);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
         return nodesModelFactory.createTransferContainer(info, parameters, null, false);

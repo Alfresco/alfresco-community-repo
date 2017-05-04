@@ -193,6 +193,8 @@ public class SearchParameters implements BasicSearchParameters
 
     private IntervalParameters interval;
 
+    private List<StatsRequestParameters> stats;
+
     /**
      * Default constructor
      */
@@ -240,6 +242,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.spellCheck = this.spellCheck;
         sp.highlight = this.highlight;
         sp.interval = this.interval;
+        sp.stats = this.stats;
         return sp;
     }
     
@@ -293,6 +296,16 @@ public class SearchParameters implements BasicSearchParameters
     public void setHighlight(GeneralHighlightParameters highlight)
     {
         this.highlight = highlight;
+    }
+
+    public List<StatsRequestParameters> getStats()
+    {
+        return stats;
+    }
+
+    public void setStats(List<StatsRequestParameters> stats)
+    {
+        this.stats = stats;
     }
 
     public IntervalParameters getInterval()
@@ -1277,10 +1290,12 @@ public class SearchParameters implements BasicSearchParameters
                     .append(", queryTemplates=").append(this.queryTemplates).append(", namespace=")
                     .append(this.namespace).append(", maxPermissionChecks=").append(this.maxPermissionChecks)
                     .append(", maxPermissionCheckTimeMillis=").append(this.maxPermissionCheckTimeMillis)
-                    .append(", defaultFieldName=").append(this.defaultFieldName).append(", fieldFacets=")
-                    .append(this.fieldFacets).append(", facetQueries=").append(this.facetQueries)
-                    .append(this.filterQueries).append(", filterQueries=").append(this.filterQueries)
-                    .append(this.pivots).append(", pivots=").append(this.pivots)
+                    .append(", defaultFieldName=").append(this.defaultFieldName)
+                    .append(", fieldFacets=").append(this.fieldFacets)
+                    .append(", facetQueries=").append(this.facetQueries)
+                    .append(", filterQueries=").append(this.filterQueries)
+                    .append(", pivots=").append(this.pivots)
+                    .append(", stats=").append(this.stats)
                     .append(", useInMemorySort=").append(this.useInMemorySort)
                     .append(", maxRawResultSetSizeForInMemorySort=").append(this.maxRawResultSetSizeForInMemorySort)
                     .append(", extraParameters=").append(this.extraParameters).append(", excludeTenantFilter=")

@@ -58,6 +58,7 @@
        <property name="apiUtils" ref="apiUtils" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
        <property name="fileFolderService" ref="FileFolderService" />
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.fileplans.FilePlanChildrenRelation">
@@ -65,12 +66,14 @@
        <property name="nodesModelFactory" ref="nodesModelFactory" />
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="searchTypesFactory" ref="searchTypesFactory" />
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.unfiledcontainers.UnfiledContainerEntityResource">
        <property name="apiUtils" ref="apiUtils" />
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.unfiledcontainers.UnfiledContainerChildrenRelation">
@@ -85,6 +88,7 @@
        <property name="apiUtils" ref="apiUtils" />
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.unfiledrecordfolders.UnfiledRecordFolderChildrenRelation">
@@ -99,6 +103,7 @@
        <property name="apiUtils" ref="apiUtils" />
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.recordcategories.RecordCategoryChildrenRelation">
@@ -113,6 +118,7 @@
        <property name="apiUtils" ref="apiUtils" />
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderChildrenRelation">
@@ -129,6 +135,7 @@
        <property name="nodesModelFactory" ref="nodesModelFactory" />
        <property name="recordService" ref="RecordService"/>
        <property name="nodeService" ref="NodeService"/>
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.files.FilesEntityResource">
@@ -143,6 +150,7 @@
        <property name="apiUtils" ref="apiUtils" />
        <property name="fileFolderService" ref="FileFolderService" />
        <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
     </bean>
 
     <bean class="org.alfresco.rm.rest.api.transfercontainers.TransferContainerChildrenRelation">

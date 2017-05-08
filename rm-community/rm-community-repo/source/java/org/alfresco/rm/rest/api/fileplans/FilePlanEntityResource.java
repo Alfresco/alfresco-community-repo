@@ -134,7 +134,7 @@ public class FilePlanEntityResource
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
         return nodesModelFactory.createFilePlan(info, parameters, null, false);

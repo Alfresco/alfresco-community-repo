@@ -128,7 +128,7 @@ public class UnfiledRecordFolderEntityResource implements EntityResourceAction.R
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
         apiUtils.postActivity(info, unfiledRecordFolderInfo.getParentId(), ActivityType.FILE_UPDATED);

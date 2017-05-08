@@ -126,7 +126,7 @@ public class FilePlanEntityResource
         }
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanType);
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        RetryingTransactionCallback<Void> updateCallback = new RetryingTransactionCallback<Void>()
         {
             public Void execute()
             {
@@ -134,9 +134,17 @@ public class FilePlanEntityResource
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        transactionService.getRetryingTransactionHelper().doInTransaction(updateCallback, false, true);
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(nodeRef);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+
         return nodesModelFactory.createFilePlan(info, parameters, null, false);
     }
 }

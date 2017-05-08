@@ -67,6 +67,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
@@ -224,21 +225,25 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
 
         // Retrieve the input data and resolve the parent node
         final UploadInfo uploadInfo = new UploadInfo(formData);
-        final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER, uploadInfo.getRelativePath());
 
-        // Create the record
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
+        // Create the record  - returns pair(newNode,parentNode)
+        RetryingTransactionCallback<Pair<NodeRef,NodeRef>> callback = new RetryingTransactionCallback<Pair<NodeRef,NodeRef>>()
         {
-            public NodeRef execute()
+            public Pair<NodeRef,NodeRef> execute()
             {
-                return apiUtils.uploadRecord(parentNodeRef, uploadInfo.getFileName(), uploadInfo.getNodeType(), uploadInfo.getProperties(), uploadInfo.getContent().getInputStream());
+                final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER, uploadInfo.getRelativePath());
+                NodeRef newNode = apiUtils.uploadRecord(parentNodeRef, uploadInfo.getFileName(), uploadInfo.getNodeType(), uploadInfo.getProperties(), uploadInfo.getContent().getInputStream());
+                return new Pair<NodeRef, NodeRef>(newNode, parentNodeRef);
             }
         };
-        NodeRef newNode = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        Pair<NodeRef,NodeRef> nodeAndParentInfo = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+        NodeRef newNode = nodeAndParentInfo.getFirst();
+        NodeRef parent = nodeAndParentInfo.getSecond();
 
-        // Get file info for response
+         // Get file info for response
         FileInfo info = fileFolderService.getFileInfo(newNode);
-        apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
+        apiUtils.postActivity(info, parent, ActivityType.FILE_ADDED);
+
         return nodesModelFactory.createUnfiledRecordFolderChild(info, parameters, null, false);
     }
 }

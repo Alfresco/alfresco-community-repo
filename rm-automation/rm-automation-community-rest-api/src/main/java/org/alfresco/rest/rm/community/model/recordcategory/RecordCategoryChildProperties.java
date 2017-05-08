@@ -31,6 +31,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IS_CLOSED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_LOCATION;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_OWNER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_REVIEW_PERIOD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
@@ -40,6 +41,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import org.alfresco.rest.rm.community.model.common.Owner;
 import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
 import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
 import org.alfresco.utility.model.TestModel;
@@ -99,4 +101,7 @@ public class RecordCategoryChildProperties extends TestModel
 
     @JsonProperty (PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE)
     private Boolean recordSearchHasDispositionSchedule;
+
+    @JsonProperty (PROPERTIES_OWNER)
+    private Owner owner;
 }

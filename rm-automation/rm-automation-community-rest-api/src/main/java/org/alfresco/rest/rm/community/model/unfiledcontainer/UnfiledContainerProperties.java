@@ -60,4 +60,7 @@ public class UnfiledContainerProperties extends TestModel
     /*************************/
     @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
+
+    @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
+    private String rootNodeRef;
 }

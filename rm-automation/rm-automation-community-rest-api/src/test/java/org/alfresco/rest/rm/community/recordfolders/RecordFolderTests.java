@@ -131,7 +131,7 @@ public class RecordFolderTests extends BaseRMRestTest
     /**
      * <pre>
      * Given that RM site is created
-     * When I use the API to create a children inside a record folder with wron  types
+     * When I use the API to create a children of wrong type inside a record folder 
      * Then the operation fails
      * </pre>
      */
@@ -141,7 +141,7 @@ public class RecordFolderTests extends BaseRMRestTest
         dataProvider = "childrenNotAllowedForFolder"
     )
 
-    public void createRecordFolderIntoSpecialContainers(String nodeType) throws Exception
+    public void createInvalidChildrenForFolder(String nodeType) throws Exception
     {
         //create a record folder
         RecordCategoryChild folder =  createCategoryFolderInFilePlan();

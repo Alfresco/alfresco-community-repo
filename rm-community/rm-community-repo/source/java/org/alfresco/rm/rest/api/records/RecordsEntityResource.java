@@ -214,7 +214,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // return record state
         FileInfo info = fileFolderService.getFileInfo(record);

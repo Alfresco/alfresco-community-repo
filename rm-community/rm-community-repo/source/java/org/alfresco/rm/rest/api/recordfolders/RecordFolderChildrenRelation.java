@@ -173,7 +173,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
                 return createdNodes;
             }
         };
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Get the nodes info
         List<Record> result = new LinkedList<>();
@@ -211,7 +211,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
                         uploadInfo.getContent().getInputStream());
             }
         };
-        NodeRef newNode = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        NodeRef newNode = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Get file info for response
         FileInfo info = fileFolderService.getFileInfo(newNode);

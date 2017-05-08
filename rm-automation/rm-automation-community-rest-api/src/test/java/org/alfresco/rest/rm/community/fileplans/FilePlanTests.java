@@ -241,10 +241,10 @@ public class FilePlanTests extends BaseRMRestTest
         assertStatusCode(OK);
 
         // Verify the returned description field for the file plan component
-        assertEquals(renamedFilePlan.getProperties().getDescription(), FILE_PLAN_DESCRIPTION);
+        assertEquals(FILE_PLAN_DESCRIPTION, renamedFilePlan.getProperties().getDescription());
 
         // Verify the returned title field for the file plan component
-        assertEquals(renamedFilePlan.getProperties().getTitle(), FILE_PLAN_TITLE);
+        assertEquals(FILE_PLAN_TITLE, renamedFilePlan.getProperties().getTitle());
     }
 
     /**

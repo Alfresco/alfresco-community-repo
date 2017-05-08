@@ -349,9 +349,6 @@ public class ElectronicRecordTests extends BaseRMRestTest
         UnfiledContainerChild unfiledContainerChildModel= UnfiledContainerChild.builder()
                                                                                 .name(ELECTRONIC_RECORD_NAME)
                                                                                 .nodeType(CONTENT_TYPE)
-                                                                                .content(RecordContent.builder()
-                                                                                        .mimeType(TEXT_PLAIN_VALUE)
-                                                                                        .build())
                                                                                 .relativePath(relativePath)
                                                                                 .build();
 

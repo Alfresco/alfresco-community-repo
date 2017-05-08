@@ -128,7 +128,7 @@ public class RecordCategoriesEntityResource implements
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
         return nodesModelFactory.createRecordCategory(info, parameters, null, false);

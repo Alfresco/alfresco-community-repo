@@ -205,7 +205,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
                 return createdNodes;
             }
         };
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Get the nodes info
         List<RecordCategory> result = new ArrayList<>(nodeInfos.size());

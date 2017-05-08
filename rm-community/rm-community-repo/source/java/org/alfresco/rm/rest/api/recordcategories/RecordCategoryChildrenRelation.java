@@ -196,7 +196,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
                 return createdNodes;
             }
         };
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         for (NodeRef nodeInfo : createdNodes)
         {

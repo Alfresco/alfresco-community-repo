@@ -123,7 +123,7 @@ public class RecordFolderEntityResource implements EntityResourceAction.ReadById
                 return null;
             }
         };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
         return nodesModelFactory.createRecordFolder(info, parameters, null, false);

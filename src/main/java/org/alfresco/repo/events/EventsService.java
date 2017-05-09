@@ -191,4 +191,18 @@ public interface EventsService
      * @param cascade whether it's a cascading delete or not
      */
     void groupDeleted(String groupName, boolean cascade);
+
+    /**
+     * Generated a node created event for a secondary child
+     * 
+     * @param secAssociation the child association being created
+     */
+    void secondaryAssociationCreated(ChildAssociationRef secAssociation);
+
+    /**
+     * Generate a delete event for a secondary child
+     * 
+     * @param secAssociation the child association being deleted
+     */
+    void secondaryAssociationDeleted(ChildAssociationRef secAssociation);
 }

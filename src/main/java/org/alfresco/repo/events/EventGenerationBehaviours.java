@@ -76,8 +76,10 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         PermissionServicePolicies.OnInheritPermissionsEnabled,
         AuthorityServicePolicies.OnAuthorityAddedToGroup,
         AuthorityServicePolicies.OnAuthorityRemovedFromGroup,
-        AuthorityServicePolicies.OnGroupDeleted
-{
+        AuthorityServicePolicies.OnGroupDeleted,
+        NodeServicePolicies.OnDeleteChildAssociationPolicy,
+        NodeServicePolicies.OnCreateChildAssociationPolicy
+{  
     protected EventsService eventsService;
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
@@ -139,6 +141,10 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         bindClassPolicy(AuthorityServicePolicies.OnAuthorityRemovedFromGroup.QNAME, AuthorityRemovedFromGroupEvent.EVENT_TYPE);
         
         bindClassPolicy(AuthorityServicePolicies.OnGroupDeleted.QNAME, GroupDeletedEvent.EVENT_TYPE);
+        
+        bindAssociationPolicy(NodeServicePolicies.OnDeleteChildAssociationPolicy.QNAME, NodeRemovedEvent.EVENT_TYPE);
+        
+        bindAssociationPolicy(NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, NodeAddedEvent.EVENT_TYPE);
 	}
 
     private DataType getPropertyType(QName propertyName)
@@ -419,5 +425,23 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     public void onGroupDeleted(String groupName, boolean cascade)
     {
         eventsService.groupDeleted(groupName, cascade);
+    } 
+
+    @Override
+    public void onCreateChildAssociation(ChildAssociationRef newChildAssocRef, boolean isNewNode)
+    {
+        if (!newChildAssocRef.isPrimary())
+        {
+            eventsService.secondaryAssociationCreated(newChildAssocRef);
+        }
+    }
+
+    @Override
+    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
+    {
+        if (!childAssocRef.isPrimary())
+        {
+            eventsService.secondaryAssociationDeleted(childAssocRef);
+        }
     }
 }

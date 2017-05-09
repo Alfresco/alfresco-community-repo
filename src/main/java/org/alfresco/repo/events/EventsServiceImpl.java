@@ -23,6 +23,7 @@ import org.alfresco.events.types.permission.LocalPermissionGrantedEvent;
 import org.alfresco.events.types.permission.LocalPermissionRevokedEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.Client;
+import org.alfresco.repo.events.AbstractEventsService.NodeInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -104,35 +105,30 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
 
             NodeRef oldParentNodeRef = oldChildAssocRef.getParentRef();
             NodeRef newParentNodeRef = newChildAssocRef.getParentRef();
+            NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
+            NodeRef newNodeRef = newChildAssocRef.getChildRef();
 
-            // Work out the old and new paths. Note that the FileFolderService sets the node name to a temporary name during the move,
-            // so we can't rely on the name. Use the association name instead.
-            String oldName = oldChildAssocRef.getQName().getLocalName();
-            String tmpNewName = newChildAssocRef.getQName().getLocalName();
-            String newName = null;
-            if(oldName != null && tmpNewName != null && !oldName.equals(tmpNewName))
-            {
-                newName = tmpNewName;
-            }
             String oldParentNodeName = (String)nodeService.getProperty(oldParentNodeRef, ContentModel.PROP_NAME);
             String newParentNodeName = (String)nodeService.getProperty(newParentNodeRef, ContentModel.PROP_NAME);
+            String oldNodeName = (String)nodeService.getProperty(oldNodeRef, ContentModel.PROP_NAME);
+            String newNodeName = (String)nodeService.getProperty(newNodeRef, ContentModel.PROP_NAME);
             List<Path> newParentPaths = nodeService.getPaths(newParentNodeRef, false);
-            List<String> newPaths = getPaths(newParentPaths, Arrays.asList(newParentNodeName, tmpNewName));
+            List<String> newPaths = getPaths(newParentPaths, Arrays.asList(newParentNodeName, newNodeName));
 
             // renames are handled by an onUpdateProperties callback, we just deal with real moves here.
             if(!oldParentNodeRef.equals(newParentNodeRef))
             {
                 List<List<String>> toParentNodeIds = getNodeIds(newParentPaths);
                 List<Path> oldParentPaths = nodeService.getPaths(oldParentNodeRef, false);
-                List<String> previousPaths = getPaths(oldParentPaths, Arrays.asList(oldParentNodeName, oldName));
+                List<String> previousPaths = getPaths(oldParentPaths, Arrays.asList(oldParentNodeName, oldNodeName));
                 List<List<String>> previousParentNodeIds = getNodeIds(oldParentPaths);
 
                 Set<String> aspects = nodeInfo.getAspectsAsStrings();
                 Map<String, Serializable> properties = nodeInfo.getProperties();
-
+               
                 Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
 
-                Event event = new NodeMovedEvent(nextSequenceNumber(), oldName, newName, txnId, timestamp, networkId, siteId, objectId, nodeType,
+                Event event = new NodeMovedEvent(nextSequenceNumber(), oldNodeName, newNodeName, txnId, timestamp, networkId, siteId, objectId, nodeType, 
                         previousPaths, previousParentNodeIds, username, modificationTime, newPaths, toParentNodeIds, alfrescoClient,
                         aspects, properties);
                 sendEvent(event);
@@ -356,6 +352,74 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
 
             Event event = new NodeAddedEvent(nextSequenceNumber(), name, txnId, timestamp, networkId, siteId, objectId, nodeType, nodePaths, pathNodeIds,
                     username, modificationTime, alfrescoClient, aspects, properties);
+            sendEvent(event);
+        }
+    }
+    
+    @Override
+    public void secondaryAssociationCreated(final ChildAssociationRef secAssociation)
+    {
+        NodeInfo nodeInfo = getNodeInfo(secAssociation.getChildRef(), NodeAddedEvent.EVENT_TYPE);
+        if(nodeInfo.checkNodeInfo())
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+
+            String name = nodeInfo.getName();
+            String objectId = nodeInfo.getNodeId();
+            String siteId = nodeInfo.getSiteId();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            
+            NodeRef secParentNodeRef = secAssociation.getParentRef();
+            String secParentNodeName = (String)nodeService.getProperty(secAssociation.getParentRef(), ContentModel.PROP_NAME);
+            List<Path> secParentPath = nodeService.getPaths(secParentNodeRef, true);
+            List<String> nodePaths = getPaths(secParentPath, Arrays.asList(secParentNodeName, name));
+            List<List<String>> pathNodeIds = this.getNodeIds(secParentPath);
+            
+            long timestamp = System.currentTimeMillis();
+            Long modificationTime = nodeInfo.getModificationTimestamp();
+            String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
+            Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
+
+            Set<String> aspects = nodeInfo.getAspectsAsStrings();
+            Map<String, Serializable> properties = nodeInfo.getProperties();
+
+            Event event = new NodeAddedEvent(nextSequenceNumber(), name, txnId, timestamp, networkId, siteId, objectId, nodeType, nodePaths, pathNodeIds,
+                    username, modificationTime, alfrescoClient, aspects, properties);
+            sendEvent(event);
+        }
+    }
+    
+    @Override
+    public void secondaryAssociationDeleted(final ChildAssociationRef secAssociation)
+    {
+        NodeInfo nodeInfo = getNodeInfo(secAssociation.getChildRef(), NodeRemovedEvent.EVENT_TYPE);
+        if(nodeInfo.checkNodeInfo())
+        {
+            String username = AuthenticationUtil.getFullyAuthenticatedUser();
+            String networkId = TenantUtil.getCurrentDomain();
+
+            String name = nodeInfo.getName();
+            String objectId = nodeInfo.getNodeId();
+            String siteId = nodeInfo.getSiteId();
+            String txnId = AlfrescoTransactionSupport.getTransactionId();
+            
+            NodeRef secParentNodeRef = secAssociation.getParentRef();
+            String secParentNodeName = (String)nodeService.getProperty(secAssociation.getParentRef(), ContentModel.PROP_NAME);
+            List<Path> secParentPath = nodeService.getPaths(secParentNodeRef, true);
+            List<String> nodePaths = getPaths(secParentPath, Arrays.asList(secParentNodeName, name));
+            List<List<String>> pathNodeIds = this.getNodeIds(secParentPath);
+            
+            long timestamp = System.currentTimeMillis();
+            Long modificationTime = nodeInfo.getModificationTimestamp();
+            String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
+            Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
+
+            Set<String> aspects = nodeInfo.getAspectsAsStrings();
+            Map<String, Serializable> properties = nodeInfo.getProperties();
+
+            Event event = new NodeRemovedEvent(nextSequenceNumber(), name, txnId, timestamp, networkId, siteId, objectId, nodeType,
+                    nodePaths, pathNodeIds, username, modificationTime, alfrescoClient, aspects, properties);
             sendEvent(event);
         }
     }

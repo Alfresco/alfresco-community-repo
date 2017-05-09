@@ -194,6 +194,8 @@ public class SearchParameters implements BasicSearchParameters
     private IntervalParameters interval;
 
     private List<StatsRequestParameters> stats;
+    
+    private RangeParameters range;
 
     /**
      * Default constructor
@@ -243,6 +245,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.highlight = this.highlight;
         sp.interval = this.interval;
         sp.stats = this.stats;
+        sp.range = this.range;
         return sp;
     }
     
@@ -320,6 +323,16 @@ public class SearchParameters implements BasicSearchParameters
     public void setInterval(IntervalParameters interval)
     {
         this.interval = interval;
+    }
+
+    public RangeParameters getRange()
+    {
+        return range;
+    }
+
+    public void setRange(RangeParameters range)
+    {
+        this.range = range;
     }
 
     /**
@@ -1304,6 +1317,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(this.sinceTxId).append(", searchTerm=").append(this.searchTerm)
                     .append(", highlight=").append(this.highlight)
                     .append(", interval=").append(this.interval)
+                    .append(", range=").append(this.range)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();
     }

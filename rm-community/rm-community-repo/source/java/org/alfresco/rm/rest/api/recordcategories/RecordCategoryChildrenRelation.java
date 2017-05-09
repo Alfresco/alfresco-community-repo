@@ -114,10 +114,11 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
 
         // list record categories and record folders
         Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesCategoriesEndpoint(parameters, LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES);
+        Set<QName> assocTypeQNames = searchTypesFactory.buildAssocTypesCategoriesEndpoint();
         List<FilterProp> filterProps = apiUtils.getListChildrenFilterProps(parameters, LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES);
 
         final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef,
-                null,
+                assocTypeQNames,
                 searchTypeQNames,
                 null,
                 apiUtils.getSortProperties(parameters),

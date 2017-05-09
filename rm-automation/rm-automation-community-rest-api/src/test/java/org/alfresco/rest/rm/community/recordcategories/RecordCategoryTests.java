@@ -52,6 +52,7 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -66,7 +67,10 @@ import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
+import org.alfresco.rest.v0.RecordCategoriesAPI;
+import org.alfresco.rest.core.v0.BaseAPI.RETENTION_SCHEDULE;
 import org.alfresco.utility.report.Bug;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -82,6 +86,9 @@ public class RecordCategoryTests extends BaseRMRestTest
     /** Number of children (for children creation test) */
     private static final int NUMBER_OF_CHILDREN = 10;
     private static final int NUMBER_OF_FOLDERS = 5;
+
+    @Autowired
+    private RecordCategoriesAPI recordCategoriesAPI;
 
     /**
      * Invalid  containers that cannot be deleted with record category end-point
@@ -287,6 +294,7 @@ public class RecordCategoryTests extends BaseRMRestTest
         assertEquals(folderProperties.getTitle(), TITLE_PREFIX + RECORD_FOLDER_NAME);
         assertNotNull(folderProperties.getIdentifier());
     }
+
     /**
      * <pre>
      * Given that a record category exists
@@ -294,16 +302,36 @@ public class RecordCategoryTests extends BaseRMRestTest
      * When I ask the API to get me the children of the record category
      * Then I am returned the contained record categories and record folders and their details
      * </pre>
+     * <pre>
+     * Given that a record category with a disposition schedule exists
+     * And contains a number of record categories and record folders
+     * When I ask the API to get me the children of the record category
+     * Then I am returned the contained record categories and record folders but not the disposition schedule
+     * </pre>
      */
     @Test
-    (
-        description = "Get children of a record category"
-    )
+        (
+            description = "Get children of a record category excluding the disposition schedule"
+        )
+    @Bug (id="RM-5115")
     public void getRecordCategoryChildren() throws Exception
     {
         // Create root level category
         RecordCategory rootRecordCategory = createRootCategory(getRandomAlphanumeric());
         assertNotNull(rootRecordCategory.getId());
+
+        // Create disposition schedule
+        String userName = getAdminUser().getUsername();
+        String userPassword = getAdminUser().getPassword();
+        String categoryName = rootRecordCategory.getName();
+        recordCategoriesAPI.createRetentionSchedule(userName, userPassword, categoryName);
+
+        // Add disposition schedule cut off step
+        HashMap<RETENTION_SCHEDULE, String> cutOffStep = new HashMap<>();
+        cutOffStep.put(RETENTION_SCHEDULE.NAME, "cutoff");
+        cutOffStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, "day|2");
+        cutOffStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Cut off after 2 days");
+        recordCategoriesAPI.addDispositionScheduleSteps(userName, userPassword, categoryName, cutOffStep);
 
         // Add record category children
         List<RecordCategoryChild> children = new ArrayList<RecordCategoryChild>();

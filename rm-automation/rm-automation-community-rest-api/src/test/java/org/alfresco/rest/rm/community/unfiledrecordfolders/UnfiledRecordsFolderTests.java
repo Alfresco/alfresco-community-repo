@@ -106,7 +106,7 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
                 { getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId() },
                 { getRestAPIFactory().getTransferContainerAPI().getTransferContainer(TRANSFERS_ALIAS).getId() },
                 // an arbitrary record category
-                { createRootCategory(RECORD_CATEGORY_NAME).getId() },
+                { createRootCategory(RECORD_CATEGORY_NAME + getRandomAlphanumeric()).getId() },
                 // an arbitrary unfiled records folder
                 {createCategoryFolderInFilePlan().getId()},
                 {createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Record " + getRandomAlphanumeric(), CONTENT_TYPE).getId() }

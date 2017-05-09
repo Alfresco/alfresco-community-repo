@@ -85,6 +85,29 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
             
     protected static final String MIME_HTML_TEXT = "text/html";
 
+    protected String loginPageLink;
+
+    /**
+     * @return login page link, which is send back to the client if the login fails in the filter.
+     *         Override to change the default behaviour.
+     */
+    public String getLoginPageLink()
+    {
+        if (loginPageLink == null || loginPageLink.isEmpty())
+        {
+            return "/faces" + getLoginPage();
+        }
+        else
+        {
+            return loginPageLink;
+        }
+    }
+
+    public void setLoginPageLink(String loginPageLink)
+    {
+        this.loginPageLink = loginPageLink;
+    }
+
     /**
      * @param serverConfiguration the serverConfiguration to set
      */
@@ -576,7 +599,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
             final PrintWriter out = resp.getWriter();
             out.println("<html><head>");
             out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + 
-                    req.getContextPath() + "/faces" + getLoginPage() +
+                    req.getContextPath() + getLoginPageLink() +
                     "\">");
             out.println("</head><body><p>Please <a href=\"" +
                     req.getContextPath() + "/faces" + getLoginPage() +

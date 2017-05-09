@@ -47,6 +47,12 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     // Debug logging
     private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);
 
+    @Override
+    public String getLoginPageLink()
+    {
+        return loginPageLink;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseSSOAuthenticationFilter#onValidateFailed(javax.servlet.ServletContext, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, javax.servlet.http.HttpSession)
      */
@@ -92,7 +98,7 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
         out.println("<html><head>");
         // Remove the auto refresh to avoid refresh loop, MNT-16931
 //        out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + req.getContextPath() + "/webdav\">");
-        out.println("</head><body><p>Please <a href=\"" + req.getContextPath() + "/webdav\">log in</a>.</p>");
+        out.println("</head><body><p>Please <a href=\"" + req.getContextPath() + getLoginPageLink() +"\">log in</a>.</p>");
         out.println("</body></html>");
         out.close();
     }

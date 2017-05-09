@@ -51,6 +51,7 @@ public class FilePlanComponentFields
 
     /** Common properties for record folders and records */
     public static final String PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE = "rma:recordSearchHasDispositionSchedule";
+    public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION = "rma:recordSearchDispositionPeriodExpression";
 
     /** File plan properties */
     public static final String PROPERTIES_COMPONENT_ID = "st:componentId";

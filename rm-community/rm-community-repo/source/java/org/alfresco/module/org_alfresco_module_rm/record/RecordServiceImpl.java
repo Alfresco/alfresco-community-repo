@@ -1798,7 +1798,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     )
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+        if (nodeService.exists(nodeRef) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
             appendIdentifierToName(nodeService, nodeRef);
         }

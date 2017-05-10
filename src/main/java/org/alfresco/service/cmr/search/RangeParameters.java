@@ -38,7 +38,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class RangeParameters
 {
     private String field;
-    private int minCount;
     private String start;
     private String end;
     private String gap;
@@ -48,21 +47,7 @@ public class RangeParameters
     private List<String> tags;
     private List<String> excludeFilters;
 
-    public RangeParameters() {}
     
-    @JsonCreator
-    public RangeParameters( @JsonProperty("field") String field,
-                            @JsonProperty("facet.range.start") String start, 
-                            @JsonProperty("facet.range.end") String end, 
-                            @JsonProperty("facet.range.gap") String gap)
-    {
-        super();
-        this.field = field;
-        this.start = start;
-        this.end = end;
-        this.gap = gap;
-        this.hardend = false;
-    }
     /**
      * Constructor.
      * @param field
@@ -71,42 +56,33 @@ public class RangeParameters
      * @param end
      * @param gap
      * @param hardend
-     * @param other
-     * @param include
+     * @param other can have one of the following values: before,after,between,none
+     * @param include can have one of the following values: lower,upper,edge,outer,all
      * @param tags
      * @param excludeFilters
      */
-    public RangeParameters(String field,
-                           int minCount,
-                           String start, 
-                           String end, 
-                           String gap, 
-                           boolean hardend, 
-                           String other,
-                           String include, 
-                           List<String> tags, 
-                           List<String> excludeFilters)
+    @JsonCreator
+    public RangeParameters(@JsonProperty("field") String field,
+                           @JsonProperty("facet.range.start") String start, 
+                           @JsonProperty("facet.range.end") String end, 
+                           @JsonProperty("facet.range.gap") String gap,
+                           @JsonProperty("facet.range.hardend") boolean hardend, 
+                           @JsonProperty("facet.range.other")String other,
+                           @JsonProperty("facet.range.include")String include)
     {
         super();
         this.field = field;
-        this.minCount = minCount;
         this.start = start;
         this.end = end;
         this.gap = gap;
         this.hardend = hardend;
         this.other = other;
         this.include = include;
-        this.tags = tags;
-        this.excludeFilters = excludeFilters;
     }
     
     public String getField()
     {
         return field;
-    }
-    public int getMinCount() 
-    {
-        return minCount;
     }
     public String getStart()
     {

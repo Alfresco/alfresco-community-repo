@@ -31,7 +31,6 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,7 +56,6 @@ import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.impl.SearchTypesFactory;
 import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.RecordFolder;
-import org.alfresco.rm.rest.api.model.UnfiledContainerChild;
 import org.alfresco.rm.rest.api.model.UploadInfo;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -169,7 +167,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
                 List<NodeRef> createdNodes = new LinkedList<>();
                 for (Record nodeInfo : nodeInfos)
                 {
-                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo.getName(), nodeInfo.getNodeType(), nodeInfo.getProperties(), nodeInfo.getAspectNames());
+                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
                     createdNodes.add(newNodeRef);
                 }
                 return createdNodes;

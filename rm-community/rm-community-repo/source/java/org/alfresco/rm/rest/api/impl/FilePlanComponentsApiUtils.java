@@ -134,6 +134,12 @@ public class FilePlanComponentsApiUtils
             RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER,
             RecordsManagementModel.TYPE_HOLD_CONTAINER);
 
+    public static final List<QName> TYPES_CAN_USE_AUTORENAME = Arrays.asList(
+            RecordsManagementModel.TYPE_RECORD_CATEGORY,
+            RecordsManagementModel.TYPE_RECORD_FOLDER,
+            RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER,
+            RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
+
     /** RM Nodes API */
     private Nodes nodes;
     private FileFolderService fileFolderService;
@@ -598,27 +604,43 @@ public class FilePlanComponentsApiUtils
      * Create an RM node
      *
      * @param parentNodeRef  the parent of the node
-     * @param name  the name of the new node
-     * @param type  the type of the node
-     * @param properties properties to set on the new node
-     * @param aspects aspects to set on the new node
+     * @param nodeInfo  the node infos to create
+     * @param parameters  the object to get the parameters passed into the request
      * @return the new node
      */
-    public NodeRef createRMNode(NodeRef parentNodeRef, String name, String type, Map<String, Object> properties, List<String> aspects)
+    public NodeRef createRMNode(NodeRef parentNodeRef, RMNode nodeInfo, Parameters parameters)
     {
         mandatory("parentNodeRef", parentNodeRef);
-        checkNotBlank(RMNode.PARAM_NAME, name);
-        checkNotBlank(RMNode.PARAM_NODE_TYPE, type);
+        mandatory("nodeInfo", nodeInfo);
+        mandatory("parameters", parameters);
+
+        String nodeName = nodeInfo.getName();
+        String nodeType = nodeInfo.getNodeType();
+        checkNotBlank(RMNode.PARAM_NAME, nodeName);
+        checkNotBlank(RMNode.PARAM_NODE_TYPE, nodeType);
 
         // Create the node
         NodeRef newNodeRef = null;
+        boolean autoRename = Boolean.valueOf(parameters.getParameter(RMNode.PARAM_AUTO_RENAME));
+
         try
         {
-            QName typeQName = nodes.createQName(type);
-            newNodeRef = fileFolderService.create(parentNodeRef, name, typeQName).getNodeRef();
+            QName typeQName = nodes.createQName(nodeType);
+
+            // Existing file/folder name handling
+            if (TYPES_CAN_CREATE.contains(typeQName) && autoRename)
+            {
+                NodeRef existingNode = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
+                if (existingNode != null)
+                {
+                    // File already exists, find a unique name
+                    nodeName = findUniqueName(parentNodeRef, nodeName);
+                }
+            }
+            newNodeRef = fileFolderService.create(parentNodeRef, nodeName, typeQName).getNodeRef();
 
             // Set the provided properties if any
-            Map<QName, Serializable> qnameProperties = mapToNodeProperties(properties);
+            Map<QName, Serializable> qnameProperties = mapToNodeProperties(nodeInfo.getProperties());
             if (qnameProperties != null)
             {
                 nodeService.addProperties(newNodeRef, qnameProperties);
@@ -628,18 +650,19 @@ public class FilePlanComponentsApiUtils
             if (!typeQName.equals(RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT)
                     && dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
             {
-                writeContent(newNodeRef, name, new ByteArrayInputStream("".getBytes()), false);
+                writeContent(newNodeRef, nodeName, new ByteArrayInputStream("".getBytes()), false);
             }
 
             // Add the provided aspects if any
-            if (aspects != null)
+            List<String> aspectNames = nodeInfo.getAspectNames();
+            if (aspectNames != null)
             {
-                nodes.addCustomAspects(newNodeRef, aspects, ApiNodesModelFactory.EXCLUDED_ASPECTS);
+                nodes.addCustomAspects(newNodeRef, aspectNames, ApiNodesModelFactory.EXCLUDED_ASPECTS);
             }
         }
         catch (InvalidTypeException ex)
         {
-            throw new InvalidArgumentException("The given type:'" + type + "' is invalid '");
+            throw new InvalidArgumentException("The given type:'" + nodeType + "' is invalid '");
         }
 
         return newNodeRef;
@@ -955,7 +978,45 @@ public class FilePlanComponentsApiUtils
             activityPoster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(), activityInfo.getSiteId(),
                     activityInfo.getParentNodeRef(), activityInfo.getNodeRef(), activityInfo.getFileName(), Activities.APP_TOOL,
                     Activities.RESTAPI_CLIENT, activityInfo.getFileInfo());
-
         }
+    }
+    /**
+     * Creates a unique file name, if the upload component was configured to
+     * find a new unique name for clashing filenames.
+     *
+     * @param parentNodeRef the parent node
+     * @param fileName      the original fileName
+     * @return a new file name
+     */
+    private String findUniqueName(NodeRef parentNodeRef, String fileName)
+    {
+        int counter = 1;
+        String tmpFilename;
+        NodeRef existingFile;
+        do
+        {
+            int dotIndex = fileName.lastIndexOf('.');
+            if (dotIndex == 0)
+            {
+                // File didn't have a proper 'name' instead it
+                // had just a suffix and started with a ".", create "1.txt"
+                tmpFilename = counter + fileName;
+            }
+            else if (dotIndex > 0)
+            {
+                // Filename contained ".", create "fileName-1.txt"
+                tmpFilename = fileName.substring(0, dotIndex) + "-" + counter + fileName.substring(dotIndex);
+            }
+            else
+            {
+                // Filename didn't contain a dot at all, create "fileName-1"
+                tmpFilename = fileName + "-" + counter;
+            }
+            existingFile = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, tmpFilename);
+            counter++;
+
+        } while (existingFile != null);
+
+        return tmpFilename;
     }
 }

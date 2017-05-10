@@ -174,7 +174,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
             }
 
             // Create the node
-            NodeRef newNode = apiUtils.createRMNode(nodeParent, nodeInfo.getName(), nodeInfo.getNodeType(), nodeInfo.getProperties(), nodeInfo.getAspectNames());
+            NodeRef newNode = apiUtils.createRMNode(nodeParent, nodeInfo, parameters);
             FileInfo info = fileFolderService.getFileInfo(newNode);
             result.add(nodesModelFactory.createRecordCategoryChild(info, parameters, mapUserInfo, false));
         }

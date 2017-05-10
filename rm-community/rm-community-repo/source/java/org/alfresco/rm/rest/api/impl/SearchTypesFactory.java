@@ -29,7 +29,6 @@ package org.alfresco.rm.rest.api.impl;
 
 import java.security.InvalidParameterException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -250,16 +249,6 @@ public class SearchTypesFactory
             searchTypeQNames.add(RecordsManagementModel.TYPE_RECORD_CATEGORY);
         }
         return searchTypeQNames;
-    }
-
-    /**
-     * Helper method to build association types for categories endpoint
-     * @return
-     */
-    public Set<QName> buildAssocTypesCategoriesEndpoint()
-    {
-        Set<QName> assocTypeQNames = Collections.singleton(ContentModel.ASSOC_CONTAINS);
-        return assocTypeQNames;
     }
 
     /**

@@ -68,7 +68,9 @@ public class RangeParameters
                            @JsonProperty("facet.range.gap") String gap,
                            @JsonProperty("facet.range.hardend") boolean hardend, 
                            @JsonProperty("facet.range.other")String other,
-                           @JsonProperty("facet.range.include")String include)
+                           @JsonProperty("facet.range.include")String include,
+                           @JsonProperty("tags")List<String> tags,
+                           @JsonProperty("excludeFilters")List<String> excludeFilters)
     {
         super();
         this.field = field;
@@ -78,6 +80,8 @@ public class RangeParameters
         this.hardend = hardend;
         this.other = other;
         this.include = include;
+        this.tags = tags;
+        this.excludeFilters = excludeFilters;
     }
     
     public String getField()

@@ -488,7 +488,7 @@ public class RecordCategoryTests extends BaseRMRestTest
     {
         // The record category to be created
         RecordCategory recordCategoryModel = RecordCategory.builder()
-                                                           .name(RECORD_CATEGORY_NAME)
+                                                           .name(RECORD_CATEGORY_NAME + getRandomAlphanumeric())
                                                            .nodeType(RECORD_CATEGORY_TYPE)
                                                            .build();
         FilePlanAPI filePlansAPI = getRestAPIFactory().getFilePlansAPI();
@@ -593,7 +593,7 @@ public class RecordCategoryTests extends BaseRMRestTest
     {
         // The record category to be created
         RecordCategory recordCategoryModel = RecordCategory.builder()
-                                                           .name(RECORD_CATEGORY_NAME+getRandomAlphanumeric())
+                                                           .name(RECORD_CATEGORY_NAME + getRandomAlphanumeric())
                                                            .nodeType(RECORD_CATEGORY_TYPE)
                                                            .build();
         FilePlanAPI filePlansAPI = getRestAPIFactory().getFilePlansAPI();

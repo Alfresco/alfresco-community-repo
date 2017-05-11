@@ -197,6 +197,8 @@ public class SearchParameters implements BasicSearchParameters
     
     private RangeParameters range;
 
+    private String timezone;
+
     /**
      * Default constructor
      */
@@ -246,6 +248,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.interval = this.interval;
         sp.stats = this.stats;
         sp.range = this.range;
+        sp.timezone = this.timezone;
         return sp;
     }
     
@@ -344,6 +347,20 @@ public class SearchParameters implements BasicSearchParameters
     public void setLanguage(String language)
     {
         this.language = language;
+    }
+
+    public String getTimezone()
+    {
+        return timezone;
+    }
+
+    /**
+     * Override the default TimeZone (UTC)
+     * @param timezone any zone ID supported by @see java.time.ZoneId
+     */
+    public void setTimezone(String timezone)
+    {
+        this.timezone = timezone;
     }
 
     public void addExtraParameter(String name, String value)
@@ -1318,6 +1335,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(", highlight=").append(this.highlight)
                     .append(", interval=").append(this.interval)
                     .append(", range=").append(this.range)
+                    .append(", timezone=").append(this.timezone)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();
     }

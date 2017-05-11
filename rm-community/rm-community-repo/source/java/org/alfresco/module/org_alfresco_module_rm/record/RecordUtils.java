@@ -56,6 +56,11 @@ public class RecordUtils
     {
         mandatory("nodeService", nodeService);
         mandatory("nodeRef", nodeRef);
+        
+        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
+        {
+        	return;
+        }
 
         // get the record id
         String recordId = (String) nodeService.getProperty(nodeRef, PROP_IDENTIFIER);

@@ -486,10 +486,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             }
                         }
 
-                        // create and file the content as a record
-                        file(nodeRef);
-                        // recalculate disposition schedule for the record when linking it
-                        dispositionService.recalculateNextDispositionStep(nodeRef);
                     }
                 }
                 catch (RecordLinkRuntimeException e)

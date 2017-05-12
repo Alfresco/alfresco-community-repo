@@ -988,7 +988,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path}
      */
     @Test
-    public void testSharedLinkIncludePath() throws Exception
+    public void testGetSharedLinksIncludePath() throws Exception
     {
         String contentText = "includePathTest" + RUNID;
         
@@ -1010,12 +1010,12 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals("get /shared-links/ API returns same no of shared-links with or without include=path, when there are no shared-links", sharedLinks, sharedLinksWithPath);
         
         // Create Files in various locations: My Files, SharedFiles, Sites with different visibility
-        
+
         // Create doc in "My Files"
-        Document myFile = createTextFile(getMyNodeId(), "MyFile1.txt", contentText);
+        Document myFile = createTextFile(getMyNodeId(), "MyFile" + RUNID + ".txt", contentText);
 
         // Create doc in "Shared" folder
-        Document sharedFile = createTextFile(getSharedNodeId(), "SharedFile1.txt", contentText);
+        Document sharedFile = createTextFile(getSharedNodeId(), "SharedFile" + RUNID + ".txt", contentText);
         
         // Create Sites
         Site publicSite = createSite ("TestSite-Public-" + RUNID, SiteVisibility.PUBLIC);
@@ -1062,14 +1062,14 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         Document docPermissions = new Document();
         docPermissions.setPermissions(nodePermissions);
 
-        response = put(URL_NODES, fileMod.getId(), toJsonAsStringNonNull(docPermissions), null, 200);
+        put(URL_NODES, fileMod.getId(), toJsonAsStringNonNull(docPermissions), null, 200);
         
         // Grant user2: Consumer Permission for Moderated Site > Folder 2, File2
-        response = put(URL_NODES, fileMod2.getId(), toJsonAsStringNonNull(docPermissions), null, 200);
+        put(URL_NODES, fileMod2.getId(), toJsonAsStringNonNull(docPermissions), null, 200);
         
         Folder folderPermissions = new Folder();
         folderPermissions.setPermissions(nodePermissions);
-        response = put(URL_NODES, folder2.getId(), toJsonAsStringNonNull(folderPermissions), null, 200);
+        put(URL_NODES, folder2.getId(), toJsonAsStringNonNull(folderPermissions), null, 200);
         
         // Get links For User1
         setRequestContext(user1);
@@ -1081,7 +1081,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // Path Info is not included for get shared-links/<id>
         response = getSingle(QuickShareLinkEntityResource.class, myFileLinkId, queryParams, 200);
         link = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
-        assertNull("get /shared-links/<id> API does not return Path Info when requested", link.getPathInfo());
+        assertNull("get /shared-links/<id> API ignores Path Info when requested as it is a noAuth API.", link.getPathInfo());
         
         response = getAll(URL_SHARED_LINKS, paging, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
@@ -1163,7 +1163,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         getAll(URL_SHARED_LINKS, paging, queryParams, 401);
 
         // Unauthenticated request returns 401
-        setRequestContext(null, null, null);
+        setRequestContext(user2, null, null);
         getAll(URL_SHARED_LINKS, paging, queryParams, 401);
 
         // Delete the shared links
@@ -1174,7 +1174,94 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         deleteSharedLink(fileModLinkId);
         deleteSharedLink(fileMod2LinkId);
         deleteSharedLink(filePrivateLinkId);
-    }    
+    }
+
+    /**
+     * Tests create shared-links with 'include' parameter.
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=allowableOperations}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path,allowableOperations}
+     */
+    @Test
+    public void testCreateSharedLinkWithIncludeParam() throws Exception
+    {
+        String content = "The quick brown fox jumps over the lazy dog.";
+        String fileName1 = "fileOne_" + RUNID + ".txt";
+        String fileName2 = "fileTwo_" + RUNID + ".txt";
+        String fileName3 = "fileThree_" + RUNID + ".txt";
+
+        // As user 1 create 3 text files in -my- folder (i.e. User's Home)
+        setRequestContext(user1);
+        String doc1Id = createTextFile(getMyNodeId(), fileName1, content).getId();
+        String doc2Id = createTextFile(getMyNodeId(), fileName2, content).getId();
+        String doc3Id = createTextFile(getMyNodeId(), fileName3, content).getId();
+
+        // Share the 'fileName1' doc and use the query parameter 'include=path' to return path information
+        QuickShareLink body = new QuickShareLink();
+        body.setNodeId(doc1Id);
+
+        HttpResponse response = post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), "?include=path", 201);
+        QuickShareLink quickShareLinkResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        PathInfo pathInfo = quickShareLinkResponse.getPathInfo();
+        assertNotNull("API returns Path Info when requested upon creation.", pathInfo);
+        assertTrue("IsComplete should have been true for user1.", pathInfo.getIsComplete());
+        assertEquals("Incorrect number of path elements.", 3, pathInfo.getElements().size());
+        assertEquals("Incorrect path name.", "/Company Home/User Homes/" + user1, pathInfo.getName());
+        assertEquals("Incorrect path element.", getRootNodeId(), pathInfo.getElements().get(0).getId());
+        assertEquals("Incorrect path element.", "Company Home", pathInfo.getElements().get(0).getName());
+        assertEquals("Incorrect path element", "User Homes", pathInfo.getElements().get(1).getName());
+        assertEquals("Incorrect path element.", getMyNodeId(), pathInfo.getElements().get(2).getId());
+        assertEquals("Incorrect path element.", user1, pathInfo.getElements().get(2).getName());
+
+        // Share the 'fileName2' doc and use the query parameter 'include=allowableOperations' to return allowableOperations information
+        body.setNodeId(doc2Id);
+        response = post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), "?include=allowableOperations", 201);
+        quickShareLinkResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        List<String> allowableOperations = quickShareLinkResponse.getAllowableOperations();
+        assertNotNull("'allowableOperations' should have been returned.", allowableOperations);
+        assertEquals("allowableOperations should only have 'Delete' as allowable operation.", 1, allowableOperations.size());
+        assertEquals("Incorrect allowable operation.", "delete", allowableOperations.get(0));
+
+        // Share the 'fileName3' doc and use the query parameter 'include=path,allowableOperations' to return path and allowableOperations information
+        body.setNodeId(doc3Id);
+        response = post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), "?include=path,allowableOperations", 201);
+        quickShareLinkResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        // Check PathInfo
+        pathInfo = quickShareLinkResponse.getPathInfo();
+        assertNotNull("'pathInfo' should have been returned.", pathInfo);
+        assertTrue("IsComplete should have been true for user1.", pathInfo.getIsComplete());
+        assertEquals("Incorrect number of path elements.", 3, pathInfo.getElements().size());
+        assertEquals("Incorrect path name.", "/Company Home/User Homes/" + user1, pathInfo.getName());
+
+        // Check allowableOperations
+        allowableOperations = quickShareLinkResponse.getAllowableOperations();
+        assertNotNull("'allowableOperations' should have been returned.", allowableOperations);
+        assertEquals("allowableOperations should only have 'Delete' as allowable operation.", 1, allowableOperations.size());
+        assertEquals("Incorrect allowable operation.", "delete", allowableOperations.get(0));
+
+        // Test that listing shared links also support the include parameter.
+        Paging paging = getPaging(0, 100);
+        response = getAll(URL_SHARED_LINKS, paging, Collections.singletonMap("include", "path,allowableOperations"), 200);
+        List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals("Incorrect number of shared-links returned.", 3, sharedLinks.size());
+        sharedLinks.forEach(sharedLink ->
+        {
+            // Check PathInfo
+            PathInfo path = sharedLink.getPathInfo();
+            assertNotNull("'pathInfo' should have been returned.", path);
+            assertTrue("IsComplete should have been true for user1.", path.getIsComplete());
+            assertEquals("Incorrect number of path elements.", 3, path.getElements().size());
+            assertEquals("Incorrect path name.", "/Company Home/User Homes/" + user1, path.getName());
+
+            // Check allowableOperations
+            List<String> operations = sharedLink.getAllowableOperations();
+            assertNotNull("'allowableOperations' should have been returned.", operations);
+            assertEquals("allowableOperations should only have 'Delete' as allowable operation.", 1, operations.size());
+            assertEquals("Incorrect allowable operation.", "delete", operations.get(0));
+        });
+    }
 
     private String getEmailSharedLinkUrl(String sharedId)
     {

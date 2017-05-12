@@ -124,6 +124,6 @@ then please re-run with  -Ddependency.surf.version=6.3
 Install lombok plugin for IDEs:
 -------------------------------
 
-To allow UI automation and benchmark projects to be built within an IDE the lombok 'plugin' needs to be installed.
+To allow automation and benchmark projects to be built within an IDE the lombok 'plugin' needs to be installed.
 
 Execute lombok.jar (doubleclick it, or run java -jar lombok.jar). Follow instructions.

@@ -50,6 +50,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.repo.content.MimetypeMap;
@@ -78,6 +79,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
     private ModelSecurityService modelSecurityService;
     private FilePlanRoleService filePlanRoleService;
     private CapabilityService capabilityService;
+    private RecordService recordService;
 
     /** test values */
     public static final String DEFAULT_DISPOSITION_AUTHORITY = "disposition authority";
@@ -104,6 +106,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
         modelSecurityService = (ModelSecurityService)applicationContext.getBean("ModelSecurityService");
         filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
         capabilityService = (CapabilityService)applicationContext.getBean("CapabilityService");
+        recordService = (RecordService)applicationContext.getBean("RecordService");
     }
 
     /**
@@ -250,6 +253,9 @@ public class CommonRMTestUtils implements RecordsManagementModel
         writer.setEncoding("UTF-8");
         writer.putContent(content);
 
+        // file the record
+        recordService.file(record);
+
         return record;
     }
 
@@ -272,6 +278,9 @@ public class CommonRMTestUtils implements RecordsManagementModel
         writer.setMimetype(mimetype);
         writer.setEncoding("UTF-8");
         writer.putContent(content);
+
+        // file the record
+        recordService.file(record);
 
         return record;
     }

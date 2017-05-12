@@ -52,6 +52,7 @@ import java.util.NoSuchElementException;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
+import org.alfresco.rest.rm.community.model.record.RecordProperties;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
@@ -59,6 +60,7 @@ import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChi
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledRecordFolder;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
@@ -400,6 +402,29 @@ public class UnfiledContainerTests extends BaseRMRestTest
         // Verify the status code
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
+
+    @Test(description = "Create a record with custom record identifier in unfiled container")
+    public void createRecordWithCustomIdentifier() throws Exception
+    {
+    	String recordName = "customIdRecord-" + getRandomAlphanumeric();
+    	String customIdentifier = "customId";
+    	RecordProperties propertiesModel = RecordProperties.builder().identifier(customIdentifier).build();
+
+    	UnfiledContainerChild childModel = UnfiledContainerChild.builder()
+        .name(recordName)
+        .nodeType(CONTENT_TYPE)
+        .properties(UnfiledContainerChildProperties.builder()
+                .identifier(customIdentifier)
+                .build())
+        .build();
+
+    	UnfiledContainerChild child = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(childModel, UNFILED_RECORDS_CONTAINER_ALIAS);
+
+    	assertStatusCode(HttpStatus.CREATED);
+    	assertEquals(child.getProperties().getIdentifier(), customIdentifier);
+    	assertEquals(child.getName(), recordName + " (" + customIdentifier + ")");
+    }
+
     @AfterMethod
     @AfterClass (alwaysRun = true)
     public void tearDown() throws Exception

@@ -486,6 +486,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             }
                         }
 
+                        // recalculate disposition schedule for the record when linking it
+                        dispositionService.recalculateNextDispositionStep(nodeRef);
                     }
                 }
                 catch (RecordLinkRuntimeException e)
@@ -1206,29 +1208,43 @@ public class RecordServiceImpl extends BaseBehaviourBean
         disablePropertyEditableCheck();
         try
         {
-            // get the record id
-            String recordId = identifierService.generateIdentifier(ASPECT_RECORD,
-                                                                   nodeService.getPrimaryParent(document).getParentRef());
+        	authenticationUtil.runAsSystem(new RunAsWork<Void>() 
+        	{
 
-            // get the record name
-            String name = (String)nodeService.getProperty(document, ContentModel.PROP_NAME);
+				@Override
+				public Void doWork() throws Exception {
+                    Map<QName, Serializable> props = new HashMap<>();
 
-            // add the record aspect
-            Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
-            props.put(PROP_IDENTIFIER, recordId);
-            props.put(PROP_ORIGIONAL_NAME, name);
-            nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);
+                    if(!nodeService.hasAspect(document, ASPECT_RECORD_COMPONENT_ID))
+                    {
+                        // get the record id
+                        String recordId = identifierService.generateIdentifier(ASPECT_RECORD,
+                                nodeService.getPrimaryParent(document).getParentRef());
 
-            // remove versionable aspect(s)
-            nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
+                        // get the record name
+                        String name = (String)nodeService.getProperty(document, ContentModel.PROP_NAME);
 
-            // remove the owner
-            ownableService.setOwner(document, OwnableService.NO_OWNER);
+                        // add the record aspect
 
-            if (TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(document)))
-            {
-                appendIdentifierToName(nodeService, document);
-            }
+                        props.put(PROP_IDENTIFIER, recordId);
+                        props.put(PROP_ORIGIONAL_NAME, name);
+                    }
+		            nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);
+
+		            // remove versionable aspect(s)
+		            nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
+
+		            // remove the owner
+		            
+		            ownableService.setOwner(document, OwnableService.NO_OWNER);
+		            
+		            if (TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(document)))
+		            {
+		                appendIdentifierToName(nodeService, document);
+		            }
+					return null;
+				}
+			});
         }
         finally
         {

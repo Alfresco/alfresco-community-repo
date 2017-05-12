@@ -120,6 +120,11 @@
 
    <!-- rma model aspects -->
 
+    <bean id="rma.protectedAspects" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.ProtectedAspects" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+    </bean>
+
    <bean id="rma.filePlanComponent" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FilePlanComponentAspect" parent="rm.baseBehaviour">
         <property name="scriptService" ref="ScriptService" />
         <property name="namespaceService" ref="NamespaceService" />

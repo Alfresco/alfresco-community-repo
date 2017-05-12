@@ -223,7 +223,7 @@ public class RecordFolderAPI extends RMModelRequest
     /**
      * Create a record from file resource
      *
-     * @param electronicRecordModel {@link Record} for electronic record to be created
+     * @param recordModel {@link Record} for electronic record to be created
      * @param recordContent {@link File} pointing to the content of the electronic record to be created
      * @param recordFolderId The identifier of a record folder
      * @return newly created {@link Record}
@@ -263,7 +263,7 @@ public class RecordFolderAPI extends RMModelRequest
      * Creates a record in a record folder child, i.e. a record.
      *
      * @param recordModel The record model which holds the information
-     * @param recordfolderId The identifier of a record folder
+     * @param recordFolderId The identifier of a record folder
      * @param parameters The URL parameters to add
      * @return The created {@link Record}
      * @throws Exception for the following cases:

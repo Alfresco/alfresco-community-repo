@@ -579,13 +579,20 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             qs.setExpiresAt((Date) map.get("expiryDate"));
 
             // note: if noAuth mode then do not return allowable operations (eg. but can be optionally returned when finding shared links)
-            if ((! noAuth) && includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
+            if (!noAuth)
             {
-                if (quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
+                if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS) && quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
                 {
                     qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
                 }
+
+                // in noAuth mode we don't return the path info
+                if (includeParam.contains(PARAM_INCLUDE_PATH))
+                {
+                    qs.setPathInfo(nodes.lookupPathInfo(nodeRef, null));
+                }
             }
+
 
             return qs;
         }

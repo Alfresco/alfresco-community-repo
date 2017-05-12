@@ -314,7 +314,7 @@ paths:
         '200':
           description: Successful response
           schema:
-            $ref: '#/definitions/RecordCategoryAssociationPaging'
+            $ref: '#/definitions/RecordCategoryPaging'
         '401':
           description: If authentication fails
         '403':
@@ -1157,7 +1157,7 @@ paths:
         '200':
           description: Successful response
           schema:
-            $ref: '#/definitions/RecordCategoryAssociationPaging'
+            $ref: '#/definitions/RecordCategoryChildPaging'
         '401':
           description: If authentication fails
         '403':
@@ -2984,7 +2984,7 @@ definitions:
     properties:
       entry:
         $ref: '#/definitions/RecordCategoryChild'
-  RecordCategoryAssociationPaging:
+  RecordCategoryPaging:
     type: object
     properties:
       list:
@@ -2995,20 +2995,23 @@ definitions:
           entries:
             type: array
             items:
-              $ref: '#/definitions/RecordCategoryChildAssociationEntry'
+              $ref: '#/definitions/RecordCategoryEntry'
           source:
             $ref: '#/definitions/FilePlan'
-  RecordCategoryChildAssociationEntry:
+  RecordCategoryChildPaging:
     type: object
-    required:
-      - entry
     properties:
-      entry:
-        $ref: '#/definitions/RecordCategoryChildAssociation'
-  RecordCategoryChildAssociation:
-    allOf:
-      - $ref: '#/definitions/RecordCategoryChild'
-      - type: object
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/RecordCategoryChildEntry'
+          source:
+            $ref: '#/definitions/RecordCategory'
   ## Record folder
   RecordFolder:
     type: object

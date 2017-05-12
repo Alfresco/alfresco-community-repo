@@ -174,7 +174,7 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
         mandatory("parameters", parameters);
 
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
-
+        
         // Create the children
         RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
         {
@@ -193,7 +193,7 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
                         nodeParent = parentNodeRef;
                     }
 
-                    NodeRef newNodeRef = apiUtils.createRMNode(nodeParent, nodeInfo.getName(), nodeInfo.getNodeType(), nodeInfo.getProperties(), nodeInfo.getAspectNames());
+                    NodeRef newNodeRef = apiUtils.createRMNode(nodeParent, nodeInfo, parameters);
                     createdNodes.add(newNodeRef);
                 }
                 return createdNodes;

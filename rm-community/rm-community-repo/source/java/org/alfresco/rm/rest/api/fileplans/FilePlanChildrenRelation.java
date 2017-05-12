@@ -198,8 +198,8 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
                 for (RecordCategory nodeInfo : nodeInfos)
                 {
                     // Create the node
-                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo.getName(), RECORD_CATEGORY_TYPE,
-                            nodeInfo.getProperties(), nodeInfo.getAspectNames());
+                    nodeInfo.setNodeType(RECORD_CATEGORY_TYPE);
+                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
                     createdNodes.add(newNodeRef);
                 }
                 return createdNodes;

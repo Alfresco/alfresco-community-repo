@@ -198,6 +198,7 @@ public class SearchTypesFactory
             Boolean isRecordFolder = propertyWalker.getProperty(RecordCategoryChild.PARAM_IS_RECORD_FOLDER,
                     WhereClauseParser.EQUALS, Boolean.class);
             Boolean isRecordCategory = propertyWalker.getProperty(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY, WhereClauseParser.EQUALS, Boolean.class);
+
             if ((isRecordFolder != null && isRecordFolder.booleanValue()) || (isRecordCategory != null && !isRecordCategory.booleanValue()))
             {
                 includeRecordFolders = true;
@@ -221,6 +222,7 @@ public class SearchTypesFactory
                 if (nodeTypeQNameStr.equals(RecordsManagementModel.TYPE_RECORD_FOLDER))
                 {
                     includeRecordFolders = true;
+
                 }
                 else if (filterNodeTypeQName.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY))
                 {

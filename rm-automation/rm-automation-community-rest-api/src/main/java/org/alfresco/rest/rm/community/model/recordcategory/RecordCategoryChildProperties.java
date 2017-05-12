@@ -134,7 +134,7 @@ public class RecordCategoryChildProperties extends TestModel
     private Boolean recordSearchDispositionEventsEligible;
 
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS)
-	private String recordSearchDispositionInstructions;
+    private String recordSearchDispositionInstructions;
 
     @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;

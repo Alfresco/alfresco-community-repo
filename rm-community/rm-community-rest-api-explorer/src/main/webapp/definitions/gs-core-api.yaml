@@ -538,7 +538,7 @@ paths:
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
         - $ref: '#/parameters/unfiledRecordFolderAndContainerWhereParam'
-        - $ref: '#/parameters/unfiledContainerEntryIncludeParam'
+        - $ref: '#/parameters/unfiledContainerChildEntryIncludeParam'
         - $ref: '#/parameters/unfiledContainerIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
       responses:
@@ -842,7 +842,7 @@ paths:
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
         - $ref: '#/parameters/unfiledRecordFolderAndContainerWhereParam'
-        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderChildEntryIncludeParam'
         - $ref: '#/parameters/unfiledRecordFolderRelativePathParam'
         - $ref: '#/parameters/unfiledRecordFolderIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
@@ -2093,7 +2093,24 @@ parameters:
     description: |
       Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
       * allowableOperations
+      * aspectNames
       * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  unfiledContainerChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * association 
+      * path
+      * properties
     required: false
     type: array
     items:
@@ -2119,7 +2136,24 @@ parameters:
     description: |
       Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
       * allowableOperations
+      * aspectNames
       * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  unfiledRecordFolderChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * association
+      * path
+      * properties
     required: false
     type: array
     items:
@@ -2165,9 +2199,11 @@ parameters:
     in: query
     description: |
       Returns additional information about the record category. Any optional field from the response model can be requested. For example:
-      * hasRetentionSchedule
       * allowableOperations
+      * aspectNames
+      * hasRetentionSchedule
       * path
+      * properties
     required: false
     type: array
     items:
@@ -2191,14 +2227,14 @@ parameters:
     in: query
     description: |
       Returns additional information about the record category. Any optional field from the response model can be requested. For example:
-      * properties
+      * allowableOperations
       * aspectNames
       * hasRetentionSchedule
       * isClosed
       * isRecordCategory
       * isRecordFolder
-      * allowableOperations
       * path
+      * properties
     required: false
     type: array
     items:
@@ -2231,10 +2267,8 @@ parameters:
     in: query
     description: |
       Returns additional information about the record folders. Any optional field from the response model can be requested. For example:
-      * properties
-      * aspectNames
-      * isClosed
       * allowableOperations
+      * isClosed
       * path
     required: false
     type: array
@@ -2252,11 +2286,13 @@ parameters:
     in: query
     description: |
       Returns additional information about the records. Any optional field from the response model can be requested. For example:
-      * properties
-      * aspectNames
-      * isCompleted
       * allowableOperations
+      * aspectNames
+      * association
+      * content
+      * isCompleted
       * path
+      * properties
     required: false
     type: array
     items:
@@ -2307,12 +2343,12 @@ parameters:
     in: query
     description: |
       Returns additional information about the transfer folder. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * properties
       * transferPDFIndicator
       * transferLocation
       * transferAccessionIndicator
-      * properties
-      * aspectNames
-      * allowableOperations
     required: false
     type: array
     items:
@@ -2335,14 +2371,14 @@ parameters:
     in: query
     description: |
       Returns additional information about the transfer's child. Any optional field from the response model can be requested. For example:
-      * properties
+      * allowableOperations
       * aspectNames
+      * isClosed
       * isCompleted
       * isRecord
-      * isClosed
       * isRecordFolder
-      * allowableOperations
       * path
+      * properties
     required: false
     type: array
     items:
@@ -2360,9 +2396,9 @@ parameters:
     in: query
     description: |
       Returns additional information about the record. Any optional field from the response model can be requested. For example:
-      * isCompleted
-      * content
       * allowableOperations
+      * content
+      * isCompleted
       * path
     required: false
     type: array
@@ -2961,7 +2997,7 @@ definitions:
             items:
               $ref: '#/definitions/RecordCategoryChildAssociationEntry'
           source:
-            $ref: '#/definitions/RecordCategory'
+            $ref: '#/definitions/FilePlan'
   RecordCategoryChildAssociationEntry:
     type: object
     required:
@@ -2973,9 +3009,6 @@ definitions:
     allOf:
       - $ref: '#/definitions/RecordCategoryChild'
       - type: object
-        properties:
-          association:
-            $ref: '#/definitions/ChildAssociationInfo'
   ## Record folder
   RecordFolder:
     type: object

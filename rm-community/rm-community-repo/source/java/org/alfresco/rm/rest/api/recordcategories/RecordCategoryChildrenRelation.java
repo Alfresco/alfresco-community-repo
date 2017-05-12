@@ -33,6 +33,7 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.FilterProp;
@@ -123,10 +125,11 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
 
         // list record categories and record folders
         Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesCategoriesEndpoint(parameters, LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES);
+        Set<QName> assocTypeQNames = Collections.singleton(ContentModel.ASSOC_CONTAINS);
         List<FilterProp> filterProps = apiUtils.getListChildrenFilterProps(parameters, LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES);
 
         final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef,
-                null,
+                assocTypeQNames,
                 searchTypeQNames,
                 null,
                 apiUtils.getSortProperties(parameters),
@@ -189,8 +192,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
                                 RecordsManagementModel.TYPE_RECORD_CATEGORY);
                     }
                     // Create the node
-                    NodeRef newNode = apiUtils.createRMNode(nodeParent, nodeInfo.getName(), nodeInfo.getNodeType(),
-                            nodeInfo.getProperties(), nodeInfo.getAspectNames());
+                    NodeRef newNode =  apiUtils.createRMNode(nodeParent, nodeInfo, parameters);
                     createdNodes.add(newNode);
                 }
                 return createdNodes;

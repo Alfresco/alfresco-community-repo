@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.security.authority;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,7 +41,6 @@ import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
-
 import net.sf.acegisecurity.AuthenticationCredentialsNotFoundException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -49,10 +51,14 @@ import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.Policy;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnAuthorityAddedToGroup;
+import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnAuthorityRemovedFromGroup;
+import org.alfresco.repo.security.authority.AuthorityServicePolicies.OnGroupDeleted;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.ServiceRegistry;
@@ -74,10 +80,13 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.junit.FixMethodOrder;
 import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
 import org.springframework.context.ApplicationContext;
 
 @Category(OwnJVMTestsCategory.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AuthorityServiceTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -1577,6 +1586,70 @@ public class AuthorityServiceTest extends TestCase
         assertFalse(groups.getPage().contains(user));
         assertFalse(groups.getPage().contains(role));
     }
+    
+    /**
+     * Test that the AuthorityServicePolicies are invoked whenever an authority is added/removed from a group, or a group is being deleted
+     */
+    public void testAuthorityPolicies()
+    {
+        String testGroup = authorityService.createAuthority(AuthorityType.GROUP, "testGroup");
+        String testSubGroup = authorityService.createAuthority(AuthorityType.GROUP, "testSubGroup");
+        
+        String anotherTestGroup = authorityService.createAuthority(AuthorityType.GROUP, "testGroup2");
+        
+        String testUser = "testUser";
+        HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        properties.put(ContentModel.PROP_USERNAME, testUser);
+        personService.createPerson(properties);
+        
+        //test that OnAuthorityAddedToGroup is invoked when an user is added to a group
+        OnAuthorityAddedToGroup onAuthorityAddedToGroup = createClassPolicy(OnAuthorityAddedToGroup.class, OnAuthorityAddedToGroup.QNAME, ContentModel.TYPE_AUTHORITY);
+        
+        authorityService.addAuthority(testGroup, testUser);
+        
+        verify(onAuthorityAddedToGroup).onAuthorityAddedToGroup(testGroup, testUser);
+        
+        //test that OnAuthorityAddedToGroup is invoked when an user is removed from a group
+        OnAuthorityRemovedFromGroup onAuthorityRemovedFromGroup = createClassPolicy(OnAuthorityRemovedFromGroup.class, OnAuthorityRemovedFromGroup.QNAME, ContentModel.TYPE_AUTHORITY);
+        
+        authorityService.removeAuthority(testGroup, testUser);
+        
+        verify(onAuthorityRemovedFromGroup).onAuthorityRemovedFromGroup(testGroup, testUser);
+        
+        //test that OnAuthorityAddedToGroup is invoked when a group is added to another group
+        onAuthorityAddedToGroup = createClassPolicy(OnAuthorityAddedToGroup.class, OnAuthorityAddedToGroup.QNAME, ContentModel.TYPE_AUTHORITY);
+        
+        authorityService.addAuthority(testGroup, testSubGroup);
+        
+        verify(onAuthorityAddedToGroup).onAuthorityAddedToGroup(testGroup, testSubGroup);
+        
+        //test that OnGroupDeleted is invoked when a group is deleted without the cascade flag
+        OnGroupDeleted onGroupDeleted = createClassPolicy(OnGroupDeleted.class, OnGroupDeleted.QNAME, ContentModel.TYPE_AUTHORITY);
+        
+        authorityService.deleteAuthority(anotherTestGroup);
+        
+        verify(onGroupDeleted).onGroupDeleted(anotherTestGroup, false);
+        
+        //test that OnGroupDeleted is invoked when a group is deleted with cascade=true
+        onGroupDeleted = createClassPolicy(OnGroupDeleted.class, OnGroupDeleted.QNAME, ContentModel.TYPE_AUTHORITY);
+        
+        authorityService.deleteAuthority(testGroup, true);
+        
+        verify(onGroupDeleted).onGroupDeleted(testSubGroup, true);
+        
+        verify(onGroupDeleted).onGroupDeleted(testGroup, true);
+    }
+    
+    private <T extends Policy> T createClassPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)
+    {
+        T policy = mock(policyInterface);
+        policyComponent.bindClassBehaviour(
+                    policyQName, 
+                    triggerOnClass, 
+                    new JavaBehaviour(policy, policyQName.getLocalName()));
+        return policy;
+    }  
+      
 
     private void createUserAuthority(String user)
     {

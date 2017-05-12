@@ -192,7 +192,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
                 return createdNodes;
             }
         };
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Get the nodes info
         List<UnfiledContainerChild> result = new LinkedList<>();

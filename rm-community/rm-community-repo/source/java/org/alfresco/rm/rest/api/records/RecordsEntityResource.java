@@ -217,7 +217,15 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // return record state
-        FileInfo info = fileFolderService.getFileInfo(record);
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(record);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+        
         apiUtils.postActivity(info, recordInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createRecord(info, parameters, null, false);
     }

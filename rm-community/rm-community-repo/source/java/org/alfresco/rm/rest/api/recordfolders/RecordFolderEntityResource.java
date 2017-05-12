@@ -125,7 +125,15 @@ public class RecordFolderEntityResource implements EntityResourceAction.ReadById
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(nodeRef);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+
         return nodesModelFactory.createRecordFolder(info, parameters, null, false);
     }
 

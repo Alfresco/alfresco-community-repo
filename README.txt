@@ -95,9 +95,6 @@ Follow these instructions install licence and Outlook plugin:
   - http://docs.alfresco.com/outlook2.1/tasks/Outlook-install_v2.html 
 
 
-
-
-
 SNAPSHOT dependencies:
 ----------------------
 
@@ -114,6 +111,7 @@ Code Formatting:
 
 This project follows the usual Alfresco Coding Standards. If you use Eclipse or IntelliJ, there are settings inside the ide-config directory for you to import.
 
+
 Surf build errors:
 ------------------
 
@@ -121,3 +119,11 @@ If you get:
 [ERROR] Failed to execute goal on project alfresco-rm-community-share: Could not resolve dependencies for project org.alfresco:alfresco-rm-community-share:amp:2.6-SNAPSHOT: Failed to collect dependencies at org.alfresco.surf:spring-surf-api:jar:6.3 -> org.alfresco.surf:spring-surf:jar:${dependency.surf.version}: Failed to read artifact descriptor for org.alfresco.surf:spring-surf:jar:${dependency.surf.version}: Could not transfer artifact org.alfresco.surf:spring-surf:pom:${dependency.surf.version} from/to alfresco-internal (https://artifacts.alfresco.com/nexus/content/groups/private): Not authorized , ReasonPhrase:Unauthorized. -> [Help 1]
 
 then please re-run with  -Ddependency.surf.version=6.3
+
+
+Install lombok plugin for IDEs:
+-------------------------------
+
+To allow automation and benchmark projects to be built within an IDE the lombok 'plugin' needs to be installed.
+
+Execute lombok.jar (doubleclick it, or run java -jar lombok.jar). Follow instructions.

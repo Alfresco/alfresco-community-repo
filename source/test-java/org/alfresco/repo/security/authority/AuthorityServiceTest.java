@@ -1598,7 +1598,7 @@ public class AuthorityServiceTest extends TestCase
         String anotherTestGroup = authorityService.createAuthority(AuthorityType.GROUP, "testGroup2");
         
         String testUser = "testUser";
-        HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        HashMap<QName, Serializable> properties = new HashMap<>();
         properties.put(ContentModel.PROP_USERNAME, testUser);
         personService.createPerson(properties);
         

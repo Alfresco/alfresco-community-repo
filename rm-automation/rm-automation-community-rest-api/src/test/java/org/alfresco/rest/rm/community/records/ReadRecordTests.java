@@ -24,20 +24,16 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.fileplancomponents;
+package org.alfresco.rest.rm.community.records;
 
-import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_NAME;
-import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.base.TestData.RECORD_FOLDER_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_COMPLETED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.CONTENT;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_COMPLETED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
@@ -49,13 +45,10 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
@@ -64,14 +57,10 @@ import org.alfresco.rest.rm.community.model.record.RecordContent;
 import org.alfresco.rest.rm.community.model.record.RecordProperties;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.rm.community.model.recordfolder.RecordFolderCollection;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI;
+import org.alfresco.test.AlfrescoTest;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -109,7 +98,7 @@ public class ReadRecordTests extends BaseRMRestTest
      * Then I receive an empty list
      */
     @DataProvider(name="invalidContainersForRecords")
-    public  String[][] getInvalidContainersForRecords() throws Exception
+    public  Object[][] getInvalidContainersForRecords() throws Exception
     {
         return new String[][] {
             { FILE_PLAN_ALIAS },
@@ -119,9 +108,10 @@ public class ReadRecordTests extends BaseRMRestTest
     }
     @Test
     (
-    dataProvider ="invalidContainersForRecords",
-    description ="Reading records from invalid containers"
+        dataProvider ="invalidContainersForRecords",
+        description ="Reading records from invalid containers"
     )
+    @AlfrescoTest(jira="RM-4361")
     public void readRecordsFromInvalidContainers(String container) throws Exception
     {
         Record electronicRecord = Record.builder()
@@ -154,7 +144,7 @@ public class ReadRecordTests extends BaseRMRestTest
         }
         else if(TRANSFERS_ALIAS.equals(container))
         {
-            getRestAPIFactory().getTransferContainerAPI().getTransfers(container, "where=(isFile=true)")
+            getRestAPIFactory().getTransferContainerAPI().getTransfers(container, "where=(isRecord=true)")
                                                             .assertThat()//check the list returned is empty
                                                             .entriesListIsEmpty().assertThat().paginationExist();
             //check response status code
@@ -181,11 +171,12 @@ public class ReadRecordTests extends BaseRMRestTest
      * Then I successfully receive the meta-data values for that record
      */
     @Test
+    @AlfrescoTest (jira = "RM-4361")
     public void readRecordMetadata() throws Exception
     {
         String RELATIVE_PATH = "/" + CATEGORY_NAME + getRandomAlphanumeric() + "/folder";
 
-        RecordCategory recordCategoryModel = createRecordCategoryModel(RECORD_CATEGORY_NAME, RECORD_CATEGORY_TITLE);
+        RecordCategory recordCategoryModel = createRecordCategoryModel(CATEGORY_NAME, CATEGORY_NAME);
         String recordCategoryId = getRestAPIFactory().getFilePlansAPI().createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS).getId();
 
         //create the containers from the relativePath
@@ -236,6 +227,7 @@ public class ReadRecordTests extends BaseRMRestTest
      * Then I successfully receive the content of the record
      */
     @Test
+    @AlfrescoTest (jira = "RM-4361")
     public void readRecordContent() throws Exception
     {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
@@ -299,6 +291,7 @@ public class ReadRecordTests extends BaseRMRestTest
      * Then I am informed that the record has no content
      */
     @Test
+    @AlfrescoTest (jira = "RM-4361")
     public void readNonElectronicRecordContent() throws Exception
     {
 
@@ -322,7 +315,7 @@ public class ReadRecordTests extends BaseRMRestTest
      * Then I receive an error
      */
     @DataProvider(name="noContentNodes")
-    public  String[][] getNonRecordTypes() throws Exception
+    public  Object[][] getNonRecordTypes() throws Exception
     {
         return new String[][] {
             { getFilePlan(FILE_PLAN_ALIAS).getId() },
@@ -335,180 +328,12 @@ public class ReadRecordTests extends BaseRMRestTest
         dataProvider = "noContentNodes",
         description = "Reading records from invalid containers"
     )
+    @AlfrescoTest (jira = "RM-4361")
     public void readContentFromInvalidContainers(String container) throws Exception
     {
         getRestAPIFactory().getRecordsAPI().getRecordContent(container).asString();
         assertStatusCode(BAD_REQUEST);
     }
 
-    /**
-     * Given a container that is a record folder
-     * When I try to record the containers records
-     * Then I receive a list of all the records contained within the record folder
-     */
-    @Test
-    public void readRecordsFromRecordFolder() throws Exception
-    {
-        final int NUMBER_OF_RECORDS = 5;
-        String containerId = createCategoryFolderInFilePlan().getId();
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        // Create Electronic Records
-        ArrayList<Record> children = new ArrayList<Record>();
-        for (int i = 0; i < NUMBER_OF_RECORDS; i++)
-        {
-            //build the electronic record
-            Record record =  Record.builder()
-                        .name(ELECTRONIC_RECORD_NAME + i)
-                        .nodeType(CONTENT_TYPE)
-                        .build();
-            //create a child
-            Record child = recordFolderAPI.createRecord(record, containerId, createTempFile(ELECTRONIC_RECORD_NAME + i, ELECTRONIC_RECORD_NAME + i ));
 
-            children.add(child);
-        }
-        //Create NonElectronicRecords
-        for (int i = 0; i < NUMBER_OF_RECORDS; i++)
-        {
-            Record nonelectronicRecord =  Record.builder()
-                        .properties(RecordProperties.builder()
-                                    .description("Description")
-                                    .title("Title")
-                                    .build())
-                        .name(NONELECTRONIC_RECORD_NAME+i)
-                        .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                        .build();
-            //create records
-            Record child = recordFolderAPI.createRecord(nonelectronicRecord, containerId);
-
-            children.add(child);
-        }
-
-        // List children from API
-        RecordFolderCollection apiChildren = (RecordFolderCollection) recordFolderAPI.getRecordFolderChildren(containerId).assertThat().entriesListIsNotEmpty();
-
-        // Check status code
-        assertStatusCode(OK);
-
-
-        // Check listed children against created list
-        apiChildren.getEntries().forEach(c ->
-        {
-            Record record = c.getEntry();
-            assertNotNull(record.getId());
-            logger.info("Checking child " + record.getId());
-
-            try
-            {
-                // Find this child in created children list
-                Record createdComponent = children.stream()
-                            .filter(child -> child.getId().equals(record.getId()))
-                            .findFirst()
-                            .get();
-
-                // Created by
-                assertEquals(record.getCreatedByUser().getId(), getAdminUser().getUsername());
-
-                // Is parent Id set correctly
-                assertEquals(record.getParentId(), containerId);
-
-                //check the record name
-                assertTrue(record.getName().equals(createdComponent.getName()));
-                assertTrue(createdComponent.getName().contains(createdComponent.getProperties().getIdentifier()));
-                assertEquals(createdComponent.getNodeType(), record.getNodeType());
-
-            }
-            catch (NoSuchElementException e)
-            {
-                fail("No child element for " + record.getId());
-            }
-        });
-    }
-
-    /**
-     * Given a container that is a unfiled record folder
-     * When I try to record the containers records
-     * Then I receive a list of all the records contained within the unfiled record folder
-     */
-    @Test
-    public void readRecordsFromUnfiledRecordFolder() throws Exception
-    {
-        final int NUMBER_OF_RECORDS = 5;
-        String containerId = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId();
-        //we have unfiled record folder
-        UnfiledRecordFolderAPI unfiledRecordFoldersAPI = getRestAPIFactory().getUnfiledRecordFoldersAPI();
-        // Create Electronic Records
-        ArrayList<UnfiledContainerChild> children = new ArrayList<UnfiledContainerChild>();
-        for (int i = 0; i < NUMBER_OF_RECORDS; i++)
-        {
-            //build the electronic record
-            UnfiledContainerChild record =  UnfiledContainerChild.builder()
-                        .name(ELECTRONIC_RECORD_NAME + i)
-                        .nodeType(CONTENT_TYPE)
-                        .build();
-            //create a child
-            UnfiledContainerChild child = unfiledRecordFoldersAPI.uploadRecord(record, containerId, createTempFile(ELECTRONIC_RECORD_NAME + i, ELECTRONIC_RECORD_NAME + i ));
-
-            children.add(child);
-        }
-        //Create NonElectronicRecords
-        for (int i = 0; i < NUMBER_OF_RECORDS; i++)
-        {
-            UnfiledContainerChild nonelectronicRecord =  UnfiledContainerChild.builder()
-                        .properties(UnfiledContainerChildProperties.builder()
-                                    .description("Description")
-                                    .title("Title")
-                                    .build())
-                        .name(NONELECTRONIC_RECORD_NAME+i)
-                        .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                        .build();
-            //create records
-            UnfiledContainerChild child = unfiledRecordFoldersAPI.createUnfiledRecordFolderChild(nonelectronicRecord, containerId);
-
-            children.add(child);
-        }
-
-        // List children from API
-        UnfiledContainerChildCollection apiChildren = (UnfiledContainerChildCollection) unfiledRecordFoldersAPI.getUnfiledRecordFolderChildren(containerId).assertThat().entriesListIsNotEmpty();
-
-        // Check status code
-        assertStatusCode(OK);
-
-
-        // Check listed children against created list
-        apiChildren.getEntries().forEach(c ->
-        {
-            UnfiledContainerChild record = c.getEntry();
-            assertNotNull(record.getId());
-            logger.info("Checking child " + record.getId());
-
-            try
-            {
-                // Find this child in created children list
-                UnfiledContainerChild createdComponent = children.stream()
-                            .filter(child -> child.getId().equals(record.getId()))
-                            .findFirst()
-                            .get();
-
-                // Created by
-                assertEquals(record.getCreatedByUser().getId(), getAdminUser().getUsername());
-
-                // Is parent Id set correctly
-                assertEquals(record.getParentId(), containerId);
-                assertTrue(record.getIsRecord());
-
-                // Boolean properties related to node type
-                assertFalse(record.getIsUnfiledRecordFolder());
-
-                //check the record name
-                assertTrue(record.getName().equals(createdComponent.getName()));
-                assertTrue(createdComponent.getName().contains(createdComponent.getProperties().getIdentifier()));
-                assertEquals(createdComponent.getNodeType(), record.getNodeType());
-
-            }
-            catch (NoSuchElementException e)
-            {
-                fail("No child element for " + record.getId());
-            }
-        });
-    }
 }

@@ -117,6 +117,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_ORIGIONAL_NAME = QName.createQName(RM_URI, "origionalName");
 
     // Common record details
+    QName ASPECT_COMMON_RECORD_DETAILS = QName.createQName(RM_URI, "commonRecordDetails");
     QName PROP_LOCATION = QName.createQName(RM_URI, "location");
 
     // Fileable aspect

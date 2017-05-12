@@ -128,7 +128,15 @@ public class TransferContainerEntityResource implements
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(nodeRef);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+
         return nodesModelFactory.createTransferContainer(info, parameters, null, false);
     }
 }

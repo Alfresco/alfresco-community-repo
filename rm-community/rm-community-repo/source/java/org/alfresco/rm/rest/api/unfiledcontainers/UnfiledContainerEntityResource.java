@@ -126,7 +126,15 @@ public class UnfiledContainerEntityResource
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(nodeRef);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+
         apiUtils.postActivity(info, unfiledContainerInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createUnfiledContainer(info, parameters, null, false);
     }

@@ -32,6 +32,7 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.activities.ActivityType;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.resource.EntityResource;
@@ -43,6 +44,7 @@ import org.alfresco.rm.rest.api.model.UnfiledContainer;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -60,6 +62,7 @@ public class UnfiledContainerEntityResource
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
+    private TransactionService transactionService;
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
@@ -74,6 +77,11 @@ public class UnfiledContainerEntityResource
     public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
     {
         this.nodesModelFactory = nodesModelFactory;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     @Override
@@ -107,9 +115,26 @@ public class UnfiledContainerEntityResource
         mandatory("parameters", parameters);
 
         NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-        apiUtils.updateNode(nodeRef, unfiledContainerInfo, parameters);
-        
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                apiUtils.updateNode(nodeRef, unfiledContainerInfo, parameters);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(nodeRef);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+
         apiUtils.postActivity(info, unfiledContainerInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createUnfiledContainer(info, parameters, null, false);
     }

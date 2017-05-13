@@ -34,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -56,6 +57,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.ConcurrencyFailureException;
@@ -80,6 +82,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     private FileFolderService fileFolderService;
     private RecordService recordService;
     private NodeService nodeService;
+    private TransactionService transactionService;
 
     public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
     {
@@ -105,6 +108,12 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     {
         this.fileFolderService = fileFolderService;
     }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     /**
      * Download content
      *
@@ -197,10 +206,26 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         NodeRef record = apiUtils.validateRecord(recordId);
 
         // update info
-        apiUtils.updateNode(record, recordInfo, parameters);
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                apiUtils.updateNode(record, recordInfo, parameters);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // return record state
-        FileInfo info = fileFolderService.getFileInfo(record);
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(record);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+        
         apiUtils.postActivity(info, recordInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createRecord(info, parameters, null, false);
     }

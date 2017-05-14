@@ -41,18 +41,17 @@ import static org.testng.Assert.fail;
 import java.io.File;
 import java.util.Iterator;
 
-import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.rm.community.model.record.Record;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
-import org.alfresco.rest.rm.community.requests.RMModelRequest;
-import org.alfresco.rest.rm.community.util.FilePlanComponentMixIn;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.restassured.builder.RequestSpecBuilder;
 import com.jayway.restassured.http.ContentType;
+
+import org.alfresco.rest.core.RMRestWrapper;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
+import org.alfresco.rest.rm.community.requests.RMModelRequest;
+import org.alfresco.rest.rm.community.util.UnfiledContainerChildMixin;
 
 /**
  * Unfiled Container REST API Wrapper
@@ -209,7 +208,7 @@ public class UnfiledContainerAPI extends RMModelRequest
          * to the request.
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
-        JsonNode root = new ObjectMapper().readTree(toJson(unfiledContainerChildModel, Record.class, FilePlanComponentMixIn.class));
+        JsonNode root = new ObjectMapper().readTree(toJson(unfiledContainerChildModel, UnfiledContainerChild.class, UnfiledContainerChildMixin.class));
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
         while (fieldNames.hasNext())

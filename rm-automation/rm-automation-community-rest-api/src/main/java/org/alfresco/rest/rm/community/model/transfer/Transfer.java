@@ -29,11 +29,10 @@ package org.alfresco.rest.rm.community.model.transfer;
 
 import java.util.List;
 
-import org.alfresco.rest.model.RestByUserModel;
-import org.alfresco.rest.rm.community.model.common.Path;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.model.RestByUserModel;
+import org.alfresco.utility.model.TestModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

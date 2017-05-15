@@ -28,14 +28,11 @@ package org.alfresco.rest.rm.community.model.unfiledcontainer;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ID_IS_TEMPORARILY_EDITABLE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_OWNER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_TITLE;
-
-import org.alfresco.rest.rm.community.model.common.Owner;
-import org.alfresco.utility.model.TestModel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.utility.model.TestModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -67,5 +64,4 @@ public class UnfiledContainerProperties extends TestModel
 
     @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
-
 }

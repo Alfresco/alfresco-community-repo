@@ -54,7 +54,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 /**
@@ -76,8 +75,6 @@ public class RMRolesAndActionsAPI extends BaseAPI
     /** http client factory */
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
-
-    private ApplicationContext applicationContext;
 
     /** user service */
     @Autowired

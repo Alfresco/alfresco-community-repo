@@ -192,7 +192,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
                 return createdNodes;
             }
         };
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Get the nodes info
         List<UnfiledContainerChild> result = new LinkedList<>();
@@ -226,7 +226,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
                 return apiUtils.uploadRecord(parentNodeRef, uploadInfo.getFileName(), uploadInfo.getNodeType(), uploadInfo.getProperties(), uploadInfo.getContent().getInputStream());
             }
         };
-        NodeRef newNode = transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+        NodeRef newNode = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Get file info for response
         FileInfo info = fileFolderService.getFileInfo(newNode);

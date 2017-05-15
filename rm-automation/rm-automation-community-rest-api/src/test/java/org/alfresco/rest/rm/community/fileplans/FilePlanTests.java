@@ -45,12 +45,14 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -241,10 +243,10 @@ public class FilePlanTests extends BaseRMRestTest
         assertStatusCode(OK);
 
         // Verify the returned description field for the file plan component
-        assertEquals(renamedFilePlan.getProperties().getDescription(), FILE_PLAN_DESCRIPTION);
+        assertEquals(FILE_PLAN_DESCRIPTION, renamedFilePlan.getProperties().getDescription());
 
         // Verify the returned title field for the file plan component
-        assertEquals(renamedFilePlan.getProperties().getTitle(), FILE_PLAN_TITLE);
+        assertEquals(FILE_PLAN_TITLE, renamedFilePlan.getProperties().getTitle());
     }
 
     /**
@@ -320,6 +322,56 @@ public class FilePlanTests extends BaseRMRestTest
         RecordCategoryProperties rootRecordCategoryProperties = rootRecordCategory.getProperties();
         assertEquals(rootRecordCategoryProperties.getTitle(), categoryTitle);
         assertNotNull(rootRecordCategoryProperties.getIdentifier());
+    }
+
+    /**
+     * <pre>
+     * Given a root category
+     * When I ask the API to create a root category having the same name
+     * Then  the response code received is 409 - name clashes with an existing node
+     *</pre>
+     * <pre>
+     * Given a root category
+     * When I ask the API to create a root category having the same name  with autoRename parameter on true
+     * Then the record category is created the record category has a unique name by adding an integer suffix
+     * </pre>
+     */
+    @Test
+    @Bug(id = "RM-5116")
+    public void createDuplicateCategories() throws Exception
+    {
+        String categoryName = "Category name " + getRandomAlphanumeric();
+        String categoryTitle = "Category title " + getRandomAlphanumeric();
+
+
+        // Create the root record category
+        RecordCategory recordCategory = RecordCategory.builder()
+                                                      .name(categoryName)
+                                                      .properties(RecordCategoryProperties.builder()
+                                                                           .title(categoryTitle)
+                                                                           .build())
+                                                      .build();
+        // Create the root record category
+        RecordCategory rootRecordCategory = getRestAPIFactory().getFilePlansAPI().createRootRecordCategory(recordCategory,FILE_PLAN_ALIAS);
+
+        // Verify the status code
+        assertStatusCode(CREATED);
+        assertEquals(rootRecordCategory.getName(), categoryName);
+
+        // Create the same root record category
+        getRestAPIFactory().getFilePlansAPI().createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS);
+
+        // Verify the status code
+        assertStatusCode(CONFLICT);
+
+        //create the same category with autoRename parameter on true
+        RecordCategory rootRecordCategoryAutoRename = getRestAPIFactory().getFilePlansAPI()
+                                                                         .createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS,"autoRename=true");
+
+        // Verify the status code
+        assertStatusCode(CREATED);
+        assertNotEquals(rootRecordCategoryAutoRename.getName(), categoryName);
+        assertTrue(rootRecordCategoryAutoRename.getName().startsWith(categoryName));
     }
 
     @Test

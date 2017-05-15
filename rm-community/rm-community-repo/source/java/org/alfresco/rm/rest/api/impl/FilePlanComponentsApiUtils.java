@@ -628,7 +628,7 @@ public class FilePlanComponentsApiUtils
             QName typeQName = nodes.createQName(nodeType);
 
             // Existing file/folder name handling
-            if (TYPES_CAN_CREATE.contains(typeQName) && autoRename)
+            if (TYPES_CAN_USE_AUTORENAME.contains(typeQName) && autoRename)
             {
                 NodeRef existingNode = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
                 if (existingNode != null)

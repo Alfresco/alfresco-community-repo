@@ -33,12 +33,15 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.impl.Util;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -51,11 +54,13 @@ import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.impl.SearchTypesFactory;
 import org.alfresco.rm.rest.api.model.FilePlan;
+import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.RecordCategory;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -76,6 +81,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private SearchTypesFactory searchTypesFactory;
+    private TransactionService transactionService;
 
     public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
     {
@@ -95,6 +101,11 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
     public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory)
     {
         this.searchTypesFactory = searchTypesFactory;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     @Override
@@ -173,22 +184,38 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
         mandatory("parameters", parameters);
 
         QName filePlanType = apiUtils.getFilePlanType();
-        if(filePlanType == null)// rm site not created
+        if (filePlanType == null)// rm site not created
         {
             throw new EntityNotFoundException(filePlanId);
         }
         NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanType);
 
+        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
+        {
+            public List<NodeRef> execute()
+            {
+                List<NodeRef> createdNodes = new LinkedList<>();
+                for (RecordCategory nodeInfo : nodeInfos)
+                {
+                    // Create the node
+                    nodeInfo.setNodeType(RECORD_CATEGORY_TYPE);
+                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
+                    createdNodes.add(newNodeRef);
+                }
+                return createdNodes;
+            }
+        };
+        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+
+        // Get the nodes info
         List<RecordCategory> result = new ArrayList<>(nodeInfos.size());
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        for (RecordCategory nodeInfo : nodeInfos)
+        for (NodeRef newNodeRef : createdNodes)
         {
-            // Create the node
-            nodeInfo.setNodeType(RECORD_CATEGORY_TYPE);
-            NodeRef newNode = apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
-            FileInfo info = fileFolderService.getFileInfo(newNode);
+            FileInfo info = fileFolderService.getFileInfo(newNodeRef);
             result.add(nodesModelFactory.createRecordCategory(info, parameters, mapUserInfo, false));
         }
+
         return result;
     }
 }

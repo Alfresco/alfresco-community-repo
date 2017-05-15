@@ -27,6 +27,7 @@
 
 package org.alfresco.rest.rm.community.model.record;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_AUTHOR;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_BOX;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DATE_FILED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DATE_TIME_ORIGINAL;
@@ -200,4 +201,7 @@ public class RecordProperties extends TestModel
 
     @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;
+
+    @JsonProperty(PROPERTIES_AUTHOR)
+    private String author;
 }

@@ -307,7 +307,7 @@ paths:
         - $ref: '#/parameters/filePlanIdWithAliasParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
+        - $ref: '#/parameters/filePlanCategoriesEntryIncludeParam'
         - $ref: '#/parameters/filePlanIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
       responses:
@@ -393,7 +393,7 @@ paths:
       parameters:
         - $ref: '#/parameters/filePlanIdWithAliasParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
+        - $ref: '#/parameters/filePlanCategoriesEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
@@ -666,7 +666,7 @@ paths:
       parameters:
         - $ref: '#/parameters/unfiledContainerIdParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/unfiledContainerEntryIncludeParam'
+        - $ref: '#/parameters/unfiledContainerChildEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
@@ -971,7 +971,7 @@ paths:
       parameters:
         - $ref: '#/parameters/unfiledRecordFolderIdParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderChildEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
@@ -1565,7 +1565,7 @@ paths:
       operationId: createRecordFolderChild
       parameters:
         - $ref: '#/parameters/recordFolderIdParam'
-        - $ref: '#/parameters/recordFolderChildEntryIncludeParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: recordBodyCreate
@@ -1962,7 +1962,7 @@ paths:
         - $ref: '#/parameters/transferContainerIdWithAliasParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/transferEntryIncludeParam'
+        - $ref: '#/parameters/transferContainerChildEntryIncludeParam'
         - $ref: '#/parameters/transferContainerIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
       responses:
@@ -2067,6 +2067,21 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  filePlanCategoriesEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the record category. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * hasRetentionSchedule
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
   filePlanIdWithAliasParam:
     name: filePlanId
     in: path
@@ -2093,9 +2108,7 @@ parameters:
     description: |
       Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
       * allowableOperations
-      * aspectNames
       * path
-      * properties
     required: false
     type: array
     items:
@@ -2136,9 +2149,7 @@ parameters:
     description: |
       Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
       * allowableOperations
-      * aspectNames
       * path
-      * properties
     required: false
     type: array
     items:
@@ -2200,10 +2211,8 @@ parameters:
     description: |
       Returns additional information about the record category. Any optional field from the response model can be requested. For example:
       * allowableOperations
-      * aspectNames
       * hasRetentionSchedule
       * path
-      * properties
     required: false
     type: array
     items:
@@ -2226,7 +2235,7 @@ parameters:
     name: include
     in: query
     description: |
-      Returns additional information about the record category. Any optional field from the response model can be requested. For example:
+      Returns additional information about the record category child. Any optional field from the response model can be requested. For example:
       * allowableOperations
       * aspectNames
       * hasRetentionSchedule
@@ -2331,6 +2340,22 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  transferContainerChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the transfer folders. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * properties
+      * transferPDFIndicator
+      * transferLocation
+      * transferAccessionIndicator
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
   transferContainerIncludeSourceParam:
     name: includeSource
     in: query
@@ -2344,8 +2369,6 @@ parameters:
     description: |
       Returns additional information about the transfer folder. Any optional field from the response model can be requested. For example:
       * allowableOperations
-      * aspectNames
-      * properties
       * transferPDFIndicator
       * transferLocation
       * transferAccessionIndicator
@@ -2374,7 +2397,6 @@ parameters:
       * allowableOperations
       * aspectNames
       * isClosed
-      * isCompleted
       * isRecord
       * isRecordFolder
       * path
@@ -3389,10 +3411,6 @@ definitions:
         type: boolean
         default: false
         description: Indicates if the record folder is closed
-      isCompleted:
-        type: boolean
-        default: false
-        description: Present only for record nodes. Indicates if the record has a retention schedule defined
       modifiedAt:
         type: string
         format: date-time

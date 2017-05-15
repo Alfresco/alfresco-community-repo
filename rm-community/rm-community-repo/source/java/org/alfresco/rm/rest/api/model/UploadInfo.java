@@ -26,6 +26,7 @@
  */
 package org.alfresco.rm.rest.api.model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -50,6 +51,8 @@ public class UploadInfo
 
     public UploadInfo(FormData formData)
     {
+        properties = new HashMap<>();
+
         for (FormData.FormField field : formData.getFields())
         {
             switch (field.getName().toLowerCase())

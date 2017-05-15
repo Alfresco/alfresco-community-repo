@@ -28,6 +28,7 @@ package org.alfresco.rest.rm.community.base;
 
 import static lombok.AccessLevel.PROTECTED;
 
+import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
@@ -35,10 +36,11 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createUnfiledContainerChildModel;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
@@ -52,6 +54,7 @@ import java.util.List;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
+import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
@@ -334,8 +337,17 @@ public class BaseRMRestTest extends RestTest
      */
     public UnfiledContainerChild createUnfiledContainerChild(UserModel user, String parentId, String childName, String nodeType) throws Exception
     {
+        UnfiledContainerChild child = null;
         UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
-        UnfiledContainerChild child = getRestAPIFactory().getUnfiledContainersAPI(user).createUnfiledContainerChild(childModel, parentId);
+
+        if (FilePlanComponentType.CONTENT_TYPE.equals(nodeType))
+        {
+            child = getRestAPIFactory().getUnfiledContainersAPI(user).uploadRecord(childModel, parentId, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
+        }
+        else
+        {
+            child = getRestAPIFactory().getUnfiledContainersAPI(user).createUnfiledContainerChild(childModel, parentId);
+        }
         assertStatusCode(CREATED);
 
         return child;

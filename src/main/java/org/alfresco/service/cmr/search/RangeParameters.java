@@ -64,12 +64,12 @@ public class RangeParameters
      */
     @JsonCreator
     public RangeParameters(@JsonProperty("field") String field,
-                           @JsonProperty("facet.range.start") String start, 
-                           @JsonProperty("facet.range.end") String end, 
-                           @JsonProperty("facet.range.gap") String gap,
-                           @JsonProperty("facet.range.hardend") boolean hardend, 
-                           @JsonProperty("facet.range.other")String other,
-                           @JsonProperty("facet.range.include")String include,
+                           @JsonProperty("start") String start, 
+                           @JsonProperty("end") String end, 
+                           @JsonProperty("gap") String gap,
+                           @JsonProperty("hardend") boolean hardend, 
+                           @JsonProperty("other")String other,
+                           @JsonProperty("include")String include,
                            @JsonProperty("tags")List<String> tags,
                            @JsonProperty("excludeFilters")List<String> excludeFilters)
     {

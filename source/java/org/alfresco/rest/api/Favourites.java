@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,6 +37,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  */
 public interface Favourites
 {
+    String PARAM_INCLUDE_PATH = Nodes.PARAM_INCLUDE_PATH;
+
 	/**
 	 * Add a favourite for user personId
 	 * 
@@ -44,6 +46,15 @@ public interface Favourites
 	 * @param favourite the favourite to add
 	 */
 	Favourite addFavourite(String personId, Favourite favourite);
+
+    /**
+     * Add a favourite for user personId taking parameters into account
+     *
+     * @param personId   the personId for which the favourite is to be added
+     * @param favourite  the favourite to add
+     * @param parameters the parameters
+     */
+    Favourite addFavourite(String personId, Favourite favourite, Parameters parameters);
 
 	/**
 	 * Add a favourite for user personId
@@ -70,4 +81,14 @@ public interface Favourites
 	 * @return the favourite
 	 */
     Favourite getFavourite(String personId, String favouriteId);
+
+    /**
+     * Get a specific favourite for user personId taking parameters into account
+     *
+     * @param personId    the personId for which the favourite is to be removed
+     * @param favouriteId the favourite id
+     * @param parameters  the parameters
+     * @return the favourite
+     */
+    Favourite getFavourite(String personId, String favouriteId, Parameters parameters);
 }

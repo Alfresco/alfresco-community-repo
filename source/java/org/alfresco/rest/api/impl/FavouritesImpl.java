@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -46,6 +46,8 @@ import org.alfresco.rest.api.model.DocumentTarget;
 import org.alfresco.rest.api.model.Favourite;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.FolderTarget;
+import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.model.SiteTarget;
 import org.alfresco.rest.api.model.Target;
@@ -54,6 +56,7 @@ import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundE
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper.WalkerCallbackAdapter;
 import org.alfresco.service.cmr.favourites.FavouritesService;
@@ -107,7 +110,7 @@ public class FavouritesImpl implements Favourites
 		this.siteService = siteService;
 	}
 
-	private Target getTarget(PersonFavourite personFavourite)
+	private Target getTarget(PersonFavourite personFavourite, Parameters parameters)
 	{
 		Target target = null;
 		NodeRef nodeRef = personFavourite.getNodeRef();
@@ -115,11 +118,13 @@ public class FavouritesImpl implements Favourites
 		if(type.equals(Type.FILE))
 		{
 			Document document = nodes.getDocument(nodeRef);
-			target = new DocumentTarget(document);
+            setPathInfo(document, parameters.getInclude());
+            target = new DocumentTarget(document);
 		}
 		else if(type.equals(Type.FOLDER))
 		{
 			Folder folder = nodes.getFolder(nodeRef);
+            setPathInfo(folder, parameters.getInclude());
 			target = new FolderTarget(folder);
 		}
 		else if(type.equals(Type.SITE))
@@ -136,18 +141,18 @@ public class FavouritesImpl implements Favourites
 		
 		return target;
 	}
-	
-	private Favourite getFavourite(PersonFavourite personFavourite)
+
+	private Favourite getFavourite(PersonFavourite personFavourite, Parameters parameters)
 	{
 		Favourite fav = new Favourite();
 		fav.setTargetGuid(personFavourite.getNodeRef().getId());
 		fav.setCreatedAt(personFavourite.getCreatedAt());
-		Target target = getTarget(personFavourite);
+		Target target = getTarget(personFavourite, parameters);
 		fav.setTarget(target);
 		return fav;
 	}
 
-    private CollectionWithPagingInfo<Favourite> wrap(Paging paging, PagingResults<PersonFavourite> personFavourites)
+    private CollectionWithPagingInfo<Favourite> wrap(Paging paging, PagingResults<PersonFavourite> personFavourites, Parameters parameters)
     {
     	final List<PersonFavourite> page = personFavourites.getPage();
     	final List<Favourite> list = new AbstractList<Favourite>()
@@ -156,7 +161,7 @@ public class FavouritesImpl implements Favourites
 			public Favourite get(int index)
 			{
 				PersonFavourite personFavourite = page.get(index);
-				Favourite fav = getFavourite(personFavourite);
+				Favourite fav = getFavourite(personFavourite, parameters);
 				return fav;
 			}
 
@@ -178,58 +183,65 @@ public class FavouritesImpl implements Favourites
     @Override
 	public Favourite addFavourite(String personId, Favourite favourite)
     {
-    	Favourite ret = null;
+        Parameters parameters = getDefaultParameters(personId, null);
+        return addFavourite(personId, favourite, parameters);
+    }
 
-    	personId = people.validatePerson(personId, true);
-    	Target target = favourite.getTarget();
-    	if(target == null)
-    	{
-    		throw new InvalidArgumentException("target is missing");
-    	}
-    	else if(target instanceof SiteTarget)
-    	{
-    		SiteTarget siteTarget = (SiteTarget)target;
-    		String guid = siteTarget.getSite().getGuid();
-    		SiteInfo siteInfo = sites.validateSite(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, guid));
-    		NodeRef siteNodeRef = siteInfo.getNodeRef();
-    		String siteId = siteInfo.getShortName();
+    @Override
+    public Favourite addFavourite(String personId, Favourite favourite, Parameters parameters)
+    {
+        Favourite ret = null;
 
-    		try
-    		{
-    			PersonFavourite personFavourite = favouritesService.addFavourite(personId, siteNodeRef);
-    			ret = getFavourite(personFavourite);
-    		}
-    		catch(SiteDoesNotExistException e)
-    		{
-    			throw new RelationshipResourceNotFoundException(personId, siteId);
-    		}
-    	}
-    	else if(target instanceof DocumentTarget)
-    	{
-    		DocumentTarget documentTarget = (DocumentTarget)target;
-    		NodeRef nodeRef = documentTarget.getFile().getGuid();
-    		if(!nodes.nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null))
-    		{
-    			throw new RelationshipResourceNotFoundException(personId, nodeRef.getId());
-    		}
-    		
-    	   	PersonFavourite personFavourite = favouritesService.addFavourite(personId, nodeRef);
-    	   	ret = getFavourite(personFavourite);
-    	}
-    	else if(target instanceof FolderTarget)
-    	{
-    		FolderTarget folderTarget = (FolderTarget)target;
-    		NodeRef nodeRef = folderTarget.getFolder().getGuid();
-    		if(!nodes.nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), Collections.singleton(SiteModel.TYPE_SITE)))
-    		{
-    			throw new RelationshipResourceNotFoundException(personId, nodeRef.getId());
-    		}
+        personId = people.validatePerson(personId, true);
+        Target target = favourite.getTarget();
+        if(target == null)
+        {
+            throw new InvalidArgumentException("target is missing");
+        }
+        else if(target instanceof SiteTarget)
+        {
+            SiteTarget siteTarget = (SiteTarget)target;
+            String guid = siteTarget.getSite().getGuid();
+            SiteInfo siteInfo = sites.validateSite(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, guid));
+            NodeRef siteNodeRef = siteInfo.getNodeRef();
+            String siteId = siteInfo.getShortName();
 
-    	   	PersonFavourite personFavourite = favouritesService.addFavourite(personId, nodeRef);
-    	   	ret = getFavourite(personFavourite);
-    	}
+            try
+            {
+                PersonFavourite personFavourite = favouritesService.addFavourite(personId, siteNodeRef);
+                ret = getFavourite(personFavourite, parameters);
+            }
+            catch(SiteDoesNotExistException e)
+            {
+                throw new RelationshipResourceNotFoundException(personId, siteId);
+            }
+        }
+        else if(target instanceof DocumentTarget)
+        {
+            DocumentTarget documentTarget = (DocumentTarget)target;
+            NodeRef nodeRef = documentTarget.getFile().getGuid();
+            if(!nodes.nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null))
+            {
+                throw new RelationshipResourceNotFoundException(personId, nodeRef.getId());
+            }
 
-    	return ret;
+            PersonFavourite personFavourite = favouritesService.addFavourite(personId, nodeRef);
+            ret = getFavourite(personFavourite, parameters);
+        }
+        else if(target instanceof FolderTarget)
+        {
+            FolderTarget folderTarget = (FolderTarget)target;
+            NodeRef nodeRef = folderTarget.getFolder().getGuid();
+            if(!nodes.nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), Collections.singleton(SiteModel.TYPE_SITE)))
+            {
+                throw new RelationshipResourceNotFoundException(personId, nodeRef.getId());
+            }
+
+            PersonFavourite personFavourite = favouritesService.addFavourite(personId, nodeRef);
+            ret = getFavourite(personFavourite, parameters);
+        }
+
+        return ret;
     }
 
     @Override
@@ -263,25 +275,33 @@ public class FavouritesImpl implements Favourites
     		throw new RelationshipResourceNotFoundException(personId, id);
     	}
     }
-    
+
+    @Override
     public Favourite getFavourite(String personId, String favouriteId)
     {
-    	NodeRef nodeRef = nodes.validateNode(favouriteId);
-    	personId = people.validatePerson(personId, true);
-
-    	PersonFavourite personFavourite = favouritesService.getFavourite(personId, nodeRef);
-    	if(personFavourite != null)
-    	{
-	    	Favourite favourite = getFavourite(personFavourite);
-	    	return favourite;
-    	}
-    	else
-    	{
-    		throw new RelationshipResourceNotFoundException(personId, favouriteId);
-    	}
+        Parameters parameters = getDefaultParameters(personId, favouriteId);
+        return getFavourite(personId, favouriteId, parameters);
     }
 
-	@Override
+    @Override
+    public Favourite getFavourite(String personId, String favouriteId, Parameters parameters)
+    {
+        NodeRef nodeRef = nodes.validateNode(favouriteId);
+        personId = people.validatePerson(personId, true);
+
+        PersonFavourite personFavourite = favouritesService.getFavourite(personId, nodeRef);
+        if(personFavourite != null)
+        {
+            Favourite favourite = getFavourite(personFavourite, parameters);
+            return favourite;
+        }
+        else
+        {
+            throw new RelationshipResourceNotFoundException(personId, favouriteId);
+        }
+    }
+
+    @Override
     public CollectionWithPagingInfo<Favourite> getFavourites(String personId, final Parameters parameters)
     {
     	personId = people.validatePerson(personId, true);
@@ -327,6 +347,27 @@ public class FavouritesImpl implements Favourites
 
     	final PagingResults<PersonFavourite> favourites = favouritesService.getPagedFavourites(personId, filterTypes, FavouritesService.DEFAULT_SORT_PROPS,
     			Util.getPagingRequest(paging));
-    	return wrap(paging, favourites);
+    	return wrap(paging, favourites, parameters);
+    }
+
+    private void setPathInfo(Node node, List<String> includeParam)
+    {
+        if (includeParam.contains(PARAM_INCLUDE_PATH))
+        {
+            PathInfo pathInfo = nodes.lookupPathInfo(node.getNodeRef(), null);
+            node.setPath(pathInfo);
+        }
+    }
+
+    /**
+     * Returns a {@code {@link Parameters} object where almost all of its values are null.
+     * the non-null value is the {@literal include} and whatever value is passed for {@code personId} and {@code favouriteId}
+     */
+    private Parameters getDefaultParameters(String personId, String favouriteId)
+    {
+        Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, null, null, null, Collections.emptyList(), null, null, null,
+                    false);
+        Parameters parameters = Params.valueOf(recognizedParams, personId, favouriteId, null);
+        return parameters;
     }
 }

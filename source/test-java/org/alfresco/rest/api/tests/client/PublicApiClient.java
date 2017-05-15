@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1086,12 +1086,25 @@ public class PublicApiClient
 			return Favourite.parseFavourite((JSONObject)response.getJsonResponse().get("entry"));
 		}
 
+        public Favourite getFavourite(String personId, String favouriteId, Map<String, String> params) throws PublicApiException, ParseException
+        {
+            HttpResponse response = getSingle("people", personId, "favorites", favouriteId, params, "Failed to get favourite " + favouriteId, 200);
+            return Favourite.parseFavourite((JSONObject) response.getJsonResponse().get("entry"));
+        }
+
 		public Favourite createFavourite(String personId, Favourite favourite) throws PublicApiException, ParseException
 		{
 			HttpResponse response = create("people", personId, "favorites", null, favourite.toJSON().toString(), "Failed to create favourite");
 			Favourite ret = Favourite.parseFavourite((JSONObject)response.getJsonResponse().get("entry"));
 			return ret;
 		}
+
+        public Favourite createFavourite(String personId, Favourite favourite, Map<String, String> params) throws PublicApiException, ParseException
+        {
+            HttpResponse response = create("people", personId, "favorites", null, favourite.toJSON().toString(), "Failed to create favourite", 201, params);
+            Favourite ret = Favourite.parseFavourite((JSONObject)response.getJsonResponse().get("entry"));
+            return ret;
+        }
 
 		public void removeFavourite(String personId, String favouriteId) throws PublicApiException
 		{

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -29,8 +29,10 @@ package org.alfresco.rest.api.tests.client.data;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.Date;
 
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.json.simple.JSONObject;
 
 /**
@@ -52,6 +54,7 @@ public class FavouriteNode implements Serializable, ExpectedComparison
 	protected Date modifiedAt;
 	protected String createdBy;
 	protected String modifiedBy;
+	protected PathInfo path;
 
 	public FavouriteNode()
 	{
@@ -173,7 +176,33 @@ public class FavouriteNode implements Serializable, ExpectedComparison
 		this.nodeId = nodeId;
 	}
 
-	@Override
+    public PathInfo getPath()
+    {
+        return path;
+    }
+
+    public void setPath(PathInfo pathInfo)
+    {
+        this.path = pathInfo;
+    }
+
+    protected void parseAndSetPath(JSONObject jsonObject) throws ParseException
+    {
+        if (jsonObject.get("path") != null)
+        {
+            try
+            {
+                PathInfo pathInfo = RestApiUtil.parsePojo("path", jsonObject, PathInfo.class);
+                this.setPath(pathInfo);
+            }
+            catch (Exception e)
+            {
+                throw new ParseException(e.getMessage(), -1);
+            }
+        }
+    }
+
+    @Override
 	public int hashCode()
 	{
 		final int prime = 31;
@@ -229,15 +258,27 @@ public class FavouriteNode implements Serializable, ExpectedComparison
 		}
 		AssertUtil.assertEquals("createdBy", createdBy, other.getCreatedBy());
 		AssertUtil.assertEquals("modifiedBy", modifiedBy, other.getModifiedBy());
+		if(path != null)
+        {
+            path.expected(other.path);
+        }
 	}
 
-	@Override
-	public String toString()
-	{
-		return "Node [nodeId=" + nodeId + ", guid=" + guid + ", name=" + name
-				+ ", title=" + title + ", description=" + description
-				+ ", createdAt=" + createdAt + ", modifiedAt=" + modifiedAt
-				+ ", createdBy=" + createdBy + ", modifiedBy=" + modifiedBy
-				+ "]";
-	}
+    @Override
+    public String toString()
+    {
+        final StringBuilder sb = new StringBuilder(250);
+        sb.append("FavouriteNode [nodeId=").append(nodeId)
+                    .append(", guid=").append(guid)
+                    .append(", name=").append(name)
+                    .append(", title=").append(title)
+                    .append(", description=").append(description)
+                    .append(", createdAt=").append(createdAt)
+                    .append(", modifiedAt=").append(modifiedAt)
+                    .append(", createdBy=").append(createdBy)
+                    .append(", modifiedBy=").append(modifiedBy)
+                    .append(", path=").append(path)
+                    .append(']');
+        return sb.toString();
+    }
 }

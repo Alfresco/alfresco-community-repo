@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -84,7 +84,7 @@ RelationshipResourceAction.Create<Favourite>,  RelationshipResourceAction.Delete
 		List<Favourite> ret = new ArrayList<Favourite>(entity.size());
         for(Favourite favourite : entity)
         {
-        	ret.add(favourites.addFavourite(personId, favourite));
+        	ret.add(favourites.addFavourite(personId, favourite, parameters));
         }
         return ret;
 	}
@@ -100,6 +100,6 @@ RelationshipResourceAction.Create<Favourite>,  RelationshipResourceAction.Delete
 	public Favourite readById(String personId, String favouriteId, Parameters parameters)
 			throws RelationshipResourceNotFoundException
 	{
-		return favourites.getFavourite(personId, favouriteId);
+		return favourites.getFavourite(personId, favouriteId, parameters);
 	}
 }

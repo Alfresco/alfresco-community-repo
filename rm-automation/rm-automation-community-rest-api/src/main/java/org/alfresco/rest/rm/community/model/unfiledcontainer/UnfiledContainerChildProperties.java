@@ -58,12 +58,10 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_X_RESOLUTION;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_Y_RESOLUTION;
 
-import org.alfresco.rest.rm.community.model.common.Owner;
-import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
-import org.alfresco.rest.rm.community.util.ReviewPeriodSerializer;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.rm.community.model.common.Owner;
+import org.alfresco.utility.model.TestModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -159,7 +157,7 @@ public class UnfiledContainerChildProperties extends TestModel
 
     @JsonProperty (PROPERTIES_Y_RESOLUTION)
     private Double yResolution;
-    
+
     @JsonProperty (PROPERTIES_ORIGINAL_NAME)
     private String originalName;
 

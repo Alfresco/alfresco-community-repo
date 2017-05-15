@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -70,6 +71,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
 
     /** record folder service */
     protected RecordFolderService recordFolderService;
+    
+    protected DispositionService dispositionService;
 
     /** I18N */
     private static final String MSG_CANNOT_CAST_TO_RM_TYPE = "rm.action.cast-to-rm-type";
@@ -97,6 +100,14 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     {
         this.recordFolderService = recordFolderService;
     }
+
+    /**
+     * @param dispositionService disposition service
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+		this.dispositionService = dispositionService;
+	}
 
     /**
      * Disable the behaviours for this transaction
@@ -172,10 +183,17 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                             if (!nodeService.hasAspect(child, ASPECT_RECORD))
                             {
                                 recordService.makeRecord(child);
-                                appendIdentifierToName(nodeService, child);
                             }
                         }
+
+                        if(isContentSubType && parentType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER)&& !recordService.isFiled(child))
+                        {
+                        	recordService.file(child);
+                        }
                     }
+                    
+                    // recalculate disposition schedule for the child
+                    dispositionService.recalculateNextDispositionStep(child);
                 }
 
                 return null;

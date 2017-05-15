@@ -589,7 +589,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
                 // in noAuth mode we don't return the path info
                 if (includeParam.contains(PARAM_INCLUDE_PATH))
                 {
-                    qs.setPathInfo(nodes.lookupPathInfo(nodeRef, null));
+                    qs.setPath(nodes.lookupPathInfo(nodeRef, null));
                 }
             }
 

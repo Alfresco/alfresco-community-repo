@@ -52,7 +52,7 @@ public class QuickShareLink
 
     private String nodeId;
     private String name;
-    private PathInfo pathInfo;
+    private PathInfo path;
 
     private ContentInfo content;
 
@@ -119,14 +119,14 @@ public class QuickShareLink
         this.name = name;
     }
 
-    public PathInfo getPathInfo()
+    public PathInfo getPath()
     {
-        return pathInfo;
+        return path;
     }
 
-    public void setPathInfo(PathInfo pathInfo)
+    public void setPath(PathInfo pathInfo)
     {
-        this.pathInfo = pathInfo;
+        this.path = pathInfo;
     }
 
     public Date getModifiedAt()
@@ -177,7 +177,7 @@ public class QuickShareLink
         sb.append("QuickShareLink [id=").append(getId());
         sb.append(", nodeId=").append(getNodeId());
         sb.append(", name=").append(getName());
-        sb.append(", pathInfo=").append(getPathInfo());
+        sb.append(", path=").append(getPath());
         sb.append(", modifiedAt=").append(getModifiedAt());
         sb.append(", modifiedByUser=").append(getModifiedByUser());
         sb.append(", sharedByUser=").append(getSharedByUser());

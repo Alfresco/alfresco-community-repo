@@ -1076,25 +1076,25 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         
         response = getSingle(QuickShareLinkEntityResource.class, myFileLinkId, null, 200);
         QuickShareLink link = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
-        assertNull("get /shared-links/<id> API does not return Path Info by default", link.getPathInfo());
+        assertNull("get /shared-links/<id> API does not return Path info by default", link.getPath());
         
-        // Path Info is not included for get shared-links/<id>
+        // Path info is not included for get shared-links/<id>
         response = getSingle(QuickShareLinkEntityResource.class, myFileLinkId, queryParams, 200);
         link = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
-        assertNull("get /shared-links/<id> API ignores Path Info when requested as it is a noAuth API.", link.getPathInfo());
+        assertNull("get /shared-links/<id> API ignores Path info when requested as it is a noAuth API.", link.getPath());
         
         response = getAll(URL_SHARED_LINKS, paging, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
-        assertEquals("API returns correct shared-links as expected: without path", 6, sharedLinks.size());
-        sharedLinks.forEach(sharedLink -> assertNull("API does not return Path Info for any shared-links by default", sharedLink.getPathInfo()));
+        assertEquals("API returns correct shared-links as expected: without path info", 6, sharedLinks.size());
+        sharedLinks.forEach(sharedLink -> assertNull("API does not return Path info for any shared-links by default", sharedLink.getPath()));
         
-        // Path Info is included for get shared-links when requested
+        // Path info is included for get shared-links when requested
         response = getAll(URL_SHARED_LINKS, paging, queryParams, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         
-        // Complete path Info is retrieved for the user with access to the complete path
-        assertEquals("API returns correct shared-links as expected: with path", 6, sharedLinks.size());
-        sharedLinks.forEach(sharedLink -> assertTrue("API returns Complete Path Info for each link when requested by content owner", sharedLink.getPathInfo().getIsComplete()));
+        // Complete path info is retrieved for the user with access to the complete path
+        assertEquals("API returns correct shared-links as expected: with path info", 6, sharedLinks.size());
+        sharedLinks.forEach(sharedLink -> assertTrue("API returns Complete Path info for each link when requested by content owner", sharedLink.getPath().getIsComplete()));
 
         // Get links For User2
         setRequestContext(user2);
@@ -1102,22 +1102,22 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getAll(URL_SHARED_LINKS, paging, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         
-        // Path Info is not included when not requested
-        assertEquals("API returns correct shared-links as expected for user2: without path", 4, sharedLinks.size());
-        sharedLinks.forEach(sharedLink -> assertNull("get /shared-links/ API does not return Path Info for any shared-links by default", sharedLink.getPathInfo()));
+        // Path info is not included when not requested
+        assertEquals("API returns correct shared-links as expected for user2: without path info", 4, sharedLinks.size());
+        sharedLinks.forEach(sharedLink -> assertNull("get /shared-links/ API does not return Path info for any shared-links by default", sharedLink.getPath()));
         
         response = getAll(URL_SHARED_LINKS, paging, queryParams, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         
-        // Path Info is retrieved for the user with access to the complete path: Sorted as LIFO
-        assertEquals("API returns correct shared-links as expected for user2: with path", 4, sharedLinks.size());
-        sharedLinks.forEach(sharedLink -> assertNotNull("API returns Path Info for each link when requested by user2", sharedLink.getPathInfo()));
+        // Path info is retrieved for the user with access to the complete path: Sorted as LIFO
+        assertEquals("API returns correct shared-links as expected for user2: with path info", 4, sharedLinks.size());
+        sharedLinks.forEach(sharedLink -> assertNotNull("API returns Path info for each link when requested by user2", sharedLink.getPath()));
         
         // Moderated Site > fileMod2: Path only includes elements where user2 has access
         QuickShareLink sharedLink = sharedLinks.get(0);
         assertEquals("Incorrect sort order or SharedLink ID for fileMod2: " + sharedLink, fileMod2LinkId, sharedLink.getId());
         
-        PathInfo path = sharedLink.getPathInfo();
+        PathInfo path = sharedLink.getPath();
         assertEquals("Complete Path is returned even when user2 does not have appropriate permissions. SharedLink Path: " + path, false, path.getIsComplete());
         assertEquals("Path omits immediate Parent folder Name when user has access to it. SharedLink Path: " + path, "/" + folder2.getName(), path.getName());
         assertEquals("Path omits immediate Parent folder ID when user has access to it. SharedLink Path: " + path, folder2.getId(), path.getElements().get(0).getId());
@@ -1125,18 +1125,18 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // Moderated Site > fileMod: Path empty when user2 does not have access to the immediate parent
         sharedLink = sharedLinks.get(1);
         assertEquals("Incorrect sort order or SharedLink ID for fileMod: " + sharedLink, fileModLinkId, sharedLink.getId());
-        path = sharedLink.getPathInfo();
+        path = sharedLink.getPath();
         
-        assertNotNull("PathInfo is not icluded in the response when user does not have right permissions. SharedLink Path: " + path, path);
+        assertNotNull("Path info is not included in the response when user does not have right permissions. SharedLink Path: " + path, path);
         assertNull("Path Name is returned when user does not have right permissions. SharedLink Path: " + path, path.getName());
-        assertNull("PathInfo is returned when user does not have right permissions. SharedLink Path: " + path, path.getIsComplete());
+        assertNull("Path info is returned when user does not have right permissions. SharedLink Path: " + path, path.getIsComplete());
         assertNull("Path Elements are returned when user does not have right permissions. SharedLink Path: " + path, path.getElements());
        
         // Public Site > filePublic: Path includes all the elements when user2 has appropriate access
         sharedLink = sharedLinks.get(2);
         assertEquals("Incorrect sort order or SharedLink ID for filePublic: " + sharedLink, filePublicLinkId, sharedLink.getId());
         
-        path = sharedLink.getPathInfo();
+        path = sharedLink.getPath();
         
         assertEquals("Complete Path is not returned for user2 for public files. SharedLink Path: " + path, true, path.getIsComplete());
         assertEquals("Incorrect Path Name for Public Site Files. SharedLink Path: " + path, "/Company Home/Sites/" + publicSite.getId() + "/documentLibrary", path.getName());
@@ -1149,7 +1149,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         sharedLink = sharedLinks.get(3);
         assertEquals("Incorrect sort order or SharedLink ID for sharedFiles: " + sharedLink, sharedLinkId, sharedLink.getId());
         
-        path = sharedLink.getPathInfo();
+        path = sharedLink.getPath();
         
         assertEquals("Complete Path is not returned for user2 for shared files. SharedLink Path: " + path, true, path.getIsComplete());
         assertEquals("Incorrect Path Name for Shared Files. SharedLink Path: " + path, "/Company Home/Shared", path.getName());
@@ -1204,8 +1204,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         HttpResponse response = post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), "?include=path", 201);
         QuickShareLink quickShareLinkResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
-        PathInfo pathInfo = quickShareLinkResponse.getPathInfo();
-        assertNotNull("API returns Path Info when requested upon creation.", pathInfo);
+        PathInfo pathInfo = quickShareLinkResponse.getPath();
+        assertNotNull("API returns Path info when requested upon creation.", pathInfo);
         assertTrue("IsComplete should have been true for user1.", pathInfo.getIsComplete());
         assertEquals("Incorrect number of path elements.", 3, pathInfo.getElements().size());
         assertEquals("Incorrect path name.", "/Company Home/User Homes/" + user1, pathInfo.getName());
@@ -1228,9 +1228,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         body.setNodeId(doc3Id);
         response = post(URL_SHARED_LINKS, RestApiUtil.toJsonAsString(body), "?include=path,allowableOperations", 201);
         quickShareLinkResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
-        // Check PathInfo
-        pathInfo = quickShareLinkResponse.getPathInfo();
-        assertNotNull("'pathInfo' should have been returned.", pathInfo);
+        // Check Path info
+        pathInfo = quickShareLinkResponse.getPath();
+        assertNotNull("'path' should have been returned.", pathInfo);
         assertTrue("IsComplete should have been true for user1.", pathInfo.getIsComplete());
         assertEquals("Incorrect number of path elements.", 3, pathInfo.getElements().size());
         assertEquals("Incorrect path name.", "/Company Home/User Homes/" + user1, pathInfo.getName());
@@ -1248,9 +1248,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals("Incorrect number of shared-links returned.", 3, sharedLinks.size());
         sharedLinks.forEach(sharedLink ->
         {
-            // Check PathInfo
-            PathInfo path = sharedLink.getPathInfo();
-            assertNotNull("'pathInfo' should have been returned.", path);
+            // Check Path info
+            PathInfo path = sharedLink.getPath();
+            assertNotNull("'path' should have been returned.", path);
             assertTrue("IsComplete should have been true for user1.", path.getIsComplete());
             assertEquals("Incorrect number of path elements.", 3, path.getElements().size());
             assertEquals("Incorrect path name.", "/Company Home/User Homes/" + user1, path.getName());

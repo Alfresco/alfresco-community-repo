@@ -39,23 +39,22 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.node.getchildren.FilterProp;
-import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.impl.Util;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.impl.SearchTypesFactory;
 import org.alfresco.rm.rest.api.model.FilePlan;
+import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.RecordCategory;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -64,7 +63,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * File plan children relation
@@ -74,9 +72,7 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  */
 @RelationshipResource(name="categories", entityResource = FilePlanEntityResource.class, title = "Category children of file plan")
 public class FilePlanChildrenRelation implements RelationshipResourceAction.Read<RecordCategory>,
-                                                 RelationshipResourceAction.Create<RecordCategory>,
-                                                 MultiPartRelationshipResourceAction.Create<FilePlan>,
-                                                 InitializingBean
+                                                 RelationshipResourceAction.Create<RecordCategory>, InitializingBean
 {
     /** Record category type */
     public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
@@ -221,11 +217,5 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
         }
 
         return result;
-    }
-
-    @Override
-    public FilePlan create(String entityResourceId, FormData formData, Parameters parameters, WithResponse withResponse)
-    {
-        throw new IntegrityException("Uploading records into file plan root is not allowed.", null);
     }
 }

@@ -38,8 +38,10 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.TITLE_PREFIX;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -47,6 +49,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -293,6 +296,42 @@ public class RecordCategoryTests extends BaseRMRestTest
         RecordCategoryChildProperties folderProperties = recordFolder.getProperties();
         assertEquals(folderProperties.getTitle(), TITLE_PREFIX + RECORD_FOLDER_NAME);
         assertNotNull(folderProperties.getIdentifier());
+    }
+    @Test
+    (
+        dataProviderClass = TestData.class,
+        dataProvider = "categoryChild"
+    )
+    @Bug(id = "RM-5116")
+    public void createdDuplicateChild(String childType)throws Exception
+    {
+        // create a root category
+        String rootRecordCategory = createRootCategory(RECORD_CATEGORY_NAME + getRandomAlphanumeric()).getId();
+
+        // Create the record category child
+        RecordCategoryChild recordFolder = createRecordCategoryChild(rootRecordCategory, RECORD_FOLDER_NAME, childType);
+
+        // check the response  code
+        assertStatusCode(CREATED);
+        assertEquals(recordFolder.getName(), RECORD_FOLDER_NAME);
+
+        // Create a record category child with the same name as the exiting one
+
+        RecordCategoryChild recordFolderDuplicate = getRestAPIFactory().getRecordCategoryAPI().createRecordCategoryChild(
+                    createRecordCategoryChildModel(RECORD_FOLDER_NAME, childType), rootRecordCategory);
+
+        // check the response  code
+        assertStatusCode(CONFLICT);
+
+        // Create a record folder with the same name as the exiting one and with the autoRename parameter on true
+        recordFolderDuplicate = getRestAPIFactory().getRecordCategoryAPI()
+                                                   .createRecordCategoryChild(createRecordCategoryChildModel(RECORD_FOLDER_NAME,
+                                                               childType),
+                                                    rootRecordCategory, "autoRename=true");
+        // check the response  code
+        assertStatusCode(CREATED);
+        assertNotEquals(recordFolderDuplicate.getName(), RECORD_FOLDER_NAME);
+        assertTrue(recordFolderDuplicate.getName().contains(RECORD_FOLDER_NAME));
     }
 
     /**

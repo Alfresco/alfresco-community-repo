@@ -48,6 +48,7 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_VITAL_RECORD_INDICATOR = "rma:vitalRecordIndicator";
     public static final String PROPERTIES_REVIEW_PERIOD = "rma:reviewPeriod";
     public static final String PROPERTIES_OWNER = "cm:owner";
+    public static final String PROPERTIES_AUTHOR="cm:author";
 
     /** Common properties for record folders and records */
     public static final String PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE = "rma:recordSearchHasDispositionSchedule";

@@ -46,80 +46,80 @@ import org.json.simple.JSONObject;
  */
 public class FavouriteFolder extends FavouriteNode implements ExpectedComparison, JSONAble
 {
-	private static final long serialVersionUID = 5020819866533183524L;
+    private static final long serialVersionUID = 5020819866533183524L;
 
-	/**
-	 * For POSTs
-	 * @param guid String
-	 */
-	public FavouriteFolder(String guid)
-	{
-		super(guid);
-	}
-	
-	public FavouriteFolder(String id, String guid)
-	{
-		super(id, guid);
-	}
+    /**
+     * For POSTs
+     * @param guid String
+     */
+    public FavouriteFolder(String guid)
+    {
+        super(guid);
+    }
 
-//	public Folder(String id, String guid, Map<String, Serializable> properties)
-//	{
-//		super(id, guid, properties);
-//	}
+    public FavouriteFolder(String id, String guid)
+    {
+        super(id, guid);
+    }
 
-	public static FavouriteFolder getFolder(String id, String guid, Properties props)
-	{
-		FavouriteFolder folder = new FavouriteFolder(id, guid);
+// public Folder(String id, String guid, Map<String, Serializable> properties)
+// {
+//     super(id, guid, properties);
+// }
 
-		Map<String, PropertyData<?>> properties = props.getProperties();
-		folder.setName((String)properties.get(PropertyIds.NAME).getFirstValue());
-		folder.setTitle((String)properties.get(ContentModel.PROP_TITLE.toString()).getFirstValue());
-		folder.setCreatedBy((String)properties.get(PropertyIds.CREATED_BY).getFirstValue());
-		folder.setModifiedBy((String)properties.get(PropertyIds.LAST_MODIFIED_BY).getFirstValue());
-		GregorianCalendar modifiedAt = (GregorianCalendar)properties.get(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
-		folder.setModifiedAt(modifiedAt.getTime());
-		GregorianCalendar createdAt = (GregorianCalendar)properties.get(PropertyIds.CREATION_DATE).getFirstValue();
-		folder.setCreatedAt(createdAt.getTime());
-		//document.setDescription((String)props.get(PropertyIds.DE).getFirstValue());
-		return folder;
-	}
-	
-	public JSONObject toJSON()
-	{
-		JSONObject json = super.toJSON();
-		return json;
-	}
+    public static FavouriteFolder getFolder(String id, String guid, Properties props)
+    {
+        FavouriteFolder folder = new FavouriteFolder(id, guid);
 
-	public static FavouriteFolder parseFolder(JSONObject jsonObject) throws ParseException
-	{
-		String id = (String)jsonObject.get("id");
-		String guid = (String)jsonObject.get("guid");
-		String name = (String)jsonObject.get("name");
-		String title = (String)jsonObject.get("title");
-		String description = (String)jsonObject.get("description");
-		Date createdAt = PublicApiDateFormat.getDateFormat().parse((String)jsonObject.get("createdAt"));
-		Date modifiedAt = PublicApiDateFormat.getDateFormat().parse((String)jsonObject.get("modifiedAt"));
-		String createdBy = (String)jsonObject.get("createdBy");
-		String modifiedBy = (String)jsonObject.get("modifiedBy");
+        Map<String, PropertyData<?>> properties = props.getProperties();
+        folder.setName((String)properties.get(PropertyIds.NAME).getFirstValue());
+        folder.setTitle((String)properties.get(ContentModel.PROP_TITLE.toString()).getFirstValue());
+        folder.setCreatedBy((String)properties.get(PropertyIds.CREATED_BY).getFirstValue());
+        folder.setModifiedBy((String)properties.get(PropertyIds.LAST_MODIFIED_BY).getFirstValue());
+        GregorianCalendar modifiedAt = (GregorianCalendar)properties.get(PropertyIds.LAST_MODIFICATION_DATE).getFirstValue();
+        folder.setModifiedAt(modifiedAt.getTime());
+        GregorianCalendar createdAt = (GregorianCalendar)properties.get(PropertyIds.CREATION_DATE).getFirstValue();
+        folder.setCreatedAt(createdAt.getTime());
+        //document.setDescription((String)props.get(PropertyIds.DE).getFirstValue());
+        return folder;
+    }
 
-		FavouriteFolder folder = new FavouriteFolder(id, guid);
-		folder.setName(name);
-		folder.setTitle(title);
-		folder.setCreatedBy(createdBy);
-		folder.setModifiedBy(modifiedBy);
-		folder.setModifiedAt(modifiedAt);
-		folder.setCreatedAt(createdAt);
-		folder.setDescription(description);
+    public JSONObject toJSON()
+    {
+        JSONObject json = super.toJSON();
+        return json;
+    }
+
+    public static FavouriteFolder parseFolder(JSONObject jsonObject) throws ParseException
+    {
+        String id = (String)jsonObject.get("id");
+        String guid = (String)jsonObject.get("guid");
+        String name = (String)jsonObject.get("name");
+        String title = (String)jsonObject.get("title");
+        String description = (String)jsonObject.get("description");
+        Date createdAt = PublicApiDateFormat.getDateFormat().parse((String)jsonObject.get("createdAt"));
+        Date modifiedAt = PublicApiDateFormat.getDateFormat().parse((String)jsonObject.get("modifiedAt"));
+        String createdBy = (String)jsonObject.get("createdBy");
+        String modifiedBy = (String)jsonObject.get("modifiedBy");
+
+        FavouriteFolder folder = new FavouriteFolder(id, guid);
+        folder.setName(name);
+        folder.setTitle(title);
+        folder.setCreatedBy(createdBy);
+        folder.setModifiedBy(modifiedBy);
+        folder.setModifiedAt(modifiedAt);
+        folder.setCreatedAt(createdAt);
+        folder.setDescription(description);
         // set path if available
         folder.parseAndSetPath(jsonObject);
         return folder;
     }
 
-	@Override
-	public void expected(Object o)
-	{
-		super.expected(o);
-	}
+    @Override
+    public void expected(Object o)
+    {
+        super.expected(o);
+    }
 
     @Override
     public String toString()

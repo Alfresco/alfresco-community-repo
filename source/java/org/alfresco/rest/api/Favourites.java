@@ -39,13 +39,13 @@ public interface Favourites
 {
     String PARAM_INCLUDE_PATH = Nodes.PARAM_INCLUDE_PATH;
 
-	/**
-	 * Add a favourite for user personId
-	 * 
-	 * @param personId the personId for which the favourite is to be added
-	 * @param favourite the favourite to add
-	 */
-	Favourite addFavourite(String personId, Favourite favourite);
+    /**
+     * Add a favourite for user personId
+     *
+     * @param personId the personId for which the favourite is to be added
+     * @param favourite the favourite to add
+     */
+    Favourite addFavourite(String personId, Favourite favourite);
 
     /**
      * Add a favourite for user personId taking parameters into account
@@ -56,30 +56,30 @@ public interface Favourites
      */
     Favourite addFavourite(String personId, Favourite favourite, Parameters parameters);
 
-	/**
-	 * Add a favourite for user personId
-	 * 
-	 * @param personId the personId for which the favourite is to be removed
-	 * @param id the id of the favourite to remove (id is a uuid)
-	 */
+    /**
+     * Add a favourite for user personId
+     *
+     * @param personId the personId for which the favourite is to be removed
+     * @param id the id of the favourite to remove (id is a uuid)
+     */
     void removeFavourite(String personId, String id);
 
-	/**
-	 * Get a paged list of favourites for user personId
-	 * 
-	 * @param personId the personId for which the favourite is to be removed
-	 * @param parameters Parameters
-	 * @return paged favourites
-	 */
+    /**
+     * Get a paged list of favourites for user personId
+     *
+     * @param personId the personId for which the favourite is to be removed
+     * @param parameters Parameters
+     * @return paged favourites
+     */
     CollectionWithPagingInfo<Favourite> getFavourites(String personId, final Parameters parameters);
 
-	/**
-	 * Get a specific favourite for user personId
-	 * 
-	 * @param personId the personId for which the favourite is to be removed
-	 * @param favouriteId the favourite id
-	 * @return the favourite
-	 */
+    /**
+     * Get a specific favourite for user personId
+     *
+     * @param personId the personId for which the favourite is to be removed
+     * @param favouriteId the favourite id
+     * @return the favourite
+     */
     Favourite getFavourite(String personId, String favouriteId);
 
     /**

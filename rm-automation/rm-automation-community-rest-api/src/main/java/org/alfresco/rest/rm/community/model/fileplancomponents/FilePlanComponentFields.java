@@ -48,9 +48,18 @@ public class FilePlanComponentFields
     public static final String PROPERTIES_VITAL_RECORD_INDICATOR = "rma:vitalRecordIndicator";
     public static final String PROPERTIES_REVIEW_PERIOD = "rma:reviewPeriod";
     public static final String PROPERTIES_OWNER = "cm:owner";
+    public static final String PROPERTIES_AUTHOR="cm:author";
 
     /** Common properties for record folders and records */
     public static final String PROPERTIES_RECORD_SEARCH_HAS_DISPOSITION_SCHEDULE = "rma:recordSearchHasDispositionSchedule";
+    public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD_EXPRESSION = "rma:recordSearchDispositionPeriodExpression";
+    public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_AUTHORITY = "rma:recordSearchDispositionAuthority";
+    public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_AS_OF = "rma:recordSearchDispositionActionAsOf";
+    public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_PERIOD = "rma:recordSearchDispositionPeriod";
+    public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_ACTION_NAME = "rma:recordSearchDispositionActionName";
+    public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS_ELIGIBLE = "rma:recordSearchDispositionEventsEligible";
+    public static final String PROPERTIES_RECORD_SEARCH_DISPOSITION_INSTRUCTIONS = "rma:recordSearchDispositionInstructions";
+    
 
     /** File plan properties */
     public static final String PROPERTIES_COMPONENT_ID = "st:componentId";

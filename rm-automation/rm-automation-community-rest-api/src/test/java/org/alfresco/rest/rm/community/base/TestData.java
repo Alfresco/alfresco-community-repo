@@ -160,6 +160,22 @@ public interface TestData
     }
 
     /**
+     * Data Provider with:
+     * with the object types  for creating a Record Category Child
+     *
+     * @return record category child type
+     */
+    @DataProvider
+    public static Object[][] categoryChild()
+    {
+        return new String[][] {
+                    { RECORD_FOLDER_TYPE },
+                    { FOLDER_TYPE },
+                    { RECORD_CATEGORY_TYPE }
+        };
+    }
+
+    /**
      * Invalid root level types, at unfiled record folder/unfiled containers container  level that shouldn't be possible to create
      */
     @DataProvider (name = "invalidRootTypes")

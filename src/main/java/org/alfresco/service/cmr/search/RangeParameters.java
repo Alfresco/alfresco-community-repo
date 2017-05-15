@@ -25,6 +25,7 @@
  */
 package org.alfresco.service.cmr.search;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.api.AlfrescoPublicApi;
@@ -80,8 +81,8 @@ public class RangeParameters
         this.hardend = hardend;
         this.other = other;
         this.include = include;
-        this.tags = tags;
-        this.excludeFilters = excludeFilters;
+        this.tags = tags == null? Collections.emptyList():tags;
+        this.excludeFilters = excludeFilters == null? Collections.emptyList():excludeFilters;
     }
     
     public String getField()

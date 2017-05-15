@@ -255,14 +255,19 @@ public class RecordFolderType extends    AbstractDisposableItem
     )
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        final NodeRef recordFolder = childAssocRef.getChildRef();
+        final NodeRef child = childAssocRef.getChildRef();
 
         // only records can be added in a record folder or hidden folders(is the case of e-mail attachments)
-        if (instanceOf(recordFolder, ContentModel.TYPE_FOLDER) && !nodeService.hasAspect(recordFolder, ContentModel.ASPECT_HIDDEN))
+        if (instanceOf(child, ContentModel.TYPE_FOLDER) && !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
         {
-            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(recordFolder)), null);
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(child)), null);
         }
 
+        // file the record
+        recordService.file(child);
+        // recalculate disposition schedule
+        dispositionService.recalculateNextDispositionStep(child);
+        
         behaviourFilter.disableBehaviour();
         try
         {
@@ -272,7 +277,7 @@ public class RecordFolderType extends    AbstractDisposableItem
                 public Void doWork()
                 {
                     // setup vital record definition
-                    vitalRecordService.setupVitalRecordDefinition(recordFolder);
+                    vitalRecordService.setupVitalRecordDefinition(child);
 
                     return null;
                 }

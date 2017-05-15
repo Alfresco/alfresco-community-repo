@@ -185,15 +185,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                                 recordService.makeRecord(child);
                             }
                         }
-
-                        if(isContentSubType && parentType.equals(RecordsManagementModel.TYPE_RECORD_FOLDER)&& !recordService.isFiled(child))
-                        {
-                        	recordService.file(child);
-                        }
                     }
-                    
-                    // recalculate disposition schedule for the child
-                    dispositionService.recalculateNextDispositionStep(child);
                 }
 
                 return null;

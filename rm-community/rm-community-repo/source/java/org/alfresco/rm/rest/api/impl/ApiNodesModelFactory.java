@@ -469,10 +469,6 @@ public class ApiNodesModelFactory
             {
                 transferChild.setIsClosed((Boolean) nodeService.getProperty(info.getNodeRef(), RecordsManagementModel.PROP_IS_CLOSED));
             }
-            if(isMinimalInfo && includeParam.contains(TransferChild.PARAM_IS_COMPLETED))
-            {
-                transferChild.setIsCompleted(null);
-            }
         }
         else
         {
@@ -487,10 +483,6 @@ public class ApiNodesModelFactory
             if(isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED))
             {
                 transferChild.setIsClosed(null);
-            }
-            if(isMinimalInfo && includeParam.contains(TransferChild.PARAM_IS_COMPLETED))
-            {
-                transferChild.setIsCompleted(nodeService.hasAspect(info.getNodeRef(), RecordsManagementModel.ASPECT_DECLARED_RECORD));
             }
         }
     }

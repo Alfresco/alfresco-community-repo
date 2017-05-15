@@ -179,6 +179,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
                 
                 // Create a record filed under category A and linked to category B.
                 record = fileFolderService.create(folderA, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
+                recordService.file(record);
                 recordService.link(record, folderB);
             })
             .when(() -> {
@@ -212,6 +213,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
                 setUpFilePlan();
                 // Create a record filed under category B and linked to category A.
                 record = fileFolderService.create(folderB, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
+                recordService.file(record);
                 recordService.link(record, folderA);
             })
             .when(() -> {
@@ -243,6 +245,7 @@ public class MultipleSchedulesTest extends BaseRMTestCase
                 setUpFilePlan();
                 // Create a record filed under category A and linked to category B and C.
                 record = fileFolderService.create(folderA, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
+                recordService.file(record);
                 recordService.link(record, folderB);
                 recordService.link(record, folderC);
                 // Cut off the record.

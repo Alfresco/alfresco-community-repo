@@ -123,6 +123,7 @@ public class UpdateDispositionScheduleTest extends BaseRMTestCase
                 // Create a folder containing a record within the category.
                 folder = recordFolderService.createRecordFolder(category, FOLDER_NAME);
                 record = fileFolderService.create(folder, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
+                recordService.file(record);
 
                 dispositionService.cutoffDisposableItem(record);
                 // Ensure the update has been applied to the record.

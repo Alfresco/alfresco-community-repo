@@ -485,9 +485,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                 validateLinkConditions(nodeRef, parentNodeRef);
                             }
                         }
-
-                        // recalculate disposition schedule for the record when linking it
-                        dispositionService.recalculateNextDispositionStep(nodeRef);
                     }
                 }
                 catch (RecordLinkRuntimeException e)
@@ -1238,10 +1235,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 		            
 		            ownableService.setOwner(document, OwnableService.NO_OWNER);
 		            
-		            if (TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(document)))
-		            {
-		                appendIdentifierToName(nodeService, document);
-		            }
+		            appendIdentifierToName(nodeService, document);
 					return null;
 				}
 			});

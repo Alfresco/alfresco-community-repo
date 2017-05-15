@@ -65,6 +65,7 @@
       <property name="identifierService" ref="recordsManagementIdentifierService"/>
       <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="recordFolderService" />
+      <property name="dispositionService" ref="dispositionService"/>
    </bean>
 
    <bean id="rma.nonElectronicRecord" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.NonElectronicRecordType" parent="rm.baseBehaviour">

@@ -524,7 +524,9 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                        // create record folder and file record 
                        NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
                        fileFolderService.move(dmDocument, recordFolder, null);
-                       
+                   })
+                   .perform(() -> 
+                   {
                        // cut off record
                        rmActionService.executeRecordsManagementAction(dmDocument, DeclareRecordAction.NAME);
                        utils.completeEvent(dmDocument, CommonRMTestUtils.DEFAULT_EVENT_NAME);

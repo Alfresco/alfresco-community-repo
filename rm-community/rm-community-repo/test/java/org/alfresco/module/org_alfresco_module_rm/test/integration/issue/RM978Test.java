@@ -36,6 +36,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -408,8 +409,10 @@ public class RM978Test extends BaseRMTestCase
                 List<ChildAssociationRef> rmFolderChildAssocs = nodeService.getChildAssocs(rmFolder);
                 assertEquals(1, rmFolderChildAssocs.size());
                 NodeRef movedDocument = rmFolderChildAssocs.iterator().next().getChildRef();
+                String recordIdentifier = (String) nodeService.getProperty(movedDocument, RecordsManagementModel.PROP_IDENTIFIER);
+                assertNotNull(recordIdentifier);
                 String movedDocumentName = (String) nodeService.getProperty(movedDocument, ContentModel.PROP_NAME);
-                assertEquals(document1Name, movedDocumentName);
+                assertEquals(document1Name + " (" + recordIdentifier + ")", movedDocumentName);
             }
         });
     }

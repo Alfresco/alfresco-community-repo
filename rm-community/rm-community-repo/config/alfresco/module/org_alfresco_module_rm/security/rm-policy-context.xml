@@ -38,6 +38,7 @@
 
 	<bean id="writeContentPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.WriteContentPolicy">
 		<property name="name" value="WriteContent"/>
+		<property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
 	</bean>
 
 	<bean id="declarePolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.DeclarePolicy">

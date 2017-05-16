@@ -336,8 +336,6 @@ paths:
         the API method tries to create
         a unique name using an integer suffix.
 
-        Any field in the JSON body defined below can also be passed as a form-data field.
-
         This API method also supports record category creation using application/json.
 
         You must specify at least a **name**.
@@ -1178,8 +1176,6 @@ paths:
         You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
         the API method tries to create
         a unique name using an integer suffix.
-
-        Any field in the JSON body defined below can also be passed as a form-data field.
 
         This API method also supports record category or record folder creation using application/json.
 

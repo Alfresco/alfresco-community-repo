@@ -1086,7 +1086,7 @@ public class SearchParameters implements BasicSearchParameters
      * @param searchParameters
      * @return true if exists
      */
-    public boolean hasFaceting(SearchParameters searchParameters)
+    public boolean hasFaceting()
     {
         if(facetQueries != null && !facetQueries.isEmpty())
         {

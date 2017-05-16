@@ -1096,7 +1096,7 @@ public class SearchParameters implements BasicSearchParameters
         {
             return true;
         }
-        if(interval != null && !interval.getIntervals().isEmpty() || !interval.getSets().isEmpty())
+        if(interval != null)
         {
             return true;
         }

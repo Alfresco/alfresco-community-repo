@@ -182,7 +182,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
         {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
             apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
-            result.add(nodesModelFactory.createRecord(info, parameters, mapUserInfo, false));
+            result.add(nodesModelFactory.createRecord(info, parameters, mapUserInfo, true));
         }
 
         return result;
@@ -216,6 +216,6 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
         // Get file info for response
         FileInfo info = fileFolderService.getFileInfo(newNode);
         apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
-        return nodesModelFactory.createRecord(info, parameters, null, false);
+        return nodesModelFactory.createRecord(info, parameters, null, true);
     }
 }

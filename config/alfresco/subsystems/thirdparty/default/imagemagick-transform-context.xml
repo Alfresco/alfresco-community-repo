@@ -16,6 +16,7 @@
                         <value>${source}</value>
                         <value>SPLIT:${options}</value>
                         <value>-strip</value>
+                        <value>-quiet</value>
                         <value>${target}</value>
                      </list>
                   </entry>

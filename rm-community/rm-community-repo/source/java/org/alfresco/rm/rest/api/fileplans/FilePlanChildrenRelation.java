@@ -57,7 +57,6 @@ import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.impl.SearchTypesFactory;
 import org.alfresco.rm.rest.api.model.FilePlan;
 import org.alfresco.rm.rest.api.model.RecordCategory;
-import org.alfresco.rm.rest.api.model.RecordCategoryChild;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -76,7 +75,7 @@ import org.springframework.extensions.webscripts.servlet.FormData;
 @RelationshipResource(name="categories", entityResource = FilePlanEntityResource.class, title = "Category children of file plan")
 public class FilePlanChildrenRelation implements RelationshipResourceAction.Read<RecordCategory>,
                                                  RelationshipResourceAction.Create<RecordCategory>,
-                                                 MultiPartRelationshipResourceAction.Create<RecordCategoryChild>,
+                                                 MultiPartRelationshipResourceAction.Create<RecordCategory>,
                                                  InitializingBean
 {
     /** Record category type */
@@ -228,7 +227,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
      * @see org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction.Create#create(java.lang.String, org.springframework.extensions.webscripts.servlet.FormData, org.alfresco.rest.framework.resource.parameters.Parameters, org.alfresco.rest.framework.webscripts.WithResponse)
      */
     @Override
-    public RecordCategoryChild create(String entityResourceId, FormData formData, Parameters parameters, WithResponse withResponse)
+    public RecordCategory create(String entityResourceId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
         throw new IntegrityException("Uploading records into file plan root is not allowed.", null);
     }

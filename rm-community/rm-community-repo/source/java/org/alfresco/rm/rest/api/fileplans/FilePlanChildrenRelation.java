@@ -213,7 +213,7 @@ public class FilePlanChildrenRelation implements RelationshipResourceAction.Read
         for (NodeRef newNodeRef : createdNodes)
         {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
-            result.add(nodesModelFactory.createRecordCategory(info, parameters, mapUserInfo, true));
+            result.add(nodesModelFactory.createRecordCategory(info, parameters, mapUserInfo, false));
         }
 
         return result;

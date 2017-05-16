@@ -208,7 +208,7 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
         {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
             apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
-            result.add(nodesModelFactory.createUnfiledRecordFolderChild(info, parameters, mapUserInfo, true));
+            result.add(nodesModelFactory.createUnfiledRecordFolderChild(info, parameters, mapUserInfo, false));
         }
 
         return result;
@@ -244,6 +244,6 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
         FileInfo info = fileFolderService.getFileInfo(newNode);
         apiUtils.postActivity(info, parent, ActivityType.FILE_ADDED);
 
-        return nodesModelFactory.createUnfiledRecordFolderChild(info, parameters, null, true);
+        return nodesModelFactory.createUnfiledRecordFolderChild(info, parameters, null, false);
     }
 }

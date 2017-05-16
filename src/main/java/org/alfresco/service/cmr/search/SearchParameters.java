@@ -198,7 +198,7 @@ public class SearchParameters implements BasicSearchParameters
     private RangeParameters range;
 
     private String timezone;
-
+    
     /**
      * Default constructor
      */
@@ -1080,6 +1080,36 @@ public class SearchParameters implements BasicSearchParameters
     {
         return this.spellCheck;
     }
+    
+    /**
+     * Checks if faceting is used as part of the query, Search-347.
+     * @param searchParameters
+     * @return true if exists
+     */
+    public boolean hasFaceting(SearchParameters searchParameters)
+    {
+        if(facetQueries != null && !facetQueries.isEmpty())
+        {
+            return true;
+        }
+        if(fieldFacets != null && !fieldFacets.isEmpty())
+        {
+            return true;
+        }
+        if(interval != null && !interval.getIntervals().isEmpty() || !interval.getSets().isEmpty())
+        {
+            return true;
+        }
+        if(pivots != null && !pivots.isEmpty())
+        {
+            return true;
+        }
+        if(range != null)
+        {
+            return true;
+        }
+        return false;
+    }
 
     /**
      * @param spellCheck the spellCheck to set
@@ -1128,6 +1158,7 @@ public class SearchParameters implements BasicSearchParameters
         result = prime * result + ((facetQueries.isEmpty()) ? 0 : facetQueries.hashCode());
         result = prime * result + ((filterQueries.isEmpty()) ? 0 : filterQueries.hashCode());
         result = prime * result + ((pivots.isEmpty()) ? 0 : pivots.hashCode());
+        result = prime * result + ((range == null) ? 0 : range.hashCode());
         result = prime * result + ((searchTerm == null) ? 0 : searchTerm.hashCode());
         result = prime * result + (spellCheck ? 1231 : 1237);
         return result;

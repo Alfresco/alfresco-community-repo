@@ -37,7 +37,7 @@ public class IntervalSet
 {
     private final String start;
     private final String end;
-    private final String label;
+    private String label;
     private final boolean startInclusive;
     private final boolean endInclusive;
 
@@ -69,6 +69,11 @@ public class IntervalSet
     public String getLabel()
     {
         return label;
+    }
+
+    public void setLabel(String label)
+    {
+        this.label = label;
     }
 
     public boolean isStartInclusive()
@@ -127,5 +132,39 @@ public class IntervalSet
                     ", startInclusive=" + startInclusive +
                     ", endInclusive=" + endInclusive +
                     '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        IntervalSet that = (IntervalSet) o;
+
+        if (startInclusive != that.startInclusive)
+            return false;
+        if (endInclusive != that.endInclusive)
+            return false;
+        if (start != null ? !start.equals(that.start) : that.start != null)
+            return false;
+        if (end != null ? !end.equals(that.end) : that.end != null)
+            return false;
+        if (label != null ? !label.equals(that.label) : that.label != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = start != null ? start.hashCode() : 0;
+        result = 31 * result + (end != null ? end.hashCode() : 0);
+        result = 31 * result + (startInclusive ? 1 : 0);
+        result = 31 * result + (endInclusive ? 1 : 0);
+        return result;
     }
 }

@@ -215,8 +215,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
     }
 
     @Override
-    public RecordCategoryChild create(String entityResourceId, FormData formData, Parameters parameters,
-        WithResponse withResponse)
+    public RecordCategoryChild create(String entityResourceId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
         throw new IntegrityException("Uploading records into record categories is not allowed.", null);
     }

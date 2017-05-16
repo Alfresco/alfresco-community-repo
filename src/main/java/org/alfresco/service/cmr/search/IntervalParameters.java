@@ -30,6 +30,7 @@ import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Parameters used for search Intervals.
@@ -37,19 +38,19 @@ import java.util.List;
 @AlfrescoPublicApi
 public class IntervalParameters
 {
-    private final List<IntervalSet> sets;
+    private final Set<IntervalSet> sets;
     private final List<Interval> intervals;
 
     @JsonCreator
     public IntervalParameters(
-                @JsonProperty("sets") List<IntervalSet> sets,
+                @JsonProperty("sets") Set<IntervalSet> sets,
                 @JsonProperty("intervals") List<Interval> intervals)
     {
         this.sets = sets;
         this.intervals = intervals;
     }
 
-    public List<IntervalSet> getSets()
+    public Set<IntervalSet> getSets()
     {
         return sets;
     }

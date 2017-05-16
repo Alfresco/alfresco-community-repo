@@ -29,7 +29,9 @@ import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Parameters used for a search Interval.
@@ -38,17 +40,17 @@ public class Interval
 {
     private final String field;
     private final String label;
-    private final List<IntervalSet> sets;
+    private final Set<IntervalSet> sets;
 
     @JsonCreator
     public Interval(
                 @JsonProperty("field") String field,
                 @JsonProperty("label") String label,
-                @JsonProperty("sets") List<IntervalSet> sets)
+                @JsonProperty("sets")  Set<IntervalSet> sets)
     {
         this.field = field;
         this.label = label;
-        this.sets = sets == null ? new ArrayList<>() :sets;
+        this.sets = sets == null ? new HashSet() :sets;
     }
 
     public String getField()
@@ -61,7 +63,7 @@ public class Interval
         return label;
     }
 
-    public List<IntervalSet> getSets()
+    public Set<IntervalSet> getSets()
     {
         return sets;
     }

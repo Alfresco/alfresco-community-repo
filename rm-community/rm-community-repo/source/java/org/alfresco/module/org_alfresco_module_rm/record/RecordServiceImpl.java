@@ -485,6 +485,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                 validateLinkConditions(nodeRef, parentNodeRef);
                             }
                         }
+                        nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD, null);
                     }
                 }
                 catch (RecordLinkRuntimeException e)

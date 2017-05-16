@@ -27,46 +27,19 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
-import java.util.Set;
-
-import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
-import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
-
 public class WriteContentPolicy extends AbstractBasePolicy
 {
-    protected TransactionalResourceHelper transactionalResourceHelper; 
-
-    public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
-    {
-        this.transactionalResourceHelper = transactionalResourceHelper;
-    }
-
     @SuppressWarnings("rawtypes")
     public int evaluate(
             MethodInvocation invocation,
             Class[] params,
             ConfigAttributeDefinition cad)
     {
-        try{
-            NodeRef updatee = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-            Set<NodeRef> newRecords = transactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS);
-            if(newRecords.contains(updatee))
-            {
-                return AccessDecisionVoter.ACCESS_GRANTED;
-            }
-            else
-            {
-                return getCapabilityService().getCapability("WriteContent").evaluate(updatee);
-            }
-        } 
-        catch(Exception ex)
-        {
-            throw ex;
-        }
+        NodeRef updatee = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
+        return getCapabilityService().getCapability("WriteContent").evaluate(updatee);
     }
 
 }

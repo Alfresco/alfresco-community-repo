@@ -464,8 +464,8 @@ public class RecordFolderTests extends BaseRMRestTest
                 assertEquals(record.getParentId(), containerId);
 
                 //check the record name
-                assertFalse(record.getName().equals(createdComponent.getName()),
-                        "Record Name"+ record.getName()+" doesn't contain the record identifier");
+                assertTrue(record.getName().equals(createdComponent.getName()),
+                        "Record Name"+ record.getName()+" doesn't match the one returned on create");
                 assertTrue(createdComponent.getName().contains(createdComponent.getProperties().getIdentifier()),
                         "Record Name"+ createdComponent.getName()+" doesn't contain the record identifier in response when creating");
                 assertEquals(createdComponent.getNodeType(), record.getNodeType());

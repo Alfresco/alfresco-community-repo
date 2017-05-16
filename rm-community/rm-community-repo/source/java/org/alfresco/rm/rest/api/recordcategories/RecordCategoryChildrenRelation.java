@@ -208,7 +208,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
         for (NodeRef nodeInfo : createdNodes)
         {
             FileInfo info = fileFolderService.getFileInfo(nodeInfo);
-            result.add(nodesModelFactory.createRecordCategoryChild(info, parameters, mapUserInfo, true));
+            result.add(nodesModelFactory.createRecordCategoryChild(info, parameters, mapUserInfo, false));
         }
 
         return result;

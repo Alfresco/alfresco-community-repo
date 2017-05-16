@@ -201,7 +201,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
         {
             FileInfo info = fileFolderService.getFileInfo(newNodeRef);
             apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
-            result.add(nodesModelFactory.createUnfiledContainerChild(info, parameters, mapUserInfo, true));
+            result.add(nodesModelFactory.createUnfiledContainerChild(info, parameters, mapUserInfo, false));
         }
 
         return result;
@@ -231,6 +231,6 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
         // Get file info for response
         FileInfo info = fileFolderService.getFileInfo(newNode);
         apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
-        return nodesModelFactory.createUnfiledContainerChild(info, parameters, null, true);
+        return nodesModelFactory.createUnfiledContainerChild(info, parameters, null, false);
     }
 }

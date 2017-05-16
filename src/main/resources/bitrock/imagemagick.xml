@@ -90,8 +90,8 @@ System variables provided by this component:
             <ask>0</ask>
             <!--description>ImageMagick version</description-->
             <name>imagemagick_version</name>
-            <value>6.9.1</value>
-            <default>6.9.1</default>
+            <value>7.0.5</value>
+            <default>7.0.5</default>
         </stringParameter>
         <booleanParameter name="imagemagick_ghostscriptwin_included" value="0" ask="0" />
     </parameterList>

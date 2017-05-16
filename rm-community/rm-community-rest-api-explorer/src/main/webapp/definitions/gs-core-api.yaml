@@ -336,8 +336,6 @@ paths:
         the API method tries to create
         a unique name using an integer suffix.
 
-        Any field in the JSON body defined below can also be passed as a form-data field.
-
         This API method also supports record category creation using application/json.
 
         You must specify at least a **name**.
@@ -393,7 +391,7 @@ paths:
       parameters:
         - $ref: '#/parameters/filePlanIdWithAliasParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/filePlanCategoriesEntryIncludeParam'
+        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
@@ -666,7 +664,7 @@ paths:
       parameters:
         - $ref: '#/parameters/unfiledContainerIdParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/unfiledContainerChildEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
@@ -762,6 +760,7 @@ paths:
       operationId: updateUnfiledRecordFolder
       parameters:
         - $ref: '#/parameters/unfiledRecordFolderIdParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
         - $ref: '#/parameters/unfiledRecordFolderIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
@@ -971,7 +970,7 @@ paths:
       parameters:
         - $ref: '#/parameters/unfiledRecordFolderIdParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/unfiledRecordFolderChildEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
@@ -1181,8 +1180,6 @@ paths:
 
         Any field in the JSON body defined below can also be passed as a form-data field.
 
-        This API method also supports record category or record folder creation using application/json.
-
         You must specify at least a **name** and **nodeType**.
 
         You can create a category like this:
@@ -1274,7 +1271,7 @@ paths:
       parameters:
         - $ref: '#/parameters/recordCategoryIdParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/recordCategoryChildEntryIncludeParam'
+        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate

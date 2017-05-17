@@ -853,7 +853,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                         // make the document a record
                         makeRecord(nodeRef);
-                        appendIdentifierToName(nodeService, nodeRef);
+                        generateRecordIdentifier(nodeService, identifierService, nodeRef);
 
                         if (latestVersionRecord != null)
                         {
@@ -1063,7 +1063,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                     // make record
                     makeRecord(record);
-                    appendIdentifierToName(nodeService, record);
+                    generateRecordIdentifier(nodeService, identifierService, record);
 
                     // remove added copy assocs
                     List<AssociationRef> recordAssocs = nodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
@@ -1198,7 +1198,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                         // make record
                         makeRecord(record);
-                        appendIdentifierToName(nodeService, record);
+                        generateRecordIdentifier(nodeService, identifierService, record);
                     }
 
                     return record;
@@ -1811,7 +1811,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         if (nodeService.exists(nodeRef) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
-            appendIdentifierToName(nodeService, nodeRef);
+            generateRecordIdentifier(nodeService, identifierService, record);
         }
     }
 

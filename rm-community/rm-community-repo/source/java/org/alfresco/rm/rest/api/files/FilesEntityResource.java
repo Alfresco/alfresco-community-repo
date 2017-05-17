@@ -31,6 +31,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.EntityResource;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -59,6 +61,7 @@ public class FilesEntityResource implements InitializingBean
     private FilePlanService filePlanService;
     private FileFolderService fileFolderService;
     private RecordService recordService;
+    private TransactionService transactionService;
 
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
@@ -85,6 +88,11 @@ public class FilesEntityResource implements InitializingBean
         this.nodesModelFactory = nodesModelFactory;
     }
 
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
     @Operation("declare")
     @WebApiDescription(title = "Declare as record", description="Declare a file as record.")
     public Record declareAsRecord(String fileId, Void body, Parameters parameters, WithResponse withResponse)
@@ -104,7 +112,15 @@ public class FilesEntityResource implements InitializingBean
 
         // Create the record
         NodeRef file = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, fileId);
-        recordService.createRecord(filePlan, file, !hideRecord);
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                recordService.createRecord(filePlan, file, !hideRecord);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // Return record state
         FileInfo info = fileFolderService.getFileInfo(file);

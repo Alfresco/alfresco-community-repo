@@ -510,22 +510,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION,
-       policy = "alf:onCreateChildAssociation",
-       type = "rma:recordFolder",
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
-    {
-        NodeRef record = childAssocRef.getChildRef();
-        if(nodeService.exists(record) && dictionaryService.isSubClass(nodeService.getType(record), ContentModel.TYPE_CONTENT))
-        {
-            generateRecordIdentifier(nodeService, identifierService, record);
-        }
-    }
-
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#disablePropertyEditableCheck()
      */

@@ -406,23 +406,23 @@ public class UnfiledContainerTests extends BaseRMRestTest
     @Test(description = "Create a record with custom record identifier in unfiled container")
     public void createRecordWithCustomIdentifier() throws Exception
     {
-    	String recordName = "customIdRecord-" + getRandomAlphanumeric();
-    	String customIdentifier = "customId";
-    	RecordProperties propertiesModel = RecordProperties.builder().identifier(customIdentifier).build();
+        String recordName = "customIdRecord-" + getRandomAlphanumeric();
+        String customIdentifier = "customId";
+        RecordProperties propertiesModel = RecordProperties.builder().identifier(customIdentifier).build();
 
-    	UnfiledContainerChild childModel = UnfiledContainerChild.builder()
-        .name(recordName)
-        .nodeType(CONTENT_TYPE)
-        .properties(UnfiledContainerChildProperties.builder()
+        UnfiledContainerChild childModel = UnfiledContainerChild.builder()
+            .name(recordName)
+            .nodeType(CONTENT_TYPE)
+            .properties(UnfiledContainerChildProperties.builder()
                 .identifier(customIdentifier)
                 .build())
-        .build();
+            .build();
 
-    	UnfiledContainerChild child = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(childModel, UNFILED_RECORDS_CONTAINER_ALIAS);
+        UnfiledContainerChild child = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(childModel, UNFILED_RECORDS_CONTAINER_ALIAS);
 
-    	assertStatusCode(HttpStatus.CREATED);
-    	assertEquals(child.getProperties().getIdentifier(), customIdentifier);
-    	assertEquals(child.getName(), recordName + " (" + customIdentifier + ")");
+        assertStatusCode(HttpStatus.CREATED);
+        assertEquals(child.getProperties().getIdentifier(), customIdentifier);
+        assertEquals(child.getName(), recordName + " (" + customIdentifier + ")");
     }
 
     @AfterMethod
@@ -432,7 +432,7 @@ public class UnfiledContainerTests extends BaseRMRestTest
         UnfiledContainerChildCollection listedChildren = getRestAPIFactory().getUnfiledContainersAPI()
                 .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS);
 
-        listedChildren.getEntries().forEach(UnfiledContainerChildEntry -> 
+        listedChildren.getEntries().forEach(UnfiledContainerChildEntry ->
         {
             if (UnfiledContainerChildEntry.getEntry().getIsRecord())
             {

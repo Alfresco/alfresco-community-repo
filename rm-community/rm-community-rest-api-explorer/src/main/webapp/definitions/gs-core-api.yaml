@@ -1178,7 +1178,7 @@ paths:
         the API method tries to create
         a unique name using an integer suffix.
 
-        Any field in the JSON body defined below can also be passed as a form-data field.
+        This API method also supports record category or record folder creation using application/json.
 
         You must specify at least a **name** and **nodeType**.
 
@@ -2622,6 +2622,10 @@ definitions:
           The character . must not be used at the end of the name.
       nodeType:
         type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean 
       modifiedAt:
         type: string
         format: date-time
@@ -2675,6 +2679,10 @@ definitions:
           The character . must not be used at the end of the name.
       nodeType:
         type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
       modifiedAt:
         type: string
         format: date-time
@@ -2763,6 +2771,10 @@ definitions:
           The character . must not be used at the end of the name.
       nodeType:
         type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
       modifiedAt:
         type: string
         format: date-time
@@ -2816,6 +2828,10 @@ definitions:
           The character . must not be used at the end of the name.
       nodeType:
         type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
       modifiedAt:
         type: string
         format: date-time

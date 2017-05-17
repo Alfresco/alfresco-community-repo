@@ -515,7 +515,7 @@ public class ApiNodesModelFactory
             {
                 recordCategoryChild.setIsClosed((Boolean) nodeService.getProperty(info.getNodeRef(), RecordsManagementModel.PROP_IS_CLOSED));
             }
-            if((!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_HAS_RETENTION_SCHEDULE)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE)))
+            if (includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE))
             {
                 recordCategoryChild.setHasRetentionSchedule(null);
             }
@@ -530,7 +530,7 @@ public class ApiNodesModelFactory
             {
                 recordCategoryChild.setIsRecordCategory(true);
             }
-            if((!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_HAS_RETENTION_SCHEDULE)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE)))
+            if (includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE))
             {
                 DispositionSchedule ds = dispositionService.getDispositionSchedule(info.getNodeRef());
                 recordCategoryChild.setHasRetentionSchedule(ds !=null ? true : false);

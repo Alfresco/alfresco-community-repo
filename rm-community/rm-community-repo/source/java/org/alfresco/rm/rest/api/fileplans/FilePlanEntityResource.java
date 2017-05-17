@@ -30,16 +30,13 @@ package org.alfresco.rm.rest.api.fileplans;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
-import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.FilePlan;
@@ -50,7 +47,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * File plan entity resource
@@ -61,7 +57,6 @@ import org.springframework.extensions.webscripts.servlet.FormData;
 @EntityResource(name = "file-plans", title = "File plans")
 public class FilePlanEntityResource implements EntityResourceAction.ReadById<FilePlan>,
                                                 EntityResourceAction.Update<FilePlan>,
-                                                MultiPartRelationshipResourceAction.Create<FilePlan>,
                                                 InitializingBean
 {
 
@@ -152,11 +147,5 @@ public class FilePlanEntityResource implements EntityResourceAction.ReadById<Fil
         FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
 
         return nodesModelFactory.createFilePlan(info, parameters, null, false);
-    }
-
-    @Override
-    public FilePlan create(String entityResourceId, FormData formData, Parameters parameters, WithResponse withResponse)
-    {
-        throw new IntegrityException("Uploading records into file plan root is not allowed.", null);
     }
 }

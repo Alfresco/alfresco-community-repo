@@ -34,6 +34,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.IS_CLOSED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FILE_PLAN_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
@@ -105,7 +106,8 @@ public class RecordFolderTests extends BaseRMRestTest
                 { UNFILED_CONTAINER_TYPE },
                 { UNFILED_RECORD_FOLDER_TYPE },
                 { TRANSFER_TYPE },
-                { RECORD_CATEGORY_TYPE }
+                { RECORD_CATEGORY_TYPE },
+                { FOLDER_TYPE }
         };
     }
 
@@ -370,9 +372,6 @@ public class RecordFolderTests extends BaseRMRestTest
         // Make a request to close the record folder
         RecordFolder updatedRecordFolder = recordFolderAPI.updateRecordFolder(recordFolderModel, recordFolder.getId());
 
-        //FIXME - remove this workaround after RM-4921 is fixed.
-        updatedRecordFolder = recordFolderAPI.getRecordFolder(updatedRecordFolder.getId());
-
         // Verify that the record folder is closed now
         assertTrue(updatedRecordFolder.getProperties().getIsClosed());
 
@@ -385,9 +384,6 @@ public class RecordFolderTests extends BaseRMRestTest
 
         // Make a request to reopen the record folder
         updatedRecordFolder = recordFolderAPI.updateRecordFolder(recordFolderModel, recordFolder.getId());
-
-        //FIXME - remove this workaround after RM-4921 is fixed.
-        updatedRecordFolder = recordFolderAPI.getRecordFolder(updatedRecordFolder.getId());
 
         // Verify that the record folder is open now
         assertFalse(updatedRecordFolder.getProperties().getIsClosed());

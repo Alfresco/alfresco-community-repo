@@ -304,7 +304,8 @@ public abstract class BaseServlet extends HttpServlet
          
          final PrintWriter out = res.getWriter();
          out.println("<html><head>");
-         out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + redirectURL + "\">");
+         // Remove the auto refresh to avoid refresh loop, MNT-16931
+//         out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + redirectURL + "\">");
          out.println("</head><body><p>Please <a href=\"" + redirectURL + "\">log in</a>.</p>");
          out.println("</body></html>");
          out.close();

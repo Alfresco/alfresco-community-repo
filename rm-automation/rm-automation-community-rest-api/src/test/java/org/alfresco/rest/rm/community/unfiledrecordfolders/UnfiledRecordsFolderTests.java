@@ -490,7 +490,7 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
                 String identifier = " \\(" + record.getProperties().getIdentifier() + "\\)";
                 String regex= "(" + NONELECTRONIC_RECORD_NAME + "|" + ELECTRONIC_RECORD_NAME + ")" + "[0-9]+" + identifier;
                 assertTrue(record.getName().matches(regex),
-                            "The record name :" + record.getName() +"doesn't match the expression " + regex);
+                            "The record name:" + record.getName() + " doesn't match the expression " + regex);
                 assertTrue(createdComponent.getName().contains(createdComponent.getProperties().getIdentifier()));
                 assertEquals(createdComponent.getNodeType(), record.getNodeType());
 

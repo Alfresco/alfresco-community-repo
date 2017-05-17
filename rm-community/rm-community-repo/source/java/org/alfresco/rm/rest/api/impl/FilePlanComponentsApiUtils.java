@@ -617,18 +617,18 @@ public class FilePlanComponentsApiUtils
             QName typeQName = nodes.createQName(type);
             newNodeRef = fileFolderService.create(parentNodeRef, name, typeQName).getNodeRef();
 
-            // If electronic record create empty content
-            if (!typeQName.equals(RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT)
-                    && dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
-            {
-                writeContent(newNodeRef, name, new ByteArrayInputStream("".getBytes()), false);
-            }
-
             // Set the provided properties if any
             Map<QName, Serializable> qnameProperties = mapToNodeProperties(properties);
             if (qnameProperties != null)
             {
                 nodeService.addProperties(newNodeRef, qnameProperties);
+            }
+
+            // If electronic record create empty content
+            if (!typeQName.equals(RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT)
+                    && dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+            {
+                writeContent(newNodeRef, name, new ByteArrayInputStream("".getBytes()), false);
             }
 
             // Add the provided aspects if any

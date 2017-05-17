@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
@@ -203,6 +204,9 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
         when(mockedDictionaryService.isSubClass(type, TYPE_FOLDER)).thenReturn(true);
         when(mockedNodeService.hasAspect(nodeRef, ASPECT_HIDDEN)).thenReturn(true);
 
+        ChildAssociationRef mockedPrimaryParentAssoc = mock(ChildAssociationRef.class);
+        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedPrimaryParentAssoc);
+
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);
     }
@@ -219,6 +223,9 @@ public class RecordFolderTypeUnitTest extends BaseUnitTest
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
 
         when(mockedDictionaryService.isSubClass(type, TYPE_FOLDER)).thenReturn(false);
+
+        ChildAssociationRef mockedPrimaryParentAssoc = mock(ChildAssociationRef.class);
+        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedPrimaryParentAssoc);
 
         ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
         recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);

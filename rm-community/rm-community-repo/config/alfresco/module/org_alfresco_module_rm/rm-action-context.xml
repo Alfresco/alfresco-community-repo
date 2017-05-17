@@ -140,6 +140,7 @@
       <property name="modelSecurityService" ref="modelSecurityService" />
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="holdService" ref="HoldService" />
+      <property name="identifierService" ref="recordsManagementIdentifierService"/>
    </bean>
 
    <bean id="rmProxyAction"

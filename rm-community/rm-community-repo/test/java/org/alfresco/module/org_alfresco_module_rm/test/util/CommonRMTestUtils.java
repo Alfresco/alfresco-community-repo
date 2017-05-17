@@ -253,9 +253,6 @@ public class CommonRMTestUtils implements RecordsManagementModel
         writer.setEncoding("UTF-8");
         writer.putContent(content);
 
-        // file the record
-        recordService.file(record);
-
         return record;
     }
 
@@ -278,9 +275,6 @@ public class CommonRMTestUtils implements RecordsManagementModel
         writer.setMimetype(mimetype);
         writer.setEncoding("UTF-8");
         writer.putContent(content);
-
-        // file the record
-        recordService.file(record);
 
         return record;
     }

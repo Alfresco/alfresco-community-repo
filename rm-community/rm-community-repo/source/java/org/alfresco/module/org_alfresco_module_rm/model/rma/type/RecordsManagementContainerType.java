@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -71,8 +72,6 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
 
     /** record folder service */
     protected RecordFolderService recordFolderService;
-    
-    protected DispositionService dispositionService;
 
     /** I18N */
     private static final String MSG_CANNOT_CAST_TO_RM_TYPE = "rm.action.cast-to-rm-type";
@@ -100,14 +99,6 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     {
         this.recordFolderService = recordFolderService;
     }
-
-    /**
-     * @param dispositionService disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-		this.dispositionService = dispositionService;
-	}
 
     /**
      * Disable the behaviours for this transaction
@@ -184,6 +175,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                             {
                                 recordService.makeRecord(child);
                             }
+                            generateRecordIdentifier(nodeService, identifierService, child);
                         }
                     }
                 }

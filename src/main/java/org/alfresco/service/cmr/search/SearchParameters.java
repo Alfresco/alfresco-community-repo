@@ -195,7 +195,7 @@ public class SearchParameters implements BasicSearchParameters
 
     private List<StatsRequestParameters> stats;
     
-    private RangeParameters range;
+    private RangeParameters ranges;
 
     private String timezone;
     
@@ -247,7 +247,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.highlight = this.highlight;
         sp.interval = this.interval;
         sp.stats = this.stats;
-        sp.range = this.range;
+        sp.ranges = this.ranges;
         sp.timezone = this.timezone;
         return sp;
     }
@@ -328,14 +328,14 @@ public class SearchParameters implements BasicSearchParameters
         this.interval = interval;
     }
 
-    public RangeParameters getRange()
+    public RangeParameters getRanges()
     {
-        return range;
+        return ranges;
     }
 
-    public void setRange(RangeParameters range)
+    public void setRanges(RangeParameters ranges)
     {
-        this.range = range;
+        this.ranges = ranges;
     }
 
     /**
@@ -1104,7 +1104,7 @@ public class SearchParameters implements BasicSearchParameters
         {
             return true;
         }
-        if(range != null)
+        if(ranges != null)
         {
             return true;
         }
@@ -1162,7 +1162,7 @@ public class SearchParameters implements BasicSearchParameters
         result = prime * result + ((facetQueries.isEmpty()) ? 0 : facetQueries.hashCode());
         result = prime * result + ((filterQueries.isEmpty()) ? 0 : filterQueries.hashCode());
         result = prime * result + ((pivots.isEmpty()) ? 0 : pivots.hashCode());
-        result = prime * result + ((range == null) ? 0 : range.hashCode());
+        result = prime * result + ((ranges == null) ? 0 : ranges.hashCode());
         result = prime * result + ((searchTerm == null) ? 0 : searchTerm.hashCode());
         result = prime * result + (spellCheck ? 1231 : 1237);
         return result;
@@ -1369,7 +1369,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(this.sinceTxId).append(", searchTerm=").append(this.searchTerm)
                     .append(", highlight=").append(this.highlight)
                     .append(", interval=").append(this.interval)
-                    .append(", range=").append(this.range)
+                    .append(", range=").append(this.ranges)
                     .append(", timezone=").append(this.timezone)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();

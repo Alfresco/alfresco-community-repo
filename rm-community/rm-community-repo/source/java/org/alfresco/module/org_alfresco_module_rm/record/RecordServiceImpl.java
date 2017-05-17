@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.record;
 
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.FIRST_EVENT;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 import static org.alfresco.repo.policy.annotation.BehaviourKind.ASSOCIATION;
@@ -79,6 +80,7 @@ import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -485,7 +487,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                 validateLinkConditions(nodeRef, parentNodeRef);
                             }
                         }
-                        nodeService.addAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD, null);
+
+                        //create and file the content as a record
+                        file(nodeRef);
+                        // recalculate disposition schedule for the record when linking it
+                        dispositionService.recalculateNextDispositionStep(nodeRef);
                     }
                 }
                 catch (RecordLinkRuntimeException e)
@@ -502,6 +508,22 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    @Behaviour
+    (
+       kind = BehaviourKind.ASSOCIATION,
+       policy = "alf:onCreateChildAssociation",
+       type = "rma:recordFolder",
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
+    {
+        NodeRef record = childAssocRef.getChildRef();
+        if(nodeService.exists(record) && dictionaryService.isSubClass(nodeService.getType(record), ContentModel.TYPE_CONTENT))
+        {
+            generateRecordIdentifier(nodeService, identifierService, record);
+        }
     }
 
     /**
@@ -1208,35 +1230,21 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             authenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
-
                 @Override
-                public Void doWork() throws Exception {
-                    Map<QName, Serializable> props = new HashMap<>();
-
-                    if(!nodeService.hasAspect(document, ASPECT_RECORD_COMPONENT_ID))
-                    {
-                        // get the record id
-                        String recordId = identifierService.generateIdentifier(ASPECT_RECORD,
-                                nodeService.getPrimaryParent(document).getParentRef());
-
-                        // get the record name
-                        String name = (String)nodeService.getProperty(document, ContentModel.PROP_NAME);
-
-                        // add the record aspect
-
-                        props.put(PROP_IDENTIFIER, recordId);
-                        props.put(PROP_ORIGIONAL_NAME, name);
-                    }
-                    nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);
+                public Void doWork() throws Exception 
+                {
+                    nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, null);
 
                     // remove versionable aspect(s)
                     nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
 
                     // remove the owner
-
                     ownableService.setOwner(document, OwnableService.NO_OWNER);
 
-                    appendIdentifierToName(nodeService, document);
+                    if (TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(document)))
+                    {
+                        generateRecordIdentifier(nodeService, identifierService, document);
+                    }
                     return null;
                 }
             });

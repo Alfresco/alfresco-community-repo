@@ -27,11 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
+
 import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -77,6 +80,9 @@ public class RecordFolderType extends    AbstractDisposableItem
     /** vital record service */
     protected VitalRecordService vitalRecordService;
 
+    /** identifier service */
+    protected IdentifierService identifierService;
+
     /** I18N */
     private static final String MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD = "rm.action.create.record.folder.child-error-message";
 
@@ -104,6 +110,11 @@ public class RecordFolderType extends    AbstractDisposableItem
     public void setVitalRecordService(VitalRecordService vitalRecordService)
     {
         this.vitalRecordService = vitalRecordService;
+    }
+
+    public void setIdentifierService(IdentifierService identifierService)
+    {
+        this.identifierService = identifierService;
     }
 
     /**
@@ -263,11 +274,8 @@ public class RecordFolderType extends    AbstractDisposableItem
             throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(child)), null);
         }
 
-        // file the record
-        recordService.file(child);
-        // recalculate disposition schedule
-        dispositionService.recalculateNextDispositionStep(child);
-        
+        generateRecordIdentifier(nodeService, identifierService, child);
+
         behaviourFilter.disableBehaviour();
         try
         {

@@ -42,6 +42,7 @@ import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventSe
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
+import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -127,6 +128,9 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
 
     /** Hold service */
     private HoldService holdService;
+    
+    /** Identifier service */
+    private IdentifierService identifierService;
 
     /** List of kinds for which this action is applicable */
     protected Set<FilePlanComponentKind> applicableKinds = new HashSet<FilePlanComponentKind>();
@@ -492,6 +496,26 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
+     * Gets the identifier service
+     * 
+     * @return the identifier service
+     */
+    public IdentifierService getIdentifierService()
+    {
+        return identifierService;
+    }
+
+    /**
+     * Sets the identifier service
+     * 
+     * @param identifierService the identifier service
+     */
+    public void setIdentifierService(IdentifierService identifierService)
+    {
+        this.identifierService = identifierService;
+    }
+
+    /**
      * Sets the applicable kinds
      *
      * @param applicableKinds   kinds that this action is applicable for
@@ -550,6 +574,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         PropertyCheck.mandatory(this, "recordsManagementActionService", recordsManagementActionService);
         PropertyCheck.mandatory(this, "recordsManagementAdminService", recordsManagementAdminService);
         PropertyCheck.mandatory(this, "recordsManagementEventService", recordsManagementEventService);
+        PropertyCheck.mandatory(this, "identifierService", identifierService);
 
         super.init();
     }

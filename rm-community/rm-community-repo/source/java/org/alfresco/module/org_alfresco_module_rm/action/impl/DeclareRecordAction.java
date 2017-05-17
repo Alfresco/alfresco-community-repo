@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -90,6 +92,9 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
         {
             if (!getRecordService().isDeclared(actionedUponNodeRef))
             {
+                // make sure the record identifier is set
+                generateRecordIdentifier(getNodeService(), getIdentifierService(), actionedUponNodeRef);
+
                 List<String> missingProperties = new ArrayList<String>(5);
                 // Aspect not already defined - check mandatory properties then add
                 if (!checkMandatoryPropertiesEnabled || 

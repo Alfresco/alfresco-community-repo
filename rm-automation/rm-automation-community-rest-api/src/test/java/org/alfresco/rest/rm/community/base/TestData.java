@@ -187,7 +187,9 @@ public interface TestData
                         { RECORD_CATEGORY_TYPE },
                         { RECORD_FOLDER_TYPE },
                         { TRANSFER_CONTAINER_TYPE },
-                        { UNFILED_CONTAINER_TYPE }
+                        { TRANSFER_TYPE },
+                        { UNFILED_CONTAINER_TYPE },
+
                 };
     }
 }

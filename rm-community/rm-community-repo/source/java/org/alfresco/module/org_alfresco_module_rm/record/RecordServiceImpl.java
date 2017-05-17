@@ -1241,10 +1241,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     // remove the owner
                     ownableService.setOwner(document, OwnableService.NO_OWNER);
 
-                    if (TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(document)))
-                    {
-                        generateRecordIdentifier(nodeService, identifierService, document);
-                    }
                     return null;
                 }
             });

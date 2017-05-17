@@ -431,7 +431,8 @@ public class UnfiledContainerTests extends BaseRMRestTest
         try
         {
             getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(unfiledFolderModel, UNFILED_RECORDS_CONTAINER_ALIAS);
-        } catch (Exception error)
+        }
+        catch (Exception error)
         {
         }
         // Verify the status code

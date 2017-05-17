@@ -1811,7 +1811,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         if (nodeService.exists(nodeRef) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
-            generateRecordIdentifier(nodeService, identifierService, record);
+            generateRecordIdentifier(nodeService, identifierService, nodeRef);
         }
     }
 

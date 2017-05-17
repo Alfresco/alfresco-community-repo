@@ -1108,6 +1108,10 @@ public class SearchParameters implements BasicSearchParameters
         {
             return true;
         }
+        if(stats != null && !stats.isEmpty())
+        {
+            return true;
+        }
         return false;
     }
 

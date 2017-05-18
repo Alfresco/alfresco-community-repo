@@ -195,7 +195,7 @@ public class SearchParameters implements BasicSearchParameters
 
     private List<StatsRequestParameters> stats;
     
-    private RangeParameters ranges;
+    private List<RangeParameters> ranges;
 
     private String timezone;
     
@@ -328,12 +328,12 @@ public class SearchParameters implements BasicSearchParameters
         this.interval = interval;
     }
 
-    public RangeParameters getRanges()
+    public List<RangeParameters> getRanges()
     {
         return ranges;
     }
 
-    public void setRanges(RangeParameters ranges)
+    public void setRanges(List<RangeParameters> ranges)
     {
         this.ranges = ranges;
     }

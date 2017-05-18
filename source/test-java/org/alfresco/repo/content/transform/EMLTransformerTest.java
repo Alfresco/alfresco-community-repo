@@ -31,6 +31,8 @@ import java.io.File;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -60,7 +62,6 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
     private EMLTransformer transformer;
 
     private ContentTransformerRegistry registry;
-    private ContentTransformerWorker ooWorker;
 
     @Override
     public void setUp() throws Exception
@@ -73,8 +74,6 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
         transformer.setTransformerConfig(transformerConfig);
         
         registry = (ContentTransformerRegistry) ctx.getBean("contentTransformerRegistry");
-
-        ooWorker = (ContentTransformerWorker) ctx.getBean("transformer.worker.OpenOffice");
     }
 
     @Override
@@ -115,26 +114,33 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
      */
     public void testRFC822ToPdf() throws Exception
     {
-        assertNotNull(registry.getTransformer("transformer.complex.Rfc822ToPdf"));
-                
-        // workaround for build machines (borrowed from OpenOfficeContentTransformerTest)
-        if (!ooWorker.isAvailable())
-        {
-            // no connection
-            return;
-        }
-        
         String sourceMimetype = MimetypeMap.MIMETYPE_RFC822;
         String targetMimetype = MimetypeMap.MIMETYPE_PDF;
+
+        // force Transformers subsystem to start (this will also load the ContentTransformerRegistry - including complex/dynamic pipelines)
+        // note: a call to contentService.getTransformer would also do this .. even if transformer cannot be found (returned as null)
+        ChildApplicationContextFactory transformersSubsystem = (ChildApplicationContextFactory) ctx.getBean("Transformers");
+        transformersSubsystem.start();
+
+        assertNotNull(registry.getTransformer("transformer.complex.Rfc822ToPdf"));
+
+        // note: txt -> pdf currently uses OpenOffice/LibreOffice
+        if (! isOpenOfficeWorkerAvailable())
+        {
+            // no connection
+            System.err.println("ooWorker available - skipping testRFC822ToPdf !!");
+            return;
+        }
+
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        ContentTransformer transformer = serviceRegistry.getContentService().getTransformer(sourceMimetype, targetMimetype);
+        assertNotNull(transformer);
 
         String sourceExtension = mimetypeService.getExtension(sourceMimetype);
         String targetExtension = mimetypeService.getExtension(targetMimetype);
 
         File emlSourceFile = loadQuickTestFile("eml");
         ContentReader sourceReader = new FileContentReader(emlSourceFile);
-
-        ContentTransformer transformer = registry.getTransformer(sourceMimetype, -1, targetMimetype, null);
-        assertNotNull(transformer);
 
         // make a writer for the target file
         File targetFile = TempFileProvider.createTempFile(getClass().getSimpleName() + "_"

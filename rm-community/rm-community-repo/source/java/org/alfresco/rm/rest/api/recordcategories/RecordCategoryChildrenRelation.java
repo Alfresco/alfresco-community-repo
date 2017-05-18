@@ -33,6 +33,7 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -40,18 +41,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.Util;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.rm.rest.api.impl.ApiNodesModelFactory;
 import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.impl.SearchTypesFactory;
@@ -64,6 +69,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * Record category children relation
@@ -74,7 +80,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 @RelationshipResource(name="children", entityResource = RecordCategoriesEntityResource.class, title = "Children of a record category")
 public class RecordCategoryChildrenRelation implements RelationshipResourceAction.Read<RecordCategoryChild>,
-                                                 RelationshipResourceAction.Create<RecordCategoryChild>
+                                                    RelationshipResourceAction.Create<RecordCategoryChild>,
+                                                    MultiPartRelationshipResourceAction.Create<RecordCategoryChild>
 {
     private final static Set<String> LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays
             .asList(new String[] { RecordCategoryChild.PARAM_IS_RECORD_CATEGORY, RecordCategoryChild.PARAM_IS_RECORD_FOLDER,
@@ -123,10 +130,11 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
 
         // list record categories and record folders
         Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesCategoriesEndpoint(parameters, LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES);
+        Set<QName> assocTypeQNames = Collections.singleton(ContentModel.ASSOC_CONTAINS);
         List<FilterProp> filterProps = apiUtils.getListChildrenFilterProps(parameters, LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES);
 
         final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef,
-                null,
+                assocTypeQNames,
                 searchTypeQNames,
                 null,
                 apiUtils.getSortProperties(parameters),
@@ -189,8 +197,7 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
                                 RecordsManagementModel.TYPE_RECORD_CATEGORY);
                     }
                     // Create the node
-                    NodeRef newNode = apiUtils.createRMNode(nodeParent, nodeInfo.getName(), nodeInfo.getNodeType(),
-                            nodeInfo.getProperties(), nodeInfo.getAspectNames());
+                    NodeRef newNode =  apiUtils.createRMNode(nodeParent, nodeInfo, parameters);
                     createdNodes.add(newNode);
                 }
                 return createdNodes;
@@ -205,5 +212,11 @@ public class RecordCategoryChildrenRelation implements RelationshipResourceActio
         }
 
         return result;
+    }
+
+    @Override
+    public RecordCategoryChild create(String entityResourceId, FormData formData, Parameters parameters, WithResponse withResponse)
+    {
+        throw new IntegrityException("Uploading records into record categories is not allowed.", null);
     }
 }

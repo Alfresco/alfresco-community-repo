@@ -38,8 +38,10 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.TITLE_PREFIX;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -47,11 +49,13 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -66,7 +70,10 @@ import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
+import org.alfresco.rest.v0.RecordCategoriesAPI;
+import org.alfresco.rest.core.v0.BaseAPI.RETENTION_SCHEDULE;
 import org.alfresco.utility.report.Bug;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -82,6 +89,9 @@ public class RecordCategoryTests extends BaseRMRestTest
     /** Number of children (for children creation test) */
     private static final int NUMBER_OF_CHILDREN = 10;
     private static final int NUMBER_OF_FOLDERS = 5;
+
+    @Autowired
+    private RecordCategoriesAPI recordCategoriesAPI;
 
     /**
      * Invalid  containers that cannot be deleted with record category end-point
@@ -287,6 +297,43 @@ public class RecordCategoryTests extends BaseRMRestTest
         assertEquals(folderProperties.getTitle(), TITLE_PREFIX + RECORD_FOLDER_NAME);
         assertNotNull(folderProperties.getIdentifier());
     }
+    @Test
+    (
+        dataProviderClass = TestData.class,
+        dataProvider = "categoryChild"
+    )
+    @Bug(id = "RM-5116")
+    public void createdDuplicateChild(String childType)throws Exception
+    {
+        // create a root category
+        String rootRecordCategory = createRootCategory(RECORD_CATEGORY_NAME + getRandomAlphanumeric()).getId();
+
+        // Create the record category child
+        RecordCategoryChild recordFolder = createRecordCategoryChild(rootRecordCategory, RECORD_FOLDER_NAME, childType);
+
+        // check the response  code
+        assertStatusCode(CREATED);
+        assertEquals(recordFolder.getName(), RECORD_FOLDER_NAME);
+
+        // Create a record category child with the same name as the exiting one
+
+        RecordCategoryChild recordFolderDuplicate = getRestAPIFactory().getRecordCategoryAPI().createRecordCategoryChild(
+                    createRecordCategoryChildModel(RECORD_FOLDER_NAME, childType), rootRecordCategory);
+
+        // check the response  code
+        assertStatusCode(CONFLICT);
+
+        // Create a record folder with the same name as the exiting one and with the autoRename parameter on true
+        recordFolderDuplicate = getRestAPIFactory().getRecordCategoryAPI()
+                                                   .createRecordCategoryChild(createRecordCategoryChildModel(RECORD_FOLDER_NAME,
+                                                               childType),
+                                                    rootRecordCategory, "autoRename=true");
+        // check the response  code
+        assertStatusCode(CREATED);
+        assertNotEquals(recordFolderDuplicate.getName(), RECORD_FOLDER_NAME);
+        assertTrue(recordFolderDuplicate.getName().contains(RECORD_FOLDER_NAME));
+    }
+
     /**
      * <pre>
      * Given that a record category exists
@@ -294,16 +341,36 @@ public class RecordCategoryTests extends BaseRMRestTest
      * When I ask the API to get me the children of the record category
      * Then I am returned the contained record categories and record folders and their details
      * </pre>
+     * <pre>
+     * Given that a record category with a disposition schedule exists
+     * And contains a number of record categories and record folders
+     * When I ask the API to get me the children of the record category
+     * Then I am returned the contained record categories and record folders but not the disposition schedule
+     * </pre>
      */
     @Test
-    (
-        description = "Get children of a record category"
-    )
+        (
+            description = "Get children of a record category excluding the disposition schedule"
+        )
+    @Bug (id="RM-5115")
     public void getRecordCategoryChildren() throws Exception
     {
         // Create root level category
         RecordCategory rootRecordCategory = createRootCategory(getRandomAlphanumeric());
         assertNotNull(rootRecordCategory.getId());
+
+        // Create disposition schedule
+        String userName = getAdminUser().getUsername();
+        String userPassword = getAdminUser().getPassword();
+        String categoryName = rootRecordCategory.getName();
+        recordCategoriesAPI.createRetentionSchedule(userName, userPassword, categoryName);
+
+        // Add disposition schedule cut off step
+        HashMap<RETENTION_SCHEDULE, String> cutOffStep = new HashMap<>();
+        cutOffStep.put(RETENTION_SCHEDULE.NAME, "cutoff");
+        cutOffStep.put(RETENTION_SCHEDULE.RETENTION_PERIOD, "day|2");
+        cutOffStep.put(RETENTION_SCHEDULE.DESCRIPTION, "Cut off after 2 days");
+        recordCategoriesAPI.addDispositionScheduleSteps(userName, userPassword, categoryName, cutOffStep);
 
         // Add record category children
         List<RecordCategoryChild> children = new ArrayList<RecordCategoryChild>();

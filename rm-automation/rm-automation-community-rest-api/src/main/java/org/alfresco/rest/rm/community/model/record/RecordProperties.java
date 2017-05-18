@@ -27,6 +27,7 @@
 
 package org.alfresco.rest.rm.community.model.record;
 
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_AUTHOR;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_BOX;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DATE_FILED;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_DATE_TIME_ORIGINAL;
@@ -62,6 +63,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_ORIGINATING_USER_ID;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_RECORD_ORIGINATING_CREATION_DATE;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.rm.community.model.common.Owner;
@@ -84,6 +86,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RecordProperties extends TestModel
 {
     /*************************/
@@ -196,4 +199,7 @@ public class RecordProperties extends TestModel
 
     @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;
+
+    @JsonProperty(PROPERTIES_AUTHOR)
+    private String author;
 }

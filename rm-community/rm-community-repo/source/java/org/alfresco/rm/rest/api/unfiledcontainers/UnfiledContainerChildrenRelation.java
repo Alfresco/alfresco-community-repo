@@ -186,7 +186,7 @@ public class UnfiledContainerChildrenRelation implements RelationshipResourceAct
                 List<NodeRef> createdNodes = new LinkedList<>();
                 for (UnfiledContainerChild nodeInfo : nodeInfos)
                 {
-                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo.getName(), nodeInfo.getNodeType(), nodeInfo.getProperties(), nodeInfo.getAspectNames());
+                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
                     createdNodes.add(newNodeRef);
                 }
                 return createdNodes;

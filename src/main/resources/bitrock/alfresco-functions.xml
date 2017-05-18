@@ -103,7 +103,6 @@ img.exe=${'${img.root}'}/bin/convert</value>
                             <value>img.root=${imagemagick_root_directory_windows.escape_backslashes}
 img.coders=${'${img.root}'}\\modules\\coders
 img.config=${'${img.root}'}
-img.gslib=${'${img.root}'}\\lib
 img.exe=${'${img.root}'}\\convert.exe</value>
                             <ruleList>
                                 <platformTest type="windows"/>

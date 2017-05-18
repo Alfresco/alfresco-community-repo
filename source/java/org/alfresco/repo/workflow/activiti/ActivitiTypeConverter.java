@@ -852,6 +852,13 @@ public class ActivitiTypeConverter
                     }
                 }
             }
+
+            if (isSubProcess(currentActivity))
+            {
+                Map<String, Object> properties = ((ActivityImpl)currentActivity).getProperties();
+                PvmActivity startEvent = (PvmActivity) properties.get(ActivitiConstants.PROP_INITIAL_ACTIVITY);
+                findUserTasks(startEvent, userTasks, processedActivities);
+            }
         }
     }
     
@@ -866,6 +873,16 @@ public class ActivitiTypeConverter
         return false;
     }
     
+    private boolean isSubProcess(PvmActivity currentActivity)
+    {
+        String type = (String) currentActivity.getProperty(ActivitiConstants.NODE_TYPE);
+        if(type != null && type.equals(ActivitiConstants.SUB_PROCESS_NODE_TYPE))
+        {
+            return true;
+        }
+        return false;
+    }
+
     public WorkflowInstance convert(HistoricProcessInstance historicProcessInstance)
     {
     	return convertToInstanceAndSetVariables(historicProcessInstance, null);

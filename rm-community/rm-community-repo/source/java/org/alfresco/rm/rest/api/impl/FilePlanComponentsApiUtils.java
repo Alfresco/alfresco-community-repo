@@ -56,6 +56,7 @@ import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeExcep
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.FilterPropBoolean;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -80,6 +81,7 @@ import org.alfresco.rm.rest.api.model.RMSite;
 import org.alfresco.rm.rest.api.model.TransferContainer;
 import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
+import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -640,6 +642,11 @@ public class FilePlanComponentsApiUtils
         catch (InvalidTypeException ex)
         {
             throw new InvalidArgumentException("The given type:'" + type + "' is invalid '");
+        }
+        catch(DuplicateAttributeException ex)
+        {
+            // This exception can occur when setting a custom identifier that already exists
+            throw new IntegrityException(ex.getMessage(), null);
         }
 
         return newNodeRef;

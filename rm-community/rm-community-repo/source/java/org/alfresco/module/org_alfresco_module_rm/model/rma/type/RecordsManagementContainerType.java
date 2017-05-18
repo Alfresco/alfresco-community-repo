@@ -126,6 +126,44 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     @Behaviour
     (
        kind = BehaviourKind.ASSOCIATION,
+       policy = "alf:onCreateChildAssociation",
+       notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onCreateChildAssoiationFirstEvent(final ChildAssociationRef childAssocRef, final boolean bNew)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                QName parentType = nodeService.getType(childAssocRef.getParentRef());
+                boolean isContentSubType = dictionaryService.isSubClass(nodeService.getType(childAssocRef.getChildRef()), ContentModel.TYPE_CONTENT);
+                boolean parentIsUnfiledRecordContainer = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
+                boolean parentIsUnfiledRecordFolder = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
+
+                NodeRef child = childAssocRef.getChildRef();
+                if((parentIsUnfiledRecordContainer || parentIsUnfiledRecordFolder) && isContentSubType && !recordService.isRecord(child))
+                {
+                    if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
+                    {
+                        nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
+                    }
+                    if (!nodeService.hasAspect(child, ASPECT_RECORD))
+                    {
+                        recordService.makeRecord(child);
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.model.BaseTypeBehaviour#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     */
+    @Behaviour
+    (
+       kind = BehaviourKind.ASSOCIATION,
        notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT,
        name = BEHAVIOUR_NAME
     )
@@ -167,14 +205,6 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                         boolean isUnfiledRecordFolder = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
                         if (isContentSubType && (isUnfiledRecordContainer || isUnfiledRecordFolder))
                         {
-                            if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
-                            {
-                                nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
-                            }
-                            if (!nodeService.hasAspect(child, ASPECT_RECORD))
-                            {
-                                recordService.makeRecord(child);
-                            }
                             generateRecordIdentifier(nodeService, identifierService, child);
                         }
                     }

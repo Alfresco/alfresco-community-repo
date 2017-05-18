@@ -2622,10 +2622,6 @@ definitions:
           The character . must not be used at the end of the name.
       nodeType:
         type: string
-      isUnfiledRecordFolder:
-        type: boolean
-      isRecord:
-        type: boolean 
       modifiedAt:
         type: string
         format: date-time
@@ -2661,6 +2657,8 @@ definitions:
     - id
     - name
     - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
     - createdAt
     - createdByUser
     - modifiedAt
@@ -2753,6 +2751,8 @@ definitions:
     - id
     - name
     - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
     - createdAt
     - createdByUser
     - modifiedAt
@@ -2810,6 +2810,8 @@ definitions:
     - id
     - name
     - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
     - createdAt
     - createdByUser
     - modifiedAt

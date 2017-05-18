@@ -57,6 +57,7 @@ public abstract class RMNode
     public static final String PARAM_PROPERTIES = "properties";
     public static final String PARAM_PATH = "path";
     public static final String PARAM_ALLOWABLE_OPERATIONS = "allowableOperations";
+    public static final String PARAM_AUTO_RENAME = "autoRename";
     
     public static final String PARAM_ISPRIMARY = "isPrimary";
     

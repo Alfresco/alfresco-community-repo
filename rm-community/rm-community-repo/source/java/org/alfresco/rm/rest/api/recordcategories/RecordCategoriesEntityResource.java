@@ -130,7 +130,15 @@ public class RecordCategoriesEntityResource implements
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
+        {
+            public FileInfo execute()
+            {
+                return fileFolderService.getFileInfo(nodeRef);
+            }
+        };
+        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+        
         return nodesModelFactory.createRecordCategory(info, parameters, null, false);
     }
 

@@ -24,40 +24,26 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.unfiledcontainer;
+package org.alfresco.rest.rm.community.util;
 
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.utility.model.TestModel;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
 
 /**
- * POJO for file plan properties
+ * Mix class for Record POJO class
+ * Mix-in annotations are: a way to associate annotations with classes
+ * without modifying (target) classes themselves.
  *
  * @author Tuna Aksoy
  * @since 2.6
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-@NoArgsConstructor
-@AllArgsConstructor
-public class UnfiledContainerProperties extends TestModel
+public abstract class UnfiledContainerChildMixin
 {
-    /*************************/
-    /** Mandatory parameters */
-    /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
-    private String identifier;
-
-    @JsonProperty (required = true, value = PROPERTIES_ROOT_NODE_REF)
-    private String rootNodeRef;
+    /**
+     * Annotation used to indicate that a property should be serialized "unwrapped"
+     * Its properties are instead included as properties of its containing Object
+     */
+    @JsonUnwrapped
+    abstract UnfiledContainerChildProperties getProperties();
 }

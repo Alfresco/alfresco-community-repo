@@ -55,8 +55,9 @@ import org.springframework.beans.factory.InitializingBean;
  * @since 2.6
  */
 @EntityResource(name = "file-plans", title = "File plans")
-public class FilePlanEntityResource
-        implements EntityResourceAction.ReadById<FilePlan>, EntityResourceAction.Update<FilePlan>, InitializingBean
+public class FilePlanEntityResource implements EntityResourceAction.ReadById<FilePlan>,
+                                                EntityResourceAction.Update<FilePlan>,
+                                                InitializingBean
 {
 
     private FilePlanComponentsApiUtils apiUtils;

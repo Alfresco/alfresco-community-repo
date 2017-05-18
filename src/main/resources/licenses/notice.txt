@@ -194,10 +194,6 @@ TrueLicense     http://truelicense.java.net/
 truezip http://truezip.java.net/
 
 
-=== GPL V2 ===
-GhostScript http://www.ghostscript.com/
-
-
 === ICU License ===
 icu4j   http://icu-project.org/ 
 

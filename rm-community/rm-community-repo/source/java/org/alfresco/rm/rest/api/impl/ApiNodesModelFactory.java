@@ -40,6 +40,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
@@ -61,7 +62,9 @@ import org.alfresco.rm.rest.api.model.UnfiledRecordFolder;
 import org.alfresco.rm.rest.api.model.UnfiledRecordFolderChild;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -466,10 +469,6 @@ public class ApiNodesModelFactory
             {
                 transferChild.setIsClosed((Boolean) nodeService.getProperty(info.getNodeRef(), RecordsManagementModel.PROP_IS_CLOSED));
             }
-            if(isMinimalInfo && includeParam.contains(TransferChild.PARAM_IS_COMPLETED))
-            {
-                transferChild.setIsCompleted(null);
-            }
         }
         else
         {
@@ -484,10 +483,6 @@ public class ApiNodesModelFactory
             if(isMinimalInfo && includeParam.contains(RMNode.PARAM_IS_CLOSED))
             {
                 transferChild.setIsClosed(null);
-            }
-            if(isMinimalInfo && includeParam.contains(TransferChild.PARAM_IS_COMPLETED))
-            {
-                transferChild.setIsCompleted(nodeService.hasAspect(info.getNodeRef(), RecordsManagementModel.ASPECT_DECLARED_RECORD));
             }
         }
     }
@@ -520,7 +515,7 @@ public class ApiNodesModelFactory
             {
                 recordCategoryChild.setIsClosed((Boolean) nodeService.getProperty(info.getNodeRef(), RecordsManagementModel.PROP_IS_CLOSED));
             }
-            if((!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_HAS_RETENTION_SCHEDULE)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE)))
+            if (includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE))
             {
                 recordCategoryChild.setHasRetentionSchedule(null);
             }
@@ -535,7 +530,7 @@ public class ApiNodesModelFactory
             {
                 recordCategoryChild.setIsRecordCategory(true);
             }
-            if((!isMinimalInfo && propertyFilter.isAllowed(RMNode.PARAM_HAS_RETENTION_SCHEDULE)) || (isMinimalInfo && includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE)))
+            if (includeParam.contains(RMNode.PARAM_HAS_RETENTION_SCHEDULE))
             {
                 DispositionSchedule ds = dispositionService.getDispositionSchedule(info.getNodeRef());
                 recordCategoryChild.setHasRetentionSchedule(ds !=null ? true : false);
@@ -598,6 +593,48 @@ public class ApiNodesModelFactory
     private Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> properties)
     {
         return nodes.mapFromNodeProperties(properties, new ArrayList<>(), new HashMap<>(), EXCLUDED_NS, EXCLUDED_PROPS);
+    }
+
+    /**
+     * Utility method that maps associations, applicable only for records
+     * 
+     * @param rmNode
+     * @param info
+     * @param includeParam
+     */
+    private void mapAssociations(RMNode rmNode, FileInfo info, List<String> includeParam)
+    {
+        if (includeParam.contains(RMNode.PARAM_INCLUDE_ASSOCIATION))
+        {
+            NodeRef nodeRef = info.getNodeRef();
+            ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
+
+            if ((parentAssocRef == null) || (parentAssocRef.getParentRef() == null)
+                    || (!parentAssocRef.getParentRef().equals(rmNode.getParentId())))
+            {
+                List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(nodeRef);
+                for (ChildAssociationRef pAssocRef : parentAssocRefs)
+                {
+                    if (pAssocRef.getParentRef().equals(rmNode.getParentId()))
+                    {
+                        // for now, assume same parent/child cannot appear more than once (due to unique name)
+                        parentAssocRef = pAssocRef;
+                        break;
+                    }
+                }
+            }
+
+            if (parentAssocRef != null)
+            {
+                QName assocTypeQName = parentAssocRef.getTypeQName();
+                if ((assocTypeQName != null) && (!EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI())))
+                {
+                    AssocChild childAssoc = new AssocChild(assocTypeQName.toPrefixString(namespaceService), parentAssocRef.isPrimary());
+
+                    rmNode.setAssociation(childAssoc);
+                }
+            }
+        }
     }
 
     /**
@@ -760,6 +797,10 @@ public class ApiNodesModelFactory
         mapBasicInfo(unfiledContainerChild, info, parameters.getFilter(), mapUserInfo, isMinimalInfo);
         mapOptionalInfo(unfiledContainerChild, info, parameters.getInclude(), isMinimalInfo);
         mapUnfiledChildInfo(unfiledContainerChild, info, parameters.getFilter());
+        if (unfiledContainerChild.getIsRecord())
+        {
+            mapAssociations(unfiledContainerChild, info, parameters.getInclude());
+        }
         return unfiledContainerChild;
     }
 
@@ -797,6 +838,10 @@ public class ApiNodesModelFactory
         mapBasicInfo(unfiledRecordFolderChild, info, parameters.getFilter(), mapUserInfo, isMinimalInfo);
         mapOptionalInfo(unfiledRecordFolderChild, info, parameters.getInclude(), isMinimalInfo);
         mapUnfiledChildInfo(unfiledRecordFolderChild, info, parameters.getFilter());
+        if (unfiledRecordFolderChild.getIsRecord())
+        {
+            mapAssociations(unfiledRecordFolderChild, info, parameters.getInclude());
+        }
         return unfiledRecordFolderChild;
     }
 
@@ -834,6 +879,7 @@ public class ApiNodesModelFactory
         mapBasicInfo(record, info, parameters.getFilter(), mapUserInfo, isMinimalInfo);
         mapOptionalInfo(record, info, parameters.getInclude(), isMinimalInfo);
         mapRecordInfo(record, info, parameters.getInclude());
+        mapAssociations(record, info, parameters.getInclude());
         return record;
     }
 }

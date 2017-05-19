@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.rest.api.model.Assoc;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -65,6 +66,7 @@ public abstract class RMNode
     
     public static final String PARAM_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
     public static final String PARAM_IS_CLOSED = "isClosed";
+    public static final String PARAM_INCLUDE_ASSOCIATION = "association";
     
     public static final String FILE_PLAN_TYPE = "rma:filePlan";
     public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
@@ -94,6 +96,7 @@ public abstract class RMNode
     protected Map<String, Object> properties;
     protected PathInfo path;
     protected List<String> allowableOperations;
+    protected Assoc association;
 
     public RMNode()
     {
@@ -219,6 +222,16 @@ public abstract class RMNode
     public void setAllowableOperations(List<String> allowableOperations)
     {
         this.allowableOperations = allowableOperations;
+    }
+
+    public Assoc getAssociation()
+    {
+        return association;
+    }
+
+    public void setAssociation(Assoc association)
+    {
+        this.association = association;
     }
 
 }

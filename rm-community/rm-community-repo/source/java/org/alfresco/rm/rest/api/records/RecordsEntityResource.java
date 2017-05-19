@@ -30,6 +30,13 @@ package org.alfresco.rm.rest.api.records;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.activities.ActivityType;
@@ -57,6 +64,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
@@ -229,6 +237,78 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         apiUtils.postActivity(info, recordInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createRecord(info, parameters, null, false);
     }
+
+    @Operation ("complete")
+    @WebApiDescription (title = "Complete record", description = "Complete a record.")
+    public Record completeRecord(String recordId, Void body, Parameters parameters)
+    {
+        checkNotBlank("recordId", recordId);
+        mandatory("parameters", parameters);
+
+        // Get record
+        NodeRef record = apiUtils.validateRecord(recordId);
+
+        // Complete the record
+        //TODO this should probably be something like recordService.complete(record);
+        completeRecord(record);
+
+        // return record state
+        FileInfo info = fileFolderService.getFileInfo(record);
+        return nodesModelFactory.createRecord(info, parameters, null, false);
+    }
+
+    /* Temporary helper method just to do the complete record action.
+       Should probably live elsewhere, maybe RecordsImpl
+     */
+    private void completeRecord(NodeRef record) {
+        boolean checkMandatoryPropertiesEnabled = true;
+
+        if (! recordService.isDeclared(record))
+        {
+            List<String> missingProperties = new ArrayList<>(5);
+            if (checkMandatoryPropertiesEnabled && mandatoryPropertiesSet(record, missingProperties))
+            {
+                //TODO error here;
+            }
+            else
+            {
+                recordService.disablePropertyEditableCheck();
+                //try
+                //{
+                    // Add the declared aspect
+                    Map<QName, Serializable> declaredProps = new HashMap<>(2);
+                    declaredProps.put(RecordsManagementModel.PROP_DECLARED_AT, new Date());
+                    //TODO declaredProps.put(RecordsManagementModel.PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
+                    nodeService.addAspect(record, RecordsManagementModel.ASPECT_DECLARED_RECORD, declaredProps);
+
+                    /* TODO
+                    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                    {
+                        @Override
+                        public Void doWork()
+                        {
+                            // remove all owner related rights
+                            getOwnableService().setOwner(record, OwnableService.NO_OWNER);
+                            return null;
+                        }
+                    });
+                    */
+                //} finally
+                //{
+                //    recordService.enablePropertyEditableCheck();
+                //}
+            }
+        }
+    }
+
+    /* TODO
+     * this is temporary partly because there is an error in the original code
+     */
+    private boolean mandatoryPropertiesSet(NodeRef nodeRef, List<String> missingProperties) {
+
+        return true;
+    }
+
 
     @Override
     @WebApiDescription(title = "Delete record", description="Deletes a record with id 'recordId'")

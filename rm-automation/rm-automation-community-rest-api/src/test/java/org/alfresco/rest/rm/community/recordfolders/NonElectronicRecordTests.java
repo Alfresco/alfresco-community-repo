@@ -33,9 +33,9 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.util.PojoUtility.toJson;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createFullNonElectronicUnfiledContainerChildRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createFullNonElectronicRecordModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createFullNonElectronicUnfiledContainerChildRecordModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.verifyFullNonElectronicRecord;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;

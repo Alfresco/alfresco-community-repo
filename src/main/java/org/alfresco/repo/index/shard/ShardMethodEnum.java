@@ -35,6 +35,7 @@ public enum ShardMethodEnum
     MOD_ACL_ID,
     ACL_ID,
     DB_ID,
+    DB_ID_RANGE,
     DATE,
     UNKOWN,
     PROPERTY;
@@ -58,6 +59,9 @@ public enum ShardMethodEnum
                 break;
             case "DB_ID":
                 shardMethodEnum = DB_ID;
+                break;
+            case "DB_ID_RANGE":
+                shardMethodEnum = DB_ID_RANGE;
                 break;
             case "DATE":
                 shardMethodEnum = DATE;

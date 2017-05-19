@@ -43,6 +43,13 @@ public class ShardMethodEnumTest
     {
         Assert.assertEquals(ShardMethodEnum.MOD_ACL_ID, ShardMethodEnum.getShardMethod("MOD_ACL_ID"));
     }
+
+    @Test
+    public void testDBIDRange()
+    {
+        Assert.assertEquals(ShardMethodEnum.DB_ID_RANGE, ShardMethodEnum.getShardMethod("DB_ID_RANGE"));
+    }
+
     @Test
     public void testTypeACLBasedOnMurmurHash()
     {

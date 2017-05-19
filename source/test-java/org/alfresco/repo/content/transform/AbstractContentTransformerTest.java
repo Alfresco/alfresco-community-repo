@@ -439,7 +439,7 @@ public abstract class AbstractContentTransformerTest extends TestCase
     }
 
     // TODO externalise ? Review as part of "fast & reliable tests" (and also testing a "reference deployment" that includes LibreOffice/OpenOffice)
-    private boolean failTestIfOOWorkerUnavailable = true;
+    private boolean failTestIfOOWorkerUnavailable = false;
 
     /**
      * This method is currently used to skip certain tests if LibreOffice/OpenOffice is not available (eg. on build machines).

@@ -208,6 +208,8 @@ paths:
         Get information for file plan **filePlanId**
 
         Besides mandatory fields the file plan's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getFilePlan
       parameters:
         - $ref: '#/parameters/filePlanIdWithAliasParam'
@@ -296,10 +298,8 @@ paths:
 
         Minimal information for each child is returned by default.
 
-        You can use the **include** parameter to return additional information.
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
 
-        You can use the **include** parameter (include=association) to return child association details
-        for each child, including the **assocType** and the **isPrimary** flag.
       operationId: getFilePlanCategories
       produces:
         - application/json
@@ -307,14 +307,14 @@ paths:
         - $ref: '#/parameters/filePlanIdWithAliasParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
+        - $ref: '#/parameters/filePlanCategoriesEntryIncludeParam'
         - $ref: '#/parameters/filePlanIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
       responses:
         '200':
           description: Successful response
           schema:
-            $ref: '#/definitions/RecordCategoryAssociationPaging'
+            $ref: '#/definitions/RecordCategoryPaging'
         '401':
           description: If authentication fails
         '403':
@@ -335,8 +335,6 @@ paths:
         You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
         the API method tries to create
         a unique name using an integer suffix.
-
-        Any field in the JSON body defined below can also be passed as a form-data field.
 
         This API method also supports record category creation using application/json.
 
@@ -434,6 +432,8 @@ paths:
         Get information for unfiled records contianer **unfiledContainerId**
 
         Besides mandatory fields the unfiled records container's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getUnfiledContainer
       parameters:
         - $ref: '#/parameters/unfiledContainerIdParam'
@@ -527,7 +527,7 @@ paths:
 
         Minimal information for each child is returned by default.
 
-        You can use the **include** parameter to return additional information.
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: listUnfiledContainerChildren
       produces:
         - application/json
@@ -536,7 +536,7 @@ paths:
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
         - $ref: '#/parameters/unfiledRecordFolderAndContainerWhereParam'
-        - $ref: '#/parameters/unfiledContainerEntryIncludeParam'
+        - $ref: '#/parameters/unfiledContainerChildEntryIncludeParam'
         - $ref: '#/parameters/unfiledContainerIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
       responses:
@@ -664,7 +664,7 @@ paths:
       parameters:
         - $ref: '#/parameters/unfiledContainerIdParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/unfiledContainerEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
@@ -705,6 +705,8 @@ paths:
         Get information for unfiled record folder id **unfiledRecordFolderId**
 
         Besides mandatory fields the unfiled record folder's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getUnfiledRecordFolder
       parameters:
         - $ref: '#/parameters/unfiledRecordFolderIdParam'
@@ -758,6 +760,7 @@ paths:
       operationId: updateUnfiledRecordFolder
       parameters:
         - $ref: '#/parameters/unfiledRecordFolderIdParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
         - $ref: '#/parameters/unfiledRecordFolderIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
@@ -829,7 +832,7 @@ paths:
 
         Minimal information for each child is returned by default.
 
-        You can use the **include** parameter to return additional information.
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: listUnfiledRecordFolderChildren
       produces:
         - application/json
@@ -838,7 +841,7 @@ paths:
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
         - $ref: '#/parameters/unfiledRecordFolderAndContainerWhereParam'
-        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderChildEntryIncludeParam'
         - $ref: '#/parameters/unfiledRecordFolderRelativePathParam'
         - $ref: '#/parameters/unfiledRecordFolderIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
@@ -1008,6 +1011,8 @@ paths:
         Get information for record category **recordCategoryId**
 
         Besides mandatory fields the record category's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getRecordCategory
       parameters:
         - $ref: '#/parameters/recordCategoryIdParam'
@@ -1132,12 +1137,9 @@ paths:
 
         Minimal information for each child is returned by default.
 
-        You can use the **include** parameter to return additional information.
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
 
         The list of child nodes includes primary children and secondary children, if there are any.
-
-        You can use the **include** parameter (include=association) to return child association details
-        for each child, including the **assocType** and the **isPrimary** flag.
       operationId: listRecordCategoryChildren
       produces:
         - application/json
@@ -1146,7 +1148,7 @@ paths:
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
         - $ref: '#/parameters/recordCategoryWhereParam'
-        - $ref: '#/parameters/recordCategoryChildIncludeParam'
+        - $ref: '#/parameters/recordCategoryChildEntryIncludeParam'
         - $ref: '#/parameters/recordCategoryRelativePathParam'
         - $ref: '#/parameters/recordCategoryIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
@@ -1154,7 +1156,7 @@ paths:
         '200':
           description: Successful response
           schema:
-            $ref: '#/definitions/RecordCategoryAssociationPaging'
+            $ref: '#/definitions/RecordCategoryChildPaging'
         '401':
           description: If authentication fails
         '403':
@@ -1175,8 +1177,6 @@ paths:
         You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
         the API method tries to create
         a unique name using an integer suffix.
-
-        Any field in the JSON body defined below can also be passed as a form-data field.
 
         This API method also supports record category or record folder creation using application/json.
 
@@ -1271,7 +1271,7 @@ paths:
       parameters:
         - $ref: '#/parameters/recordCategoryIdParam'
         - $ref: '#/parameters/autoRenameParam'
-        - $ref: '#/parameters/recordCategoryChildEntryIncludeParam'
+        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: nodeBodyCreate
@@ -1313,6 +1313,8 @@ paths:
         Get information for record folder **recordFolderId**
 
         Besides mandatory fields the record folder's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getRecordFolder
       parameters:
         - $ref: '#/parameters/recordFolderIdParam'
@@ -1436,12 +1438,9 @@ paths:
 
         Minimal information for each record is returned by default.
 
-        You can use the **include** parameter to return additional information.
-
         The list of records includes primary children and secondary children, if there are any.
 
-        You can use the **include** parameter (include=association) to return child association details
-        for each child, including the **assocType** and the **isPrimary** flag.
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: listRecordFolderChildren
       produces:
         - application/json
@@ -1563,7 +1562,7 @@ paths:
       operationId: createRecordFolderChild
       parameters:
         - $ref: '#/parameters/recordFolderIdParam'
-        - $ref: '#/parameters/recordFolderChildEntryIncludeParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: recordBodyCreate
@@ -1605,6 +1604,8 @@ paths:
         Get information for record **recordId**
 
         Besides mandatory fields the record's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getRecord
       parameters:
         - $ref: '#/parameters/recordIdParam'
@@ -1759,6 +1760,8 @@ paths:
         You can specify the target record folder by providing its id **targetParentId**
 
         If the record is already filed, a link to the target record folder is created.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: fileRecord
       parameters:
         - $ref: '#/parameters/recordIdParam'
@@ -1854,6 +1857,8 @@ paths:
         Get information for transfer container  **transferContainerId**
 
         Besides mandatory fields the transfer container's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getTransferContainer
       parameters:
         - $ref: '#/parameters/transferContainerIdWithAliasParam'
@@ -1946,10 +1951,7 @@ paths:
 
         Minimal information for each child is returned by default.
 
-        You can use the **include** parameter to return additional information.
-
-        You can use the **include** parameter (include=association) to return child association details
-        for each child, including the **assocType** and the **isPrimary** flag.
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: listTransfers
       produces:
         - application/json
@@ -1957,7 +1959,7 @@ paths:
         - $ref: '#/parameters/transferContainerIdWithAliasParam'
         - $ref: '#/parameters/skipCountParam'
         - $ref: '#/parameters/maxItemsParam'
-        - $ref: '#/parameters/transferEntryIncludeParam'
+        - $ref: '#/parameters/transferContainerChildEntryIncludeParam'
         - $ref: '#/parameters/transferContainerIncludeSourceParam'
         - $ref: '#/parameters/fieldsParam'
       responses:
@@ -1985,6 +1987,8 @@ paths:
         Get information for transfer **transferId**
 
         Besides mandatory fields the transfer's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getTransfer
       parameters:
         - $ref: '#/parameters/transferIdParam'
@@ -2020,10 +2024,7 @@ paths:
 
         Minimal information for each child is returned by default.
 
-        You can use the **include** parameter to return additional information.
-
-        You can use the **include** parameter (include=association) to return child association details
-        for each child, including the **assocType** and the **isPrimary** flag.
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: listTransfersChildren
       produces:
         - application/json
@@ -2063,6 +2064,21 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  filePlanCategoriesEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the record category. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * hasRetentionSchedule
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
   filePlanIdWithAliasParam:
     name: filePlanId
     in: path
@@ -2095,6 +2111,21 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  unfiledContainerChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * association 
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
   unfiledContainerIncludeSourceParam:
     name: includeSource
     in: query
@@ -2116,6 +2147,21 @@ parameters:
       Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
       * allowableOperations
       * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  unfiledRecordFolderChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * association
+      * path
+      * properties
     required: false
     type: array
     items:
@@ -2161,21 +2207,8 @@ parameters:
     in: query
     description: |
       Returns additional information about the record category. Any optional field from the response model can be requested. For example:
+      * allowableOperations
       * hasRetentionSchedule
-      * isRecordCategory
-      * allowableOperations
-      * path
-    required: false
-    type: array
-    items:
-      type: string
-    collectionFormat: csv
-  recordCategoryChildEntryIncludeParam:
-    name: include
-    in: query
-    description: |
-      Returns additional information about the record category. Any optional field from the response model can be requested. For example:
-      * allowableOperations
       * path
     required: false
     type: array
@@ -2195,19 +2228,19 @@ parameters:
     description: Also include **source** in addition to **entries** with folder information on the parent node – either the specified parent **recordCategoryId**, or as resolved by **relativePath**.
     required: false
     type: boolean
-  recordCategoryChildIncludeParam:
+  recordCategoryChildEntryIncludeParam:
     name: include
     in: query
     description: |
-      Returns additional information about the record category. Any optional field from the response model can be requested. For example:
-      * properties
+      Returns additional information about the record category child. Any optional field from the response model can be requested. For example:
+      * allowableOperations
       * aspectNames
       * hasRetentionSchedule
       * isClosed
       * isRecordCategory
       * isRecordFolder
-      * allowableOperations
       * path
+      * properties
     required: false
     type: array
     items:
@@ -2240,10 +2273,8 @@ parameters:
     in: query
     description: |
       Returns additional information about the record folders. Any optional field from the response model can be requested. For example:
-      * properties
-      * aspectNames
-      * isClosed
       * allowableOperations
+      * isClosed
       * path
     required: false
     type: array
@@ -2261,11 +2292,13 @@ parameters:
     in: query
     description: |
       Returns additional information about the records. Any optional field from the response model can be requested. For example:
-      * properties
-      * aspectNames
-      * isCompleted
       * allowableOperations
+      * aspectNames
+      * association
+      * content
+      * isCompleted
       * path
+      * properties
     required: false
     type: array
     items:
@@ -2304,6 +2337,22 @@ parameters:
     items:
       type: string
     collectionFormat: csv
+  transferContainerChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the transfer folders. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * properties
+      * transferPDFIndicator
+      * transferLocation
+      * transferAccessionIndicator
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
   transferContainerIncludeSourceParam:
     name: includeSource
     in: query
@@ -2316,12 +2365,10 @@ parameters:
     in: query
     description: |
       Returns additional information about the transfer folder. Any optional field from the response model can be requested. For example:
+      * allowableOperations
       * transferPDFIndicator
       * transferLocation
       * transferAccessionIndicator
-      * properties
-      * aspectNames
-      * allowableOperations
     required: false
     type: array
     items:
@@ -2344,14 +2391,13 @@ parameters:
     in: query
     description: |
       Returns additional information about the transfer's child. Any optional field from the response model can be requested. For example:
-      * properties
-      * aspectNames
-      * isCompleted
-      * isRecord
-      * isClosed
-      * isRecordFolder
       * allowableOperations
+      * aspectNames
+      * isClosed
+      * isRecord
+      * isRecordFolder
       * path
+      * properties
     required: false
     type: array
     items:
@@ -2369,9 +2415,9 @@ parameters:
     in: query
     description: |
       Returns additional information about the record. Any optional field from the response model can be requested. For example:
-      * isCompleted
-      * content
       * allowableOperations
+      * content
+      * isCompleted
       * path
     required: false
     type: array
@@ -2525,12 +2571,6 @@ definitions:
   FilePlanBodyUpdate:
     type: object
     properties:
-      name:
-        type: string
-        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
-        description: |
-          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
-          The character . must not be used at the end of the name.
       properties:
         type: object
         additionalProperties:
@@ -2617,6 +2657,8 @@ definitions:
     - id
     - name
     - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
     - createdAt
     - createdByUser
     - modifiedAt
@@ -2635,6 +2677,10 @@ definitions:
           The character . must not be used at the end of the name.
       nodeType:
         type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
       modifiedAt:
         type: string
         format: date-time
@@ -2705,6 +2751,8 @@ definitions:
     - id
     - name
     - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
     - createdAt
     - createdByUser
     - modifiedAt
@@ -2723,6 +2771,10 @@ definitions:
           The character . must not be used at the end of the name.
       nodeType:
         type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
       modifiedAt:
         type: string
         format: date-time
@@ -2758,6 +2810,8 @@ definitions:
     - id
     - name
     - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
     - createdAt
     - createdByUser
     - modifiedAt
@@ -2776,6 +2830,10 @@ definitions:
           The character . must not be used at the end of the name.
       nodeType:
         type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
       modifiedAt:
         type: string
         format: date-time
@@ -2963,7 +3021,7 @@ definitions:
     properties:
       entry:
         $ref: '#/definitions/RecordCategoryChild'
-  RecordCategoryAssociationPaging:
+  RecordCategoryPaging:
     type: object
     properties:
       list:
@@ -2974,23 +3032,23 @@ definitions:
           entries:
             type: array
             items:
-              $ref: '#/definitions/RecordCategoryChildAssociationEntry'
+              $ref: '#/definitions/RecordCategoryEntry'
+          source:
+            $ref: '#/definitions/FilePlan'
+  RecordCategoryChildPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/RecordCategoryChildEntry'
           source:
             $ref: '#/definitions/RecordCategory'
-  RecordCategoryChildAssociationEntry:
-    type: object
-    required:
-      - entry
-    properties:
-      entry:
-        $ref: '#/definitions/RecordCategoryChildAssociation'
-  RecordCategoryChildAssociation:
-    allOf:
-      - $ref: '#/definitions/RecordCategoryChild'
-      - type: object
-        properties:
-          association:
-            $ref: '#/definitions/ChildAssociationInfo'
   ## Record folder
   RecordFolder:
     type: object
@@ -3368,10 +3426,6 @@ definitions:
         type: boolean
         default: false
         description: Indicates if the record folder is closed
-      isCompleted:
-        type: boolean
-        default: false
-        description: Present only for record nodes. Indicates if the record has a retention schedule defined
       modifiedAt:
         type: string
         format: date-time

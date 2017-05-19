@@ -39,23 +39,12 @@ public class TransferChild extends RMNode
     public static final String PARAM_IS_RECORD_FOLDER = "isRecordFolder";
     public static final String PARAM_IS_RECORD = "isRecord";
 
-    protected Boolean isCompleted;
     protected Boolean isClosed;
     protected Boolean isRecordFolder;
     protected Boolean isRecord;
 
     public TransferChild()
     {
-    }
-
-    public Boolean getIsCompleted()
-    {
-        return isCompleted;
-    }
-
-    public void setIsCompleted(Boolean isCompleted)
-    {
-        this.isCompleted = isCompleted;
     }
 
     public Boolean getIsClosed()

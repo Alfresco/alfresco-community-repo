@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -107,7 +107,7 @@ public class SolrFacetConfigTest
     {
         Map<String, SolrFacetProperties> defaultProps = facetConfig.getDefaultFacets();
         assertNotNull(defaultProps);
-        assertEquals("Incorrect number of properties", 4, defaultProps.size());
+        assertEquals("Incorrect number of properties", 6, defaultProps.size());
 
         // loaded from /facets/facets-config-sample.properties
         SolrFacetProperties contentSizeFP = defaultProps.get("test_filter_content_size");
@@ -137,6 +137,32 @@ public class SolrFacetConfigTest
         assertEquals("ALL", mimeTypeFP.getScope());
         assertEquals(0, mimeTypeFP.getScopedSites().size());
         assertEquals(true, mimeTypeFP.isEnabled());
+
+        // test SITE (solr special), loaded from /facets/extension/facets-config-custom-sample.properties
+        SolrFacetProperties siteFP = defaultProps.get("site_filter");
+        assertEquals("There shouldn't be any namespace (solr special).", "{}SITE", siteFP.getFacetQName().toString());
+        assertEquals("SiteExtDisplayName", siteFP.getDisplayName());
+        assertEquals("alfresco/search/FacetFilters", siteFP.getDisplayControl());
+        assertEquals(20, siteFP.getMaxFilters());
+        assertEquals(1, siteFP.getHitThreshold());
+        assertEquals(1, siteFP.getMinFilterValueLength());
+        assertEquals("ALPHABETICALLY", siteFP.getSortBy());
+        assertEquals("ALL", siteFP.getScope());
+        assertEquals(0, siteFP.getScopedSites().size());
+        assertEquals(true, siteFP.isEnabled());
+
+        // test TAG (solr special), loaded from /facets/extension/facets-config-custom-sample.properties
+        SolrFacetProperties tagFP = defaultProps.get("tag_filter");
+        assertEquals("There shouldn't be any namespace (solr special)", "{}TAG", tagFP.getFacetQName().toString());
+        assertEquals("TagExtDisplayName", tagFP.getDisplayName());
+        assertEquals("alfresco/search/FacetFilters", tagFP.getDisplayControl());
+        assertEquals(3, tagFP.getMaxFilters());
+        assertEquals(1, tagFP.getHitThreshold());
+        assertEquals(2, tagFP.getMinFilterValueLength());
+        assertEquals("DESCENDING", tagFP.getSortBy());
+        assertEquals("ALL", tagFP.getScope());
+        assertEquals(0, tagFP.getScopedSites().size());
+        assertEquals(true, tagFP.isEnabled());
 
         // See if the overrides worked
         SolrFacetProperties creatorFP = defaultProps.get("test_filter_creator");

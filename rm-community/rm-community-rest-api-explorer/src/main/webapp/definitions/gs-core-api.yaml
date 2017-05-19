@@ -1677,9 +1677,9 @@ paths:
           description: |
             Invalid parameter: the update request is invalid or **recordId** is not a valid format or **recordBodyUpdate** is invalid
         '401':
-          description: If authentication fails
+          description: If authentication
         '403':
-          description: If current user does not have permission to update **recordId**
+          description: If current user does not have permission to update **recordId**fails
         '404':
           description: If **recordId** does not exist
         '409':
@@ -1796,6 +1796,47 @@ paths:
         '422':
           description: |
             Model integrity exception: the action breaks system's integrity restrictions
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/records/{recordId}/complete':
+    put:
+      tags:
+        - records
+      summary: Complete a record
+      description: |
+        Completes the record **recordId**.
+      operationId: completeRecord
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordIdParam** is not a valid format or
+            **recordIdParam** is not a record
+        '401':
+          description: Authentication failed
+        '403':
+          description: >-
+            Current user does not have permission to complete record
+            **recordIdParam**
+        '404':
+          description: |
+            **recordIdParam** does not exist
+        '409':
+          description: |
+            **recordIdParam** is already completed
         default:
           description: Unexpected error
           schema:

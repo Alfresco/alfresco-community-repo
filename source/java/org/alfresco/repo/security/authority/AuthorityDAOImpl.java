@@ -1029,29 +1029,36 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
 
     public String getName(AuthorityType type, String shortName)
     {
-        String authorityName = shortName;
         if (type.isFixedString())
         {
-            authorityName = type.getFixedString();
+            return type.getFixedString();
         }
         else if (type.isPrefixed())
         {
-            String prefix = type.getPrefixString();
+            final String prefix = type.getPrefixString();
+            final String authorityName = prefix + shortName;
             if (shortName.startsWith(prefix))
             {
                 String doublePrefixed = prefix + prefix;
                 if (shortName.startsWith(doublePrefixed))
                 {
-                    throw new AuthorityException("The authority name is double-prefixed");
+                    throw new AuthorityException("The authority name [" + shortName + "] is double-prefixed");
+                }
+                // MNT-17824: We need this check, in case this method is invoked for retrieving an
+                // authority (rather than creating a new one), that was created with the shortName prefixed with 'GROUP_' before the MNT-14958 fix.
+                // As before MNT-14958, if the shortName starts with 'GROUP_', the authority name will end up as 'GROUP_GROUP_<anyName>'
+                else if (getAuthorityOrNull(authorityName, type) != null)
+                {
+                    return authorityName;
                 }
             }
             else
             {
-                authorityName = prefix + shortName;
+                return authorityName;
+
             }
         }
-            return authorityName;
-            
+        return shortName;
     }
 
     protected void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type)
@@ -1285,12 +1292,17 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }
         }
     }
-    
+
     private NodeRef getAuthorityOrNull(final String name)
+    {
+        final AuthorityType authType = AuthorityType.getAuthorityType(name);
+        return getAuthorityOrNull(name, authType);
+    }
+
+    private NodeRef getAuthorityOrNull(final String name, final AuthorityType authType)
     {
         try
         {
-            final AuthorityType authType = AuthorityType.getAuthorityType(name);
             switch (authType)
             {
                 case USER:
@@ -1302,13 +1314,13 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
                     return null;
                 default:
                 {
-                    Pair <String, String> cacheKey = cacheKey(name);
+                    Pair<String, String> cacheKey = cacheKey(name);
                     NodeRef result = authorityLookupCache.get(cacheKey);
                     if (result == null)
                     {
-                        List<ChildAssociationRef> results = nodeService.getChildAssocs(getAuthorityContainer(),
-                                ContentModel.ASSOC_CHILDREN, QName.createQName("cm", name, namespacePrefixResolver), false);
-                        result = results.isEmpty() ? NULL_NODEREF :results.get(0).getChildRef(); 
+                        List<ChildAssociationRef> results = nodeService.getChildAssocs(getAuthorityContainer(), ContentModel.ASSOC_CHILDREN,
+                                    QName.createQName("cm", name, namespacePrefixResolver), false);
+                        result = results.isEmpty() ? NULL_NODEREF : results.get(0).getChildRef();
                         authorityLookupCache.put(cacheKey, result);
                     }
                     return result.equals(NULL_NODEREF) ? null : result;

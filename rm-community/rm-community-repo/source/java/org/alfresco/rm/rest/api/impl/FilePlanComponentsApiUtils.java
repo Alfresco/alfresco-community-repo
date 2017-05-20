@@ -136,12 +136,6 @@ public class FilePlanComponentsApiUtils
             RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER,
             RecordsManagementModel.TYPE_HOLD_CONTAINER);
 
-    public static final List<QName> TYPES_CAN_USE_AUTORENAME = Arrays.asList(
-            RecordsManagementModel.TYPE_RECORD_CATEGORY,
-            RecordsManagementModel.TYPE_RECORD_FOLDER,
-            RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER,
-            RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
-
     /** RM Nodes API */
     private Nodes nodes;
     private FileFolderService fileFolderService;
@@ -630,7 +624,7 @@ public class FilePlanComponentsApiUtils
             QName typeQName = nodes.createQName(nodeType);
 
             // Existing file/folder name handling
-            if (TYPES_CAN_USE_AUTORENAME.contains(typeQName) && autoRename)
+            if (autoRename)
             {
                 NodeRef existingNode = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
                 if (existingNode != null)

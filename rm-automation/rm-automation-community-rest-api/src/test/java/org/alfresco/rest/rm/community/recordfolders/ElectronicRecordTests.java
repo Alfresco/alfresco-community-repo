@@ -49,7 +49,6 @@ import static org.testng.Assert.assertTrue;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
-import org.alfresco.rest.rm.community.model.record.RecordContent;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
@@ -392,5 +391,34 @@ public class ElectronicRecordTests extends BaseRMRestTest
         assertTrue(record.getName().startsWith(ELECTRONIC_RECORD_NAME));
 
         assertTrue(unfiledRecordFoldersAPI.getUnfiledRecordFolder(record.getParentId()).getName().equals(unfiledRecordFolderPathEl4));
+    }
+
+    /**
+     * <pre>
+     * Given a parent container that is a record folder
+     * When I try to create a record with name1 and create another one with the same given name
+     * Then the second record is created with success
+     * </pre>
+     * 
+     * @throws Exception
+     *             if record can't be created
+     */
+    @Test(description = "Electronic records can be created in record folder with duplicate name")
+    @Bug(id ="RM-5116, RM-5012")
+    public void canCreateElectronicRecordsWithDuplicateName() throws Exception
+    {
+        RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
+
+        // Create an electronic record with the name "Record 1"
+        Record recordModel = Record.builder().name("Record 1").nodeType(CONTENT_TYPE).build();
+        getRestAPIFactory().getRecordFolderAPI().createRecord(recordModel, recordFolder.getId());
+        // Verify the status code
+        assertStatusCode(CREATED);
+
+        // Try to create another electronic record with the same name
+        getRestAPIFactory().getRecordFolderAPI().createRecord(recordModel, recordFolder.getId());
+
+        // Verify the status code
+        assertStatusCode(CREATED);
     }
 }

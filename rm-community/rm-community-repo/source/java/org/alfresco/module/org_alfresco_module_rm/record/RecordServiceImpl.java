@@ -132,6 +132,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                implements RecordService,
                                           RecordsManagementModel,
                                           RecordsManagementCustomModel,
+                                          NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy,
                                           NodeServicePolicies.OnUpdatePropertiesPolicy,
@@ -419,6 +420,24 @@ public class RecordServiceImpl extends BaseBehaviourBean
         onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);
         beforeRecordDeclarationDelegate = policyComponent.registerClassPolicy(BeforeRecordDeclaration.class);
         onRecordDeclarationDelegate = policyComponent.registerClassPolicy(OnRecordDeclaration.class);
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "rma:record",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onAddAspect(NodeRef nodeRef, QName aspect)
+    {
+        if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+        {
+            generateRecordIdentifier(nodeService, identifierService, nodeRef);
+        }
     }
 
     /**

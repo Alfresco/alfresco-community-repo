@@ -696,6 +696,16 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             logger.debug(builder.toString());
             logger.debug("Current action = " + action.getId());
         }
+
+        // MNT-15365
+        if(actionedUponNodeRef != null && !this.nodeService.exists(actionedUponNodeRef))
+        {
+            if (logger.isDebugEnabled() == true)
+            {
+                logger.debug("Node = " + actionedUponNodeRef.toString() + " skip action because node doesn't exist");
+            }
+            return;
+        }
         
         // get the current user early in case the process fails and we are
         // unable to do it later

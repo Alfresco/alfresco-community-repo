@@ -65,6 +65,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.PagedSourceOptions;
@@ -117,6 +118,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     private Repository repositoryHelper;
     private PermissionService permissionService;
     private LockService lockService;
+    private CopyService copyService;
 
     private NodeRef folder;
     private static final String TEST_FAILING_MIME_TYPE = "application/vnd.alfresco.test.transientfailure";
@@ -146,6 +148,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
         this.permissionService = (PermissionService) applicationContext.getBean("PermissionService");
         this.lockService = (LockService) applicationContext.getBean("lockService");
+        this.copyService = (CopyService) applicationContext.getBean("CopyService");
 
         // Create a folder and some content
         Map<QName, Serializable> folderProps = new HashMap<QName, Serializable>(1);
@@ -677,6 +680,35 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
 
         // Check if property "Last thumbnail modification data" has changed
         assertFalse("Property 'Last thumbnail modification data' has not changed", lastThumbnailDataV1.equals(lastThumbnailDataV2));
+    }
+
+    /**
+     * See REPO-2257, MNT-17661
+     */
+    public void testLastThumbnailModificationDataContentCopy() throws Exception
+    {
+        final NodeRef pdfOrig = createOriginalContent(this.folder, MimetypeMap.MIMETYPE_PDF);
+        QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
+
+        ThumbnailDefinition details = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(qname.getLocalName());
+        NodeRef thumbnail = this.thumbnailService.createThumbnail(pdfOrig, ContentModel.PROP_CONTENT, MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                details.getTransformationOptions(), "doclib");
+        assertNotNull(thumbnail);
+
+        setComplete();
+        endTransaction();
+
+        Thread.sleep(1000);
+
+        // Get initial value of property "Last thumbnail modification data"
+        List<String>lastThumbnailData = (List<String>)this.secureNodeService.getProperty(pdfOrig, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA);
+        assertNotNull(lastThumbnailData);
+        assertEquals(1, lastThumbnailData.size());
+        assertTrue(lastThumbnailData.get(0).contains("doclib:"));
+
+        final NodeRef pdfCopy = copyService.copy(pdfOrig, this.folder, ContentModel.ASSOC_CONTAINS, QName.createQName("copyOfOriginal"));
+        List<String> lastThumbnailDataCopy = (List<String>)this.secureNodeService.getProperty(pdfCopy, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA);
+        assertNull(lastThumbnailDataCopy);
     }
 
     /**

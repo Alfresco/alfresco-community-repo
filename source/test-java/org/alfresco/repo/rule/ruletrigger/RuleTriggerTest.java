@@ -132,27 +132,6 @@ public class RuleTriggerTest extends BaseSpringTest
         // Check to see if the rule type has been triggered
         assertTrue(ruleType.rulesTriggered);        
     }
-
-    // MNT-15365
-    public void testOnUpdateNodeTriggerOnWorkingCopy()
-    {
-        NodeRef nodeRef = this.nodeService.createNode(
-                this.rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                ContentModel.ASSOC_CHILDREN,
-                ContentModel.TYPE_CONTAINER).getChildRef();
-
-        this.nodeService.addAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY, null);
-
-        TestRuleType ruleType = createTestRuleType(ON_UPDATE_NODE_TRIGGER);
-        assertFalse(ruleType.rulesTriggered);
-
-        // Try and trigger the type
-        this.nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, "nameChanged");
-
-        // Check to see if the rule type has been triggered. It shouldn't trigger because it is a working copy
-        assertFalse(ruleType.rulesTriggered);
-    }
     
 //    public void testOnDeleteNodeTrigger()
 //    {

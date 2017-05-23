@@ -43,8 +43,8 @@ public class RangeParameters
     private String end;
     private String gap;
     private boolean hardend;
-    private String other;
-    private String include;
+    private List<String> other;
+    private List<String> include;
     private List<String> tags;
     private List<String> excludeFilters;
 
@@ -68,8 +68,8 @@ public class RangeParameters
                            @JsonProperty("end") String end, 
                            @JsonProperty("gap") String gap,
                            @JsonProperty("hardend") boolean hardend, 
-                           @JsonProperty("other")String other,
-                           @JsonProperty("include")String include,
+                           @JsonProperty("other")List<String> other,
+                           @JsonProperty("include")List<String> include,
                            @JsonProperty("tags")List<String> tags,
                            @JsonProperty("excludeFilters")List<String> excludeFilters)
     {
@@ -105,11 +105,11 @@ public class RangeParameters
     {
         return hardend;
     }
-    public String getOther()
+    public List<String> getOther()
     {
         return other;
     }
-    public String getInclude() 
+    public List<String> getInclude() 
     {
         return include;
     }

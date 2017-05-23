@@ -158,7 +158,7 @@
                            <groupId>${alfresco.groupId}</groupId>
                            <artifactId>${app.amp.client.war.artifactId}</artifactId>
                            <type>war</type>
-                           <version>${alfresco.version}</version>
+                           <version>5.1.g</version>
                         </artifactItem>
                      </artifactItems>
                   </configuration>

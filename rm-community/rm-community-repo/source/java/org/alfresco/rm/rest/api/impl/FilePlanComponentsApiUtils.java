@@ -79,6 +79,7 @@ import org.alfresco.rm.rest.api.RMSites;
 import org.alfresco.rm.rest.api.model.RMNode;
 import org.alfresco.rm.rest.api.model.RMSite;
 import org.alfresco.rm.rest.api.model.TransferContainer;
+import org.alfresco.rm.rest.api.model.UploadInfo;
 import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
@@ -672,32 +673,50 @@ public class FilePlanComponentsApiUtils
     /**
      * Upload a record
      *
-     * @param parentNodeRef the parent of the record
-     * @param name the name of the record
-     * @param type the type of the record (if null the record's type will be cm:content)
-     * @param properties properties to set (can be null)
-     * @param stream the stream to write
+     * @param parentNodeRef  the parent of the record
+     * @param uploadInfo  the infos of the uploaded record
+     * @param parameters  the object to get the parameters passed into the request
      * @return the new record
      */
-    public NodeRef uploadRecord(NodeRef parentNodeRef, String name, String type, Map<String, Object> properties, InputStream stream)
+    public NodeRef uploadRecord(NodeRef parentNodeRef, UploadInfo uploadInfo, Parameters parameters)
     {
-        checkNotBlank(RMNode.PARAM_NAME, name);
+        mandatory("parentNodeRef", parentNodeRef);
+        mandatory("uploadInfo", uploadInfo);
+        mandatory("parameters", parameters);
+
+        String nodeName = uploadInfo.getFileName();
+        String nodeType = uploadInfo.getNodeType();
+        InputStream stream = uploadInfo.getContent().getInputStream();
         mandatory("stream", stream);
+        checkNotBlank(RMNode.PARAM_NAME, nodeName);
 
         // Create the node
-        QName typeQName = StringUtils.isBlank(type) ? ContentModel.TYPE_CONTENT : nodes.createQName(type);
-        if(!dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+        QName typeQName = StringUtils.isBlank(nodeType) ? ContentModel.TYPE_CONTENT : nodes.createQName(nodeType);
+        if (!dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
         {
             throw new InvalidArgumentException("Can only upload type of cm:content: " + typeQName);
         }
-        NodeRef newNodeRef = fileFolderService.create(parentNodeRef, name, typeQName).getNodeRef();
+
+        // Existing file/folder name handling
+        boolean autoRename = Boolean.valueOf(parameters.getParameter(RMNode.PARAM_AUTO_RENAME));
+        if (autoRename)
+        {
+            NodeRef existingNode = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
+            if (existingNode != null)
+            {
+                // File already exists, find a unique name
+                nodeName = findUniqueName(parentNodeRef, nodeName);
+            }
+        }
+
+        NodeRef newNodeRef = fileFolderService.create(parentNodeRef, nodeName, typeQName).getNodeRef();
 
         // Write content
-        writeContent(newNodeRef, name, stream, true);
+        writeContent(newNodeRef, nodeName, stream, true);
 
         // Set the provided properties if any
-        Map<QName, Serializable> qnameProperties = mapToNodeProperties(properties);
-        if(qnameProperties != null)
+        Map<QName, Serializable> qnameProperties = mapToNodeProperties(uploadInfo.getProperties());
+        if (qnameProperties != null)
         {
             nodeService.addProperties(newNodeRef, qnameProperties);
         }

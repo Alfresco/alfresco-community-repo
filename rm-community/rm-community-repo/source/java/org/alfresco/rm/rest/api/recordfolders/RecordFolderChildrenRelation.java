@@ -207,8 +207,7 @@ public class RecordFolderChildrenRelation implements RelationshipResourceAction.
         {
             public NodeRef execute()
             {
-                return apiUtils.uploadRecord(parentNodeRef, uploadInfo.getFileName(), uploadInfo.getNodeType(), uploadInfo.getProperties(),
-                        uploadInfo.getContent().getInputStream());
+                return apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);
             }
         };
         NodeRef newNode = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);

@@ -434,10 +434,18 @@ public class RecordServiceImpl extends BaseBehaviourBean
     )
     public void onAddAspect(NodeRef nodeRef, QName aspect)
     {
-        if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+        authenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            generateRecordIdentifier(nodeService, identifierService, nodeRef);
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+                {
+                    generateRecordIdentifier(nodeService, identifierService, nodeRef);
+                }
+                return null;
+            }
+        });
     }
 
     /**

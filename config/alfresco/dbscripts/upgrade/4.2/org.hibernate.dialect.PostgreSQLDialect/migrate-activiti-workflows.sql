@@ -22,7 +22,30 @@ select nextval('VARINST_ID_SEQ');
 -- insert from act_hi_detail into act_hi_varinst, the id will be generated starting from the next.dbid
 -- only the most recent version of a variable must by migrated
 -- the most recent version of a variable is considered to be the one with the highest revision and timestamp
-INSERT INTO ACT_HI_VARINST(
+
+CREATE INDEX ACT_IDX_HI_DETAIL_TMP ON ACT_HI_DETAIL (PROC_INST_ID_, NAME_, REV_, time_);
+
+CREATE TABLE ACT_HI_DETAIL_TMP (
+    PROC_INST_ID_ varchar(64),
+    NAME_ varchar(255) NOT NULL,
+    REV_ int4,
+    TIME_ timestamp NOT NULL
+);
+
+CREATE INDEX ACT_HI_DETAIL_TMP_IDX ON ACT_HI_DETAIL_TMP(PROC_INST_ID_, NAME_, REV_, TIME_);
+
+INSERT INTO ACT_HI_DETAIL_TMP
+    SELECT
+        PROC_INST_ID_,
+        NAME_,
+        MAX(REV_),
+        MAX(time_)
+    FROM ACT_HI_DETAIL
+    GROUP BY PROC_INST_ID_, NAME_;
+
+CREATE TABLE ACT_HI_VARINST_TMP (LIKE ACT_HI_VARINST INCLUDING DEFAULTS INCLUDING INDEXES);
+
+INSERT INTO ACT_HI_VARINST_TMP(
     ID_,
     PROC_INST_ID_,
     EXECUTION_ID_,
@@ -38,6 +61,30 @@ INSERT INTO ACT_HI_VARINST(
     )
 SELECT
     nextval('VARINST_ID_SEQ'),
+    AHD.PROC_INST_ID_,
+    AHD.EXECUTION_ID_,
+    AHD.TASK_ID_,
+    AHD.NAME_,
+    AHD.VAR_TYPE_,
+    AHD.REV_,
+    AHD.BYTEARRAY_ID_,
+    AHD.DOUBLE_,
+    AHD.LONG_,
+    AHD.TEXT_,
+    AHD.TEXT2_
+FROM ACT_HI_DETAIL AHD
+INNER JOIN ACT_HI_DETAIL_TMP AS DETAIL
+    ON AHD.PROC_INST_ID_ = DETAIL.PROC_INST_ID_
+         AND AHD.NAME_ = DETAIL.NAME_
+         AND AHD.REV_ = DETAIL.REV_
+         AND AHD.TIME_ = DETAIL.TIME_
+LEFT OUTER JOIN ACT_HI_VARINST as VAR
+    ON AHD.PROC_INST_ID_ = VAR.PROC_INST_ID_
+    WHERE VAR.PROC_INST_ID_ IS NULL;
+
+
+INSERT INTO ACT_HI_VARINST(
+    ID_,
     PROC_INST_ID_,
     EXECUTION_ID_,
     TASK_ID_,
@@ -49,13 +96,22 @@ SELECT
     LONG_,
     TEXT_,
     TEXT2_
-FROM ACT_HI_DETAIL AHD
-WHERE AHD.PROC_INST_ID_ not in (select PROC_INST_ID_ from ACT_HI_VARINST)
-AND
-    (AHD.PROC_INST_ID_ , AHD.NAME_, AHD.REV_, AHD.time_) IN
-    (SELECT PROC_INST_ID_, NAME_, MAX(REV_), MAX(time_)
-    FROM ACT_HI_DETAIL
-    GROUP BY PROC_INST_ID_ , NAME_);
+)
+    SELECT
+        ID_,
+        PROC_INST_ID_,
+        EXECUTION_ID_,
+        TASK_ID_,
+        NAME_,
+        VAR_TYPE_,
+        REV_,
+        BYTEARRAY_ID_,
+        DOUBLE_,
+        LONG_,
+        TEXT_,
+        TEXT2_
+    FROM
+        ACT_HI_VARINST_TMP;
 
 --update act_ge_property
 --ASSIGN:TOTAL_ROW_COUNT=ROW_COUNT
@@ -67,6 +123,9 @@ update ACT_GE_PROPERTY set VALUE_ = VALUE_::integer + ${TOTAL_ROW_COUNT} - ${INI
 update ACT_GE_PROPERTY set REV_ = VALUE_::integer / 100 + 1 where NAME_ = 'next.dbid';
 
 DROP SEQUENCE IF EXISTS VARINST_ID_SEQ;
+DROP TABLE ACT_HI_DETAIL_TMP;
+DROP TABLE ACT_HI_VARINST_TMP;
+DROP INDEX ACT_IDX_HI_DETAIL_TMP;
 --
 -- Record script finish
 --

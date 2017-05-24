@@ -10,10 +10,7 @@
     </parent>
 
     <properties>
-        <build-number>0</build-number>
-        <scm-revision>123456</scm-revision>
         <repositoryTestIncludes>**/org/alfresco/Repository*TestSuite.java</repositoryTestIncludes>
-        
     </properties>
     
     <dependencies>

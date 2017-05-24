@@ -527,7 +527,7 @@ public class UserCSVUploadPost extends DeclarativeWebScript
             // If no password was given, use their surname
             if (!user.containsKey(ContentModel.PROP_PASSWORD))
             {
-                user.put(ContentModel.PROP_PASSWORD, user.get(ContentModel.PROP_LASTNAME));
+                user.put(ContentModel.PROP_PASSWORD, "");
             }
             
             // Skip any user who looks like an example file heading

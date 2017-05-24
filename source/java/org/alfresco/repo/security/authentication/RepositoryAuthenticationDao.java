@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
@@ -354,6 +355,13 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         String salt = GUID.generate();
         properties.put(ContentModel.PROP_SALT, salt);
 
+        boolean emptyPassword = rawPassword != null ? "".equals(new String(rawPassword)) : true;
+
+        if (emptyPassword)
+        {
+            rawPassword = UUID.randomUUID().toString().toCharArray();
+        }
+
         if (hashedPassword == null)
         {
             if (logger.isDebugEnabled())
@@ -374,7 +382,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList(compositePasswordEncoder.getPreferredEncoding()));
         properties.put(ContentModel.PROP_ACCOUNT_EXPIRES, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));
-        properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(true));
+        properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(!emptyPassword));
         properties.put(ContentModel.PROP_ACCOUNT_LOCKED, Boolean.valueOf(false));
         nodeService.createNode(typesNode, ContentModel.ASSOC_CHILDREN, QName.createQName(ContentModel.USER_MODEL_URI,
                 caseSensitiveUserName), ContentModel.TYPE_USER, properties);

@@ -2155,4 +2155,62 @@ public class AuthenticationTest extends TestCase
         nspr.registerNamespace(NamespaceService.DEFAULT_PREFIX, defaultURI);
         return nspr;
     }
+
+    public void testCreatingUserWithEmptyPassword() throws Exception
+    {
+        String previousAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String userName = GUID.generate();
+        String rawPass = "";
+        try
+        {
+            dao.createUser(userName, null, rawPass.toCharArray());
+            NodeRef userNodeRed = getRepositoryAuthenticationDao().getUserOrNull(userName);
+            assertNotNull(userNodeRed);
+
+            Map<QName, Serializable> properties = nodeService.getProperties(userNodeRed);
+            assertEquals(properties.get(ContentModel.PROP_ENABLED), false);
+
+            properties.remove(ContentModel.PROP_ENABLED);
+            properties.put(ContentModel.PROP_ENABLED, true);
+            nodeService.setProperties(userNodeRed, properties);
+            assertEquals(properties.get(ContentModel.PROP_ENABLED), true);
+
+            try
+            {
+                authenticationService.authenticate(userName, rawPass.toCharArray());
+                fail("Authentication should have been rejected");
+            }
+            catch (IllegalArgumentException e)
+            {
+                assertEquals(e.getMessage(), "rawPassword is a mandatory parameter");
+            }
+
+            rawPass = "newPassword";
+            dao.updateUser(userName, rawPass.toCharArray());
+            try
+            {
+                authenticationService.authenticate(userName, rawPass.toCharArray());
+            }
+            catch (AuthenticationException e)
+            {
+                fail("Authentication should have passed.");
+            }
+            assertEquals(authenticationService.getCurrentUserName(), userName);
+        }
+        finally
+        {
+            if (previousAuthenticatedUser != null)
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(previousAuthenticatedUser);
+            }
+            try
+            {
+                dao.deleteUser(userName);
+            }
+            catch (Exception e)
+            {
+                // Nothing to do here.
+            }
+        }
+    }
 }

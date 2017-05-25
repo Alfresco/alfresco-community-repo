@@ -25,6 +25,7 @@
  */
 package org.alfresco.service.cmr.search;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -120,5 +121,66 @@ public class RangeParameters
     public List<String> getExcludeFilters() 
     {
         return excludeFilters;
+    }
+    
+    public boolean isRangeStartInclusive()
+    {
+        List<String> options = new ArrayList<String>();
+        if(include != null && !include.isEmpty())
+        {
+            options.addAll(include);
+        }
+        if(other != null && !other.isEmpty())
+        {
+            options.addAll(other);
+        }
+        if(!options.isEmpty())
+        {
+            for(String startInc : options)
+            {
+                switch (startInc)
+                {
+                case "before":
+                    return  false;
+                case "outer":
+                    return  false;
+                default:
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+    public boolean isRangeEndInclusive()
+    {
+        List<String> options = new ArrayList<String>();
+        if(include != null && !include.isEmpty())
+        {
+            options.addAll(include);
+        }
+        if(other != null && !other.isEmpty())
+        {
+            options.addAll(other);
+        }
+        if(!options.isEmpty())
+        {
+            for(String endInc : options)
+            {
+                switch (endInc)
+                {
+                case "upper":
+                    return  true;
+                case "edge":
+                    return  true;
+                case "outer":
+                    return  true;
+                case "all":
+                    return  true;
+                default:
+                    break;
+                }
+            }
+        }
+        return false;
     }
 }

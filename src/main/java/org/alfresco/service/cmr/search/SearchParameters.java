@@ -169,7 +169,7 @@ public class SearchParameters implements BasicSearchParameters
     
     private List<String> filterQueries = new ArrayList<String>();
 
-    private List<String> pivots = new ArrayList<String>();
+    private List<List<String>> pivots = new ArrayList<>();
 
     private Boolean useInMemorySort;
     
@@ -978,14 +978,14 @@ public class SearchParameters implements BasicSearchParameters
         filterQueries.add(filterQuery);
     }
 
-    public List<String> getPivots()
+    public List<List<String>> getPivots()
     {
         return pivots;
     }
 
-    public void addPivot(String pivotField)
+    public void addPivots(List<String> pivotFields)
     {
-        pivots.add(pivotField);
+        pivots.add(pivotFields);
     }
 
     public Locale getSortLocale()

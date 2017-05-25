@@ -7,13 +7,35 @@
  */
 package org.alfresco.repo.events;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.events.types.*;
+import org.alfresco.events.types.Event;
+import org.alfresco.events.types.NodeAddedEvent;
+import org.alfresco.events.types.NodeCheckOutCancelledEvent;
+import org.alfresco.events.types.NodeCheckedInEvent;
+import org.alfresco.events.types.NodeCheckedOutEvent;
+import org.alfresco.events.types.NodeCommentedEvent;
+import org.alfresco.events.types.NodeContentGetEvent;
+import org.alfresco.events.types.NodeContentPutEvent;
+import org.alfresco.events.types.NodeFavouritedEvent;
+import org.alfresco.events.types.NodeLikedEvent;
+import org.alfresco.events.types.NodeMovedEvent;
+import org.alfresco.events.types.NodeRemovedEvent;
+import org.alfresco.events.types.NodeRenamedEvent;
+import org.alfresco.events.types.NodeTaggedEvent;
+import org.alfresco.events.types.NodeUnFavouritedEvent;
+import org.alfresco.events.types.NodeUnLikedEvent;
+import org.alfresco.events.types.NodeUnTaggedEvent;
+import org.alfresco.events.types.NodeUpdatedEvent;
+import org.alfresco.events.types.Property;
 import org.alfresco.events.types.authority.AuthorityAddedToGroupEvent;
 import org.alfresco.events.types.authority.AuthorityRemovedFromGroupEvent;
 import org.alfresco.events.types.authority.GroupDeletedEvent;
@@ -21,9 +43,12 @@ import org.alfresco.events.types.permission.InheritPermissionsDisabledEvent;
 import org.alfresco.events.types.permission.InheritPermissionsEnabledEvent;
 import org.alfresco.events.types.permission.LocalPermissionGrantedEvent;
 import org.alfresco.events.types.permission.LocalPermissionRevokedEvent;
+import org.alfresco.events.types.recordsmanagement.FileClassifiedEvent;
+import org.alfresco.events.types.recordsmanagement.FileUnclassifiedEvent;
+import org.alfresco.events.types.recordsmanagement.RecordCreatedEvent;
+import org.alfresco.events.types.recordsmanagement.RecordRejectedEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.Client;
-import org.alfresco.repo.events.AbstractEventsService.NodeInfo;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -46,6 +71,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class EventsServiceImpl extends AbstractEventsService implements EventsService
 {
+    private static final QName PROP_RMA_RECORD_ORIGINATING_LOCATION = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "recordOriginatingLocation");
     private static Log logger = LogFactory.getLog(EventsServiceImpl.class);
 
     private NodeRenamedEvent nodeRenamedEvent(NodeInfo nodeInfo, String oldName, String newName)
@@ -851,5 +877,126 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             sendEvent(event);
         }
         
+    }
+
+    @Override
+    public void fileUnclassified(NodeRef nodeRef)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, FileUnclassifiedEvent.EVENT_TYPE);
+        if(nodeInfo.checkNodeInfo())
+        {
+            Event event = FileUnclassifiedEvent.builder()
+                              .seqNumber(nextSequenceNumber())
+                              .name(nodeInfo.getName())
+                              .txnId(AlfrescoTransactionSupport.getTransactionId())
+                              .timestamp(System.currentTimeMillis())
+                              .networkId(TenantUtil.getCurrentDomain())
+                              .siteId(nodeInfo.getSiteId())
+                              .nodeId(nodeInfo.getNodeId())
+                              .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
+                              .paths(nodeInfo.getPaths())
+                              .parentNodeIds(nodeInfo.getParentNodeIds())
+                              .username(AuthenticationUtil.getFullyAuthenticatedUser())
+                              .nodeModificationTime(nodeInfo.getModificationTimestamp())
+                              .client(getAlfrescoClient(nodeInfo.getClient()))
+                              .aspects(nodeInfo.getAspectsAsStrings())
+                              .nodeProperties(nodeInfo.getProperties())
+                              .build();
+            sendEvent(event);
+        }
+    }
+
+    @Override
+    public void fileClassified(NodeRef nodeRef)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, FileClassifiedEvent.EVENT_TYPE);
+        if(nodeInfo.checkNodeInfo())
+        {
+            Event event = FileClassifiedEvent.builder()
+                              .seqNumber(nextSequenceNumber())
+                              .name(nodeInfo.getName())
+                              .txnId(AlfrescoTransactionSupport.getTransactionId())
+                              .timestamp(System.currentTimeMillis())
+                              .networkId(TenantUtil.getCurrentDomain())
+                              .siteId(nodeInfo.getSiteId())
+                              .nodeId(nodeInfo.getNodeId())
+                              .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
+                              .paths(nodeInfo.getPaths())
+                              .parentNodeIds(nodeInfo.getParentNodeIds())
+                              .username(AuthenticationUtil.getFullyAuthenticatedUser())
+                              .nodeModificationTime(nodeInfo.getModificationTimestamp())
+                              .client(getAlfrescoClient(nodeInfo.getClient()))
+                              .aspects(nodeInfo.getAspectsAsStrings())
+                              .nodeProperties(nodeInfo.getProperties())
+                              .build();
+            sendEvent(event);
+        }
+    }
+
+    @Override
+    public void recordRejected(NodeRef nodeRef)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, RecordRejectedEvent.EVENT_TYPE);
+        if(nodeInfo.checkNodeInfo())
+        {
+            //The event should contain the path that points to the original location of the file.
+            //We'll use a RM specific property that stores the original location of the file.
+            NodeRef recordOriginatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RMA_RECORD_ORIGINATING_LOCATION);
+            String recordOriginatingParentName = (String) nodeService.getProperty(recordOriginatingLocation, ContentModel.PROP_NAME);
+            Path originatingParentPath = nodeService.getPath(recordOriginatingLocation);
+            
+            Event event = RecordRejectedEvent.builder()
+                              .seqNumber(nextSequenceNumber())
+                              .name(nodeInfo.getName())
+                              .txnId(AlfrescoTransactionSupport.getTransactionId())
+                              .timestamp(System.currentTimeMillis())
+                              .networkId(TenantUtil.getCurrentDomain())
+                              .siteId(nodeInfo.getSiteId())
+                              .nodeId(nodeInfo.getNodeId())
+                              .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
+                              .paths(getPaths(singletonList(originatingParentPath), asList(recordOriginatingParentName, nodeInfo.getName())))
+                              .parentNodeIds(this.getNodeIds(singletonList(originatingParentPath)))
+                              .username(AuthenticationUtil.getFullyAuthenticatedUser())
+                              .nodeModificationTime(nodeInfo.getModificationTimestamp())
+                              .client(getAlfrescoClient(nodeInfo.getClient()))
+                              .aspects(nodeInfo.getAspectsAsStrings())
+                              .nodeProperties(nodeInfo.getProperties())
+                              .build();
+            sendEvent(event);
+        }
+    }
+
+    @Override
+    public void recordCreated(NodeRef nodeRef)
+    {
+        NodeInfo nodeInfo = getNodeInfo(nodeRef, RecordCreatedEvent.EVENT_TYPE);
+        if(nodeInfo.checkNodeInfo())
+        {
+            //The event should contain the path that points to the original location of the file.
+            //When a node is declared as a record, a secondary association is created for the original location, hence use just that.
+            List<Path> allPaths = nodeService.getPaths(nodeRef, false);
+            Path primaryPath = nodeService.getPath(nodeRef);
+            allPaths.remove(primaryPath);
+            List<Path> secPath = Collections.singletonList(allPaths.get(0));
+                        
+            Event event = RecordCreatedEvent.builder()
+                              .seqNumber(nextSequenceNumber())
+                              .name(nodeInfo.getName())
+                              .txnId(AlfrescoTransactionSupport.getTransactionId())
+                              .timestamp(System.currentTimeMillis())
+                              .networkId(TenantUtil.getCurrentDomain())
+                              .siteId(nodeInfo.getSiteId())
+                              .nodeId(nodeInfo.getNodeId())
+                              .nodeType(nodeInfo.getType().toPrefixString(namespaceService))
+                              .paths(getPaths(secPath, Arrays.asList(nodeInfo.getName())))
+                              .parentNodeIds(this.getNodeIdsFromParent(secPath))
+                              .username(AuthenticationUtil.getFullyAuthenticatedUser())
+                              .nodeModificationTime(nodeInfo.getModificationTimestamp())
+                              .client(getAlfrescoClient(nodeInfo.getClient()))
+                              .aspects(nodeInfo.getAspectsAsStrings())
+                              .nodeProperties(nodeInfo.getProperties())
+                              .build();
+            sendEvent(event);
+        }
     }
 }

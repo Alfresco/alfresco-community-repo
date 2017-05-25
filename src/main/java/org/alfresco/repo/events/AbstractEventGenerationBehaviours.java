@@ -91,11 +91,23 @@ public abstract class AbstractEventGenerationBehaviours
      * Bind a class policy to a JavaBehaviour if a specific event type is enabled
      * 
      * @param policyName the policy to implement or in other words the one we bind to the JavaBehaviour
-     * @param eventTypeToCheck implement the policy only if this event type is enabled
+     * @param eventTypeToCheck implement the policy only if the event is supported
      */
     protected void bindClassPolicy(QName policyName, String eventTypeToCheck)
     {
-        if(eventTypeToCheck != null && !includeEventType(eventTypeToCheck))
+        bindClassPolicy(policyName, ContentModel.TYPE_BASE, eventTypeToCheck);
+    }
+    
+    /**
+     * Bind a class policy to a JavaBehaviour if a specific event type is enabled
+     * 
+     * @param policyName the policy to implement or in other words the one we bind to the JavaBehaviour
+     * @param className the class to bind to
+     * @param eventTypeToCheck implement the policy only if the event is supported
+     */
+    protected void bindClassPolicy(QName policyName, QName className, String eventTypeToCheck)
+    {
+        if (eventTypeToCheck != null && !includeEventType(eventTypeToCheck))
         {
             return;
         }
@@ -103,7 +115,7 @@ public abstract class AbstractEventGenerationBehaviours
         BehaviourDefinition<ClassBehaviourBinding> binding =
                 this.policyComponent.bindClassBehaviour(
                         policyName,
-                        ContentModel.TYPE_BASE,
+                        className,
                         new JavaBehaviour(this, policyName.getLocalName()));
         addBehaviour(binding);
     }

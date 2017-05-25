@@ -34,6 +34,10 @@ import org.alfresco.events.types.permission.InheritPermissionsDisabledEvent;
 import org.alfresco.events.types.permission.InheritPermissionsEnabledEvent;
 import org.alfresco.events.types.permission.LocalPermissionGrantedEvent;
 import org.alfresco.events.types.permission.LocalPermissionRevokedEvent;
+import org.alfresco.events.types.recordsmanagement.FileClassifiedEvent;
+import org.alfresco.events.types.recordsmanagement.FileUnclassifiedEvent;
+import org.alfresco.events.types.recordsmanagement.RecordCreatedEvent;
+import org.alfresco.events.types.recordsmanagement.RecordRejectedEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies;
 import org.alfresco.repo.content.ContentServicePolicies;
@@ -63,7 +67,7 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         NodeServicePolicies.OnCreateNodePolicy,
         NodeServicePolicies.BeforeDeleteNodePolicy,
         NodeServicePolicies.OnAddAspectPolicy,
-        NodeServicePolicies.OnRemoveAspectPolicy,
+        NodeServicePolicies.BeforeRemoveAspectPolicy,
         NodeServicePolicies.OnUpdatePropertiesPolicy,
         NodeServicePolicies.OnMoveNodePolicy,
         CheckOutCheckInServicePolicies.BeforeCheckOut,
@@ -80,6 +84,13 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         NodeServicePolicies.OnDeleteChildAssociationPolicy,
         NodeServicePolicies.OnCreateChildAssociationPolicy
 {  
+    //Records management policies
+    private static final QName ON_UPDATE_SECURITY_MARKS_POLICY_NAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateContentSecurityMarks");
+    private static final QName ON_RECORD_DECLARATION_POLICY_NAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordDeclaration");    
+    
+    //this is used temporarily until RM-5180 is implemented
+    private static final QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "recordOriginatingDetails");
+    
     protected EventsService eventsService;
     protected DictionaryService dictionaryService;
     protected NamespaceService namespaceService;
@@ -145,6 +156,16 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         bindAssociationPolicy(NodeServicePolicies.OnDeleteChildAssociationPolicy.QNAME, NodeRemovedEvent.EVENT_TYPE);
         
         bindAssociationPolicy(NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, NodeAddedEvent.EVENT_TYPE);
+        
+        //Bind to Records Management policies
+        bindClassPolicy(ON_UPDATE_SECURITY_MARKS_POLICY_NAME);
+        bindClassPolicy(ON_RECORD_DECLARATION_POLICY_NAME, RecordCreatedEvent.EVENT_TYPE);
+        
+        //TODO: To be replaced with a proper policy once https://issues.alfresco.com/jira/browse/RM-5180 is implemented
+        if (dictionaryService.getAspect(ASPECT_RECORD_ORIGINATING_DETAILS) != null)
+        {
+            bindClassPolicy(NodeServicePolicies.BeforeRemoveAspectPolicy.QNAME, ASPECT_RECORD_ORIGINATING_DETAILS, RecordRejectedEvent.EVENT_TYPE);
+        }
 	}
 
     private DataType getPropertyType(QName propertyName)
@@ -314,12 +335,6 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     }
 
     @Override
-    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        eventsService.nodeUpdated(nodeRef, null, null, null, null, Collections.singleton(aspectTypeQName.toPrefixString()));
-    }
-
-    @Override
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
         eventsService.nodeUpdated(nodeRef, null, null, null, Collections.singleton(aspectTypeQName.toPrefixString()), null);
@@ -443,5 +458,44 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         {
             eventsService.secondaryAssociationDeleted(childAssocRef);
         }
+    }
+
+    @Override
+    public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+        if (aspectTypeQName.equals(ASPECT_RECORD_ORIGINATING_DETAILS))
+        {
+            eventsService.recordRejected(nodeRef);
+        }
+    }
+    
+    /**
+     * Called after a new content node's security marking has been updated.
+     * 
+     * @param nodeRef  reference to the updated node
+     * @param wasMarkedBefore - indicated if before update the content was marked
+     * @param isMarkedAfter - indicated if after update the content is marked
+     */
+    public void onUpdateContentSecurityMarks(NodeRef nodeRef, boolean wasMarkedBefore, boolean isMarkedAfter)
+    {
+        if(!wasMarkedBefore && isMarkedAfter && includeEventType(FileClassifiedEvent.EVENT_TYPE))
+        {
+            eventsService.fileClassified(nodeRef);
+        }
+        
+        if(wasMarkedBefore && !isMarkedAfter && includeEventType(FileUnclassifiedEvent.EVENT_TYPE))
+        {
+            eventsService.fileUnclassified(nodeRef);
+        }
+    }
+    
+    /**
+     * Called after a file has been declared as a record
+     * 
+     * @param nodeRef the file being declared as a record
+     */
+    public void onRecordDeclaration(NodeRef nodeRef)
+    {
+        eventsService.recordCreated(nodeRef);
     }
 }

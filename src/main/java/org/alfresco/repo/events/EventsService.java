@@ -205,4 +205,33 @@ public interface EventsService
      * @param secAssociation the child association being deleted
      */
     void secondaryAssociationDeleted(ChildAssociationRef secAssociation);
+
+    /**
+     * Generate an event when a file is unclassified
+     * 
+     * @param nodeRef the node from which the security mark is removed
+     */
+    void fileUnclassified(NodeRef nodeRef);
+    
+    /**
+     * Generate an event when a file is classified
+     * 
+     * @param nodeRef the node on which a security mark is applied
+     */
+    void fileClassified(NodeRef nodeRef);
+
+    /**
+     * Generate an event when a record is rejected
+     * 
+     * @param nodeRef the node which becomes a regular file again after the record is rejected
+     */
+    void recordRejected(NodeRef nodeRef);
+    
+
+    /**
+     * Generate an event when a record is created
+     * 
+     * @param nodeRef the node being declared as a record
+     */
+    void recordCreated(NodeRef nodeRef);
 }

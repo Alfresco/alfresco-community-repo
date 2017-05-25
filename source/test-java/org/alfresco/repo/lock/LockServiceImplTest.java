@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -520,6 +520,59 @@ public class LockServiceImplTest extends BaseSpringTest
         assertFalse(lockService.isLocked(noAspectNode));
     }
     
+    /**
+     * Test that covers MNT-17612 - having an expired ephemeral lock and a persistent one on the same node.
+     */
+    public void testExpiredEphemeralLockAndPersitentLock()
+    {
+       TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+ 
+        // Check that the node is not currently locked
+        assertEquals(LockStatus.NO_LOCK, securedLockService.getLockStatus(noAspectNode));
+        assertFalse(securedLockService.isLocked(noAspectNode));
+
+        // Check that there really is no lockable aspect
+        assertEquals(false, nodeService.hasAspect(noAspectNode, ContentModel.ASPECT_LOCKABLE));
+
+        // Lock the node 
+        securedLockService.lock(noAspectNode, LockType.WRITE_LOCK, 1, Lifetime.EPHEMERAL);
+
+        // Check that we can retrieve LockState
+        LockState lockState = securedLockService.getLockState(noAspectNode);
+        assertEquals(noAspectNode, lockState.getNodeRef());
+        assertEquals(LockType.WRITE_LOCK, lockState.getLockType());
+        assertEquals(GOOD_USER_NAME, lockState.getOwner());
+        assertEquals(Lifetime.EPHEMERAL, lockState.getLifetime());
+        assertNotNull(lockState.getExpires());
+
+        // Wait for 2 seconds to give the ephemeral lock time to expire
+        try {Thread.sleep(2*1000);} catch (Exception exception){};
+
+        assertFalse(securedLockService.isLocked(noAspectNode));
+
+        // Do a persistent lock with a different user (simulate an Edit Offline - MNT-17612)
+        TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+
+        // Lock the node 
+        securedLockService.lock(noAspectNode, LockType.READ_ONLY_LOCK, 1000, Lifetime.PERSISTENT);
+
+        assertTrue(securedLockService.isLocked(noAspectNode));
+        assertEquals(true, nodeService.hasAspect(noAspectNode, ContentModel.ASPECT_LOCKABLE));
+        assertEquals(LockType.READ_ONLY_LOCK, securedLockService.getLockType(noAspectNode));
+
+        // Check that we can retrieve LockState
+        lockState = securedLockService.getLockState(noAspectNode);
+        assertEquals(noAspectNode, lockState.getNodeRef());
+        assertEquals(LockType.READ_ONLY_LOCK, lockState.getLockType());
+        assertEquals(BAD_USER_NAME, lockState.getOwner());
+        assertEquals(Lifetime.PERSISTENT, lockState.getLifetime());
+
+        // Check unlock
+        securedLockService.unlock(noAspectNode);
+
+        assertFalse(securedLockService.isLocked(noAspectNode));        
+    }
+
     public void testLockRevertedOnRollback() throws NotSupportedException, SystemException
     {
         // Preconditions of test

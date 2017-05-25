@@ -42,8 +42,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.security.authority.AuthorityServicePolicies;
-import org.alfresco.repo.security.permissions.PermissionServicePolicies;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -74,19 +72,19 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         CheckOutCheckInServicePolicies.OnCheckOut,
         CheckOutCheckInServicePolicies.OnCheckIn,
         CheckOutCheckInServicePolicies.OnCancelCheckOut,
-        PermissionServicePolicies.OnGrantLocalPermission,
-        PermissionServicePolicies.OnRevokeLocalPermission,
-        PermissionServicePolicies.OnInheritPermissionsDisabled,
-        PermissionServicePolicies.OnInheritPermissionsEnabled,
-        AuthorityServicePolicies.OnAuthorityAddedToGroup,
-        AuthorityServicePolicies.OnAuthorityRemovedFromGroup,
-        AuthorityServicePolicies.OnGroupDeleted,
         NodeServicePolicies.OnDeleteChildAssociationPolicy,
         NodeServicePolicies.OnCreateChildAssociationPolicy
 {  
+    private static final QName POLICY_ON_GROUP_DELETED = QName.createQName(NamespaceService.ALFRESCO_URI, "onGroupDeleted");
+    private static final QName POLICY_ON_AUTHORITY_REMOVED_FROM_GROUP = QName.createQName(NamespaceService.ALFRESCO_URI, "onAuthorityRemovedFromGroup");
+    private static final QName POLICY_ON_AUTHORITY_ADDED_TO_GROUP = QName.createQName(NamespaceService.ALFRESCO_URI, "onAuthorityAddedToGroup");
+    private static final QName POLICY_ON_REVOKE_LOCAL_PERMISSION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRevokeLocalPermission");
+    private static final QName POLICY_ON_GRANT_LOCAL_PERMISSION = QName.createQName(NamespaceService.ALFRESCO_URI, "onGrantLocalPermission");
+    private static final QName POLICY_ON_INHERIT_PERMISSIONS_DISABLED = QName.createQName(NamespaceService.ALFRESCO_URI, "onInheritPermissionsDisabled");
+    private static final QName POLICY_ON_INHERIT_PERMISSIONS_ENABLED = QName.createQName(NamespaceService.ALFRESCO_URI, "onInheritPermissionsEnabled");
     //Records management policies
-    private static final QName ON_UPDATE_SECURITY_MARKS_POLICY_NAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateContentSecurityMarks");
-    private static final QName ON_RECORD_DECLARATION_POLICY_NAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordDeclaration");    
+    private static final QName POLICY_ON_UPDATE_SECURITY_MARKS = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateContentSecurityMarks");
+    private static final QName POLICY_ON_RECORD_DECLARATION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordDeclaration");    
     
     //this is used temporarily until RM-5180 is implemented
     private static final QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "recordOriginatingDetails");
@@ -139,27 +137,27 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
 
         bindClassPolicy(NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME);
         
-        bindClassPolicy(PermissionServicePolicies.OnInheritPermissionsEnabled.QNAME, InheritPermissionsEnabledEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_ON_INHERIT_PERMISSIONS_ENABLED, InheritPermissionsEnabledEvent.EVENT_TYPE);
         
-        bindClassPolicy(PermissionServicePolicies.OnInheritPermissionsDisabled.QNAME, InheritPermissionsDisabledEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_ON_INHERIT_PERMISSIONS_DISABLED, InheritPermissionsDisabledEvent.EVENT_TYPE);
         
-        bindClassPolicy(PermissionServicePolicies.OnGrantLocalPermission.QNAME, LocalPermissionGrantedEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_ON_GRANT_LOCAL_PERMISSION, LocalPermissionGrantedEvent.EVENT_TYPE);
         
-        bindClassPolicy(PermissionServicePolicies.OnRevokeLocalPermission.QNAME, LocalPermissionRevokedEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_ON_REVOKE_LOCAL_PERMISSION, LocalPermissionRevokedEvent.EVENT_TYPE);
         
-        bindClassPolicy(AuthorityServicePolicies.OnAuthorityAddedToGroup.QNAME, AuthorityAddedToGroupEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_ON_AUTHORITY_ADDED_TO_GROUP, AuthorityAddedToGroupEvent.EVENT_TYPE);
         
-        bindClassPolicy(AuthorityServicePolicies.OnAuthorityRemovedFromGroup.QNAME, AuthorityRemovedFromGroupEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_ON_AUTHORITY_REMOVED_FROM_GROUP, AuthorityRemovedFromGroupEvent.EVENT_TYPE);
         
-        bindClassPolicy(AuthorityServicePolicies.OnGroupDeleted.QNAME, GroupDeletedEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_ON_GROUP_DELETED, GroupDeletedEvent.EVENT_TYPE);
         
         bindAssociationPolicy(NodeServicePolicies.OnDeleteChildAssociationPolicy.QNAME, NodeRemovedEvent.EVENT_TYPE);
         
         bindAssociationPolicy(NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME, NodeAddedEvent.EVENT_TYPE);
         
         //Bind to Records Management policies
-        bindClassPolicy(ON_UPDATE_SECURITY_MARKS_POLICY_NAME);
-        bindClassPolicy(ON_RECORD_DECLARATION_POLICY_NAME, RecordCreatedEvent.EVENT_TYPE);
+        bindClassPolicy(POLICY_ON_UPDATE_SECURITY_MARKS);
+        bindClassPolicy(POLICY_ON_RECORD_DECLARATION, RecordCreatedEvent.EVENT_TYPE);
         
         //TODO: To be replaced with a proper policy once https://issues.alfresco.com/jira/browse/RM-5180 is implemented
         if (dictionaryService.getAspect(ASPECT_RECORD_ORIGINATING_DETAILS) != null)
@@ -400,43 +398,36 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     {
     }
 
-    @Override
     public void onAuthorityRemovedFromGroup(String parentGroup, String childAuthority)
     {
         eventsService.authorityRemovedFromGroup(parentGroup, childAuthority);
     }
 
-    @Override
     public void onAuthorityAddedToGroup(String parentGroup, String childAuthority)
     {
         eventsService.authorityAddedToGroup(parentGroup, childAuthority);
     }
 
-    @Override
     public void onInheritPermissionsEnabled(NodeRef nodeRef)
     {
         eventsService.inheritPermissionsEnabled(nodeRef);
     }
 
-    @Override
     public void onInheritPermissionsDisabled(NodeRef nodeRef, boolean async)
     {
         eventsService.inheritPermissionsDisabled(nodeRef, async);
     }
 
-    @Override
     public void onRevokeLocalPermission(NodeRef nodeRef, String authority, String permission)
     {
         eventsService.revokeLocalPermissions(nodeRef, authority, permission);
     }
 
-    @Override
     public void onGrantLocalPermission(NodeRef nodeRef, String authority, String permission)
     {
         eventsService.grantLocalPermission(nodeRef, authority, permission);
     }
 
-    @Override
     public void onGroupDeleted(String groupName, boolean cascade)
     {
         eventsService.groupDeleted(groupName, cascade);

@@ -120,6 +120,10 @@ public final class ImportableItem
     
     public Set<VersionedContentAndMetadata> getVersionEntries()
     {
+        if (versionEntries == null)
+        {
+            return Collections.emptySet();
+        }
         return(Collections.unmodifiableSet(versionEntries));
     }
     

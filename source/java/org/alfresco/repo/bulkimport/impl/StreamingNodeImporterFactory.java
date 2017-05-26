@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.bulkimport.BulkImportParameters;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.MetadataLoader;
 import org.alfresco.repo.bulkimport.NodeImporter;
@@ -109,7 +110,7 @@ public class StreamingNodeImporterFactory extends AbstractNodeImporterFactory
 	    	importImportableItemMetadata(nodeRef, contentAndMetadata.getContentFile(), metadata);
 	    }
 
-	    protected NodeRef importImportableItemImpl(ImportableItem importableItem, boolean replaceExisting)
+	    protected NodeRef importImportableItemImpl(ImportableItem importableItem, BulkImportParameters.ExistingFileMode existingFileMode)
 	    {
 	        NodeRef target = importableItem.getParent().getNodeRef();
 	        if(target == null)
@@ -120,7 +121,16 @@ public class StreamingNodeImporterFactory extends AbstractNodeImporterFactory
 	        NodeRef result = null;
 	        MetadataLoader.Metadata metadata = loadMetadata(importableItem.getHeadRevision());
 
-	        Triple<NodeRef, Boolean, NodeState> node = createOrFindNode(target, importableItem, replaceExisting, metadata);
+	        // TODO: we'll get NodeState.REPLACED back from this method (i.e. the node WILL be replaced)
+			// even if we're using ExistingFileMode.ADD_VERSION - we need to do this currently, otherwise
+			// the file would be SKIPPED and various other checks that are only computed if replace is being used,
+			// wouldn't happen.
+			// TODO: sort this out.
+			Triple<NodeRef, Boolean, NodeState> node = createOrFindNode(
+					target,
+					importableItem,
+					existingFileMode,
+					metadata);
 	        boolean isDirectory = node.getSecond() == null ? false : node.getSecond();  // Watch out for NPEs during unboxing!
 	        NodeState nodeState = node.getThird();
 	        
@@ -139,7 +149,7 @@ public class StreamingNodeImporterFactory extends AbstractNodeImporterFactory
 	            }
 	            else
 	            {
-	                numVersionProperties = importImportableItemFile(result, importableItem, metadata, nodeState);
+	                numVersionProperties = importImportableItemFile(result, importableItem, metadata, nodeState, existingFileMode);
 	            }
 	            
 	            importStatus.incrementNodesWritten(importableItem, isDirectory, nodeState, metadata.getProperties().size() + 4, numVersionProperties);

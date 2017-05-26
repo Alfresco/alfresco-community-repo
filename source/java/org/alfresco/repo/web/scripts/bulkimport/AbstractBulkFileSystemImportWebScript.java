@@ -59,6 +59,7 @@ public class AbstractBulkFileSystemImportWebScript extends DeclarativeWebScript
     
     // Web scripts parameters (common)
 	protected static final String PARAMETER_REPLACE_EXISTING        = "replaceExisting";
+	protected static final String PARAMETER_EXISTING_FILE_MODE      = "existingFileMode";
 	protected static final String PARAMETER_VALUE_REPLACE_EXISTING 	= "replaceExisting";
 	protected static final String PARAMETER_SOURCE_DIRECTORY       	= "sourceDirectory";
 	protected static final String PARAMETER_DISABLE_RULES		    = "disableRules";

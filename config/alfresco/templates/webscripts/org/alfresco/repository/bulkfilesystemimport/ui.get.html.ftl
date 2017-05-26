@@ -95,7 +95,16 @@
           <td><label for="disableRules">Disable rules:</label></td><td><input type="checkbox" id="disableRules" name="disableRules" value="disableRules" unchecked/> (unchecked means rules are enabled during the import)</td><td></td>
         </tr>
         <tr>
-          <td><label for="replaceExisting">Replace existing files:</label></td><td><input type="checkbox" id="replaceExisting" name="replaceExisting" value="replaceExisting" unchecked/> (unchecked means skip files that already exist in the repository)</td><td></td>
+          <td><label>Existing file mode:</label></td>
+          <td>
+              <br /><br />
+              When a file being imported already exists in the repository<br />
+              <label><input type="radio" name="existingFileMode" value="SKIP" checked/> skip (don't import) the file</label><br />
+              <label><input type="radio" name="existingFileMode" value="REPLACE" unchecked/> replace the file in the repository with the imported file</label><br />
+              <label><input type="radio" name="existingFileMode" value="ADD_VERSION" unchecked/> create a new version of the file with the imported content</label><br />
+              <br />
+          </td>
+          <td></td>
         </tr>
         <tr>
           <td>Batch Size:</td>

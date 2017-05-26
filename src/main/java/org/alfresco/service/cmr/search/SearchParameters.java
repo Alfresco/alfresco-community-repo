@@ -199,6 +199,7 @@ public class SearchParameters implements BasicSearchParameters
 
     private String timezone;
     
+    private FacetFormat facetFormat;
     /**
      * Default constructor
      */
@@ -249,6 +250,7 @@ public class SearchParameters implements BasicSearchParameters
         sp.stats = this.stats;
         sp.ranges = this.ranges;
         sp.timezone = this.timezone;
+        sp.facetFormat = this.facetFormat;
         return sp;
     }
     
@@ -1371,6 +1373,7 @@ public class SearchParameters implements BasicSearchParameters
                     .append(", interval=").append(this.interval)
                     .append(", range=").append(this.ranges)
                     .append(", timezone=").append(this.timezone)
+                    .append(", facetFormat=").append(this.facetFormat)
                     .append(", spellCheck=").append(this.spellCheck).append("]");
         return builder.toString();
     }
@@ -1628,6 +1631,16 @@ public class SearchParameters implements BasicSearchParameters
         boolean use = (useInMemorySort == null) ? useInMemorySortDefault : useInMemorySort.booleanValue();
         int max = (maxRawResultSetSizeForInMemorySort == null) ? maxRawResultSetSizeForInMemorySortDefault :  maxRawResultSetSizeForInMemorySort.intValue();
         return use && (length <= max);
+    }
+
+    public FacetFormat getFacetFormat()
+    {
+        return facetFormat;
+    }
+
+    public void setFacetFormat(FacetFormat facetFormat)
+    {
+        this.facetFormat = facetFormat;
     }
 
 }

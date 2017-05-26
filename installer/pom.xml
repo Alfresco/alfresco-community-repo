@@ -66,13 +66,6 @@
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat</artifactId>
             <version>${installer.tomcat.version}</version>
-            <classifier>win32</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat</artifactId>
-            <version>${installer.tomcat.version}</version>
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
@@ -90,13 +83,6 @@
             <artifactId>postgresql-distribution</artifactId>
             <version>${installer.postgresql.version}</version>
             <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>        
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql-distribution</artifactId>
-            <version>${installer.postgresql.version}</version>
-            <classifier>win32</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
@@ -120,13 +106,6 @@
             <artifactId>jre</artifactId>
             <version>${installer.java.version}</version>
             <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>        
-        <dependency>
-            <groupId>com.oracle.java</groupId>
-            <artifactId>jre</artifactId>
-            <version>${installer.java.version}</version>
-            <classifier>win32</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
@@ -179,13 +158,6 @@
             <groupId>com.ghostscript</groupId>
             <artifactId>ghostscript-distribution</artifactId>
             <version>${installer.ghostscript.version}</version>
-            <classifier>win32</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>com.ghostscript</groupId>
-            <artifactId>ghostscript-distribution</artifactId>
-            <version>${installer.ghostscript.version}</version>
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
@@ -203,13 +175,6 @@
             <artifactId>imagemagick-distribution</artifactId>
             <version>${installer.imagemagick.version}</version>
             <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.imagemagick</groupId>
-            <artifactId>imagemagick-distribution</artifactId>
-            <version>${installer.imagemagick.version}</version>
-            <classifier>win32</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
@@ -256,13 +221,6 @@
             <artifactId>manager</artifactId>
             <version>${installer.manager.version}</version>
             <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>manager</artifactId>
-            <version>${installer.manager.version}</version>
-            <classifier>win32</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>

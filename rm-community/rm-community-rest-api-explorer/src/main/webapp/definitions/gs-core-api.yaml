@@ -3,7 +3,7 @@ info:
   description: |
     **GS Core API**
 
-    Provides access to the core features of Governance Services.
+    Provides access to the core features of Alfresco Governance Services.
   version: '1'
   title: Alfresco Governance Services REST API
 basePath: /alfresco/api/-default-/public/gs/versions/1
@@ -186,7 +186,7 @@ paths:
             $ref: '#/definitions/RMSiteEntry'
         '400':
           description: |
-            Invalid parameter: PUT request is suported only for the RM site, or **siteBodyUpdate** invalid
+            Invalid parameter: PUT request is supported only for the RM site, or **siteBodyUpdate** invalid
         '401':
           description: Authentication failed
         '403':
@@ -686,13 +686,13 @@ paths:
           description: |
             Invalid parameter: **unfiledContainerId** is not a valid format or **unfiledContainerId** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to add children to **unfiledContainerId**
+          description: Current user does not have permission to add children to **unfiledContainerId**
         '404':
-          description: If **unfiledContainerId** does not exist
+          description: "**unfiledContainerId** does not exist"
         '409':
-          description: If new name clashes with an existing node in the current parent container
+          description: New name clashes with an existing node in the current parent container
         '422':
           description: Model integrity exception, including node name with invalid characters
  ## Unfiled record folders
@@ -704,7 +704,7 @@ paths:
       description: |
         Get information for unfiled record folder id **unfiledRecordFolderId**
 
-        Besides mandatory fields the unfiled record folder's aspects and properties are returned by default.
+        Mandatory fields and the unfiled record folder's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getUnfiledRecordFolder
@@ -724,11 +724,11 @@ paths:
           description: |
             Invalid parameter: **unfiledRecordFolderId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **unfiledRecordFolderId**
+          description: Current user does not have permission to read **unfiledRecordFolderId**
         '404':
-          description: If **unfiledRecordFolderId** does not exist
+          description: "**unfiledRecordFolderId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -780,13 +780,13 @@ paths:
           description: |
             Invalid parameter: The update request is invalid or **unfiledRecordFolderId** is not a valid format or **unfiledRecordFolderBodyUpdate** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to update **unfiledRecordFolderId**
+          description: Current user does not have permission to update **unfiledRecordFolderId**
         '404':
-          description: If **unfiledRecordFolderId** does not exist
+          description: "**unfiledRecordFolderId** does not exist"
         '409':
-          description: If the updated name clashes with an existing unfiled record folder in the current parent category
+          description: Updated name clashes with an existing unfiled record folder in the current parent category
         '422':
           description: Model integrity exception, including file name with invalid characters
         default:
@@ -811,13 +811,13 @@ paths:
           description: |
             Invalid parameter: **unfiledRecordFolderId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If the current user does not have permission to delete **unfiledRecordFolderId**
+          description: Current user does not have permission to delete **unfiledRecordFolderId**
         '404':
-          description: If **unfiledRecordFolderId** does not exist
+          description: "**unfiledRecordFolderId** does not exist"
         '409':
-          description: If **unfiledRecordFolderId** is locked and cannot be deleted
+          description: "**unfiledRecordFolderId** is locked and cannot be deleted"
         default:
           description: Unexpected error
           schema:
@@ -1085,13 +1085,13 @@ paths:
           description: |
             Invalid parameter: The update request is invalid or **recordCategoryId** is not a valid format or **recordCategoryBodyUpdate** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to update **recordCategoryId**
+          description: Current user does not have permission to update **recordCategoryId**
         '404':
-          description: If **recordCategoryId** does not exist
+          description: "**recordCategoryId** does not exist"
         '409':
-          description: If the updated name clashes with an existing record category in the current parent category
+          description: Updated name clashes with an existing record category in the current parent category
         '422':
           description: Model integrity exception, including file name with invalid characters
         default:
@@ -1116,13 +1116,13 @@ paths:
           description: |
             Invalid parameter: **recordCategoryId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If the current user does not have permission to delete **recordCategoryId**
+          description: Current user does not have permission to delete **recordCategoryId**
         '404':
-          description: If **recordCategoryId** does not exist
+          description: "**recordCategoryId** does not exist"
         '409':
-          description: If **recordCategoryId** is locked and cannot be deleted
+          description: "**recordCategoryId** is locked and cannot be deleted"
         default:
           description: Unexpected error
           schema:
@@ -1158,11 +1158,11 @@ paths:
           schema:
             $ref: '#/definitions/RecordCategoryChildPaging'
         '401':
-          description: If authentication fails
+          description: Authentication fails
         '403':
-          description: If current user does not have permission to read **recordCategoryId**
+          description: Current user does not have permission to read **recordCategoryId**
         '404':
-          description: If **recordCategoryId** does not exist
+          description: "**recordCategoryId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -1294,13 +1294,13 @@ paths:
           description: |
             Invalid parameter: **recordCategoryId** is not a valid format or **nodeBodyCreate** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication fails
         '403':
-          description: If current user does not have permission to add children to **recordCategoryId**
+          description: Current user does not have permission to add children to **recordCategoryId**
         '404':
-          description: If **recordCategoryId** does not exist
+          description: "**recordCategoryId** does not exist"
         '409':
-          description: If new name clashes with an existing node in the current parent container
+          description: Name clashes with an existing node in the current parent container
         '422':
           description: Model integrity exception, including node name with invalid characters
   ## Record folders
@@ -1331,11 +1331,11 @@ paths:
           description: |
             Invalid parameter: **recordFolderId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **recordFolderId**
+          description: Current user does not have permission to read **recordFolderId**
         '404':
-          description: If **recordFolderId** does not exist
+          description: "**recordFolderId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -1386,13 +1386,13 @@ paths:
           description: |
             Invalid parameter: The update request is invalid or **recordFolderId** is not a valid format or **recordFolderBodyUpdate** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to update **recordFolderId**
+          description: Current user does not have permission to update **recordFolderId**
         '404':
-          description: If **recordFolderId** does not exist
+          description: "**recordFolderId** does not exist"
         '409':
-          description: If the updated name clashes with an existing record folder in the current parent category
+          description: Updated name clashes with an existing record folder in the current parent category
         '422':
           description: Model integrity exception, including file name with invalid characters
         default:
@@ -1417,13 +1417,13 @@ paths:
           description: |
             Invalid parameter: **recordFolderId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If the current user does not have permission to delete **recordFolderId**
+          description: Current user does not have permission to delete **recordFolderId**
         '404':
-          description: If **recordFolderId** does not exist
+          description: "**recordFolderId** does not exist"
         '409':
-          description: If **recordFolderId** is locked and cannot be deleted
+          description: "**recordFolderId** is locked and cannot be deleted"
         default:
           description: Unexpected error
           schema:
@@ -1458,11 +1458,11 @@ paths:
           schema:
             $ref: '#/definitions/RecordFolderAssociationPaging'
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **recordFolderId**
+          description: Current user does not have permission to read **recordFolderId**
         '404':
-          description: If **recordFolderId** does not exist
+          description: "**recordFolderId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -1587,11 +1587,11 @@ paths:
           description: |
             Invalid parameter: **recordFolderId** is not a valid format or **recordBodyCreate** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to add children to **recordFolderId**
+          description: Current user does not have permission to add children to **recordFolderId**
         '404':
-          description: If **recordFolderId** does not exist
+          description: "**recordFolderId** does not exist"
         '422':
           description: Model integrity exception, including node name with invalid characters
   ## Records
@@ -1603,7 +1603,7 @@ paths:
       description: |
         Get information for record **recordId**
 
-        Besides mandatory fields the record's aspects and properties are returned by default.
+        Mandatory fields and the record's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getRecord
@@ -1622,11 +1622,11 @@ paths:
           description: |
             Invalid parameter: **recordId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication fails
         '403':
-          description: If current user does not have permission to read **recordId**
+          description: Current user does not have permission to read **recordId**
         '404':
-          description: If **recordId** does not exist
+          description: "**recordId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -1677,13 +1677,13 @@ paths:
           description: |
             Invalid parameter: the update request is invalid or **recordId** is not a valid format or **recordBodyUpdate** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to update **recordId**
+          description: Current user does not have permission to update **recordId**
         '404':
-          description: If **recordId** does not exist
+          description: "**recordId** does not exist"
         '409':
-          description: If the updated name clashes with an existing node in the current parent folder
+          description: Updated name clashes with an existing node in the current parent folder
         '422':
           description: Model integrity exception, including file name with invalid characters
         default:
@@ -1708,13 +1708,13 @@ paths:
           description: |
             Invalid parameter: **recordId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication fails
         '403':
-          description: If the current user does not have permission to delete **recordId**
+          description: Current user does not have permission to delete **recordId**
         '404':
-          description: If **recordId** does not exist
+          description: "**recordId** does not exist"
         '409':
-          description: If **recordId** is locked and cannot be deleted
+          description: "**recordId** is locked and cannot be deleted"
         default:
           description: Unexpected error
           schema:
@@ -1856,7 +1856,7 @@ paths:
       description: |
         Get information for transfer container  **transferContainerId**
 
-        Besides mandatory fields the transfer container's aspects and properties are returned by default.
+        Mandatory fields and the transfer container's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getTransferContainer

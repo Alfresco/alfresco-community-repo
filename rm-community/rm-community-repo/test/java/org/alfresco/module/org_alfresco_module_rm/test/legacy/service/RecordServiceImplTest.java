@@ -35,7 +35,9 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRecordDeclaration;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRecordRejection;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRecordDeclaration;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRecordRejection;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -62,7 +64,10 @@ import org.alfresco.util.GUID;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecordDeclaration, OnRecordDeclaration
+public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecordDeclaration,
+                                                                     OnRecordDeclaration,
+                                                                     BeforeRecordRejection,
+                                                                     OnRecordRejection
 {
     /**
      * This is a user test
@@ -834,5 +839,63 @@ public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecor
     {
         assertEquals(nodeRef, dmDocument);
         onRecordDeclaration = true;
+    }
+
+    /**
+     * RM-5180 - integration test for policies for record rejection
+     * @see RecordService#rejectRecord(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    private boolean beforeRecordRejection = false;
+    private boolean onRecordRejection = false;
+
+    @Override
+    public void beforeRecordRejection(NodeRef nodeRef)
+    {
+        assertEquals(nodeRef, dmDocument);
+        beforeRecordRejection = true;
+    }
+
+    @Override
+    public void onRecordRejection(NodeRef nodeRef)
+    {
+        assertEquals(nodeRef, dmDocument);
+        onRecordRejection = true;
+    }
+
+    public void testPolicyNotificationForRecordRejection() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+
+            @Override
+            public Void run()
+            {
+                assertFalse(recordService.isRecord(dmDocument));
+
+                BehaviourDefinition<ClassBehaviourBinding> beforeRecordRejectionBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.BEFORE_RECORD_REJECTION, ContentModel.TYPE_CONTENT,
+                        new JavaBehaviour(RecordServiceImplTest.this, "beforeRecordRejection", NotificationFrequency.EVERY_EVENT));
+                BehaviourDefinition<ClassBehaviourBinding> onRecordRejectionBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.ON_RECORD_REJECTION, ContentModel.TYPE_CONTENT,
+                        new JavaBehaviour(RecordServiceImplTest.this, "onRecordRejection", NotificationFrequency.EVERY_EVENT));
+
+                recordService.createRecord(filePlan, dmDocument);
+
+                assertFalse(beforeRecordRejection);
+                assertFalse(onRecordRejection);
+                assertTrue(recordService.isRecord(dmDocument));
+
+                recordService.rejectRecord(dmDocument, "test reasons");
+
+                assertTrue(beforeRecordRejection);
+                assertTrue(onRecordRejection);
+                assertFalse(recordService.isRecord(dmDocument));
+
+                policyComponent.removeClassDefinition(beforeRecordRejectionBehaviour);
+                policyComponent.removeClassDefinition(onRecordRejectionBehaviour);
+
+                return null;
+            }
+        }, dmCollaborator);
     }
 }

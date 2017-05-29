@@ -13,14 +13,12 @@
     <target name="extract-base">
         <extract-base-for targetPlatform="linux" unless:set="skipLinInstaller" />
         <extract-base-for targetPlatform="osx" unless:set="skipOSXInstaller" />
-        <extract-base-for targetPlatform="win32" unless:set="skipWinInstaller" />
         <extract-base-for targetPlatform="win64" unless:set="skipWinInstaller" />
     </target>
 
     <target name="extract-platform">
         <extract-platform-for targetPlatform="linux" unless:set="skipLinInstaller" />
         <extract-platform-for targetPlatform="osx" unless:set="skipOSXInstaller" />
-        <extract-platform-for targetPlatform="win32" unless:set="skipWinInstaller" />
         <extract-platform-for targetPlatform="win64" unless:set="skipWinInstaller" />
     </target>
 
@@ -36,9 +34,6 @@
             </condition>
             <condition property="bin.folder" value="${project.build.directory}/binaries-osx-x64">
                 <equals arg1="@{targetPlatform}" arg2="osx" />
-            </condition>
-            <condition property="bin.folder" value="${project.build.directory}/binaries-windows">
-                <equals arg1="@{targetPlatform}" arg2="win32" />
             </condition>
             <condition property="bin.folder" value="${project.build.directory}/binaries-windows-x64">
                 <equals arg1="@{targetPlatform}" arg2="win64" />
@@ -59,10 +54,7 @@
             <!-- Check if platform is windows -->
             <local name="isPlatformWindows"/>
             <condition property="isPlatformWindows">
-                <or>
-                    <equals arg1="@{targetPlatform}" arg2="win32" />
-                    <equals arg1="@{targetPlatform}" arg2="win64" />
-                </or>
+                <equals arg1="@{targetPlatform}" arg2="win64" />
             </condition>
 
             <echo>  Extracting Common...</echo>
@@ -106,9 +98,6 @@
             <condition property="bin.folder" value="${project.build.directory}/binaries-osx-x64">
                 <equals arg1="@{targetPlatform}" arg2="osx" />
             </condition>
-            <condition property="bin.folder" value="${project.build.directory}/binaries-windows">
-                <equals arg1="@{targetPlatform}" arg2="win32" />
-            </condition>
             <condition property="bin.folder" value="${project.build.directory}/binaries-windows-x64">
                 <equals arg1="@{targetPlatform}" arg2="win64" />
             </condition>
@@ -116,10 +105,7 @@
             <!-- LibreOffice is the same for win32 and win64 -->
             <local name="isPlatformWindows"/>
             <condition property="isPlatformWindows">
-                <or>
-                    <equals arg1="@{targetPlatform}" arg2="win32" />
-                    <equals arg1="@{targetPlatform}" arg2="win64" />
-                </or>
+                <equals arg1="@{targetPlatform}" arg2="win64" />
             </condition>
             <local name="libreoffice.platform"/>
             <condition property="libreoffice.platform" value="windows" else="@{targetPlatform}">

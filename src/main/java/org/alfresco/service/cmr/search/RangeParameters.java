@@ -123,6 +123,53 @@ public class RangeParameters
         return excludeFilters;
     }
     
+    public String getRangeFirstBucketStartInclusive()
+    {
+        if(include != null && !include.isEmpty())
+        {
+            for(String startInc : include)
+            {
+                switch (startInc)
+                {
+                    case "before":
+                        break;
+                    case "edge":
+                        return  "[";
+                    case "upper":
+                        return  "]";
+                    case "lower":
+                        break;
+                    default:
+                }
+            }
+        }
+        return "[";
+    }
+    public String getRangeFirstBucketEndInclusive()
+    {
+        if(include != null && !include.isEmpty())
+        {
+            for(String startInc : include)
+            {
+                switch (startInc)
+                {
+                    case "before":
+                        break;
+                    case "edge":
+                        return  "<";
+                    case "outer":
+                        return  "]";
+                    case "lower":
+                        return  "<";
+                    case "upper":
+                        return ">";
+                    default:
+                }
+            }
+        }
+        return ">";
+    }
+    
     public boolean isRangeStartInclusive()
     {
         List<String> options = new ArrayList<String>();
@@ -141,8 +188,6 @@ public class RangeParameters
                 switch (startInc)
                 {
                 case "before":
-                    return  false;
-                case "outer":
                     return  false;
                 default:
                     break;
@@ -182,5 +227,84 @@ public class RangeParameters
             }
         }
         return false;
+    }
+
+    public String getRangeBucketStartInclusive()
+    {
+        if(include != null && !include.isEmpty())
+        {
+            for(String key : include)
+            {
+                switch (key)
+                {
+                case "lower":
+                    return "[";
+                default:
+                    break;
+                }
+            }
+        }
+        return "]";
+    }
+    public String getRangeBucketEndInclusive()
+    {
+        if(include != null && !include.isEmpty())
+        {
+            for(String key : include)
+            {
+                switch (key)
+                {
+                case "upper":
+                    return ">";
+                default:
+                    break;
+                }
+            }
+        }
+        return "<";
+    }
+
+    public String getRangeLastBucketStartInclusive()
+    {
+        if(include != null && !include.isEmpty())
+        {
+            for(String key : include)
+            {
+                switch (key)
+                {
+                    case "lower":
+                        return "[";
+                    case "edge":
+                        return "]";
+                    case "upper":
+                        return "]";
+                    default:
+                        break;
+                }
+            }
+        }
+        return "<";
+    }
+
+    public String getRangeLastBucketEndInclusive()
+    {
+        if(include != null && !include.isEmpty())
+        {
+            for(String key : include)
+            {
+                switch (key)
+                {
+                    case "lower":
+                        return ">";
+                    case "edge":
+                        return "]";
+                    case "upper":
+                        return "]";
+                    default:
+                        break;
+                }
+            }
+        }
+        return "<";
     }
 }

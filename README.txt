@@ -77,9 +77,9 @@ To download and run RM with the Outlook Integration AMPs installed on the repo a
   mvn clean install -Pstart-share,outlook-integration
 
 Follow these instructions install licence and Outlook plugin:
-  
+
   - http://docs.alfresco.com/outlook2.1/tasks/Outlook-license.html
-  - http://docs.alfresco.com/outlook2.1/tasks/Outlook-install_v2.html 
+  - http://docs.alfresco.com/outlook2.1/tasks/Outlook-install_v2.html
 
 
 
@@ -100,3 +100,19 @@ Code Formatting:
 ----------------
 
 This project follows the usual Alfresco Coding Standards. If you use Eclipse or IntelliJ, there are settings inside the ide-config directory for you to import.
+
+
+Use Solr 6 with Alfresco 5.2.x:
+-------------------------------
+In alfresco-global.properties (depending on the RM edition /records-management/rm-community/rm-community-repo/src/test/properties/local or /records-management/rm-enterprise/rm-enterprise-repo/src/test/properties/local)
+change the value for "index.subsystem.name" from "solr4" to "solr6".
+Add also the following property "solr.port=8983".
+
+Download the latest Alfresco Search Services from
+https://nexus.alfresco.com/nexus/#nexus-search;gav~~alfresco-search-services~~~
+Currently it's 1.0.0 (alfresco-search-services-1.0.0.zip)
+
+Unzip it and change to the "solr" folder within it. Start the Solr server using the following command:
+solr start -a "-Dcreate.alfresco.defaults=alfresco,archive"
+
+Start your repository

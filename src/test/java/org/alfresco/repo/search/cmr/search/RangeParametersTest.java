@@ -21,7 +21,7 @@ public class RangeParametersTest
         List<String> other = new ArrayList<String>();
         includes.add("upper");
         p = new RangeParameters("test", "0", "10", "1", true, Collections.emptyList(), includes, null, null);
-        Assert.assertTrue(p.isRangeStartInclusive());
+        Assert.assertFalse(p.isRangeStartInclusive());
         other.add("before");
         p = new RangeParameters("test", "0", "10", "1", true, other, null, null, null);
         Assert.assertFalse(p.isRangeStartInclusive());

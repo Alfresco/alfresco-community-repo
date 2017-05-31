@@ -187,10 +187,14 @@ public class RangeParameters
             {
                 switch (startInc)
                 {
-                case "before":
-                    return  false;
-                default:
-                    break;
+                    case "before":
+                        return  false;
+                    case "upper":
+                        return  false;
+                    case "edge":
+                        return  false;
+                    default:
+                        break;
                 }
             }
         }
@@ -213,11 +217,9 @@ public class RangeParameters
             {
                 switch (endInc)
                 {
-                case "upper":
-                    return  true;
                 case "edge":
                     return  true;
-                case "outer":
+                case "upper":
                     return  true;
                 case "all":
                     return  true;

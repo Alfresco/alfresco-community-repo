@@ -456,8 +456,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
                 {
                     generateRecordIdentifier(nodeService, identifierService, nodeRef);
-                    // RM-5244 - workaround to make sure the incomplete aspect is removed
-                    incompleteNodeTagger.beforeCommit(false);
+                    reevaluateIncompleteTag(nodeRef);
                 }
                 return null;
             }
@@ -481,8 +480,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             if (ContentData.hasContent(contentData) && contentData.getSize() > 0)
             {
                 appendIdentifierToName(nodeService, nodeRef);
-                // RM-5244 - workaround to make sure the incomplete aspect is removed
-                incompleteNodeTagger.beforeCommit(false);
+                reevaluateIncompleteTag(nodeRef);
             }
         }
     }
@@ -1847,8 +1845,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         if (nodeService.exists(nodeRef) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
             generateRecordIdentifier(nodeService, identifierService, nodeRef);
-            // RM-5244 - workaround to make sure the incomplete aspect is removed
-            incompleteNodeTagger.beforeCommit(false);
+            reevaluateIncompleteTag(nodeRef);
         }
     }
 
@@ -1906,5 +1903,23 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // execute policy for node type and aspects
         OnRecordRejection policy = onRecordRejectionDelegate.get(qnames);
         policy.onRecordRejection(nodeRef);
+    }
+
+    /**
+     * RM-5244 - workaround to make sure the incomplete aspect is removed
+     * 
+     * @param nodeRef the node to reevaluate for
+     */
+    private void reevaluateIncompleteTag(NodeRef nodeRef)
+    {
+        /*
+         * Check if the node has the aspect because the reevaluation is expensive.
+         * If the node doesn't have the aspect it means IncompleteNodeTagger didn't load before TransactionBehaviourQueue 
+         * and we don't need to reevaluate.
+         */
+        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE))
+        {
+            incompleteNodeTagger.beforeCommit(false);
+        }
     }
 }

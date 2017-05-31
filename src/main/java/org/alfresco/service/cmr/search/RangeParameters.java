@@ -25,7 +25,6 @@
  */
 package org.alfresco.service.cmr.search;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -134,16 +133,14 @@ public class RangeParameters
                     case "before":
                         break;
                     case "edge":
-                        return  "[";
-                    case "upper":
-                        return  "]";
+                        return "[";
                     case "lower":
-                        break;
+                        return "[";
                     default:
                 }
             }
         }
-        return "[";
+        return "<";
     }
     public String getRangeFirstBucketEndInclusive()
     {
@@ -153,83 +150,22 @@ public class RangeParameters
             {
                 switch (startInc)
                 {
-                    case "before":
-                        break;
-                    case "edge":
-                        return  "<";
-                    case "outer":
-                        return  "]";
-                    case "lower":
-                        return  "<";
                     case "upper":
-                        return ">";
+                        return "]";
+                    case "outer":
+                        if(other != null && (other.contains("before") || other.contains("after")))
+                        {
+                            return "]";
+                        }
+                        break;
                     default:
+                        break;
                 }
             }
         }
         return ">";
     }
     
-    public boolean isRangeStartInclusive()
-    {
-        List<String> options = new ArrayList<String>();
-        if(include != null && !include.isEmpty())
-        {
-            options.addAll(include);
-        }
-        if(other != null && !other.isEmpty())
-        {
-            options.addAll(other);
-        }
-        if(!options.isEmpty())
-        {
-            for(String startInc : options)
-            {
-                switch (startInc)
-                {
-                    case "before":
-                        return  false;
-                    case "upper":
-                        return  false;
-                    case "edge":
-                        return  false;
-                    default:
-                        break;
-                }
-            }
-        }
-        return true;
-    }
-    public boolean isRangeEndInclusive()
-    {
-        List<String> options = new ArrayList<String>();
-        if(include != null && !include.isEmpty())
-        {
-            options.addAll(include);
-        }
-        if(other != null && !other.isEmpty())
-        {
-            options.addAll(other);
-        }
-        if(!options.isEmpty())
-        {
-            for(String endInc : options)
-            {
-                switch (endInc)
-                {
-                case "edge":
-                    return  true;
-                case "upper":
-                    return  true;
-                case "all":
-                    return  true;
-                default:
-                    break;
-                }
-            }
-        }
-        return false;
-    }
 
     public String getRangeBucketStartInclusive()
     {
@@ -246,7 +182,7 @@ public class RangeParameters
                 }
             }
         }
-        return "]";
+        return "<";
     }
     public String getRangeBucketEndInclusive()
     {
@@ -257,36 +193,15 @@ public class RangeParameters
                 switch (key)
                 {
                 case "upper":
-                    return ">";
+                    return "]";
                 default:
                     break;
                 }
             }
         }
-        return "<";
+        return ">";
     }
 
-    public String getRangeLastBucketStartInclusive()
-    {
-        if(include != null && !include.isEmpty())
-        {
-            for(String key : include)
-            {
-                switch (key)
-                {
-                    case "lower":
-                        return "[";
-                    case "edge":
-                        return "]";
-                    case "upper":
-                        return "]";
-                    default:
-                        break;
-                }
-            }
-        }
-        return "<";
-    }
 
     public String getRangeLastBucketEndInclusive()
     {
@@ -296,8 +211,6 @@ public class RangeParameters
             {
                 switch (key)
                 {
-                    case "lower":
-                        return ">";
                     case "edge":
                         return "]";
                     case "upper":
@@ -307,6 +220,6 @@ public class RangeParameters
                 }
             }
         }
-        return "<";
+        return ">";
     }
 }

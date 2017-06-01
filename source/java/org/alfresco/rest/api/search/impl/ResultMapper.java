@@ -305,7 +305,7 @@ public class ResultMapper
         {
             //If group by field populated in query facet return bucketing into facet field.
             List<GenericFacetResponse> facetQueryForFields = getFacetBucketsFromFacetQueries(facetQueries,searchQuery);
-            if(!facetQueryForFields.isEmpty() || FacetFormat.V2 == searchQuery.getFacetFormat())
+            if(hasGroup(searchQuery) || FacetFormat.V2 == searchQuery.getFacetFormat())
             {
                 facets.addAll(facetQueryForFields);
             }
@@ -359,6 +359,14 @@ public class ResultMapper
         context = new SearchContext(solrResultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest()?searchQuery:null);
         return isNullContext(context)?null:context;
     }
+    public static boolean hasGroup(SearchQuery searchQuery)
+    {
+        if(searchQuery != null && searchQuery.getFacetQueries() != null)
+        {
+            return searchQuery.getFacetQueries().stream().anyMatch(facetQ -> facetQ.getGroup() != null);
+        }
+        return false;
+    }
     /**
      * Builds a facet field from facet queries.
      * @param facetQueries
@@ -382,8 +390,8 @@ public class ResultMapper
                     group = found.get().getGroup();
                 }
             }
-            if(group != null && !group.isEmpty() || FacetFormat.V2 == searchQuery.getFacetFormat())
-            {
+//            if(group != null && !group.isEmpty() || FacetFormat.V2 == searchQuery.getFacetFormat())
+//            {
                 if(groups.containsKey(group)) 
                 {
                     Set<Metric> metrics = new HashSet<>(1);
@@ -399,7 +407,7 @@ public class ResultMapper
                     groups.put(group, l);
                 }
             }
-        }
+//        }
         if(!groups.isEmpty())
         {
             groups.forEach((a,v) -> facetResults.add(new GenericFacetResponse(FACET_TYPE.query, a, v)));

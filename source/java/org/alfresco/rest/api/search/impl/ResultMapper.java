@@ -327,7 +327,14 @@ public class ResultMapper
 
         //Field Facets
         Map<String, List<Pair<String, Integer>>> facetFields = solrResultSet.getFieldFacets();
-        ffcs.addAll(getFacetBucketsForFacetFields(facetFields, searchQuery));
+        if(FacetFormat.V2 == searchQuery.getFacetFormat())
+        {
+            facets.addAll(getFacetBucketsForFacetFieldsAsFacets(facetFields, searchQuery));
+        }
+        else
+        {
+            ffcs.addAll(getFacetBucketsForFacetFields(facetFields, searchQuery));
+        }
 
         Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
         facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
@@ -456,7 +463,47 @@ public class ResultMapper
 
         return Collections.emptyList();
     }
-
+    protected List<GenericFacetResponse> getFacetBucketsForFacetFieldsAsFacets(Map<String, List<Pair<String, Integer>>> facetFields, SearchQuery searchQuery)
+    {
+        if (facetFields != null && !facetFields.isEmpty())
+        {
+            List<GenericFacetResponse> ffcs = new ArrayList<>(facetFields.size());
+            for (Entry<String, List<Pair<String, Integer>>> facet:facetFields.entrySet())
+            {
+                if (facet.getValue() != null && !facet.getValue().isEmpty())
+                {
+                    List<GenericBucket> buckets = new ArrayList<>(facet.getValue().size());
+                    for (Pair<String, Integer> buck:facet.getValue())
+                    {
+                        Object display = null;
+                        String filterQuery = null;
+                        if (searchQuery != null
+                                    && searchQuery.getFacetFields() != null
+                                    && searchQuery.getFacetFields().getFacets() != null
+                                    && !searchQuery.getFacetFields().getFacets().isEmpty())
+                        {
+                            Optional<FacetField> found = searchQuery.getFacetFields().getFacets().stream().filter(
+                                        queryable -> facet.getKey().equals(queryable.getLabel()!=null?queryable.getLabel():queryable.getField())).findFirst();
+                            if (found.isPresent())
+                            {
+                                display = propertyLookup.lookup(found.get().getField(), buck.getFirst());
+                                String fq = found.get().toFilterQuery(buck.getFirst());
+                                if (fq != null)
+                                {
+                                    filterQuery = fq;
+                                }
+                            }
+                        }
+                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(buck.getSecond())))), null, null);
+                        buckets.add(bucket);
+                    }
+                    ffcs.add(new GenericFacetResponse(FACET_TYPE.field,facet.getKey(), buckets));
+                }
+            }
+            return ffcs;
+        }
+        return Collections.emptyList();
+    }
     protected List<FacetFieldContext> getFacetBucketsForFacetFields(Map<String, List<Pair<String, Integer>>> facetFields, SearchQuery searchQuery)
     {
         if (facetFields != null && !facetFields.isEmpty())

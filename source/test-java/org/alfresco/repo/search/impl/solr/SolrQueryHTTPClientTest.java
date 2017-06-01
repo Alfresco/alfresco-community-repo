@@ -518,6 +518,9 @@ public class SolrQueryHTTPClientTest
     @Test
     public void testBuildRangeDate() throws UnsupportedEncodingException
     {
+        TimeZone defaultTimeZone = TimeZone.getDefault();
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("A*");
         List<RangeParameters> ranges = new ArrayList<RangeParameters>();
@@ -532,6 +535,8 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&f.created.facet.range.start=2015-01-01T00%3A00%3A00.000Z"));
         assertTrue(url.contains("&f.created.facet.range.end=2016-01-01T00%3A00%3A00.000Z"));
         assertTrue(url.contains("&f.created.facet.range.gap=%2B1MONTH"));
+
+        TimeZone.setDefault(defaultTimeZone);
     }
 
 }

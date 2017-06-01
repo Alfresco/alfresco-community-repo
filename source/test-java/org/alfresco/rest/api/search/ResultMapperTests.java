@@ -516,6 +516,32 @@ public class ResultMapperTests
         assertEquals("300",facetInfo.get("end"));
         assertEquals("content.size:[200 TO 300>", rangeFacets.get(1).getBuckets().get(2).getFilterQuery());
     }
+    @Test
+    public void testRangeExclusiec() throws Exception
+    {
+        ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
+        String updatedJSON = helper.JSON.replace("lower", "upper");
+        SearchQuery searchQuery = helper.extractFromJson(updatedJSON);
+        SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
+        SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        
+        //Numeric facet range 
+        List<GenericFacetResponse> rangeFacets = searchContext.getFacets().stream()
+                    .filter(f -> f.getType().equals(FACET_TYPE.range)).collect(Collectors.toList());
+        assertEquals(2, rangeFacets.size());
+        assertEquals(4, rangeFacets.get(0).getBuckets().size());
+        assertEquals(3, rangeFacets.get(1).getBuckets().size());
+        assertEquals("content.size",rangeFacets.get(1).getLabel());
+        assertEquals("(0 - 100]",rangeFacets.get(1).getBuckets().get(0).getLabel());
+        Object[] metrics = rangeFacets.get(1).getBuckets().get(0).getMetrics().toArray();
+        assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
+        assertEquals("content.size:<0 TO 100]", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
+        assertEquals(null,rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("count"));
+        Map<String, String> facetInfo = rangeFacets.get(1).getBuckets().get(0).getBucketInfo();
+        assertEquals("0",facetInfo.get("start"));
+        assertEquals("100",facetInfo.get("end"));
+    }
 
     @Test
     /**

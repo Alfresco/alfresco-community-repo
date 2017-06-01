@@ -57,6 +57,7 @@
         <setInstallerVariable name="postgres_distribution_folder" value="${binaries_folder}/postgresql" />
         <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${binaries_folder}/imagemagick" />
         <setInstallerVariable name="imagemagick_distribution_folder_unix" value="${binaries_folder}/ImageMagick" />
+        <setInstallerVariable name="pdfium_distribution_folder" value="${binaries_folder}/alfresco-pdf-renderer"/>
         <setInstallerVariable name="java_distribution_folder" value="${binaries_folder}/java" />
         <setInstallerVariable name="xvfb_distribution_folder" value="${binaries_folder}/Xvfb" />
         <setInstallerVariable name="libreoffice_distribution_folder" value="${binaries_folder}/libreoffice" />

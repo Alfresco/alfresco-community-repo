@@ -111,6 +111,11 @@
             <condition property="libreoffice.platform" value="windows" else="@{targetPlatform}">
                 <isset property="isPlatformWindows"/>
             </condition>
+        	
+        	 <local name="alfrescoPdfRenderer.platform"/>
+        	 <condition property="alfrescoPdfRenderer.platform" value="win64" else="@{targetPlatform}">
+        	                <isset property="isPlatformWindows"/>
+        	  </condition>
 
             <!-- Accommodate poor Cygwin users -->
             <pathconvert property="maven.localrepo" targetos="unix">
@@ -139,6 +144,14 @@
                 <arg value="xf" />
                 <arg value="${maven.localrepo}/org/imagemagick/imagemagick-distribution/${installer.imagemagick.version}/imagemagick-distribution-${installer.imagemagick.version}-@{targetPlatform}.tgz" />
             </exec>
+
+        	<mkdir dir="${bin.folder}/alfresco-pdf-renderer"/>
+        	<echo> Extracting Alfresco Pdf Renderer...</echo>
+        	<exec failonerror="true" executable="tar" dir="${bin.folder}/alfresco-pdf-renderer">
+        	    <arg value="xf" />
+        	    <arg value="${maven.localrepo}/org/alfresco/alfresco-pdf-renderer/${installer.pdfium.version}/alfresco-pdf-renderer-${installer.pdfium.version}-${alfrescoPdfRenderer.platform}.tgz" />
+        	</exec>
+
         </sequential>
     </macrodef>
 

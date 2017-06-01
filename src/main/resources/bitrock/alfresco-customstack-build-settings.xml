@@ -37,6 +37,7 @@
                 <setInstallerVariable name="java_distribution_folder" value="${local_binaries_folder}/java"/>
                 <setInstallerVariable name="libreoffice_distribution_folder" value="${local_binaries_folder}/libreoffice"/>
                 <setInstallerVariable name="tomcat_distribution_folder" value="${local_binaries_folder}/apache-tomcat"/>
+                <setInstallerVariable name="pdfium_distribution_folder" value="${local_binaries_folder}/alfresco-pdf-renderer"/>
                 <!-- END ALFRESCO BUILD SYSTEM-->
             </actionList>
             <ruleList>

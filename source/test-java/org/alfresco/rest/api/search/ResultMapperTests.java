@@ -315,7 +315,7 @@ public class ResultMapperTests
         assertEquals(2, intervalFacets.size());
         assertEquals("creator",intervalFacets.get(0).getLabel());
         assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
-        assertEquals("cm:creator:<a TO b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("cm:creator:<\"a\" TO \"b\"]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
         Metric[] metrics = intervalFacets.get(0).getBuckets().get(0).getMetrics().toArray(new Metric[intervalFacets.get(0).getBuckets().get(0).getMetrics().size()]);
         assertEquals(METRIC_TYPE.count,metrics[0].getType());
         assertEquals("4",metrics[0].getValue().get("count"));
@@ -332,7 +332,7 @@ public class ResultMapperTests
         assertEquals(2, pivotFacet.getBuckets().size());
         GenericBucket pivotBucket = pivotFacet.getBuckets().get(1);
         assertEquals("mjackson",pivotBucket.getLabel());
-        assertEquals("creator:mjackson",pivotBucket.getFilterQuery());
+        assertEquals("creator:\"mjackson\"",pivotBucket.getFilterQuery());
         metrics =  pivotBucket.getMetrics().toArray(new Metric[pivotBucket.getMetrics().size()]);
         assertEquals("{count=7}",metrics[0].getValue().toString());
         assertEquals(1,pivotBucket.getFacets().size());
@@ -342,13 +342,13 @@ public class ResultMapperTests
         assertEquals(2,nestedFacet.getBuckets().size());
         GenericBucket nestedBucket = nestedFacet.getBuckets().get(0);
         assertEquals("mjackson",nestedBucket.getLabel());
-        assertEquals("modifier:mjackson",nestedBucket.getFilterQuery());
+        assertEquals("modifier:\"mjackson\"",nestedBucket.getFilterQuery());
 
         metrics = nestedBucket.getMetrics().toArray(new Metric[nestedBucket.getMetrics().size()]);
         assertEquals("{count=3}",metrics[0].getValue().toString());
         GenericBucket nestedBucket2 = nestedFacet.getBuckets().get(1);
         assertEquals("admin",nestedBucket2.getLabel());
-        assertEquals("modifier:admin",nestedBucket2.getFilterQuery());
+        assertEquals("modifier:\"admin\"",nestedBucket2.getFilterQuery());
         metrics = nestedBucket2.getMetrics().toArray(new Metric[nestedBucket2.getMetrics().size()]);
         assertEquals("{count=4}",metrics[0].getValue().toString());
 
@@ -439,7 +439,7 @@ public class ResultMapperTests
         assertEquals(2, intervalFacets.size());
         assertEquals("creator",intervalFacets.get(0).getLabel());
         assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
-        assertEquals("cm:creator:<a TO b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("cm:creator:<\"a\" TO \"b\"]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
 
         Object[] metrics = intervalFacets.get(0).getBuckets().get(0).getMetrics().toArray();
         assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
@@ -448,19 +448,19 @@ public class ResultMapperTests
         metrics = intervalFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("TheCreated",intervalFacets.get(1).getLabel());
         assertEquals("earlier",intervalFacets.get(1).getBuckets().get(0).getLabel());
-        assertEquals("cm:created:[* TO 2016>",intervalFacets.get(1).getBuckets().get(0).getFilterQuery());
+        assertEquals("cm:created:[\"*\" TO \"2016\">",intervalFacets.get(1).getBuckets().get(0).getFilterQuery());
         assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
         assertEquals("5",((SimpleMetric) metrics[0]).getValue().get("count"));
 
         metrics = intervalFacets.get(1).getBuckets().get(1).getMetrics().toArray();
         assertEquals("lastYear",intervalFacets.get(1).getBuckets().get(1).getLabel());
-        assertEquals("cm:created:[2016 TO 2017>",intervalFacets.get(1).getBuckets().get(1).getFilterQuery());
+        assertEquals("cm:created:[\"2016\" TO \"2017\">",intervalFacets.get(1).getBuckets().get(1).getFilterQuery());
         assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
         assertEquals("0",((SimpleMetric) metrics[0]).getValue().get("count"));
 
         metrics = intervalFacets.get(1).getBuckets().get(2).getMetrics().toArray();
         assertEquals("currentYear",intervalFacets.get(1).getBuckets().get(2).getLabel());
-        assertEquals("cm:created:[NOW/YEAR TO NOW/YEAR+1YEAR]",intervalFacets.get(1).getBuckets().get(2).getFilterQuery());
+        assertEquals("cm:created:[\"NOW/YEAR\" TO \"NOW/YEAR+1YEAR\"]",intervalFacets.get(1).getBuckets().get(2).getFilterQuery());
         assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
         assertEquals("854",((SimpleMetric) metrics[0]).getValue().get("count"));
     }
@@ -482,7 +482,7 @@ public class ResultMapperTests
         assertEquals("[2015-09-29T10:45:15.729Z - 2016-01-07T10:45:15.729Z)",rangeFacets.get(0).getBuckets().get(0).getLabel());
         Object[] metrics1 = rangeFacets.get(0).getBuckets().get(0).getMetrics().toArray();
         assertEquals("0",((SimpleMetric) metrics1[0]).getValue().get("count"));
-        assertEquals("created:[2015-09-29T10:45:15.729Z TO 2016-01-07T10:45:15.729Z>", rangeFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("created:[\"2015-09-29T10:45:15.729Z\" TO \"2016-01-07T10:45:15.729Z\">", rangeFacets.get(0).getBuckets().get(0).getFilterQuery());
         assertEquals(null,rangeFacets.get(0).getBuckets().get(0).getBucketInfo().get("count"));
         assertEquals("false",rangeFacets.get(0).getBuckets().get(0).getBucketInfo().get("endInclusive"));
         assertEquals("true",rangeFacets.get(0).getBuckets().get(0).getBucketInfo().get("startInclusive"));
@@ -492,7 +492,7 @@ public class ResultMapperTests
         assertEquals("[0 - 100)",rangeFacets.get(1).getBuckets().get(0).getLabel());
         Object[] metrics = rangeFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
-        assertEquals("content.size:[0 TO 100>", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
+        assertEquals("content.size:[\"0\" TO \"100\">", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
         assertEquals(null,rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("count"));
         Map<String, String> facetInfo = rangeFacets.get(1).getBuckets().get(0).getBucketInfo();
         assertEquals("0",facetInfo.get("start"));
@@ -504,7 +504,7 @@ public class ResultMapperTests
         facetInfo = rangeFacets.get(1).getBuckets().get(1).getBucketInfo();
         assertEquals("100",facetInfo.get("start"));
         assertEquals("200",facetInfo.get("end"));
-        assertEquals("content.size:[100 TO 200>", rangeFacets.get(1).getBuckets().get(1).getFilterQuery());
+        assertEquals("content.size:[\"100\" TO \"200\">", rangeFacets.get(1).getBuckets().get(1).getFilterQuery());
         assertEquals(null,rangeFacets.get(1).getBuckets().get(1).getBucketInfo().get("count"));
         assertEquals("false",rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("endInclusive"));
         assertEquals("true",rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("startInclusive"));
@@ -515,7 +515,7 @@ public class ResultMapperTests
         facetInfo = rangeFacets.get(1).getBuckets().get(2).getBucketInfo();
         assertEquals("200",facetInfo.get("start"));
         assertEquals("300",facetInfo.get("end"));
-        assertEquals("content.size:[200 TO 300>", rangeFacets.get(1).getBuckets().get(2).getFilterQuery());
+        assertEquals("content.size:[\"200\" TO \"300\">", rangeFacets.get(1).getBuckets().get(2).getFilterQuery());
     }
     @Test
     public void testRangeExclusiec() throws Exception
@@ -537,7 +537,7 @@ public class ResultMapperTests
         assertEquals("(0 - 100]",rangeFacets.get(1).getBuckets().get(0).getLabel());
         Object[] metrics = rangeFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
-        assertEquals("content.size:<0 TO 100]", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
+        assertEquals("content.size:<\"0\" TO \"100\"]", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
         assertEquals(null,rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("count"));
         Map<String, String> facetInfo = rangeFacets.get(1).getBuckets().get(0).getBucketInfo();
         assertEquals("0",facetInfo.get("start"));
@@ -759,7 +759,7 @@ public class ResultMapperTests
         assertEquals("creator",searchContext.getFacetsFields().get(0).getLabel());
         assertEquals(3,searchContext.getFacetsFields().get(0).getBuckets().size());
         assertEquals(124,searchContext.getFacetsFields().get(0).getBuckets().get(0).getCount());
-        assertEquals("creator:System",searchContext.getFacetsFields().get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("creator:\"System\"",searchContext.getFacetsFields().get(0).getBuckets().get(0).getFilterQuery());
         assertEquals("System",searchContext.getFacetsFields().get(0).getBuckets().get(0).getLabel());
         assertEquals("modifier",searchContext.getFacetsFields().get(1).getLabel());
         jsonQuery = jsonQuery.replace("V1", "V2");
@@ -771,7 +771,7 @@ public class ResultMapperTests
         assertEquals(3,searchContext.getFacets().get(0).getBuckets().size());
         metrics = searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().toArray(new Metric[searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().size()]);
         assertEquals("{count=124}",metrics[0].getValue().toString());
-        assertEquals("creator:System",searchContext.getFacets().get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("creator:\"System\"",searchContext.getFacets().get(0).getBuckets().get(0).getFilterQuery());
         assertEquals("System",searchContext.getFacets().get(0).getBuckets().get(0).getLabel());
         assertEquals("modifier",searchContext.getFacets().get(1).getLabel());
     }

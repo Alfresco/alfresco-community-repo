@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public interface Metric
 {
-    public static enum METRIC_TYPE {count, min, max, sum, missing, sumOfSquares, mean, stddev, countDistinct, cardinality, distinctValues, percentiles};
+    public static enum METRIC_TYPE {count, min, max, sum, missing, sumOfSquares, mean, stddev, countDistinct, cardinality, distinctValues, percentiles, facets};
 
     METRIC_TYPE getType();
     Map<String, Object> getValue();

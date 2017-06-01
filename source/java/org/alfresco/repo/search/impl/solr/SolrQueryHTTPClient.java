@@ -26,6 +26,24 @@
 package org.alfresco.repo.search.impl.solr;
 
 import static org.alfresco.util.SearchDateConversion.parseDateInterval;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
@@ -90,21 +108,6 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringJoiner;
 
 /**
  * @author Andy
@@ -839,6 +842,35 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 url.append("&facet.range.other=").append(encoder.encode(""+searchParameters.getRange().getOther(), "UTF-8"));
             }
             url.append("&facet.range.hardend=").append(encoder.encode(""+searchParameters.getRange().isHardend(), "UTF-8"));
+            if(!searchParameters.getRange().getExcludeFilters().isEmpty())
+            {
+                url.append("&range.field=");
+                if (searchParameters.getRange().getExcludeFilters() != null && !searchParameters.getRange().getExcludeFilters().isEmpty())
+                {
+                    StringBuilder prefix = new StringBuilder("{!ex=");
+                    Iterator<String> itr = searchParameters.getRange().getExcludeFilters().iterator();
+                    while(itr.hasNext())
+                    {
+                        String val = itr.next();
+                        prefix.append(val);
+                        if(itr.hasNext())
+                        {
+                            prefix.append(",");
+                        }
+                    }
+                    prefix.append("}");
+                    url.append(prefix);
+                }
+                
+            }
+            if(!searchParameters.getRange().getTags().isEmpty())
+            {
+                for(String tag:searchParameters.getRange().getTags())
+                {
+                    
+                    url.append(String.format("&fq={!tag=%1$s}%1$s",tag));
+                }
+            }
         }
     }
 

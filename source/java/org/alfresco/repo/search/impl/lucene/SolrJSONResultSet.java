@@ -316,10 +316,10 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                             String facetRangeCount = rangeCollection.getString(i+1);
                             String rangeTo = (i+2 < rangeCollection.length() ? rangeCollection.getString(i+2):end);
                             String label = rangeFrom + " - " + rangeTo;
-                            rangeMap.put("label", label);
-                            rangeMap.put("count", facetRangeCount);
-                            rangeMap.put("from", rangeFrom);
-                            rangeMap.put("to", rangeTo);
+                            rangeMap.put(GenericFacetResponse.LABEL, label);
+                            rangeMap.put(GenericFacetResponse.COUNT, facetRangeCount);
+                            rangeMap.put(GenericFacetResponse.START, rangeFrom);
+                            rangeMap.put(GenericFacetResponse.END, rangeTo);
                             buckets.add(rangeMap);
                         }
                         facetRanges.put(fieldName, buckets);

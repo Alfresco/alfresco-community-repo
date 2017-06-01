@@ -37,6 +37,13 @@ public class GenericFacetResponse
     private final String label;
     private final List<GenericBucket> buckets;
 
+    public static final String LABEL = "label";
+    public static final String COUNT = "count";
+    public static final String START = "start";
+    public static final String END = "end";
+    public static final String START_INC = "startInclusive";
+    public static final String END_INC = "endInclusive";
+
     public GenericFacetResponse(FACET_TYPE type, String label, List<GenericBucket> buckets)
     {
         this.type = type;

@@ -58,14 +58,14 @@ public class GenericBucket
         this.facets = facets;
         
     }
-    public GenericBucket(String label, String filterQuery, Object display, Set<Metric> metrics, List<GenericFacetResponse> facets, Map<String, String> facetInfo)
+    public GenericBucket(String label, String filterQuery, Object display, Set<Metric> metrics, List<GenericFacetResponse> facets, Map<String, String> bucketInfo)
     {
         this.label = label;
         this.filterQuery = filterQuery;
         this.display = display;
         this.metrics = metrics;
         this.facets = facets;
-        this.bucketInfo = facetInfo;
+        this.bucketInfo = bucketInfo;
     }
 
     public String getFilterQuery()

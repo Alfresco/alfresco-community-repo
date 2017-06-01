@@ -193,17 +193,6 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 }
             }
 
-            Map<String, String> intervalMappings = new HashMap<>();
-            if(json.has("_interval_mappings_"))
-            {
-                JSONObject interval_mappings = json.getJSONObject("_interval_mappings_");
-                for(Iterator it = interval_mappings.keys(); it.hasNext(); /**/)
-                {
-                    String original = (String) it.next();
-                    intervalMappings.put(interval_mappings.getString(original), original);
-                }
-            }
-
             //Process hightlight response
             if(json.has("highlighting"))
             {
@@ -279,8 +268,6 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     {
                         String fieldName = (String)it.next();
                         JSONObject intervals = facet_intervals.getJSONObject(fieldName);
-                        //TODO: Handle a label
-                        String fieldkey = intervalMappings.containsKey(fieldName)?intervalMappings.get(fieldName):fieldName;
 
                         ArrayList<Pair<String, Integer>> intervalValues = new ArrayList<Pair<String, Integer>>(intervals.length());
                         for(Iterator itk = intervals.keys(); itk.hasNext(); /**/)
@@ -289,7 +276,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                             Integer count = Integer.parseInt(intervals.getString(key));
                             intervalValues.add(new Pair<String, Integer>(key, count));
                         }
-                        facetIntervals.put(fieldkey,intervalValues);
+                        facetIntervals.put(fieldName,intervalValues);
                     }
                 }
                 if(facet_counts.has("facet_pivot"))

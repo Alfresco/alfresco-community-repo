@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.api.search.context;
 
+import java.util.List;
+
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.rest.api.search.model.SearchQuery;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The contextual results of a Search
@@ -43,7 +42,7 @@ public class SearchContext
     private final List<GenericFacetResponse> facets;
     private final SearchQuery request;
 
-    public SearchContext(long lastTxId, List<GenericFacetResponse> facets, List<FacetQueryContext> facetQueries, List<FacetFieldContext> facetsFields, SpellCheckContext spellCheck,
+    public SearchContext(long lastTxId, List<GenericFacetResponse> facets, List<FacetQueryContext> facetResults, List<FacetFieldContext> facetsFields, SpellCheckContext spellCheck,
                 SearchQuery request)
     {
         this.spellCheck = spellCheck;
@@ -56,7 +55,7 @@ public class SearchContext
         {
             consistency = null;
         }
-        this.facetQueries = facetQueries;
+        this.facetQueries = facetResults;
         this.facetsFields = facetsFields;
         this.facets = facets;
     }

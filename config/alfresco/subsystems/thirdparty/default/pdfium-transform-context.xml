@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+<beans>
+
+   <bean id="transformer.worker.Pdfium" class="org.alfresco.repo.content.transform.pdfium.PdfiumContentTransformerWorker">
+      <property name="mimetypeService">
+         <ref bean="mimetypeService" />
+      </property>
+      <property name="executer">
+         <bean name="transformer.Pdfium.Command" class="org.alfresco.util.exec.RuntimeExec">
+            <property name="commandsAndArguments">
+               <map>
+                  <entry key=".*">
+                     <list>
+                        <value>${pdfium.exe}</value>
+                        <value>SPLIT:${options}</value>
+                        <value>${source}</value>
+                        <value>${target}</value>
+                     </list>
+                  </entry>
+               </map>
+            </property>
+            <property name="processProperties" ref="#{systemProperties['os.name'].contains('Windows') ? 'processPropertiesWindows' : 'processPropertiesUnix'}" />
+            <property name="defaultProperties">
+               <props>
+                  <prop key="options"></prop>
+               </props>
+            </property>
+            <property name="errorCodes" >
+               <!-- The published error and fatal error codes are in the 400 and 700 ranges, but 1 is the most common and have seen 255 (could that by -1) -->
+               <value>1,2,255,400,405,410,415,420,425,430,435,440,450,455,460,465,470,475,480,485,490,495,499,700,705,710,715,720,725,730,735,740,750,755,760,765,770,775,780,785,790,795,799</value>
+            </property>
+         </bean>
+      </property>
+   </bean>
+
+   <bean id="processPropertiesWindows" class="org.springframework.beans.factory.config.MapFactoryBean">
+      <property name="sourceMap"> 
+         <map>
+            <entry key="PDFIUM_HOME">
+               <value>${pdfium.root}</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+
+   <bean id="processPropertiesUnix" class="org.springframework.beans.factory.config.MapFactoryBean">
+      <property name="sourceMap">
+         <map>
+            <entry key="PDFIUM_HOME">
+               <value>${pdfium.root}</value>
+            </entry>
+         </map>
+      </property>
+   </bean>
+
+</beans>

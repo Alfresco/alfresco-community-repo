@@ -656,7 +656,29 @@
          <ref bean="transformer.worker.ImageMagick" />
       </property>
    </bean>
+   
+   <!-- Import the Pdfium transformer from the third party subsystem -->
+   <bean id="transformer.worker.Pdfium" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="thirdparty" />
+      </property>
+      <property name="sourceBeanName">
+         <value>transformer.worker.Pdfium</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.content.transform.ContentTransformerWorker</value>
+         </list>
+      </property>
+   </bean>
 
+   <bean id="transformer.Pdfium" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+      <property name="worker">
+         <ref bean="transformer.worker.Pdfium" />
+      </property>
+   </bean>
+   
+   
    <!-- This transformer allows for the indexing and therefore searching of zip files. -->   
    <bean id="transformer.Archive"
          class="org.alfresco.repo.content.transform.ArchiveContentTransformer"

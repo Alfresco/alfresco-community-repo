@@ -417,7 +417,6 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet.range.start=0"));
         assertTrue(url.contains("&facet.range.end=1000000"));
         assertTrue(url.contains("&facet.range.gap=10000"));
-        System.out.println(url);
     }
 
 }

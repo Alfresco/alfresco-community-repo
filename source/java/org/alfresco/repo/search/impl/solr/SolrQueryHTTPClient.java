@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -819,19 +820,41 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 List<String> pivotsList = new ArrayList<>();
                 pivotsList.addAll(pivotKeys);
                 url.append("&facet.pivot=");
+
+                StringBuilder prefix = new StringBuilder("{! ");
+
                 if (searchParameters.getStats() != null && !searchParameters.getStats().isEmpty())
                 {
                     for (StatsRequestParameters aStat:searchParameters.getStats())
                     {
                         if (pivotKeys.contains(aStat.getLabel()))
                         {
-                            url.append(encoder.encode("{!stats=", "UTF-8"))
-                                        .append(encoder.encode(aStat.getLabel(), "UTF-8"))
-                                        .append(encoder.encode("}", "UTF-8"));
+                            prefix.append("stats="+aStat.getLabel()+" ");
                             pivotsList.remove(aStat.getLabel());
                             break; //only do it once
                         }
                     }
+                }
+
+                if (searchParameters.getRanges() != null && !searchParameters.getRanges().isEmpty())
+                {
+                    for (RangeParameters aRange:searchParameters.getRanges())
+                    {
+                        Optional<String> found = pivotKeys.stream().filter(aKey -> aRange.getTags().contains(aKey)).findFirst();
+
+                        if (found.isPresent())
+                        {
+                            prefix.append("range="+found.get()+" ");
+                            pivotsList.remove(found.get());
+                            break; //only do it once
+                        }
+                    }
+                }
+
+                if (prefix.length() > 3)  //We have add something
+                {
+                    url.append(encoder.encode(prefix.toString().trim(), "UTF-8"));
+                    url.append(encoder.encode("}", "UTF-8"));
                 }
                 url.append(encoder.encode(String.join(",", pivotsList), "UTF-8"));
             }

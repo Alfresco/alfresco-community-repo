@@ -274,8 +274,6 @@ public class RecordFolderType extends    AbstractDisposableItem
             throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(child)), null);
         }
 
-        generateRecordIdentifier(nodeService, identifierService, child);
-
         behaviourFilter.disableBehaviour();
         try
         {

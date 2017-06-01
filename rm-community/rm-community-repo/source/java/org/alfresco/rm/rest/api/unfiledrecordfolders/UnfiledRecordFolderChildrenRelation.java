@@ -232,7 +232,7 @@ public class UnfiledRecordFolderChildrenRelation implements RelationshipResource
             public Pair<NodeRef,NodeRef> execute()
             {
                 final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledRecordFolderId, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER, uploadInfo.getRelativePath());
-                NodeRef newNode = apiUtils.uploadRecord(parentNodeRef, uploadInfo.getFileName(), uploadInfo.getNodeType(), uploadInfo.getProperties(), uploadInfo.getContent().getInputStream());
+                NodeRef newNode = apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);
                 return new Pair<NodeRef, NodeRef>(newNode, parentNodeRef);
             }
         };

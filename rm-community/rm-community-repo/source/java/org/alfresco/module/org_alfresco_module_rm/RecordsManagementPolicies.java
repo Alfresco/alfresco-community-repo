@@ -51,6 +51,8 @@ public interface RecordsManagementPolicies
     QName ON_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveReference");
     QName BEFORE_RECORD_DECLARATION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordDeclaration");
     QName ON_RECORD_DECLARATION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordDeclaration");
+    QName BEFORE_RECORD_REJECTION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordRejection");
+    QName ON_RECORD_REJECTION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordRejection");
 
     /** Before records management action execution */
     interface BeforeRMActionExecution extends ClassPolicy
@@ -145,5 +147,23 @@ public interface RecordsManagementPolicies
     interface OnRecordDeclaration extends ClassPolicy
     {
         void onRecordDeclaration(NodeRef nodeRef);
+    }
+
+    /**
+     * Before record rejection
+     * @since 2.5
+     */
+    interface BeforeRecordRejection extends ClassPolicy
+    {
+        void beforeRecordRejection(NodeRef nodeRef);
+    }
+
+    /**
+     * On record rejection
+     * @since 2.5
+     */
+    interface OnRecordRejection extends ClassPolicy
+    {
+        void onRecordRejection(NodeRef nodeRef);
     }
 }

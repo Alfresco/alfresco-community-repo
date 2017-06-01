@@ -147,23 +147,15 @@ public class SearchQuerySerializerTests
         IntervalParameters ip = searchQuery.getFacetIntervals();
         assertNotNull(ip);
         assertEquals(1,ip.getSets().size());
-        IntervalSet is = ip.getSets().get(0);
-        assertEquals("king", is.getLabel());
-        assertEquals("1", is.getStart());
-        assertEquals("2", is.getEnd());
-        assertEquals(true, is.isStartInclusive());
-        assertEquals(false, is.isEndInclusive());
+        IntervalSet expected = new IntervalSet("1","2","king",true, false );
+        assertTrue(ip.getSets().contains(expected));
 
         assertEquals(2,ip.getIntervals().size());
         Interval interval = ip.getIntervals().get(0);
         assertEquals("creator", interval.getLabel());
         assertEquals("cm:creator", interval.getField());
-        is = interval.getSets().get(0);
-        assertEquals("last", is.getLabel());
-        assertEquals("a", is.getStart());
-        assertEquals("b", is.getEnd());
-        assertEquals(false, is.isStartInclusive());
-        assertEquals(true, is.isEndInclusive());
+        expected = new IntervalSet("a","b","last",false, true );
+        assertTrue(interval.getSets().contains(expected));
 
         assertEquals(1,searchQuery.getPivots().size());
         assertEquals("mylabel",searchQuery.getPivots().get(0).getKey());

@@ -76,6 +76,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 
 /**
@@ -499,7 +501,7 @@ public class SearchMapper
         {
             ParameterCheck.mandatory("facetIntervals intervals", facetIntervals.getIntervals());
 
-            List<IntervalSet> globalSets = facetIntervals.getSets();
+            Set<IntervalSet> globalSets = facetIntervals.getSets();
             validateSets(globalSets, "facetIntervals");
 
             if (facetIntervals.getIntervals() != null && !facetIntervals.getIntervals().isEmpty())
@@ -627,7 +629,7 @@ public class SearchMapper
 
     }
 
-    protected void validateSets(List<IntervalSet> intervalSets, String prefix)
+    protected void validateSets(Set<IntervalSet> intervalSets, String prefix)
     {
         if (intervalSets != null && !intervalSets.isEmpty())
         {
@@ -635,6 +637,11 @@ public class SearchMapper
             {
                 ParameterCheck.mandatory(prefix+" sets start", aSet.getStart());
                 ParameterCheck.mandatory(prefix+" sets end", aSet.getEnd());
+
+                if (aSet.getLabel() == null)
+                {
+                    aSet.setLabel(aSet.toRange());
+                }
             }
         }
     }

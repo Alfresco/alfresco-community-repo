@@ -624,6 +624,11 @@ public class SearchMapper
                 if (foundStat.isPresent())
                 {
                     pivotKey = aPivot.getKey();
+                    if (pivotKeys.isEmpty())
+                    {
+                        throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                    new Object[] { ": Stats key " + pivotKey + " cannot be used here" });
+                    }
                     pivotKeys.add(pivotKey);
                     searchRequestContext.getPivotKeys().put(pivotKey, pivotKey);
                 }
@@ -636,6 +641,11 @@ public class SearchMapper
                     if (aRange.getTags().contains(aPivot.getKey()))
                     {
                         pivotKey = aPivot.getKey();
+                        if (pivotKeys.isEmpty())
+                        {
+                            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                        new Object[] { ": Range key " + pivotKey + " cannot be used here" });
+                        }
                         pivotKeys.add(pivotKey);
                         searchRequestContext.getPivotKeys().put(pivotKey, pivotKey);
                     }

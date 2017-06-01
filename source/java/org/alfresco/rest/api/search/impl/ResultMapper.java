@@ -331,7 +331,7 @@ public class ResultMapper
         Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
         facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
         
-        Map<String,List> facetRanges = solrResultSet.getFacetRanges();
+        Map<String,List<Map<String,String>>> facetRanges = solrResultSet.getFacetRanges();
         facets.addAll(getGenericFacetsForRanges(facetRanges, searchQuery));
 
         List<GenericFacetResponse> stats = getFieldStats(searchRequestContext, solrResultSet.getStats());
@@ -490,37 +490,37 @@ public class ResultMapper
      * @param searchQuery
      * @return GenericFacetResponse
      */
-    protected static List<GenericFacetResponse> getGenericFacetsForRanges( Map<String,List> facetFields, SearchQuery searchQuery)
+    protected static List<GenericFacetResponse> getGenericFacetsForRanges( Map<String,List<Map<String,String>>> facetFields, SearchQuery searchQuery)
     {
         List<GenericFacetResponse> ffcs = new ArrayList<>(facetFields.size());
-        if (facetFields != null && !facetFields.isEmpty())
+        if (facetFields != null && !facetFields.isEmpty() && searchQuery.getQuery() != null)
         {
             List<GenericBucket> buckets = new ArrayList<>();
-            for (Entry<String, List> facet : facetFields.entrySet())
+            for (Entry<String, List<Map<String, String>>> facet : facetFields.entrySet())
             {
-                facet.getValue().forEach(action -> buckets.add(buildGenericBucketFromRange((Map<String, String>) action)));
+                facet.getValue().forEach(action -> buckets.add(buildGenericBucketFromRange(facet.getKey(), (Map<String, String>) action)));
                 ffcs.add(new GenericFacetResponse(FACET_TYPE.range, facet.getKey(), buckets));
             }
         }
         return ffcs;
     }
-    private static GenericBucket buildGenericBucketFromRange(Map<String,String> facet)
+    private static GenericBucket buildGenericBucketFromRange(String facetField, Map<String,String> facet)
     {
-        return new GenericBucket(facet.get("label"),
-              null,
-              null, 
-              new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,facet.get("count")))),
-              null,
-              appendRangeInfo(facet.get("from"), facet.get("to")));
+        String from = facet.get("from");
+        String to = facet.get("to");
+        String label = facet.get("label");
+        facet.remove("label");
+        String filterQ = String.format("%s:(%s TO %s)",
+                                        facetField,
+                                        from,
+                                        to);
+        return new GenericBucket(label,
+                                 filterQ,
+                                 null, 
+                                 new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,facet.get("count")))),
+                                 null,
+                                 facet);
         
-    }
-    private static Map appendRangeInfo(String from, String to)
-    {
-        // TODO Auto-generated method stub
-        Map<String,String> rangeInfo = new HashMap<String,String>(2);
-        rangeInfo.put("from", from);
-        rangeInfo.put("to", to);
-        return rangeInfo;
     }
 
 

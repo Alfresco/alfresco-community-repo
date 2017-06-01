@@ -27,20 +27,26 @@
 
 package org.alfresco.rm.rest.api.records;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel.RM_CUSTOM_MODEL;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import com.sun.xml.bind.v2.TODO;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
@@ -58,6 +64,10 @@ import org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils;
 import org.alfresco.rm.rest.api.model.Record;
 import org.alfresco.rm.rest.api.model.TargetContainer;
 import org.alfresco.service.cmr.activities.ActivityPoster;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -67,8 +77,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
+import org.opensaml.ws.security.provider.MandatoryAuthenticatedMessageRule;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.dao.ConcurrencyFailureException;
+import sun.util.resources.cldr.naq.CalendarData_naq_NA;
 
 /**
  * An implementation of an Entity Resource for a record
@@ -91,6 +103,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     private RecordService recordService;
     private NodeService nodeService;
     private TransactionService transactionService;
+    private DictionaryService dictionaryService;
 
     public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
     {
@@ -120,6 +133,11 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     /**
@@ -240,7 +258,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
 
     @Operation ("complete")
     @WebApiDescription (title = "Complete record", description = "Complete a record.")
-    public Record completeRecord(String recordId, Void body, Parameters parameters)
+    public Record completeRecord(String recordId, Void body, Parameters parameters, WithResponse withResponse)
     {
         checkNotBlank("recordId", recordId);
         mandatory("parameters", parameters);
@@ -249,66 +267,29 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         NodeRef record = apiUtils.validateRecord(recordId);
 
         // Complete the record
-        //TODO this should probably be something like recordService.complete(record);
-        completeRecord(record);
+        if (!recordService.isDeclared(record))
+        {
+            //TODO: move this to appropriate place when resolved
+            boolean checkMandatoryPropertiesEnabled = true; // TODO
+            if (checkMandatoryPropertiesEnabled && (!recordService.isMandatoryPropertiesPopulated(record)))
+            {
+                throw new IntegrityException("Model integrity exception: the record has missing mandatory meta-data.",
+                        null);
+            }
+            else
+            {
+                recordService.complete(record);
+            }
+        }
+        else
+        {
+            throw new IntegrityException("Model integrity exception: the record is already completed.", null);
+        }
 
         // return record state
         FileInfo info = fileFolderService.getFileInfo(record);
         return nodesModelFactory.createRecord(info, parameters, null, false);
     }
-
-    /* Temporary helper method just to do the complete record action.
-       Should probably live elsewhere, maybe RecordsImpl
-     */
-    private void completeRecord(NodeRef record) {
-        boolean checkMandatoryPropertiesEnabled = true;
-
-        if (! recordService.isDeclared(record))
-        {
-            List<String> missingProperties = new ArrayList<>(5);
-            if (checkMandatoryPropertiesEnabled && mandatoryPropertiesSet(record, missingProperties))
-            {
-                //TODO error here;
-            }
-            else
-            {
-                recordService.disablePropertyEditableCheck();
-                //try
-                //{
-                    // Add the declared aspect
-                    Map<QName, Serializable> declaredProps = new HashMap<>(2);
-                    declaredProps.put(RecordsManagementModel.PROP_DECLARED_AT, new Date());
-                    //TODO declaredProps.put(RecordsManagementModel.PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
-                    nodeService.addAspect(record, RecordsManagementModel.ASPECT_DECLARED_RECORD, declaredProps);
-
-                    /* TODO
-                    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                    {
-                        @Override
-                        public Void doWork()
-                        {
-                            // remove all owner related rights
-                            getOwnableService().setOwner(record, OwnableService.NO_OWNER);
-                            return null;
-                        }
-                    });
-                    */
-                //} finally
-                //{
-                //    recordService.enablePropertyEditableCheck();
-                //}
-            }
-        }
-    }
-
-    /* TODO
-     * this is temporary partly because there is an error in the original code
-     */
-    private boolean mandatoryPropertiesSet(NodeRef nodeRef, List<String> missingProperties) {
-
-        return true;
-    }
-
 
     @Override
     @WebApiDescription(title = "Delete record", description="Deletes a record with id 'recordId'")

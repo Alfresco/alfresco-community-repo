@@ -1801,7 +1801,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   '/records/{recordId}/complete':
-    put:
+    post:
       tags:
         - records
       summary: Complete a record
@@ -1834,9 +1834,9 @@ paths:
         '404':
           description: |
             **recordIdParam** does not exist
-        '409':
+        '422':
           description: |
-            **recordIdParam** is already completed
+            Model integrity exception: the record is already completed
         default:
           description: Unexpected error
           schema:

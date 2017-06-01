@@ -38,16 +38,15 @@ import org.codehaus.jackson.annotate.JsonProperty;
 @AlfrescoPublicApi
 public class RangeParameters
 {
-    private String field;
-    private String start;
-    private String end;
-    private String gap;
-    private boolean hardend;
-    private List<String> other;
-    private List<String> include;
-    private List<String> tags;
-    private List<String> excludeFilters;
-
+    private final String field;
+    private final String start;
+    private final String end;
+    private final String gap;
+    private final boolean hardend;
+    private final List<String> other;
+    private final List<String> include;
+    private final String label;
+    private final List<String> excludeFilters;
     
     /**
      * Constructor.
@@ -59,7 +58,7 @@ public class RangeParameters
      * @param hardend
      * @param other can have one of the following values: before,after,between,none
      * @param include can have one of the following values: lower,upper,edge,outer,all
-     * @param tags
+     * @param label
      * @param excludeFilters
      */
     @JsonCreator
@@ -70,7 +69,7 @@ public class RangeParameters
                            @JsonProperty("hardend") boolean hardend, 
                            @JsonProperty("other")List<String> other,
                            @JsonProperty("include")List<String> include,
-                           @JsonProperty("tags")List<String> tags,
+                           @JsonProperty("label") String label,
                            @JsonProperty("excludeFilters")List<String> excludeFilters)
     {
         super();
@@ -79,9 +78,9 @@ public class RangeParameters
         this.end = end;
         this.gap = gap;
         this.hardend = hardend;
-        this.other = other;
-        this.include = include;
-        this.tags = tags == null? Collections.emptyList():tags;
+        this.other = other == null? Collections.emptyList():other;
+        this.include = include == null? Collections.emptyList():include;
+        this.label = label;
         this.excludeFilters = excludeFilters == null? Collections.emptyList():excludeFilters;
     }
     
@@ -113,10 +112,11 @@ public class RangeParameters
     {
         return include;
     }
-    public List<String> getTags() 
+    public String getLabel()
     {
-        return tags;
+        return label;
     }
+
     public List<String> getExcludeFilters() 
     {
         return excludeFilters;
@@ -201,7 +201,6 @@ public class RangeParameters
         }
         return ">";
     }
-
 
     public String getRangeLastBucketEndInclusive()
     {

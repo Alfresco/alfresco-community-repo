@@ -409,7 +409,7 @@ public class SolrQueryHTTPClientTest
                                 null, null, null, null,null, null,  null)
                     ));
         List<RangeParameters> ranges = new ArrayList<RangeParameters>();
-        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), Arrays.asList("csize"), null));
+        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), "csize", null));
         params.setRanges(ranges);
 
         StringBuilder urlBuilder = new StringBuilder();
@@ -463,18 +463,15 @@ public class SolrQueryHTTPClientTest
         List<String> filters = new ArrayList<String>();
         filters.add("bart");
         filters.add("homer");
-        List<String> tags = new ArrayList<String>();
-        tags.add("dt");
-        tags.add("doc");
-        
+
         ranges.clear();
-        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), tags, filters));
+        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), "doc", filters));
         params.setRanges(ranges);
         urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
         String url2 = urlBuilder.toString();
         assertTrue(url2.contains("&facet=true"));
-        assertTrue(url2.contains("&facet.range="+encoder.encode("{!tag=dt tag=doc }", "UTF-8")+"content.size"));
+        assertTrue(url2.contains("&facet.range="+encoder.encode("{!tag=doc }", "UTF-8")+"content.size"));
         assertTrue(url2.contains("&f.content.size.facet.range.start=0"));
         assertTrue(url2.contains("&f.content.size.facet.range.end=1000000"));
         assertTrue(url2.contains("&f.content.size.facet.range.gap=10000"));

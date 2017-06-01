@@ -41,6 +41,7 @@ import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric.METRIC_TYPE;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.Version2Model;
@@ -120,7 +121,7 @@ public class ResultMapperTests
                 + "  \"_DEFAULT_!800001579e3d1964!800001579e3d1969\": {\"name\": [\"some very <al>long<fresco> name\"],\"title\": [\"title1 is very <al>long<fresco>\"], \"DBID\": \"521\"},"
                 + " \"_DEFAULT_!800001579e3d1964!800001579e3d196a\": {\"name\": [\"this is some <al>long<fresco> text.  It\", \" has the word <al>long<fresco> in many places\", \".  In fact, it has <al>long<fresco> on some\", \" happens to <al>long<fresco> in this case.\"], \"DBID\": \"1475846153692\"}"
                 + "},"
-                + "\"stats\":{\"stats_fields\":{\"creator\":{\"min\":\"System\",\"max\":\"mjackson\",\"count\":\"990\",\"missing\":\"290\"}, \"created\":{\"sumOfSquares\":2.1513045770343806E27,\"min\":\"2011-02-15T20:16:27.080Z\",\"max\":\"2017-04-10T15:06:30.143Z\",\"mean\":\"2016-09-05T04:20:12.898Z\",\"count\":990,\"missing\":290,\"sum\":1.458318720769983E15,\"stddev\":5.6250677994522545E10}}},"
+                + "\"stats\":{\"stats_fields\":{\"numericLabel\":{\"sumOfSquares\":0,\"min\":null,\"max\":null,\"mean\":\"NaN\",\"percentiles\":[\"0.0\",12,\"0.99\",20.0685], \"count\":0,\"missing\":0,\"sum\":0,\"distinctValues\":[12,13,14,15,16,17,1],\"stddev\":0}, \"creator\":{\"min\":\"System\",\"max\":\"mjackson\",\"count\":\"990\",\"missing\":\"290\"}, \"created\":{\"sumOfSquares\":2.1513045770343806E27,\"min\":\"2011-02-15T20:16:27.080Z\",\"max\":\"2017-04-10T15:06:30.143Z\",\"mean\":\"2016-09-05T04:20:12.898Z\",\"count\":990,\"missing\":290,\"sum\":1.458318720769983E15,\"stddev\":5.6250677994522545E10}}},"
                 + "\"processedDenies\":true, \"lastIndexedTx\":34}";
     public static final Params EMPTY_PARAMS = Params.valueOf((String)null,(String)null,(WebScriptRequest) null);
     public static final String FROZEN_ID = "frozen";
@@ -313,12 +314,12 @@ public class ResultMapperTests
         assertEquals("great", searchContext.getRequest().getQuery().getUserQuery());
 
         //Pivot
-        assertEquals(3, searchContext.getFacets().size());
+        assertEquals(5, searchContext.getFacets().size());
         GenericFacetResponse pivotFacet = searchContext.getFacets().get(2);
         assertEquals(FACET_TYPE.pivot,pivotFacet.getType());
         assertEquals("creator",pivotFacet.getLabel());
-        assertEquals(1, pivotFacet.getBuckets().size());
-        GenericBucket pivotBucket = pivotFacet.getBuckets().get(0);
+        assertEquals(2, pivotFacet.getBuckets().size());
+        GenericBucket pivotBucket = pivotFacet.getBuckets().get(1);
         assertEquals("mjackson",pivotBucket.getLabel());
         assertEquals("creator:mjackson",pivotBucket.getFilterQuery());
         assertEquals("{count=7}",pivotBucket.getMetrics().get(0).getValue().toString());
@@ -336,7 +337,51 @@ public class ResultMapperTests
         assertEquals("modifier:admin",nestedBucket2.getFilterQuery());
         assertEquals("{count=4}",nestedBucket2.getMetrics().get(0).getValue().toString());
 
+        //Stats
+        GenericFacetResponse statsFacet = searchContext.getFacets().get(3);
+        assertEquals(FACET_TYPE.stats,statsFacet.getType());
+        assertEquals("created",statsFacet.getLabel());
+        List<Metric> metrics = statsFacet.getBuckets().get(0).getMetrics();
+        assertEquals(8,metrics.size());
+        assertEquals(METRIC_TYPE.sumOfSquares,metrics.get(0).getType());
+        assertEquals(METRIC_TYPE.min,metrics.get(1).getType());
+        assertEquals(METRIC_TYPE.max,metrics.get(2).getType());
+        assertEquals(METRIC_TYPE.mean,metrics.get(3).getType());
+        assertEquals(METRIC_TYPE.count,metrics.get(4).getType());
+        assertEquals(METRIC_TYPE.missing,metrics.get(5).getType());
+        assertEquals(METRIC_TYPE.sum,metrics.get(6).getType());
+        assertEquals(METRIC_TYPE.stddev,metrics.get(7).getType());
 
+        statsFacet = searchContext.getFacets().get(4);
+        metrics = statsFacet.getBuckets().get(0).getMetrics();
+        assertEquals("numericLabel",statsFacet.getLabel());
+        assertEquals(7,metrics.size());
+        assertEquals(METRIC_TYPE.sumOfSquares,metrics.get(0).getType());
+        assertEquals("{sumOfSquares=0}",metrics.get(0).getValue().toString());
+        /**
+        assertEquals(METRIC_TYPE.min,metrics.get(1).getType());
+        assertEquals("{min=null}",metrics.get(1).getValue().toString());
+        assertEquals(METRIC_TYPE.max,metrics.get(2).getType());
+        assertEquals("{max=null}",metrics.get(2).getValue().toString());
+        assertEquals(METRIC_TYPE.mean,metrics.get(3).getType());
+        assertEquals("{mean=NaN}",metrics.get(3).getValue().toString());
+         **/
+        assertEquals(METRIC_TYPE.percentiles,metrics.get(1).getType());
+        assertEquals("{percentiles={0.99=20.0685, 0.0=12.0}}",metrics.get(1).getValue().toString());
+        Map percentiles = (Map) metrics.get(1).getValue().get("percentiles");
+        assertEquals(2, percentiles.size());
+        assertEquals(METRIC_TYPE.count,metrics.get(2).getType());
+        assertEquals("{count=0}",metrics.get(2).getValue().toString());
+        assertEquals(METRIC_TYPE.missing,metrics.get(3).getType());
+        assertEquals("{missing=0}",metrics.get(3).getValue().toString());
+        assertEquals(METRIC_TYPE.distinctValues,metrics.get(4).getType());
+        List distinctValues = (List) metrics.get(4).getValue().get("distinctValues");
+        assertEquals(7, distinctValues.size());
+        assertEquals("{distinctValues=[12, 13, 14, 15, 16, 17, 1]}",metrics.get(4).getValue().toString());
+        assertEquals(METRIC_TYPE.sum,metrics.get(5).getType());
+        assertEquals("{sum=0}",metrics.get(5).getValue().toString());
+        assertEquals(METRIC_TYPE.stddev,metrics.get(6).getType());
+        assertEquals("{stddev=0}",metrics.get(6).getValue().toString());
     }
 
     @Test

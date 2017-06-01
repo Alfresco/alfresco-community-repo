@@ -860,7 +860,21 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 boolean endInc = facetRange.isRangeEndInclusive();
                 
                 IntervalSet rangeSet = parseDateInterval(new IntervalSet(facetRange.getStart(), facetRange.getEnd(), facetRange.getGap(), startIncl, endInc), isDate);
-                url.append("&facet.range=").append(encoder.encode(facetRange.getField(), "UTF-8"));
+                url.append("&facet.range=");
+
+                if(!facetRange.getTags().isEmpty())
+                {
+                    url.append(encoder.encode("{!", "UTF-8"));
+
+                    for(String tag:facetRange.getTags())
+                    {
+                        url.append(encoder.encode(String.format("tag=%s ",tag), "UTF-8"));
+                    }
+                    url.append(encoder.encode("}", "UTF-8"));
+                }
+
+                url.append(encoder.encode(facetRange.getField(), "UTF-8"));
+
                 //Check if date and if inclusive or not
                 url.append(String.format("&f.%s.facet.range.start=",fieldName)).append(encoder.encode(""+ rangeSet.getStart(), "UTF-8"));
                 url.append(String.format("&f.%s.facet.range.end=",fieldName)).append(encoder.encode(""+ rangeSet.getEnd(), "UTF-8"));
@@ -900,14 +914,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                         url.append(prefix);
                     }
                     
-                }
-                if(!facetRange.getTags().isEmpty())
-                {
-                    for(String tag:facetRange.getTags())
-                    {
-                        
-                        url.append(String.format("&fq={!tag=%1$s}%1$s",tag));
-                    }
                 }
             }
         }

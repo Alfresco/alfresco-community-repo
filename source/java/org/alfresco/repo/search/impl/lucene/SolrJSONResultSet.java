@@ -483,7 +483,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 nested.addAll(rangefacets);
             }
 
-            GenericBucket buck = new GenericBucket(value, field+":"+value, null, metrics, nested);
+            GenericBucket buck = new GenericBucket(value, field+":\""+value+"\"", null, metrics, nested);
             List<GenericBucket> listBucks = pivotBuckets.containsKey(field)?pivotBuckets.get(field):new ArrayList<>();
             listBucks.add(buck);
             pivotBuckets.put(field, listBucks);

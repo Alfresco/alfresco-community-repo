@@ -43,6 +43,7 @@ import org.alfresco.rest.api.search.model.FacetFields;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Limits;
+import org.alfresco.rest.api.search.model.Localization;
 import org.alfresco.rest.api.search.model.Pivot;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.Scope;
@@ -71,6 +72,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -518,49 +520,49 @@ public class SearchMapperTests
     {
         SearchParameters searchParameters = new SearchParameters();
         //Doesn't error
-        searchMapper.fromTimezone(searchParameters, null);
-        searchMapper.fromTimezone(searchParameters, "");
+        searchMapper.fromLocalization(searchParameters, null);
+        searchMapper.fromLocalization(searchParameters, new Localization("", null));
 
         try
         {
-            searchMapper.fromTimezone(searchParameters, "nonsense");
+            searchMapper.fromLocalization(searchParameters,  new Localization("nonsense", null));
+            fail();
+        } catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains( "Invalid timezone"));
+        }
+
+        try
+        {
+            searchMapper.fromLocalization(searchParameters,  new Localization("GMT+25", null));
             fail();
         } catch (IllegalArgumentException iae)
         {
             assertTrue(iae.getLocalizedMessage().contains("Invalid timezone"));
         }
 
-        try
-        {
-            searchMapper.fromTimezone(searchParameters, "GMT+25");
-            fail();
-        } catch (IllegalArgumentException iae)
-        {
-            assertTrue(iae.getLocalizedMessage().contains("Invalid timezone"));
-        }
-
-        searchMapper.fromTimezone(searchParameters, "America/New_York");
+        searchMapper.fromLocalization(searchParameters,  new Localization("America/New_York", null));
         assertEquals("America/New_York", searchParameters.getTimezone());
-        searchMapper.fromTimezone(searchParameters, "America/Denver");
+        searchMapper.fromLocalization(searchParameters,  new Localization("America/Denver", null));
         assertEquals("America/Denver", searchParameters.getTimezone());
-        searchMapper.fromTimezone(searchParameters, "America/Los_Angeles");
+        searchMapper.fromLocalization(searchParameters,  new Localization("America/Los_Angeles", null));
         assertEquals("America/Los_Angeles", searchParameters.getTimezone());
-        searchMapper.fromTimezone(searchParameters, "Europe/Madrid");
+        searchMapper.fromLocalization(searchParameters,  new Localization("Europe/Madrid", null));
         assertEquals("Europe/Madrid", searchParameters.getTimezone());
-        searchMapper.fromTimezone(searchParameters, "GMT+1");
+        searchMapper.fromLocalization(searchParameters,  new Localization("GMT+1", null));
         assertEquals("GMT+01:00", searchParameters.getTimezone());
-        searchMapper.fromTimezone(searchParameters, "GMT+01:00");
+        searchMapper.fromLocalization(searchParameters,  new Localization("GMT+01:00", null));
         assertEquals("GMT+01:00", searchParameters.getTimezone());
-        searchMapper.fromTimezone(searchParameters, "GMT-9");
+        searchMapper.fromLocalization(searchParameters,  new Localization("GMT-9", null));
         assertEquals("GMT-09:00", searchParameters.getTimezone());
-        searchMapper.fromTimezone(searchParameters, "GMT+08:00");
+        searchMapper.fromLocalization(searchParameters,  new Localization("GMT+08:00", null));
         assertEquals("GMT+08:00", searchParameters.getTimezone());
-        searchMapper.fromTimezone(searchParameters, "GMT-12:00");
+        searchMapper.fromLocalization(searchParameters,  new Localization("GMT-12:00", null));
         assertEquals("GMT-12:00", searchParameters.getTimezone());
 
         try
         {
-            searchMapper.fromTimezone(searchParameters, "UTC+5");
+            searchMapper.fromLocalization(searchParameters,  new Localization("UTC+5", null));
             fail();
         }
         catch (IllegalArgumentException iae)
@@ -570,13 +572,68 @@ public class SearchMapperTests
 
         try
         {
-            searchMapper.fromTimezone(searchParameters, "UTC+06:00");
+            searchMapper.fromLocalization(searchParameters,  new Localization("UTC+06:00", null));
             fail();
         }
         catch (IllegalArgumentException iae)
         {
             assertTrue(iae.getLocalizedMessage().contains("Incompatible timezoneId"));
         }
+    }
+
+    @Test
+    public void fromLocales() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromLocalization(searchParameters, null);
+        searchMapper.fromLocalization(searchParameters, new Localization(null, null));
+        List<String> testLocales = new ArrayList<>();
+        testLocales.add(null);
+        try
+        {
+            searchMapper.fromLocalization(searchParameters, new Localization(null, testLocales));
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("Invalid locale"));
+        }
+
+        //Unfortunately this isn't validated, language can be anything.
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("NOTTHIS")));
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("fr")));
+        assertEquals(Locale.FRENCH, searchParameters.getLocales().get(0));
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("fr_FR")));
+        assertEquals(Locale.FRANCE, searchParameters.getLocales().get(0));
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("fr-FR")));
+        assertEquals(Locale.FRANCE, searchParameters.getLocales().get(0));
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("fr-fr")));
+        assertEquals(Locale.FRANCE, searchParameters.getSortLocale());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("fr-ca")));
+        assertEquals(Locale.CANADA_FRENCH, searchParameters.getSortLocale());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("fr_ca")));
+        assertEquals(Locale.CANADA_FRENCH, searchParameters.getSortLocale());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("en-gb")));
+        assertEquals(Locale.UK, searchParameters.getSortLocale());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromLocalization(searchParameters, new Localization(null, Arrays.asList("en-us")));
+        assertEquals(Locale.US, searchParameters.getSortLocale());
     }
 
     @Test

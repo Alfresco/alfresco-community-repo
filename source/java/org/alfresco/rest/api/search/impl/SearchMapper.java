@@ -46,6 +46,7 @@ import org.alfresco.rest.api.search.model.FacetFields;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Limits;
+import org.alfresco.rest.api.search.model.Localization;
 import org.alfresco.rest.api.search.model.Pivot;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.Scope;
@@ -78,6 +79,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
+import java.util.Locale.Builder;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -115,11 +118,11 @@ public class SearchMapper
         SearchParameters sp = new SearchParameters();
         setDefaults(sp);
 
+        fromLocalization(sp, searchQuery.getLocalization());
         fromQuery(sp,  searchQuery.getQuery());
         fromPaging(sp, params.getPaging());
         fromSort(sp, searchQuery.getSort());
         fromTemplate(sp, searchQuery.getTemplates());
-        fromTimezone(sp, searchQuery.getTimezone());
         validateInclude(searchQuery.getInclude());
         fromDefault(sp, searchQuery.getDefaults());
         fromFilterQuery(sp, searchQuery.getFilterQueries());
@@ -691,44 +694,65 @@ public class SearchMapper
      * @param sp SearchParameters
      * @param timezoneId a valid java.time.ZoneId
      */
-    public void fromTimezone(SearchParameters sp, String timezoneId)
+    public void fromLocalization(SearchParameters sp, Localization localization)
     {
-        /*
-         * java.util.TimeZone will not error if you set an invalid timezone
-         * it just falls back to GMT without telling you.
-         *
-         * So I am using java.time.ZoneId because that throws an error,
-         * if I then convert a ZoneId to Timezone I have the same problem (silently uses GMT)
-         * so
-         * I am converting using both methods:
-         * If a timezoneId is invalid then an Invalid error is thrown
-         * If its not possible to take a java.time.ZoneId and convert it to a java.util.TimeZone then an Incompatible error is thrown
-         *
-         */
-        if (timezoneId!= null && !timezoneId.isEmpty())
+        if (localization != null)
         {
-            ZoneId validZoneId = null;
-            TimeZone timeZone = null;
 
-            try
+            if (!localization.getLocales().isEmpty())
             {
-                validZoneId = ZoneId.of(timezoneId);
-                timeZone = TimeZone.getTimeZone(timezoneId);
-            }
-            catch (Exception e)
-            {
-                throw new IllegalArgumentException("Invalid timezoneId "+timezoneId);
-            }
+                try
+                {
+                    localization.getLocales().forEach(localeStr -> {
+                        if (localeStr != null) localeStr = localeStr.replace('_','-');
+                        sp.addLocale(Locale.forLanguageTag(localeStr));
+                    });
+                }
+                catch (Exception e)
+                {
+                    throw new IllegalArgumentException("Invalid locale " + localization.getLocales());
+                }
 
-            if (validZoneId.getId().equals(timeZone.getID()))
-            {
-                sp.setTimezone(validZoneId.getId());
-            }
-            else
-            {
-                throw new IllegalArgumentException("Incompatible timezoneId "+timezoneId);
             }
 
+            /*
+             * java.util.TimeZone will not error if you set an invalid timezone
+             * it just falls back to GMT without telling you.
+             *
+             * So I am using java.time.ZoneId because that throws an error,
+             * if I then convert a ZoneId to Timezone I have the same problem (silently uses GMT)
+             * so
+             * I am converting using both methods:
+             * If a timezoneId is invalid then an Invalid error is thrown
+             * If its not possible to take a java.time.ZoneId and convert it to a java.util.TimeZone then an Incompatible error is thrown
+             *
+             */
+            String timezoneId = localization.getTimezone();
+            if (timezoneId != null && !timezoneId.isEmpty())
+            {
+                ZoneId validZoneId = null;
+                TimeZone timeZone = null;
+
+                try
+                {
+                    validZoneId = ZoneId.of(timezoneId);
+                    timeZone = TimeZone.getTimeZone(timezoneId);
+                }
+                catch (Exception e)
+                {
+                    throw new IllegalArgumentException("Invalid timezoneId " + timezoneId);
+                }
+
+                if (validZoneId.getId().equals(timeZone.getID()))
+                {
+                    sp.setTimezone(validZoneId.getId());
+                }
+                else
+                {
+                    throw new IllegalArgumentException("Incompatible timezoneId " + timezoneId);
+                }
+
+            }
         }
     }
 

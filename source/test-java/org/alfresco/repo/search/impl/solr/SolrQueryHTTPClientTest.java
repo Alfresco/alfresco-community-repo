@@ -403,7 +403,7 @@ public class SolrQueryHTTPClientTest
     {
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("bob");
-        params.addPivot("creator");
+        params.addPivots(Arrays.asList("creator"));
 
         StringBuilder urlBuilder = new StringBuilder();
 
@@ -413,16 +413,17 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.pivot=creator"));
 
-        params.addPivot("cm:name");
-        params.addPivot("{!stats=piv1}cat");
+        params.addPivots(Arrays.asList("cm:name", "{!stats=piv1}cat"));
 
         urlBuilder = new StringBuilder();
         client.buildPivotParameters(params, encoder, urlBuilder);
         url = urlBuilder.toString();
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
-        assertTrue(url.contains("facet.pivot="+ encoder.encode("creator,cm:name,{!stats=piv1}cat", "UTF-8")));
+        assertTrue(url.contains("facet.pivot="+ encoder.encode("creator", "UTF-8")));
+        assertTrue(url.contains("facet.pivot="+ encoder.encode("cm:name,{!stats=piv1}cat", "UTF-8")));
     }
+
     @Test
     public void testBuildRange() throws UnsupportedEncodingException
     {

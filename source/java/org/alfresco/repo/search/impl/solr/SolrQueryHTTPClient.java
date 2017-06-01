@@ -814,21 +814,27 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         if (searchParameters.getPivots() != null && !searchParameters.getPivots().isEmpty())
         {
             url.append("&facet=").append(encoder.encode("true", "UTF-8"));
-            url.append("&facet.pivot=");
-            if (searchParameters.getStats() != null && !searchParameters.getStats().isEmpty())
+            for (List<String> pivotKeys:searchParameters.getPivots())
             {
-                for (StatsRequestParameters aStat:searchParameters.getStats())
+                List<String> pivotsList = new ArrayList<>();
+                pivotsList.addAll(pivotKeys);
+                url.append("&facet.pivot=");
+                if (searchParameters.getStats() != null && !searchParameters.getStats().isEmpty())
                 {
-                    if (searchParameters.getPivots().contains(aStat.getLabel()))
+                    for (StatsRequestParameters aStat:searchParameters.getStats())
                     {
-                        url.append(encoder.encode("{!stats=", "UTF-8"))
-                           .append(encoder.encode(aStat.getLabel(), "UTF-8"))
-                           .append(encoder.encode("}", "UTF-8"));
-                        break; //only do it once
+                        if (pivotKeys.contains(aStat.getLabel()))
+                        {
+                            url.append(encoder.encode("{!stats=", "UTF-8"))
+                                        .append(encoder.encode(aStat.getLabel(), "UTF-8"))
+                                        .append(encoder.encode("}", "UTF-8"));
+                            pivotsList.remove(aStat.getLabel());
+                            break; //only do it once
+                        }
                     }
                 }
+                url.append(encoder.encode(String.join(",", pivotsList), "UTF-8"));
             }
-            url.append(encoder.encode(String.join(",", searchParameters.getPivots()), "UTF-8"));
         }
     }
     protected void buildRangeParameters(SearchParameters searchParameters, URLCodec encoder, StringBuilder url) throws UnsupportedEncodingException

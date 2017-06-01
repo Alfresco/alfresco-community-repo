@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.StatsParameters;
+import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
@@ -103,6 +104,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * @author Andy
@@ -635,6 +637,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
 
         buildFacetParameters(searchParameters, isSharded, encoder, url);
         buildPivotParameters(searchParameters, encoder, url);
+        buildStatsParameters(searchParameters, encoder, url);
         buildFacetIntervalParameters(searchParameters, encoder, url);
         buildHightlightParameters(searchParameters, encoder, url);
     }
@@ -736,12 +739,81 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         }
     }
 
+    protected void buildStatsParameters(SearchParameters searchParameters, URLCodec encoder, StringBuilder url) throws UnsupportedEncodingException
+    {
+        if (searchParameters.getStats() != null && !searchParameters.getStats().isEmpty())
+        {
+            url.append("&stats=").append(encoder.encode("true", "UTF-8"));
+
+            for (StatsRequestParameters aStat:searchParameters.getStats())
+            {
+                url.append("&stats.field=");
+                StringBuilder prefix = new StringBuilder("{! ");
+
+                if (aStat.getExcludeFilters() != null && !aStat.getExcludeFilters().isEmpty())
+                {
+                    prefix.append("ex="+String.join(",", aStat.getExcludeFilters())+" ");
+                }
+
+                if (aStat.getLabel() != null && !aStat.getLabel().isEmpty())
+                {
+                    prefix.append("tag="+aStat.getLabel()+" ");
+                    prefix.append("key="+aStat.getLabel()+" ");
+                }
+
+                if (aStat.getPercentiles() != null && !aStat.getPercentiles().isEmpty())
+                {
+                    StringJoiner joiner = new StringJoiner(",");
+                    for (Float aFloat: aStat.getPercentiles()) {
+                        joiner.add(aFloat.toString());
+                    }
+                    prefix.append("percentiles='"+joiner.toString()+"' ");
+                }
+
+                if (aStat.getCardinality())
+                {
+                    prefix.append("cardinality="+aStat.getCardinalityAccuracy()+" ");
+                }
+
+                prefix.append("countDistinct="+aStat.getCountDistinct()+" ");
+                prefix.append("distinctValues="+aStat.getDistinctValues()+" ");
+                prefix.append("min="+aStat.getMin()+" ");
+                prefix.append("max="+aStat.getMax()+" ");
+                prefix.append("sum="+aStat.getSum()+" ");
+                prefix.append("count="+aStat.getCount()+" ");
+                prefix.append("missing="+aStat.getMissing()+" ");
+                prefix.append("sumOfSquares="+aStat.getSumOfSquares()+" ");
+                prefix.append("mean="+aStat.getMean()+" ");
+                prefix.append("stddev="+aStat.getStddev()+" ");
+
+                url.append(encoder.encode(prefix.toString().trim(), "UTF-8"));
+                url.append(encoder.encode("}", "UTF-8"));
+
+                url.append(encoder.encode(aStat.getField(), "UTF-8"));
+            }
+        }
+    }
+
     protected void buildPivotParameters(SearchParameters searchParameters, URLCodec encoder, StringBuilder url) throws UnsupportedEncodingException
     {
         if (searchParameters.getPivots() != null && !searchParameters.getPivots().isEmpty())
         {
             url.append("&facet=").append(encoder.encode("true", "UTF-8"));
-            url.append("&facet.pivot=").append(encoder.encode(String.join(",", searchParameters.getPivots()), "UTF-8"));
+            url.append("&facet.pivot=");
+            if (searchParameters.getStats() != null && !searchParameters.getStats().isEmpty())
+            {
+                for (StatsRequestParameters aStat:searchParameters.getStats())
+                {
+                    if (searchParameters.getPivots().contains(aStat.getLabel()))
+                    {
+                        url.append(encoder.encode("{!stats=", "UTF-8"))
+                           .append(encoder.encode(aStat.getLabel(), "UTF-8"))
+                           .append(encoder.encode("}", "UTF-8"));
+                        break; //only do it once
+                    }
+                }
+            }
+            url.append(encoder.encode(String.join(",", searchParameters.getPivots()), "UTF-8"));
         }
     }
 

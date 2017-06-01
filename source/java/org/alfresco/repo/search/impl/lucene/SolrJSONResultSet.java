@@ -32,13 +32,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
-import org.alfresco.repo.search.impl.solr.facet.facetsresponse.MetricCount;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric.METRIC_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.SimpleMetric;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -92,6 +95,8 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     private Map<String, List<Pair<String, Integer>>> facetIntervals = new HashMap<String, List<Pair<String, Integer>>>(1);
 
     private List<GenericFacetResponse> pivotFacets = new ArrayList<>();
+
+    private Map<String, List<Metric>> stats = new HashMap<>();
 
     private NodeDAO nodeDao;
     
@@ -290,6 +295,16 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 }
 
             }
+
+            if(json.has("stats"))
+            {
+                JSONObject statsObj = json.getJSONObject("stats");
+                Map<String, Map<String, Object>> builtStats = buildStats(statsObj);
+                builtStats.forEach((pKey, pVal) -> {
+                    stats.put(pKey, getMetrics(pVal));
+                });
+            }
+
             // process Spell check 
             JSONObject spellCheckJson = (JSONObject) json.opt("spellcheck");
             if (spellCheckJson != null)
@@ -332,6 +347,29 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 PermissionEvaluationMode.EAGER, searchParameters);
     }
 
+    protected Map<String, Map<String, Object>> buildStats(JSONObject statsObj) throws JSONException
+    {
+        if(statsObj.has("stats_fields"))
+        {
+            Map<String, Map<String, Object>> statsMap = new HashMap<>();
+            JSONObject statsFields = statsObj.getJSONObject("stats_fields");
+            for(Iterator itk = statsFields.keys(); itk.hasNext(); /**/)
+            {
+                String fieldName = (String) itk.next();
+                JSONObject theStats = statsFields.getJSONObject(fieldName);
+                Map<String, Object> fieldStats = new HashMap<>(statsFields.length());
+                for(Iterator it = theStats.keys(); it.hasNext(); /**/)
+                {
+                    String key = (String) it.next();
+                    fieldStats.put(key, theStats.get(key));
+                }
+                statsMap.put(fieldName, fieldStats);
+            }
+            return statsMap;
+        }
+        return Collections.emptyMap();
+    }
+
     protected List<GenericFacetResponse> buildPivot(JSONObject facet_pivot, String pivotName) throws JSONException
     {
         if (!facet_pivot.has(pivotName)) return null;
@@ -342,11 +380,21 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         for(int i = 0; i < pivots.length(); i++)
         {
             JSONObject piv = pivots.getJSONObject(i);
+            List<Metric> metrics = new ArrayList<>(1);
             String field = piv.getString("field");
             String value = piv.getString("value");
+            if (piv.has("stats"))
+            {
+                JSONObject stats = piv.getJSONObject("stats");
+                Map<String, Map<String, Object>> pivotStats = buildStats(stats);
+                pivotStats.forEach((pKey, pVal) -> {
+                   metrics.addAll(getMetrics(pVal));
+                });
+            }
             Integer count = Integer.parseInt(piv.getString("count"));
+            metrics.add(new SimpleMetric(METRIC_TYPE.count,String.valueOf(count)));
             List<GenericFacetResponse> innerPivot = buildPivot(piv, "pivot");
-            GenericBucket buck = new GenericBucket(piv.getString("value"), field+":"+value, null, Arrays.asList(new MetricCount(count)), innerPivot);
+            GenericBucket buck = new GenericBucket(piv.getString("value"), field+":"+value, null, metrics, innerPivot);
             List<GenericBucket> listBucks = pivotBuckets.containsKey(field)?pivotBuckets.get(field):new ArrayList<>();
             listBucks.add(buck);
             pivotBuckets.put(field, listBucks);
@@ -359,6 +407,22 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         if (!facetResponses.isEmpty()) return facetResponses;
 
         return null;
+    }
+
+    protected List<Metric> getMetrics(Map<String, Object> metrics)
+    {
+        if(metrics != null && !metrics.isEmpty())
+        {
+            return metrics.entrySet().stream().map(aStat -> {
+                METRIC_TYPE metricType = METRIC_TYPE.valueOf(aStat.getKey());
+                switch (metricType)
+                {
+                    default:
+                        return new SimpleMetric(metricType, String.valueOf(aStat.getValue()));
+                }
+            }).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
     public NodeService getNodeService()
@@ -585,6 +649,11 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     public List<GenericFacetResponse> getPivotFacets()
     {
         return pivotFacets;
+    }
+
+    public Map<String, List<Metric>> getStats()
+    {
+        return Collections.unmodifiableMap(stats);
     }
 
     public long getLastIndexedTxId()

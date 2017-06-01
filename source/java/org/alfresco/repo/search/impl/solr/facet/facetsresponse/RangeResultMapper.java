@@ -120,6 +120,8 @@ public class RangeResultMapper
                     List<String> includes = range.getInclude();
                     if(includes != null && !includes.isEmpty())
                     {
+                        startInclusive = range.isRangeStartInclusive(); 
+                        endInclusive = range.isRangeEndInclusive();
                         startFilterQuery = range.getRangeBucketStartInclusive();
                         endFilterQuery = range.getRangeBucketEndInclusive();
                     }

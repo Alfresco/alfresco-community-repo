@@ -409,7 +409,7 @@ public class SolrQueryHTTPClientTest
                                 null, null, null, null,null, null,  null)
                     ));
         List<RangeParameters> ranges = new ArrayList<RangeParameters>();
-        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), "csize", null));
+        ranges.add(new RangeParameters("content.size","0","1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), "csize",null));
         params.setRanges(ranges);
 
         StringBuilder urlBuilder = new StringBuilder();
@@ -535,7 +535,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("&facet.range=created"));
         assertTrue(url.contains("&f.created.facet.range.start=2015-01-01T00%3A00%3A00.000Z"));
-        assertTrue(url.contains("&f.created.facet.range.end=2016-01-01T00%3A00%3A00.000Z"));
+        assertTrue(url.contains("&f.created.facet.range.end=2016-12-31T23%3A59%3A59.999Z"));
         assertTrue(url.contains("&f.created.facet.range.gap=%2B1MONTH"));
 
         TimeZone.setDefault(defaultTimeZone);

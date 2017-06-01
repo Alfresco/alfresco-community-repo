@@ -85,49 +85,50 @@ public class RangeResultMapper
         String startFilterQuery = "[";
         String endFilterQuery = ">";
         StringBuilder filterQ = new StringBuilder();
+        //Check if other 
         //We take the position of the bucket into consideration.
         switch (facet.get("bucketPosition"))
         {
-        case "head":
-            for(RangeParameters range : ranges)
-            {
-                if(range.getField().equalsIgnoreCase(facetField))
+            case "head":
+                for(RangeParameters range : ranges)
                 {
-                    startInclusive = range.isRangeStartInclusive(); 
-                    endInclusive = range.isRangeEndInclusive();
-                    startFilterQuery = range.getRangeFirstBucketStartInclusive();
-                    endFilterQuery = range.getRangeFirstBucketEndInclusive();
-                }
-            }
-            break;
-        case "tail":
-            for(RangeParameters range : ranges)
-            {
-                if(range.getField().equalsIgnoreCase(facetField))
-                {
-                    startInclusive = range.isRangeStartInclusive(); 
-                    endInclusive = range.isRangeEndInclusive();
-                    startFilterQuery = range.getRangeLastBucketStartInclusive();
-                    endFilterQuery = range.getRangeLastBucketEndInclusive();
-                }
-            }
-            break;
-        default:
-            for(RangeParameters range : ranges)
-            {
-                if(range.getField().equalsIgnoreCase(facetField))
-                {
-                    List<String> includes = range.getInclude();
-                    if(includes != null && !includes.isEmpty())
+                    if(range.getField().equalsIgnoreCase(facetField))
                     {
-                        startInclusive = range.isRangeStartInclusive(); 
-                        endInclusive = range.isRangeEndInclusive();
-                        startFilterQuery = range.getRangeBucketStartInclusive();
-                        endFilterQuery = range.getRangeBucketEndInclusive();
+                        startFilterQuery = range.getRangeFirstBucketStartInclusive();
+                        endFilterQuery = range.getRangeFirstBucketEndInclusive();
+                        startInclusive = checkInclusive(startFilterQuery); 
+                        endInclusive = checkInclusive(endFilterQuery);
                     }
                 }
-            }
-            break;
+                break;
+            case "tail":
+                for(RangeParameters range : ranges)
+                {
+                    if(range.getField().equalsIgnoreCase(facetField))
+                    {
+                        startFilterQuery = range.getRangeBucketStartInclusive();
+                        endFilterQuery = range.getRangeLastBucketEndInclusive();
+                        startInclusive = checkInclusive(startFilterQuery); 
+                        endInclusive = checkInclusive(endFilterQuery);
+                    }
+                }
+                break;
+            default:
+                for(RangeParameters range : ranges)
+                {
+                    if(range.getField().equalsIgnoreCase(facetField))
+                    {
+                        List<String> includes = range.getInclude();
+                        if(includes != null && !includes.isEmpty())
+                        {
+                            startFilterQuery = range.getRangeBucketStartInclusive();
+                            endFilterQuery = range.getRangeBucketEndInclusive();
+                            startInclusive = checkInclusive(startFilterQuery); 
+                            endInclusive = checkInclusive(endFilterQuery);
+                        }
+                    }
+                }
+                break;
         }
         
         facet.put(GenericFacetResponse.START_INC.toString(), Boolean.toString(startInclusive));
@@ -161,5 +162,9 @@ public class RangeResultMapper
                                  null,
                                  facet);
         
+    }
+    private static boolean checkInclusive(String input)
+    {
+        return input.equalsIgnoreCase("[") || input.equalsIgnoreCase("]")? true:false; 
     }
 }

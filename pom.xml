@@ -10,11 +10,22 @@
     <packaging>jar</packaging>
     <name>Alfresco Content Services Installer Resources + Platform Installers</name>
 
-   <properties>
+ <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
+        <bitrock.arguments>
+           project.outputDirectory=${project.build.directory} 
+           project.version=${project.version} 
+           project.fullName='Alfresco Content Services Platform' 
+           alfresco_edition=enterprise 
+           alfresco_package='${alfresco.package.name}' 
+           alfrescogoogledocs_component_enabled=0 
+           alfrescosolr_component_enabled=0 
+           alfrescowcmqs_component_enabled=0 
+        </bitrock.arguments>
+        <!--
         <bitrock.arguments>
            project.outputDirectory=${project.build.directory} 
            project.version=${project.version} 
@@ -29,6 +40,7 @@
            alfrescosolr_component_enabled=0 
            alfrescowcmqs_component_enabled=0 
         </bitrock.arguments>
+        -->
     </properties>
 
     <dependencies>
@@ -166,25 +178,25 @@
         </dependency>
         
         
-        <!-- Pdfium -->
+        <!-- Alfresco Pdf Renderer -->
 		<dependency>
 			<groupId>org.alfresco</groupId>
 			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.pdfium.version}</version>
+			<version>${installer.alfresco-pdf-renderer.version}</version>
 			<classifier>linux</classifier>
 			<type>tgz</type>
 		</dependency>
 		<dependency>
 			<groupId>org.alfresco</groupId>
 			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.pdfium.version}</version>
+			<version>${installer.alfresco-pdf-renderer.version}</version>
 			<classifier>osx</classifier>
 			<type>tgz</type>
 		</dependency>
 		<dependency>
 			<groupId>org.alfresco</groupId>
 			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.pdfium.version}</version>
+			<version>${installer.alfresco-pdf-renderer.version}</version>
 			<classifier>win64</classifier>
 			<type>tgz</type>
 		</dependency>

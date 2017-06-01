@@ -53,16 +53,6 @@ public class SearchRequestContext
         this.includeRequest = includeRequest;
         this.pivotKeys = new HashMap<>();
         this.stores = new HashSet<>();
-
-        /**
-        this.facetQueries = facetQueries!=null?Collections.unmodifiableList(facetQueries): Collections.emptyList();
-        this.facetFields = new FacetFields(facetFields!=null?Collections.unmodifiableList(facetFields.getFacets()):Collections.emptyList());
-        this.facetIntervals = facetIntervals!=null?
-                    new IntervalParameters(Collections.unmodifiableList(facetIntervals.getSets()),
-                                           Collections.unmodifiableList(facetIntervals.getIntervals()))
-                    :
-                    new IntervalParameters(Collections.emptyList(),Collections.emptyList());
-        this.pivots = pivots!=null?Collections.unmodifiableList(pivots): Collections.emptyList();**/
     }
 
     public static final SearchRequestContext from(SearchQuery searchQuery)

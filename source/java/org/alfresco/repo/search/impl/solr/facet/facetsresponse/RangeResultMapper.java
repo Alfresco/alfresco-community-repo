@@ -154,7 +154,7 @@ public class RangeResultMapper
              .append(" - ")
              .append(end)
              .append(endInclusive ? "]" :")");
-        
+        facet.remove("bucketPosition");
         
         return new GenericBucket(label.toString(),
                                  filterQ.toString(),

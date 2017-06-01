@@ -1,27 +1,23 @@
 Configuring and starting Alfresco/Share:
 ----------------------------------------
 
-- Clone the project from git
+- Clone the project (e.g. git clone git@gitlab.alfresco.com:records-management/records-management.git)
 
 - Import the project as a maven project
 
 - Start the Alfresco/Share instances with the following commands:
 
-  To start the repo:
-  cd rm-community/rm-community-repo
   mvn clean install -Pstart-repo
-  
-  To start Share:
-  cd rm-community/rm-community-share
   mvn clean install -Pstart-share
 
-  NOTE: If you have the enterprise code, see rm-enterprise/README.txt for instructions on how to build/start the enterprise code.
+  (these commands work best if run from the specific directories, e.g. start share from
+  rm-enterprise/rm-enterprise-share/ or rm-community/rm-community-share/ )
 
 
 Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
 --------------------------------------------------------------------
 
-- Create a file called "local.properties" under src/main/resources in rm-community-repo (you may need to create the directory)
+- Create a file called "local.properties" under src/main/resources in alfresco-rm-enterprise-repo
 
 - Add the following properties in this new file
   my.db.name -> The name of the database schema
@@ -51,12 +47,12 @@ To run the automated UI tests, change to the rm-automation directory and run:
 
    mvn clean install -Dskip.automationtests=false
 
-Note: due to Selenium Firefox driver changes, the highest supported Firefox version for UI tests is 43.0.4 (with Selenium 2.52.0). 
+Note: due to Selenium Firefox driver changes, the highest supported Firefox version for UI tests is 43.0.4 (with Selenium 2.52.0).
 
 It is possible to have multiple versions of Firefox installed onto your workstation (e.g. one for running the UI tests and the other, kept
-up to date, for everyday browsing) but beware Firefox auto-updates. In this scenario the best approach is to create a non-default profile 
-(default profiles will be shared between your Firefox installations!) for which auto-updates are disabled and forcing the use of this 
-profile in your tests (-Dwebdriver.firefox.profile="ProfileName"). If your Firefox 43 install isn't in your path, you can use the 
+up to date, for everyday browsing) but beware Firefox auto-updates. In this scenario the best approach is to create a non-default profile
+(default profiles will be shared between your Firefox installations!) for which auto-updates are disabled and forcing the use of this
+profile in your tests (-Dwebdriver.firefox.profile="ProfileName"). If your Firefox 43 install isn't in your path, you can use the
 -Dwebdriver.firefox.profile option set to the full path of its "firefox-bin" executable.
 
 MacOS X Sierra users: if you experience by order of magnitude slower performance when connected to a WiFi network (e.g. office WiFi)
@@ -90,9 +86,9 @@ To download and run RM with the Outlook Integration AMPs installed on the repo a
   mvn clean install -Pstart-share,outlook-integration
 
 Follow these instructions install licence and Outlook plugin:
-  
+
   - http://docs.alfresco.com/outlook2.1/tasks/Outlook-license.html
-  - http://docs.alfresco.com/outlook2.1/tasks/Outlook-install_v2.html 
+  - http://docs.alfresco.com/outlook2.1/tasks/Outlook-install_v2.html
 
 
 SNAPSHOT dependencies:
@@ -115,7 +111,7 @@ This project follows the usual Alfresco Coding Standards. If you use Eclipse or 
 Surf build errors:
 ------------------
 
-If you get: 
+If you get:
 [ERROR] Failed to execute goal on project alfresco-rm-community-share: Could not resolve dependencies for project org.alfresco:alfresco-rm-community-share:amp:2.6-SNAPSHOT: Failed to collect dependencies at org.alfresco.surf:spring-surf-api:jar:6.3 -> org.alfresco.surf:spring-surf:jar:${dependency.surf.version}: Failed to read artifact descriptor for org.alfresco.surf:spring-surf:jar:${dependency.surf.version}: Could not transfer artifact org.alfresco.surf:spring-surf:pom:${dependency.surf.version} from/to alfresco-internal (https://artifacts.alfresco.com/nexus/content/groups/private): Not authorized , ReasonPhrase:Unauthorized. -> [Help 1]
 
 then please re-run with  -Ddependency.surf.version=6.3
@@ -127,3 +123,19 @@ Install lombok plugin for IDEs:
 To allow automation and benchmark projects to be built within an IDE the lombok 'plugin' needs to be installed.
 
 Execute lombok.jar (doubleclick it, or run java -jar lombok.jar). Follow instructions.
+
+
+Use Solr 6 with Alfresco 5.2.x:
+-------------------------------
+In alfresco-global.properties (depending on the RM edition /records-management/rm-community/rm-community-repo/src/test/properties/local or /records-management/rm-enterprise/rm-enterprise-repo/src/test/properties/local)
+change the value for "index.subsystem.name" from "solr4" to "solr6".
+Add also the following property "solr.port=8983".
+
+Download the latest Alfresco Search Services from
+https://nexus.alfresco.com/nexus/#nexus-search;gav~~alfresco-search-services~~~
+Currently it's 1.0.0 (alfresco-search-services-1.0.0.zip)
+
+Unzip it and change to the "solr" folder within it. Start the Solr server using the following command:
+solr start -a "-Dcreate.alfresco.defaults=alfresco,archive"
+
+Start your repository

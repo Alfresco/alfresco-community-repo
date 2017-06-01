@@ -78,6 +78,7 @@ import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -91,6 +92,7 @@ import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -1300,6 +1302,94 @@ public class RecordServiceImpl extends BaseBehaviourBean
             // file on file record policy
             onFileRecord.get(getTypeAndApsects(record)).onFileRecord(record);
         }
+    }
+
+    /**
+     * Helper method to 'complete' a record.
+     *
+     * @param record node reference to record
+     */
+    public void complete(NodeRef record)
+    {
+        ParameterCheck.mandatory("item", record);
+
+        // TODO get this from config
+        boolean checkMandatoryPropertiesEnabled = true;
+
+        if (!checkMandatoryPropertiesEnabled || (isMandatoryPropertiesPopulated(record)))
+        {
+            disablePropertyEditableCheck();
+            // Add the declared aspect
+            Map<QName, Serializable> declaredProps = new HashMap<>(2);
+            declaredProps.put(RecordsManagementModel.PROP_DECLARED_AT, new Date());
+            declaredProps.put(RecordsManagementModel.PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
+            nodeService.addAspect(record, RecordsManagementModel.ASPECT_DECLARED_RECORD, declaredProps);
+            enablePropertyEditableCheck();
+        }
+    }
+
+    /**
+     * Helper method to determine whether a record's mandatory properties are set.
+     *
+     * @param nodeRef  node reference to record
+     * @return boolean true if all mandatory metadata properties are set, false otherwise
+     */
+    public boolean isMandatoryPropertiesPopulated(NodeRef nodeRef)
+    {
+        boolean result = true;
+
+        // check for missing mandatory metadata from type definitions
+        Map<QName, Serializable> nodeRefProps = nodeService.getProperties(nodeRef);
+        QName nodeRefType = nodeService.getType(nodeRef);
+
+        TypeDefinition typeDef = dictionaryService.getType(nodeRefType);
+        for (PropertyDefinition propDef : typeDef.getProperties().values())
+        {
+            if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+            {
+                result = false;
+                break;
+            }
+        }
+
+        // check for missing mandatory metadata from aspect definitions
+        if (result)
+        {
+            // TODO change to aspects = getAspects(nodeRef) ?
+            Set<QName> aspects = nodeService.getAspects(nodeRef);
+            for (QName aspect : aspects)
+            {
+                AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
+                for (PropertyDefinition propDef : aspectDef.getProperties().values())
+                {
+                    if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+                    {
+                        result = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // check for missing mandatory metadata from custom aspect definitions
+        if (result)
+        {
+            Collection<QName> aspects = dictionaryService.getAspects(RM_CUSTOM_MODEL);
+            for (QName aspect : aspects)
+            {
+                AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
+                for (PropertyDefinition propDef : aspectDef.getProperties().values())
+                {
+                    if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+                    {
+                        result = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     /**

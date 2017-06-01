@@ -140,6 +140,32 @@ public class RecordsAPI extends RMModelRequest
     }
 
     /**
+     * Complete the record recordId
+     *
+     * @param recordId The id of the record to complete
+     * @return The {@link Record} with the given properties
+     * @throws Exception for the following cases:
+     *                   <ul>
+     *                   <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
+     *                   <li>authentication fails</li>
+     *                   <li>current user does not have permission to file to {@code fileplanComponentId}</li>
+     *                   <li>{@code recordId} does not exist</li>
+     *                   <li>model integrity exception: the record is already complete</li>
+     *                   <li>model integrity exception: the record has missing meta-data</li>
+     *                   </ul>
+     */
+    public Record completeRecord(String recordId, String parameters) throws Exception
+    {
+        mandatoryString("recordId", recordId);
+
+        return getRmRestWrapper().processModel(Record.class, simpleRequest(
+            POST,
+            "/records/{recordId}/complete?{parameters}",
+            recordId,
+            parameters
+        ));
+    }
+    /**
      * Deletes a record.
      *
      * @param recordId The identifier of a record

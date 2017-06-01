@@ -213,6 +213,21 @@ public interface RecordService
     */
    void file(NodeRef record);
 
+    /**
+     * Indicates whether all the mandatory metadata for the record is populated or not
+     *
+     * @param record    record for which to check if all mandatory metadata is populated
+     * @return boolean  true if all mandatory metadata is populated, false otherwise
+     */
+    boolean isMandatoryPropertiesPopulated(NodeRef record);
+
+    /**
+     * Completes a record.
+     *
+     * @param record    record to be completed
+     */
+    void complete(NodeRef record);
+
    /**
     * Rejects a record with the provided reason
     *

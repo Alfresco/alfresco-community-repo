@@ -512,6 +512,50 @@ public class SearchMapperTests
     }
 
     @Test
+    public void fromTimezone() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromTimezone(searchParameters, null);
+        searchMapper.fromTimezone(searchParameters, "");
+
+        try
+        {
+            searchMapper.fromTimezone(searchParameters, "nonsense");
+            fail();
+        } catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("Invalid timezone"));
+        }
+
+        try
+        {
+            searchMapper.fromTimezone(searchParameters, "GMT+25");
+            fail();
+        } catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("Invalid timezone"));
+        }
+
+        searchMapper.fromTimezone(searchParameters, "America/New_York");
+        assertEquals("America/New_York", searchParameters.getTimezone());
+        searchMapper.fromTimezone(searchParameters, "America/Denver");
+        assertEquals("America/Denver", searchParameters.getTimezone());
+        searchMapper.fromTimezone(searchParameters, "America/Los_Angeles");
+        assertEquals("America/Los_Angeles", searchParameters.getTimezone());
+        searchMapper.fromTimezone(searchParameters, "Europe/Madrid");
+        assertEquals("Europe/Madrid", searchParameters.getTimezone());
+        searchMapper.fromTimezone(searchParameters, "GMT+1");
+        assertEquals("GMT+01:00", searchParameters.getTimezone());
+        searchMapper.fromTimezone(searchParameters, "GMT-9");
+        assertEquals("GMT-09:00", searchParameters.getTimezone());
+        searchMapper.fromTimezone(searchParameters, "GMT+08:00");
+        assertEquals("GMT+08:00", searchParameters.getTimezone());
+        searchMapper.fromTimezone(searchParameters, "GMT-12:00");
+        assertEquals("GMT-12:00", searchParameters.getTimezone());
+    }
+
+    @Test
     public void fromFacetFields() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
@@ -866,7 +910,9 @@ public class SearchMapperTests
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,null);
+        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null, null,
+                    null, null,null, null);
         return sq;
     }
 

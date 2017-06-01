@@ -1030,7 +1030,7 @@
                   <!-- There's also surefire configuration in the integration-tests profile -->
                   <configuration>
                        <systemPropertyVariables>
-                           <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
+                          <alfresco-pdf-renderer.root>${project.build.directory}/test-binaries/alfresco-pdf-renderer</alfresco-pdf-renderer.root>
                        </systemPropertyVariables>
                        <includes>
                            <include>**/org/alfresco/AllUnitTestsSuite.java</include>

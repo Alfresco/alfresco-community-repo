@@ -116,8 +116,9 @@ public class IntervalSet
     {
         StringBuilder sb = new StringBuilder("");
         sb.append(startInclusive?"[":"<")
-                    .append(start)
-                    .append(" TO "+end)
+                    .append("\"").append(start).append("\"")
+                    .append(" TO ")
+                    .append("\"").append(end).append("\"")
                     .append(endInclusive?"]":">");
         return sb.toString();
     }

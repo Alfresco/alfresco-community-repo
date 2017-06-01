@@ -881,8 +881,23 @@ public class SearchMapperTests
         anIntervalSet.add(new IntervalSet("1", "10", "bert", false, false));
         intervalList = Arrays.asList(new Interval("cm:price", "Price", null), new Interval("cm:price", "Price", anIntervalSet));
         intervalParameters = new IntervalParameters(intervalSets,intervalList);
+
+        try
+        {
+            searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //duplicate labels
+            assertNotNull(iae);
+        }
+
+        intervalList = Arrays.asList(new Interval("cm:price", "Prices", null), new Interval("cm:price", "Pricey", anIntervalSet));
+        intervalParameters = new IntervalParameters(intervalSets,intervalList);
         searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
         assertEquals(searchParameters.getInterval(), intervalParameters);
+
     }
     
     @Test

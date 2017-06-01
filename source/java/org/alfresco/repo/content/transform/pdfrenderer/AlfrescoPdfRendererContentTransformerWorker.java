@@ -248,22 +248,24 @@ public class AlfrescoPdfRendererContentTransformerWorker extends ContentTransfor
             {
                 commandOptions = "";
             }
-
-            if (resizeOptions.getHeight() > -1)
+            if(resizeOptions != null)
             {
-                commandOptions += " --height=" + resizeOptions.getHeight();
-            }
-            if (resizeOptions.getWidth() > -1)
-            {
-                commandOptions += " --width=" + resizeOptions.getHeight();
-            }
-            if (resizeOptions.getAllowEnlargement())
-            {
-                commandOptions += " --allow-enlargement";
-            }
-            if (resizeOptions.isMaintainAspectRatio())
-            {
-                commandOptions += " --maintain-aspect-ratio";
+	            if (resizeOptions.getHeight() > -1)
+	            {
+	                commandOptions += " --height=" + resizeOptions.getHeight();
+	            }
+	            if (resizeOptions.getWidth() > -1)
+	            {
+	                commandOptions += " --width=" + resizeOptions.getHeight();
+	            }
+	            if (resizeOptions.getAllowEnlargement())
+	            {
+	                commandOptions += " --allow-enlargement";
+	            }
+	            if (resizeOptions.isMaintainAspectRatio())
+	            {
+	                commandOptions += " --maintain-aspect-ratio";
+	            }
             }
             commandOptions += " --page=" + getSourcePageRange(imageOptions, sourceMimetype, targetMimetype);
 

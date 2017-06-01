@@ -117,7 +117,7 @@ public class ResultMapperTests
                 + "\"facet_counts\":{\"facet_queries\":{\"small\":0,\"large\":0,\"xtra small\":3,\"xtra large\":0,\"medium\":8,\"XX large\":0},"
                 + "\"facet_fields\":{\"content.size\":[\"Big\",8,\"Brown\",3,\"Fox\",5,\"Jumped\",2,\"somewhere\",3]},"
                 +"\"facet_dates\":{},"
-                +"\"facet_ranges\":{},"
+                +"\"facet_ranges\":{\"content.size\": {\"counts\": [\"0\",4,\"100\",6,\"200\",3],\"gap\": 100,\"start\": 0,\"end\": 300}},"
                 +"\"facet_pivot\":{\"creator,modifier\":[{\"field\":\"creator\",\"count\":7,\"pivot\":[{\"field\":\"modifier\",\"count\":3,\"value\":\"mjackson\"},{\"field\":\"modifier\",\"count\":4,\"value\":\"admin\"}],\"value\":\"mjackson\"}]},"
                 +"\"facet_intervals\":{\"creator\":{\"last\":4,\"first\":0},\"TheCreated\":{\"earlier\":5,\"lastYear\":0,\"currentYear\":854}}"
                 + "},"
@@ -320,8 +320,8 @@ public class ResultMapperTests
         assertEquals("great", searchContext.getRequest().getQuery().getUserQuery());
 
         //Pivot
-        assertEquals(5, searchContext.getFacets().size());
-        GenericFacetResponse pivotFacet = searchContext.getFacets().get(2);
+        assertEquals(6, searchContext.getFacets().size());
+        GenericFacetResponse pivotFacet = searchContext.getFacets().get(3);
         assertEquals(FACET_TYPE.pivot,pivotFacet.getType());
         assertEquals("creator",pivotFacet.getLabel());
         assertEquals(2, pivotFacet.getBuckets().size());
@@ -348,7 +348,7 @@ public class ResultMapperTests
         assertEquals("{count=4}",metrics[0].getValue().toString());
 
         //Stats
-        GenericFacetResponse statsFacet = searchContext.getFacets().get(3);
+        GenericFacetResponse statsFacet = searchContext.getFacets().get(4);
         assertEquals(FACET_TYPE.stats,statsFacet.getType());
         assertEquals("created",statsFacet.getLabel());
         Set<Metric> statsMetrics = statsFacet.getBuckets().get(0).getMetrics();
@@ -362,7 +362,7 @@ public class ResultMapperTests
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sum, 1.458318720769983E15)));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.stddev, 5.6250677994522545E10)));
 
-        statsFacet = searchContext.getFacets().get(4);
+        statsFacet = searchContext.getFacets().get(5);
         assertEquals("numericLabel",statsFacet.getLabel());
         statsMetrics = statsFacet.getBuckets().get(0).getMetrics();
         assertEquals(7,statsMetrics.size());
@@ -458,6 +458,33 @@ public class ResultMapperTests
         assertEquals("cm:created:[NOW/YEAR TO NOW/YEAR+1YEAR]",intervalFacets.get(1).getBuckets().get(2).getFilterQuery());
         assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
         assertEquals("854",((SimpleMetric) metrics[0]).getValue().get("count"));
+    }
+    @Test
+    public void testRange() throws Exception
+    {
+        ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
+        SearchQuery searchQuery = helper.searchQueryFromJson();
+        SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
+        SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        
+        //Numeric facet range 
+        List<GenericFacetResponse> rangeFacets = searchContext.getFacets().stream()
+                    .filter(f -> f.getType().equals(FACET_TYPE.range)).collect(Collectors.toList());
+        assertEquals(1, rangeFacets.size());
+        assertEquals(3, rangeFacets.get(0).getBuckets().size());
+        assertEquals("content.size",rangeFacets.get(0).getLabel());
+        assertEquals("0",rangeFacets.get(0).getBuckets().get(0).getLabel());
+        Object[] metrics = rangeFacets.get(0).getBuckets().get(0).getMetrics().toArray();
+        assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
+
+        assertEquals("100",rangeFacets.get(0).getBuckets().get(1).getLabel());
+        metrics = rangeFacets.get(0).getBuckets().get(1).getMetrics().toArray();
+        assertEquals("6",((SimpleMetric) metrics[0]).getValue().get("count"));
+
+        assertEquals("200",rangeFacets.get(0).getBuckets().get(2).getLabel());
+        metrics = rangeFacets.get(0).getBuckets().get(2).getMetrics().toArray();
+        assertEquals("3",((SimpleMetric) metrics[0]).getValue().get("count"));
     }
 
     @Test

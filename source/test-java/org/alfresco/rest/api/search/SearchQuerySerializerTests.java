@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.Interval;
 import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.IntervalSet;
+import org.alfresco.service.cmr.search.RangeParameters;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -170,6 +171,10 @@ public class SearchQuerySerializerTests
         assertEquals(1,searchQuery.getStats().size());
         assertEquals("cm:creator",searchQuery.getStats().get(0).getField());
         assertEquals("mylabel",searchQuery.getStats().get(0).getLabel());
+        //Range Facet
+        RangeParameters range = searchQuery.getFacetRange();
+        assertNotNull(range);
+        
     }
 
     @Test

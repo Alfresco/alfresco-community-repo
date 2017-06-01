@@ -29,7 +29,6 @@ package org.alfresco.rest.api.search.impl;
 import static org.alfresco.rest.api.search.impl.StoreMapper.DELETED;
 import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
 import static org.alfresco.rest.api.search.impl.StoreMapper.VERSIONS;
-import com.sun.javafx.font.Metrics;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
@@ -322,6 +321,9 @@ public class ResultMapper
 
         Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
         facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
+        
+        Map<String, List<Pair<String, Integer>>> facetRanges = solrResultSet.getFacetRanges();
+        facets.addAll(getGenericFacetsForRanges(facetRanges, searchQuery));
 
         List<GenericFacetResponse> stats = getFieldStats(searchRequestContext, solrResultSet.getStats());
         List<GenericFacetResponse> pimped = getPivots(searchRequestContext, solrResultSet.getPivotFacets(), stats);
@@ -473,7 +475,32 @@ public class ResultMapper
         }
         return Collections.emptyList();
     }
-
+    /**
+     * Transforms the facet range response into generic facet response.
+     * @param facetFields
+     * @param searchQuery
+     * @return GenericFacetResponse
+     */
+    protected static List<GenericFacetResponse> getGenericFacetsForRanges(Map<String, List<Pair<String, Integer>>> facetFields, SearchQuery searchQuery)
+    {
+        List<GenericFacetResponse> ffcs = new ArrayList<>(facetFields.size());
+        if (facetFields != null && !facetFields.isEmpty())
+        {
+            for (Entry<String, List<Pair<String, Integer>>> facet:facetFields.entrySet())
+            {
+                if (facet.getValue() != null && !facet.getValue().isEmpty())
+                {
+                    List<GenericBucket> buckets = new ArrayList<>();
+                    facet.getValue().forEach(action -> buckets.add(
+                    new GenericBucket(action.getFirst(), null, null ,
+                            new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(action.getSecond())))),
+                            null)));
+                    ffcs.add(new GenericFacetResponse(FACET_TYPE.range, facet.getKey(), buckets));
+                }
+            }   
+        }
+        return ffcs;
+    }
     /**
      * Returns generic faceting responses for Intervals
      * @param facetFields

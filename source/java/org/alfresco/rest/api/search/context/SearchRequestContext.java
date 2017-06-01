@@ -33,11 +33,14 @@ import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.service.cmr.search.IntervalParameters;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,12 +55,15 @@ public class SearchRequestContext
     private final Query query;
     private final boolean includeRequest;
     private final Map<String, String> pivotKeys;
+    private final Set<String> stores;
 
     private SearchRequestContext(Query query, boolean includeRequest)
     {
         this.query = query;
         this.includeRequest = includeRequest;
         this.pivotKeys = new HashMap<>();
+        this.stores = new HashSet<>();
+
         /**
         this.facetQueries = facetQueries!=null?Collections.unmodifiableList(facetQueries): Collections.emptyList();
         this.facetFields = new FacetFields(facetFields!=null?Collections.unmodifiableList(facetFields.getFacets()):Collections.emptyList());
@@ -87,4 +93,9 @@ public class SearchRequestContext
     {
         return pivotKeys;
     }
+    public Set<String> getStores()
+    {
+        return stores;
+    }
+
 }

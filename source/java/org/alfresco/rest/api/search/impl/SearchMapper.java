@@ -119,7 +119,7 @@ public class SearchMapper
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromHighlight(sp, searchQuery.getHighlight());
         fromFacetIntervals(sp, searchQuery.getFacetIntervals());
-        fromScope(sp, searchQuery.getScope());
+        fromScope(sp, searchQuery.getScope(), searchRequestContext);
         fromLimits(sp, searchQuery.getLimits());
 
         return sp;
@@ -445,10 +445,11 @@ public class SearchMapper
 
     /**
      * SearchParameters from Scope object
-     * @param sp SearchParameters
      * @param Scope scope
+     * @param sp SearchParameters
+     * @param searchRequestContext
      */
-    public void fromScope(SearchParameters sp, Scope scope)
+    public void fromScope(SearchParameters sp, Scope scope, SearchRequestContext searchRequestContext)
     {
         if (scope != null)
         {
@@ -457,6 +458,8 @@ public class SearchMapper
             {
                 //First reset the stores then add them.
                 sp.getStores().clear();
+
+                searchRequestContext.getStores().addAll(stores);
                 for (String aStore:stores)
                 {
                     try
@@ -468,6 +471,12 @@ public class SearchMapper
                         throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
                                     new Object[] { aStore });
                     }
+                }
+
+                if (stores.contains(StoreMapper.HISTORY) && (stores.size() > 1))
+                {
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                new Object[] { ": scope 'history' can only be used on its own" });
                 }
             }
         }

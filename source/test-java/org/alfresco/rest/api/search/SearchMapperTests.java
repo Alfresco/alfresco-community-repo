@@ -445,17 +445,18 @@ public class SearchMapperTests
     {
         SearchParameters searchParameters = new SearchParameters();
         searchMapper.setDefaults(searchParameters);
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
 
         //Doesn't error, has default store
-        searchMapper.fromScope(searchParameters, null);
+        searchMapper.fromScope(searchParameters, null, searchRequestContext);
         assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,searchParameters.getStores().get(0));
 
-        searchMapper.fromScope(searchParameters, new Scope(null));
+        searchMapper.fromScope(searchParameters, new Scope(null), searchRequestContext);
         assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,searchParameters.getStores().get(0));
 
         try
         {
-            searchMapper.fromScope(searchParameters, new Scope(Arrays.asList("nonsense")));
+            searchMapper.fromScope(searchParameters, new Scope(Arrays.asList("nonsense")), searchRequestContext);
             fail();
         }
         catch (InvalidArgumentException iae)
@@ -464,11 +465,50 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
-        searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED, StoreMapper.LIVE_NODES, StoreMapper.VERSIONS)));
+        searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.DELETED, StoreMapper.LIVE_NODES, StoreMapper.VERSIONS)),
+                    searchRequestContext);
         assertEquals(3 ,searchParameters.getStores().size());
         assertEquals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.toString(),searchParameters.getStores().get(0).toString());
         assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString(),searchParameters.getStores().get(1).toString());
         assertEquals(StoreMapper.STORE_REF_VERSION2_SPACESSTORE.toString(),searchParameters.getStores().get(2).toString());
+
+        searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.HISTORY)), searchRequestContext);
+        assertEquals(1 ,searchParameters.getStores().size());
+        assertEquals(StoreMapper.STORE_REF_HISTORY.toString(),searchParameters.getStores().get(0).toString());
+
+        try
+        {
+            searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.HISTORY, StoreMapper.DELETED)), searchRequestContext);
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Must be a valid scope with history
+            assertNotNull(iae);
+        }
+
+
+        try
+        {
+            searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.HISTORY, StoreMapper.LIVE_NODES)), searchRequestContext);
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Must be a valid scope with history
+            assertNotNull(iae);
+        }
+
+        try
+        {
+            searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(StoreMapper.HISTORY, StoreMapper.VERSIONS)), searchRequestContext);
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Must be a valid scope with history
+            assertNotNull(iae);
+        }
     }
 
     @Test

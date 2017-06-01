@@ -249,7 +249,8 @@ public class ResultMapperTests
     @Test
     public void testNoResults() throws Exception
     {
-        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, null, null, new EmptyResultSet());
+        SearchRequestContext searchRequest = SearchRequestContext.from(SearchQuery.EMPTY);
+        CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, searchRequest, null, new EmptyResultSet());
         assertNotNull(collection);
         assertFalse(collection.hasMoreItems());
         assertTrue(collection.getTotalItems() < 1);

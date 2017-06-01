@@ -43,10 +43,12 @@ public class StoreMapper
     public static final String LIVE_NODES = "nodes";
     public static final String VERSIONS = "versions";
     public static final String DELETED = "deleted-nodes";
+    public static final String HISTORY = "history";
 
     private static Log logger = LogFactory.getLog(StoreMapper.class);
 
     public static final StoreRef STORE_REF_VERSION2_SPACESSTORE = new StoreRef("workspace", Version2Model.STORE_ID);
+    public static final StoreRef STORE_REF_HISTORY = new StoreRef("workspace", "history");
 
     /**
      * Work out which StoreRef this store belongs to.
@@ -65,6 +67,8 @@ public class StoreMapper
                     return STORE_REF_VERSION2_SPACESSTORE;
                 case DELETED:
                     return StoreRef.STORE_REF_ARCHIVE_SPACESSTORE;
+                case HISTORY:
+                    return STORE_REF_HISTORY;
             }
         }
         throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
@@ -93,6 +97,11 @@ public class StoreMapper
             if (StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.equals(nodeRef.getStoreRef()))
             {
                 return DELETED;
+            }
+
+            if (STORE_REF_HISTORY.equals(nodeRef.getStoreRef()))
+            {
+                return HISTORY;
             }
         }
 

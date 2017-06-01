@@ -116,7 +116,6 @@ public class SearchMapperTests
 
         searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, helper.searchQueryFromJson(), searchRequest);
         assertNotNull(searchParameters);
-        assertEquals(null, searchParameters.getFacetFormat());
     }
 
     @Test
@@ -1032,7 +1031,6 @@ public class SearchMapperTests
         assertEquals("workspaces store is the default", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
         assertEquals(100, searchParameters.getLimit());
-        assertEquals(FacetFormat.V2, searchParameters.getFacetFormat());
         
     }
     

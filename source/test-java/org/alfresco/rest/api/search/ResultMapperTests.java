@@ -533,7 +533,7 @@ public class ResultMapperTests
         assertEquals(4, rangeFacets.get(0).getBuckets().size());
         assertEquals(3, rangeFacets.get(1).getBuckets().size());
         assertEquals("content.size",rangeFacets.get(1).getLabel());
-        assertEquals("[0 - 100]",rangeFacets.get(1).getBuckets().get(0).getLabel());
+        assertEquals("(0 - 100]",rangeFacets.get(1).getBuckets().get(0).getLabel());
         Object[] metrics = rangeFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
         assertEquals("content.size:]0 TO 100>", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
@@ -541,7 +541,7 @@ public class ResultMapperTests
         Map<String, String> facetInfo = rangeFacets.get(1).getBuckets().get(0).getBucketInfo();
         assertEquals("0",facetInfo.get("start"));
         assertEquals("100",facetInfo.get("end"));
-        assertEquals("true",facetInfo.get("startInclusive"));
+        assertEquals("false",facetInfo.get("startInclusive"));
         assertEquals("true",facetInfo.get("endInclusive"));
         
     }

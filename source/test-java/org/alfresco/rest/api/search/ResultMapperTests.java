@@ -478,37 +478,43 @@ public class ResultMapperTests
         assertEquals(2, rangeFacets.size());
         assertEquals(4, rangeFacets.get(0).getBuckets().size());
         assertEquals("created",rangeFacets.get(0).getLabel());
-        assertEquals("2015-09-29T10:45:15.729Z - 2016-01-07T10:45:15.729Z",rangeFacets.get(0).getBuckets().get(0).getLabel());
+        assertEquals("[2015-09-29T10:45:15.729Z - 2016-01-07T10:45:15.729Z)",rangeFacets.get(0).getBuckets().get(0).getLabel());
         Object[] metrics1 = rangeFacets.get(0).getBuckets().get(0).getMetrics().toArray();
         assertEquals("0",((SimpleMetric) metrics1[0]).getValue().get("count"));
-        assertEquals("created:(2015-09-29T10:45:15.729Z TO 2016-01-07T10:45:15.729Z)", rangeFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("created:[2015-09-29T10:45:15.729Z TO 2016-01-07T10:45:15.729Z>", rangeFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals(null,rangeFacets.get(0).getBuckets().get(0).getBucketInfo().get("count"));
+        assertEquals("false",rangeFacets.get(0).getBuckets().get(0).getBucketInfo().get("endInclusive"));
+        assertEquals("true",rangeFacets.get(0).getBuckets().get(0).getBucketInfo().get("startInclusive"));
 
         assertEquals(3, rangeFacets.get(1).getBuckets().size());
         assertEquals("content.size",rangeFacets.get(1).getLabel());
-        assertEquals("0 - 100",rangeFacets.get(1).getBuckets().get(0).getLabel());
+        assertEquals("[0 - 100)",rangeFacets.get(1).getBuckets().get(0).getLabel());
         Object[] metrics = rangeFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
-        assertEquals("content.size:(0 TO 100)", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
-        
+        assertEquals("content.size:[0 TO 100>", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
+        assertEquals(null,rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("count"));
         Map<String, String> facetInfo = rangeFacets.get(1).getBuckets().get(0).getBucketInfo();
         assertEquals("0",facetInfo.get("start"));
         assertEquals("100",facetInfo.get("end"));
         
-        assertEquals("100 - 200",rangeFacets.get(1).getBuckets().get(1).getLabel());
+        assertEquals("[100 - 200)",rangeFacets.get(1).getBuckets().get(1).getLabel());
         metrics = rangeFacets.get(1).getBuckets().get(1).getMetrics().toArray();
         assertEquals("6",((SimpleMetric) metrics[0]).getValue().get("count"));
         facetInfo = rangeFacets.get(1).getBuckets().get(1).getBucketInfo();
         assertEquals("100",facetInfo.get("start"));
         assertEquals("200",facetInfo.get("end"));
-        assertEquals("content.size:(100 TO 200)", rangeFacets.get(1).getBuckets().get(1).getFilterQuery());
+        assertEquals("content.size:[100 TO 200>", rangeFacets.get(1).getBuckets().get(1).getFilterQuery());
+        assertEquals(null,rangeFacets.get(1).getBuckets().get(1).getBucketInfo().get("count"));
+        assertEquals("false",rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("endInclusive"));
+        assertEquals("true",rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("startInclusive"));
         
-        assertEquals("200 - 300",rangeFacets.get(1).getBuckets().get(2).getLabel());
+        assertEquals("[200 - 300)",rangeFacets.get(1).getBuckets().get(2).getLabel());
         metrics = rangeFacets.get(1).getBuckets().get(2).getMetrics().toArray();
         assertEquals("3",((SimpleMetric) metrics[0]).getValue().get("count"));
         facetInfo = rangeFacets.get(1).getBuckets().get(2).getBucketInfo();
         assertEquals("200",facetInfo.get("start"));
         assertEquals("300",facetInfo.get("end"));
-        assertEquals("content.size:(200 TO 300)", rangeFacets.get(1).getBuckets().get(2).getFilterQuery());
+        assertEquals("content.size:[200 TO 300>", rangeFacets.get(1).getBuckets().get(2).getFilterQuery());
     }
 
     @Test

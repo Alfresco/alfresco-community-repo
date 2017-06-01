@@ -30,6 +30,20 @@ import static org.alfresco.rest.api.search.impl.StoreMapper.DELETED;
 import static org.alfresco.rest.api.search.impl.StoreMapper.HISTORY;
 import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
 import static org.alfresco.rest.api.search.impl.StoreMapper.VERSIONS;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
@@ -72,19 +86,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Maps from a ResultSet to a json public api representation.
@@ -331,7 +332,7 @@ public class ResultMapper
         facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
         
         Map<String,List<Map<String,String>>> facetRanges = solrResultSet.getFacetRanges();
-        facets.addAll(getGenericFacetsForRanges(facetRanges, searchQuery));
+        facets.addAll(RangeResultMapper.getGenericFacetsForRanges(facetRanges, searchQuery));
 
         List<GenericFacetResponse> stats = getFieldStats(searchRequestContext, solrResultSet.getStats());
         List<GenericFacetResponse> pimped = getPivots(searchRequestContext, solrResultSet.getPivotFacets(), stats);
@@ -498,46 +499,6 @@ public class ResultMapper
         }
         return Collections.emptyList();
     }
-    /**
-     * Transforms the facet range response into generic facet response.
-     * @param facetFields
-     * @param searchQuery
-     * @return GenericFacetResponse
-     */
-    protected static List<GenericFacetResponse> getGenericFacetsForRanges( Map<String,List<Map<String,String>>> facetFields, SearchQuery searchQuery)
-    {
-        List<GenericFacetResponse> ffcs = new ArrayList<>(facetFields.size());
-        if (facetFields != null && !facetFields.isEmpty() && searchQuery.getQuery() != null)
-        {
-            for (Entry<String, List<Map<String, String>>> facet : facetFields.entrySet())
-            {
-                List<GenericBucket> buckets = new ArrayList<>();
-                facet.getValue().forEach(action -> buckets.add(buildGenericBucketFromRange(facet.getKey(), (Map<String, String>) action)));
-                ffcs.add(new GenericFacetResponse(FACET_TYPE.range, facet.getKey(), buckets));
-            }
-        }
-        return ffcs;
-    }
-    private static GenericBucket buildGenericBucketFromRange(String facetField, Map<String,String> facet)
-    {
-        String from = facet.get(GenericFacetResponse.START);
-        String to = facet.get(GenericFacetResponse.END);
-        String label = facet.get(GenericFacetResponse.LABEL);
-        facet.remove(GenericFacetResponse.LABEL);
-        String filterQ = String.format("%s:(%s TO %s)",
-                                        facetField,
-                                        from,
-                                        to);
-        return new GenericBucket(label,
-                                 filterQ,
-                                 null, 
-                                 new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,facet.get(GenericFacetResponse.COUNT)))),
-                                 null,
-                                 facet);
-        
-    }
-
-
     /**
      * Returns generic faceting responses for Intervals
      * @param facetFields

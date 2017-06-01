@@ -117,7 +117,7 @@ public class SearchMapper
 
         SearchParameters sp = new SearchParameters();
         setDefaults(sp);
-
+        sp.setFacetFormat(searchQuery.getFacetFormat()); 
         fromLocalization(sp, searchQuery.getLocalization());
         fromQuery(sp,  searchQuery.getQuery());
         fromPaging(sp, params.getPaging());

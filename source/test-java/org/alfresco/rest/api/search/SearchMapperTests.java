@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.alfresco.rest.api.search.context.SearchRequestContext;
@@ -61,6 +62,7 @@ import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.FacetFormat;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.Interval;
@@ -74,13 +76,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 /**
  * Tests the SearchMapper class
@@ -121,6 +116,7 @@ public class SearchMapperTests
 
         searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, helper.searchQueryFromJson(), searchRequest);
         assertNotNull(searchParameters);
+        assertEquals(null, searchParameters.getFacetFormat());
     }
 
     @Test
@@ -329,7 +325,6 @@ public class SearchMapperTests
     {
         SearchParameters searchParameters = new SearchParameters();
         //Doesn't error
-        searchMapper.fromFilterQuery(searchParameters, null);
 
         searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null, null), new FilterQuery("king", null, null)));
         assertEquals(2 ,searchParameters.getFilterQueries().size());
@@ -1020,6 +1015,26 @@ public class SearchMapperTests
         assertEquals(searchParameters.getInterval(), intervalParameters);
 
     }
+    @Test
+    public void facetFormatV2()
+    {
+        Query query = new Query("afts", "a*", "");
+        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
+                    null, null, null, null, null, null, null, null,
+                    null, null,null, null,FacetFormat.V2);
+        
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(sq);
+        SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, sq, searchRequestContext);
+        assertNotNull(searchParameters);
+
+        //Test defaults
+        assertEquals("There should be only 1 default store", 1,searchParameters.getStores().size());
+        assertEquals("workspaces store is the default", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
+        assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
+        assertEquals(100, searchParameters.getLimit());
+        assertEquals(FacetFormat.V2, searchParameters.getFacetFormat());
+        
+    }
     
     @Test
     public void facetRange()
@@ -1063,7 +1078,7 @@ public class SearchMapperTests
         Query query = new Query("cmis", "foo", "");
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null,
-                    null, null,null, null);
+                    null, null,null, null,null);
         return sq;
     }
 

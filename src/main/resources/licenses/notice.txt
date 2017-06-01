@@ -297,6 +297,7 @@ xercesImpl  http://xerces.apache.org/xerces2-j
 
 === BSD-like License ===
 FreeMarker  http://freemarker.sourceforge.net/ 
+Pdfium https://pdfium.googlesource.com/pdfium/
 
 === Eclipse Public License 1.0 ===
 TrueLicense     http://truelicense.java.net/
@@ -312,3 +313,6 @@ Jut.jar http://www.openoffice.org/licenses/lgpl_license.html
 
 === Mozilla Public License 2.0 ===
 rhino-js    http://www.mozilla.org/rhino/
+
+
+

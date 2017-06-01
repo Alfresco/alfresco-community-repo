@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -39,8 +40,10 @@ import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.ListMetric;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric.METRIC_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.PercentileMetric;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.SimpleMetric;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -415,12 +418,21 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         {
             return metrics.entrySet().stream().map(aStat -> {
                 METRIC_TYPE metricType = METRIC_TYPE.valueOf(aStat.getKey());
+                Object val = aStat.getValue();
+                if (JSONObject.NULL.equals(val)) return null;
+
                 switch (metricType)
                 {
+                    case distinctValues:
+                        return new ListMetric(metricType, val);
+                    case percentiles:
+                        return new PercentileMetric(metricType, val);
+                    case mean:
+                        if ("NaN".equals(String.valueOf(val))) return null; //else fall through
                     default:
-                        return new SimpleMetric(metricType, String.valueOf(aStat.getValue()));
+                        return new SimpleMetric(metricType, val);
                 }
-            }).collect(Collectors.toList());
+            }).filter(Objects::nonNull).collect(Collectors.toList());
         }
         return Collections.emptyList();
     }

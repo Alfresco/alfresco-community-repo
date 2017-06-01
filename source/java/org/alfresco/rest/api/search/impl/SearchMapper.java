@@ -524,40 +524,43 @@ public class SearchMapper
                 Pivot pivot = piterator.next();
                 ParameterCheck.mandatoryString("pivot key", pivot.getKey());
                 String pivotKey = pivot.getKey();
+
                 if (facetFields.getFacets() != null && !facetFields.getFacets().isEmpty())
                 {
-                    Optional<FacetField> found = facetFields.getFacets().stream().filter(
-                                queryable -> pivotKey.equals(queryable.getLabel()!=null?queryable.getLabel():queryable.getField())).findFirst();
+                    Optional<FacetField> found = facetFields.getFacets().stream()
+                                .filter(queryable -> pivotKey.equals(queryable.getLabel() != null ? queryable.getLabel() : queryable.getField())).findFirst();
 
                     if (found.isPresent())
                     {
                         sp.addPivot(found.get().getField());
                         facetFields.getFacets().remove(found.get());
                         searchRequestContext.getPivotKeys().put(found.get().getField(), pivotKey);
+                        continue;
                     }
-                    else
+                }
+
+                if (piterator.hasNext())
+                {
+                    //Its not the last one so lets complain
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                new Object[] { ": Pivot parameter " + pivotKey + " is does not reference a facet Field." });
+                }
+                else
+                {
+                    if (stats != null && !stats.isEmpty())
                     {
-                        if (piterator.hasNext())
+                        //It is the last one so it can reference stats
+                        Optional<StatsRequestParameters> foundStat =  stats.stream().filter(stas -> pivotKey.equals(stas.getLabel()!=null?stas.getLabel():stas.getField())).findFirst();
+                        if (foundStat.isPresent())
                         {
-                            //Its not the last one so lets complain
-                            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
-                                        new Object[] { ": Pivot parameter " + pivotKey + " is does not reference a facet Field." });
-                        }
-                        else
-                        {
-                            //It is the last one so it can reference facetquery or stats
-                            /**
-                            Optional<StatsRequestParameters> foundStat =  stats.stream().filter(stas -> pivotKey.equals(stas.getLabel())).findFirst();
-                            if (foundStat.isPresent())
-                            {
-                                stats.remove(foundStat.get());
-                            }
-                             **/
                             sp.addPivot(pivotKey);
                             searchRequestContext.getPivotKeys().put(pivotKey, pivotKey);
+                            continue;
                         }
-                    }
 
+                    }
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                new Object[] { ": Pivot parameter " + pivotKey + " is does not reference a facet Field or stats." });
                 }
             }
         }

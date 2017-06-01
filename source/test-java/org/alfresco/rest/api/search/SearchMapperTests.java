@@ -697,8 +697,15 @@ public class SearchMapperTests
 
         SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
 
-        //"bob" doesn't refer to a field facet but its the last one so lets be kind
-        searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot("bob")), searchRequestContext);
+        //"bob" doesn't refer to a field facet but its the last one so needs to refer to a stat
+        StatsRequestParameters bobf = new StatsRequestParameters("bob", null, null, null,null, null, null, null,null, null, null, null,null, null, null, null);
+        StatsRequestParameters bobL = new StatsRequestParameters("creator", "bob", null, null,null, null, null, null,null, null, null, null,null, null, null, null);
+        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, Arrays.asList(new Pivot("bob")), searchRequestContext);
+        assertEquals(1 ,searchParameters.getPivots().size());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, Arrays.asList(new Pivot("bob")), searchRequestContext);
+        assertEquals(1 ,searchParameters.getPivots().size());
 
         try
         {

@@ -535,10 +535,10 @@ public class SearchMapper
         if(rangeParams != null)
         {
             ParameterCheck.mandatory("range", rangeParams);
-            ParameterCheck.mandatory("field ", rangeParams.getField());
-            ParameterCheck.mandatory("facet range start ", rangeParams.getStart());
-            ParameterCheck.mandatory("facet range end ", rangeParams.getEnd());
-            ParameterCheck.mandatory("facet range gap ", rangeParams.getGap());
+            ParameterCheck.mandatory("field", rangeParams.getField());
+            ParameterCheck.mandatory("start", rangeParams.getStart());
+            ParameterCheck.mandatory("end", rangeParams.getEnd());
+            ParameterCheck.mandatory("gap", rangeParams.getGap());
             sp.setRange(rangeParams);
         }
         

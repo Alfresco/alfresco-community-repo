@@ -70,6 +70,7 @@ public class SerializerTestHelper implements RequestReader
                 + "},"
                 + "{\"label\":\"TheCreated\",\"field\":\"cm:created\",\"sets\":[{\"label\":\"lastYear\",\"start\":\"2016\",\"end\":\"2017\",\"endInclusive\":false},{\"label\":\"currentYear\",\"start\":\"NOW/YEAR\",\"end\":\"NOW/YEAR+1YEAR\"},{\"label\":\"earlier\",\"start\":\"*\",\"end\":\"2016\",\"endInclusive\":false}]}"
                 + "]},"
+                + "\"stats\": [{\"field\": \"cm:creator\", \"label\": \"mylabel\"}],"
                 + "\"spellcheck\": {\"query\": \"alfrezco\"},"
                 + "\"limits\": {\"permissionEvaluationCount\": \"2000\",\"permissionEvaluationTime\": \"5000\"},"
                 + "\"scope\": { \"locations\": [\"nodes\"]},"

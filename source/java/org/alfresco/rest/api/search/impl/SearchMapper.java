@@ -58,6 +58,7 @@ import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.Operator;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
+import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.alfresco.util.ParameterCheck;
 
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
@@ -70,6 +71,7 @@ import static org.alfresco.service.cmr.search.SearchService.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Optional;
 import java.util.regex.Matcher;
 
@@ -110,7 +112,8 @@ public class SearchMapper
         fromDefault(sp, searchQuery.getDefaults());
         fromFilterQuery(sp, searchQuery.getFilterQueries());
         fromFacetQuery(sp, searchQuery.getFacetQueries());
-        fromPivot(sp, searchQuery.getFacetFields(), searchQuery.getPivots(), searchRequestContext);
+        fromPivot(sp, searchQuery.getStats(), searchQuery.getFacetFields(), searchQuery.getPivots(), searchRequestContext);
+        fromStats(sp, searchQuery.getStats());
         fromFacetFields(sp, searchQuery.getFacetFields());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromHighlight(sp, searchQuery.getHighlight());
@@ -508,19 +511,21 @@ public class SearchMapper
         sp.setInterval(facetIntervals);
     }
 
-    public void fromPivot(SearchParameters sp, FacetFields facetFields, List<Pivot> pivots, SearchRequestContext searchRequestContext)
+    public void fromPivot(SearchParameters sp, List<StatsRequestParameters> stats, FacetFields facetFields, List<Pivot> pivots, SearchRequestContext searchRequestContext)
     {
         if (facetFields != null && pivots != null && !pivots.isEmpty())
         {
             ParameterCheck.mandatory("facetFields facets", facetFields.getFacets());
 
-            if (facetFields.getFacets() != null && !facetFields.getFacets().isEmpty())
-            {
-                for (Pivot pivot:pivots)
-                {
-                    ParameterCheck.mandatoryString("pivot key", pivot.getKey());
+            ListIterator<Pivot> piterator = pivots.listIterator();
 
-                    String pivotKey = pivot.getKey();
+            while (piterator.hasNext()) {
+
+                Pivot pivot = piterator.next();
+                ParameterCheck.mandatoryString("pivot key", pivot.getKey());
+                String pivotKey = pivot.getKey();
+                if (facetFields.getFacets() != null && !facetFields.getFacets().isEmpty())
+                {
                     Optional<FacetField> found = facetFields.getFacets().stream().filter(
                                 queryable -> pivotKey.equals(queryable.getLabel()!=null?queryable.getLabel():queryable.getField())).findFirst();
 
@@ -532,12 +537,61 @@ public class SearchMapper
                     }
                     else
                     {
-                        throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
-                                    new Object[] { ": Pivot parameter "+pivotKey+" is does not reference a facet Field." });
+                        if (piterator.hasNext())
+                        {
+                            //Its not the last one so lets complain
+                            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                        new Object[] { ": Pivot parameter " + pivotKey + " is does not reference a facet Field." });
+                        }
+                        else
+                        {
+                            //It is the last one so it can reference facetquery or stats
+                            /**
+                            Optional<StatsRequestParameters> foundStat =  stats.stream().filter(stas -> pivotKey.equals(stas.getLabel())).findFirst();
+                            if (foundStat.isPresent())
+                            {
+                                stats.remove(foundStat.get());
+                            }
+                             **/
+                            sp.addPivot(pivotKey);
+                            searchRequestContext.getPivotKeys().put(pivotKey, pivotKey);
+                        }
                     }
+
                 }
             }
         }
+    }
+
+    public void fromStats(SearchParameters sp, List<StatsRequestParameters> stats)
+    {
+        if (stats != null && !stats.isEmpty())
+        {
+            for (StatsRequestParameters aStat:stats)
+            {
+                ParameterCheck.mandatory("stats field", aStat.getField());
+
+                List<Float> perc = aStat.getPercentiles();
+                if (perc != null && !perc.isEmpty())
+                {
+                    for (Float percentile:perc)
+                    {
+                        if (percentile == null || percentile < 0 || percentile > 100)
+                        {
+                            throw new IllegalArgumentException("Invalid percentile "+percentile);
+                        }
+                    }
+                }
+
+                if (aStat.getCardinality() && (aStat.getCardinalityAccuracy() < 0 || aStat.getCardinalityAccuracy() > 1))
+                {
+                    throw new IllegalArgumentException("Invalid cardinality accuracy "+aStat.getCardinalityAccuracy() + " It must be between 0 and 1.");
+                }
+            }
+
+            sp.setStats(stats);
+        }
+
     }
 
     protected void validateSets(List<IntervalSet> intervalSets, String prefix)

@@ -120,6 +120,7 @@ public class ResultMapperTests
                 + "  \"_DEFAULT_!800001579e3d1964!800001579e3d1969\": {\"name\": [\"some very <al>long<fresco> name\"],\"title\": [\"title1 is very <al>long<fresco>\"], \"DBID\": \"521\"},"
                 + " \"_DEFAULT_!800001579e3d1964!800001579e3d196a\": {\"name\": [\"this is some <al>long<fresco> text.  It\", \" has the word <al>long<fresco> in many places\", \".  In fact, it has <al>long<fresco> on some\", \" happens to <al>long<fresco> in this case.\"], \"DBID\": \"1475846153692\"}"
                 + "},"
+                + "\"stats\":{\"stats_fields\":{\"creator\":{\"min\":\"System\",\"max\":\"mjackson\",\"count\":\"990\",\"missing\":\"290\"}, \"created\":{\"sumOfSquares\":2.1513045770343806E27,\"min\":\"2011-02-15T20:16:27.080Z\",\"max\":\"2017-04-10T15:06:30.143Z\",\"mean\":\"2016-09-05T04:20:12.898Z\",\"count\":990,\"missing\":290,\"sum\":1.458318720769983E15,\"stddev\":5.6250677994522545E10}}},"
                 + "\"processedDenies\":true, \"lastIndexedTx\":34}";
     public static final Params EMPTY_PARAMS = Params.valueOf((String)null,(String)null,(WebScriptRequest) null);
     public static final String FROZEN_ID = "frozen";
@@ -305,7 +306,7 @@ public class ResultMapperTests
         assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
         assertEquals("cm:creator:<a TO b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
         assertEquals(METRIC_TYPE.count,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getType());
-        assertEquals(4,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
+        assertEquals("4",intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
 
         //Requests search Query
         assertNotNull(searchContext.getRequest());
@@ -334,6 +335,8 @@ public class ResultMapperTests
         assertEquals("admin",nestedBucket2.getLabel());
         assertEquals("modifier:admin",nestedBucket2.getFilterQuery());
         assertEquals("{count=4}",nestedBucket2.getMetrics().get(0).getValue().toString());
+
+
     }
 
     @Test
@@ -390,24 +393,24 @@ public class ResultMapperTests
         assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
         assertEquals("cm:creator:<a TO b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
         assertEquals(METRIC_TYPE.count,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getType());
-        assertEquals(4,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
+        assertEquals("4",intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
 
 
         assertEquals("TheCreated",intervalFacets.get(1).getLabel());
         assertEquals("earlier",intervalFacets.get(1).getBuckets().get(0).getLabel());
         assertEquals("cm:created:[* TO 2016>",intervalFacets.get(1).getBuckets().get(0).getFilterQuery());
         assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(0).getMetrics().get(0).getType());
-        assertEquals(5,intervalFacets.get(1).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
+        assertEquals("5",intervalFacets.get(1).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
 
         assertEquals("lastYear",intervalFacets.get(1).getBuckets().get(1).getLabel());
         assertEquals("cm:created:[2016 TO 2017>",intervalFacets.get(1).getBuckets().get(1).getFilterQuery());
         assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(1).getMetrics().get(0).getType());
-        assertEquals(0,intervalFacets.get(1).getBuckets().get(1).getMetrics().get(0).getValue().get("count"));
+        assertEquals("0",intervalFacets.get(1).getBuckets().get(1).getMetrics().get(0).getValue().get("count"));
 
         assertEquals("currentYear",intervalFacets.get(1).getBuckets().get(2).getLabel());
         assertEquals("cm:created:[NOW/YEAR TO NOW/YEAR+1YEAR]",intervalFacets.get(1).getBuckets().get(2).getFilterQuery());
         assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(2).getMetrics().get(0).getType());
-        assertEquals(854,intervalFacets.get(1).getBuckets().get(2).getMetrics().get(0).getValue().get("count"));
+        assertEquals("854",intervalFacets.get(1).getBuckets().get(2).getMetrics().get(0).getValue().get("count"));
     }
 
     @Test

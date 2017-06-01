@@ -843,6 +843,9 @@
 					</plugin>
 				</plugins>
 			</build>
+			<properties>
+				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
+			</properties>
 		</profile>
 		<profile>
 			<id>linux-alfresco-pdf-renderer-test</id>
@@ -888,6 +891,9 @@
 					</plugin>
 				</plugins>
 			</build>
+			<properties>
+				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
+			</properties>
 		</profile>
 		<profile>
 			<id>osx-alfresco-pdf-renderer-test</id>
@@ -933,6 +939,9 @@
 					</plugin>
 				</plugins>
 			</build>
+			<properties>
+				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
+			</properties>
 		</profile>
 
         <profile>
@@ -953,7 +962,7 @@
                               <configuration>
                                   <systemPropertyVariables>
                                     <smart.folders.enabled>true</smart.folders.enabled>
-                                    <alfresco-pdf-renderer.root>${project.build.directory}/test-binaries/alfresco-pdf-renderer</alfresco-pdf-renderer.root>
+                                    <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
                                   </systemPropertyVariables>
                                   <forkMode>always</forkMode>
                                   <includes combine.self="override">
@@ -1030,7 +1039,7 @@
                   <!-- There's also surefire configuration in the integration-tests profile -->
                   <configuration>
                        <systemPropertyVariables>
-                          <alfresco-pdf-renderer.root>${project.build.directory}/test-binaries/alfresco-pdf-renderer</alfresco-pdf-renderer.root>
+                           <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
                        </systemPropertyVariables>
                        <includes>
                            <include>**/org/alfresco/AllUnitTestsSuite.java</include>

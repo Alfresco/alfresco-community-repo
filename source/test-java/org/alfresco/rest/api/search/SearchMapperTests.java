@@ -889,7 +889,8 @@ public class SearchMapperTests
     public void facetRange()
     {
         SearchParameters searchParameters = new SearchParameters();
-        RangeParameters rangeParams = new RangeParameters(null, null, null, null,false,null,null,null,null);
+        List<RangeParameters> rangeParams = new ArrayList<RangeParameters>();
+        rangeParams.add(new RangeParameters(null, null, null, null,false,null,null,null,null));
         try
         {
             searchMapper.fromRange(searchParameters, rangeParams);
@@ -899,14 +900,21 @@ public class SearchMapperTests
         {
             assertNotNull(iae);
         }
-        rangeParams = new RangeParameters("content.size", "0", "100000", "1000",true,null,null,null,null);
+        rangeParams.clear();
+        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true,null,null,null,null));
         searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRanges(), rangeParams);
         
-        rangeParams = new RangeParameters("content.size", "0", "100000", "1000",true,"before","lower",null,null);
+        rangeParams.clear();
+        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true,"before","lower",null,null));
         searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRanges(), rangeParams);
         
+        //Assert multiple ranges
+        rangeParams.add(new RangeParameters("created", "2015-09-29T10:45:15.729Z", "2016-09-29T10:45:15.729Z", "+100DAY", true, "before", "lower", null, null));
+        searchMapper.fromRange(searchParameters, rangeParams);
+        assertEquals(searchParameters.getRanges(), rangeParams);
+        assertEquals(2,searchParameters.getRanges().size());
     }
     
     private SearchQuery minimalQuery()

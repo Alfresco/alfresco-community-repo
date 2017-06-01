@@ -118,7 +118,9 @@ public class ResultMapperTests
                 + "\"facet_counts\":{\"facet_queries\":{\"small\":0,\"large\":0,\"xtra small\":3,\"xtra large\":0,\"medium\":8,\"XX large\":0},"
                 + "\"facet_fields\":{\"content.size\":[\"Big\",8,\"Brown\",3,\"Fox\",5,\"Jumped\",2,\"somewhere\",3]},"
                 +"\"facet_dates\":{},"
-                +"\"facet_ranges\":{\"content.size\": {\"counts\": [\"0\",4,\"100\",6,\"200\",3],\"gap\": 100,\"start\": 0,\"end\": 300}},"
+                +"\"facet_ranges\":{"
+                + "\"created\": { \"counts\": [\"2015-09-29T10:45:15.729Z\",0,\"2016-01-07T10:45:15.729Z\",0,\"2016-04-16T10:45:15.729Z\",0,\"2016-07-25T10:45:15.729Z\",0],\"gap\": \"+100DAY\",\"start\": \"2015-09-29T10:45:15.729Z\",\"end\": \"2016-11-02T10:45:15.729Z\"},"
+                + "\"content.size\": {\"counts\": [\"0\",4,\"100\",6,\"200\",3],\"gap\": 100,\"start\": 0,\"end\": 300}},"
                 +"\"facet_pivot\":{\"creator,modifier\":[{\"field\":\"creator\",\"count\":7,\"pivot\":[{\"field\":\"modifier\",\"count\":3,\"value\":\"mjackson\"},{\"field\":\"modifier\",\"count\":4,\"value\":\"admin\"}],\"value\":\"mjackson\"}]},"
                 +"\"facet_intervals\":{\"creator\":{\"last\":4,\"first\":0},\"TheCreated\":{\"earlier\":5,\"lastYear\":0,\"currentYear\":854}}"
                 + "},"
@@ -322,8 +324,8 @@ public class ResultMapperTests
         assertEquals("great", searchContext.getRequest().getQuery().getUserQuery());
 
         //Pivot
-        assertEquals(6, searchContext.getFacets().size());
-        GenericFacetResponse pivotFacet = searchContext.getFacets().get(3);
+        assertEquals(7, searchContext.getFacets().size());
+        GenericFacetResponse pivotFacet = searchContext.getFacets().get(4);
         assertEquals(FACET_TYPE.pivot,pivotFacet.getType());
         assertEquals("creator",pivotFacet.getLabel());
         assertEquals(2, pivotFacet.getBuckets().size());
@@ -350,7 +352,7 @@ public class ResultMapperTests
         assertEquals("{count=4}",metrics[0].getValue().toString());
 
         //Stats
-        GenericFacetResponse statsFacet = searchContext.getFacets().get(4);
+        GenericFacetResponse statsFacet = searchContext.getFacets().get(5);
         assertEquals(FACET_TYPE.stats,statsFacet.getType());
         assertEquals("created",statsFacet.getLabel());
         Set<Metric> statsMetrics = statsFacet.getBuckets().get(0).getMetrics();
@@ -364,7 +366,7 @@ public class ResultMapperTests
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sum, 1.458318720769983E15)));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.stddev, 5.6250677994522545E10)));
 
-        statsFacet = searchContext.getFacets().get(5);
+        statsFacet = searchContext.getFacets().get(6);
         assertEquals("numericLabel",statsFacet.getLabel());
         statsMetrics = statsFacet.getBuckets().get(0).getMetrics();
         assertEquals(7,statsMetrics.size());
@@ -473,33 +475,40 @@ public class ResultMapperTests
         //Numeric facet range 
         List<GenericFacetResponse> rangeFacets = searchContext.getFacets().stream()
                     .filter(f -> f.getType().equals(FACET_TYPE.range)).collect(Collectors.toList());
-        assertEquals(1, rangeFacets.size());
-        assertEquals(3, rangeFacets.get(0).getBuckets().size());
-        assertEquals("content.size",rangeFacets.get(0).getLabel());
-        assertEquals("0 - 100",rangeFacets.get(0).getBuckets().get(0).getLabel());
-        Object[] metrics = rangeFacets.get(0).getBuckets().get(0).getMetrics().toArray();
+        assertEquals(2, rangeFacets.size());
+        assertEquals(4, rangeFacets.get(0).getBuckets().size());
+        assertEquals("created",rangeFacets.get(0).getLabel());
+        assertEquals("2015-09-29T10:45:15.729Z - 2016-01-07T10:45:15.729Z",rangeFacets.get(0).getBuckets().get(0).getLabel());
+        Object[] metrics1 = rangeFacets.get(0).getBuckets().get(0).getMetrics().toArray();
+        assertEquals("0",((SimpleMetric) metrics1[0]).getValue().get("count"));
+        assertEquals("created:(2015-09-29T10:45:15.729Z TO 2016-01-07T10:45:15.729Z)", rangeFacets.get(0).getBuckets().get(0).getFilterQuery());
+
+        assertEquals(3, rangeFacets.get(1).getBuckets().size());
+        assertEquals("content.size",rangeFacets.get(1).getLabel());
+        assertEquals("0 - 100",rangeFacets.get(1).getBuckets().get(0).getLabel());
+        Object[] metrics = rangeFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
-        assertEquals("content.size:(0 TO 100)", rangeFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("content.size:(0 TO 100)", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
         
-        Map<String, String> facetInfo = rangeFacets.get(0).getBuckets().get(0).getBucketInfo();
+        Map<String, String> facetInfo = rangeFacets.get(1).getBuckets().get(0).getBucketInfo();
         assertEquals("0",facetInfo.get("from"));
         assertEquals("100",facetInfo.get("to"));
         
-        assertEquals("100 - 200",rangeFacets.get(0).getBuckets().get(1).getLabel());
-        metrics = rangeFacets.get(0).getBuckets().get(1).getMetrics().toArray();
+        assertEquals("100 - 200",rangeFacets.get(1).getBuckets().get(1).getLabel());
+        metrics = rangeFacets.get(1).getBuckets().get(1).getMetrics().toArray();
         assertEquals("6",((SimpleMetric) metrics[0]).getValue().get("count"));
-        facetInfo = rangeFacets.get(0).getBuckets().get(1).getBucketInfo();
+        facetInfo = rangeFacets.get(1).getBuckets().get(1).getBucketInfo();
         assertEquals("100",facetInfo.get("from"));
         assertEquals("200",facetInfo.get("to"));
-        assertEquals("content.size:(100 TO 200)", rangeFacets.get(0).getBuckets().get(1).getFilterQuery());
+        assertEquals("content.size:(100 TO 200)", rangeFacets.get(1).getBuckets().get(1).getFilterQuery());
         
-        assertEquals("200 - 300",rangeFacets.get(0).getBuckets().get(2).getLabel());
-        metrics = rangeFacets.get(0).getBuckets().get(2).getMetrics().toArray();
+        assertEquals("200 - 300",rangeFacets.get(1).getBuckets().get(2).getLabel());
+        metrics = rangeFacets.get(1).getBuckets().get(2).getMetrics().toArray();
         assertEquals("3",((SimpleMetric) metrics[0]).getValue().get("count"));
-        facetInfo = rangeFacets.get(0).getBuckets().get(2).getBucketInfo();
+        facetInfo = rangeFacets.get(1).getBuckets().get(2).getBucketInfo();
         assertEquals("200",facetInfo.get("from"));
         assertEquals("300",facetInfo.get("to"));
-        assertEquals("content.size:(200 TO 300)", rangeFacets.get(0).getBuckets().get(2).getFilterQuery());
+        assertEquals("content.size:(200 TO 300)", rangeFacets.get(1).getBuckets().get(2).getFilterQuery());
     }
 
     @Test

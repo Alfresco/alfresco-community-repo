@@ -26,6 +26,24 @@
 
 package org.alfresco.rest.api.search.impl;
 
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLINK;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PATH;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
+import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
+import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
+import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
+
+import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.rest.api.search.context.SearchRequestContext;
@@ -61,24 +79,6 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.alfresco.util.ParameterCheck;
-import sun.util.calendar.ZoneInfo;
-
-import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
-import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
-import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLINK;
-import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PATH;
-import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
-import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
-import static org.alfresco.service.cmr.search.SearchService.*;
-
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.regex.Matcher;
 
 /**
  * Maps from a json request and a solr SearchParameters object.
@@ -530,16 +530,19 @@ public class SearchMapper
      * @param sp SearchParameters
      * @param rangeParams RangeParameters
      */
-    public void fromRange(SearchParameters sp, RangeParameters rangeParams)
+    public void fromRange(SearchParameters sp, List<RangeParameters> ranges)
     {
-        if(rangeParams != null)
+        if(ranges != null && !ranges.isEmpty())
         {
-            ParameterCheck.mandatory("ranges", rangeParams);
-            ParameterCheck.mandatory("field", rangeParams.getField());
-            ParameterCheck.mandatory("start", rangeParams.getStart());
-            ParameterCheck.mandatory("end", rangeParams.getEnd());
-            ParameterCheck.mandatory("gap", rangeParams.getGap());
-            sp.setRanges(rangeParams);
+            for(RangeParameters rangeParams : ranges)
+            {
+                ParameterCheck.mandatory("ranges", rangeParams);
+                ParameterCheck.mandatory("field", rangeParams.getField());
+                ParameterCheck.mandatory("start", rangeParams.getStart());
+                ParameterCheck.mandatory("end", rangeParams.getEnd());
+                ParameterCheck.mandatory("gap", rangeParams.getGap());
+            }
+            sp.setRanges(ranges);
         }
         
     }

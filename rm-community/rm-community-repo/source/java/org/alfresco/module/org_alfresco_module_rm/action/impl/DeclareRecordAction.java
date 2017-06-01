@@ -38,6 +38,8 @@ import java.util.Set;
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -72,13 +74,24 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     /** check mandatory properties */
     private boolean checkMandatoryPropertiesEnabled = true;
     
+    /** transactional resource helper */
+    private TransactionalResourceHelper transactionalResourceHelper;
+
     /**
      * @param checkMandatoryPropertiesEnabled true if check mandatory properties is enabled, false otherwise
      */
     public void setCheckMandatoryPropertiesEnabled(boolean checkMandatoryPropertiesEnabled) 
     {
-		this.checkMandatoryPropertiesEnabled = checkMandatoryPropertiesEnabled;
-	}
+        this.checkMandatoryPropertiesEnabled = checkMandatoryPropertiesEnabled;
+    }
+
+    /**
+     * @param transactionalResourceHelper
+     */
+    public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
+    {
+        this.transactionalResourceHelper = transactionalResourceHelper;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -92,8 +105,12 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
         {
             if (!getRecordService().isDeclared(actionedUponNodeRef))
             {
-                // make sure the record identifier is set
-                generateRecordIdentifier(getNodeService(), getIdentifierService(), actionedUponNodeRef);
+                // if the record is newly created make sure the record identifier is set before completing the record
+                Set<NodeRef> newRecords = transactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS);
+                if(newRecords.contains(actionedUponNodeRef))
+                {
+                    generateRecordIdentifier(getNodeService(), getIdentifierService(), actionedUponNodeRef);
+                }
 
                 List<String> missingProperties = new ArrayList<String>(5);
                 // Aspect not already defined - check mandatory properties then add

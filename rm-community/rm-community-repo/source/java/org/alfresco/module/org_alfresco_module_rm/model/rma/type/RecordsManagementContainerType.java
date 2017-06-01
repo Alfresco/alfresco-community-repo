@@ -196,18 +196,6 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                             setIdenifierProperty(child);
                         }
                     }
-                    else
-                    {
-                        NodeRef parentRef = childAssocRef.getParentRef();
-                        QName parentType = nodeService.getType(parentRef);
-                        boolean isContentSubType = dictionaryService.isSubClass(childType, ContentModel.TYPE_CONTENT);
-                        boolean isUnfiledRecordContainer = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-                        boolean isUnfiledRecordFolder = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
-                        if (isContentSubType && (isUnfiledRecordContainer || isUnfiledRecordFolder))
-                        {
-                            generateRecordIdentifier(nodeService, identifierService, child);
-                        }
-                    }
                 }
 
                 return null;

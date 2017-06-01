@@ -51,8 +51,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeFileRecord;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRecordDeclaration;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRecordRejection;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRecordDeclaration;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRecordRejection;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -134,6 +136,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                implements RecordService,
                                           RecordsManagementModel,
                                           RecordsManagementCustomModel,
+                                          NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy,
                                           NodeServicePolicies.OnUpdatePropertiesPolicy,
@@ -266,6 +269,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private ClassPolicyDelegate<OnFileRecord> onFileRecord;
     private ClassPolicyDelegate<BeforeRecordDeclaration> beforeRecordDeclarationDelegate;
     private ClassPolicyDelegate<OnRecordDeclaration> onRecordDeclarationDelegate;
+    private ClassPolicyDelegate<BeforeRecordRejection> beforeRecordRejectionDelegate;
+    private ClassPolicyDelegate<OnRecordRejection> onRecordRejectionDelegate;
 
     /**
      * @param identifierService identifier service
@@ -421,6 +426,34 @@ public class RecordServiceImpl extends BaseBehaviourBean
         onFileRecord = policyComponent.registerClassPolicy(OnFileRecord.class);
         beforeRecordDeclarationDelegate = policyComponent.registerClassPolicy(BeforeRecordDeclaration.class);
         onRecordDeclarationDelegate = policyComponent.registerClassPolicy(OnRecordDeclaration.class);
+        beforeRecordRejectionDelegate = policyComponent.registerClassPolicy(BeforeRecordRejection.class);
+        onRecordRejectionDelegate = policyComponent.registerClassPolicy(OnRecordRejection.class);
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "rma:record",
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onAddAspect(NodeRef nodeRef, QName aspect)
+    {
+        authenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+                {
+                    generateRecordIdentifier(nodeService, identifierService, nodeRef);
+                }
+                return null;
+            }
+        });
     }
 
     /**
@@ -1404,6 +1437,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // Save the id of the currently logged in user
         final String userId = AuthenticationUtil.getFullyAuthenticatedUser();
 
+        // invoke policy
+        invokeBeforeRecordRejection(nodeRef);
+
         // do the work of rejecting the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
@@ -1520,6 +1556,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
             }
         });
+
+        // invoke policy
+        invokeOnRecordRejection(nodeRef);
     }
 
     /**
@@ -1915,5 +1954,33 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // execute policy for node type and aspects
         OnRecordDeclaration policy = onRecordDeclarationDelegate.get(qnames);
         policy.onRecordDeclaration(nodeRef);
+    }
+
+    /**
+     * Invoke invokeBeforeRecordRejection policy
+     *
+     * @param nodeRef       node reference
+     */
+    protected void invokeBeforeRecordRejection(NodeRef nodeRef)
+    {
+        // get qnames to invoke against
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
+        // execute policy for node type and aspects
+        BeforeRecordRejection policy = beforeRecordRejectionDelegate.get(qnames);
+        policy.beforeRecordRejection(nodeRef);
+    }
+
+    /**
+     * Invoke invokeOnRecordRejection policy
+     *
+     * @param nodeRef       node reference
+     */
+    protected void invokeOnRecordRejection(NodeRef nodeRef)
+    {
+        // get qnames to invoke against
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
+        // execute policy for node type and aspects
+        OnRecordRejection policy = onRecordRejectionDelegate.get(qnames);
+        policy.onRecordRejection(nodeRef);
     }
 }

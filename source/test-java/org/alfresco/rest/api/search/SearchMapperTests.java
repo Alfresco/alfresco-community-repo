@@ -947,7 +947,7 @@ public class SearchMapperTests
         facets.add(new FacetField("king",null,null,null,null,null,null,null,null,null,null));
         facets.add(new FacetField("kong",null,null,null,null,null,null,null,null,null,null));
         ff = new FacetFields(facets);
-        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true,null,null,Arrays.asList("hope"),null));
+        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true,null,null,"hope",null));
         searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, rangeParams,
                     Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null))), new Pivot("kong", Arrays.asList(new Pivot("hope", null)))), searchRequestContext);
         assertEquals(2 ,searchParameters.getPivots().size());

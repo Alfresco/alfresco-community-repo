@@ -359,16 +359,6 @@ public class ResultMapper
         context = new SearchContext(solrResultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest()?searchQuery:null);
         return isNullContext(context)?null:context;
     }
-
-    private boolean hasGroup(Map<String, Integer> facetQueries, SearchQuery searchQuery)
-    {
-        for (Entry<String, Integer> fq:facetQueries.entrySet())
-        {
-            Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
-            return (found.isPresent() && found.get().getGroup() != null);
-        }
-        return false;
-    }
     /**
      * Builds a facet field from facet queries.
      * @param facetQueries

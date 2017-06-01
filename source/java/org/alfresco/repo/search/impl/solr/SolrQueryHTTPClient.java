@@ -973,8 +973,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
 
                     PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(searchParameters.getNamespace(),
                                 namespaceDAO, dictionaryService, interval.getField());
-                    if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
-                                || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE))
+                    if (propertyDef != null && (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
+                                || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)))
                     {
                         isDate = true;
                     }

@@ -38,8 +38,7 @@ public class GenericBucket
     private final String filterQuery;
     private final Object display;
     private final Set<Metric> metrics;
-    //Additional information relating to facets such as to and from.
-    private Map<String, String> facetInfo;
+    private Map<String, String> bucketInfo; //Additional information relating to facets such as to and from.
     private final List<GenericFacetResponse> facets;
 
     /**
@@ -66,7 +65,7 @@ public class GenericBucket
         this.display = display;
         this.metrics = metrics;
         this.facets = facets;
-        this.facetInfo = facetInfo;
+        this.bucketInfo = facetInfo;
     }
 
     public String getFilterQuery()
@@ -88,14 +87,18 @@ public class GenericBucket
     {
         return metrics;
     }
-
+    
     public List<GenericFacetResponse> getFacets()
     {
         return facets;
     }
-    public Map<String, String> getFacetInfo()
+    public Map<String, String> getBucketInfo()
     {
-        return facetInfo;
+        return bucketInfo;
     }
     
+    public void setBucketInfo(Map<String, String> bucketInfo)
+    {
+        this.bucketInfo = bucketInfo;
+    }
 }

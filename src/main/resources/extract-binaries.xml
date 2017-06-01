@@ -149,7 +149,7 @@
         	<echo> Extracting Alfresco Pdf Renderer...</echo>
         	<exec failonerror="true" executable="tar" dir="${bin.folder}/alfresco-pdf-renderer">
         	    <arg value="xf" />
-        	    <arg value="${maven.localrepo}/org/alfresco/alfresco-pdf-renderer/${installer.pdfium.version}/alfresco-pdf-renderer-${installer.pdfium.version}-${alfrescoPdfRenderer.platform}.tgz" />
+        	    <arg value="${maven.localrepo}/org/alfresco/alfresco-pdf-renderer/${installer.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${installer.alfresco-pdf-renderer.version}-${alfrescoPdfRenderer.platform}.tgz" />
         	</exec>
 
         </sequential>

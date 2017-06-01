@@ -363,29 +363,33 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         
         if((mapping != null) && ((searchParameters.getStores().size() > 1) || (mapping.isSharded())))
         {
-            boolean requiresSeparator = false;
             url.append("&shards=");
-            for(StoreRef storeRef : searchParameters.getStores())
-            {
-                SolrStoreMappingWrapper storeMapping = extractMapping(storeRef);
-
-                if(requiresSeparator)
-                {
-                    url.append(',');
-                }
-                else
-                {
-                    requiresSeparator = true;
-                }
-
-                url.append(storeMapping.getShards());
-               
-            }
+            buildShards(url, searchParameters.getStores());
         }
         
         return url.toString();
     }
-    
+
+    protected void buildShards(StringBuilder url, List<StoreRef> storeRefs)
+    {
+        boolean requiresSeparator = false;
+        for(StoreRef storeRef : storeRefs)
+        {
+            SolrStoreMappingWrapper storeMapping = extractMapping(storeRef);
+
+            if(requiresSeparator)
+            {
+                url.append(',');
+            }
+            else
+            {
+                requiresSeparator = true;
+            }
+
+            url.append(storeMapping.getShards());
+
+        }
+    }
 
     protected JSONObject buildStatsBody(StatsParameters searchParameters, String tenant, Locale locale) throws JSONException
     {

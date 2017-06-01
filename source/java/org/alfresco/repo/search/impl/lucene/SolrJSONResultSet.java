@@ -29,10 +29,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -99,7 +101,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
 
     private List<GenericFacetResponse> pivotFacets = new ArrayList<>();
 
-    private Map<String, List<Metric>> stats = new HashMap<>();
+    private Map<String, Set<Metric>> stats = new HashMap<>();
 
     private NodeDAO nodeDao;
     
@@ -383,7 +385,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         for(int i = 0; i < pivots.length(); i++)
         {
             JSONObject piv = pivots.getJSONObject(i);
-            List<Metric> metrics = new ArrayList<>(1);
+            Set<Metric> metrics = new HashSet<>(1);
             String field = piv.getString("field");
             String value = piv.getString("value");
             if (piv.has("stats"))
@@ -395,7 +397,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 });
             }
             Integer count = Integer.parseInt(piv.getString("count"));
-            metrics.add(new SimpleMetric(METRIC_TYPE.count,String.valueOf(count)));
+            metrics.add(new SimpleMetric(METRIC_TYPE.count,count));
             List<GenericFacetResponse> innerPivot = buildPivot(piv, "pivot");
             GenericBucket buck = new GenericBucket(piv.getString("value"), field+":"+value, null, metrics, innerPivot);
             List<GenericBucket> listBucks = pivotBuckets.containsKey(field)?pivotBuckets.get(field):new ArrayList<>();
@@ -412,7 +414,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         return null;
     }
 
-    protected List<Metric> getMetrics(Map<String, Object> metrics)
+    protected Set<Metric> getMetrics(Map<String, Object> metrics)
     {
         if(metrics != null && !metrics.isEmpty())
         {
@@ -432,9 +434,9 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     default:
                         return new SimpleMetric(metricType, val);
                 }
-            }).filter(Objects::nonNull).collect(Collectors.toList());
+            }).filter(Objects::nonNull).collect(Collectors.toSet());
         }
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     public NodeService getNodeService()
@@ -663,7 +665,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         return pivotFacets;
     }
 
-    public Map<String, List<Metric>> getStats()
+    public Map<String, Set<Metric>> getStats()
     {
         return Collections.unmodifiableMap(stats);
     }

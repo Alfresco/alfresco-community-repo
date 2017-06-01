@@ -962,6 +962,7 @@
                               <configuration>
                                   <systemPropertyVariables>
                                     <smart.folders.enabled>true</smart.folders.enabled>
+                                    <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
                                   </systemPropertyVariables>
                                   <forkMode>always</forkMode>
                                   <includes combine.self="override">
@@ -1037,6 +1038,9 @@
                   <id>default-test</id>
                   <!-- There's also surefire configuration in the integration-tests profile -->
                   <configuration>
+                       <systemPropertyVariables>
+                           <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
+                       </systemPropertyVariables>
                        <includes>
                            <include>**/org/alfresco/AllUnitTestsSuite.java</include>
                        </includes>

@@ -843,7 +843,7 @@ public class SearchMapperTests
     public void facetRange()
     {
         SearchParameters searchParameters = new SearchParameters();
-        RangeParameters rangeParams = new RangeParameters(null, null, null, null);
+        RangeParameters rangeParams = new RangeParameters(null, null, null, null,false,null,null);
         try
         {
             searchMapper.fromFacetRange(searchParameters, rangeParams);
@@ -853,9 +853,14 @@ public class SearchMapperTests
         {
             assertNotNull(iae);
         }
-        rangeParams = new RangeParameters("content.size", "0", "100000", "1000");
+        rangeParams = new RangeParameters("content.size", "0", "100000", "1000",true,null,null);
         searchMapper.fromFacetRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRange(), rangeParams);
+        
+        rangeParams = new RangeParameters("content.size", "0", "100000", "1000",true,"before","lower");
+        searchMapper.fromFacetRange(searchParameters, rangeParams);
+        assertEquals(searchParameters.getRange(), rangeParams);
+        
     }
     
     private SearchQuery minimalQuery()

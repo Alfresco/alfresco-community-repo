@@ -300,6 +300,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                         pivotFacets = buildPivot(facet_pivot, pivotName);
                     }
                 }
+
                 if(facet_counts.has("facet_ranges"))
                 {
                     JSONObject facet_ranges = facet_counts.getJSONObject("facet_ranges");

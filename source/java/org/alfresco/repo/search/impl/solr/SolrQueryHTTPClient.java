@@ -826,6 +826,15 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             url.append("&facet.range.start=").append(encoder.encode(""+searchParameters.getRange().getStart(), "UTF-8"));
             url.append("&facet.range.end=").append(encoder.encode(""+searchParameters.getRange().getEnd(), "UTF-8"));
             url.append("&facet.range.gap=").append(encoder.encode(""+searchParameters.getRange().getGap(), "UTF-8"));
+            if(searchParameters.getRange().getInclude() != null)
+            {
+                url.append("&facet.range.include=").append(encoder.encode(""+searchParameters.getRange().getInclude(), "UTF-8"));
+            }
+            if(searchParameters.getRange().getOther() != null)
+            {
+                url.append("&facet.range.other=").append(encoder.encode(""+searchParameters.getRange().getOther(), "UTF-8"));
+            }
+            url.append("&facet.range.hardend=").append(encoder.encode(""+searchParameters.getRange().isHardend(), "UTF-8"));
         }
     }
 

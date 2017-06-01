@@ -655,8 +655,10 @@ public class SearchMapper
 
         if (pivotKey == null)
         {
+            String invalidMessage = searchRequestContext.getPivotKeys().values().contains(aPivot.getKey())
+                        ? " cannot be used more than once.":" does not reference a facet Field, range or stats.";
             throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
-                        new Object[] { ": Pivot parameter " + aPivot.getKey() + " does not reference a facet Field, range or stats." });
+                        new Object[] { ": Pivot parameter " + aPivot.getKey() + invalidMessage });
         }
 
         if (aPivot.getPivots() != null && !aPivot.getPivots().isEmpty() && aPivot.getPivots().size()>1)

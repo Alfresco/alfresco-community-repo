@@ -514,5 +514,23 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&f.created.facet.range.include=lower"));
         assertTrue(url.contains("&f.created.facet.range.hardend=true"));
     }
+    @Test
+    public void testBuildRangeDate() throws UnsupportedEncodingException
+    {
+        SearchParameters params = new SearchParameters();
+        params.setSearchTerm("A*");
+        List<RangeParameters> ranges = new ArrayList<RangeParameters>();
+        ranges.add(new RangeParameters("created", "2015", "2016", "+1MONTH", true, Collections.emptyList(), Collections.emptyList(), null, null));
+        params.setRanges(ranges);
+        StringBuilder urlBuilder = new StringBuilder();
+        client.buildRangeParameters(params, encoder, urlBuilder);
+        String url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains("&facet.range=created"));
+        assertTrue(url.contains("&f.created.facet.range.start=2015-01-01T00%3A00%3A00.000Z"));
+        assertTrue(url.contains("&f.created.facet.range.end=2016-01-01T00%3A00%3A00.000Z"));
+        assertTrue(url.contains("&f.created.facet.range.gap=%2B1MONTH"));
+    }
 
 }

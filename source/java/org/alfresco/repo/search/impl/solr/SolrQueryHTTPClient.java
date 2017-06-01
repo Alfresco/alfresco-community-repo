@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.solr;
 
 import static org.alfresco.util.SearchDateConversion.parseDateInterval;
+import static org.alfresco.util.SearchDateConversion.parseDateString;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -835,13 +837,29 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         {
             List<RangeParameters> ranges = searchParameters.getRanges();
             url.append("&facet=").append(encoder.encode("true", "UTF-8"));
+            
             for(RangeParameters facetRange : ranges)
             {
                 String fieldName = facetRange.getField();
+                boolean isDate = false;
+                PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(searchParameters.getNamespace(),
+                        namespaceDAO, dictionaryService, fieldName);
+                if (propertyDef != null && (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
+                        || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE)))
+                {
+                    isDate = true;
+                }
+                
+                boolean startIncl = facetRange.isRangeStartInclusive();
+                boolean endInc = facetRange.isRangeEndInclusive();
+                
+                IntervalSet rangeSet = parseDateInterval(new IntervalSet(facetRange.getStart(), facetRange.getEnd(), facetRange.getGap(), startIncl, endInc), isDate);
                 url.append("&facet.range=").append(encoder.encode(facetRange.getField(), "UTF-8"));
-                url.append(String.format("&f.%s.facet.range.start=",fieldName)).append(encoder.encode(""+ facetRange.getStart(), "UTF-8"));
-                url.append(String.format("&f.%s.facet.range.end=",fieldName)).append(encoder.encode(""+ facetRange.getEnd(), "UTF-8"));
-                url.append(String.format("&f.%s.facet.range.gap=",fieldName)).append(encoder.encode(""+ facetRange.getGap(), "UTF-8"));
+                //Check if date and if inclusive or not
+                url.append(String.format("&f.%s.facet.range.start=",fieldName)).append(encoder.encode(""+ rangeSet.getStart(), "UTF-8"));
+                url.append(String.format("&f.%s.facet.range.end=",fieldName)).append(encoder.encode(""+ rangeSet.getEnd(), "UTF-8"));
+                url.append(String.format("&f.%s.facet.range.gap=",fieldName)).append(encoder.encode(""+ rangeSet.getLabel(), "UTF-8"));
+                url.append(String.format("&f.%s.facet.range.hardend=",fieldName)).append(encoder.encode("" + facetRange.isHardend(), "UTF-8"));
                 if(facetRange.getInclude() != null && !facetRange.getInclude().isEmpty())
                 {
                     for(String include : facetRange.getInclude())
@@ -856,7 +874,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                         url.append(String.format("&f.%s.facet.range.other=",fieldName)).append(encoder.encode("" + other, "UTF-8"));
                     }
                 }
-                url.append(String.format("&f.%s.facet.range.hardend=",fieldName)).append(encoder.encode("" + facetRange.isHardend(), "UTF-8"));
                 if(!facetRange.getExcludeFilters().isEmpty())
                 {
                     url.append("&range.field=");

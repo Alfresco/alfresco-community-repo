@@ -183,7 +183,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         default:
             StopWatch stopWatch = new StopWatch("DB if possible");
             //SEARCH-347, exclude TMDQ calls if faceting present.
-            if(dbQueryLanguage != null && !hasFaceting(searchParameters))
+            if(dbQueryLanguage != null && !searchParameters.hasFaceting())
             {
                 try
                 {
@@ -284,24 +284,6 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         }
     }
 
-    /**
-     * Checks if faceted fields or faceted queries are present if so it needs 
-     * to be excluded from the TMDQ call.
-     * @param searchParameters
-     * @return true if exists
-     */
-    private boolean hasFaceting(SearchParameters searchParameters)
-    {
-        if(searchParameters.getFacetQueries() != null && !searchParameters.getFacetQueries().isEmpty())
-        {
-            return true;
-        }
-        if(searchParameters.getFieldFacets() != null && !searchParameters.getFieldFacets().isEmpty())
-        {
-            return true;
-        }
-        return false;
-    }
     private ResultSet executeHybridQuery(SearchParameters searchParameters,
                                          ADMLuceneSearcherImpl admLuceneSearcher)
     {        

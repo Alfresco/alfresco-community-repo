@@ -119,6 +119,7 @@ public class SearchMapper
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromHighlight(sp, searchQuery.getHighlight());
         fromFacetIntervals(sp, searchQuery.getFacetIntervals());
+        fromFacetRange(sp, searchQuery.getFacetRange());
         fromScope(sp, searchQuery.getScope(), searchRequestContext);
         fromLimits(sp, searchQuery.getLimits());
 

@@ -461,8 +461,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&f.content.size.facet.range.hardend=true"));
 
         List<String> filters = new ArrayList<String>();
-        filters.add("bart");
-        filters.add("homer");
+        filters.add("ex1");
 
         ranges.clear();
         ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), "doc", filters));
@@ -479,7 +478,7 @@ public class SolrQueryHTTPClientTest
         assertFalse(url2.contains("&f.content.size.facet.range.include=outer"));
         assertFalse(url2.contains("&f.content.size.facet.range.other=before"));
         assertTrue(url2.contains("&f.content.size.facet.range.hardend=true"));
-        assertTrue(url2.contains("&range.field={!ex=bart,homer}"));
+        assertTrue(url2.contains("&facet.range={!ex=ex1}content.size"));
     }
     @Test
     public void testBuildMulitRange() throws UnsupportedEncodingException

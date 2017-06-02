@@ -915,7 +915,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 }
                 if(!facetRange.getExcludeFilters().isEmpty())
                 {
-                    url.append("&range.field=");
+                    url.append("&facet.range=");
                     if (facetRange.getExcludeFilters() != null && !facetRange.getExcludeFilters().isEmpty())
                     {
                         StringBuilder prefix = new StringBuilder("{!ex=");
@@ -931,6 +931,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                         }
                         prefix.append("}");
                         url.append(prefix);
+                        url.append(fieldName);
                     }
                     
                 }

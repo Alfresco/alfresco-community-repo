@@ -139,8 +139,9 @@ public class RangeParameters
                     default:
                 }
             }
+            return "<";
         }
-        return "<";
+        return "[";
     }
     public String getRangeFirstBucketEndInclusive()
     {
@@ -181,8 +182,9 @@ public class RangeParameters
                     break;
                 }
             }
+            return "<";
         }
-        return "<";
+        return "[";
     }
     public String getRangeBucketEndInclusive()
     {
@@ -218,7 +220,8 @@ public class RangeParameters
                         break;
                 }
             }
+            return ">";
         }
-        return ">";
+        return "]";
     }
 }

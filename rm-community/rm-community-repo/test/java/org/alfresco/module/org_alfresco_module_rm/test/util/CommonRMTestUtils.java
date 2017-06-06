@@ -299,6 +299,43 @@ public class CommonRMTestUtils implements RecordsManagementModel
     }
 
     /**
+     * Helper method to create a non-electronic record in a record folder.
+     *
+     * @param recordFolder record folder
+     * @param name         name of the non-electronic record
+     * @param title        title of the non-electronic record
+     * @return {@link NodeRef}  non-electronic record node reference
+     */
+    public NodeRef createNonElectronicRecord(NodeRef recordFolder, String name, String title)
+    {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+        props.put(ContentModel.PROP_TITLE, title);
+        return createNonElectronicRecordImpl(recordFolder, name, props);
+    }
+
+    /**
+     * Helper to consolidate creation of non-electronic record
+     */
+    private NodeRef createNonElectronicRecordImpl(NodeRef recordFolder, String name, Map<QName, Serializable> properties)
+    {
+        // Create the document
+        if (properties == null)
+        {
+            properties = new HashMap<QName, Serializable>(1);
+        }
+        if (!properties.containsKey(ContentModel.PROP_NAME))
+        {
+            properties.put(ContentModel.PROP_NAME, name);
+        }
+        NodeRef record = nodeService.createNode(recordFolder,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
+                RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT,
+                properties).getChildRef();
+        return record;
+    }
+
+    /**
      * Helper method to complete record.
      */
     public void completeRecord(final NodeRef record)

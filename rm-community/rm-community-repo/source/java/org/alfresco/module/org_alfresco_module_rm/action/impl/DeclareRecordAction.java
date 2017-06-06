@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -179,6 +180,27 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
             Set<QName> aspects = this.getNodeService().getAspects(nodeRef);
             for (QName aspect : aspects)
             {
+                AspectDefinition aspectDef = this.getDictionaryService().getAspect(aspect);
+                for (PropertyDefinition propDef : aspectDef.getProperties().values())
+                {
+                    if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+                    {
+                        logMissingProperty(propDef, missingProperties);
+
+                        result = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // check for missing mandatory metadata from custom aspect definitions
+        if (result)
+        {
+            Collection<QName> aspects = this.getDictionaryService().getAspects(RM_CUSTOM_MODEL);
+            for (QName aspect : aspects)
+            {
+                // TODO should not apply record custom metadata for non-electronic and vice versa
                 AspectDefinition aspectDef = this.getDictionaryService().getAspect(aspect);
                 for (PropertyDefinition propDef : aspectDef.getProperties().values())
                 {

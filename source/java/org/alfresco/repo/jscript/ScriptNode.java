@@ -1215,7 +1215,12 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                             prefix = prefixes.size() != 0 ? prefixes.iterator().next() : "";
                             cache.put(qname.getNamespaceURI(), prefix);
                         }
-                        buf.append('/').append(prefix).append(':').append(ISO9075.encode(qname.getLocalName()));
+                        buf.append('/');
+                        if(prefix.length() > 0)
+                        {
+                        	  buf.append(prefix).append(':');
+                        }
+                        buf.append(ISO9075.encode(qname.getLocalName()));
                     }
                 }
                 else

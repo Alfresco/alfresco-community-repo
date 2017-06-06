@@ -195,12 +195,12 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
         }
 
         // check for missing mandatory metadata from custom aspect definitions
+        // TODO should not apply record custom metadata for non-electronic and vice versa
         if (result)
         {
             Collection<QName> aspects = this.getDictionaryService().getAspects(RM_CUSTOM_MODEL);
             for (QName aspect : aspects)
             {
-                // TODO should not apply record custom metadata for non-electronic and vice versa
                 AspectDefinition aspectDef = this.getDictionaryService().getAspect(aspect);
                 for (PropertyDefinition propDef : aspectDef.getProperties().values())
                 {

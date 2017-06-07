@@ -376,10 +376,10 @@ public class ResultMapper
     {
         List<GenericFacetResponse> facetResults = new ArrayList<GenericFacetResponse>();
         Map<String,List<GenericBucket>> groups = new HashMap<>();
-        String group = null;
         
         for (Entry<String, Integer> fq:facetQueries.entrySet())
         {
+            String group = null;
             String filterQuery = null;
             if (searchQuery != null && searchQuery.getFacetQueries() != null)
             {

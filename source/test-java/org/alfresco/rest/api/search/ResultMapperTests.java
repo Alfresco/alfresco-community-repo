@@ -802,5 +802,48 @@ public class ResultMapperTests
         SearchQuery searchQuery3 = helper.extractFromJson(noFacetQueries);
         assertFalse(ResultMapper.hasGroup(searchQuery3));
     }
+    @Test
+    /**
+     *  When the following is passed
+     * "facetQueries": [
+     *       {"query": "content.size:[0 TO 102400]", "label": "small", "group": "one"},
+     *       {"query": "content.size:[102400 TO 1048576]", "label": "medium", "group": "two"},
+     *       {"query": "content.size:[1048576 TO 16777216]", "label": "large"}
+     *  We expect to see 3 groups of 1,2,null.
+     * @throws Exception
+     */
+    public void testFacetingWithPartialGroup() throws Exception
+    {
+        String jsonQuery = "{\"query\": {\"query\": \"alfresco\"},"
+                    + "\"facetQueries\": [" 
+                    + "{\"query\": \"content.size:[o TO 102400]\", \"label\": \"small\",\"group\":\"1\"},"
+                    + "{\"query\": \"content.size:[102400 TO 1048576]\", \"label\": \"medium\",\"group\":\"2\"}," 
+                    + "{\"query\": \"content.size:[1048576 TO 16777216]\", \"label\": \"large\"}]"
+                    + "}";
+        
+        String expectedResponse = "{\"responseHeader\":{\"status\":0,\"QTime\":9},\"_original_parameters_\":\"org.apache.solr.common.params.DefaultSolrParams:{params(df=TEXT&alternativeDic=DEFAULT_DICTIONARY&fl=DBID,score&start=0&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=1000&locale=en_US&wt=json),defaults(carrot.url=id&spellcheck.collateExtendedResults=true&carrot.produceSummary=true&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.alternativeTermCount=2&spellcheck.extendedResults=false&defType=afts&spellcheck.maxResultsForSuggest=5&spellcheck=false&carrot.outputSubClusters=false&spellcheck.count=5&carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&spellcheck.collate=true)}\",\"_field_mappings_\":{},\"_date_mappings_\":{},\"_range_mappings_\":{},\"_pivot_mappings_\":{},\"_interval_mappings_\":{},\"_stats_field_mappings_\":{},\"_stats_facet_mappings_\":{},\"_facet_function_mappings_\":{},\"response\":{\"numFound\":6,\"start\":0,\"maxScore\":0.7849362,\"docs\":[{\"DBID\":565,\"score\":0.7849362},{\"DBID\":566,\"score\":0.7849362},{\"DBID\":521,\"score\":0.3540957},{\"DBID\":514,\"score\":0.33025497},{\"DBID\":420,\"score\":0.32440513},{\"DBID\":415,\"score\":0.2780319}]},"
+                        + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
+                        + "\"facet_counts\":{\"facet_queries\": {\"small\": 52,\"large\": 0,\"medium\": 0}},"
+                        + "\"processedDenies\":true, \"lastIndexedTx\":34}";
 
+        ResultSet results = mockResultset(expectedResponse);
+        SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
+        SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        assertEquals(34l, searchContext.getConsistency().getlastTxId());
+        assertEquals(null, searchContext.getFacetQueries());
+        assertEquals(3, searchContext.getFacets().size());
+        assertEquals(1,searchContext.getFacets().get(0).getBuckets().size());
+        assertEquals(1,searchContext.getFacets().get(1).getBuckets().size());
+        assertEquals(1,searchContext.getFacets().get(2).getBuckets().size());
+        assertEquals("large",searchContext.getFacets().get(0).getBuckets().get(0).getLabel());
+        assertEquals("small",searchContext.getFacets().get(1).getBuckets().get(0).getLabel());
+        assertEquals("medium",searchContext.getFacets().get(2).getBuckets().get(0).getLabel());
+        assertEquals("content.size:[o TO 102400]",searchContext.getFacets().get(1).getBuckets().get(0).getFilterQuery());
+        assertFalse(searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().isEmpty());
+        Metric[] metrics = searchContext.getFacets().get(1).getBuckets().get(0).getMetrics().toArray(new Metric[searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().size()]);
+        assertEquals(METRIC_TYPE.count, metrics[0].getType());
+        assertEquals("{count=52}", metrics[0].getValue().toString());
+        
+    }
 }

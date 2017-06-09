@@ -1075,6 +1075,7 @@
         <property name="dispositionService" ref="DispositionService"/>
         <property name="recordableVersionService" ref="RecordableVersionService"/>
         <property name="alwaysEditURIs" ref="recordService_alwaysEditURIs" />
+        <property name="incompleteNodeTagger" ref="incompleteNodeTagger" />
     </bean>
 
    <!-- Defines a list of namespace URIs for properties, which should be always editable -->

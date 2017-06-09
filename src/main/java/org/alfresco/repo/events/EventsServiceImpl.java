@@ -71,7 +71,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class EventsServiceImpl extends AbstractEventsService implements EventsService
 {
-    private static final QName PROP_RMA_RECORD_ORIGINATING_LOCATION = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "recordOriginatingLocation");
+    public static final QName PROP_RMA_RECORD_ORIGINATING_LOCATION = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "recordOriginatingLocation");
     private static Log logger = LogFactory.getLog(EventsServiceImpl.class);
 
     private NodeRenamedEvent nodeRenamedEvent(NodeInfo nodeInfo, String oldName, String newName)

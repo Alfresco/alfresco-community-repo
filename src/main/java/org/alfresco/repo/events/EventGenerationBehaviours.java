@@ -65,7 +65,6 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         NodeServicePolicies.OnCreateNodePolicy,
         NodeServicePolicies.BeforeDeleteNodePolicy,
         NodeServicePolicies.OnAddAspectPolicy,
-        NodeServicePolicies.BeforeRemoveAspectPolicy,
         NodeServicePolicies.OnUpdatePropertiesPolicy,
         NodeServicePolicies.OnMoveNodePolicy,
         CheckOutCheckInServicePolicies.BeforeCheckOut,
@@ -85,9 +84,7 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     //Records management policies
     private static final QName POLICY_ON_UPDATE_SECURITY_MARKS = QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateContentSecurityMarks");
     private static final QName POLICY_ON_RECORD_DECLARATION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordDeclaration");    
-    
-    //this is used temporarily until RM-5180 is implemented
-    private static final QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "recordOriginatingDetails");
+    private static final QName POLICY_ON_RECORD_REJECTION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordRejection");
     
     protected EventsService eventsService;
     protected DictionaryService dictionaryService;
@@ -158,12 +155,7 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
         //Bind to Records Management policies
         bindClassPolicy(POLICY_ON_UPDATE_SECURITY_MARKS);
         bindClassPolicy(POLICY_ON_RECORD_DECLARATION, RecordCreatedEvent.EVENT_TYPE);
-        
-        //TODO: To be replaced with a proper policy once https://issues.alfresco.com/jira/browse/RM-5180 is implemented
-        if (dictionaryService.getAspect(ASPECT_RECORD_ORIGINATING_DETAILS) != null)
-        {
-            bindClassPolicy(NodeServicePolicies.BeforeRemoveAspectPolicy.QNAME, ASPECT_RECORD_ORIGINATING_DETAILS, RecordRejectedEvent.EVENT_TYPE);
-        }
+        bindClassPolicy(POLICY_ON_RECORD_REJECTION, RecordRejectedEvent.EVENT_TYPE);
 	}
 
     private DataType getPropertyType(QName propertyName)
@@ -450,15 +442,6 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
             eventsService.secondaryAssociationDeleted(childAssocRef);
         }
     }
-
-    @Override
-    public void beforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (aspectTypeQName.equals(ASPECT_RECORD_ORIGINATING_DETAILS))
-        {
-            eventsService.recordRejected(nodeRef);
-        }
-    }
     
     /**
      * Called after a new content node's security marking has been updated.
@@ -488,5 +471,15 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     public void onRecordDeclaration(NodeRef nodeRef)
     {
         eventsService.recordCreated(nodeRef);
+    }
+    
+    /**
+     * Called before a record is rejected
+     * 
+     * @param nodeRef the record about to be rejected
+     */
+    public void beforeRecordRejection(NodeRef nodeRef)
+    {
+        eventsService.recordRejected(nodeRef);
     }
 }

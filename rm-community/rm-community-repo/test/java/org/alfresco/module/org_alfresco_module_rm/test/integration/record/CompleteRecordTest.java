@@ -285,7 +285,7 @@ public class CompleteRecordTest extends BaseRMTestCase
                 defineCustomMetadata(CUSTOM_NON_ELECTRONIC_TEST, TYPE_NON_ELECTRONIC_DOCUMENT, MANDATORY_METADATA);
 
                 // create a non-electronic record
-                nonElectronicRecord = utils.createRecord(rmFolder, "non-electronicRecord.txt", "title");
+                nonElectronicRecord = utils.createNonElectronicRecord(rmFolder, "non-electronicRecord.txt", "title");
             }
 
             public void when()
@@ -329,10 +329,10 @@ public class CompleteRecordTest extends BaseRMTestCase
                 action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create the custom metadata definition (that has a mandatory property)
-                defineCustomMetadata(CUSTOM_NON_ELECTRONIC_TEST, ASPECT_RECORD, MANDATORY_METADATA);
+                defineCustomMetadata(CUSTOM_NON_ELECTRONIC_TEST, TYPE_NON_ELECTRONIC_DOCUMENT, MANDATORY_METADATA);
 
                 // create a non-electronic record
-                nonElectronicRecord = utils.createRecord(rmFolder, "non-electronicRecord.txt", "title");
+                nonElectronicRecord = utils.createNonElectronicRecord(rmFolder, "non-electronicRecord.txt", "title");
 
                 // populate the custom metadata mandatory property for the record
                 populateCustomMetadata(nonElectronicRecord, CUSTOM_NON_ELECTRONIC_TEST);
@@ -424,11 +424,11 @@ public class CompleteRecordTest extends BaseRMTestCase
                 // enable mandatory parameter check
                 action.setCheckMandatoryPropertiesEnabled(true);
 
-                // create the custom metadata definition (that has a mandatory property)
+                // create the record custom metadata definition (that has a mandatory property)
                 defineCustomMetadata(CUSTOM_ELECTRONIC_TEST, ASPECT_RECORD, MANDATORY_METADATA);
 
                 // create a non-electronic record
-                nonElectronicRecord = utils.createRecord(rmFolder, "non-electronicRecord.txt", "title");
+                nonElectronicRecord = utils.createNonElectronicRecord(rmFolder, "non-electronicRecord.txt", "title");
             }
 
             public void when()
@@ -471,8 +471,8 @@ public class CompleteRecordTest extends BaseRMTestCase
                 // enable mandatory parameter check
                 action.setCheckMandatoryPropertiesEnabled(true);
 
-                // create the custom metadata definition (that has a mandatory property)
-                defineCustomMetadata(CUSTOM_NON_ELECTRONIC_TEST, ASPECT_RECORD, MANDATORY_METADATA);
+                // create the non-electronic record custom metadata definition (that has a mandatory property)
+                defineCustomMetadata(CUSTOM_NON_ELECTRONIC_TEST, TYPE_NON_ELECTRONIC_DOCUMENT, MANDATORY_METADATA);
 
                 // create a electronic record
                 record = utils.createRecord(rmFolder, "electronicRecord.txt", "title");

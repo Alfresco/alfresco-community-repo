@@ -28,21 +28,19 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
- * Unit test for RM-3341 .. can copy to hold and transfer folder
+ * Test for RM-4293
  *
- * @since 2.4
+ * @author Silviu Dinuta
+ * @since 2.6
  */
-public class RM3341Test extends BaseRMTestCase
+public class RM4293Test extends BaseRMTestCase
 {
-    public void testCopyingContentsInHoldandTransfer() throws Exception
+    public void testDeleteSpecialContainers() throws Exception
     {
         doTestInTransaction(new Test<Void>()
         {
@@ -51,66 +49,77 @@ public class RM3341Test extends BaseRMTestCase
             {
                 NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
                 assertNotNull(holdContainer);
-                NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
-                assertNotNull(transferContainer);
-
-                assertEquals(AccessStatus.ALLOWED,
-                    permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED,
-                    permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
-
-                return null;
-            }
-        }, ADMIN_USER);
-
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-
-            public Void run()
-            {
-
-                NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-                assertNotNull(holdContainer);
 
                 try
                 {
-                    fileFolderService.create(holdContainer, "test file", ContentModel.TYPE_CONTENT);
+                    fileFolderService.delete(holdContainer);
                     fail("This should have thrown an exception");
                 }
                 catch (IntegrityException e)
                 {
-                    // ("Content can't be added to a hold container. Use record folders to file content.")
+                    // ("Hold Container can't be deleted.")
                 }
                 return null;
             }
-
         });
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
-
             public Void run()
             {
-
                 NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
                 assertNotNull(transferContainer);
-
                 try
                 {
-
-                    fileFolderService.create(transferContainer, "test content", ContentModel.TYPE_CONTENT);
-
+                    fileFolderService.delete(transferContainer);
                     fail("This should have thrown an exception");
-
                 }
                 catch (IntegrityException e)
                 {
-                    // ("Content can't be added to a transfer container. Use record folders to file content.")
+                    // ("Transfer Container can't be deleted.")
                 }
                 return null;
             }
+        });
 
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
+                assertNotNull(unfiledRecordContainer);
+
+                try
+                {
+                    fileFolderService.delete(unfiledRecordContainer);
+                    fail("This should have thrown an exception");
+                }
+                catch (IntegrityException e)
+                {
+                    // ("Unfiled Record Container can't be deleted.")
+                }
+                return null;
+            }
+        });
+
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                try
+                {
+                    fileFolderService.delete(filePlan);
+                    fail("This should have thrown an exception");
+                }
+                catch (IntegrityException e)
+                {
+                    // ("FilePlan can't be deleted.")
+                }
+                return null;
+            }
         });
     }
 }

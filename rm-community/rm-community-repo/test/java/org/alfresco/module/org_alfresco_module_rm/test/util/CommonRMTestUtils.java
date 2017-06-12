@@ -310,28 +310,14 @@ public class CommonRMTestUtils implements RecordsManagementModel
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
         props.put(ContentModel.PROP_TITLE, title);
-        return createNonElectronicRecordImpl(recordFolder, name, props);
-    }
+        props.put(ContentModel.PROP_NAME, name);
 
-    /**
-     * Helper to consolidate creation of non-electronic record
-     */
-    private NodeRef createNonElectronicRecordImpl(NodeRef recordFolder, String name, Map<QName, Serializable> properties)
-    {
         // Create the document
-        if (properties == null)
-        {
-            properties = new HashMap<QName, Serializable>(1);
-        }
-        if (!properties.containsKey(ContentModel.PROP_NAME))
-        {
-            properties.put(ContentModel.PROP_NAME, name);
-        }
         NodeRef record = nodeService.createNode(recordFolder,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
                 RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT,
-                properties).getChildRef();
+                props).getChildRef();
         return record;
     }
 

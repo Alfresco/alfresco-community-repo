@@ -24,9 +24,12 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -35,25 +38,21 @@ import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.service.namespace.QName;
 
 /**
- * rma:transferContainer behaviour bean
+ * rma:unfiledRecordContainer behaviour bean
  *
- * @author Mihai Cozma
- * @since 2.4
+ * @author Silviu Dinuta
+ * @since 2.6
  */
-@BehaviourBean(defaultType = "rma:transferContainer")
-public class TransferContainerType extends BaseBehaviourBean
+@BehaviourBean(defaultType = "rma:unfiledRecordContainer")
+public class UnfiledRecordContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                       NodeServicePolicies.OnCreateNodePolicy,
                        NodeServicePolicies.OnDeleteNodePolicy
 {
-    private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
-    private final static String MSG_ERROR_ADD_CHILD_TO_TRANSFER_CONTAINER = "rm.action.create.transfer.container.child-error-message";
-    private static final String BEHAVIOUR_NAME = "onCreateChildAssocsForTransferContainer";
-    private static final String DELETE_BEHAVIOUR_NAME = "onDeleteTransferContainer";
+    private static final String BEHAVIOUR_NAME = "onDeleteUnfiledRecordContainer";
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
 
     /**
      * Disable the behaviours for this transaction
@@ -61,7 +60,6 @@ public class TransferContainerType extends BaseBehaviourBean
     public void disable()
     {
         getBehaviour(BEHAVIOUR_NAME).disable();
-        getBehaviour(DELETE_BEHAVIOUR_NAME).disable();
     }
 
     /**
@@ -70,37 +68,30 @@ public class TransferContainerType extends BaseBehaviourBean
     public void enable()
     {
         getBehaviour(BEHAVIOUR_NAME).enable();
-        getBehaviour(DELETE_BEHAVIOUR_NAME).enable();
-    }
-
-    /**
-     * Prevent creating a node inside transfer container, this will be possible only through internal services in a controlled manner.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, * boolean)
-     */
-    @Override
-    @Behaviour(kind = BehaviourKind.ASSOCIATION,
-               name = BEHAVIOUR_NAME)
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
-    {
-        throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_ADD_CHILD_TO_TRANSFER_CONTAINER), null);
     }
 
     @Override
-    public void onCreateNode(ChildAssociationRef childAssocRef)
+    @Behaviour(kind = BehaviourKind.ASSOCIATION)
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
+        // We need to automatically cast the created folder to record folder if it is a plain folder
+        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
+        // Some modules use hidden folder subtypes to store information (see RM-3283).
+        QName childType = nodeService.getType(childAssocRef.getChildRef());
+        if (childType.equals(ContentModel.TYPE_FOLDER))
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));
+            nodeService.setType(childAssocRef.getChildRef(), TYPE_UNFILED_RECORD_FOLDER);
         }
+
+        // check the created child is of an accepted type
+        validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     @Override
     @Behaviour(kind = BehaviourKind.CLASS,
-               name = DELETE_BEHAVIOUR_NAME)
+               name = BEHAVIOUR_NAME)
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
     {
-        throw new IntegrityException("Operation failed. Deletion of Transfer Container is not allowed.", null);
+        throw new IntegrityException("Operation failed. Deletion of Unfiled Record Container is not allowed.", null);
     }
 }

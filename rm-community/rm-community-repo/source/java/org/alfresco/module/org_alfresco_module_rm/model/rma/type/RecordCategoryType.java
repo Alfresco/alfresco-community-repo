@@ -27,6 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -62,6 +65,9 @@ public class RecordCategoryType extends    BaseBehaviourBean
                                            NodeServicePolicies.OnCreateNodePolicy,
                                            NodeServicePolicies.OnMoveNodePolicy
 {
+    private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = new ArrayList<QName>();
+    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY, TYPE_RECORD_FOLDER);
+
     /** vital record service */
     protected VitalRecordService vitalRecordService;
 
@@ -107,17 +113,22 @@ public class RecordCategoryType extends    BaseBehaviourBean
     )
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        // ensure content is not placed directly into a record category
-        NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
+        QName childType = nodeService.getType(childAssocRef.getChildRef());
+
+        // We need to automatically cast the created folder to record folder if it is a plain folder
+        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
+        // Some modules use hidden folders to store information (see RM-3283).
+        if (childType.equals(ContentModel.TYPE_FOLDER))
         {
-            throw new AlfrescoRuntimeException("Operation failed, because you can't place content directly into a record category.");
+            nodeService.setType(childAssocRef.getChildRef(), TYPE_RECORD_FOLDER);
         }
+
+        validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
 
         if (bNew)
         {
             // setup the record folder
-            recordFolderService.setupRecordFolder(nodeRef);
+            recordFolderService.setupRecordFolder(childAssocRef.getChildRef());
         }
     }
 

@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -90,7 +91,7 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
         {
             if (!getRecordService().isDeclared(actionedUponNodeRef))
             {
-                List<String> missingProperties = new ArrayList<String>(5);
+                List<String> missingProperties = new ArrayList<>(5);
                 // Aspect not already defined - check mandatory properties then add
                 if (!checkMandatoryPropertiesEnabled || 
                     mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
@@ -99,7 +100,7 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
                     try
                     {
                         // Add the declared aspect
-                        Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
+                        Map<QName, Serializable> declaredProps = new HashMap<>(2);
                         declaredProps.put(PROP_DECLARED_AT, new Date());
                         declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
                         this.getNodeService().addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
@@ -189,6 +190,34 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
                         result = false;
                         break;
                     }
+                }
+            }
+        }
+
+        // check for missing mandatory metadata from custom aspect definitions
+        if (result)
+        {
+            QName aspect = ASPECT_RECORD;
+            if (nodeRefType.equals(TYPE_NON_ELECTRONIC_DOCUMENT))
+            {
+                aspect = TYPE_NON_ELECTRONIC_DOCUMENT;
+            }
+
+            // get customAspectImpl
+            String localName = aspect.toPrefixString(getNamespaceService()).replace(":", "");
+            localName = MessageFormat.format("{0}CustomProperties", localName);
+            QName customAspect = QName.createQName(RM_CUSTOM_URI, localName);
+
+            AspectDefinition aspectDef = this.getDictionaryService().getAspect(customAspect);
+
+            for (PropertyDefinition propDef : aspectDef.getProperties().values())
+            {
+                if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+                {
+                    logMissingProperty(propDef, missingProperties);
+
+                    result = false;
+                    break;
                 }
             }
         }

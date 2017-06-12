@@ -76,7 +76,7 @@
         <property name="filePlanService" ref="FilePlanService" />
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
-        <property name="unfilerRecordContainerType" ref="rma.unfiledRecordsContainer" />
+        <property name="unfiledRecordContainerType" ref="rma.unfiledRecordsContainer" />
         <property name="transferContainerType" ref="rma.transferContainer" />
         <property name="holdContainerType" ref="rma.holdContainer" />
    </bean>

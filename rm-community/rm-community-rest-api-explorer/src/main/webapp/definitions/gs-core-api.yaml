@@ -25,7 +25,7 @@ tags:
   - name: record-folders
     description: Retrieve and manage record folders
   - name: gs-sites
-    description: Retrieve and manage the RM site
+    description: Retrieve and manage the Records Management site
   - name: records
     description: Perform record specific operations
   - name: files
@@ -44,18 +44,18 @@ paths:
     post:
       tags:
         - gs-sites
-      summary: Create the RM site
+      summary: Create the Records Management (RM) site
       description: |
-        **Note:** this endpoint is available in RM 2.6 and newer versions.
+        **Note:** this endpoint is available in Records Management 2.6 and newer versions.
 
         Creates the RM site with the given details.
 
         **Note:** the id of a site cannot be updated once the site has been created.
 
-        For example, to create the RM site named "Records Management Title" with "Records Management Description" as description, the following body could be used:
+        For example, to create an RM site named "Records Management" with "Records Management Description" as description, the following body could be used:
         ```JSON
         {
-          "title": "Records Management Title",
+          "title": "Records Management",
           "description": "Records Management Description"
         }
         ```
@@ -100,9 +100,9 @@ paths:
     get:
       tags:
         - gs-sites
-      summary: Get the RM site
+      summary: Get the Records Management (RM) site
       description: |
-        **Note:** this endpoint is available in RM 2.6 and newer versions.
+        **Note:** this endpoint is available in Records Management 2.6 and newer versions.
 
         Gets information for RM site.
 
@@ -118,7 +118,7 @@ paths:
             $ref: '#/definitions/RMSiteEntry'
         '400':
           description: |
-            Invalid parameter: GET request is suported only for the RM site
+            Invalid parameter: GET request is only  supported for the RM site
         '401':
           description: Authentication failed
         '404':
@@ -131,9 +131,9 @@ paths:
     delete:
       tags:
         - gs-sites
-      summary: Delete the RM site
+      summary: Delete the Records Management (RM) site
       description: |
-        **Note:** this endpoint is available in RM 2.6 and newer versions.
+        **Note:** this endpoint is available in Records Management 2.6 and newer versions.
 
         Deletes the RM site.
       operationId: deleteRMSite
@@ -144,7 +144,7 @@ paths:
           description: Successful response
         '400':
           description: |
-            Invalid parameter: DELETE request is suported only for the RM site
+            Invalid parameter: DELETE request is only supported for the RM site
         '401':
           description: Authentication failed
         '403':
@@ -159,14 +159,13 @@ paths:
     put:
       tags:
         - gs-sites
-      summary: Update the RM site
+      summary: Update the Records Management (RM) site
       description: |
-        **Note:** this endpoint is available in RM 2.6 and newer versions.
+        **Note:** this endpoint is available in Records Management 2.6 and newer versions.
 
-        Update the details for the RM site. Site Manager or otherwise a
-        (site) admin can update title or description.
+        Update the details for the RM site. Site Manager or other (site) admin can update title or description.
 
-        **Note**: the id, site visibility or compliance of the RM site cannot be updated once the RM site has been created.
+        **Note**: the id, site visibility, or compliance of the RM site cannot be updated once the site has been created.
 
       operationId: updateRMSite
       produces:
@@ -205,9 +204,9 @@ paths:
         - file-plans
       summary: Get a file plan
       description: |
-        Get information for file plan **filePlanId**
+        Gets information for file plan **filePlanId**
 
-        Besides mandatory fields the file plan's aspects and properties are returned by default.
+        Mandatory fields and the file plan's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getFilePlan
@@ -226,11 +225,11 @@ paths:
           description: |
             Invalid parameter: **filePlanId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **filePlanId**
+          description: Current user does not have permission to read **filePlanId**
         '404':
-          description: If **filePlanId** does not exist
+          description: "**filePlanId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -275,13 +274,13 @@ paths:
           description: |
             Invalid parameter: The update request is invalid or **filePlanId** is not a valid format or **filePlanBodyUpdate** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
           description: If current user does not have permission to update **filePlanId**
         '404':
-          description: If **filePlanId** does not exist
+          description: "**filePlanId** does not exist"
         '409':
-          description: If the updated name clashes with an existing fileplan
+          description: Updated name clashes with an existing fileplan
         '422':
           description: Model integrity exception, including file name with invalid characters
         default:
@@ -316,11 +315,11 @@ paths:
           schema:
             $ref: '#/definitions/RecordCategoryPaging'
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **filePlanId**
+          description: Current user does not have permission to read **filePlanId**
         '404':
-          description: If **filePlanId** does not exist
+          description: "**filePlanId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -328,9 +327,9 @@ paths:
     post:
       tags:
         - file-plans
-      summary: Create record categories for given file plan
+      summary: Create record categories for a file plan
       description: |
-        Create a record category as a primary child of **filePlanId**.
+        Creates a record category as a primary child of **filePlanId**.
 
         You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
         the API method tries to create
@@ -413,13 +412,13 @@ paths:
           description: |
             Invalid parameter: **filePlanId** is not a valid format or **filePlanId** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to add children to **filePlanId**
+          description: Current user does not have permission to add children to **filePlanId**
         '404':
-          description: If **filePlanId** does not exist
+          description: "**filePlanId** does not exist"
         '409':
-          description: If new name clashes with an existing node in the current parent container
+          description: New name clashes with an existing node in the current parent container
         '422':
           description: Model integrity exception, including node name with invalid characters
   ## Unfiled records containers
@@ -429,9 +428,9 @@ paths:
         - unfiled-containers
       summary: Get the unfiled records container
       description: |
-        Get information for unfiled records contianer **unfiledContainerId**
+        Gets information for unfiled records container **unfiledContainerId**
 
-        Besides mandatory fields the unfiled records container's aspects and properties are returned by default.
+        Mandatory fields and the unfiled records container's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getUnfiledContainer
@@ -450,11 +449,11 @@ paths:
           description: |
             Invalid parameter: **unfiledContainerId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **unfiledContainerId**
+          description: Current user does not have permission to read **unfiledContainerId**
         '404':
-          description: If **unfiledContainerId** does not exist
+          description: "**unfiledContainerId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -504,13 +503,13 @@ paths:
           description: |
             Invalid parameter: The update request is invalid or **unfiledContainerId** is not a valid format or **unfiledContainerBodyUpdate** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to update **unfiledContainerId**
+          description: Current user does not have permission to update **unfiledContainerId**
         '404':
-          description: If **unfiledContainerId** does not exist
+          description: "**unfiledContainerId** does not exist"
         '409':
-          description: If the updated name clashes with an existing root category of special container in the current fileplan
+          description: Updated name clashes with an existing root category of special container in the current fileplan
         '422':
           description: Model integrity exception, including file name with invalid characters
         default:
@@ -545,11 +544,11 @@ paths:
           schema:
             $ref: '#/definitions/UnfiledContainerAssociationPaging'
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **unfiledContainerId**
+          description: Current user does not have permission to read **unfiledContainerId**
         '404':
-          description: If **unfiledContainerId** does not exist
+          description: "**unfiledContainerId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -559,7 +558,7 @@ paths:
         - unfiled-containers
       summary: Create a record or an unfiled record folder
       description: |
-        Create a record or an unfiled record folder as a primary child of **unfiledContainerId**.
+        Creates a record or an unfiled record folder as a primary child of **unfiledContainerId**.
 
         You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
         the API method tries to create a unique name using an integer suffix.
@@ -702,7 +701,7 @@ paths:
         - unfiled-record-folders
       summary: Get the unfiled record folder
       description: |
-        Get information for unfiled record folder id **unfiledRecordFolderId**
+        Gets information for unfiled record folder id **unfiledRecordFolderId**
 
         Mandatory fields and the unfiled record folder's aspects and properties are returned by default.
         
@@ -798,7 +797,7 @@ paths:
         - unfiled-record-folders
       summary : Delete an unfiled record folder
       description: |
-        Deletes unfiled record folder **unfiledRecordFolderId**.
+        Deletes the unfiled record folder **unfiledRecordFolderId**.
       operationId: deleteUnfiledRecordFolder
       parameters:
         - $ref: '#/parameters/unfiledRecordFolderIdParam'
@@ -851,11 +850,11 @@ paths:
           schema:
             $ref: '#/definitions/UnfiledRecordFolderAssociationPaging'
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **unfiledRecordFolderId**
+          description: Current user does not have permission to read **unfiledRecordFolderId**
         '404':
-          description: If **unfiledRecordFolderId** does not exist
+          description: "**unfiledRecordFolderId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -902,7 +901,7 @@ paths:
         }
         ```
 
-        You can create an empty electronic record:
+        You can create an empty electronic record like this:
         ```JSON
         {
           "name":"My Electronic Record",
@@ -992,13 +991,13 @@ paths:
           description: |
             Invalid parameter: **unfiledRecordFolderId** is not a valid format or **unfiledRecordFolderId** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to add children to **unfiledRecordFolderId**
+          description: Current user does not have permission to add children to **unfiledRecordFolderId**
         '404':
-          description: If **unfiledRecordFolderId** does not exist
+          description: "**unfiledRecordFolderId** does not exist"
         '409':
-          description: If new name clashes with an existing node in the current parent container
+          description: New name clashes with an existing node in the current parent container
         '422':
           description: Model integrity exception, including node name with invalid characters
   ## Record categories
@@ -1008,9 +1007,9 @@ paths:
         - record-categories
       summary: Get a record category
       description: |
-        Get information for record category **recordCategoryId**
+        Gets information for record category **recordCategoryId**
 
-        Besides mandatory fields the record category's aspects and properties are returned by default.
+        Mandatory fields and the record category's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getRecordCategory
@@ -1030,11 +1029,11 @@ paths:
           description: |
             Invalid parameter: **recordCategoryId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **recordCategoryId**
+          description: Current user does not have permission to read **recordCategoryId**
         '404':
-          description: If **recordCategoryId** does not exist
+          description: "**recordCategoryId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -1158,7 +1157,7 @@ paths:
           schema:
             $ref: '#/definitions/RecordCategoryChildPaging'
         '401':
-          description: Authentication fails
+          description: Authentication failed
         '403':
           description: Current user does not have permission to read **recordCategoryId**
         '404':
@@ -1294,7 +1293,7 @@ paths:
           description: |
             Invalid parameter: **recordCategoryId** is not a valid format or **nodeBodyCreate** is invalid
         '401':
-          description: Authentication fails
+          description: Authentication failed
         '403':
           description: Current user does not have permission to add children to **recordCategoryId**
         '404':
@@ -1310,9 +1309,9 @@ paths:
         - record-folders
       summary: Get a record folder
       description: |
-        Get information for record folder **recordFolderId**
+        Gets information for record folder **recordFolderId**
 
-        Besides mandatory fields the record folder's aspects and properties are returned by default.
+        Mandatory fields and the record folder's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getRecordFolder
@@ -1434,7 +1433,7 @@ paths:
         - record-folders
       summary: List records
       description: |
-        Returns a list of records.
+        Gets a list of records.
 
         Minimal information for each record is returned by default.
 
@@ -1601,7 +1600,7 @@ paths:
         - records
       summary: Get a record
       description: |
-        Get information for record **recordId**
+        Gets information for record **recordId**
 
         Mandatory fields and the record's aspects and properties are returned by default.
         
@@ -1622,7 +1621,7 @@ paths:
           description: |
             Invalid parameter: **recordId** is not a valid format
         '401':
-          description: Authentication fails
+          description: Authentication failed
         '403':
           description: Current user does not have permission to read **recordId**
         '404':
@@ -1708,7 +1707,7 @@ paths:
           description: |
             Invalid parameter: **recordId** is not a valid format
         '401':
-          description: Authentication fails
+          description: Authentication failed
         '403':
           description: Current user does not have permission to delete **recordId**
         '404':
@@ -1806,7 +1805,7 @@ paths:
       tags:
         - files
       summary: Declare as record
-      description: Declares the file **fileId** in the unfiled record container.
+      description: Declares the file **fileId** in the unfiled records container.
       operationId: declareRecord
       parameters:
         - name: fileId
@@ -1854,7 +1853,7 @@ paths:
         - transfer-containers
       summary: Get a transfer container
       description: |
-        Get information for transfer container  **transferContainerId**
+        Gets information for transfer container **transferContainerId**
 
         Mandatory fields and the transfer container's aspects and properties are returned by default.
         
@@ -1875,11 +1874,11 @@ paths:
           description: |
             Invalid parameter: **transferContainerId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **transferContainerId**
+          description: Current user does not have permission to read **transferContainerId**
         '404':
-          description: If **transferContainerId** does not exist
+          description: "**transferContainerId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -1928,13 +1927,13 @@ paths:
           description: |
             Invalid parameter: the update request is invalid or **transferContainerId** is not a valid format or **nodeBody** is invalid
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to update **transferContainerId**
+          description: Current user does not have permission to update **transferContainerId**
         '404':
-          description: If **transferContainerId** does not exist
+          description: "**transferContainerId** does not exist"
         '409':
-          description: If the updated name clashes with an existing node in the current parent folder
+          description: Updated name clashes with an existing node in the current parent folder
         '422':
           description: Model integrity exception, including transfer container name with invalid characters
         default:
@@ -1968,11 +1967,11 @@ paths:
           schema:
             $ref: '#/definitions/TransferContainerAssociationPaging'
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **transferContainerId**
+          description: Current user does not have permission to read **transferContainerId**
         '404':
-          description: If **transferContainerId** does not exist
+          description: "**transferContainerId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -1984,9 +1983,9 @@ paths:
         - transfers
       summary: Get a transfer
       description: |
-        Get information for transfer **transferId**
+        Gets information for transfer **transferId**
 
-        Besides mandatory fields the transfer's aspects and properties are returned by default.
+        Mandatory fields and the transfer's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getTransfer
@@ -2005,11 +2004,11 @@ paths:
           description: |
             Invalid parameter: **transferId** is not a valid format
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **transferId**
+          description: Current user does not have permission to read **transferId**
         '404':
-          description: If **transferId** does not exist
+          description: "**transferId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -2020,7 +2019,7 @@ paths:
         - transfers
       summary: List transfer's children
       description: |
-        Returns a list of transfer's children.
+        Gets a list of transfer's children.
 
         Minimal information for each child is returned by default.
 
@@ -2041,11 +2040,11 @@ paths:
           schema:
             $ref: '#/definitions/TransferAssociationPaging'
         '401':
-          description: If authentication fails
+          description: Authentication failed
         '403':
-          description: If current user does not have permission to read **transferId**
+          description: Current user does not have permission to read **transferId**
         '404':
-          description: If **transferId** does not exist
+          description: "**transferId** does not exist"
         default:
           description: Unexpected error
           schema:
@@ -2088,7 +2087,7 @@ parameters:
   filePlanIncludeSourceParam:
     name: includeSource
     in: query
-    description: Also include **source** in addition to **entries** with folder information on the parent node – the specified parent **filePlanId**
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **filePlanId**
     required: false
     type: boolean
   ## Unfiled records containers
@@ -2096,14 +2095,14 @@ parameters:
     name: unfiledContainerId
     in: path
     description:
-      The identifier of a unfiled records container. You can use the **-unfiled-** alias.
+      The identifier of an unfiled records container. You can use the **-unfiled-** alias.
     required: true
     type: string
   unfiledContainerEntryIncludeParam:
     name: include
     in: query
     description: |
-      Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
+      Returns additional information about the unfiled records container's children. Any optional field from the response model can be requested. For example:
       * allowableOperations
       * path
     required: false
@@ -2115,7 +2114,7 @@ parameters:
     name: include
     in: query
     description: |
-      Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
+      Returns additional information about the unfiled records container's children. Any optional field from the response model can be requested. For example:
       * allowableOperations
       * aspectNames
       * association 
@@ -2129,7 +2128,7 @@ parameters:
   unfiledContainerIncludeSourceParam:
     name: includeSource
     in: query
-    description: Also include **source** in addition to **entries** with folder information on the parent node – the specified parent **unfiledContainerId**
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **unfiledContainerId**
     required: false
     type: boolean
 ## Unfiled record folders
@@ -2137,14 +2136,14 @@ parameters:
     name: unfiledRecordFolderId
     in: path
     description:
-      The identifier of a unfiled record folder.
+      The identifier of an unfiled record folder.
     required: true
     type: string
   unfiledRecordFolderEntryIncludeParam:
     name: include
     in: query
     description: |
-      Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
+      Returns additional information about the unfiled records container's children. Any optional field from the response model can be requested. For example:
       * allowableOperations
       * path
     required: false
@@ -2156,7 +2155,7 @@ parameters:
     name: include
     in: query
     description: |
-      Returns additional information about the unfiled records container children. Any optional field from the response model can be requested. For example:
+      Returns additional information about the unfiled records container's children. Any optional field from the response model can be requested. For example:
       * allowableOperations
       * aspectNames
       * association
@@ -2177,7 +2176,7 @@ parameters:
   unfiledRecordFolderIncludeSourceParam:
     name: includeSource
     in: query
-    description: Also include **source** in addition to **entries** with folder information on the parent node – either the specified parent **unfiledRecordFolderId**, or as resolved by **relativePath**.
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – either the specified parent **unfiledRecordFolderId**, or as resolved by **relativePath**.
     required: false
     type: boolean
   unfiledRecordFolderAndContainerWhereParam:
@@ -2225,7 +2224,7 @@ parameters:
   recordCategoryIncludeSourceParam:
     name: includeSource
     in: query
-    description: Also include **source** in addition to **entries** with folder information on the parent node – either the specified parent **recordCategoryId**, or as resolved by **relativePath**.
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – either the specified parent **recordCategoryId**, or as resolved by **relativePath**.
     required: false
     type: boolean
   recordCategoryChildEntryIncludeParam:
@@ -2284,7 +2283,7 @@ parameters:
   recordFolderIncludeSourceParam:
     name: includeSource
     in: query
-    description: Also include **source** in addition to **entries** with record information on the parent folder – the specified parent **recordFolderId**
+    description: Also include **source** (in addition to **entries**) with record information on the parent folder – the specified parent **recordFolderId**
     required: false
     type: boolean
   recordFolderChildEntryIncludeParam:
@@ -2356,7 +2355,7 @@ parameters:
   transferContainerIncludeSourceParam:
     name: includeSource
     in: query
-    description: Also include **source** in addition to **entries** with folder information on the specified parent **transferContainerId**.
+    description: Also include **source** (in addition to **entries**) with folder information on the specified parent **transferContainerId**.
     required: false
     type: boolean
   ## Transfers
@@ -2383,7 +2382,7 @@ parameters:
   transferIncludeSourceParam:
     name: includeSource
     in: query
-    description: Also include **source** in addition to **entries** with folder information on the specified parent **transferId**.
+    description: Also include **source** (in addition to **entries**) with folder information on the specified parent **transferId**.
     required: false
     type: boolean
   transferChildEntryIncludeParam:

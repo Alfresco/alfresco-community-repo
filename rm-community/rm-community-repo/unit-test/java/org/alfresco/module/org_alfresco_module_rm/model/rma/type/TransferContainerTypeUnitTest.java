@@ -26,11 +26,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+
+import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 
@@ -42,40 +47,27 @@ import org.mockito.InjectMocks;
  */
 public class TransferContainerTypeUnitTest extends BaseUnitTest
 {
-    /** test object */
-    private @InjectMocks TransferContainerType transferContainerType;
+    /**
+     * test object
+     */
+    private @InjectMocks
+    TransferContainerType transferContainerType;
 
     /**
-     * Having the Unfilled Record container and a folder having the aspect ASPECT_HIDDEN When adding a child association
-     * between the folder and the container Then the folder type shouldn't be renamed
+     * Given that we try to add to transfer container,
+     * Then IntegrityException is thrown.
      */
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void testAddContentToTransferContainerTest()
+    @Test(expected = IntegrityException.class)
+    public void testAddToTransferContainerTest()
     {
+        NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
 
-        NodeRef transferContainer = createTransferContainer();
+        QName type = AlfMock.generateQName();
+        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
-        /*
-         * When adding a child association between the folder and the container
-         */
-        NodeRef record = generateNodeRef(ContentModel.TYPE_CONTENT);
-        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.TYPE_CONTENT, transferContainer,
-                    ContentModel.TYPE_CONTENT, record);
-
-        transferContainerType.onCreateChildAssociation(childAssoc, true);
-
+        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+        when(mockedChildAssoc.getParentRef()).thenReturn(transferContainer);
+        transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
     }
-
-    /**
-     * Generates a record management container
-     *
-     * @return reference to the generated container
-     */
-    private NodeRef createTransferContainer()
-    {
-        NodeRef holdContainer = generateNodeRef(TYPE_TRANSFER, true);
-
-        return holdContainer;
-    }
-
 }

@@ -84,7 +84,7 @@ public class FilePlanType extends    BaseBehaviourBean
     /**
      * Unfiled Record Container Type behaviour bean
      */
-    private UnfiledRecordContainerType unfilerRecordContainerType;
+    private UnfiledRecordContainerType unfiledRecordContainerType;
 
     /**
      * Transfer Container Type behaviour bean
@@ -161,11 +161,11 @@ public class FilePlanType extends    BaseBehaviourBean
     }
 
     /**
-     * @param unfilerRecordContainerType - unfiled record container type behaviour bean
+     * @param unfiledRecordContainerType - unfiled record container type behaviour bean
      */
-    public void setUnfilerRecordContainerType(UnfiledRecordContainerType unfilerRecordContainerType)
+    public void setUnfiledRecordContainerType(UnfiledRecordContainerType unfiledRecordContainerType)
     {
-        this.unfilerRecordContainerType = unfilerRecordContainerType;
+        this.unfiledRecordContainerType = unfiledRecordContainerType;
     }
 
     /**
@@ -267,7 +267,7 @@ public class FilePlanType extends    BaseBehaviourBean
                name = BEHAVIOUR_NAME)
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean archived)
     {
-        unfilerRecordContainerType.enable();
+        unfiledRecordContainerType.enable();
         transferContainerType.enable();
         holdContainerType.enable();
         throw new IntegrityException("Operation failed. Deletion of File Plan is not allowed.", null);
@@ -281,7 +281,7 @@ public class FilePlanType extends    BaseBehaviourBean
                notificationFrequency = NotificationFrequency.FIRST_EVENT)
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        unfilerRecordContainerType.disable();
+        unfiledRecordContainerType.disable();
         transferContainerType.disable();
         holdContainerType.disable();
     }
@@ -293,7 +293,7 @@ public class FilePlanType extends    BaseBehaviourBean
     {
         // tear down the file plan roles
         getFilePlanRoleService().tearDownFilePlanRoles(childAssocRef.getChildRef());
-        unfilerRecordContainerType.enable();
+        unfiledRecordContainerType.enable();
         transferContainerType.enable();
         holdContainerType.enable();
     }

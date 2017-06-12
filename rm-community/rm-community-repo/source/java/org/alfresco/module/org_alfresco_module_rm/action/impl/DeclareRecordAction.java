@@ -197,16 +197,12 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
         // check for missing mandatory metadata from custom aspect definitions
         if (result)
         {
-            QName aspect;
+            QName aspect = ASPECT_RECORD;
             if (nodeRefType.equals(TYPE_NON_ELECTRONIC_DOCUMENT))
-            //if (nodeRefType.getLocalName()))
             {
                 aspect = TYPE_NON_ELECTRONIC_DOCUMENT;
             }
-            else
-            {
-                aspect = ASPECT_RECORD;
-            }
+
             // get customAspectImpl
             String localName = aspect.toPrefixString(getNamespaceService()).replace(":", "");
             localName = MessageFormat.format("{0}CustomProperties", localName);

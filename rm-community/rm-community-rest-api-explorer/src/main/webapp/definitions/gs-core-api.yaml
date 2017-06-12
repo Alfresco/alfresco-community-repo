@@ -144,7 +144,7 @@ paths:
           description: Successful response
         '400':
           description: |
-            Invalid parameter: DELETE request is only  supported for the RM site
+            Invalid parameter: DELETE request is only supported for the RM site
         '401':
           description: Authentication failed
         '403':
@@ -430,7 +430,7 @@ paths:
       description: |
         Gets information for unfiled records container **unfiledContainerId**
 
-        Mandatory fields and  the unfiled records container's aspects and properties are returned by default.
+        Mandatory fields and the unfiled records container's aspects and properties are returned by default.
         
         You can use the **include** parameter (include=allowableOperations) to return additional information.
       operationId: getUnfiledContainer
@@ -1853,7 +1853,7 @@ paths:
         - transfer-containers
       summary: Get a transfer container
       description: |
-        Gets information for transfer container  **transferContainerId**
+        Gets information for transfer container **transferContainerId**
 
         Mandatory fields and the transfer container's aspects and properties are returned by default.
         

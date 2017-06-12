@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
@@ -41,6 +40,8 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.TransferContainerType;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.TransferType;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
@@ -87,6 +88,10 @@ public class TransferServiceImpl extends ServiceBaseImpl
     /** Freeze Service */
     protected FreezeService freezeService;
 
+    protected TransferContainerType transferContainerType;
+
+    protected TransferType transferType;
+
     /**
      * @param filePlanService file plan service
      */
@@ -127,6 +132,16 @@ public class TransferServiceImpl extends ServiceBaseImpl
         this.freezeService = freezeService;
     }
 
+    public void setTransferContainerType(TransferContainerType transferContainerType)
+    {
+        this.transferContainerType = transferContainerType;
+    }
+
+    public void setTransferType(TransferType transferType)
+    {
+        this.transferType = transferType;
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.transfer.TransferService#transfer(NodeRef, boolean)
      */
@@ -164,11 +179,19 @@ public class TransferServiceImpl extends ServiceBaseImpl
             }
 
             NodeRef transferContainer = filePlanService.getTransferContainer(root);
-            transferNodeRef = nodeService.createNode(transferContainer,
-                                                      ContentModel.ASSOC_CONTAINS,
-                                                      QName.createQName(RM_URI, transferName),
-                                                      TYPE_TRANSFER,
-                                                      transferProps).getChildRef();
+
+            transferContainerType.disable();
+            try
+            {
+                transferNodeRef = nodeService.createNode(transferContainer, ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(RM_URI, transferName), TYPE_TRANSFER, transferProps)
+                    .getChildRef();
+
+            }
+            finally
+            {
+                transferContainerType.enable();
+            }
 
             // Bind the hold node reference to the transaction
             AlfrescoTransactionSupport.bindResource(KEY_TRANSFER_NODEREF, transferNodeRef);
@@ -188,13 +211,17 @@ public class TransferServiceImpl extends ServiceBaseImpl
         }
 
         // Link the record to the trasnfer object
-        nodeService.addChild(transferNodeRef,
-                                  nodeRef,
-                                  ASSOC_TRANSFERRED,
-                                  ASSOC_TRANSFERRED);
-
-        // Set PDF indicator flag
-        setPDFIndicationFlag(transferNodeRef, nodeRef);
+        transferType.disable();
+        try
+        {
+            nodeService.addChild(transferNodeRef, nodeRef, ASSOC_TRANSFERRED, ASSOC_TRANSFERRED);
+            // Set PDF indicator flag
+            setPDFIndicationFlag(transferNodeRef, nodeRef);
+        }
+        finally
+        {
+            transferType.enable();
+        }
 
         // Set the transferring indicator aspect
         nodeService.addAspect(nodeRef, ASPECT_TRANSFERRING, null);
@@ -253,12 +280,12 @@ public class TransferServiceImpl extends ServiceBaseImpl
             {
                 throw new AlfrescoRuntimeException("Could not complete a transfer that contains held folders");
             }
-            
+
             if(freezeService.hasFrozenChildren(assoc.getChildRef()))
             {
                 throw new AlfrescoRuntimeException("Cound not complete a transfer that contains folders with held children");
             }
-            
+
             markComplete(assoc.getChildRef(), accessionIndicator, transferLocation);
         }
 

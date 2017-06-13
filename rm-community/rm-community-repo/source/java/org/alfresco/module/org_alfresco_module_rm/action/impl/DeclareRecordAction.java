@@ -27,15 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
+
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
@@ -63,24 +64,24 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
 {
     /** action name */
     public static final String NAME = "declareRecord";
-    
+
     /** I18N */
     private static final String MSG_UNDECLARED_ONLY_RECORDS = "rm.action.undeclared-only-records";
     private static final String MSG_NO_DECLARE_MAND_PROP = "rm.action.no-declare-mand-prop";
 
     /** Logger */
     private static Log logger = LogFactory.getLog(DeclareRecordAction.class);
-    
+
     /** check mandatory properties */
     private boolean checkMandatoryPropertiesEnabled = true;
-    
+
     /** transactional resource helper */
     private TransactionalResourceHelper transactionalResourceHelper;
 
     /**
      * @param checkMandatoryPropertiesEnabled true if check mandatory properties is enabled, false otherwise
      */
-    public void setCheckMandatoryPropertiesEnabled(boolean checkMandatoryPropertiesEnabled) 
+    public void setCheckMandatoryPropertiesEnabled(boolean checkMandatoryPropertiesEnabled)
     {
         this.checkMandatoryPropertiesEnabled = checkMandatoryPropertiesEnabled;
     }
@@ -112,16 +113,16 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
                     generateRecordIdentifier(getNodeService(), getIdentifierService(), actionedUponNodeRef);
                 }
 
-                List<String> missingProperties = new ArrayList<String>(5);
+                List<String> missingProperties = new ArrayList<>(5);
                 // Aspect not already defined - check mandatory properties then add
-                if (!checkMandatoryPropertiesEnabled || 
+                if (!checkMandatoryPropertiesEnabled ||
                     mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
                 {
                     getRecordService().disablePropertyEditableCheck();
                     try
                     {
                         // Add the declared aspect
-                        Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
+                        Map<QName, Serializable> declaredProps = new HashMap<>(2);
                         declaredProps.put(PROP_DECLARED_AT, new Date());
                         declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
                         this.getNodeService().addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
@@ -211,6 +212,34 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
                         result = false;
                         break;
                     }
+                }
+            }
+        }
+
+        // check for missing mandatory metadata from custom aspect definitions
+        if (result)
+        {
+            QName aspect = ASPECT_RECORD;
+            if (nodeRefType.equals(TYPE_NON_ELECTRONIC_DOCUMENT))
+            {
+                aspect = TYPE_NON_ELECTRONIC_DOCUMENT;
+            }
+
+            // get customAspectImpl
+            String localName = aspect.toPrefixString(getNamespaceService()).replace(":", "");
+            localName = MessageFormat.format("{0}CustomProperties", localName);
+            QName customAspect = QName.createQName(RM_CUSTOM_URI, localName);
+
+            AspectDefinition aspectDef = this.getDictionaryService().getAspect(customAspect);
+
+            for (PropertyDefinition propDef : aspectDef.getProperties().values())
+            {
+                if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+                {
+                    logMissingProperty(propDef, missingProperties);
+
+                    result = false;
+                    break;
                 }
             }
         }

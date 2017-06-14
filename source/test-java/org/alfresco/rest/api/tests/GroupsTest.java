@@ -44,6 +44,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Groups;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Group;
+import org.alfresco.rest.api.tests.client.data.GroupMember;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -64,6 +65,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
     private String rootGroupName = null;
     private Group groupA = null;
     private Group groupB = null;
+    private GroupMember groupMemberA = null;
+    private GroupMember groupMemberB = null;
 
     @Before
     public void setup() throws Exception
@@ -351,6 +354,12 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             groupB = new Group();
             groupB.setId(groupBAuthorityName);
+
+            groupMemberA = new GroupMember();
+            groupMemberA.setId(groupAAuthorityName);
+
+            groupMemberB = new GroupMember();
+            groupMemberB.setId(groupBAuthorityName);
         }
     }
 
@@ -377,4 +386,182 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         assertNull(group.getParentIds());
         assertNull(group.getZones());
     }
+
+    private ListResponse<GroupMember> getGroupMembers(String groupId, final PublicApiClient.Paging paging, Map<String, String> otherParams, String errorMessage, int expectedStatus) throws Exception
+    {
+        final Groups groupsProxy = publicApiClient.groups();
+        return groupsProxy.getGroupMembers(groupId, createParams(paging, otherParams), errorMessage, expectedStatus);
+    }
+
+    private ListResponse<GroupMember> getGroupMembers(String groupId, final PublicApiClient.Paging paging, Map<String, String> otherParams) throws Exception
+    {
+        return getGroupMembers(groupId, paging, otherParams, "Failed to get group members", HttpServletResponse.SC_OK);
+    }
+
+    @Test
+    public void testGetGroupMembers() throws Exception
+    {
+        try
+        {
+            createAuthorityContext(user1);
+
+            setRequestContext(user1);
+
+            testGetGroupMembersByGroupId();
+            testGetGroupMembersSorting();
+            testGetGroupMembersSkipPaging();
+            testGetGroupsByMemberType();
+        }
+        finally
+        {
+            clearAuthorityContext();
+        }
+    }
+
+    private void testGetGroupMembersByGroupId() throws Exception
+    {
+        Paging paging = getPaging(0, 4);
+
+        getGroupMembers(null, paging, null, "", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        getGroupMembers("", paging, null, "", HttpServletResponse.SC_BAD_REQUEST);
+        getGroupMembers("invalidGroupId", paging, null, "", HttpServletResponse.SC_NOT_FOUND);
+    }
+
+    private void testGetGroupMembersSorting() throws Exception
+    {
+        // orderBy=sortColumn should be the same to orderBy=sortColumn ASC
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+            Map<String, String> otherParams = new HashMap<>();
+
+            // Default order.
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, null);
+
+            ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
+            List<GroupMember> groupMembers = resp.getList();
+            assertTrue("group members order not valid", groupMembers.indexOf(groupMemberA) < groupMembers.indexOf(groupMemberB));
+
+            // Ascending order
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+
+            ListResponse<GroupMember> respOrderAsc = getGroupMembers(rootGroupName, paging, otherParams);
+
+            checkList(respOrderAsc.getList(), resp.getPaging(), resp);
+        }
+
+        // Sort by displayName.
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+            Map<String, String> otherParams = new HashMap<>();
+
+            // Default order.
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+
+            ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
+            List<GroupMember> groupMembers = resp.getList();
+            assertTrue("group members order not valid", groupMembers.indexOf(groupMemberA) < groupMembers.indexOf(groupMemberB));
+        }
+
+        // Sort by id.
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+            Map<String, String> otherParams = new HashMap<>();
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, false);
+
+            // list sites
+            ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
+
+            List<GroupMember> groupMembers = resp.getList();
+            assertTrue("group members order not valid", groupMembers.indexOf(groupMemberB) < groupMembers.indexOf(groupMemberA));
+        }
+
+        // Multiple sort fields not allowed.
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("orderBy", org.alfresco.rest.api.Groups.PARAM_ID + " ASC," + org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME + " ASC");
+
+            getGroupMembers(rootGroupName, paging, otherParams, "", HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
+
+    private void testGetGroupMembersSkipPaging() throws Exception
+    {
+        // +ve: check skip count.
+        {
+            // Sort params
+            Map<String, String> otherParams = new HashMap<>();
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, false);
+
+            // Paging and list groups
+
+            int skipCount = 0;
+            int maxItems = 2;
+            Paging paging = getPaging(skipCount, maxItems);
+
+            ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
+
+            // Paging and list groups with skip count.
+
+            skipCount = 1;
+            maxItems = 1;
+            paging = getPaging(skipCount, maxItems);
+
+            ListResponse<GroupMember> sublistResponse = getGroupMembers(rootGroupName, paging, otherParams);
+
+            List<GroupMember> expectedSublist = sublist(resp.getList(), skipCount, maxItems);
+            checkList(expectedSublist, sublistResponse.getPaging(), sublistResponse);
+        }
+
+        // -ve: check skip count.
+        {
+            getGroupMembers(rootGroupName, getPaging(-1, null), null, "", HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
+
+    private void testGetGroupsByMemberType() throws Exception
+    {
+        testGetGroupsByMemberType(rootGroupName, org.alfresco.rest.api.Groups.PARAM_MEMBER_TYPE_GROUP);
+        testGetGroupsByMemberType(groupB.getId(), org.alfresco.rest.api.Groups.PARAM_MEMBER_TYPE_PERSON);
+
+        // Invalid member type
+        {
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("where", "(memberType=invalidMemberType)");
+
+            getGroupMembers(rootGroupName, getPaging(0, 4), otherParams, "", HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
+
+    private void testGetGroupsByMemberType(String groupId, String memberType) throws Exception
+    {
+        // Sort params
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("where", "(memberType=" + memberType + ")");
+
+        // Paging
+        Paging paging = getPaging(0, 4);
+
+        ListResponse<GroupMember> resp = getGroupMembers(groupId, paging, otherParams);
+        resp.getList().forEach(groupMember -> {
+            validateGroupMemberDefaultFields(groupMember);
+            assertEquals("memberType was expected to be " + memberType, memberType, groupMember.getMemberType());
+        });
+    }
+
+    private void validateGroupMemberDefaultFields(GroupMember groupMember)
+    {
+        assertNotNull(groupMember);
+        assertNotNull(groupMember.getId());
+        assertNotNull(groupMember.getDisplayName());
+        assertNotNull(groupMember.getMemberType());
+    }
+
 }

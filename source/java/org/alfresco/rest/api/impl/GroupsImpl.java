@@ -47,6 +47,7 @@ import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Groups;
 import org.alfresco.rest.api.model.Group;
+import org.alfresco.rest.api.model.GroupMember;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -84,6 +85,8 @@ public class GroupsImpl implements Groups
 
     // List groups filtering (via where clause)
     private final static Set<String> LIST_GROUPS_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_IS_ROOT }));
+
+    private final static Set<String> LIST_GROUP_MEMBERS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_MEMBER_TYPE }));
 
     protected AuthorityService authorityService;
 
@@ -355,11 +358,11 @@ public class GroupsImpl implements Groups
             if (v == null)
             {
                 // Get the value from the group
-                if (PARAM_DISPLAY_NAME.equals(sortBy))
+                if (DISPLAY_NAME.equals(sortBy))
                 {
                     v = g.getAuthorityDisplayName();
                 }
-                else if (PARAM_ID.equals(sortBy))
+                else if (SHORT_NAME.equals(sortBy))
                 {
                     v = g.getAuthorityName();
                 }
@@ -375,6 +378,133 @@ public class GroupsImpl implements Groups
                 nameCache.put(g, v);
             }
             return v;
+        }
+    }
+
+    public CollectionWithPagingInfo<GroupMember> getGroupMembers(String groupId, final Parameters parameters)
+    {
+        validateGroupId(groupId);
+
+        Paging paging = parameters.getPaging();
+
+        // Retrieve sort column. This is limited for now to sort column due to
+        // v0 api implementation. Should be improved in the future.
+        Pair<String, Boolean> sortProp = getGroupsSortProp(parameters);
+
+        AuthorityType authorityType = null;
+
+        // Parse where clause properties.
+        Query q = parameters.getQuery();
+        if (q != null)
+        {
+            MapBasedQueryWalkerOrSupported propertyWalker = new MapBasedQueryWalkerOrSupported(LIST_GROUP_MEMBERS_QUERY_PROPERTIES, null);
+            QueryHelper.walk(q, propertyWalker);
+
+            String memberTypeStr = propertyWalker.getProperty(PARAM_MEMBER_TYPE, WhereClauseParser.EQUALS, String.class);
+
+            if (memberTypeStr != null && !memberTypeStr.isEmpty())
+            {
+                switch (memberTypeStr)
+                {
+                case PARAM_MEMBER_TYPE_GROUP:
+                    authorityType = AuthorityType.GROUP;
+                    break;
+                case PARAM_MEMBER_TYPE_PERSON:
+                    authorityType = AuthorityType.USER;
+                    break;
+                default:
+                    throw new InvalidArgumentException("MemberType is invalid (expected eg. GROUP, PERSON)");
+                }
+            }
+        }
+
+        PagingResults<AuthorityInfo> pagingResult = getAuthoritiesInfo(authorityType, groupId, sortProp, paging);
+
+        // Create response.
+        final List<AuthorityInfo> page = pagingResult.getPage();
+        int totalItems = pagingResult.getTotalResultCount().getFirst();
+        List<GroupMember> groupMembers = new AbstractList<GroupMember>()
+        {
+            @Override
+            public GroupMember get(int index)
+            {
+                AuthorityInfo authorityInfo = page.get(index);
+                return getGroupMember(authorityInfo);
+            }
+
+            @Override
+            public int size()
+            {
+                return page.size();
+            }
+        };
+
+        return CollectionWithPagingInfo.asPaged(paging, groupMembers, pagingResult.hasMoreItems(), totalItems);
+    }
+
+    private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, String groupId, Pair<String, Boolean> sortProp, Paging paging)
+    {
+        Set<String> authorities;
+        try
+        {
+            authorities = authorityService.findAuthorities(authorityType, groupId, true, null, null);
+        }
+        catch (UnknownAuthorityException e)
+        {
+            authorities = Collections.emptySet();
+        }
+
+        List<AuthorityInfo> authorityInfoList = new ArrayList<>(authorities.size());
+        authorityInfoList.addAll(authorities.stream().map(this::getAuthorityInfo).collect(Collectors.toList()));
+
+        // Post process sorting - this should be moved to service
+        // layer. It is done here because sorting is not supported at
+        // service layer.
+        AuthorityInfoComparator authorityComparator = new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond());
+        Collections.sort(authorityInfoList, authorityComparator);
+
+        // Post process paging - this should be moved to service layer.
+        return Util.wrapPagingResults(paging, authorityInfoList);
+    }
+
+    private GroupMember getGroupMember(AuthorityInfo authorityInfo)
+    {
+        if (authorityInfo == null)
+        {
+            return null;
+        }
+
+        GroupMember groupMember = new GroupMember();
+        groupMember.setId(authorityInfo.getAuthorityName());
+        groupMember.setDisplayName(authorityInfo.getAuthorityDisplayName());
+
+        String memberType = null;
+        AuthorityType authorityType = AuthorityType.getAuthorityType(authorityInfo.getAuthorityName());
+        switch (authorityType)
+        {
+        case GROUP:
+            memberType = PARAM_MEMBER_TYPE_GROUP;
+            break;
+        case USER:
+            memberType = PARAM_MEMBER_TYPE_PERSON;
+            break;
+        default:
+        }
+        groupMember.setMemberType(memberType);
+
+        return groupMember;
+    }
+
+    private void validateGroupId(String groupId)
+    {
+        if (groupId == null || groupId.isEmpty())
+        {
+            throw new InvalidArgumentException("groupId is null or empty");
+        }
+
+        if (!authorityService.authorityExists(groupId))
+        {
+            throw new EntityNotFoundException(groupId);
         }
     }
 }

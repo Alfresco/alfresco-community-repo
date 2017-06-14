@@ -70,6 +70,8 @@ import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -706,7 +708,22 @@ public class PublicApiClient
 		        throw new PublicApiException(e);
 			}
 		}
-		
+
+        public HttpResponse getSingle(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params,
+                String errorMessage, int expectedStatus) throws PublicApiException
+        {
+            try
+            {
+                HttpResponse response = get("public", entityCollectionName, entityId, relationCollectionName, relationId, params);
+                checkStatus(errorMessage, expectedStatus, response);
+                return response;
+            }
+            catch (IOException e)
+            {
+                throw new PublicApiException(e);
+            }
+        }
+
 		public HttpResponse update(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage) throws PublicApiException
 		{
 		    return update(entityCollectionName, entityId, relationCollectionName, relationId, body, null, errorMessage, 200);
@@ -2247,6 +2264,31 @@ public class PublicApiClient
 
     public class Groups extends AbstractProxy
     {
+
+        public Group getGroup(String groupId) throws PublicApiException
+        {
+            return getGroup(groupId, HttpServletResponse.SC_OK);
+        }
+
+        public Group getGroup(String groupId, int expectedStatus) throws PublicApiException
+        {
+            return getGroup(groupId, null, expectedStatus);
+        }
+
+        public Group getGroup(String groupId, Map<String, String> params, int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = getSingle("groups", groupId, null, null, params, "Failed to get group " + groupId, expectedStatus);
+            if ((response != null) && (response.getJsonResponse() != null))
+            {
+                JSONObject jsonEntity = (JSONObject) response.getJsonResponse().get("entry");
+                if (jsonEntity != null)
+                {
+                    return Group.parseGroup(jsonEntity);
+                }
+            }
+
+            return null;
+        }
 
         public ListResponse<Group> getGroups(Map<String, String> params, String errorMessage, int expectedStatus) throws PublicApiException, ParseException
         {

@@ -28,6 +28,7 @@ package org.alfresco.rest.api.groups;
 import org.alfresco.rest.api.Groups;
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -41,7 +42,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author cturlica
  */
 @EntityResource(name = "groups", title = "Groups")
-public class GroupsEntityResource implements EntityResourceAction.Read<Group>, InitializingBean
+public class GroupsEntityResource implements EntityResourceAction.Read<Group>, EntityResourceAction.ReadById<Group>, InitializingBean
 {
     private Groups groups;
 
@@ -61,5 +62,12 @@ public class GroupsEntityResource implements EntityResourceAction.Read<Group>, I
     public CollectionWithPagingInfo<Group> readAll(Parameters params)
     {
         return groups.getGroups(params);
+    }
+
+    @Override
+    @WebApiDescription(title="Returns group information for group id")
+    public Group readById(String groupId, Parameters parameters) throws EntityNotFoundException
+    {
+        return groups.getGroup(groupId, parameters);
     }
 }

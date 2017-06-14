@@ -27,6 +27,7 @@ package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.api.model.GroupMember;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
@@ -47,12 +48,24 @@ public interface Groups
     String PARAM_MEMBER_TYPE_PERSON = "PERSON";
 
     /**
+     * Get a group by it's id.
+     *
+     * @param groupId the identifier of a group.
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *        including:
+     *        - include param (parentIds, zones)
+     * @return a {@code org.alfresco.rest.api.model.Group} object
+     * @throws EntityNotFoundException
+     */
+    Group getGroup(String groupId, Parameters parameters) throws EntityNotFoundException;
+
+    /**
      * Gets a list of groups.
      * 
      * @param parameters the {@link Parameters} object to get the parameters passed into the request
      *        including:
      *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
-     *        - incFiles, incFolders (both true by default)
+     *        - include param (parentIds, zones)
      * @return a paged list of {@code org.alfresco.rest.api.model.Group} objects
      */
     CollectionWithPagingInfo<Group> getGroups(Parameters parameters);
@@ -64,7 +77,7 @@ public interface Groups
      * @param parameters the {@link Parameters} object to get the parameters passed into the request
      *        including:
      *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
-     *        - incFiles, incFolders (both true by default)
+     *        - include param (parentIds, zones)
      * @return a paged list of {@code org.alfresco.rest.api.model.GroupMember} objects
      */
     CollectionWithPagingInfo<GroupMember> getGroupMembers(String groupId, Parameters parameters);

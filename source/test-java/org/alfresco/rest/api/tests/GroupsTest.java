@@ -1011,7 +1011,14 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         {
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
-            groupsProxy.deleteGroup("admin", false, HttpServletResponse.SC_CONFLICT);
+            groupsProxy.deleteGroup("GROUP_EVERYONE", false, HttpServletResponse.SC_CONFLICT);
+        }
+
+        // Trying to delete a person.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            groupsProxy.deleteGroup(user1, false, HttpServletResponse.SC_BAD_REQUEST);
         }
 
         {

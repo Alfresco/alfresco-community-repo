@@ -2424,17 +2424,17 @@ public class TestCMIS extends EnterpriseTestApi
         // note: Content-Disposition will always be "attachment" for content types that are not white-listed
 
         response = publicApiClient.get("/"+network1.getId()+"/public/cmis/versions/1.1/browser/root/Shared/"+name, null);
+		assertEquals(200, response.getStatusCode());
         assertTrue(response.getHeaders().get("Content-Disposition").startsWith("attachment;"));
-        assertEquals(200, response.getStatusCode());
 
         response = publicApiClient.get("/"+network1.getId()+"/public/cmis/versions/1.1/browser/root/Shared/"+name+"?download=inline", null);
+		assertEquals(200, response.getStatusCode());
         assertTrue(response.getHeaders().get("Content-Disposition").startsWith("attachment;"));
-        assertEquals(200, response.getStatusCode());
 
         // note: AtomPub binding (via OpenCMIS) does not support "download" query parameter
         response = publicApiClient.get("/"+network1.getId()+"/public/cmis/versions/1.1/atom/content?id="+docId, null);
+		assertEquals(200, response.getStatusCode());
         assertTrue(response.getHeaders().get("Content-Disposition").startsWith("attachment;"));
-        assertEquals(200, response.getStatusCode());
     }
 
     /**

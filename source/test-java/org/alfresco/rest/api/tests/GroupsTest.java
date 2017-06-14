@@ -69,7 +69,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 {
     private static final String MEMBER_TYPE_GROUP = "GROUP";
     private static final String MEMBER_TYPE_PERSON = "PERSON";
-    
+    private static final String GROUP_EVERYONE = "GROUP_EVERYONE";
+
     protected AuthorityService authorityService;
 
     private String rootGroupName = null;
@@ -77,6 +78,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
     private Group groupB = null;
     private GroupMember groupMemberA = null;
     private GroupMember groupMemberB = null;
+    private GroupMember personMember = null;
 
     @Before
     public void setup() throws Exception
@@ -351,7 +353,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
      * @param userName
      *            The user to run as.
      */
-    private void createAuthorityContext(String userName)
+    private void createAuthorityContext(String userName) throws PublicApiException
     {
         String groupName = "Group_ROOT" + GUID.generate();
 
@@ -389,6 +391,23 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             groupMemberB = new GroupMember();
             groupMemberB.setId(groupBAuthorityName);
             groupMemberB.setMemberType(AuthorityType.GROUP.toString());
+        }
+
+        {
+            publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), networkAdmin, "admin"));
+            Person personAlice = new Person();
+            String aliceId = "alice-" + UUID.randomUUID() + "@" + networkOne.getId();
+            personAlice.setUserName(aliceId);
+            personAlice.setId(aliceId);
+            personAlice.setFirstName("Alice");
+            personAlice.setEmail("alison.smith@example.com");
+            personAlice.setPassword("password");
+            personAlice.setEnabled(true);
+            PublicApiClient.People people = publicApiClient.people();
+            people.create(personAlice);
+            personMember = new GroupMember();
+            personMember.setId(personAlice.getId());
+            personMember.setMemberType(MEMBER_TYPE_PERSON);
         }
     }
 
@@ -520,7 +539,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(personAlice.getId(), null, "Couldn't get user's groups", 200);
             assertEquals(1L, (long) groups.getPaging().getTotalItems());
             Iterator<Group> it = groups.getList().iterator();
-            assertEquals("GROUP_EVERYONE", it.next().getId());
+            assertEquals(GROUP_EVERYONE, it.next().getId());
         }
 
         // Add the user to a couple more groups and list them.
@@ -532,7 +551,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(personAlice.getId(), null, "Couldn't get user's groups", 200);
             assertEquals(4L, (long) groups.getPaging().getTotalItems());
             Iterator<Group> it = groups.getList().iterator();
-            assertEquals("GROUP_EVERYONE", it.next().getId());
+            assertEquals(GROUP_EVERYONE, it.next().getId());
             assertEquals(rootGroupName, it.next().getId());
             assertEquals(groupA, it.next());
             assertEquals(groupB, it.next());
@@ -565,7 +584,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             ListResponse<Group> groups = groupsProxy.getGroupsByPersonId("-me-", null, "Couldn't get user's groups", 200);
             assertEquals(4L, (long) groups.getPaging().getCount());
             Iterator<Group> it = groups.getList().iterator();
-            assertEquals("GROUP_EVERYONE", it.next().getId());
+            assertEquals(GROUP_EVERYONE, it.next().getId());
             assertEquals(rootGroupName, it.next().getId());
             assertEquals(groupA, it.next());
             assertEquals(groupB, it.next());
@@ -941,25 +960,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         {
             createAuthorityContext(user1);
 
-            Person personAlice;
-            {
-                publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), networkAdmin, "admin"));
-                personAlice = new Person();
-                String aliceId = "alice-" + UUID.randomUUID() + "@" + networkOne.getId();
-                personAlice.setUserName(aliceId);
-                personAlice.setId(aliceId);
-                personAlice.setFirstName("Alice");
-                personAlice.setEmail("alison.smith@example.com");
-                personAlice.setPassword("password");
-                personAlice.setEnabled(true);
-                PublicApiClient.People people = publicApiClient.people();
-                people.create(personAlice);
-            }
-
-            GroupMember personMember = new GroupMember();
-            personMember.setId(personAlice.getId());
-            personMember.setMemberType(MEMBER_TYPE_PERSON);
-
             // +ve tests
             // Create a group membership (for a existing person and a sub-group)
             // within a group groupId
@@ -1165,7 +1165,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         {
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
-            groupsProxy.deleteGroup("GROUP_EVERYONE", false, HttpServletResponse.SC_CONFLICT);
+            groupsProxy.deleteGroup(GROUP_EVERYONE, false, HttpServletResponse.SC_CONFLICT);
         }
 
         // Trying to delete a person.
@@ -1197,6 +1197,73 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Check that delete with cascade worked.
             groupsProxy.getGroup(groupLevel2.getId(), HttpServletResponse.SC_NOT_FOUND);
             groupsProxy.getGroup(groupLevel3.getId(), HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void testDeleteGroupMembership() throws Exception
+    {
+        final Groups groupsProxy = publicApiClient.groups();
+
+        try
+        {
+            createAuthorityContext(user1);
+
+            {
+                Map<String, String> otherParams = new HashMap<>();
+                otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
+                Group createdTestGroup = groupsProxy.createGroup(generateGroup(), null, HttpServletResponse.SC_CREATED);
+                // Add new created group to groupA
+                GroupMember groupMember = new GroupMember();
+                groupMember.setId(createdTestGroup.getId());
+                groupMember.setMemberType(MEMBER_TYPE_GROUP);
+                groupsProxy.createGroupMember(groupA.getId(), groupMember, HttpServletResponse.SC_CREATED);
+
+                // If a removed sub-group no longer has any parent groups then
+                // it becomes a root group.
+                assertFalse(groupsProxy.getGroup(groupMember.getId(), otherParams, HttpServletResponse.SC_OK).getParentIds().isEmpty());
+                groupsProxy.deleteGroupMembership(groupA.getId(), groupMember.getId(), HttpServletResponse.SC_NO_CONTENT);
+                assertTrue(groupsProxy.getGroup(groupMember.getId(), otherParams, HttpServletResponse.SC_OK).getParentIds().isEmpty());
+            }
+
+            {
+                // Add new a person as a member of groupA
+                groupsProxy.createGroupMember(groupA.getId(), personMember, HttpServletResponse.SC_CREATED);
+                ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(personMember.getId(), null, "Cannot retrieve user groups", 200);
+                assertEquals(3L, (long) groups.getPaging().getTotalItems());
+                Iterator<Group> it = groups.getList().iterator();
+                assertEquals(GROUP_EVERYONE, it.next().getId());
+                assertEquals(rootGroupName, it.next().getId());
+                assertEquals(groupA, it.next());
+                groupsProxy.deleteGroupMembership(groupA.getId(), personMember.getId(), HttpServletResponse.SC_NO_CONTENT);
+                groups = groupsProxy.getGroupsByPersonId(personMember.getId(), null, "Cannot retrieve user groups", 200);
+                assertEquals(1L, (long) groups.getPaging().getTotalItems());
+                it = groups.getList().iterator();
+                assertEquals(GROUP_EVERYONE, it.next().getId());
+            }
+
+            // -ve tests
+            // Group id or group member id do not exist.
+            {
+                groupsProxy.deleteGroupMembership("invalidGroupId", groupMemberA.getId(), HttpServletResponse.SC_NOT_FOUND);
+                groupsProxy.deleteGroupMembership(groupA.getId(), "invalidGroupMemberId", HttpServletResponse.SC_NOT_FOUND);
+            }
+
+            // Authentication failed
+            {
+                setRequestContext(networkOne.getId(), GUID.generate(), "password");
+                groupsProxy.deleteGroupMembership(groupA.getId(), groupMemberA.getId(), HttpServletResponse.SC_UNAUTHORIZED);
+            }
+
+            // User does not have permission to delete a group membership
+            {
+                setRequestContext(user1);
+                groupsProxy.deleteGroupMembership(groupA.getId(), groupMemberA.getId(), HttpServletResponse.SC_FORBIDDEN);
+            }
+        }
+        finally
+        {
+            clearAuthorityContext();
         }
     }
 

@@ -477,7 +477,7 @@ public class ContentStreamer implements ResourceLoaderAware
                 if (req == null)
                 {
                     headerValue += "; filename*=UTF-8''" + URLEncoder.encode(attachFileName)
-                            + "; filename=\"" + attachFileName + "\"";
+                            + "; filename=\"" + filterNameForQuotedString(attachFileName) + "\"";
                 }
                 else
                 {
@@ -489,7 +489,7 @@ public class ContentStreamer implements ResourceLoaderAware
                     }
                     else
                     {
-                        headerValue += "; filename=\"" + attachFileName + "\"; filename*=UTF-8''"
+                        headerValue += "; filename=\"" + filterNameForQuotedString(attachFileName) + "\"; filename*=UTF-8''"
                                 + URLEncoder.encode(attachFileName);
                     }
                 }
@@ -499,6 +499,38 @@ public class ContentStreamer implements ResourceLoaderAware
             // this is better than the default response of the browser trying to display the contents
             res.setHeader("Content-Disposition", headerValue);
         }
+    }
+    
+    protected String filterNameForQuotedString(String s)
+    {
+        StringBuilder sb = new StringBuilder();
+        for(int i = 0; i < s.length(); i++)
+        {
+            char c = s.charAt(i);
+            if(isValidQuotedStringHeaderParamChar(c))
+            {
+                sb.append(c);
+            }
+            else
+            {
+                sb.append(" ");
+            }
+        }
+        return sb.toString();
+    }
+    
+    protected boolean isValidQuotedStringHeaderParamChar(char c)
+    {
+        // see RFC2616 section 2.2: 
+        // qdtext         = <any TEXT except <">>
+        // TEXT           = <any OCTET except CTLs, but including LWS>
+        // CTL            = <any US-ASCII control character (octets 0 - 31) and DEL (127)>
+        // A CRLF is allowed in the definition of TEXT only as part of a header field continuation.
+        // Note: we dis-allow header field continuation
+        return     (c < 256)  // message header param fields must be ISO-8859-1. Lower 256 codepoints of Unicode represent ISO-8859-1
+                && (c != 127) // CTL - see RFC2616 section 2.2
+                && (c != '"') // <">
+                && (c > 31);  // CTL - see RFC2616 section 2.2
     }
 
     /**

@@ -39,6 +39,7 @@ import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
@@ -882,6 +883,37 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             otherParams.put("orderBy", org.alfresco.rest.api.Groups.PARAM_ID + " ASC," + org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME + " ASC");
 
             getGroupsByPersonId(personAlice.getId(), paging, otherParams, HttpServletResponse.SC_BAD_REQUEST);
+        }
+
+        // Check include parent ids.
+        {
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
+
+            ListResponse<Group> resp = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+
+            assertEquals(4, resp.getList().size());
+
+            Iterator<Group> it = resp.getList().iterator();
+
+            Group group = it.next();
+            assertEquals(PermissionService.ALL_AUTHORITIES, group.getId());
+            assertEquals(0, group.getParentIds().size());
+
+            group = it.next();
+            assertEquals(rootGroup.getId(), group.getId());
+            assertEquals(0, group.getParentIds().size());
+
+            group = it.next();
+            assertEquals(groupA.getId(), group.getId());
+            assertEquals(1, group.getParentIds().size());
+            assertTrue(group.getParentIds().contains(rootGroup.getId()));
+
+            group = it.next();
+            assertEquals(groupB.getId(), group.getId());
+            assertEquals(1, group.getParentIds().size());
+            assertTrue(group.getParentIds().contains(rootGroup.getId()));
         }
 
         // Filter by zone, use the -me- alias.

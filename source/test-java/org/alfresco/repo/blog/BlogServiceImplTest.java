@@ -817,6 +817,60 @@ public class BlogServiceImplTest
             });
     }
     
+    /**
+     * Test that correct paging info is returned when searching for tagged blog posts.
+     */
+    @Test 
+    public void testGetBlogPostsByTagPaging() throws Exception{
+        final String tagToSearchBy = "testtag";
+        final int numberOfBlogPostsTagged = 2;
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
+        {
+            @Override
+            public List<NodeRef> execute() throws Throwable
+            {
+                List<NodeRef> results = new ArrayList<NodeRef>();
+
+                do{
+                    final String blogTitle = "blogTitle" + GUID.generate();
+                    BlogPostInfo newBlogPost = BLOG_SERVICE.createBlogPost(BLOG_CONTAINER_NODE, blogTitle, "Hello world", false);
+                    TAGGING_SERVICE.addTags(newBlogPost.getNodeRef(), Arrays.asList(new String[] { tagToSearchBy }));
+                    testNodesToTidy.add(newBlogPost.getNodeRef());
+                    results.add(newBlogPost.getNodeRef());
+                }while(results.size() < numberOfBlogPostsTagged);
+
+                return results;
+            }
+        });
+        
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                PagingRequest pagingReq = new PagingRequest(0, 1, null);
+                RangedDateProperty dates = new RangedDateProperty(null, null, ContentModel.PROP_CREATED);
+                PagingResults<BlogPostInfo> pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, dates, tagToSearchBy, pagingReq);
+
+                assertEquals("Wrong number of blog posts on page 1 for " + tagToSearchBy, 1, pagedResults.getPage().size());
+             
+                assertEquals("Wrong total number of blog posts for " + tagToSearchBy, new Pair<Integer, Integer>(2, 2), pagedResults.getTotalResultCount());
+                
+                assertEquals("There should still be blog posts available to be retrieved for " + tagToSearchBy, true, pagedResults.hasMoreItems());
+                
+                pagingReq = new PagingRequest(1, 1, null);
+                pagedResults = BLOG_SERVICE.findBlogPosts(BLOG_CONTAINER_NODE, dates, tagToSearchBy, pagingReq);
+
+                assertEquals("Wrong number of blog posts on page 2 for " + tagToSearchBy, 1, pagedResults.getPage().size());
+             
+                assertEquals("Wrong total number of blog posts for " + tagToSearchBy, new Pair<Integer, Integer>(2, 2), pagedResults.getTotalResultCount());
+                
+                assertEquals("All blog posts should have been retrieved by now for " + tagToSearchBy, false, pagedResults.hasMoreItems());
+                return null;
+            }
+        });
+    }
+    
     private static void createUser(final String userName)
     {
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()

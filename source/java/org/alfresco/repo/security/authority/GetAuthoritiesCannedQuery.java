@@ -169,7 +169,7 @@ public class GetAuthoritiesCannedQuery extends AbstractCannedQueryPermissions<Au
                 sortByDisplayName = false;
                 sortByShortName = true;
             }
-            else if (SHORT_NAME.equals(fieldName))
+            else if (AUTHORITY_NAME.equals(fieldName))
             {
                 sortByDisplayName = false;
                 sortByShortName = false;

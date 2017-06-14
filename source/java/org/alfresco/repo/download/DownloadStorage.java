@@ -68,6 +68,7 @@ public class DownloadStorage
     private ImporterBootstrap bootstrap;
     private Repository        repositoryHelper;
     private NodeService       nodeService;
+    private NodeService       noPermissionCheckNodeService;
     private NamespaceService  namespaceService;
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> queryRegistry;
     
@@ -91,6 +92,11 @@ public class DownloadStorage
         this.nodeService = nodeService;
     }
     
+    public void setNoPermissionCheckNodeService(NodeService noPermissionCheckNodeService)
+    {
+        this.noPermissionCheckNodeService = noPermissionCheckNodeService;
+    }
+
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
@@ -135,7 +141,7 @@ public class DownloadStorage
         Map<QName, Serializable> downloadProperties = new HashMap<QName, Serializable>();
         downloadProperties.put(DownloadModel.PROP_RECURSIVE, recursive);
         
-        ChildAssociationRef newChildAssoc = nodeService.createNode(downloadsContainer,
+        ChildAssociationRef newChildAssoc = noPermissionCheckNodeService.createNode(downloadsContainer,
                                                                    ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
                                                                    DownloadModel.TYPE_DOWNLOAD,
                                                                    downloadProperties);

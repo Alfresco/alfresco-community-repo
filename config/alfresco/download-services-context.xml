@@ -74,7 +74,8 @@
    <bean id="downloadStorage" class="org.alfresco.repo.download.DownloadStorage">
       <property name="importerBootstrap" ref="spacesBootstrap"/>
       <property name="repositoryHelper" ref="repositoryHelper"/>
-      <property name="nodeService" ref="nodeService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="noPermissionCheckNodeService" ref="nodeService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="queryRegistry" ref="downloadCannedQueryRegistry"/>
    </bean>	

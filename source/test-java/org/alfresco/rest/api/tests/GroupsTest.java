@@ -1168,6 +1168,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
         getGroupMembers("", paging, null, "", HttpServletResponse.SC_BAD_REQUEST);
         getGroupMembers("invalidGroupId", paging, null, "", HttpServletResponse.SC_NOT_FOUND);
+        getGroupMembers(GROUP_EVERYONE, paging, null, "", HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     private void testGetGroupMembersSorting() throws Exception
@@ -1346,6 +1347,14 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 assertNull(group.getParentIds());
                 assertNotNull(group.getZones());
             }
+
+            // Support GROUP_EVERYONE
+            {
+                Group group = groupsProxy.getGroup(GROUP_EVERYONE, null, HttpServletResponse.SC_OK);
+                assertNotNull(group);
+                assertNotNull(group.getId());
+                assertNotNull(group.getIsRoot());
+            }
         }
         finally
         {
@@ -1488,6 +1497,11 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 groupsProxy.createGroupMember(groupB.getId(), groupMemberA, HttpServletResponse.SC_CONFLICT);
             }
 
+            // Not allowed to modify a GROUP_EVERYONE member.
+            {
+                groupsProxy.createGroupMember(GROUP_EVERYONE, groupMemberA, HttpServletResponse.SC_CONFLICT);
+            }
+
             // Person or group with given id does not exists
             {
                 GroupMember invalidIdGroupMember = new GroupMember();
@@ -1622,6 +1636,16 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             groupsProxy.updateGroup("invalidId", group, null, HttpServletResponse.SC_NOT_FOUND);
         }
+
+        // It isn't allowed to update GROUP_EVERYONE.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            Group myGroup = new Group();
+            myGroup.setDisplayName("newDisplayName");
+
+            groupsProxy.updateGroup(GROUP_EVERYONE, myGroup, null, HttpServletResponse.SC_CONFLICT);
+        }
     }
 
     @Test
@@ -1742,6 +1766,11 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             {
                 groupsProxy.deleteGroupMembership("invalidGroupId", groupMemberA.getId(), HttpServletResponse.SC_NOT_FOUND);
                 groupsProxy.deleteGroupMembership(groupA.getId(), "invalidGroupMemberId", HttpServletResponse.SC_NOT_FOUND);
+            }
+
+            // Not allowed to delete member of GROUP_EVERYONE.
+            {
+                groupsProxy.deleteGroupMembership(GROUP_EVERYONE, groupMemberA.getId(), HttpServletResponse.SC_CONFLICT);
             }
 
             // Authentication failed

@@ -38,6 +38,8 @@ import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.download.DownloadService;
@@ -273,13 +275,21 @@ public class CMMDownloadTestUtil
 
     public DownloadStatus getDownloadStatus(final NodeRef downloadNode)
     {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<DownloadStatus>()
+        return AuthenticationUtil.runAsSystem(new RunAsWork<DownloadStatus>()
         {
             @Override
-            public DownloadStatus execute() throws Throwable
+            public DownloadStatus doWork() throws Exception
             {
-                return downloadService.getDownloadStatus(downloadNode);
+                return transactionHelper.doInTransaction(new RetryingTransactionCallback<DownloadStatus>()
+                {
+                    @Override
+                    public DownloadStatus execute() throws Throwable
+                    {
+                        return downloadService.getDownloadStatus(downloadNode);
+                    }
+                });
             }
         });
+
     }
 }

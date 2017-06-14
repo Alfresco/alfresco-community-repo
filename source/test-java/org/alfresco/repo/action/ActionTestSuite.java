@@ -31,6 +31,7 @@ import org.alfresco.repo.action.evaluator.HasAspectEvaluatorTest;
 import org.alfresco.repo.action.evaluator.IsSubTypeEvaluatorTest;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuterTest;
 import org.alfresco.repo.action.executer.ContentMetadataEmbedderTest;
+import org.alfresco.repo.action.executer.ContentMetadataExtracterTagMappingTest;
 import org.alfresco.repo.action.executer.ContentMetadataExtracterTest;
 import org.alfresco.repo.action.executer.ImporterActionExecuterTest;
 import org.alfresco.repo.action.executer.MailActionExecuterTest;
@@ -68,7 +69,8 @@ import org.junit.runners.Suite.SuiteClasses;
     // Test executors
     SetPropertyValueActionExecuterTest.class,
     AddFeaturesActionExecuterTest.class,
-    ContentMetadataExtracterTest.class,
+    ContentMetadataExtracterTest.class, 
+    ContentMetadataExtracterTagMappingTest.class,
     ContentMetadataEmbedderTest.class,
     SpecialiseTypeActionExecuterTest.class,
     RemoveFeaturesActionExecuterTest.class,

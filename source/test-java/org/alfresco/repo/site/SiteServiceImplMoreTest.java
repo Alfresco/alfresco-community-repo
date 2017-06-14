@@ -29,7 +29,6 @@ package org.alfresco.repo.site;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -43,9 +42,12 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -56,7 +58,6 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
-import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -1038,6 +1039,156 @@ public class SiteServiceImplMoreTest
                 return null;
             }
         });
+    }
+
+    // TODO currently not being run - requires fix for REPO-1688 (see also MNT-17093)
+    public void deleteSiteRestoreSiteWithLocks() throws Exception
+    {
+        final String userSiteOwner = "UserSiteOwner";
+        final String userSiteManager = "UserSiteManager";
+        final String userSiteCollaborator = "UserSiteCollaborator";        
+        final String userPrefix = "restore-with-lock";
+
+        // create the users
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                createUser(userSiteOwner, userPrefix);
+                createUser(userSiteManager, userPrefix);
+                createUser(userSiteCollaborator, userPrefix);
+                return null;
+            }
+        });
+
+        final String siteShortName = "testsite-" + System.currentTimeMillis();
+        final SiteServiceImpl siteServiceImpl = (SiteServiceImpl)SITE_SERVICE;
+        log.debug("Creating test site called: " + siteShortName);
+
+        // Create site
+        final TestSiteAndMemberInfo testSiteAndMemberInfo =
+                perMethodTestSites.createTestSiteWithUserPerRole(siteShortName, "sitePreset", SiteVisibility.PUBLIC, userSiteOwner);
+
+        // Add Site COLLABORATOR - create file
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // make userSiteCollaborator a member of the site
+                SITE_SERVICE.setMembership(siteShortName, userSiteCollaborator, SiteModel.SITE_COLLABORATOR);
+
+                return null;
+            }
+        });
+
+        // create document as userSiteCollaborator
+        AUTHENTICATION_COMPONENT.setCurrentUser(userSiteCollaborator);
+
+        String fileFolderPrefix = "TESTLOCK_";
+        String componentId = "doclib";
+
+        NodeRef siteContainer = SITE_SERVICE.createContainer(siteShortName, componentId, ContentModel.TYPE_FOLDER, null);
+        final FileInfo fileInfo = FILE_FOLDER_SERVICE.create(
+                siteContainer,
+                fileFolderPrefix + "file.txt",
+                ContentModel.TYPE_CONTENT);
+        ContentWriter writer = FILE_FOLDER_SERVICE.getWriter(fileInfo.getNodeRef());
+        writer.putContent("Just some old content that doesn't mean anything");
+
+        // Make sure there are no locks on the fileInfo yet
+        assertEquals(LockStatus.NO_LOCK, LOCK_SERVICE.getLockStatus(fileInfo.getNodeRef()));
+
+        // Lock a file as userSiteCollaborator
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                LOCK_SERVICE.lock(fileInfo.getNodeRef(), LockType.READ_ONLY_LOCK);
+                return null;
+            }
+        });
+
+        // Make sure we have a lock now
+        assertEquals(LockStatus.LOCK_OWNER, LOCK_SERVICE.getLockStatus(fileInfo.getNodeRef()));
+
+        AUTHENTICATION_COMPONENT.setCurrentUser(userSiteOwner);
+
+        // Delete site
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Map<String, String>>()
+        {
+            public Map<String, String> execute() throws Throwable
+            {
+                log.debug("About to delete site.");
+                SITE_SERVICE.deleteSite(siteShortName);
+                log.debug("Site deleted.");
+
+                return null;
+            }
+        });
+
+        // Add custom behaviour that triggers onCreateNode to cause update ... and hence triggers REPO-1688
+
+        PolicyComponent policyComponent = (PolicyComponent) APP_CONTEXT_INIT.getApplicationContext().getBean("policyComponent");
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,
+                ContentModel.TYPE_CONTENT,
+                new JavaBehaviour(this, "onCreateNodeSetTitle"));
+
+        // restore the site
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertThatArchivedNodeExists(testSiteAndMemberInfo.siteInfo.getNodeRef(), "Site node not found in archive.");
+
+                log.debug("About to restore site node from archive");
+
+                final NodeRef archivedSiteNode = NODE_ARCHIVE_SERVICE.getArchivedNode(testSiteAndMemberInfo.siteInfo.getNodeRef());
+                RestoreNodeReport report = NODE_ARCHIVE_SERVICE.restoreArchivedNode(archivedSiteNode);
+                // ...which should work
+                assertEquals("Failed to restore site from archive", RestoreStatus.SUCCESS, report.getStatus());
+
+                log.debug("Successfully restored site from arhive.");
+
+                return null;
+            }
+        });
+
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Map<String, String>>()
+        {
+            public Map<String, String> execute() throws Throwable
+            {
+                // The site itself should have been restored, of course...
+                assertTrue("The site noderef was not restored as expected", NODE_SERVICE.exists(testSiteAndMemberInfo.siteInfo.getNodeRef()));
+
+                return null;
+            }
+        });
+
+        // remove site completely
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                log.debug("About to delete site completely.");
+                SITE_SERVICE.deleteSite(siteShortName);
+                log.debug("About to purge site from trashcan.");
+
+                // get archive node reference
+                String storePath = "archive://SpacesStore";
+                StoreRef storeRef = new StoreRef(storePath);
+                NodeRef archivedNodeRef = new NodeRef(storeRef, testSiteAndMemberInfo.siteInfo.getNodeRef().getId());
+                NODE_ARCHIVE_SERVICE.purgeArchivedNode(archivedNodeRef);
+
+                return null;
+            }
+        });
+    }
+
+    public void onCreateNodeSetTitle(ChildAssociationRef childAssocRef)
+    {
+        NodeRef newRef = childAssocRef.getChildRef();
+        NODE_SERVICE.setProperty(newRef, ContentModel.PROP_TITLE, "Testing REPO-1688");
     }
 
     private void assertThatArchivedNodeExists(NodeRef originalNodeRef, String failureMsg)

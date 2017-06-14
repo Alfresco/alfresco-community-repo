@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -53,6 +53,7 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionableAspect;
+import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.scripts.ScriptException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -707,5 +708,30 @@ public class ScriptNodeTest
             Context.exit();
         }
         return scope;
+    }
+
+    /**
+     *  MNT-16053: Conversion for property with multiple=true, on an Activiti script node, fails.
+     */
+    @Test
+    public void testConvertMultiplePropertyForActivitiScriptNode()
+    {
+        ArrayList<String> numbers = new ArrayList<>();
+        numbers.add("Phone #1");
+        numbers.add("Phone #2");
+        Repository repositoryHelper = (Repository) APP_CONTEXT_INIT.getApplicationContext()
+                .getBean("repositoryHelper");
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+
+        ActivitiScriptNode scriptNode = new ActivitiScriptNode(companyHome, SERVICE_REGISTRY); 
+        try 
+        {
+            // Do a conversion of a multiple property (this is a residual property, but it doesn't matter, the conversion code is the same, regardless of the property being in the model or not).
+            scriptNode.getValueConverter().convertValueForScript(QName.createQName("cm:phonenumbers"), numbers);
+        }
+        catch (Exception e)
+        {
+            fail("Converting multiple property for Activiti script fails with " + e);
+        }
     }
 }

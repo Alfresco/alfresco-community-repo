@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -66,7 +66,7 @@ public class ActivitiScriptNode extends ScriptNode
     }
 
     /**
-     * Value converter for beanshell. Dates should be handled differenty since
+     * Value converter for beanshell. Dates should be handled differently since
      * default conversion uses top-level scope which is sometimes missing.
      */
     private class ActivitiNodeConverter extends NodeValueConverter
@@ -87,11 +87,15 @@ public class ActivitiScriptNode extends ScriptNode
         @Override
         public Serializable convertValueForScript(ServiceRegistry serviceRegistry, Scriptable theScope, QName qname, Serializable value)
         {
-        	// ALF-14863: If script-node is used outside of Script-call (eg. Activiti evaluating an expression that contains variables of type ScriptNode)
-        	// a scope should be created solely for this conversion. The scope will ALWAYS be set when value-conversion is called from the
-        	// ScriptProcessor
-        	ensureScopePresent();
-        	
+            // ALF-14863: If script-node is used outside of Script-call (eg. Activiti evaluating an expression that contains variables of type ScriptNode)
+            // a scope should be created solely for this conversion. The scope will ALWAYS be set when value-conversion is called from the
+            // ScriptProcessor
+            ensureScopePresent();
+            if (theScope == null)
+            {
+                theScope = scope;
+            }
+
             if (value instanceof NodeRef)
             {
                 return new ActivitiScriptNode(((NodeRef)value), serviceRegistry);
@@ -106,26 +110,29 @@ public class ActivitiScriptNode extends ScriptNode
             }
         }
 
-		private void ensureScopePresent() {
-			if(scope == null) {
-				// Create a scope for the value conversion. This scope will be an empty scope exposing basic Object and Function, sufficient for value-conversion.
-				// In case no context is active for the current thread, we can safely enter end exit one to get hold of a scope
-				Context ctx = Context.getCurrentContext();
-				boolean closeContext = false;
-				if(ctx == null) 
-				{
-					ctx = Context.enter();
-					closeContext = true;
-				}
-				
-				scope = ctx.initStandardObjects();
-				scope.setParentScope(null);
-				
-				if(closeContext) {
-					// Only an exit call should be done when context didn't exist before
-					Context.exit();
-				}
-			}
-		}
+        private void ensureScopePresent()
+        {
+            if (scope == null)
+            {
+                // Create a scope for the value conversion. This scope will be an empty scope exposing basic Object and Function, sufficient for value-conversion.
+                // In case no context is active for the current thread, we can safely enter end exit one to get hold of a scope
+                Context ctx = Context.getCurrentContext();
+                boolean closeContext = false;
+                if (ctx == null)
+                {
+                    ctx = Context.enter();
+                    closeContext = true;
+                }
+
+                scope = ctx.initStandardObjects();
+                scope.setParentScope(null);
+
+                if (closeContext)
+                {
+                    // Only an exit call should be done when context didn't exist before
+                    Context.exit();
+                }
+            }
+        }
     }
 }

@@ -21,6 +21,8 @@ package org.alfresco.hibernate;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.Properties;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -41,6 +43,24 @@ public class DialectFactoryBean implements FactoryBean<Dialect>
 
     /** The local session factory. */
     private LocalSessionFactoryBean localSessionFactory;
+
+    /** The map used in mapping driver name to a dialect. **/
+    private Map<String, String> driverDialectMap;
+
+
+    public void setDriverDialectMap(Map<String, String> driverDialectMap)
+    {
+        this.driverDialectMap = driverDialectMap;
+
+    }
+
+    public Map<String, String>  getDriverDialectMap()
+    {
+        return this.driverDialectMap;
+    }
+
+
+
 
     /**
      * Sets the local session factory.
@@ -66,8 +86,11 @@ public class DialectFactoryBean implements FactoryBean<Dialect>
             con = session.connection();
             con.setAutoCommit(true);
             DatabaseMetaData meta = con.getMetaData();
-            Dialect dialect = DialectFactory.buildDialect(cfg.getProperties(), meta.getDatabaseProductName(), meta
-                    .getDatabaseMajorVersion());
+
+            overrideDialectPropertyForDriver(cfg.getProperties(), meta.getDriverName());
+
+            Dialect dialect = DialectFactory.buildDialect(cfg.getProperties(), meta.getDatabaseProductName(), meta.getDatabaseMajorVersion());
+
             dialect = changeDialect(cfg, dialect);
             return dialect;
         }
@@ -80,6 +103,18 @@ public class DialectFactoryBean implements FactoryBean<Dialect>
             catch (Exception e)
             {
             }
+        }
+    }
+
+
+    /**
+     * Override or add a dialect property to props based on the driver name
+     */
+    void overrideDialectPropertyForDriver(Properties props, String driverName)
+    {
+        if (driverDialectMap != null && driverDialectMap.containsKey(driverName))
+        {
+            props.setProperty(Environment.DIALECT, driverDialectMap.get(driverName));
         }
     }
 

@@ -2343,7 +2343,100 @@ public class TestCMIS extends EnterpriseTestApi
 		}
 		assertTrue("The aspects should have P:cm:generalclassifiable", mandatoryAspects.contains("P:cm:generalclassifiable"));
     }
-    
+
+    @Test
+    public void testContentDisposition_MNT_17477() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11, AlfrescoObjectFactoryImpl.class.getName());
+
+        Folder folder = (Folder)cmisSession.getObjectByPath("/Shared");
+
+        //
+        // Upload test JPG document
+        //
+        String name = GUID.generate() + ".jpg";
+
+        Map<String, Object> properties = new HashMap<>();
+        {
+            properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
+            properties.put(PropertyIds.NAME, name);
+        }
+
+        ContentStreamImpl fileContent = new ContentStreamImpl();
+        {
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_IMAGE_JPEG);
+            fileContent.setStream(this.getClass().getResourceAsStream("/test.jpg"));
+        }
+
+        Document doc = folder.createDocument(properties, fileContent, VersioningState.MAJOR);
+        String docId = doc.getId();
+
+        // note: Content-Disposition can be "inline or "attachment" for content types that are white-listed (eg. specific image types & pdf)
+
+        HttpResponse response = publicApiClient.get(network1.getId()+"/public/cmis/versions/1.1/browser/root/Shared/"+name, null);
+        assertTrue(response.getHeaders().get("Content-Disposition").startsWith("inline"));
+        assertEquals(200, response.getStatusCode());
+
+        response = publicApiClient.get(network1.getId()+"/public/cmis/versions/1.1/browser/root/Shared/"+name+"?download=inline", null);
+        assertTrue(response.getHeaders().get("Content-Disposition").startsWith("inline"));
+        assertEquals(200, response.getStatusCode());
+
+        response = publicApiClient.get(network1.getId()+"/public/cmis/versions/1.1/browser/root/Shared/"+name+"?download=attachment", null);
+        assertTrue(response.getHeaders().get("Content-Disposition").startsWith("attachment"));
+        assertEquals(200, response.getStatusCode());
+
+        // note: AtomPub binding (via OpenCMIS) does not support "download" query parameter
+        response = publicApiClient.get(network1.getId()+"/public/cmis/versions/1.1/atom/content?id="+docId, null);
+        assertTrue(response.getHeaders().get("Content-Disposition").startsWith("attachment"));
+        assertEquals(200, response.getStatusCode());
+
+        //
+        // Create test HTML document
+        //
+        name = GUID.generate() + ".html";
+
+        properties = new HashMap<>();
+        {
+            properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
+            properties.put(PropertyIds.NAME, name);
+        }
+
+        fileContent = new ContentStreamImpl();
+        {
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".html"));
+            writer.putContent("<html><script>alert(123);</script><body>Hello <b>world</b></body</html>");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_HTML);
+            fileContent.setStream(reader.getContentInputStream());
+        }
+
+        doc = folder.createDocument(properties, fileContent, VersioningState.MAJOR);
+        docId = doc.getId();
+
+        // note: Content-Disposition will always be "attachment" for content types that are not white-listed
+
+        response = publicApiClient.get(network1.getId()+"/public/cmis/versions/1.1/browser/root/Shared/"+name, null);
+        assertTrue(response.getHeaders().get("Content-Disposition").startsWith("attachment;"));
+        assertEquals(200, response.getStatusCode());
+
+        response = publicApiClient.get(network1.getId()+"/public/cmis/versions/1.1/browser/root/Shared/"+name+"?download=inline", null);
+        assertTrue(response.getHeaders().get("Content-Disposition").startsWith("attachment;"));
+        assertEquals(200, response.getStatusCode());
+
+        // note: AtomPub binding (via OpenCMIS) does not support "download" query parameter
+        response = publicApiClient.get(network1.getId()+"/public/cmis/versions/1.1/atom/content?id="+docId, null);
+        assertTrue(response.getHeaders().get("Content-Disposition").startsWith("attachment;"));
+        assertEquals(200, response.getStatusCode());
+    }
+
     /**
      * Test delete version on versions other than latest (most recent) version (MNT-17228)
      */

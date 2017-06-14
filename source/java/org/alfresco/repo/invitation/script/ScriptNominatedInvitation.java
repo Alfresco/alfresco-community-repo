@@ -92,4 +92,8 @@ public class ScriptNominatedInvitation  extends ScriptInvitation<NominatedInvita
         return ISO8601DateFormat.format(getSentInviteDate());
     }
 
+    public String getInviteTicket()
+    {
+        return getInvitation().getTicket();
+    }
 }

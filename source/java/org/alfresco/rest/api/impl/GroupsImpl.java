@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -59,6 +60,7 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -89,6 +91,7 @@ public class GroupsImpl implements Groups
     private final static Set<String> LIST_GROUP_MEMBERS_QUERY_PROPERTIES = new HashSet<>(Arrays.asList(new String[] { PARAM_MEMBER_TYPE }));
 
     protected AuthorityService authorityService;
+    private AuthorityDAO authorityDAO;
 
     public AuthorityService getAuthorityService()
     {
@@ -98,6 +101,35 @@ public class GroupsImpl implements Groups
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    public void setAuthorityDAO(AuthorityDAO authorityDAO)
+    {
+        this.authorityDAO = authorityDAO;
+    }
+
+    public Group create(Group group, Parameters parameters)
+    {
+        validateGroup(group);
+
+        // Create authority with default zones.
+        final Set<String> authorityZones = authorityService.getDefaultZones();
+        String authorityDisplayName = null;
+        if(group.getDisplayName() != null && !group.getDisplayName().isEmpty())
+        {
+            authorityDisplayName = group.getDisplayName();
+        }
+
+        String authority = authorityService.createAuthority(AuthorityType.GROUP, group.getId(), authorityDisplayName, authorityZones);
+
+        // Set a given child authority to be included by the given parent
+        // authorities.
+        if (group.getParentIds() != null && !group.getParentIds().isEmpty())
+        {
+            authorityService.addAuthority(group.getParentIds(), authority);
+        }
+
+        return getGroup(authority, parameters);
     }
 
     public Group getGroup(String groupId, Parameters parameters) throws EntityNotFoundException
@@ -244,6 +276,21 @@ public class GroupsImpl implements Groups
      */
     private AuthorityInfo getAuthorityInfo(String id)
     {
+        return getAuthorityInfo(id, false);
+    }
+
+    /**
+     * Retrieve authority info by name. <b>Node id field isn't used at this time
+     * and it is set to null.</b>
+     *
+     * @param id
+     *            The authority name.
+     * @param defaultDisplayNameIfNull
+     *            True if we would like to get a default value (e.g. shortName of the authority) if the authority display name is null.
+     * @return The authority info.
+     */
+    private AuthorityInfo getAuthorityInfo(String id, boolean defaultDisplayNameIfNull)
+    {
         if (id == null || id.isEmpty())
         {
             throw new InvalidArgumentException("id is null or empty");
@@ -254,9 +301,14 @@ public class GroupsImpl implements Groups
             throw new EntityNotFoundException(id);
         }
 
-        String authorityDisplayName = authorityService.getAuthorityDisplayName(id);
+        String authorityDisplayName = getAuthorityDisplayName(id, defaultDisplayNameIfNull);
 
         return new AuthorityInfo(null, authorityDisplayName, id);
+    }
+
+    private String getAuthorityDisplayName(String id, boolean defaultDisplayNameIfNull)
+    {
+        return defaultDisplayNameIfNull ? authorityService.getAuthorityDisplayName(id) : authorityDAO.getAuthorityDisplayName(id);
     }
 
     private Group getGroup(AuthorityInfo authorityInfo, List<String> includeParam, Set<String> rootAuthorities)
@@ -355,7 +407,7 @@ public class GroupsImpl implements Groups
 
         private AuthorityInfoComparator(String sortBy, boolean sortAsc)
         {
-            col = Collator.getInstance(I18NUtil.getLocale());
+            col = AlfrescoCollator.getInstance(I18NUtil.getLocale());
             this.sortBy = sortBy;
             this.nameCache = new HashMap<>();
 
@@ -376,6 +428,9 @@ public class GroupsImpl implements Groups
             String v = nameCache.get(g);
             if (v == null)
             {
+
+                // Please see GetAuthoritiesCannedQuery.AuthComparator for details.
+
                 // Get the value from the group
                 if (DISPLAY_NAME.equals(sortBy))
                 {
@@ -383,15 +438,20 @@ public class GroupsImpl implements Groups
                 }
                 else if (SHORT_NAME.equals(sortBy))
                 {
-                    v = g.getAuthorityName();
+                    v = g.getShortName();
                 }
                 else
                 {
                     throw new InvalidArgumentException("Invalid sort field: " + sortBy);
                 }
 
-                // Lower case it for case insensitive search
-                v = v.toLowerCase();
+                if (v == null)
+                {
+                    v = g.getAuthorityName();
+                }
+
+                // // Lower case it for case insensitive search
+                // v = v.toLowerCase();
 
                 // Cache it
                 nameCache.put(g, v);
@@ -495,7 +555,14 @@ public class GroupsImpl implements Groups
 
         GroupMember groupMember = new GroupMember();
         groupMember.setId(authorityInfo.getAuthorityName());
-        groupMember.setDisplayName(authorityInfo.getAuthorityDisplayName());
+
+        String authorityDisplayName = authorityInfo.getAuthorityDisplayName();
+        if (authorityDisplayName == null || authorityDisplayName.isEmpty())
+        {
+            authorityDisplayName = authorityService.getAuthorityDisplayName(authorityInfo.getAuthorityName());
+        }
+
+        groupMember.setDisplayName(authorityDisplayName);
 
         String memberType = null;
         AuthorityType authorityType = AuthorityType.getAuthorityType(authorityInfo.getAuthorityName());
@@ -524,6 +591,19 @@ public class GroupsImpl implements Groups
         if (!authorityService.authorityExists(groupId))
         {
             throw new EntityNotFoundException(groupId);
+        }
+    }
+
+    private void validateGroup(Group group)
+    {
+        if (group == null)
+        {
+            throw new InvalidArgumentException("group is null");
+        }
+
+        if (group.getId() == null || group.getId().isEmpty())
+        {
+            throw new InvalidArgumentException("groupId is null or empty");
         }
     }
 }

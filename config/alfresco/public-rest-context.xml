@@ -1337,6 +1337,7 @@
     <!--                               -->
     <bean id="groups" class="org.alfresco.rest.api.impl.GroupsImpl">
         <property name="authorityService" ref="AuthorityService" />
+        <property name="authorityDAO" ref="authorityDAO" />
     </bean>
 
     <bean id="Groups" class="org.springframework.aop.framework.ProxyFactoryBean">

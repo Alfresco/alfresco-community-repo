@@ -480,11 +480,22 @@ public class PublicApiClient
 	public HttpResponse post(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId, String body) throws IOException
 	{
 		HttpResponse response = client.post(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId != null ? relationshipEntityId.toString() : null, body);
-		
+
 		logger.debug(response.toString());
 
 		return response;
 	}
+
+    public HttpResponse post(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId, String body,
+            final Map<String, String> params) throws IOException
+    {
+        HttpResponse response = client.post(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName,
+                relationshipEntityId != null ? relationshipEntityId.toString() : null, body, params);
+
+        logger.debug(response.toString());
+
+        return response;
+    }
 
     public HttpResponse post(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId,
                 String body, String contentType) throws IOException
@@ -747,20 +758,27 @@ public class PublicApiClient
         {
             return create(entityCollectionName, entityId, relationCollectionName, relationId, body, errorMessage, HttpServletResponse.SC_CREATED);
         }
-		
-		public HttpResponse create(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage, int expectedStatus) throws PublicApiException
-		{
-	        try
-	        {
-		        HttpResponse response = post("public", entityCollectionName, entityId, relationCollectionName, relationId, body);
+
+        public HttpResponse create(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage,
+                int expectedStatus) throws PublicApiException
+        {
+            return create(entityCollectionName, entityId, relationCollectionName, relationId, body, errorMessage, expectedStatus, null);
+        }
+
+        public HttpResponse create(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage,
+                int expectedStatus, Map<String, String> params) throws PublicApiException
+        {
+            try
+            {
+                HttpResponse response = post("public", entityCollectionName, entityId, relationCollectionName, relationId, body, params);
                 checkStatus(errorMessage, expectedStatus, response);
                 return response;
-			}
-			catch (IOException e)
-			{
-		        throw new PublicApiException(e);
-			}
-		}
+            }
+            catch (IOException e)
+            {
+                throw new PublicApiException(e);
+            }
+        }
 
         public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage) throws PublicApiException
         {
@@ -2265,6 +2283,12 @@ public class PublicApiClient
     public class Groups extends AbstractProxy
     {
 
+        public Group createGroup(Group group, Map<String, String> params, int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = create("groups", null, null, null, group.toJSON().toString(), "Failed to create group " + group.getId(), expectedStatus, params);
+            return parseGroupEntity(response);
+        }
+
         public Group getGroup(String groupId) throws PublicApiException
         {
             return getGroup(groupId, HttpServletResponse.SC_OK);
@@ -2278,6 +2302,11 @@ public class PublicApiClient
         public Group getGroup(String groupId, Map<String, String> params, int expectedStatus) throws PublicApiException
         {
             HttpResponse response = getSingle("groups", groupId, null, null, params, "Failed to get group " + groupId, expectedStatus);
+            return parseGroupEntity(response);
+        }
+
+        private Group parseGroupEntity(HttpResponse response)
+        {
             if ((response != null) && (response.getJsonResponse() != null))
             {
                 JSONObject jsonEntity = (JSONObject) response.getJsonResponse().get("entry");

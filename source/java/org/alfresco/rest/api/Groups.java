@@ -48,6 +48,17 @@ public interface Groups
     String PARAM_MEMBER_TYPE_PERSON = "PERSON";
 
     /**
+     * Create a group.
+     *
+     * @param group the group to create.
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *        including:
+     *        - include param (parentIds, zones)
+     * @return a {@code org.alfresco.rest.api.model.Group} object
+     */
+    Group create(Group group, Parameters parameters);
+
+    /**
      * Get a group by it's id.
      *
      * @param groupId the identifier of a group.

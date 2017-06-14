@@ -56,6 +56,7 @@ import org.alfresco.rest.api.tests.client.data.ContentData;
 import org.alfresco.rest.api.tests.client.data.Favourite;
 import org.alfresco.rest.api.tests.client.data.FavouriteSite;
 import org.alfresco.rest.api.tests.client.data.FolderNode;
+import org.alfresco.rest.api.tests.client.data.Group;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.MemberOfSite;
 import org.alfresco.rest.api.tests.client.data.NodeRating;
@@ -116,6 +117,7 @@ public class PublicApiClient
 	private People people;
 	private Favourites favourites;
 	private SiteMembershipRequests siteMembershipRequests;
+    private Groups groups;
 	private RawProxy rawProxy;
 	
 	private ThreadLocal<RequestContext> rc = new ThreadLocal<RequestContext>();
@@ -137,6 +139,7 @@ public class PublicApiClient
 		people = new People();
 		favourites = new Favourites();
 		siteMembershipRequests = new SiteMembershipRequests();
+        groups = new Groups();
 		rawProxy = new RawProxy();
 	}
 
@@ -199,6 +202,11 @@ public class PublicApiClient
 	{
 		return comments;
 	}
+
+    public Groups groups()
+    {
+        return groups;
+    }
 
 	public CmisSession createPublicApiCMISSession(Binding binding, String version)
     {
@@ -2233,6 +2241,30 @@ public class PublicApiClient
                         .append(", descriptionURL='").append(descriptionURL)
                         .append(']');
             return sb.toString();
+        }
+    }
+
+    public class Groups extends AbstractProxy
+    {
+
+        public ListResponse<Group> getGroups(Map<String, String> params, String errorMessage, int expectedStatus) throws PublicApiException, ParseException
+        {
+            HttpResponse response = getAll("groups", null, null, null, params, errorMessage, expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return Group.parseGroups(response.getJsonResponse());
+                }
+            }
+            return null;
+        }
+
+        public ListResponse<Group> getGroups(Map<String, String> params) throws PublicApiException, ParseException
+        {
+            return getGroups(params, "Failed to get groups", HttpServletResponse.SC_OK);
         }
     }
 }

@@ -57,7 +57,7 @@ import org.junit.runners.Suite;
     AuthenticationsTest.class,
     ModulePackagesApiTest.class,
     WherePredicateApiTest.class,
-	DiscoveryApiTest.class,
+    DiscoveryApiTest.class,
     TestSites.class,
     TestNodeComments.class,
     TestFavouriteSites.class,
@@ -73,8 +73,8 @@ import org.junit.runners.Suite;
     TestSiteMembershipRequests.class,
     TestFavourites.class,
     TestPublicApi128.class,
-    TestPublicApiCaching.class
-        
+    TestPublicApiCaching.class,
+    GroupsTest.class
 })
 public class ApiTest
 {

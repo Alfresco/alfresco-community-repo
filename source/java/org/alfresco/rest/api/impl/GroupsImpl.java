@@ -314,8 +314,12 @@ public class GroupsImpl implements Groups
             {
                 // Limit the post processing work by using the already loaded
                 // list of root authorities.
+                List<AuthorityInfo> authorities = rootAuthorities.stream().
+                        map(this::getAuthorityInfo).
+                        filter(auth -> matchZoneFilter(auth, zoneFilter)).
+                        collect(Collectors.toList());
                 groupList = new ArrayList<>(rootAuthorities.size());
-                groupList.addAll(rootAuthorities.stream().map(this::getAuthorityInfo).collect(Collectors.toList()));
+                groupList.addAll(authorities);
 
                 // Post process sorting - this should be moved to service
                 // layer. It is done here because sorting is not supported at
@@ -330,7 +334,7 @@ public class GroupsImpl implements Groups
                 // Get authorities using canned query but without using
                 // the requested paginating now because we need to filter out
                 // the root authorities.
-                PagingResults<AuthorityInfo> nonPagingResult = authorityService.getAuthoritiesInfo(authorityType, null, null, sortProp.getFirst(), sortProp.getSecond(),
+                PagingResults<AuthorityInfo> nonPagingResult = authorityService.getAuthoritiesInfo(authorityType, zoneFilter, null, sortProp.getFirst(), sortProp.getSecond(),
                         pagingNoMaxItems);
 
                 // Post process filtering - this should be moved to service
@@ -351,18 +355,6 @@ public class GroupsImpl implements Groups
             }
 
             // Post process paging - this should be moved to service layer.
-
-            if (zoneFilter != null)
-            {
-                // Only AND (e.g. isRoot=true AND zones IN ('MY.APP')) currently supported,
-                // as we can easily post-filter for zones.
-                // If we introduce OR, then a different approach will be needed.
-                groupList = groupList.stream().
-                    filter(authority -> {
-                        Set<String> zones = authorityService.getAuthorityZones(authority.getAuthorityName());
-                        return zones.contains(zoneFilter);
-                    }).collect(Collectors.toList());
-            }
             pagingResult = Util.wrapPagingResults(paging, groupList);
         }
         else
@@ -373,6 +365,16 @@ public class GroupsImpl implements Groups
             pagingResult = authorityService.getAuthoritiesInfo(authorityType, zoneFilter, null, sortProp.getFirst(), sortProp.getSecond(), pagingRequest);
         }
         return pagingResult;
+    }
+
+    private boolean matchZoneFilter(AuthorityInfo authority, String zone)
+    {
+        if (zone != null)
+        {
+            Set<String> zones = authorityService.getAuthorityZones(authority.getAuthorityName());
+            return zones.contains(zone);
+        }
+        return true;
     }
 
     private Set<String> getAllRootAuthorities(AuthorityType authorityType)

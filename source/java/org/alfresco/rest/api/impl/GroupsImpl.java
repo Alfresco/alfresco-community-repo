@@ -29,6 +29,7 @@ import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authority.AuthorityDAO;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -39,6 +40,7 @@ import org.alfresco.rest.api.model.GroupMember;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -55,6 +57,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import java.text.Collator;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
 
 /**
  * Centralises access to groups services and maps between representations.
@@ -190,10 +194,20 @@ public class GroupsImpl implements Groups
     }
 
     @Override
-    public CollectionWithPagingInfo<Group> getGroupsByPersonId(String personId, Parameters parameters)
+    public CollectionWithPagingInfo<Group> getGroupsByPersonId(String requestedPersonId, Parameters parameters)
     {
         // Canonicalize the person ID, performing -me- alias substitution.
-        personId = people.validatePerson(personId);
+        final String personId = people.validatePerson(requestedPersonId);
+
+        // Non-admins can only access their own data
+        // TODO: this is also in PeopleImpl.update(personId,personInfo) - refactor?
+        boolean isAdmin = authorityService.hasAdminAuthority();
+        String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (!isAdmin && !currentUserId.equalsIgnoreCase(personId))
+        {
+            // The user is not an admin user and is not attempting to update *their own* details.
+            throw new PermissionDeniedException();
+        }
 
         final List<String> includeParam = parameters.getInclude();
         Paging paging = parameters.getPaging();
@@ -203,7 +217,8 @@ public class GroupsImpl implements Groups
         Pair<String, Boolean> sortProp = getGroupsSortProp(parameters);
 
         // Get all the authorities for a user, including but not limited to, groups.
-        final Set<String> userAuthorities = authorityService.getAuthoritiesForUser(personId);
+        Set<String> userAuthorities = runAsSystem(
+                () -> authorityService.getAuthoritiesForUser(personId));
 
         // Filter, transform and sort the list of user authorities into
         // a suitable list of AuthorityInfo objects.

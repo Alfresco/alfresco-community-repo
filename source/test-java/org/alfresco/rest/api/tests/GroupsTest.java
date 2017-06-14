@@ -415,10 +415,28 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         return groupsProxy.getGroupMembers(groupId, createParams(paging, otherParams), errorMessage, expectedStatus);
     }
 
-    private ListResponse<Group> getGroupsByPersonId(String userId, final PublicApiClient.Paging paging, Map<String, String> otherParams, String errorMessage, int expectedStatus) throws Exception
+    private ListResponse<Group> getGroupsByPersonId(String userId, final PublicApiClient.Paging paging,
+                                                    Map<String, String> otherParams) throws Exception
+    {
+        return getGroupsByPersonId(
+                userId,
+                paging,
+                otherParams,
+                HttpServletResponse.SC_OK);
+    }
+
+    private ListResponse<Group> getGroupsByPersonId(
+            String userId,
+            final PublicApiClient.Paging paging,
+            Map<String, String> otherParams,
+            int expectedStatus) throws Exception
     {
         final Groups groupsProxy = publicApiClient.groups();
-        return groupsProxy.getGroupsByPersonId(userId, createParams(paging, otherParams), errorMessage, expectedStatus);
+        return groupsProxy.getGroupsByPersonId(
+                userId,
+                createParams(paging, otherParams),
+                "Incorrect response when getting groups for user ID " + userId,
+                expectedStatus);
     }
 
     private ListResponse<GroupMember> getGroupMembers(String groupId, final PublicApiClient.Paging paging, Map<String, String> otherParams) throws Exception
@@ -460,7 +478,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         }
     }
 
-    private void canGetGroupsForUserId() throws ParseException, PublicApiException
+    private void canGetGroupsForUserId() throws Exception
     {
         Person personAlice;
         {
@@ -525,18 +543,49 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         }
 
         // As Alice
-//        setRequestContext(networkOne.getId(), personAlice.getId(), "password");
+        setRequestContext(networkOne.getId(), personAlice.getId(), "password");
 
         // test -me- alias as Alice
-//        {
-//            ListResponse<Group> groups = groupsProxy.getGroupsByPersonId("-me-", null, "Couldn't get user's groups", 200);
-//            assertEquals(4L, (long) groups.getPaging().getCount());
-//            Iterator<Group> it = groups.getList().iterator();
-//            assertEquals("GROUP_EVERYONE", it.next().getId());
-//            assertEquals(rootGroupName, it.next().getId());
-//            assertEquals(groupA, it.next());
-//            assertEquals(groupB, it.next());
-//        }
+        {
+            ListResponse<Group> groups = groupsProxy.getGroupsByPersonId("-me-", null, "Couldn't get user's groups", 200);
+            assertEquals(4L, (long) groups.getPaging().getCount());
+            Iterator<Group> it = groups.getList().iterator();
+            assertEquals("GROUP_EVERYONE", it.next().getId());
+            assertEquals(rootGroupName, it.next().getId());
+            assertEquals(groupA, it.next());
+            assertEquals(groupB, it.next());
+        }
+
+        // +ve: check skip count.
+        {
+            // Sort params
+            Map<String, String> otherParams = new HashMap<>();
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, false);
+
+            // Paging and list groups
+
+            int skipCount = 0;
+            int maxItems = 4;
+            Paging paging = getPaging(skipCount, maxItems);
+
+            ListResponse<Group> resp = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+
+            // Paging and list groups with skip count.
+
+            skipCount = 2;
+            maxItems = 2;
+            paging = getPaging(skipCount, maxItems);
+
+            ListResponse<Group> sublistResponse = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+
+            List<Group> expectedSublist = sublist(resp.getList(), skipCount, maxItems);
+            checkList(expectedSublist, sublistResponse.getPaging(), sublistResponse);
+        }
+
+        // -ve: check skip count.
+        {
+            getGroupsByPersonId(personAlice.getId(), getPaging(-1, null), null, HttpServletResponse.SC_BAD_REQUEST);
+        }
     }
 
     private void testGetGroupMembersByGroupId() throws Exception

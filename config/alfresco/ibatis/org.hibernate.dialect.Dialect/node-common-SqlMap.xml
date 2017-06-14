@@ -1056,7 +1056,7 @@
         from
             alf_child_assoc assoc
             join alf_node childNode on (childNode.id = assoc.child_node_id)
-            join alf_store childStore on (childStore.id = childNode.store_id)
+            left join alf_store childStore on (childStore.id = childNode.store_id)
             join alf_transaction childTxn on (childTxn.id = childNode.transaction_id)
             <if test="prop1qnameId != null">
             left join alf_node_properties prop1 on (prop1.node_id = childNode.id and prop1.qname_id = #{prop1qnameId})
@@ -1106,7 +1106,7 @@
         from
             alf_child_assoc assoc
             join alf_node childNode on (childNode.id = assoc.child_node_id)
-            join alf_store childStore on (childStore.id = childNode.store_id)
+            left join alf_store childStore on (childStore.id = childNode.store_id)
             <if test="pattern != null">
             join alf_node_properties prop4 on (prop4.node_id = childNode.id)
             join alf_qname qname on (prop4.qname_id = qname.id and qname.id = #{namePropertyQNameId})

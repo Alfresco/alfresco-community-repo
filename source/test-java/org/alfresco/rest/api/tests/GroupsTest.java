@@ -25,15 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import java.text.ParseException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -41,8 +32,10 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Groups;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiException;
+import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Group;
 import org.alfresco.rest.api.tests.client.data.GroupMember;
+import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -50,6 +43,10 @@ import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -455,9 +452,7 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         try
         {
             createAuthorityContext(user1);
-            setRequestContext(networkAdmin);
             canGetGroupsForUserId();
-            // TODO: get details for -me- without 403
         }
         finally
         {
@@ -467,9 +462,81 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
     private void canGetGroupsForUserId() throws ParseException, PublicApiException
     {
+        Person personAlice;
+        {
+            publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), networkAdmin, "admin"));
+            personAlice = new Person();
+            String aliceId = "alice-" + UUID.randomUUID() + "@" + networkOne.getId();
+            personAlice.setUserName(aliceId);
+            personAlice.setId(aliceId);
+            personAlice.setFirstName("Alice");
+            personAlice.setEmail("alison.smith@example.com");
+            personAlice.setPassword("password");
+            personAlice.setEnabled(true);
+            PublicApiClient.People people = publicApiClient.people();
+            people.create(personAlice);
+        }
+
         Groups groupsProxy = publicApiClient.groups();
-        ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(user1, null, "Couldn't get user's groups", 200);
-        assertEquals(5L, (long) groups.getPaging().getCount());
+
+        // As admin
+        setRequestContext(networkOne.getId(), networkAdmin, "admin");
+
+        // New user has only the one default group.
+        {
+            ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(personAlice.getId(), null, "Couldn't get user's groups", 200);
+            assertEquals(1L, (long) groups.getPaging().getTotalItems());
+            Iterator<Group> it = groups.getList().iterator();
+            assertEquals("GROUP_EVERYONE", it.next().getId());
+        }
+
+        // Add the user to a couple more groups and list them.
+        {
+            AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+            authorityService.addAuthority(groupA.getId(), personAlice.getId());
+            authorityService.addAuthority(groupB.getId(), personAlice.getId());
+
+            ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(personAlice.getId(), null, "Couldn't get user's groups", 200);
+            assertEquals(4L, (long) groups.getPaging().getTotalItems());
+            Iterator<Group> it = groups.getList().iterator();
+            assertEquals("GROUP_EVERYONE", it.next().getId());
+            assertEquals(rootGroupName, it.next().getId());
+            assertEquals(groupA, it.next());
+            assertEquals(groupB, it.next());
+        }
+
+        // Get network admin's groups by explicit ID.
+        {
+            ListResponse<Group> groups = groupsProxy.getGroupsByPersonId(networkAdmin, null, "Couldn't get user's groups", 200);
+            assertEquals(6L, (long) groups.getPaging().getTotalItems());
+        }
+
+        // test -me- alias (as network admin)
+        {
+            ListResponse<Group> groups = groupsProxy.getGroupsByPersonId("-me-", null, "Couldn't get user's groups", 200);
+            assertEquals(6L, (long) groups.getPaging().getCount());
+            Iterator<Group> it = groups.getList().iterator();
+            assertEquals("GROUP_EVERYONE", it.next().getId());
+        }
+
+        // -ve test: attempt to get groups for non-existent person
+        {
+            groupsProxy.getGroupsByPersonId("i-do-not-exist", null, "Incorrect response", 404);
+        }
+
+        // As Alice
+//        setRequestContext(networkOne.getId(), personAlice.getId(), "password");
+
+        // test -me- alias as Alice
+//        {
+//            ListResponse<Group> groups = groupsProxy.getGroupsByPersonId("-me-", null, "Couldn't get user's groups", 200);
+//            assertEquals(4L, (long) groups.getPaging().getCount());
+//            Iterator<Group> it = groups.getList().iterator();
+//            assertEquals("GROUP_EVERYONE", it.next().getId());
+//            assertEquals(rootGroupName, it.next().getId());
+//            assertEquals(groupA, it.next());
+//            assertEquals(groupB, it.next());
+//        }
     }
 
     private void testGetGroupMembersByGroupId() throws Exception

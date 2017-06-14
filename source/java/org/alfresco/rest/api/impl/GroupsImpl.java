@@ -25,20 +25,6 @@
  */
 package org.alfresco.rest.api.impl;
 
-import java.text.Collator;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -47,6 +33,7 @@ import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Groups;
+import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Group;
 import org.alfresco.rest.api.model.GroupMember;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
@@ -64,6 +51,10 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import java.text.Collator;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Centralises access to groups services and maps between representations.
@@ -94,6 +85,8 @@ public class GroupsImpl implements Groups
     protected AuthorityService authorityService;
     private AuthorityDAO authorityDAO;
 
+    protected People people;
+
     public AuthorityService getAuthorityService()
     {
         return authorityService;
@@ -107,6 +100,11 @@ public class GroupsImpl implements Groups
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
         this.authorityDAO = authorityDAO;
+    }
+
+    public void setPeople(People people)
+    {
+        this.people = people;
     }
 
     public Group create(Group group, Parameters parameters)
@@ -194,6 +192,9 @@ public class GroupsImpl implements Groups
     @Override
     public CollectionWithPagingInfo<Group> getGroupsByPersonId(String personId, Parameters parameters)
     {
+        // Canonicalize the person ID, performing -me- alias substitution.
+        personId = people.validatePerson(personId);
+
         final List<String> includeParam = parameters.getInclude();
         Paging paging = parameters.getPaging();
 
@@ -201,35 +202,28 @@ public class GroupsImpl implements Groups
         // v0 api implementation. Should be improved in the future.
         Pair<String, Boolean> sortProp = getGroupsSortProp(parameters);
 
-        final AuthorityType authorityType = AuthorityType.GROUP;
+        // Get all the authorities for a user, including but not limited to, groups.
         final Set<String> userAuthorities = authorityService.getAuthoritiesForUser(personId);
-        List<AuthorityInfo> groupList = userAuthorities.stream().map(this::getAuthorityInfo).collect(Collectors.toList());
-        // TODO: if isRoot not null then filter
-        AuthorityInfoComparator authorityComparator = new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond());
-        Collections.sort(groupList, authorityComparator);
-        PagingResults<AuthorityInfo> pagingResult = Util.wrapPagingResults(paging, groupList);
+
+        // Filter, transform and sort the list of user authorities into
+        // a suitable list of AuthorityInfo objects.
+        List<AuthorityInfo> groupAuthorities = userAuthorities.stream().
+                filter(a -> a.startsWith(AuthorityType.GROUP.getPrefixString())).
+                map(this::getAuthorityInfo).
+                sorted(new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond())).
+                collect(Collectors.toList());
+
+        PagingResults<AuthorityInfo> pagingResult = Util.wrapPagingResults(paging, groupAuthorities);
 
         // Create response.
         final List<AuthorityInfo> page = pagingResult.getPage();
         int totalItems = pagingResult.getTotalResultCount().getFirst();
 
-
-        final Set<String> rootAuthorities = getAllRootAuthorities(authorityType);
-        List<Group> groups = new AbstractList<Group>()
-        {
-            @Override
-            public Group get(int index)
-            {
-                AuthorityInfo authorityInfo = page.get(index);
-                return getGroup(authorityInfo, includeParam, rootAuthorities);
-            }
-
-            @Override
-            public int size()
-            {
-                return page.size();
-            }
-        };
+        // Transform the page of results into Group objects
+        final Set<String> rootAuthorities = getAllRootAuthorities(AuthorityType.GROUP);
+        List<Group> groups = page.stream().
+                map(authority -> getGroup(authority, includeParam, rootAuthorities)).
+                collect(Collectors.toList());
 
         return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
     }

@@ -25,6 +25,22 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -44,12 +60,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletResponse;
-import java.text.ParseException;
-import java.util.*;
-
-import static org.junit.Assert.*;
-
 /**
  * V1 REST API tests for managing Groups
  *
@@ -57,6 +67,9 @@ import static org.junit.Assert.*;
  */
 public class GroupsTest extends AbstractSingleNetworkSiteTest
 {
+    private static final String MEMBER_TYPE_GROUP = "GROUP";
+    private static final String MEMBER_TYPE_PERSON = "PERSON";
+    
     protected AuthorityService authorityService;
 
     private String rootGroupName = null;
@@ -371,9 +384,11 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             groupMemberA = new GroupMember();
             groupMemberA.setId(groupAAuthorityName);
+            groupMemberA.setMemberType(AuthorityType.GROUP.toString());
 
             groupMemberB = new GroupMember();
             groupMemberB.setId(groupBAuthorityName);
+            groupMemberB.setMemberType(AuthorityType.GROUP.toString());
         }
     }
 
@@ -914,6 +929,101 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             subGroup.setParentIds(subGroupParents);
 
             groupsProxy.createGroup(subGroup, otherParams, HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    @Test
+    public void testCreateGroupMembers() throws PublicApiException
+    {
+        final Groups groupsProxy = publicApiClient.groups();
+
+        try
+        {
+            createAuthorityContext(user1);
+
+            Person personAlice;
+            {
+                publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), networkAdmin, "admin"));
+                personAlice = new Person();
+                String aliceId = "alice-" + UUID.randomUUID() + "@" + networkOne.getId();
+                personAlice.setUserName(aliceId);
+                personAlice.setId(aliceId);
+                personAlice.setFirstName("Alice");
+                personAlice.setEmail("alison.smith@example.com");
+                personAlice.setPassword("password");
+                personAlice.setEnabled(true);
+                PublicApiClient.People people = publicApiClient.people();
+                people.create(personAlice);
+            }
+
+            // +ve tests
+            // Create a group membership (for a existing person and a sub-group)
+            // within a group groupId
+            {
+                GroupMember personMember = new GroupMember();
+                personMember.setId(personAlice.getId());
+                personMember.setMemberType(MEMBER_TYPE_PERSON);
+
+                // Add person as groupB member
+                groupsProxy.createGroupMember(groupB.getId(), personMember, HttpServletResponse.SC_CREATED);
+                // Add group as groupB sub-group
+                groupsProxy.createGroupMember(groupB.getId(), groupMemberA, HttpServletResponse.SC_CREATED);
+            }
+
+            // If the added sub-group was previously a root group then it
+            // becomes a non-root group since it now has a parent.
+            {
+                // create a group without parent
+                Group groupRoot = generateGroup();
+                Group groupRootCreated = groupsProxy.createGroup(groupRoot, null, HttpServletResponse.SC_CREATED);
+                assertTrue("Group was expected to be root.", groupRootCreated.getIsRoot());
+                GroupMember groupMember = new GroupMember();
+                groupMember.setId(groupRootCreated.getId());
+                groupMember.setMemberType(MEMBER_TYPE_GROUP);
+
+                groupsProxy.createGroupMember(groupB.getId(), groupMember, HttpServletResponse.SC_CREATED);
+                Group subGroup = groupsProxy.getGroup(groupMember.getId());
+                assertFalse("Group was expected to be sub-group.", subGroup.getIsRoot());
+            }
+
+            // Person or group with given id does not exists
+            {
+                GroupMember invalidIdGroupMember = new GroupMember();
+                invalidIdGroupMember.setId("invalidPersonId-" + GUID.generate());
+                invalidIdGroupMember.setMemberType(MEMBER_TYPE_PERSON);
+                groupsProxy.createGroupMember(groupA.getId(), invalidIdGroupMember, HttpServletResponse.SC_NOT_FOUND);
+                invalidIdGroupMember.setMemberType(MEMBER_TYPE_GROUP);
+                groupsProxy.createGroupMember(groupA.getId(), invalidIdGroupMember, HttpServletResponse.SC_NOT_FOUND);
+            }
+
+            // Invalid group Id
+            {
+                groupsProxy.createGroupMember("invalidGroupId", groupMemberA, HttpServletResponse.SC_NOT_FOUND);
+            }
+
+            // Invalid group member
+            {
+                GroupMember invalidGroupMember = new GroupMember();
+                groupsProxy.createGroupMember(groupA.getId(), invalidGroupMember, HttpServletResponse.SC_BAD_REQUEST);
+
+                // Member type still missing
+                invalidGroupMember.setId("Test_" + GUID.generate());
+                groupsProxy.createGroupMember(groupA.getId(), invalidGroupMember, HttpServletResponse.SC_BAD_REQUEST);
+                // invalid member type
+                invalidGroupMember.setMemberType("invalidMemberType");
+                groupsProxy.createGroupMember(groupA.getId(), invalidGroupMember, HttpServletResponse.SC_BAD_REQUEST);
+            }
+
+            // -ve tests
+            // Add group with non-admin user
+            {
+                setRequestContext(user1);
+                groupsProxy.createGroupMember(groupA.getId(), groupMemberA, HttpServletResponse.SC_FORBIDDEN);
+            }
+        }
+        finally
+        {
+            clearAuthorityContext();
         }
     }
 

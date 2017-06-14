@@ -25,11 +25,27 @@
  */
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
+
+import java.text.Collator;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.security.authority.AuthorityException;
 import org.alfresco.repo.security.authority.AuthorityInfo;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
@@ -51,16 +67,10 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
-
-import java.text.Collator;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
 
 /**
  * Centralises access to groups services and maps between representations.
@@ -573,21 +583,7 @@ public class GroupsImpl implements Groups
             QueryHelper.walk(q, propertyWalker);
 
             String memberTypeStr = propertyWalker.getProperty(PARAM_MEMBER_TYPE, WhereClauseParser.EQUALS, String.class);
-
-            if (memberTypeStr != null && !memberTypeStr.isEmpty())
-            {
-                switch (memberTypeStr)
-                {
-                case PARAM_MEMBER_TYPE_GROUP:
-                    authorityType = AuthorityType.GROUP;
-                    break;
-                case PARAM_MEMBER_TYPE_PERSON:
-                    authorityType = AuthorityType.USER;
-                    break;
-                default:
-                    throw new InvalidArgumentException("MemberType is invalid (expected eg. GROUP, PERSON)");
-                }
-            }
+            authorityType = getAuthorityType(memberTypeStr);
         }
 
         PagingResults<AuthorityInfo> pagingResult = getAuthoritiesInfo(authorityType, groupId, sortProp, paging);
@@ -612,6 +608,45 @@ public class GroupsImpl implements Groups
         };
 
         return CollectionWithPagingInfo.asPaged(paging, groupMembers, pagingResult.hasMoreItems(), totalItems);
+    }
+
+    @Override
+    public GroupMember createGroupMember(String groupId, GroupMember groupMember)
+    {
+        validateGroupId(groupId, false);
+        validateGroupMember(groupMember);
+
+        AuthorityType authorityType = getAuthorityType(groupMember.getMemberType());
+
+        if (!authorityService.authorityExists(groupMember.getId()))
+        {
+            throw new EntityNotFoundException("Group member with id " + groupMember.getId() + " does not exists");
+        }
+
+        authorityService.addAuthority(groupId, groupMember.getId());
+        String authority = authorityService.getName(authorityType, groupMember.getId());
+
+        return getGroupMember(authority);
+    }
+
+    private AuthorityType getAuthorityType(String memberType)
+    {
+        AuthorityType authorityType = null;
+        if (memberType != null && !memberType.isEmpty())
+        {
+            switch (memberType)
+            {
+            case PARAM_MEMBER_TYPE_GROUP:
+                authorityType = AuthorityType.GROUP;
+                break;
+            case PARAM_MEMBER_TYPE_PERSON:
+                authorityType = AuthorityType.USER;
+                break;
+            default:
+                throw new InvalidArgumentException("MemberType is invalid (expected eg. GROUP, PERSON)");
+            }
+        }
+        return authorityType;
     }
 
     private PagingResults<AuthorityInfo> getAuthoritiesInfo(AuthorityType authorityType, String groupId, Pair<String, Boolean> sortProp, Paging paging)
@@ -674,6 +709,13 @@ public class GroupsImpl implements Groups
         return groupMember;
     }
 
+    private GroupMember getGroupMember(String authorityId)
+    {
+        AuthorityInfo authorityInfo = getAuthorityInfo(authorityId);
+
+        return getGroupMember(authorityInfo);
+    }
+
     private void validateGroupId(String groupId, boolean inferPrefix)
     {
         if (groupId == null || groupId.isEmpty())
@@ -732,6 +774,24 @@ public class GroupsImpl implements Groups
             {
                 throw new InvalidArgumentException("Group update does not support field: zones");
             }
+        }
+    }
+
+    private void validateGroupMember(GroupMember groupMember)
+    {
+        if (groupMember == null)
+        {
+            throw new InvalidArgumentException("group member is null");
+        }
+
+        if (groupMember.getId() == null || groupMember.getId().isEmpty())
+        {
+            throw new InvalidArgumentException("group member Id is null or empty");
+        }
+
+        if (groupMember.getMemberType() == null || groupMember.getMemberType().isEmpty())
+        {
+            throw new InvalidArgumentException("group member type is null or empty");
         }
     }
 

@@ -131,4 +131,12 @@ public interface Groups
      * @return a paged list of {@code org.alfresco.rest.api.model.GroupMember} objects
      */
     CollectionWithPagingInfo<GroupMember> getGroupMembers(String groupId, Parameters parameters);
+
+    /**
+     * Create a group member.
+     *
+     * @param groupId the identifier of a group.
+     * @return a {@code org.alfresco.rest.api.model.GroupMember} object
+     */
+    GroupMember createGroupMember(String groupId, GroupMember groupMember);
 }

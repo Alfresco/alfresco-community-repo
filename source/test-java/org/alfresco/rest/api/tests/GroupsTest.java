@@ -724,6 +724,25 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertEquals("GROUP_ALFRESCO_ADMINISTRATORS", it.next().getId());
         }
 
+        // Filter by isRoot
+        {
+            Map<String, String> params = new HashMap<>();
+
+            params.put("where", "(isRoot=true)");
+            ListResponse<Group> response = groupsProxy.getGroupsByPersonId("-me-", params, "Couldn't get user's groups", 200);
+            List<Group> groups = response.getList();
+            assertFalse(groups.isEmpty());
+            // All groups should be root groups.
+            groups.forEach(group -> assertTrue(group.getIsRoot()));
+
+            params.put("where", "(isRoot=false)");
+            response = groupsProxy.getGroupsByPersonId("-me-", params, "Couldn't get user's groups", 200);
+            groups = response.getList();
+            assertFalse(groups.isEmpty());
+            // All groups should be non-root groups.
+            groups.forEach(group -> assertFalse(group.getIsRoot()));
+        }
+
         // -ve test: attempt to get groups for non-existent person
         {
             groupsProxy.getGroupsByPersonId("i-do-not-exist", null, "Incorrect response", 404);
@@ -792,6 +811,52 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
             ListResponse<Group> respOrderAsc = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
             checkList(respOrderAsc.getList(), resp.getPaging(), resp);
+        }
+
+        // Sorting should be the same regardless of implementation (canned query
+        // or postprocessing).
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+            Map<String, String> otherParams = new HashMap<>();
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, null);
+
+            // Get and sort groups using canned query.
+            ListResponse<Group> respCannedQuery = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+
+            // Get and sort groups using postprocessing.
+            otherParams.put("where", "(isRoot=true)");
+            ListResponse<Group> respPostProcess = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+
+            List<Group> expected = respCannedQuery.getList();
+            expected.retainAll(respPostProcess.getList());
+
+            // If this assertion fails, then the tests aren't providing any value - change them!
+            assertTrue("List doesn't contain enough items for test to be conclusive.", expected.size() > 0);
+            checkList(expected, respPostProcess.getPaging(), respPostProcess);
+        }
+
+        {
+            // paging
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+            Map<String, String> otherParams = new HashMap<>();
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, null);
+
+            // Get and sort groups using canned query.
+            ListResponse<Group> respCannedQuery = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+
+            // Get and sort groups using postprocessing.
+            otherParams.put("where", "(isRoot=true)");
+            ListResponse<Group> respPostProcess = getGroupsByPersonId(personAlice.getId(), paging, otherParams);
+
+            List<Group> expected = respCannedQuery.getList();
+            expected.retainAll(respPostProcess.getList());
+
+            // If this assertion fails, then the tests aren't providing any value - change them!
+            assertTrue("List doesn't contain enough items for test to be conclusive.", expected.size() > 0);
+            checkList(expected, respPostProcess.getPaging(), respPostProcess);
         }
 
         // Sort by id.
@@ -867,13 +932,55 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             groups.forEach(group -> assertNull(group.getZones()));
         }
 
+        // Filter zones while using where isRoot=true
+        // (this causes a different query path to be used)
         {
-            // Zone that doesn't exist.
-            Map<String, String> params = new HashMap<>();
-            params.put("where", "(isRoot=false AND zones in ('I.DO.NOT.EXIST'))");
+            Map<String, String> otherParams = new HashMap<>();
+            // Ensure predictable result ordering
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+
+            otherParams.put("where", "(isRoot=true AND zones in ('APITEST.MYZONE'))");
+
             ListResponse<Group> response = groupsProxy.
-                    getGroupsByPersonId(personAlice.getId(), params, "Incorrect response", 200);
+                    getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
             List<Group> groups = response.getList();
+
+            assertEquals(1, groups.size());
+            assertEquals(rootGroup, groups.get(0));
+            assertTrue(groups.get(0).getZones().contains("APITEST.MYZONE"));
+
+            // Zone that doesn't exist.
+            otherParams.put("where", "(isRoot=true AND zones in ('I.DO.NOT.EXIST'))");
+            response = groupsProxy.
+                    getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
+            groups = response.getList();
+            assertTrue(groups.isEmpty());
+        }
+
+        // Filter zones while using where isRoot=false
+        {
+            Map<String, String> otherParams = new HashMap<>();
+            // Ensure predictable result ordering
+            addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
+
+            otherParams.put("where", "(isRoot=false AND zones in ('APITEST.MYZONE'))");
+
+            ListResponse<Group> response = groupsProxy.
+                    getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
+            List<Group> groups = response.getList();
+
+            assertEquals(2, groups.size());
+            assertEquals(groupA, groups.get(0));
+            assertEquals(groupB, groups.get(1));
+            // We haven't included the zones info.
+            groups.forEach(group -> assertNull(group.getZones()));
+
+            // Zone that doesn't exist.
+            otherParams.put("where", "(isRoot=false AND zones in ('I.DO.NOT.EXIST'))");
+            response = groupsProxy.
+                    getGroupsByPersonId("-me-", otherParams, "Unexpected response", 200);
+            groups = response.getList();
             assertTrue(groups.isEmpty());
         }
 

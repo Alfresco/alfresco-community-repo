@@ -36,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.audit.model.AuditModelException;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -62,6 +63,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1145,5 +1147,40 @@ public class AuditComponentTest extends TestCase
         {
             transactionServiceImpl.setAllowWrite(true, veto);   
         }
+    }
+
+    public void testAuditTruncatedValues()
+    {
+        final String rootPath = "/test/one.one/two.one";
+
+        // String value with length grater then the DB supported threshold.
+        final String stringValue = RandomStringUtils.randomAlphanumeric(SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH + 1);
+        final MLText mlTextValue = new MLText();
+        mlTextValue.put(Locale.ENGLISH, stringValue);
+
+        final RetryingTransactionCallback<Map<String, Serializable>> testCallback = new RetryingTransactionCallback<Map<String, Serializable>>()
+        {
+            public Map<String, Serializable> execute() throws Throwable
+            {
+                final Map<String, Serializable> values = new HashMap<>();
+                values.put("/3.1/4.1", stringValue);
+                values.put("/3.1/4.2", mlTextValue);
+
+                return auditComponent.recordAuditValues(rootPath, values);
+            }
+        };
+        RunAsWork<Map<String, Serializable>> testRunAs = new RunAsWork< Map<String, Serializable>>()
+        {
+            public Map<String, Serializable> doWork() throws Exception
+            {
+                return transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
+            }
+        };
+
+        Map<String, Serializable> result = AuthenticationUtil.runAs(testRunAs, "SomeOtherUser");
+
+        // Check that the values aren't truncated.
+        assertEquals(stringValue, result.get("/test/1.1/2.1/3.1/4.1/value.1"));
+        assertEquals(mlTextValue, result.get("/test/1.1/2.1/3.1/4.2/value.2"));
     }
 }

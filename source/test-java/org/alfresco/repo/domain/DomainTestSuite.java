@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.mimetype.MimetypeDAOTest;
 import org.alfresco.repo.domain.node.NodeDAOTest;
 import org.alfresco.repo.domain.patch.AppliedPatchDAOTest;
 import org.alfresco.repo.domain.permissions.AclCrudDAOTest;
+import org.alfresco.repo.domain.propval.PropertyTypeConverterTest;
 import org.alfresco.repo.domain.propval.PropertyValueCleanupTest;
 import org.alfresco.repo.domain.propval.PropertyValueDAOTest;
 import org.alfresco.repo.domain.qname.QNameDAOTest;
@@ -70,6 +71,7 @@ import org.junit.runners.Suite;
     // AuditDAOTest fails if it runs after CannedQueryDAOTest so this order is a compromise
     // CannedQueryDAOTest will fail on MS SQL if either AuditDAOTest or PropertyValueCleanupTest fail
     PropertyValueCleanupTest.class,
+    PropertyTypeConverterTest.class,
     AuditDAOTest.class,
     CannedQueryDAOTest.class
 })

@@ -702,6 +702,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
                 siteService.createSite("InviteSitePreset", siteName, "InviteSiteTitle",
                         "InviteSiteDescription", SiteVisibility.MODERATED);
             }
+            assertEquals( SiteModel.SITE_MANAGER, siteService.getMembersRole(siteName, AuthenticationUtil.getAdminUserName()));
 
             // Invite user
             NominatedInvitation nominatedInvitation = invitationService.inviteNominated(

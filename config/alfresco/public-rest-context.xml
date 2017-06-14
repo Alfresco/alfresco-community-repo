@@ -954,8 +954,8 @@
     <!-- OpenCMIS -->
 
     <bean id="publicApiCMISServiceFactory" class="org.alfresco.opencmis.PublicApiAlfrescoCmisServiceFactory" init-method="init">
-        <property name="memoryThreshold"        value="${opencmis.memoryThreshold}" />
-        <property name="maxContentSize"         value="${opencmis.maxContentSize}" />
+        <property name="memoryThreshold"        value="${opencmis.memoryThresholdKB}" />
+        <property name="maxContentSize"         value="${opencmis.maxContentSizeMB}" />
         <property name="cmisConnector"          ref="CMISConnector" />
         <property name="cmisTransactions"       ref="CMISService_Transactions" />
         <property name="cmisExceptions"         ref="CMISService_Exceptions" />

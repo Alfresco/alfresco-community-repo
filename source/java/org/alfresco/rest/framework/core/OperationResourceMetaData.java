@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -40,6 +40,7 @@ import java.util.Set;
 public class OperationResourceMetaData extends ResourceMetadata
 {
     private final Method operationMethod;
+    private final boolean noAuthRequired;
 
     /**
      * Use this constructor to create the resource metadata
@@ -47,8 +48,9 @@ public class OperationResourceMetaData extends ResourceMetadata
      * @param operations
      * @param api
      * @param operationMethod
+     * @param noAuthRequired
      */
-    public OperationResourceMetaData(String uniqueId, List<ResourceOperation> operations, Api api, Method operationMethod)
+    public OperationResourceMetaData(String uniqueId, List<ResourceOperation> operations, Api api, Method operationMethod, boolean noAuthRequired)
     {
         super(uniqueId, RESOURCE_TYPE.OPERATION, operations, api, null, null, null);
         if (operations.size()!= 1)
@@ -56,6 +58,7 @@ public class OperationResourceMetaData extends ResourceMetadata
             throw new IllegalArgumentException("Only 1 operation per url is supported for an entity");
         }
         this.operationMethod = operationMethod;
+        this.noAuthRequired = noAuthRequired;
     }
 
     /**
@@ -63,16 +66,24 @@ public class OperationResourceMetaData extends ResourceMetadata
      * @param uniqueId
      * @param api
      * @param apiDeleted
+     * @param noAuthRequired
      */
-    public OperationResourceMetaData(String uniqueId, Api api, Set<Class<? extends ResourceAction>> apiDeleted)
+    public OperationResourceMetaData(String uniqueId, Api api, Set<Class<? extends ResourceAction>> apiDeleted, boolean noAuthRequired)
     {
         super(uniqueId, RESOURCE_TYPE.OPERATION, null, api, apiDeleted, null, null);
         this.operationMethod = null;
+        this.noAuthRequired = noAuthRequired;
     }
 
     public Method getOperationMethod()
     {
         return operationMethod;
+    }
+
+    @Override
+    public boolean isNoAuth(Class<? extends ResourceAction> resourceAction)
+    {
+        return this.noAuthRequired;
     }
 
     @Override
@@ -91,7 +102,8 @@ public class OperationResourceMetaData extends ResourceMetadata
         builder.append(this.getOperations());
         builder.append(", apiDeleted=");
         builder.append(this.getApiDeleted());
-        builder.append("operationMethod=").append(operationMethod);
+        builder.append(", operationMethod=").append(operationMethod);
+        builder.append(", noAuthRequired=").append(noAuthRequired);
         builder.append("]");
         return builder.toString();
     }

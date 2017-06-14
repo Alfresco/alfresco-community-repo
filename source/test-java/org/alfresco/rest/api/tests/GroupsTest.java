@@ -25,16 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.*;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -53,6 +43,11 @@ import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 /**
  * V1 REST API tests for managing Groups
@@ -415,6 +410,12 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertEquals(1, groups.size());
             assertEquals(rootGroup, groups.get(0));
             assertTrue(groups.get(0).getZones().contains("APITEST.MYZONE"));
+
+            // Zone that doesn't exist.
+            otherParams.put("where", "(isRoot=true AND zones in ('I.DO.NOT.EXIST'))");
+            response = getGroups(paging, otherParams, "Incorrect response", 200);
+            groups = response.getList();
+            assertTrue(groups.isEmpty());
         }
 
         // Filter zones while using where isRoot=false
@@ -434,6 +435,12 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             assertEquals(groupB, groups.get(1));
             // We haven't included the zones info.
             groups.forEach(group -> assertNull(group.getZones()));
+
+            // Zone that doesn't exist.
+            otherParams.put("where", "(isRoot=false AND zones in ('I.DO.NOT.EXIST'))");
+            response = getGroups(paging, otherParams, "Incorrect response", 200);
+            groups = response.getList();
+            assertTrue(groups.isEmpty());
         }
 
         // -ve test: invalid zones clause
@@ -457,10 +464,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // "A series of unfortunate errors"
             otherParams.put("where", "(zones in ('', 'APP.DEFAULT', '', 'APITEST.MYZONE'))");
             getGroups(paging, otherParams, "Incorrect response", 400);
-
-            // A zone that isn't in use or doesn't exist
-            otherParams.put("where", "(zones in ('NON.EXISTENT'))");
-            getGroups(paging, otherParams, "Incorrect response", 404);
 
             // OR operator not currently supported
             otherParams.put("where", "(isRoot=true OR zones in ('APP.DEFAULT'))");
@@ -814,6 +817,91 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             otherParams.put("orderBy", org.alfresco.rest.api.Groups.PARAM_ID + " ASC," + org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME + " ASC");
 
             getGroupsByPersonId(personAlice.getId(), paging, otherParams, HttpServletResponse.SC_BAD_REQUEST);
+        }
+
+        // Filter by zone, use the -me- alias.
+        {
+            Map<String, String> params = new HashMap<>();
+            params.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+
+            params.put("where", "(zones in ('APP.DEFAULT'))");
+
+            // Use the -me- alias
+            ListResponse<Group> response = groupsProxy.
+                    getGroupsByPersonId("-me-", params, "Couldn't get user's groups", 200);
+            List<Group> groups = response.getList();
+
+            assertFalse(groups.isEmpty());
+            // All groups should contain the selected zone.
+            groups.forEach(group -> assertTrue(group.getZones().contains("APP.DEFAULT")));
+        }
+
+        // Filter by zone, use the -me- alias.
+        {
+            Map<String, String> params = new HashMap<>();
+            params.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+
+            params.put("where", "(zones in ('APITEST.MYZONE'))");
+
+            // Use the -me- alias
+            ListResponse<Group> response = groupsProxy.
+                    getGroupsByPersonId("-me-", params, "Couldn't get user's groups", 200);
+            List<Group> groups = response.getList();
+
+            assertEquals(3, groups.size());
+            // All groups should contain the selected zone.
+            groups.forEach(group -> assertTrue(group.getZones().contains("APITEST.MYZONE")));
+        }
+
+        // Filter by zone - use the person's ID, without "include"-ing zones
+        {
+            Map<String, String> params = new HashMap<>();
+            params.put("where", "(zones in ('APITEST.ANOTHER'))");
+
+            ListResponse<Group> response = groupsProxy.
+                    getGroupsByPersonId(personAlice.getId(), params, "Couldn't get user's groups", 200);
+            List<Group> groups = response.getList();
+
+            assertEquals(1, groups.size());
+            // We haven't included the zone info
+            groups.forEach(group -> assertNull(group.getZones()));
+        }
+
+        {
+            // Zone that doesn't exist.
+            Map<String, String> params = new HashMap<>();
+            params.put("where", "(isRoot=false AND zones in ('I.DO.NOT.EXIST'))");
+            ListResponse<Group> response = groupsProxy.
+                    getGroupsByPersonId(personAlice.getId(), params, "Incorrect response", 200);
+            List<Group> groups = response.getList();
+            assertTrue(groups.isEmpty());
+        }
+
+        // -ve test: invalid zones clause
+        {
+            Paging paging = getPaging(0, Integer.MAX_VALUE);
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_ZONES);
+
+            // Empty zone list
+            otherParams.put("where", "(zones in ())");
+            groupsProxy.getGroupsByPersonId(personAlice.getId(), otherParams, "Incorrect response", 400);
+
+            // Empty zone name
+            otherParams.put("where", "(zones in (''))");
+            groupsProxy.getGroupsByPersonId(personAlice.getId(), otherParams, "Incorrect response", 400);
+
+            // Too many zones
+            otherParams.put("where", "(zones in ('APP.DEFAULT', 'APITEST.MYZONE'))");
+            groupsProxy.getGroupsByPersonId(personAlice.getId(), otherParams, "Incorrect response", 400);
+
+            // "A series of unfortunate errors"
+            otherParams.put("where", "(zones in ('', 'APP.DEFAULT', '', 'APITEST.MYZONE'))");
+            groupsProxy.getGroupsByPersonId(personAlice.getId(), otherParams, "Incorrect response", 400);
+
+            // OR operator not currently supported
+            otherParams.put("where", "(isRoot=true OR zones in ('APP.DEFAULT'))");
+            groupsProxy.getGroupsByPersonId(personAlice.getId(), otherParams, "Incorrect response", 400);
         }
     }
 

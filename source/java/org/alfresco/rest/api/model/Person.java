@@ -113,7 +113,10 @@ public class Person implements Serializable
 		setLocation(location);
 		setTelephone(telephone);
 		setMobile(mobile);
-		setEmail(email);
+        if (email != null)
+        {
+            setEmail(email);
+        }
 		setSkypeId(skypeId);
 		setInstantMessageId(instantMessageId);
 		setUserStatus(userStatus);
@@ -125,7 +128,10 @@ public class Person implements Serializable
 		// system-maintained / derived
 		setStatusUpdatedAt(statusUpdatedAt);
 		setQuota(quota);
-		setQuotaUsed(quotaUsed);
+        if (quotaUsed != null)
+        {
+            setQuotaUsed(quotaUsed);
+        }
 	}
 
 	public Person(NodeRef nodeRef, Map<QName, Serializable> nodeProps, boolean enabled)
@@ -489,7 +495,10 @@ public class Person implements Serializable
 		addToMap(properties, ContentModel.PROP_LOCATION, getLocation());
 		addToMap(properties, ContentModel.PROP_TELEPHONE, getTelephone());
 		addToMap(properties, ContentModel.PROP_MOBILE, getMobile());
-		addToMap(properties, ContentModel.PROP_EMAIL, getEmail());
+        if (wasSet(ContentModel.PROP_EMAIL))
+        {
+            addToMap(properties, ContentModel.PROP_EMAIL, getEmail());
+        }
 		
 		if (wasSet(PROP_PERSON_COMPANY))
 		{
@@ -568,7 +577,10 @@ public class Person implements Serializable
 		addToMap(properties, ContentModel.PROP_USER_STATUS_TIME, getStatusUpdatedAt());
 		addToMap(properties, ContentModel.PROP_GOOGLEUSERNAME, getGoogleId());
 		addToMap(properties, ContentModel.PROP_SIZE_QUOTA, getQuota());
-		addToMap(properties, ContentModel.PROP_SIZE_CURRENT, getQuotaUsed());
+        if (wasSet(ContentModel.PROP_SIZE_CURRENT))
+        {
+            addToMap(properties, ContentModel.PROP_SIZE_CURRENT, getQuotaUsed());
+        }
 		addToMap(properties, ContentModel.PROP_PERSONDESC, getDescription());
         addToMap(properties, ContentModel.PROP_ENABLED, isEnabled());
 

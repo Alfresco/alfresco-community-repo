@@ -54,12 +54,12 @@ public abstract class AbstractTestFixture implements TestFixture
 	protected TreeMap<String, TestNetwork> networks = new TreeMap<String, TestNetwork>();
     protected TreeMap<String, SiteInformation> sites = new TreeMap<String, SiteInformation>();
 
-    protected String[] configLocations;
-    protected final String[] classLocations;
-    protected int port = 8081;
-    protected String contextPath = "/alfresco";
-    protected String servletName = "api";
-    protected String hostname = "localhost";
+    private String[] configLocations;
+    private final String[] classLocations;
+    private int port = PORT;
+    private String contextPath = CONTEXT_PATH;
+    private String servletName = PUBLIC_API_SERVLET_NAME;
+
     protected JettyComponent jetty;
     protected boolean cleanup;
     protected Random random = new Random();
@@ -94,7 +94,27 @@ public abstract class AbstractTestFixture implements TestFixture
 	{
 		return port;
 	}
-	
+
+	public String getContextPath()
+	{
+		return contextPath;
+	}
+
+	public String getServletName()
+	{
+		return servletName;
+	}
+
+	public String[] getConfigLocations()
+	{
+		return configLocations;
+	}
+
+	public String[] getClassLocations()
+	{
+		return classLocations;
+	}
+
 	protected abstract JettyComponent makeJettyComponent();
 	protected abstract void populateTestData();
 	protected abstract RepoService makeRepoService() throws Exception;

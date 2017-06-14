@@ -33,7 +33,8 @@ import org.springframework.context.ApplicationContext;
 
 public interface TestFixture
 {
-	public final static int PORT = 8081;
+	public final static String HOST = "localhost";
+	public final static int PORT = 8765;
 	public final static String CONTEXT_PATH = "/alfresco";
 	public final static String PUBLIC_API_SERVLET_NAME = "api";
 	

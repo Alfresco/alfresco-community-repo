@@ -95,7 +95,7 @@ public abstract class AbstractTestApi
 		};
 	    AuthenticationDetailsProvider authenticationDetailsProvider = new UserAuthenticationDetailsProviderImpl(userDataService, "admin", "admin");
 	    AuthenticatedHttp authenticatedHttp = new AuthenticatedHttp(httpClientProvider, authenticationDetailsProvider);
-		this.httpClient = new PublicApiHttpClient("localhost", TestFixture.PORT, TestFixture.CONTEXT_PATH,
+		this.httpClient = new PublicApiHttpClient(TestFixture.HOST, TestFixture.PORT, TestFixture.CONTEXT_PATH,
 				TestFixture.PUBLIC_API_SERVLET_NAME, authenticatedHttp);
 	    this.publicApiClient = new PublicApiClient(httpClient, userDataService);
 	}

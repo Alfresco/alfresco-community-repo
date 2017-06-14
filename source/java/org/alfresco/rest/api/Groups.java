@@ -82,6 +82,17 @@ public interface Groups
     CollectionWithPagingInfo<Group> getGroups(Parameters parameters);
 
     /**
+     * Gets the list of groups for which the specified person is a member.
+     *
+     * @param personId the person's ID ("-me-" may be used as an alias for the current user.)
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *        including:
+     *        - sort & paging params (orderBy, skipCount, maxItems)
+     * @return a paged list of {@code org.alfresco.rest.api.model.Group} objects
+     */
+    CollectionWithPagingInfo<Group> getGroupsByPersonId(String personId, Parameters parameters);
+
+    /**
      * Gets a list of groups.
      *
      * @param groupId the identifier of a group.

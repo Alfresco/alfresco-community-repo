@@ -165,8 +165,6 @@ public class GroupsImpl implements Groups
         }
 
         final AuthorityType authorityType = AuthorityType.GROUP;
-        // TODO: I think this is where we need to do this slightly differently, i.e.
-        // getAllRootAuthoritiesByUserId(). What about root authorities? Are all group authorities root?
         final Set<String> rootAuthorities = getAllRootAuthorities(authorityType);
 
         PagingResults<AuthorityInfo> pagingResult = getAuthoritiesInfo(authorityType, isRootParam, rootAuthorities, sortProp, paging);
@@ -174,6 +172,49 @@ public class GroupsImpl implements Groups
         // Create response.
         final List<AuthorityInfo> page = pagingResult.getPage();
         int totalItems = pagingResult.getTotalResultCount().getFirst();
+        List<Group> groups = new AbstractList<Group>()
+        {
+            @Override
+            public Group get(int index)
+            {
+                AuthorityInfo authorityInfo = page.get(index);
+                return getGroup(authorityInfo, includeParam, rootAuthorities);
+            }
+
+            @Override
+            public int size()
+            {
+                return page.size();
+            }
+        };
+
+        return CollectionWithPagingInfo.asPaged(paging, groups, pagingResult.hasMoreItems(), totalItems);
+    }
+
+    @Override
+    public CollectionWithPagingInfo<Group> getGroupsByPersonId(String personId, Parameters parameters)
+    {
+        final List<String> includeParam = parameters.getInclude();
+        Paging paging = parameters.getPaging();
+
+        // Retrieve sort column. This is limited for now to sort column due to
+        // v0 api implementation. Should be improved in the future.
+        Pair<String, Boolean> sortProp = getGroupsSortProp(parameters);
+
+        final AuthorityType authorityType = AuthorityType.GROUP;
+        final Set<String> userAuthorities = authorityService.getAuthoritiesForUser(personId);
+        List<AuthorityInfo> groupList = userAuthorities.stream().map(this::getAuthorityInfo).collect(Collectors.toList());
+        // TODO: if isRoot not null then filter
+        AuthorityInfoComparator authorityComparator = new AuthorityInfoComparator(sortProp.getFirst(), sortProp.getSecond());
+        Collections.sort(groupList, authorityComparator);
+        PagingResults<AuthorityInfo> pagingResult = Util.wrapPagingResults(paging, groupList);
+
+        // Create response.
+        final List<AuthorityInfo> page = pagingResult.getPage();
+        int totalItems = pagingResult.getTotalResultCount().getFirst();
+
+
+        final Set<String> rootAuthorities = getAllRootAuthorities(authorityType);
         List<Group> groups = new AbstractList<Group>()
         {
             @Override
@@ -299,7 +340,8 @@ public class GroupsImpl implements Groups
             throw new InvalidArgumentException("id is null or empty");
         }
 
-        if (!authorityService.authorityExists(id))
+        // authorityService.authorityExists("GROUP_EVERYONE") returns false!
+        if (!id.equals("GROUP_EVERYONE") && !authorityService.authorityExists(id))
         {
             throw new EntityNotFoundException(id);
         }

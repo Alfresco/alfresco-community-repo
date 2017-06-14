@@ -2354,5 +2354,23 @@ public class PublicApiClient
             }
             return null;
         }
+
+        public ListResponse<Group> getGroupsByPersonId(String userId, Map<String, String> params, String errorMessage, int expectedStatus)
+                throws PublicApiException, ParseException
+        {
+            HttpResponse response = getAll("people", userId, "groups", null, params, errorMessage, expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return Group.parseGroups(response.getJsonResponse());
+                }
+            }
+            return null;
+        }
+
+
     }
 }

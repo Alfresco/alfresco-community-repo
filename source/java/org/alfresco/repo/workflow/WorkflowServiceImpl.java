@@ -1291,12 +1291,20 @@ public class WorkflowServiceImpl implements WorkflowService
         List<WorkflowInstance> workflowInstances = new ArrayList<WorkflowInstance>(workflowIds.size());
         for (String workflowId : workflowIds)
         {
-            String engineId = BPMEngineRegistry.getEngineId(workflowId);
-            WorkflowComponent component = getWorkflowComponent(engineId);
-            WorkflowInstance instance = component.getWorkflowById(workflowId);
-            if (instance != null && instance.isActive() == active)
+            try
             {
-                workflowInstances.add(instance);
+                String engineId = BPMEngineRegistry.getEngineId(workflowId);
+                WorkflowComponent component = getWorkflowComponent(engineId);
+                WorkflowInstance instance = component.getWorkflowById(workflowId);
+                if (instance != null && instance.isActive() == active)
+                {
+                    workflowInstances.add(instance);
+                }
+            }
+            catch (WorkflowException componentForEngineNotRegistered)
+            {
+                String message = componentForEngineNotRegistered.getMessage();
+                logger.debug(message + ". Ignored workflow on " + packageItem);
             }
         }
         return workflowInstances;

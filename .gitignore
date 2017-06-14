@@ -39,3 +39,6 @@ test-output
 /rm-enterprise/rm-automation-enterprise/root
 
 rm-automation/src/test/resources/webdriver.properties
+
+/rm-community/rm-community-rest-api-explorer/overlays
+/rm-enterprise/rm-enterprise-rest-api-explorer/overlays

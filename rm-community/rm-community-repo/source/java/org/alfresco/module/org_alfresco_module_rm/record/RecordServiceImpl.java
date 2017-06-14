@@ -80,6 +80,7 @@ import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IncompleteNodeTagger;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -272,6 +273,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private ClassPolicyDelegate<BeforeRecordRejection> beforeRecordRejectionDelegate;
     private ClassPolicyDelegate<OnRecordRejection> onRecordRejectionDelegate;
 
+    private IncompleteNodeTagger incompleteNodeTagger;
+
     /**
      * @param identifierService identifier service
      */
@@ -416,6 +419,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
         this.recordableVersionService = recordableVersionService;
     }
 
+    public void setIncompleteNodeTagger(IncompleteNodeTagger incompleteNodeTagger)
+    {
+        this.incompleteNodeTagger = incompleteNodeTagger;
+    }
+
     /**
      * Init method
      */
@@ -450,6 +458,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
                 {
                     generateRecordIdentifier(nodeService, identifierService, nodeRef);
+                    reevaluateIncompleteTag(nodeRef);
                 }
                 return null;
             }
@@ -473,6 +482,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             if (ContentData.hasContent(contentData) && contentData.getSize() > 0)
             {
                 appendIdentifierToName(nodeService, nodeRef);
+                reevaluateIncompleteTag(nodeRef);
             }
         }
     }
@@ -1925,6 +1935,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         if (nodeService.exists(nodeRef) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_HIDDEN) && !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
         {
             generateRecordIdentifier(nodeService, identifierService, nodeRef);
+            reevaluateIncompleteTag(nodeRef);
         }
     }
 
@@ -1982,5 +1993,23 @@ public class RecordServiceImpl extends BaseBehaviourBean
         // execute policy for node type and aspects
         OnRecordRejection policy = onRecordRejectionDelegate.get(qnames);
         policy.onRecordRejection(nodeRef);
+    }
+
+    /**
+     * RM-5244 - workaround to make sure the incomplete aspect is removed
+     * 
+     * @param nodeRef the node to reevaluate for
+     */
+    private void reevaluateIncompleteTag(NodeRef nodeRef)
+    {
+        /*
+         * Check if the node has the aspect because the reevaluation is expensive.
+         * If the node doesn't have the aspect it means IncompleteNodeTagger didn't load before TransactionBehaviourQueue 
+         * and we don't need to reevaluate.
+         */
+        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_INCOMPLETE))
+        {
+            incompleteNodeTagger.beforeCommit(false);
+        }
     }
 }

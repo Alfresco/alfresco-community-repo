@@ -3544,6 +3544,49 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
     }
 
+    @Test
+    public void testGetNodeWithEmptyProperties() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        // create folder f1
+        Folder folderResp = createFolder(myNodeId, "fld1_" + RUNID);
+        String f1Id = folderResp.getId();
+
+        String nodeName = "f1 link";
+        String nodeType = "app:folderlink";
+        String propertyName = "cm:destination";
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(propertyName, "");
+
+        Node nodeResp = createNode(f1Id, nodeName, nodeType, props);
+        String nodeId = nodeResp.getId();
+
+        Node n1 = new Node();
+        n1.setName(nodeName);
+        n1.setNodeType(nodeType);
+        n1.setIsFolder(true);
+        // note: parent of the link (not where it is pointing)
+        n1.setParentId(f1Id);
+        n1.setAspectNames(Collections.singletonList("cm:auditable"));
+        // Empty (zero length) string values are considered to be
+        // null values, and will be represented the same as null
+        // values (i.e. by non-existence of the property).
+        n1.setProperties(null);
+
+        // Check create response.
+        n1.expected(nodeResp);
+
+        HttpResponse httpResponse = getSingle(NodesEntityResource.class, nodeId, null, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(httpResponse.getJsonResponse(), Node.class);
+
+        // Check get response.
+        n1.expected(nodeResp);
+    }
+
     /**
      * Tests optional lookup of Allowable Operations (eg. when getting node info, listing node children, ...)
      *

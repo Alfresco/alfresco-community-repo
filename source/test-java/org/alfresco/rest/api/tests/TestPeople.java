@@ -77,6 +77,7 @@ public class TestPeople extends EnterpriseTestApi
     private static final QName PROP_TELEHASH = QName.createQName("test.people.api", "telehash");
     private static final QName ASPECT_LUNCHABLE = QName.createQName("test.people.api", "lunchable");
     private static final QName PROP_LUNCH = QName.createQName("test.people.api", "lunch");
+    private static final QName PROP_LUNCH_COMMENTS = QName.createQName("test.people.api", "lunchcomments");
     private People people;
     private Iterator<TestNetwork> accountsIt;
     private TestNetwork account1;
@@ -577,6 +578,7 @@ public class TestPeople extends EnterpriseTestApi
         Map<QName, Serializable> nodeProps = new HashMap<>();
         // The papi:lunchable aspect should be auto-added for the papi:lunch property
         nodeProps.put(PROP_LUNCH, "Falafel wrap");
+        nodeProps.put(PROP_LUNCH_COMMENTS, "");
         
         // These properties should not be present when a person is retrieved
         // since they are present as top-level fields.
@@ -629,6 +631,11 @@ public class TestPeople extends EnterpriseTestApi
         assertEquals("Doc", person.getFirstName());
         assertEquals("Falafel wrap", person.getProperties().get("papi:lunch"));
         assertTrue(person.getAspectNames().contains("papi:lunchable"));
+
+        // Empty (zero length) string values are considered to be
+        // null values, and will be represented the same as null
+        // values (i.e. by non-existence of the property).
+        assertNull(person.getProperties().get("papi:lunchcomments"));
         
         // Check that no properties are present that should have been filtered by namespace.
         for (String key : person.getProperties().keySet())

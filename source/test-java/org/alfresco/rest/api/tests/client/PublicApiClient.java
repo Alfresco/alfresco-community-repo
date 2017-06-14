@@ -2289,6 +2289,12 @@ public class PublicApiClient
             return parseGroupEntity(response);
         }
 
+        public Group updateGroup(String groupId, Group group, Map<String, String> params, int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = update("groups", groupId, null, null, group.toJSON().toString(), params, "Failed to update group " + group.getId(), expectedStatus);
+            return parseGroupEntity(response);
+        }
+
         public Group getGroup(String groupId) throws PublicApiException
         {
             return getGroup(groupId, HttpServletResponse.SC_OK);

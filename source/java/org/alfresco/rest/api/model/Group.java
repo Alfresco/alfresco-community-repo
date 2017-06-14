@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -44,6 +46,14 @@ public class Group implements Comparable<Group>
     protected Set<String> parentIds;
     protected Set<String> zones;
 
+    private Map<String, Boolean> setFields = new HashMap<>(7);
+
+    public static final String ID = "id";
+    public static final String DISPLAY_NAME = "displayName";
+    public static final String IS_ROOT = "isRoot";
+    public static final String PARENT_IDS = "parentIds";
+    public static final String ZONES = "zones";
+
     public Group()
     {
     }
@@ -57,6 +67,7 @@ public class Group implements Comparable<Group>
     public void setId(String id)
     {
         this.id = id;
+        setFields.put(ID, true);
     }
 
     public String getDisplayName()
@@ -67,6 +78,7 @@ public class Group implements Comparable<Group>
     public void setDisplayName(String displayName)
     {
         this.displayName = displayName;
+        setFields.put(DISPLAY_NAME, true);
     }
 
     public Boolean getIsRoot()
@@ -77,6 +89,7 @@ public class Group implements Comparable<Group>
     public void setIsRoot(Boolean isRoot)
     {
         this.isRoot = isRoot;
+        setFields.put(IS_ROOT, true);
     }
 
     public Set<String> getParentIds()
@@ -87,6 +100,7 @@ public class Group implements Comparable<Group>
     public void setParentIds(Set<String> parentIds)
     {
         this.parentIds = parentIds;
+        setFields.put(PARENT_IDS, true);
     }
 
     public Set<String> getZones()
@@ -97,6 +111,7 @@ public class Group implements Comparable<Group>
     public void setZones(Set<String> zones)
     {
         this.zones = zones;
+        setFields.put(ZONES, true);
     }
 
     @Override
@@ -140,5 +155,11 @@ public class Group implements Comparable<Group>
     public String toString()
     {
         return "Group [id=" + id + ", displayName=" + displayName + ", isRoot=" + isRoot + "]";
+    }
+
+    public boolean wasSet(String fieldName)
+    {
+        Boolean b = setFields.get(fieldName);
+        return (b != null ? b : false);
     }
 }

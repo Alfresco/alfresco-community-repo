@@ -66,9 +66,17 @@ public class Group extends org.alfresco.rest.api.model.Group implements Serializ
     public JSONObject toJSON()
     {
         JSONObject groupJson = new JSONObject();
-        groupJson.put("id", getId());
+        if (getId() != null)
+        {
+            groupJson.put("id", getId());
+        }
+
         groupJson.put("displayName", getDisplayName());
-        groupJson.put("isRoot", getIsRoot());
+
+        if (getIsRoot() != null)
+        {
+            groupJson.put("isRoot", getIsRoot());
+        }
 
         if (getParentIds() != null)
         {

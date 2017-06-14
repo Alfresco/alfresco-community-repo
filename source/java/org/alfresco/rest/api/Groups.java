@@ -59,6 +59,21 @@ public interface Groups
     Group create(Group group, Parameters parameters);
 
     /**
+     * Update the given group. Not all fields are used, only those as defined in
+     * the Open API spec.
+     *
+     * @param groupId
+     *            the group ID
+     * @param group
+     *            details to use for the update
+     * @param parameters
+     *            the {@link Parameters} object to get the parameters passed
+     *            into the request including: - include param (parentIds, zones)
+     * @return Updated group
+     */
+    Group update(String groupId, Group group, Parameters parameters);
+
+    /**
      * Get a group by it's id.
      *
      * @param groupId the identifier of a group.

@@ -47,7 +47,8 @@ import java.util.List;
  * @author cturlica
  */
 @EntityResource(name = "groups", title = "Groups")
-public class GroupsEntityResource implements EntityResourceAction.Read<Group>, EntityResourceAction.ReadById<Group>, EntityResourceAction.Create<Group>, InitializingBean
+public class GroupsEntityResource
+        implements EntityResourceAction.Read<Group>, EntityResourceAction.ReadById<Group>, EntityResourceAction.Create<Group>, EntityResourceAction.Update<Group>, InitializingBean
 {
     private Groups groups;
 
@@ -85,5 +86,12 @@ public class GroupsEntityResource implements EntityResourceAction.Read<Group>, E
         List<Group> result = new ArrayList<>(1);
         result.add(groups.create(entity.get(0), parameters));
         return result;
+    }
+
+    @Override
+    @WebApiDescription(title = "Update group", description = "Update group")
+    public Group update(String groupId, Group group, Parameters parameters)
+    {
+        return groups.update(groupId, group, parameters);
     }
 }

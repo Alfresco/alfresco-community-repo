@@ -890,6 +890,22 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             groupsProxy.createGroup(group, null, HttpServletResponse.SC_CREATED);
             groupsProxy.createGroup(group, null, HttpServletResponse.SC_CONFLICT);
         }
+
+        // Create subgroup with invalid parent.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            Map<String, String> otherParams = new HashMap<>();
+            otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
+
+            Set<String> subGroupParents = new HashSet<>();
+            subGroupParents.add("invalidId");
+
+            Group subGroup = generateGroup();
+            subGroup.setParentIds(subGroupParents);
+
+            groupsProxy.createGroup(subGroup, otherParams, HttpServletResponse.SC_NOT_FOUND);
+        }
     }
 
     @Test
@@ -959,11 +975,91 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         }
     }
 
+    @Test
+    public void testDeleteGroup() throws Exception
+    {
+        final Groups groupsProxy = publicApiClient.groups();
+
+        Map<String, String> otherParams = new HashMap<>();
+        otherParams.put("include", org.alfresco.rest.api.Groups.PARAM_INCLUDE_PARENT_IDS);
+
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+        Group group = groupsProxy.createGroup(generateGroup(), otherParams, HttpServletResponse.SC_CREATED);
+
+        // User without admin rights can't delete a group.
+        {
+            setRequestContext(user1);
+
+            groupsProxy.deleteGroup(group.getId(), false, HttpServletResponse.SC_FORBIDDEN);
+        }
+
+        // Invalid auth.
+        {
+            setRequestContext(networkOne.getId(), GUID.generate(), "password");
+            groupsProxy.deleteGroup("invalidId", false, HttpServletResponse.SC_UNAUTHORIZED);
+        }
+
+        // Group id doesn't exist.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            groupsProxy.deleteGroup("GROUP_invalidId", false, HttpServletResponse.SC_NOT_FOUND);
+        }
+
+        // Trying to modify a fixed authority.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            groupsProxy.deleteGroup("admin", false, HttpServletResponse.SC_CONFLICT);
+        }
+
+        {
+            Group groupLevel1 = groupsProxy.createGroup(generateGroup(), otherParams, HttpServletResponse.SC_CREATED);
+            Group groupLevel2 = groupsProxy.createGroup(generateSubGroup(groupLevel1), otherParams, HttpServletResponse.SC_CREATED);
+            Group groupLevel3 = groupsProxy.createGroup(generateSubGroup(groupLevel2), otherParams, HttpServletResponse.SC_CREATED);
+
+            // Delete the primary root (no cascade)
+            groupsProxy.deleteGroup(groupLevel1.getId(), false, HttpServletResponse.SC_NO_CONTENT);
+            groupsProxy.getGroup(groupLevel1.getId(), HttpServletResponse.SC_NOT_FOUND);
+
+            // Check that second level group is now root.
+            groupLevel2 = groupsProxy.getGroup(groupLevel2.getId(), HttpServletResponse.SC_OK);
+            assertTrue(groupLevel2.getIsRoot());
+
+            // Check that third level group wasn't deleted.
+            groupsProxy.getGroup(groupLevel3.getId(), HttpServletResponse.SC_OK);
+
+            // Delete new root with cascade.
+            groupsProxy.deleteGroup(groupLevel2.getId(), true, HttpServletResponse.SC_NO_CONTENT);
+
+            // Check that delete with cascade worked.
+            groupsProxy.getGroup(groupLevel2.getId(), HttpServletResponse.SC_NOT_FOUND);
+            groupsProxy.getGroup(groupLevel2.getId(), HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
     private Group generateGroup()
     {
         Group group = new Group();
         group.setId("TST" + GUID.generate());
 
         return group;
+    }
+
+    private Group generateSubGroup(Group parentGroup)
+    {
+
+        Set<String> subGroupParents = new HashSet<>();
+        if (parentGroup.getParentIds() != null && !parentGroup.getParentIds().isEmpty())
+        {
+            subGroupParents.addAll(parentGroup.getParentIds());
+        }
+        subGroupParents.add(parentGroup.getId());
+
+        Group subGroup = generateGroup();
+        subGroup.setParentIds(subGroupParents);
+
+        return subGroup;
     }
 }

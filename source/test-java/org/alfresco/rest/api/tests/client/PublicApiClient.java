@@ -2311,6 +2311,16 @@ public class PublicApiClient
             return parseGroupEntity(response);
         }
 
+        public void deleteGroup(String groupId, boolean cascade, int expectedStatus) throws PublicApiException
+        {
+            Map<String, String> params = null;
+            if (cascade)
+            {
+                params = Collections.singletonMap("cascade", "true");
+            }
+            remove("groups", groupId, null, null, params, "Failed to remove site", expectedStatus);
+        }
+
         private Group parseGroupEntity(HttpResponse response)
         {
             if ((response != null) && (response.getJsonResponse() != null))

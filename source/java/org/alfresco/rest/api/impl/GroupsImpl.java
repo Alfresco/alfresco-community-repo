@@ -165,6 +165,8 @@ public class GroupsImpl implements Groups
         }
 
         final AuthorityType authorityType = AuthorityType.GROUP;
+        // TODO: I think this is where we need to do this slightly differently, i.e.
+        // getAllRootAuthoritiesByUserId(). What about root authorities? Are all group authorities root?
         final Set<String> rootAuthorities = getAllRootAuthorities(authorityType);
 
         PagingResults<AuthorityInfo> pagingResult = getAuthoritiesInfo(authorityType, isRootParam, rootAuthorities, sortProp, paging);

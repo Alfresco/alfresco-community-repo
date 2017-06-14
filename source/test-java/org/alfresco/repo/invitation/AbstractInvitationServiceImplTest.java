@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -67,6 +68,12 @@ import org.springframework.util.ReflectionUtils;
  */
 public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpringTest
 {
+    private static final String TEST_REJECT_URL = "testRejectUrl";
+
+    private static final String TEST_ACCEPT_URL = "testAcceptUrl";
+
+    private static final String TEST_SERVER_PATH = "testServerPath";
+
     private static final Log logger = LogFactory.getLog(AbstractInvitationServiceImplTest.class);
     
     private SiteService siteService;
@@ -379,6 +386,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         /**
          * Now accept the invitation
          */
+        AuthenticationUtil.setFullyAuthenticatedUser(inviteeUserName);
         NominatedInvitation acceptedInvitation = (NominatedInvitation) invitationService.accept(firstInvite
                     .getInviteId(), firstInvite.getTicket());
         assertEquals("invite id wrong", firstInvite.getInviteId(), acceptedInvitation.getInviteId());
@@ -570,6 +578,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         /**
          * Now accept the invitation
          */
+        AuthenticationUtil.setFullyAuthenticatedUser(nominatedInvitationA.getInviteeUserName());
         NominatedInvitation acceptedInvitationA = (NominatedInvitation) invitationService.accept(inviteAId,
                     nominatedInvitationA.getTicket());
         assertEquals("invite id wrong", inviteAId, acceptedInvitationA.getInviteId());
@@ -577,6 +586,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         assertEquals("last name wrong", inviteeALastName, acceptedInvitationA.getInviteeLastName());
         assertEquals("user name wrong", inviteeAUserName, acceptedInvitationA.getInviteeUserName());
 
+        AuthenticationUtil.setFullyAuthenticatedUser(nominatedInvitationB.getInviteeUserName());
         NominatedInvitation acceptedInvitationB = (NominatedInvitation) invitationService.accept(inviteBId,
                     nominatedInvitationB.getTicket());
         assertEquals("invite id wrong", inviteBId, acceptedInvitationB.getInviteId());
@@ -587,6 +597,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         /**
          * Now verify access control list
          */
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_MANAGER);
         String roleNameA = siteService.getMembersRole(resourceName, inviteeAUserName);
         assertEquals("role name wrong", roleNameA, inviteeRole);
         String roleNameB = siteService.getMembersRole(resourceName, inviteeBUserName);
@@ -728,6 +739,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         assertEquals("user name wrong", expectedUserName, invitation.getInviteeUserName());
 
         // Now accept the invitation
+        AuthenticationUtil.setFullyAuthenticatedUser(invitation.getInviteeUserName());
         NominatedInvitation acceptedInvitation = (NominatedInvitation) invitationService.accept(invitation
                     .getInviteId(), invitation.getTicket());
 
@@ -1247,6 +1259,61 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         // only search for the first MAX_SEARCH
         results = invitationService.searchInvitation(query, MAX_SEARCH);
         assertEquals(MAX_SEARCH, results.size());
+    }
+    
+    /**
+     * MNT-17341 : External users with Manager role cannot invite other external users to the site because site invitation accept fails
+     */
+    public void testExternalUserManagerInvitingAnotherExternalUser() throws Exception{
+        String inviteeFirstName = PERSON_FIRSTNAME;
+        String inviteeLastName = PERSON_LASTNAME;
+        String inviteeEmail = "123@alfrescotesting.com";
+        
+        String inviteeFirstName2 = "user2name";
+        String inviteeLastName2 = "user2lastname";
+        String inviteeEmail2 = "1234@alfrescotesting.com";
+
+        this.authenticationComponent.setCurrentUser(USER_MANAGER);
+
+        // internal user invites an external user as a site manager
+        NominatedInvitation nominatedInvitation = invitationService.inviteNominated(inviteeFirstName, inviteeLastName, inviteeEmail,
+                Invitation.ResourceType.WEB_SITE, SITE_SHORT_NAME_INVITE, SiteModel.SITE_MANAGER, TEST_SERVER_PATH, TEST_ACCEPT_URL, TEST_REJECT_URL);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(nominatedInvitation.getInviteeUserName());
+
+        invitationService.accept(nominatedInvitation.getInviteId(), nominatedInvitation.getTicket());
+
+        // external user1 now a site manager, invites another external user as a site collaborator
+        NominatedInvitation nominatedInvitation2 = invitationService.inviteNominated(inviteeFirstName2, inviteeLastName2, inviteeEmail2,
+                Invitation.ResourceType.WEB_SITE, SITE_SHORT_NAME_INVITE, SiteModel.SITE_COLLABORATOR, TEST_SERVER_PATH, TEST_ACCEPT_URL, TEST_REJECT_URL);
+
+        assertNotNull("nominated invitation is null", nominatedInvitation2);
+        assertEquals("first name wrong", inviteeFirstName2, nominatedInvitation2.getInviteeFirstName());
+        assertEquals("last name wrong", inviteeLastName2, nominatedInvitation2.getInviteeLastName());
+        assertEquals("email name wrong", inviteeEmail2, nominatedInvitation2.getInviteeEmail());
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(nominatedInvitation2.getInviteeUserName());
+        
+        NodeRef person = personService.getPersonOrNull(nominatedInvitation2.getInviteeUserName());
+        assertTrue("user has not been created", person != null);
+        assertTrue("user should have the ASPECT_ANULLABLE aspect since the invitation hasn't been accepted yet", nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE));      
+        
+        // authenticated as external user 2 accept the invitation
+        Invitation acceptedNominatedInvitation2 = invitationService.accept(nominatedInvitation2.getInviteId(), nominatedInvitation2.getTicket());
+        
+        assertNotNull("accepted nominated invitation is null", acceptedNominatedInvitation2);
+        assertEquals("role is wrong", SiteModel.SITE_COLLABORATOR, acceptedNominatedInvitation2.getRoleName());
+        assertEquals("user name wrong", inviteeFirstName2 + "_" + inviteeLastName2, acceptedNominatedInvitation2.getInviteeUserName());
+        
+        person = personService.getPersonOrNull(acceptedNominatedInvitation2.getInviteeUserName());
+        assertTrue("user has not been created", person != null);
+        assertTrue("user should not have the ASPECT_ANULLABLE aspect anymore", !nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE));
+        
+        Invitation invitation = invitationService.getInvitation(acceptedNominatedInvitation2.getInviteId());
+        assertEquals("invited user name is wrong", invitation.getInviteeUserName(), acceptedNominatedInvitation2.getInviteeUserName());
+        assertEquals("invite id is wrong", invitation.getInviteId(), acceptedNominatedInvitation2.getInviteId());
+        assertEquals("invite resource name is wrong", invitation.getResourceName(), acceptedNominatedInvitation2.getResourceName());
+        
     }
 
     public void disabled_test100Invites() throws Exception

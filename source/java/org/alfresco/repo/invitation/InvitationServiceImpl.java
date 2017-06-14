@@ -459,7 +459,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 WorkflowModelNominatedInvitation.WF_TASK_ACTIVIT_INVITE_PENDING);
         
         //MNT-9101 Share: Cancelling an invitation for a disabled user, the user gets deleted in the process.
-        NodeRef person = personService.getPersonOrNull(invitation.getInviterUserName());
+        NodeRef person = personService.getPersonOrNull(invitation.getInviteeUserName());
         if (person != null && nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
         {
             nodeService.removeAspect(person, ContentModel.ASPECT_ANULLABLE);

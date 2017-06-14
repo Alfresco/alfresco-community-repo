@@ -764,7 +764,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 {
                    int snippetCount = this.getIntegerValue("snippetCount", 20, highlighting);
                    int fragmentSize = this.getIntegerValue("fragmentSize", 50, highlighting);
-                   int maxAnalyzedChars = this.getIntegerValue("maxAnalyzedChars", 500, highlighting);
+                   Integer maxAnalyzedChars = null;//see SEARCH-284
                    boolean usePhraseHighlighter = this.getBooleanValue("usePhraseHighlighter", true, highlighting);
                    boolean mergeContiguous = this.getBooleanValue("mergeContiguous", true, highlighting);
                    

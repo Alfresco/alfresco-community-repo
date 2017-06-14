@@ -25,14 +25,17 @@
  */
 package org.alfresco.opencmis.search;
 
+import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
 
 public interface CMISQueryService
 {
+    @Auditable(parameters = {"options"})
     CMISResultSet query(CMISQueryOptions options);
 
+    @Auditable(parameters = {"query", "storeRef"})
     CMISResultSet query(String query, StoreRef storeRef);
 
     boolean getPwcSearchable();

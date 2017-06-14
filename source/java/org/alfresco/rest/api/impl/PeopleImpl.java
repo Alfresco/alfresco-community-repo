@@ -157,7 +157,13 @@ public class PeopleImpl implements People
     {
 		this.thumbnailService = thumbnailService;
 	}
-	
+
+    /**
+     * Validate, perform -me- substitution and canonicalize the person ID.
+     * 
+     * @param personId
+     * @return The validated and processed ID.
+     */
 	public String validatePerson(String personId)
 	{
 		return validatePerson(personId, false);
@@ -555,9 +561,11 @@ public class PeopleImpl implements People
 
     public Person update(String personId, final Person person)
     {
-        boolean isAdmin = isAdminAuthority();
-
+        // Validate, perform -me- substitution and canonicalize the person ID.
+        personId = validatePerson(personId);
         validateUpdatePersonData(person);
+
+        boolean isAdmin = isAdminAuthority();
 
         String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
         if (!isAdmin && !currentUserId.equalsIgnoreCase(personId))
@@ -572,6 +580,17 @@ public class PeopleImpl implements People
         // if requested, update password
         updatePassword(isAdmin, personIdToUpdate, person);
 
+        if (person.isEnabled() != null)
+        {
+            if (isAdminAuthority(personIdToUpdate))
+            {
+                throw new PermissionDeniedException("Admin authority cannot be disabled.");
+            }
+
+            // note: if current user is not an admin then permission denied exception is thrown
+            MutableAuthenticationService mutableAuthenticationService = (MutableAuthenticationService) authenticationService;
+            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
+        }
 
 		NodeRef personNodeRef = personService.getPerson(personIdToUpdate, false);
 		if (person.wasSet(Person.PROP_PERSON_DESCRIPTION))
@@ -681,19 +700,7 @@ public class PeopleImpl implements People
                 mutableAuthenticationService.setAuthentication(personIdToUpdate, newPassword);
             }
         }
-
-        if (person.isEnabled() != null)
-        {
-            if (isAdminAuthority(personIdToUpdate))
-            {
-                throw new PermissionDeniedException("Admin authority cannot be disabled.");
-            }
-
-            mutableAuthenticationService.setAuthenticationEnabled(personIdToUpdate, person.isEnabled());
-        }
-
     }
-
 
     private boolean isAdminAuthority()
     {

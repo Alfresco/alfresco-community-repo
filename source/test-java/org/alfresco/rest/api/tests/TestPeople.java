@@ -979,17 +979,28 @@ public class TestPeople extends EnterpriseTestApi
         final String personId = account1PersonIt.next();
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), personId));
 
-        Person updatedPerson = people.update(personId, qjson("{ `firstName`: `Updated firstName` }"), 200);
-        assertEquals("Updated firstName", updatedPerson.getFirstName());
+        // Explicitly using the person's ID
+        {
+            Person updatedPerson = people.update(personId, qjson("{ `firstName`: `Matt` }"), 200);
+            assertEquals("Matt", updatedPerson.getFirstName());
+        }
+        
+        // "-me-" user
+        {
+            Person updatedPerson = people.update("-me-", qjson("{ `firstName`: `John` }"), 200);
+            assertEquals("John", updatedPerson.getFirstName());
+        }
 
         // TODO: temp fix, set back to orig firstName
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
         people.update(personId, qjson("{ `firstName`:`Bill` }"), 200);
-
+        
         // -ve test: check that required/mandatory/non-null fields cannot be unset (or empty string)
-        people.update("people", personId, null, null, qjson("{ `firstName`:`` }"), null, "Expected 400 response when updating " + personId, 400);
-        people.update("people", personId, null, null, qjson("{ `email`:`` }"), null, "Expected 400 response when updating " + personId, 400);
-        people.update("people", personId, null, null, qjson("{ `emailNotificationsEnabled`:`` }"), null, "Expected 400 response when updating " + personId, 400);
+        {
+            people.update("people", personId, null, null, qjson("{ `firstName`:`` }"), null, "Expected 400 response when updating " + personId, 400);
+            people.update("people", personId, null, null, qjson("{ `email`:`` }"), null, "Expected 400 response when updating " + personId, 400);
+            people.update("people", personId, null, null, qjson("{ `emailNotificationsEnabled`:`` }"), null, "Expected 400 response when updating " + personId, 400);
+        }
     }
 
     @Test

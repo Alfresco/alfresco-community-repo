@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -44,6 +44,7 @@ import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.client.config.ClientAppConfig;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -54,7 +55,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.quickshare.ClientAppConfig.ClientApp;
+import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -125,6 +126,7 @@ public class QuickShareServiceImpl implements QuickShareService,
 
     static final String ATTR_KEY_SHAREDIDS_ROOT = ".sharedIds";
 
+    private static final String CONFIG_SHARED_LINK_BASE_URL = "sharedLinkBaseUrl";
     private static final String FTL_SHARED_NODE_URL = "shared_node_url";
     private static final String FTL_SHARED_NODE_NAME = "shared_node_name";
     private static final String FTL_SENDER_MESSAGE = "sender_message";
@@ -914,11 +916,12 @@ public class QuickShareServiceImpl implements QuickShareService,
         Map<String, Serializable> templateModel = new HashMap<>(6);
         templateModel.put(FTL_SENDER_FIRST_NAME, senderFirstName);
         templateModel.put(FTL_SENDER_LAST_NAME, senderLastName);
-        final String sharedNodeUrl = getUrl(clientApp.getSharedLinkBaseUrl()) + '/' + emailRequest.getSharedId();
+        final String sharedNodeUrl = getUrl(clientApp.getProperty(CONFIG_SHARED_LINK_BASE_URL), CONFIG_SHARED_LINK_BASE_URL)
+                    + '/' + emailRequest.getSharedId();
         templateModel.put(FTL_SHARED_NODE_URL, sharedNodeUrl);
         templateModel.put(FTL_SHARED_NODE_NAME, emailRequest.getSharedNodeName());
         templateModel.put(FTL_SENDER_MESSAGE, emailRequest.getSenderMessage());
-        String templateAssetsUrl = getUrl(clientApp.getTemplateAssetsUrl());
+        final String templateAssetsUrl = getUrl(clientApp.getTemplateAssetsUrl(), ClientAppConfig.PROP_TEMPLATE_ASSETS_URL);
         templateModel.put(FTL_TEMPLATE_ASSETS_URL, templateAssetsUrl);
 
         // Set the email details
@@ -999,8 +1002,13 @@ public class QuickShareServiceImpl implements QuickShareService,
         return nodeService.getProperty(parent, ContentModel.PROP_NAME).toString();
     }
 
-    private String getUrl(String url)
+    private String getUrl(String url, String propName)
     {
+        if (url == null)
+        {
+            logger.warn("URL for the property [" + propName + "] is not configured.");
+            return "";
+        }
         if (url.endsWith("/"))
         {
             return url.substring(0, url.length() - 1);

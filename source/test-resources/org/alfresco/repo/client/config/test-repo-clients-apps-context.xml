@@ -3,10 +3,10 @@
 
 <beans>
 
-    <bean id="quickShareDefaultPropertiesTest" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    <bean id="clientAppDefaultPropertiesTest" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <property name="locations">
             <list>
-                <value>classpath*:org/alfresco/repo/quickshare/test-quickshare-clients-config.properties</value>
+                <value>classpath*:org/alfresco/repo/client/config/test-repo-clients-apps.properties</value>
             </list>
         </property>
     </bean>
@@ -14,13 +14,13 @@
     <bean id="globalPropertiesTest" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <property name="locations">
             <list>
-                <value>classpath*:org/alfresco/repo/quickshare/test-global-properties.properties</value>
+                <value>classpath*:org/alfresco/repo/client/config/test-global-properties.properties</value>
             </list>
         </property>
     </bean>
 
-    <bean id="quickShareClientsConfigTest" class="org.alfresco.repo.quickshare.ClientAppConfig">
-        <property name="defaultProperties" ref="quickShareDefaultPropertiesTest"/>
+    <bean id="clientAppConfigTest" class="org.alfresco.repo.client.config.ClientAppConfig">
+        <property name="defaultProperties" ref="clientAppDefaultPropertiesTest"/>
         <property name="globalProperties" ref="globalPropertiesTest"/>
     </bean>
 </beans>

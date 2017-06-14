@@ -300,6 +300,19 @@ public class TestPeople extends EnterpriseTestApi
         person.setUserName("myUser/Name@" + account1.getId());
         people.create(person, 400);
 
+        // check for reserved authority prefixes
+        person.setUserName("GROUP_EVERYONE");
+        people.create(person, 400);
+
+        person.setUserName("GROUP_mygroup");
+        people.create(person, 400);
+
+        person.setUserName("ROLE_ANYTHING");
+        people.create(person, 400);
+
+        // lower case
+        person.setUserName("role_whatever");
+        people.create(person, 400);
     }
 
     @Test
@@ -456,9 +469,13 @@ public class TestPeople extends EnterpriseTestApi
 
         // -ve: not enough fields!
         {
-            // Create a person with no fields set.
+            // Create a person with no fields other than user ID set.
             Person person = new Person();
             person.setUserName("joe.bloggs.2@"+account1.getId());
+            people.create(person, 400);
+
+            // Missing ID
+            person.setUserName(null);
             people.create(person, 400);
         }
     }

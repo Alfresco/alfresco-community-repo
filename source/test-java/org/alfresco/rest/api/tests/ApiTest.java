@@ -74,7 +74,8 @@ import org.junit.runners.Suite;
     TestSiteMembershipRequests.class,
     TestFavourites.class,
     TestPublicApi128.class,
-    TestPublicApiCaching.class
+    TestPublicApiCaching.class,
+    TestDownloads.class
 })
 public class ApiTest
 {

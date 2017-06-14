@@ -34,7 +34,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.namespace.QName;
 
 /**
  * Has tag evaluator
@@ -43,12 +42,12 @@ import org.alfresco.service.namespace.QName;
  */
 public class HasTagEvaluator extends ActionConditionEvaluatorAbstractBase
 {
-	/**
-	 * Evaluator constants
-	 */
-	public static final String NAME = "has-tag";
+    /**
+     * Evaluator constants
+     */
+    public static final String NAME = "has-tag";
     public static final String PARAM_TAG = "tag";
-	
+    
     /** The node service */
     private NodeService nodeService;
     
@@ -94,10 +93,10 @@ public class HasTagEvaluator extends ActionConditionEvaluatorAbstractBase
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_TAG, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_TAG)));
-	}
+    }
 
 }

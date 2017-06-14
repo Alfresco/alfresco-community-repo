@@ -37,28 +37,28 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  */
 public abstract class ActionConditionEvaluatorAbstractBase extends ParameterizedItemAbstractBase implements ActionConditionEvaluator
-{	
+{    
     /**
      * Indicates whether the condition is public or not
      */
     private boolean publicCondition = true;
     
-	/**
+    /**
      * The action condition definition
-	 */
-	protected ActionConditionDefinition actionConditionDefinition;		
-	
+     */
+    protected ActionConditionDefinition actionConditionDefinition;        
+    
     /**
      * Initialise method
      */
-	public void init()
-	{
+    public void init()
+    {
         if (this.publicCondition == true)
         {
             // Call back to the action service to register the condition
             this.runtimeActionService.registerActionConditionEvaluator(this);
         }
-	}
+    }
     
     /**
      * Set the value that indicates whether a condition is public or not
@@ -69,27 +69,27 @@ public abstract class ActionConditionEvaluatorAbstractBase extends Parameterized
     {
         this.publicCondition = publicCondition;
     }
-	
+    
     /**
      * Get the action condition definition.
      * 
      * @return  the action condition definition
      */
-	public ActionConditionDefinition getActionConditionDefintion() 
-	{
-		if (this.actionConditionDefinition == null)
-		{
-			this.actionConditionDefinition = new ActionConditionDefinitionImpl(this.name);
-			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setTitleKey(getTitleKey());
-			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setDescriptionKey(getDescriptionKey());
-			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
-			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setConditionEvaluator(this.name);
-			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
-		}
-		return this.actionConditionDefinition;
-	}
-	
-	/**
+    public ActionConditionDefinition getActionConditionDefintion() 
+    {
+        if (this.actionConditionDefinition == null)
+        {
+            this.actionConditionDefinition = new ActionConditionDefinitionImpl(this.name);
+            ((ActionConditionDefinitionImpl)this.actionConditionDefinition).setTitleKey(getTitleKey());
+            ((ActionConditionDefinitionImpl)this.actionConditionDefinition).setDescriptionKey(getDescriptionKey());
+            ((ActionConditionDefinitionImpl)this.actionConditionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
+            ((ActionConditionDefinitionImpl)this.actionConditionDefinition).setConditionEvaluator(this.name);
+            ((ActionConditionDefinitionImpl)this.actionConditionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
+        }
+        return this.actionConditionDefinition;
+    }
+    
+    /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluator#evaluate(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean evaluate(ActionCondition actionCondition, NodeRef actionedUponNodeRef)
@@ -102,7 +102,7 @@ public abstract class ActionConditionEvaluatorAbstractBase extends Parameterized
         }
         return result;
     }
-	
+    
     /**
      * Evaluation implementation
      * 
@@ -110,5 +110,5 @@ public abstract class ActionConditionEvaluatorAbstractBase extends Parameterized
      * @param actionedUponNodeRef   the actioned upon node reference
      * @return                      the result of the condition evaluation
      */
-	protected abstract boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef);
+    protected abstract boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef);
 }

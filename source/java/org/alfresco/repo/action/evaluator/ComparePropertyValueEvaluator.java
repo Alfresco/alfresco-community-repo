@@ -170,6 +170,7 @@ public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstr
     /**
      * @see ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, NodeRef)
      */
+    @SuppressWarnings("unchecked")
     public boolean evaluateImpl(
             ActionCondition ruleCondition,
             NodeRef actionedUponNodeRef) 

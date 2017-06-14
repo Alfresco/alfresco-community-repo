@@ -51,14 +51,14 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
     /**
      * Action constants
      */
-	public static final String NAME = "execute-all-rules";
+    public static final String NAME = "execute-all-rules";
     public static final String PARAM_EXECUTE_INHERITED_RULES = "execute-inherited-rules";
     public static final String PARAM_RUN_ALL_RULES_ON_CHILDREN = "run-all-rules-on-children";
-	
-	/**
-	 * The node service
-	 */
-	private NodeService nodeService;
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
     
     /**
      * The rule service
@@ -72,16 +72,16 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
     
     /** The dictionary Service */
     private DictionaryService dictionaryService;
-	
+    
     /**
      * Set the node service
      * 
      * @param nodeService  the node service
      */
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
     
     /**
      * Set the rule service
@@ -118,8 +118,8 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
+        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        {
             // Get the parameter value
             boolean includeInherited = false;
             Boolean includeInheritedValue = (Boolean)ruleAction.getParameterValue(PARAM_EXECUTE_INHERITED_RULES);
@@ -135,7 +135,7 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
                 runAllChildren = runAllChildrenValue.booleanValue();
             }
             
-		    // Get the rules
+            // Get the rules
             List<Rule> rules = ruleService.getRules(actionedUponNodeRef, includeInherited);
             if (rules != null && rules.isEmpty() == false)
             {
@@ -173,7 +173,7 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
                     }                    
                 }
             }
-		}
+        }
     }
 
     /**

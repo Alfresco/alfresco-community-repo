@@ -285,7 +285,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
             }
             else
             {
-            	break;
+                break;
             }
         }
         assertFalse("The content was not created or indexed correctly.", notFound);

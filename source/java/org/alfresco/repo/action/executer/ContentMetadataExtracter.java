@@ -179,7 +179,6 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
      * @param propertyDef the PropertyDefinition of the taggable property
      * @param rawValue the raw value from the metadata extracter
      */
-    @SuppressWarnings("unchecked")
     protected void addTags(NodeRef actionedUponNodeRef, PropertyDefinition propertyDef, Serializable rawValue)
     {
         List<String> tags = new ArrayList<String>();
@@ -200,12 +199,13 @@ public class ContentMetadataExtracter extends ActionExecuterAbstractBase
                         Serializable convertedPropertyValue = (Serializable) DefaultTypeConverter.INSTANCE.convert(
                                 propertyDef.getDataType(),
                                 (String) singleValue);
-                        try {
+                        try
+                        {
                             String tagName = (String) nodeService.getProperty((NodeRef) convertedPropertyValue, ContentModel.PROP_NAME);
                             if (logger.isTraceEnabled())
                             {
                                 logger.trace("found tag '" + tagName + "' from tag nodeRef '" + (String) singleValue + "', " +
-                                		"adding to " + actionedUponNodeRef.toString());
+                                        "adding to " + actionedUponNodeRef.toString());
                             }
                             if (tagName != null && !tagName.equals(""))
                             {

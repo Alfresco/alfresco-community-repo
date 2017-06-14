@@ -42,12 +42,12 @@ import org.alfresco.service.namespace.QName;
  */
 public class HasAspectEvaluator extends ActionConditionEvaluatorAbstractBase
 {
-	/**
-	 * Evaluator constants
-	 */
-	public static final String NAME = "has-aspect";
+    /**
+     * Evaluator constants
+     */
+    public static final String NAME = "has-aspect";
     public static final String PARAM_ASPECT = "aspect";
-	
+    
     /**
      * The node service
      */
@@ -84,10 +84,10 @@ public class HasAspectEvaluator extends ActionConditionEvaluatorAbstractBase
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT), false, "ac-aspects"));
-	}
+    }
 
 }

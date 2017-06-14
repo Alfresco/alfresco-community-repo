@@ -51,22 +51,22 @@ import org.alfresco.service.namespace.QName;
  */
 public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase 
 {
-	/**
-	 * Rule constants
-	 */
-	public static final String NAME = "link-category";
+    /**
+     * Rule constants
+     */
+    public static final String NAME = "link-category";
     public static final String PARAM_CATEGORY_ASPECT = "category-aspect";
     public static final String PARAM_CATEGORY_VALUE = "category-value";
-	
-	/**
-	 * The node service
-	 */
-	private NodeService nodeService;
-	
-	/**
-	 * The dictionary service
-	 */
-	private DictionaryService dictionaryService;
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
+    
+    /**
+     * The dictionary service
+     */
+    private DictionaryService dictionaryService;
     
     /**
      * Sets the node service
@@ -91,32 +91,32 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
     /**
      * Add the parameter definitions
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_ASPECT, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_CATEGORY_ASPECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_CATEGORY_VALUE, DataTypeDefinition.NODE_REF, true, getParamDisplayLabel(PARAM_CATEGORY_VALUE)));
-	}
-	
+    }
+    
     /**
      * Execute action implementation
      */
     @Override
     protected void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-		// Double check that the node still exists
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
-			// Get the rule parameter values
-			QName categoryAspect = (QName)ruleAction.getParameterValue(PARAM_CATEGORY_ASPECT);
-			if (categoryAspect == null)
-			{
-			    // Use the default general classifiable aspect
-			    //cm:generalclassifiable
-			    categoryAspect = ContentModel.ASPECT_GEN_CLASSIFIABLE;
-			}					
-			NodeRef categoryValue = (NodeRef)ruleAction.getParameterValue(PARAM_CATEGORY_VALUE);
-			
+        // Double check that the node still exists
+        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        {
+            // Get the rule parameter values
+            QName categoryAspect = (QName)ruleAction.getParameterValue(PARAM_CATEGORY_ASPECT);
+            if (categoryAspect == null)
+            {
+                // Use the default general classifiable aspect
+                //cm:generalclassifiable
+                categoryAspect = ContentModel.ASPECT_GEN_CLASSIFIABLE;
+            }                    
+            NodeRef categoryValue = (NodeRef)ruleAction.getParameterValue(PARAM_CATEGORY_VALUE);
+            
             // Check that the aspect is classifiable and is currently applied to the node
             if (this.dictionaryService.isSubClass(categoryAspect, ContentModel.ASPECT_CLASSIFIABLE) == true)
             {
@@ -168,7 +168,7 @@ public class LinkCategoryActionExecuter extends ActionExecuterAbstractBase
                         this.nodeService.setProperty(actionedUponNodeRef, categoryProperty, (Serializable)categories);
                     }
                 }
-            }			
-		}
-	}
+            }            
+        }
+    }
 }

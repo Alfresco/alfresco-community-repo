@@ -42,11 +42,11 @@ import org.alfresco.service.cmr.version.VersionService;
  */
 public class HasVersionHistoryEvaluator extends ActionConditionEvaluatorAbstractBase
 {
-	/**
-	 * Evaluator constants
-	 */
-	public static final String NAME = "has-version-history";
-	
+    /**
+     * Evaluator constants
+     */
+    public static final String NAME = "has-version-history";
+    
     /**
      * The node service
      */
@@ -92,9 +92,8 @@ public class HasVersionHistoryEvaluator extends ActionConditionEvaluatorAbstract
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
-	}
-
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+    }
 }

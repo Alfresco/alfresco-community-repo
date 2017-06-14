@@ -104,16 +104,16 @@ public class DatePropertyValueComparator implements PropertyValueComparator
     {
         if(value instanceof Date)
         {
-        	return (Date) value;
+            return (Date) value;
         } 
         else if(value instanceof String)
         {
-        	return ISO8601DateFormat.parse((String) value);
+            return ISO8601DateFormat.parse((String) value);
         } 
-    	throw new AlfrescoRuntimeException("Parameter 'compareValue' must be of type java.util.Date!");
-	}
+        throw new AlfrescoRuntimeException("Parameter 'compareValue' must be of type java.util.Date!");
+    }
 
-	/**
+    /**
      * @see org.alfresco.repo.action.evaluator.compare.PropertyValueComparator#registerComparator(org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator)
      */
     public void registerComparator(ComparePropertyValueEvaluator evaluator)

@@ -87,7 +87,6 @@ public class CompositeActionConditionImplTest extends TestCase
         assertEquals(temp.isORCondition(), false);
         temp.setORCondition(true);
         assertEquals(temp.isORCondition(), true);
-
     }
 
     public void testSetGetInvertCondition()

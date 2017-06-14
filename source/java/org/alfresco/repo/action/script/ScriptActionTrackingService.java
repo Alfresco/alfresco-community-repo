@@ -34,8 +34,6 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.ExecutionDetails;
 import org.alfresco.service.cmr.action.ExecutionSummary;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Script object representing the action tracking service.
@@ -44,8 +42,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class ScriptActionTrackingService extends BaseScopableProcessorExtension
 {
-    private static Log logger = LogFactory.getLog(ScriptActionTrackingService.class);
-    
     /** The Services registry */
     private ServiceRegistry serviceRegistry;
     private ActionTrackingService actionTrackingService;

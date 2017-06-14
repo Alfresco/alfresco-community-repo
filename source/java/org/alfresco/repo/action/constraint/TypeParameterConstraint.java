@@ -68,6 +68,4 @@ public class TypeParameterConstraint extends BaseParameterConstraint
         }        
         return result;
     }    
-    
-    
 }

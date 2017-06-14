@@ -156,22 +156,22 @@ public class TextPropertyValueComparator implements PropertyValueComparator
      */
     private static List<Character> ESCAPE_CHAR_LIST = null;
     
-	static 
-	{
-		// ([{\^$|)?*+.
-		ESCAPE_CHAR_LIST = new ArrayList<Character>(4);
-		ESCAPE_CHAR_LIST.add('.');
-		ESCAPE_CHAR_LIST.add('^');
-		ESCAPE_CHAR_LIST.add('$');
-		ESCAPE_CHAR_LIST.add('(');
-		ESCAPE_CHAR_LIST.add('[');
-		ESCAPE_CHAR_LIST.add('{');
-		ESCAPE_CHAR_LIST.add('\\');
-		ESCAPE_CHAR_LIST.add('|');
-		ESCAPE_CHAR_LIST.add(')');
-		ESCAPE_CHAR_LIST.add('?');
-		ESCAPE_CHAR_LIST.add('+');
-	}
+    static 
+    {
+        // ([{\^$|)?*+.
+        ESCAPE_CHAR_LIST = new ArrayList<Character>(4);
+        ESCAPE_CHAR_LIST.add('.');
+        ESCAPE_CHAR_LIST.add('^');
+        ESCAPE_CHAR_LIST.add('$');
+        ESCAPE_CHAR_LIST.add('(');
+        ESCAPE_CHAR_LIST.add('[');
+        ESCAPE_CHAR_LIST.add('{');
+        ESCAPE_CHAR_LIST.add('\\');
+        ESCAPE_CHAR_LIST.add('|');
+        ESCAPE_CHAR_LIST.add(')');
+        ESCAPE_CHAR_LIST.add('?');
+        ESCAPE_CHAR_LIST.add('+');
+    }
 
     /**
      * @see org.alfresco.repo.action.evaluator.compare.PropertyValueComparator#registerComparator(org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator)

@@ -42,7 +42,7 @@ import java.util.Comparator;
  */
 public abstract class AbstractAsynchronousActionFilter implements Comparator<OngoingAsyncAction>
 {
-	private String name;
+    private String name;
     private String actionDefinitionName;
     private AsynchronousActionExecutionQueueImpl asynchronousActionExecutionQueue;
 
@@ -50,42 +50,42 @@ public abstract class AbstractAsynchronousActionFilter implements Comparator<Ong
      * Gets the name of this comparator.
      * @return String
      */
-	public String getName()
-	{
-		return this.name;
-	}
+    public String getName()
+    {
+        return this.name;
+    }
 
-	/**
-	 * Sets the name of this comparator.
-	 * @param name String
-	 */
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    /**
+     * Sets the name of this comparator.
+     * @param name String
+     */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	/**
-	 * Gets the action definition name against which this comparator is registered.
-	 * @return String
-	 */
-	public String getActionDefinitionName()
-	{
-		return this.actionDefinitionName;
-	}
+    /**
+     * Gets the action definition name against which this comparator is registered.
+     * @return String
+     */
+    public String getActionDefinitionName()
+    {
+        return this.actionDefinitionName;
+    }
 
-	public void setActionDefinitionName(String actionDefinitionName)
-	{
-		this.actionDefinitionName = actionDefinitionName;
-	}
+    public void setActionDefinitionName(String actionDefinitionName)
+    {
+        this.actionDefinitionName = actionDefinitionName;
+    }
 
-	public void setAsynchronousActionExecutionQueue(
-			AsynchronousActionExecutionQueueImpl asynchronousActionExecutionQueue)
-	{
-		this.asynchronousActionExecutionQueue = asynchronousActionExecutionQueue;
-	}
-	
-	public void init()
-	{
-		this.asynchronousActionExecutionQueue.registerActionFilter(this);
-	}
+    public void setAsynchronousActionExecutionQueue(
+            AsynchronousActionExecutionQueueImpl asynchronousActionExecutionQueue)
+    {
+        this.asynchronousActionExecutionQueue = asynchronousActionExecutionQueue;
+    }
+    
+    public void init()
+    {
+        this.asynchronousActionExecutionQueue.registerActionFilter(this);
+    }
 }

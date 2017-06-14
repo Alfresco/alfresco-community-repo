@@ -46,28 +46,28 @@ public class SpecialiseTypeActionExecuter extends ActionExecuterAbstractBase
     /**
      * Action constants
      */
-	public static final String NAME = "specialise-type";
-	public static final String PARAM_TYPE_NAME = "type-name";
-	
-	/**
-	 * The node service
-	 */
-	private NodeService nodeService;
+    public static final String NAME = "specialise-type";
+    public static final String PARAM_TYPE_NAME = "type-name";
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
     
     /**
      * The dictionary service
      */
     private DictionaryService dictionaryService;
-	
+    
     /**
      * Set the node service
      * 
      * @param nodeService  the node service
      */
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
 
     /**
      * Set the dictionary service
@@ -84,9 +84,9 @@ public class SpecialiseTypeActionExecuter extends ActionExecuterAbstractBase
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
-		    // Get the type of the node
+        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        {
+            // Get the type of the node
             QName currentType = this.nodeService.getType(actionedUponNodeRef);
             QName destinationType = (QName)ruleAction.getParameterValue(PARAM_TYPE_NAME);
             
@@ -97,16 +97,16 @@ public class SpecialiseTypeActionExecuter extends ActionExecuterAbstractBase
                 // Specialise the type of the node
                 this.nodeService.setType(actionedUponNodeRef, destinationType);
             }
-		}
+        }
     }
 
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
-		paramList.add(new ParameterDefinitionImpl(PARAM_TYPE_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_TYPE_NAME), false, "ac-types"));
-	}
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
+        paramList.add(new ParameterDefinitionImpl(PARAM_TYPE_NAME, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_TYPE_NAME), false, "ac-types"));
+    }
 
 }

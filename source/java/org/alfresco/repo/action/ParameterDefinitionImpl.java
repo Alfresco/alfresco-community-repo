@@ -27,7 +27,6 @@ package org.alfresco.repo.action;
 
 import java.io.Serializable;
 
-import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.namespace.QName;
 
@@ -62,14 +61,14 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
      * The display label
      */
     private String displayLabel;
-	
+    
     /** Parameter constraint name */
     private String parameterConstraintName;
     
-	/**
-	 * Indicates whether it is mandatory for the parameter to be set
-	 */
-	private boolean isMandatory = false;
+    /**
+     * Indicates whether it is mandatory for the parameter to be set
+     */
+    private boolean isMandatory = false;
 
     /**
      * Constructor
@@ -87,7 +86,7 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
         this.name = name;
         this.type = type;
         this.displayLabel = displayLabel;
-		this.isMandatory = isMandatory;
+        this.isMandatory = isMandatory;
         this.isMultiValued = false;
     }
 
@@ -149,14 +148,14 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
     {
         return this.type;
     }
-	
-	/**
-	 * @see org.alfresco.service.cmr.action.ParameterDefinition#isMandatory()
-	 */
-	public boolean isMandatory() 
-	{
-		return this.isMandatory;
-	}
+    
+    /**
+     * @see org.alfresco.service.cmr.action.ParameterDefinition#isMandatory()
+     */
+    public boolean isMandatory() 
+    {
+        return this.isMandatory;
+    }
 
     /**
      * @see org.alfresco.service.cmr.action.ParameterDefinition#isMultiValued()

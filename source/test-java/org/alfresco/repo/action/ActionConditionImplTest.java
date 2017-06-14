@@ -36,7 +36,7 @@ public class ActionConditionImplTest extends BaseParameterizedItemImplTest
     protected ParameterizedItemImpl create()
     {
         return new ActionConditionImpl(
-        		ID,
+                ID,
                 NAME, 
                 this.paramValues);
     }

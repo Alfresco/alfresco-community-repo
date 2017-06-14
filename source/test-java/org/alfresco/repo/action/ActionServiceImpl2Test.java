@@ -164,7 +164,7 @@ public class ActionServiceImpl2Test
         });
         // check that the default counter value is set to 1
         int beforeIncrement = (Integer) nodeService.getProperty(testNode, ContentModel.PROP_COUNTER);
-        assertEquals(1, beforeIncrement);
+        assertEquals("Counter value incorrect", 1, beforeIncrement);
 
         // Set authentication to SiteConsumer.
         AuthenticationUtil.setFullyAuthenticatedUser(testSiteAndMemberInfo.siteConsumer);

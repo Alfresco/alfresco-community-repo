@@ -55,10 +55,10 @@ public class RepositoryExporterActionExecuter extends ActionExecuterAbstractBase
      * 
      * @param exporterService The ExporterService
      */
-	public void setRepositoryExporterService(RepositoryExporterService exporterService) 
-	{
-		this.exporterService = exporterService;
-	}
+    public void setRepositoryExporterService(RepositoryExporterService exporterService) 
+    {
+        this.exporterService = exporterService;
+    }
     
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
@@ -70,15 +70,15 @@ public class RepositoryExporterActionExecuter extends ActionExecuterAbstractBase
         exporterService.export(repoDestination, packageName);
     }
 
-	/**
+    /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-	 */
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+     */
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_PACKAGE_NAME, DataTypeDefinition.TEXT, true, 
               getParamDisplayLabel(PARAM_PACKAGE_NAME)));
         paramList.add(new ParameterDefinitionImpl(PARAM_DESTINATION_FOLDER, DataTypeDefinition.NODE_REF, true, 
               getParamDisplayLabel(PARAM_DESTINATION_FOLDER)));
-	}
+    }
 
 }

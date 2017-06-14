@@ -80,7 +80,7 @@ public abstract class BaseParameterizedItemImplTest extends TestCase
         Map<String, Serializable> tempParamValues = temp.getParameterValues();
         assertNotNull(tempParamValues);
         assertEquals(2, tempParamValues.size());
-        for (Map.Entry entry : tempParamValues.entrySet())
+        for (Map.Entry<String, Serializable> entry : tempParamValues.entrySet())
         {
             if (entry.getKey() == PARAM_1)
             {
@@ -96,24 +96,24 @@ public abstract class BaseParameterizedItemImplTest extends TestCase
             }
         }
     }
-	
-	public void testGetParameterValue()
-	{
-		ParameterizedItemImpl temp = create();
-		assertNull(temp.getParameterValue("bobbins"));
-		assertEquals(VALUE_1, temp.getParameterValue(PARAM_1));
-	}
-	
-	public void testSetParameterValue()
-	{
-		ParameterizedItemImpl temp = create();
-		temp.setParameterValue("bobbins", "value");
-		assertEquals("value", temp.getParameterValue("bobbins"));
-	}
-	
-	public void testGetId()
-	{
-		ParameterizedItemImpl temp = create();
-		assertEquals(ID, temp.getId());
-	}
+    
+    public void testGetParameterValue()
+    {
+        ParameterizedItemImpl temp = create();
+        assertNull(temp.getParameterValue("bobbins"));
+        assertEquals(VALUE_1, temp.getParameterValue(PARAM_1));
+    }
+    
+    public void testSetParameterValue()
+    {
+        ParameterizedItemImpl temp = create();
+        temp.setParameterValue("bobbins", "value");
+        assertEquals("value", temp.getParameterValue("bobbins"));
+    }
+    
+    public void testGetId()
+    {
+        ParameterizedItemImpl temp = create();
+        assertEquals(ID, temp.getId());
+    }
 }

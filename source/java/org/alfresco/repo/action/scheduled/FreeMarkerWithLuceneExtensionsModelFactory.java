@@ -133,6 +133,7 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
      */
     private class QueryForSingleNodeFunction implements TemplateMethodModelEx
     {
+        @SuppressWarnings("rawtypes")
         public Object exec(List args) throws TemplateModelException
         {
             if (args.size() == 3)
@@ -218,7 +219,7 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
      */
     private static class LuceneDateRangeFunction implements TemplateMethodModelEx
     {
-
+        @SuppressWarnings("rawtypes")
         public Object exec(List args) throws TemplateModelException
         {
             if (args.size() == 2)

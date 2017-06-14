@@ -43,42 +43,42 @@ public class CountChildrenActionExecuter extends ActionExecuterAbstractBase
     /**
      * Action constants
      */
-	public static final String NAME = "count-children";
-	
-	/**
-	 * The node service
-	 */
-	private NodeService nodeService;
-	
+    public static final String NAME = "count-children";
+    
+    /**
+     * The node service
+     */
+    private NodeService nodeService;
+    
     /**
      * Set the node service
      * 
      * @param nodeService  the node service
      */
-	public void setNodeService(NodeService nodeService) 
-	{
-		this.nodeService = nodeService;
-	}
+    public void setNodeService(NodeService nodeService) 
+    {
+        this.nodeService = nodeService;
+    }
     
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
-		if (this.nodeService.exists(actionedUponNodeRef) == true)
-		{
-			// Get the parent node		
-			int count = this.nodeService.getChildAssocs(actionedUponNodeRef).size();
-			ruleAction.setParameterValue(PARAM_RESULT, Integer.valueOf(count));
-		}
+        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        {
+            // Get the parent node        
+            int count = this.nodeService.getChildAssocs(actionedUponNodeRef).size();
+            ruleAction.setParameterValue(PARAM_RESULT, Integer.valueOf(count));
+        }
     }
 
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{		
-	}
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {        
+    }
 
 }

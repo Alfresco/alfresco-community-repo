@@ -68,6 +68,4 @@ public class PropertyParameterConstraint extends BaseParameterConstraint
         }        
         return result;
     }    
-    
-    
 }

@@ -35,8 +35,10 @@ import org.alfresco.service.cmr.action.CancellableAction;
  */
 public class ActionCancelledException extends AlfrescoRuntimeException 
 {
-   public ActionCancelledException(CancellableAction action)
-   {
-      super(action.toString());
-   }
+    private static final long serialVersionUID = -3895466153727814956L;
+
+    public ActionCancelledException(CancellableAction action)
+    {
+        super(action.toString());
+    }
 }

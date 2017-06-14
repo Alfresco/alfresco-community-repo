@@ -41,8 +41,8 @@ public interface ActionConditionEvaluator
      * 
      * @return  the action condition definition
      */
-	public ActionConditionDefinition getActionConditionDefintion();
-	
+    public ActionConditionDefinition getActionConditionDefintion();
+    
     /**
      * Evaluate the action condition
      * 
@@ -51,6 +51,6 @@ public interface ActionConditionEvaluator
      * @return                      true if the condition passes, false otherwise
      */
     public boolean evaluate(
-			ActionCondition actionCondition,
+            ActionCondition actionCondition,
             NodeRef actionedUponNodeRef);
 }

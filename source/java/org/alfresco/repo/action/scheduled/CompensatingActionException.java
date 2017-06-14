@@ -41,10 +41,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class CompensatingActionException extends AlfrescoRuntimeException
 {
-
-    /**
-     * Comment for <code>serialVersionUID</code>
-     */
     private static final long serialVersionUID = 2144573075007116603L;
 
     List<Pair<Action, NodeRef>> compensatingActions;

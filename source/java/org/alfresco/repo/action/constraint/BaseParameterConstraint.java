@@ -38,9 +38,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author Roy Wetherall
  */
-public abstract class BaseParameterConstraint implements ParameterConstraint,
-                                                               BeanNameAware
-{   
+public abstract class BaseParameterConstraint implements ParameterConstraint, BeanNameAware
+{
     /** Constraint name */
     protected String name;
 

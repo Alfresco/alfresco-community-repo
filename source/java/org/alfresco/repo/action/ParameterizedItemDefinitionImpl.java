@@ -44,6 +44,8 @@ import org.alfresco.service.cmr.rule.RuleServiceException;
  */
 public abstract class ParameterizedItemDefinitionImpl implements ParameterizedItemDefinition, Serializable
 {
+    private static final long serialVersionUID = -114215660281683946L;
+
     /**
      * The name of the rule item
      */
@@ -140,18 +142,18 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
      */
     public boolean getAdhocPropertiesAllowed()
     {
-    	return this.adhocPropertiesAllowed;
+        return this.adhocPropertiesAllowed;
     }
     
     /**
      * Set whether adhoc properties are allowed
      * 
-     * @param adhocPropertiesAllowed	true is adhoc properties are allowed, false otherwise
+     * @param adhocPropertiesAllowed    true is adhoc properties are allowed, false otherwise
      */
     public void setAdhocPropertiesAllowed(boolean adhocPropertiesAllowed)
-	{
-		this.adhocPropertiesAllowed = adhocPropertiesAllowed;
-	}
+    {
+        this.adhocPropertiesAllowed = adhocPropertiesAllowed;
+    }
 
     /**
      * Set the parameter definitions for the rule item with the locale specified

@@ -35,9 +35,6 @@ import org.alfresco.service.cmr.action.ActionConditionDefinition;
 public class ActionConditionDefinitionImpl extends ParameterizedItemDefinitionImpl 
                                implements ActionConditionDefinition
 {
-    /**
-     * Serial version UID
-     */
     private static final long serialVersionUID = 3688505493618177331L;
 
     /**

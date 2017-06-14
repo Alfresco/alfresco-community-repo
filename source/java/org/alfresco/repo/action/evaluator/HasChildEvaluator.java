@@ -47,14 +47,14 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 public class HasChildEvaluator extends ActionConditionEvaluatorAbstractBase
 {
-	/**
-	 * Evaluator constants
-	 */
-	public static final String NAME = "has-child";
+    /**
+     * Evaluator constants
+     */
+    public static final String NAME = "has-child";
 
     public static final String PARAM_ASSOC_TYPE = "assoc-type";
     public static final String PARAM_ASSOC_NAME = "assoc-name";
-	
+    
     /**
      * The node service
      */
@@ -101,10 +101,10 @@ public class HasChildEvaluator extends ActionConditionEvaluatorAbstractBase
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
-	@Override
-	protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-	{
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
+    {
         paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_TYPE, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_ASSOC_TYPE), false));
         paramList.add(new ParameterDefinitionImpl(PARAM_ASSOC_NAME, DataTypeDefinition.QNAME, false, getParamDisplayLabel(PARAM_ASSOC_NAME), false));
-	}
+    }
 }

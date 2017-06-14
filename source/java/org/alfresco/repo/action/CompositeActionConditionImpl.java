@@ -52,6 +52,7 @@ public class CompositeActionConditionImpl extends ActionConditionImpl implements
      */
     private List<ActionCondition> actionConditions = new ArrayList<ActionCondition>();
    
+    @SuppressWarnings("unused")
     private static Boolean OR = true;
     private static Boolean AND = false;
    

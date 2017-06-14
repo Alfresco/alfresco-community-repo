@@ -701,6 +701,11 @@ public class GroupsImpl implements Groups
                 throw new InvalidArgumentException("groupId is null or empty");
             }
 
+            if (group.getId().indexOf('/') != -1)
+            {
+                throw new IllegalArgumentException("groupId contains characters that are not permitted.");
+            }
+
             if (groupAuthorityExists(group.getId()))
             {
                 throw new ConstraintViolatedException("Group '" + group.getId() + "' already exists.");

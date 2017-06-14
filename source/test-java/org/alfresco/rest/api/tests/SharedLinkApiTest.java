@@ -636,7 +636,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // Email request with minimal properties
         QuickShareLinkEmailRequest request = new QuickShareLinkEmailRequest();
-        request.setClient("sfs");
+        request.setClient("share");
         List<String> recipients = new ArrayList<>(2);
         recipients.add(user2 + "@acme.test");
         recipients.add(user2 + "@ping.test");
@@ -645,7 +645,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // Email request with all the properties
         request = new QuickShareLinkEmailRequest();
-        request.setClient("sfs");
+        request.setClient("share");
         request.setMessage("My custom message!");
         request.setLocale(Locale.UK.toString());
         recipients = Collections.singletonList(user2 + "@acme.test");
@@ -661,14 +661,14 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         request.setClient("VeryCoolClient" + System.currentTimeMillis());
         List<String> user2Email = Collections.singletonList(user2 + "@acme.test");
         request.setRecipientEmails(user2Email);
-        post(getEmailSharedLinkUrl(sharedId), RestApiUtil.toJsonAsString(request), 400);
+        post(getEmailSharedLinkUrl(sharedId), RestApiUtil.toJsonAsString(request), 404);
 
         // client is mandatory
         request.setClient(null);
         post(getEmailSharedLinkUrl(sharedId), RestApiUtil.toJsonAsString(request), 400);
 
         // recipientEmails is mandatory
-        request.setClient("sfs");
+        request.setClient("share");
         request.setRecipientEmails(null);
         post(getEmailSharedLinkUrl(sharedId), RestApiUtil.toJsonAsString(request), 400);
 
@@ -679,7 +679,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         {
             quickShareLinks.setEnabled(false);
             request = new QuickShareLinkEmailRequest();
-            request.setClient("sfs");
+            request.setClient("share");
             request.setRecipientEmails(user2Email);
             post(getEmailSharedLinkUrl(sharedId), RestApiUtil.toJsonAsString(request), 501);
         }

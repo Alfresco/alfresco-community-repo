@@ -36,22 +36,22 @@ import org.alfresco.service.cmr.download.DownloadStatus;
  */
 public class Download
 {
-    private String downloadId;
+    private String id;
     private List<String> nodeIds;
     private DownloadStatus.Status status;
-    private long done;
-    private long total;
+    private long bytesAdded;
+    private long totalBytes;
     private long filesAdded;
     private long totalFiles;
-
-    public String getDownloadId()
+    
+    public String getId()
     {
-        return downloadId;
+        return id;
     }
 
-    public void setDownloadId(String downloadId)
+    public void setId(String id)
     {
-        this.downloadId = downloadId;
+        this.id = id;
     }
 
     public List<String> getNodeIds()
@@ -74,24 +74,24 @@ public class Download
         this.status = status;
     }
 
-    public long getDone()
+    public long getBytesAdded()
     {
-        return done;
+        return bytesAdded;
     }
 
-    public void setDone(long done)
+    public void setBytesAdded(long bytesAdded)
     {
-        this.done = done;
+        this.bytesAdded = bytesAdded;
     }
 
-    public long getTotal()
+    public long getTotalBytes()
     {
-        return total;
+        return totalBytes;
     }
 
-    public void setTotal(long total)
+    public void setTotalBytes(long totalBytes)
     {
-        this.total = total;
+        this.totalBytes = totalBytes;
     }
 
     public long getFilesAdded()
@@ -114,15 +114,16 @@ public class Download
         this.totalFiles = totalFiles;
     }
 
+
     @Override
     public String toString()
     {        
         StringBuilder builder = new StringBuilder(150);
-        builder.append("Download [downloadId=").append(downloadId)
+        builder.append("Download [id=").append(id)
                .append(", nodeIds=").append(nodeIds)
                .append(", status=").append(status)
-               .append(", done=").append(done)
-               .append(", total=").append(total)
+               .append(", bytesAdded=").append(bytesAdded)
+               .append(", totalBytes=").append(totalBytes)
                .append(", filesAdded=").append(filesAdded)
                .append(", totalFiles=").append(totalFiles)
                .append("]");

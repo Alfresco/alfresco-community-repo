@@ -41,6 +41,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -60,11 +61,14 @@ import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
 
 /**
  * Tests the /downloads API
@@ -74,10 +78,14 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestDownloads extends AbstractBaseApiTest
-{ 
+{     
+    private static Log logger = LogFactory.getLog(TestDownloads.class);
+    
+    private static final int NUMBER_OF_TIMES_TO_RETRY_TEST_CANCEL_STATUS = 5;
+
     private static final int STATUS_CHECK_SLEEP_TIME = 5;
 
-    private static final int NUMBER_OF_TIMES_TO_CHECK_STATUS = 400;
+    private static final int NUMBER_OF_TIMES_TO_CHECK_STATUS = 200;
 
     public static final String NODES_SECONDARY_CHILDREN = "nodes/%s/secondary-children";
 
@@ -208,8 +216,12 @@ public class TestDownloads extends AbstractBaseApiTest
         assertDoneDownload(download, 4, 52);
         
         //test retrieving the status of a cancelled download
-        download = createDownload(HttpServletResponse.SC_ACCEPTED, zippableFolderId1, zippableDocId3_InFolder1);
-        assertCancelledDownload(download, 3, 39);
+        cancelWithRetry(() -> 
+        {
+            Download downloadToBeCancelled = createDownload(HttpServletResponse.SC_ACCEPTED, zippableFolderId1, zippableDocId3_InFolder1);            
+            cancel(downloadToBeCancelled.getId());            
+            assertCancelledDownload(downloadToBeCancelled, 3, 39);
+        });
     }
     
     /**
@@ -222,23 +234,23 @@ public class TestDownloads extends AbstractBaseApiTest
     @Test
     public void test003CancelDownload() throws Exception
     {
-        //cancel a running download operation
-        Download download = createDownload(HttpServletResponse.SC_ACCEPTED, zippableDocId1, zippableDocId2);
-        
-        cancel(download.getDownloadId());
-        
-        assertCancelledDownload(download, 2, 26);
+        //cancel a running download operation.
+        cancelWithRetry(()->{
+            Download download = createDownload(HttpServletResponse.SC_ACCEPTED, zippableFolderId1, zippableDocId3_InFolder1, zippableDocId1, zippableDocId2);            
+            cancel(download.getId());            
+            assertCancelledDownload(download, 5, 65);
+        });
         
         //cancel a completed download - should have no effect
-        download = createDownload(HttpServletResponse.SC_ACCEPTED, zippableDocId1, zippableDocId2);
+        Download download = createDownload(HttpServletResponse.SC_ACCEPTED, zippableDocId1, zippableDocId2);
         
         assertDoneDownload(download, 2, 26);
         
-        cancel(download.getDownloadId());
+        cancel(download.getId());
         
         Thread.sleep(500);
         
-        Download downloadStatus = getDownload(download.getDownloadId());
+        Download downloadStatus = getDownload(download.getId());
         
         assertTrue("A cancel operation on a DONE download has no effect.", downloadStatus.getStatus().equals(DownloadStatus.Status.DONE));
         
@@ -248,9 +260,9 @@ public class TestDownloads extends AbstractBaseApiTest
         //user2 canceling user1 download operation - should not be allowed
         download = createDownload(HttpServletResponse.SC_ACCEPTED, zippableDocId1);
         
-        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user2));
+        setRequestContext(user2);
         
-        cancel(HttpServletResponse.SC_FORBIDDEN, download.getDownloadId());
+        cancel(HttpServletResponse.SC_FORBIDDEN, download.getId());
     }
     
     /**
@@ -328,18 +340,6 @@ public class TestDownloads extends AbstractBaseApiTest
         assertEquals("Zip entry name is not correct", FOLDER3_NAME + "/" + ZIPPABLE_DOC1_NAME, zipStream.getNextEntry().getName());
         assertTrue("No more entries should be in this zip", zipStream.getNextEntry() == null);
     }
-
-
-    protected ZipInputStream getZipStreamFromResponse(HttpResponse response)
-    {
-        return new ZipInputStream(new ByteArrayInputStream(response.getResponseAsBytes()));
-    }
-
-
-    protected HttpResponse downloadContent(Download download) throws Exception
-    {
-        return getSingle(NodesEntityResource.class, download.getDownloadId() + "/content", null, HttpServletResponse.SC_OK);
-    }
     
     /**
      * Tests deleting a download node using the /nodes API:
@@ -356,79 +356,120 @@ public class TestDownloads extends AbstractBaseApiTest
         
         assertDoneDownload(download, 1, 13);
         
-        deleteNode(download.getDownloadId(), true, HttpServletResponse.SC_NO_CONTENT);
+        deleteNode(download.getId(), true, HttpServletResponse.SC_NO_CONTENT);
         
-        getDownload(download.getDownloadId(), HttpServletResponse.SC_NOT_FOUND);
+        getDownload(download.getId(), HttpServletResponse.SC_NOT_FOUND);
         
         //test user2 deleting a download node created by user1
         download = createDownload(HttpServletResponse.SC_ACCEPTED, zippableDocId1);
         
         assertDoneDownload(download, 1, 13);
         
-        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), user2));
+        setRequestContext(user2);
         
-        deleteNode(download.getDownloadId(), true, HttpServletResponse.SC_FORBIDDEN);
+        deleteNode(download.getId(), true, HttpServletResponse.SC_FORBIDDEN);
         
         assertDoneDownload(download, 1, 13);
     }
-
-    private void assertDoneDownload(Download download, int expectedFilesAdded, int expectedTotal) throws Exception, InterruptedException
+    
+    protected ZipInputStream getZipStreamFromResponse(HttpResponse response)
     {
-        for(int i = 0; i<=NUMBER_OF_TIMES_TO_CHECK_STATUS; i++){
-            if (i == NUMBER_OF_TIMES_TO_CHECK_STATUS)
+        return new ZipInputStream(new ByteArrayInputStream(response.getResponseAsBytes()));
+    }
+
+    protected HttpResponse downloadContent(Download download) throws Exception
+    {
+        return getSingle(NodesEntityResource.class, download.getId() + "/content", null, HttpServletResponse.SC_OK);
+    }
+    
+    /**
+     * It may happen that a download is already done before getting a chance to call cancel(). Hence retry a couple of times.
+     * @param cancelAction
+     * @throws Exception
+     */
+    private void cancelWithRetry(CancelAction cancelAction) throws Exception{
+        for(int i = 0; i<=NUMBER_OF_TIMES_TO_RETRY_TEST_CANCEL_STATUS; i++)
+        {
+            if (i == NUMBER_OF_TIMES_TO_RETRY_TEST_CANCEL_STATUS)
             {
-                fail("Download should be DONE by now.");
+                logger.error("Did not manage to test the cancel status, the download node gets to the DONE status too fast.");
             }
-            Download downloadStatus = getDownload(download.getDownloadId());
-            if (!downloadStatus.getStatus().equals(DownloadStatus.Status.DONE)){
-                Thread.sleep(STATUS_CHECK_SLEEP_TIME);
-            }else{
-                assertTrue("The number of bytes added in the archive does not match the total", downloadStatus.getDone() == downloadStatus.getTotal());
-                assertEquals("The number of files added in the archive should be " + expectedFilesAdded, expectedFilesAdded, downloadStatus.getFilesAdded());
-                assertEquals("The total number of bytes should be " + expectedTotal, expectedTotal, downloadStatus.getTotal());
-                assertEquals("The total number of files of the final archive should be " + expectedFilesAdded, expectedFilesAdded, downloadStatus.getTotalFiles());
-                break;
+            try
+            {
+                cancelAction.run();
+            }catch(DownloadAlreadyDoneException e)
+            {
+                continue;
             }
         }
-    } 
+    }
+    
+    private void assertDoneDownload(Download download, int expectedFilesAdded, int expectedTotal) throws Exception, InterruptedException
+    {
+        assertExpectedStatus(DownloadStatus.Status.DONE, download, "Download should be DONE by now.", downloadStatus -> 
+        {
+            assertTrue("The number of bytes added in the archive does not match the total", downloadStatus.getBytesAdded() == downloadStatus.getTotalBytes());
+            assertEquals("The number of files added in the archive should be " + expectedFilesAdded, expectedFilesAdded, downloadStatus.getFilesAdded());
+            assertEquals("The total number of bytes should be " + expectedTotal, expectedTotal, downloadStatus.getTotalBytes());
+            assertEquals("The total number of files of the final archive should be " + expectedFilesAdded, expectedFilesAdded, downloadStatus.getTotalFiles());
+        }, null, null);
+    }
 
     protected void assertCancelledDownload(Download download, int expectedTotalFiles, int expectedTotal) throws PublicApiException, Exception, InterruptedException
     {
-        cancel(download.getDownloadId());
-        for(int i = 0; i<=NUMBER_OF_TIMES_TO_CHECK_STATUS; i++){
-            if (i == NUMBER_OF_TIMES_TO_CHECK_STATUS)
-            {
-                fail("Download should be CANCELLED by now.");
-            }
-            Download downloadStatus = getDownload(download.getDownloadId());
-            if (!downloadStatus.getStatus().equals(DownloadStatus.Status.CANCELLED)){
-                Thread.sleep(STATUS_CHECK_SLEEP_TIME);
-            }else{
-                assertTrue("The total bytes added to the archive by now should be greater than 0", downloadStatus.getDone() > 0 && downloadStatus.getDone() <= downloadStatus.getTotal());
-                assertTrue("The download is in progress, there should still be files to be added.", downloadStatus.getFilesAdded() < downloadStatus.getTotalFiles());
-                assertEquals("The total number of bytes should be " + expectedTotal, expectedTotal, downloadStatus.getTotal());
-                assertEquals("The total number of files to be added to the archive should be " + expectedTotalFiles, expectedTotalFiles, downloadStatus.getTotalFiles());
-                break;
-            }
-        }
-    }    
+        assertExpectedStatus(DownloadStatus.Status.CANCELLED, download, "Download should be CANCELLED by now.", downloadStatus -> 
+        {
+            assertTrue("The total bytes added to the archive by now should be greater than 0", downloadStatus.getBytesAdded() > 0 && downloadStatus.getBytesAdded() <= downloadStatus.getTotalBytes());
+            assertTrue("The download has been cancelled, there should still be files to be added.", downloadStatus.getFilesAdded() < downloadStatus.getTotalFiles());
+            assertEquals("The total number of bytes should be " + expectedTotal, expectedTotal, downloadStatus.getTotalBytes());
+            assertEquals("The total number of files to be added to the archive should be " + expectedTotalFiles, expectedTotalFiles, downloadStatus.getTotalFiles());
+        }, DownloadStatus.Status.DONE, downloadStatus->
+        {
+            throw new DownloadAlreadyDoneException();
+        });
+    }
 
     private void assertInProgressDownload(Download download, int expectedTotalFiles, int expectedTotal) throws Exception, InterruptedException
     {
+        assertExpectedStatus(DownloadStatus.Status.IN_PROGRESS, download, "Download creation is taking too long.Download status should be at least IN_PROGRESS by now.", downloadStatus -> 
+        {
+            //'done' can be equal to the 'total' even though the status is IN_PROGRESS. See ZipDownloadExporter line 239
+            assertTrue("The total bytes added to the archive by now should be greater than 0", downloadStatus.getBytesAdded() > 0 && downloadStatus.getBytesAdded() <= downloadStatus.getTotalBytes());
+            assertTrue("The download is in progress, there should still be files to be added.", downloadStatus.getFilesAdded() < downloadStatus.getTotalFiles());
+            assertEquals("The total number of bytes should be " + expectedTotal, expectedTotal, downloadStatus.getTotalBytes());
+            assertEquals("The total number of files to be added to the archive should be " + expectedTotalFiles, expectedTotalFiles, downloadStatus.getTotalFiles());
+        }, DownloadStatus.Status.DONE, downloadStatus ->
+        {
+            try
+            {
+                assertDoneDownload(download, expectedTotalFiles, expectedTotal);
+            }
+            catch (Exception e)
+            { 
+                throw new RuntimeException(e);
+            }
+        });
+    }
+    
+    private void assertExpectedStatus(DownloadStatus.Status expectedStatus, Download download, String failMessage, Consumer<Download> assertionsToDo, 
+                                      DownloadStatus.Status alternateExpectedStatus, Consumer<Download> alternateAssertionsToDo) throws Exception{
         for(int i = 0; i<=NUMBER_OF_TIMES_TO_CHECK_STATUS; i++){
             if (i == NUMBER_OF_TIMES_TO_CHECK_STATUS)
             {
-                fail("Download creation is taking too long.Download status should be at least IN_PROGRESS by now.");
+                fail(failMessage);
             }
-            Download downloadStatus = getDownload(download.getDownloadId());
-            if (!downloadStatus.getStatus().equals(DownloadStatus.Status.IN_PROGRESS)){
+            Download downloadStatus = getDownload(download.getId());
+            if (alternateExpectedStatus != null && downloadStatus.getStatus().equals(alternateExpectedStatus))
+            {
+                alternateAssertionsToDo.accept(downloadStatus);
+                break;
+            }
+            else if (!downloadStatus.getStatus().equals(expectedStatus))
+            {
                 Thread.sleep(STATUS_CHECK_SLEEP_TIME);
-            }else{
-                //'done' can be equal to the 'total' even though the status is IN_PROGRESS. See ZipDownloadExporter line 239
-                assertTrue("The total bytes added to the archive by now should be greater than 0", downloadStatus.getDone() > 0 && downloadStatus.getDone() <= downloadStatus.getTotal());
-                assertTrue("The download is in progress, there should still be files to be added.", downloadStatus.getFilesAdded() < downloadStatus.getTotalFiles());
-                assertEquals("The total number of bytes should be " + expectedTotal, expectedTotal, downloadStatus.getTotal());
-                assertEquals("The total number of files to be added to the archive should be " + expectedTotalFiles, expectedTotalFiles, downloadStatus.getTotalFiles());
+            }else
+            {
+                assertionsToDo.accept(downloadStatus);
                 break;
             }
         }
@@ -448,7 +489,7 @@ public class TestDownloads extends AbstractBaseApiTest
                 @Override
                 public Void doWork() throws Exception
                 {
-                    nodesApi.validateNode(download.getDownloadId());
+                    nodesApi.validateNode(download.getId());
                     return null;
                 }
             }, user1, networkOne.getId());
@@ -461,9 +502,9 @@ public class TestDownloads extends AbstractBaseApiTest
     private void assertPendingDownloadProps(Download download)
     {
         assertEquals("The download request hasn't been processed yet, the status is not correct", DownloadStatus.Status.PENDING, download.getStatus());
-        assertEquals("Should be 0, the download req hasn't been processed yet", 0, download.getDone());
+        assertEquals("Should be 0, the download req hasn't been processed yet", 0, download.getBytesAdded());
         assertEquals("Should be 0, the download req hasn't been processed yet", 0, download.getFilesAdded());
-        assertEquals("Should be 0, the download req hasn't been processed yet", 0, download.getTotal());
+        assertEquals("Should be 0, the download req hasn't been processed yet", 0, download.getTotalBytes());
         assertEquals("Should be 0, the download req hasn't been processed yet", 0, download.getTotalFiles());
     }
 
@@ -520,5 +561,13 @@ public class TestDownloads extends AbstractBaseApiTest
             return RestApiUtil.parseRestApiEntry((JSONObject) response.getJsonResponse(), Download.class);
         }
         return null;
+    }
+    
+    private static class DownloadAlreadyDoneException extends RuntimeException
+    {        
+    }
+    
+    private interface CancelAction{
+        void run() throws Exception;
     }
 }

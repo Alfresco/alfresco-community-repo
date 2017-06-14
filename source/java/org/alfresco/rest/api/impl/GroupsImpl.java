@@ -51,6 +51,7 @@ import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalkerOrSupported;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.AlfrescoCollator;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -205,7 +206,7 @@ public class GroupsImpl implements Groups
         String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
         if (!isAdmin && !currentUserId.equalsIgnoreCase(personId))
         {
-            // The user is not an admin user and is not attempting to update *their own* details.
+            // The user is not an admin user and is not attempting to retrieve *their own* details.
             throw new PermissionDeniedException();
         }
 
@@ -349,8 +350,8 @@ public class GroupsImpl implements Groups
             throw new InvalidArgumentException("id is null or empty");
         }
 
-        // authorityService.authorityExists("GROUP_EVERYONE") returns false!
-        if (!id.equals("GROUP_EVERYONE") && !authorityService.authorityExists(id))
+        // authorityService.authorityExists(ALL_AUTHORITIES) returns false!
+        if (!id.equals(PermissionService.ALL_AUTHORITIES) && !authorityService.authorityExists(id))
         {
             throw new EntityNotFoundException(id);
         }

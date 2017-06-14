@@ -42,7 +42,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -123,12 +122,6 @@ public class EmailHelperTest
         emailHelper.setTemplateLoader(templateLoaderMock);
     }
 
-    @After
-    public void tearDown() throws Exception
-    {
-
-    }
-
     @Test
     public void testGetEmailTemplate() throws Exception
     {
@@ -165,7 +158,7 @@ public class EmailHelperTest
             assertEquals(result, dummyTemplateNodeRef.toString());
         }
 
-        //NodeRed
+        // NodeRef
         {
             when(nodeServiceMock.exists(dummyTemplateNodeRef)).thenReturn(false);
             result = emailHelper.getEmailTemplate(CLIENT_NAME, dummyTemplateNodeRef.toString(), FALLBACK_TEMPLATE_PATH);
@@ -178,7 +171,7 @@ public class EmailHelperTest
             assertEquals(result, dummyTemplateNodeRef.toString());
         }
 
-        //class path
+        // Class path
         {
             String classPathTemplate = "alfresco/templates/email-templates/new-template.html";
             when(templateLoaderMock.findTemplateSource(classPathTemplate)).thenReturn(null);

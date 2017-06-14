@@ -1,5 +1,5 @@
 <#-- renders an invitation object which can be either a MODERATED or NOMINATED invitation-->
-<#macro invitationJSON invitation avatars={"" : ""} >
+<#macro invitationJSON invitation avatars={"" : ""} outputTicket=false >
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
    "inviteId": "${invitation.inviteId}",
@@ -19,6 +19,7 @@
    <#-- Nominated invitation properties -->
    <#if invitation.acceptURL??>"acceptURL": "${invitation.acceptURL}",</#if>
    <#if invitation.rejectURL??>"rejectURL": "${invitation.rejectURL}",</#if>
+   <#if outputTicket && invitation.inviteTicket??>"inviteTicket": "${invitation.inviteTicket}",</#if>
    <#if invitation.sentInviteDateAsISO8601??>
    "sentInviteDate" : 
    {

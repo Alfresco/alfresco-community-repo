@@ -486,17 +486,6 @@
    <!--                         -->
    
    <!--                                                                                                       -->
-   <!-- Invite Web Script - Invoked by a Site Manager (Inviter) to either invite another person (Invitee) to  -->
-   <!-- join a Site as a Site Collaborator, or to cancel a pending invitation that has already been sent out  -->
-   <!--                                                                                                       -->
-   <bean id="webscript.org.alfresco.repository.invite.invite.get"
-         class="org.alfresco.repo.web.scripts.invite.Invite"
-         parent="webscript">
-      <property name="invitationService" ref="InvitationService"/>
-      <property name="siteService" ref="SiteService"/>
-   </bean>
-   
-   <!--                                                                                                       -->
    <!-- Invite Accept/Reject Web Script - accepts or rejects a pending invite                                 -->
    <!--                                                                                                       -->
    
@@ -534,6 +523,17 @@
       <property name="siteService" ref="SiteService"/>
       <property name="invitationService" ref="InvitationService"/>
       <property name="tenantService" ref="tenantService"/>
+   </bean>
+
+   <!--                                                                                                       -->
+   <!--  Controller for the org.alfresco.repository.site.invitation.invitation.delete webscript               -->
+   <!--  Used to cancel invitations                                                                           -->
+   <!--                                                                                                       -->
+   <bean id="webscript.org.alfresco.repository.site.invitation.invitation.delete"
+         class="org.alfresco.repo.web.scripts.invitation.InvitationDelete"
+         parent="webscript">
+      <property name="invitationService" ref="InvitationService"/>
+      <property name="siteService" ref="SiteService"/>
    </bean>
 
    <!--                         -->

@@ -185,6 +185,7 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.importer.FileImporterTest.class);
         suite.addTestSuite(org.alfresco.repo.importer.ImporterComponentTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.invitation.InvitationCleanupTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.invitation.ActivitiInvitationServiceImplTests.class));
     }
     
     static void tests29(TestSuite suite) // tests="12" time="93.965"

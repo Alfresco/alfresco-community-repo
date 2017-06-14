@@ -44,7 +44,9 @@ import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.action.executer.MailActionExecuter;
+import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.client.config.ClientAppConfig;
+import org.alfresco.repo.client.config.ClientAppNotFoundException;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -70,7 +72,6 @@ import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedAction;
 import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
 import org.alfresco.service.cmr.quickshare.QuickShareDisabledException;
@@ -95,10 +96,12 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EmailHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.UrlUtil;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -107,7 +110,6 @@ import org.joda.time.Interval;
 import org.joda.time.PeriodType;
 import org.safehaus.uuid.UUID;
 import org.safehaus.uuid.UUIDGenerator;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * QuickShare Service implementation.
@@ -126,13 +128,14 @@ public class QuickShareServiceImpl implements QuickShareService,
 
     static final String ATTR_KEY_SHAREDIDS_ROOT = ".sharedIds";
 
-    private static final String CONFIG_SHARED_LINK_BASE_URL = "sharedLinkBaseUrl";
     private static final String FTL_SHARED_NODE_URL = "shared_node_url";
     private static final String FTL_SHARED_NODE_NAME = "shared_node_name";
     private static final String FTL_SENDER_MESSAGE = "sender_message";
     private static final String FTL_SENDER_FIRST_NAME = "sender_first_name";
     private static final String FTL_SENDER_LAST_NAME = "sender_last_name";
     private static final String FTL_TEMPLATE_ASSETS_URL = "template_assets_url";
+
+    private static final String CONFIG_SHARED_LINK_BASE_URL = "sharedLinkBaseUrl";
     private static final String DEFAULT_EMAIL_SUBJECT = "quickshare.notifier.email.subject";
     private static final String EMAIL_TEMPLATE_REF ="alfresco/templates/quickshare-email-templates/quickshare-email.default.template.ftl";
 
@@ -146,12 +149,13 @@ public class QuickShareServiceImpl implements QuickShareService,
     private ThumbnailService thumbnailService;
     private EventPublisher eventPublisher;
     private ActionService actionService;
-    private PreferenceService preferenceService;
     /** Component to determine which behaviours are active and which not */
     private BehaviourFilter behaviourFilter;
     private SearchService searchService;
     private SiteService siteService;
     private AuthorityService authorityService;
+    private SysAdminParams sysAdminParams;
+    private EmailHelper emailHelper;
 
     private boolean enabled;
     private String defaultEmailSender;
@@ -241,14 +245,6 @@ public class QuickShareServiceImpl implements QuickShareService,
     }
 
     /**
-     * Set the preferenceService
-     */
-    public void setPreferenceService(PreferenceService preferenceService)
-    {
-        this.preferenceService = preferenceService;
-    }
-
-    /**
      * Spring configuration
      *
      * @param behaviourFilter the behaviourFilter to set
@@ -286,6 +282,26 @@ public class QuickShareServiceImpl implements QuickShareService,
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param sysAdminParams the sysAdminParams to set
+     */
+    public void setSysAdminParams(SysAdminParams sysAdminParams)
+    {
+        this.sysAdminParams = sysAdminParams;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param emailHelper the emailHelper to set
+     */
+    public void setEmailHelper(EmailHelper emailHelper)
+    {
+        this.emailHelper = emailHelper;
     }
 
     /**
@@ -357,13 +373,14 @@ public class QuickShareServiceImpl implements QuickShareService,
         PropertyCheck.mandatory(this, "thumbnailService", thumbnailService);
         PropertyCheck.mandatory(this, "eventPublisher", eventPublisher);
         PropertyCheck.mandatory(this, "actionService", actionService);
-        PropertyCheck.mandatory(this, "preferenceService", preferenceService);
         PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
         PropertyCheck.mandatory(this, "defaultEmailSender", defaultEmailSender);
         PropertyCheck.mandatory(this, "clientAppConfig", clientAppConfig);
         PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "siteService", siteService);
         PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "sysAdminParams", sysAdminParams);
+        PropertyCheck.mandatory(this, "emailHelper", emailHelper);
         PropertyCheck.mandatory(this, "scheduledPersistedActionService", scheduledPersistedActionService);
         PropertyCheck.mandatory(this, "quickShareLinkExpiryActionPersister", quickShareLinkExpiryActionPersister);
     }
@@ -901,7 +918,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         ClientApp clientApp = clientAppConfig.getClient(emailRequest.getClient());
         if (clientApp == null)
         {
-            throw new QuickShareClientNotFoundException("Client was not found [" + emailRequest.getClient() + "]");
+            throw new ClientAppNotFoundException("Client was not found [" + emailRequest.getClient() + "]");
         }
 
         // Set the details of the person sending the email
@@ -918,6 +935,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         templateModel.put(FTL_SENDER_LAST_NAME, senderLastName);
         final String sharedNodeUrl = getUrl(clientApp.getProperty(CONFIG_SHARED_LINK_BASE_URL), CONFIG_SHARED_LINK_BASE_URL)
                     + '/' + emailRequest.getSharedId();
+
         templateModel.put(FTL_SHARED_NODE_URL, sharedNodeUrl);
         templateModel.put(FTL_SHARED_NODE_NAME, emailRequest.getSharedNodeName());
         templateModel.put(FTL_SENDER_MESSAGE, emailRequest.getSenderMessage());
@@ -934,9 +952,12 @@ public class QuickShareServiceImpl implements QuickShareService,
         actionParams.put(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] { senderFirstName, senderLastName, emailRequest.getSharedNodeName() });
         actionParams.put(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, emailRequest.isIgnoreSendFailure());
         // Pick the template
-        actionParams.put(MailActionExecuter.PARAM_TEMPLATE, EMAIL_TEMPLATE_REF);
+        final String templatePath = emailHelper.getEmailTemplate(clientApp.getName(), getSharedLinkEmailTemplatePath(clientApp), EMAIL_TEMPLATE_REF);
+        actionParams.put(MailActionExecuter.PARAM_TEMPLATE, templatePath);
         actionParams.put(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) templateModel);
-        actionParams.put(MailActionExecuter.PARAM_LOCALE, getDefaultIfNull(getEmailCreatorLocale(authenticatedUser), emailRequest.getLocale()));
+        actionParams.put(MailActionExecuter.PARAM_LOCALE, getDefaultIfNull(
+                    emailHelper.getUserLocaleOrDefault(authenticatedUser),
+                    emailRequest.getLocale()));
 
         for (String to : emailRequest.getToEmails())
         {
@@ -945,6 +966,11 @@ public class QuickShareServiceImpl implements QuickShareService,
             Action mailAction = actionService.createAction(MailActionExecuter.NAME, params);
             actionService.executeAction(mailAction, null, false, true);
         }
+    }
+
+    protected String getSharedLinkEmailTemplatePath(ClientApp clientApp)
+    {
+        return clientApp.getProperty("sharedLinkTemplatePath");
     }
 
     @Override
@@ -1011,20 +1037,15 @@ public class QuickShareServiceImpl implements QuickShareService,
         }
         if (url.endsWith("/"))
         {
-            return url.substring(0, url.length() - 1);
+            url = url.substring(0, url.length() - 1);
         }
-        return url;
+        // Replace '${shareUrl} placeholder if it does exist.
+        return UrlUtil.replaceShareUrlPlaceholder(url, sysAdminParams);
     }
 
     private <T> T getDefaultIfNull(T defaultValue, T newValue)
     {
         return (newValue == null) ? defaultValue : newValue;
-    }
-
-    private Locale getEmailCreatorLocale(String userId)
-    {
-        String localeString = (String) preferenceService.getPreference(userId, "locale");
-        return I18NUtil.parseLocale(localeString);
     }
 
     /**

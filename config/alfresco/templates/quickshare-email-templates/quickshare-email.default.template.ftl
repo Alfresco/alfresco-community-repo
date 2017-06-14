@@ -317,10 +317,10 @@ display:block; border-collapse:collapse; outline:none; text-decoration:none;"></
                                                 <!--Headline Text-->
                                                 <div class="mktEditable" id="Headline Text 1" align="left" style="vertical-align:middle; "><span
                                                         style="color: #727174; margin: 0px; font-family: Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 22px; font-weight: 600; text-align: left; text-decoration: none; vertical-align:
-middle;"><p>${shared_node_name} shared with you</p></span></div>
+middle;"><p>${message("template.quickshare-email.ftl.title", shared_node_name)?html}</p></span></div>
                                                 <div class="mktEditable" id="Body Text 1" align="left">
 <span style="color:#727174; font-family:Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:18px;font-weight:400; text-align:left; text-decoration:none; -webkit-text-size-adjust:none;">
-<p>${sender_first_name} ${sender_last_name} has shared <a href="${shared_node_url}">${shared_node_name}</a> with you.</p>
+<p>${message("template.quickshare-email.ftl.detail", sender_first_name, sender_last_name, shared_node_url, shared_node_name)}</p>
 <#if sender_message??>
     <p>${sender_message?html}</p>
 </#if>
@@ -411,15 +411,16 @@ middle;"><p>${shared_node_name} shared with you</p></span></div>
                                                                                                              href="http://go.alfresco.com/a0100K050L0000KZjI2d00U"
                                                                                                              target="_blank"><span
                                                     style="font-family: Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: #727174;"><img
-                                                    src="${template_assets_url}/AlfrrescoGlobal_Logo_BW.png" border="0" alt="alfresco.com" width="92" height="29"><br></span></a>
+                                                    src="${template_assets_url}/AlfrescoGlobal_Logo_BW.png" border="0" alt="alfresco.com" width="92" height="29"><br></span></a>
                                             </td>
                                         </tr>
                                     </table>
-                                    <a style="color: #0c79bf; text-decoration: underline;" href="http://{{my.Footer_ContactUs_URL}}"
+                                    <a style="color: #0c79bf; text-decoration: underline;" href="http://www.alfresco.com/company/contact"
                                        target="_blank"><span
-                                            style="font-family: Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: #0c79bf;">Contact Us</span></a> <span
-                                        style="font-family: Gotham, 'Helvetica Neue', Helvetica, Arial,
-sans-serif; font-size: 10px; color: #b3b3b8;">© 2015 Alfresco Software, Inc. All Rights Reserved.</span><br>
+                                            style="font-family: Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: #0c79bf;">${message("templates.generic-email.ftl.contact_us")}</span></a>
+                                    <span style="font-family: Gotham, 'Helvetica Neue', Helvetica, Arial,
+sans-serif; font-size: 10px; color: #b3b3b8;">&copy; ${date?string["yyyy"]} Alfresco Software, Inc.
+                                    ${message("templates.generic-email.ftl.copy_right")}</span><br>
                                     <span style="font-family: Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: #b3b3b8;">Bridge Ave, The Place Maidenhead SL6 1AF United Kingdom</span><br>
                                     <span style="font-family: Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: #b3b3b8;">1825 S Grant St, Suite 900 San Mateo, CA 94402 USA</span><br>
                                 </td>

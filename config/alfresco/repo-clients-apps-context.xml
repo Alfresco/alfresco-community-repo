@@ -15,4 +15,11 @@
         <property name="defaultProperties" ref="clientAppDefaultProperties"/>
         <property name="globalProperties" ref="global-properties"/>
     </bean>
+
+    <bean id="emailHelper" class="org.alfresco.util.EmailHelper" init-method="init">
+        <property name="serviceRegistry" ref="ServiceRegistry" />
+        <property name="preferenceService" ref="preferenceService" />
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="companyHomeChildName" value="${spaces.company_home.childname}" />
+    </bean>
 </beans>

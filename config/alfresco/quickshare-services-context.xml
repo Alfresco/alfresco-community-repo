@@ -65,12 +65,13 @@
         <property name="eventPublisher" ref="eventPublisher" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="actionService" ref="ActionService" />
-        <property name="preferenceService" ref="PreferenceService" />
         <property name="defaultEmailSender" value="${system.quickshare.email.from.default}" />
         <property name="clientAppConfig" ref="clientAppConfig" />
         <property name="searchService" ref="SearchService" />
         <property name="siteService" ref="SiteService" />
         <property name="authorityService" ref="AuthorityService" />
+        <property name="emailHelper" ref="emailHelper" />
+        <property name="sysAdminParams" ref="sysAdminParams"/>
         <property name="scheduledPersistedActionService" ref="scheduledPersistedActionService" />
         <property name="quickShareLinkExpiryActionPersister" ref="quickShareLinkExpiryActionPersister" />
         <property name="expiryDatePeriod" value="${system.quickshare.expiry_date.enforce.minimum.period}" />

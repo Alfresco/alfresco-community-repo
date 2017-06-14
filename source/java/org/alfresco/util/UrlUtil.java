@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,6 +28,7 @@ package org.alfresco.util;
 
 import org.alfresco.repo.admin.SysAdminParams;
 
+import java.util.regex.Pattern;
 
 /**
  * Alfresco URL related utility functions.
@@ -36,6 +37,9 @@ import org.alfresco.repo.admin.SysAdminParams;
  */
 public class UrlUtil
 {
+    // ${shareUrl} placeholder
+    public static final Pattern PATTERN = Pattern.compile("\\$\\{shareUrl\\}");
+
     /**
      * Builds up the Url to Alfresco based on the settings in the 
      *  {@link SysAdminParams}. 
@@ -65,7 +69,25 @@ public class UrlUtil
                 sysAdminParams.getSharePort(),
                 sysAdminParams.getShareContext());
     }
-    
+
+    /**
+     * Replaces the share url placeholder, namely {@literal ${shareUrl}}, with <b>share</b> url.
+     *
+     * @param value          the string value which contains the share url placeholder
+     * @param sysAdminParams the {@code SysAdminParams} object
+     * @return if the given {@code value} contains share url placeholder,
+     * the placeholder is replaced with share url; otherwise, the given {@code value} is simply returned
+     */
+    public static String replaceShareUrlPlaceholder(String value, SysAdminParams sysAdminParams)
+    {
+        if (value != null)
+        {
+            return PATTERN.matcher(value).replaceAll(
+                        getShareUrl(sysAdminParams));
+        }
+        return value;
+    }
+
     protected static String buildUrl(String protocol, String host, int port, String context)
     {
         StringBuilder url = new StringBuilder();

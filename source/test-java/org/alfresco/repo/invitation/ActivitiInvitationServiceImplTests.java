@@ -26,10 +26,8 @@
 
 package org.alfresco.repo.invitation;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
@@ -39,13 +37,15 @@ import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.test_category.BaseSpringTestsCategory;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Nick Smith
  * @since 4.0
  *
  */
+@Category(BaseSpringTestsCategory.class)
 public class ActivitiInvitationServiceImplTests extends AbstractInvitationServiceImplTest
 {
     private WorkflowService workflowService;

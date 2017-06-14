@@ -216,7 +216,15 @@ public class GroupsImpl implements Groups
         final AuthorityType authorityType = AuthorityType.GROUP;
         final Set<String> rootAuthorities = getAllRootAuthorities(authorityType);
 
-        PagingResults<AuthorityInfo> pagingResult = getAuthoritiesInfo(authorityType, isRootParam, zoneFilter, rootAuthorities, sortProp, paging);
+        PagingResults<AuthorityInfo> pagingResult;
+        try
+        {
+            pagingResult = getAuthoritiesInfo(authorityType, isRootParam, zoneFilter, rootAuthorities, sortProp, paging);
+        }
+        catch (UnknownAuthorityException e)
+        {
+            throw new EntityNotFoundException("Zone "+zoneFilter+" does not exist.");
+        }
 
         // Create response.
         final List<AuthorityInfo> page = pagingResult.getPage();

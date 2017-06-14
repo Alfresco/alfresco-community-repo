@@ -83,14 +83,13 @@ public class GroupsImpl implements Groups
 {
     private static final int MAX_ZONES = 1;
     private static final String DISPLAY_NAME = "displayName";
-    private static final String SHORT_NAME = "shortName";
-    // private static final String AUTHORITY_NAME = "authorityName";
+    private static final String AUTHORITY_NAME = "authorityName";
 
     private final static Map<String, String> SORT_PARAMS_TO_NAMES;
     static
     {
         Map<String, String> aMap = new HashMap<>(2);
-        aMap.put(PARAM_ID, SHORT_NAME);
+        aMap.put(PARAM_ID, AUTHORITY_NAME);
         aMap.put(PARAM_DISPLAY_NAME, DISPLAY_NAME);
 
         SORT_PARAMS_TO_NAMES = Collections.unmodifiableMap(aMap);
@@ -647,9 +646,9 @@ public class GroupsImpl implements Groups
                 {
                     v = g.getAuthorityDisplayName();
                 }
-                else if (SHORT_NAME.equals(sortBy))
+                else if (AUTHORITY_NAME.equals(sortBy))
                 {
-                    v = g.getShortName();
+                    v = g.getAuthorityName();
                 }
                 else
                 {

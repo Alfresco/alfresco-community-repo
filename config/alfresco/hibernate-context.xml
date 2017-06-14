@@ -42,6 +42,11 @@
         <property name="localSessionFactory">
             <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
         </property>
+        <property name="driverDialectMap">
+            <map>
+                <entry key="MariaDB connector/J" value="org.alfresco.repo.domain.hibernate.dialect.AlfrescoMariaDBDialect" />
+            </map>
+        </property>
     </bean>
 
     <bean id="sessionFactoryBase" abstract="true">

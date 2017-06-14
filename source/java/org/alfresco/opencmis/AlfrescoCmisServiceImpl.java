@@ -1312,11 +1312,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 	            // copy stream to temp file
 	            // OpenCMIS does this for us ....
 	            tempFile = copyToTempFile(contentStream);
-	            final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
+	            String encoding = getEncoding(tempFile, mimeType);
 	                
 	            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
 	            writer.setMimetype(mimeType);
-	            writer.setEncoding(encoding.name());
+	            writer.setEncoding(encoding);
 	            writer.putContent(tempFile);
 	        }
         }
@@ -1572,16 +1572,15 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisInvalidArgumentException("No content!");
         }
 
-        // copy stream to temp file
+        String mimeType = parseMimeType(contentStream);
         final File tempFile = copyToTempFile(contentStream);
-        final Charset encoding = getEncoding(tempFile, contentStream.getMimeType());
+        String encoding = getEncoding(tempFile, mimeType);
 
         try
         {
             ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            String mimeType = parseMimeType(contentStream);
             writer.setMimetype(mimeType);
-            writer.setEncoding(encoding.name());
+            writer.setEncoding(encoding);
             writer.putContent(tempFile);
         }
         finally
@@ -2307,7 +2306,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         // copy stream to temp file
         final File tempFile = copyToTempFile(contentStream);
-        final Charset encoding = (tempFile == null ? null : getEncoding(tempFile, contentStream.getMimeType()));
 
         // check in
         // update PWC
@@ -2319,10 +2317,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         // handle content
         if (contentStream != null)
         {
+            String mimeType = parseMimeType(contentStream);
+            String encoding =  getEncoding(tempFile, mimeType);
             // write content
             ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            writer.setMimetype(parseMimeType(contentStream));
-            writer.setEncoding(encoding.name());
+            writer.setMimetype(mimeType);
+            writer.setEncoding(encoding);
             writer.putContent(tempFile);
         }
 
@@ -3081,22 +3081,51 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         }
     }
 
-    private Charset getEncoding(File tempFile, String mimeType)
+    /**
+     * Inspired from NodesImpl.guessEncoding method.
+     * 
+     * @param tempFile can be null;
+     * @param mimeType can be null;
+     * @return the encoding detected. never null;
+     */
+    private String getEncoding(File tempFile, String mimeType)
     {
-        Charset encoding = null;
+        String defaultEncoding = "UTF-8";
+        if (tempFile == null)
+        {
+            return defaultEncoding;
+        }
 
+        InputStream tfis = null;
         try
         {
-            InputStream tfis = new BufferedInputStream(new FileInputStream(tempFile));
+            tfis = new BufferedInputStream(new FileInputStream(tempFile));
             ContentCharsetFinder charsetFinder = connector.getMimetypeService().getContentCharsetFinder();
-            encoding = charsetFinder.getCharset(tfis, mimeType);
-            tfis.close();
-        } catch (Exception e)
+            return charsetFinder.getCharset(tfis, mimeType).name();
+        }
+        catch (Exception e)
         {
             throw new CmisStorageException("Unable to read content: " + e.getMessage(), e);
         }
+        finally
+        {
+            closeInputStream(tfis);
+        }
+    }
 
-        return encoding;
+    protected void closeInputStream(InputStream tfis)
+    {
+        if (tfis != null)
+        {
+            try
+            {
+                tfis.close();
+            }
+            catch (Exception e)
+            {
+                // nothing
+            }
+        }
     }
 
     private File copyToTempFile(ContentStream contentStream)

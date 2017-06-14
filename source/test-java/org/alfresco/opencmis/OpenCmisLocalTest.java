@@ -30,6 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -42,14 +44,18 @@ import junit.framework.TestCase;
 import org.alfresco.events.types.ContentEventImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.domain.node.ContentDataWithId;
 import org.alfresco.repo.events.EventPublisherForTestingOnly;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.FileFilterMode.Client;
@@ -496,5 +502,67 @@ public class OpenCmisLocalTest extends TestCase
         NodeService nodeService = serviceRegistry.getNodeService();
         assertFalse(nodeService.exists(doc1NodeRef));
         assertFalse(nodeService.exists(doc1WorkingCopy));
+    }
+
+    public void testEncodingForCreateContentStream()
+    {
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        FileFolderService ffs = serviceRegistry.getFileFolderService();
+        // Authenticate as system
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx
+                .getBean(BEAN_NAME_AUTHENTICATION_COMPONENT);
+        authenticationComponent.setSystemUserAsCurrentUser();
+        try
+        {
+            /* Create the document using openCmis services */
+            Repository repository = getRepository("admin", "admin");
+            Session session = repository.createSession();
+            Folder rootFolder = session.getRootFolder();
+            Document document = createDocument(rootFolder, "test_file_" + GUID.generate() + ".txt", session);
+
+            ContentStream content = document.getContentStream();
+            assertNotNull(content);
+
+            content = document.getContentStream(BigInteger.valueOf(2), BigInteger.valueOf(4));
+            assertNotNull(content);
+
+            NodeRef doc1NodeRef = cmisIdToNodeRef(document.getId());
+            FileInfo fileInfo = ffs.getFileInfo(doc1NodeRef);
+            Map<QName, Serializable> properties = fileInfo.getProperties();
+            ContentDataWithId contentData = (ContentDataWithId) properties
+                    .get(QName.createQName("{http://www.alfresco.org/model/content/1.0}content"));
+            String encoding = contentData.getEncoding();
+
+            assertEquals("ISO-8859-1", encoding);
+        }
+        finally
+        {
+            authenticationComponent.clearCurrentSecurityContext();
+        }
+    }
+
+    private static Document createDocument(Folder target, String newDocName, Session session)
+    {
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+        props.put(PropertyIds.NAME, newDocName);
+        String content = "aegif Mind Share Leader Generating New Paradigms by aegif corporation.";
+        byte[] buf = null;
+        try
+        {
+            buf = content.getBytes("ISO-8859-1"); // set the encoding here for the content stream
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            e.printStackTrace();
+        }
+
+        ByteArrayInputStream input = new ByteArrayInputStream(buf);
+
+        ContentStream contentStream = session.getObjectFactory().createContentStream(newDocName, buf.length,
+                "text/plain; charset=UTF-8", input); // additionally set the charset here
+        // NOTE that we intentionally specified the wrong charset here (as UTF-8)
+        // because Alfresco does automatic charset detection, so we will ignore this explicit request
+        return target.createDocument(props, contentStream, VersioningState.MAJOR);
     }
 }

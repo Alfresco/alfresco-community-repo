@@ -27,8 +27,17 @@
 
 package org.alfresco.opencmis;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -59,9 +68,11 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.domain.audit.AuditDAO;
+import org.alfresco.repo.domain.node.ContentDataWithId;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -73,6 +84,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionableAspectTest;
 import org.alfresco.repo.workflow.WorkflowDeployer;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -110,6 +122,7 @@ import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
+import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.FailedToDeleteData;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderData;
@@ -154,13 +167,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.GUID;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * OpenCMIS tests.
@@ -794,6 +800,12 @@ public class CMISTest
     @Test
     public void testContentMimeTypeDetection()
     {
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        FileFolderService ffs = serviceRegistry.getFileFolderService();
+        AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
+        final String isoEncoding = "ISO-8859-1";
+        final String utfEncoding = "UTF-8";
+
         // get repository id
     	List<RepositoryInfo> repositories = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>()
     	{
@@ -864,11 +876,16 @@ public class CMISTest
 				}
             });
             assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_HTML, contentType);
+
+            // check that the encoding is detected correctly
+            checkEncoding(ffs, authenticationComponent, objectData, utfEncoding);
         }
 
-        // create content stream with mimetype and encoding
+        // create content stream with mimetype and encoding as UTF-8
         {
-            String mimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN + "; charset=UTF-8";
+            String mimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN + "; charset="+isoEncoding;
+            // NOTE that we intentionally specify the wrong charset here. 
+            // Alfresco will detect the encoding (as UTF-8 - given by the ContentStreamImpl constructor)
             final ContentStreamImpl contentStreamHTML = new ContentStreamImpl(null, mimeType, "<html><head><title> Hello </title></head><body><p> Test html</p></body></html></body></html>");
             withCmisService(new CmisServiceCallback<Void>()
             {
@@ -901,6 +918,66 @@ public class CMISTest
 				}
             });
             assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_TEXT_PLAIN, contentType);
+
+            // check that the encoding is detected correctly
+            checkEncoding(ffs, authenticationComponent, objectData, utfEncoding);
+        }
+
+        // create content stream with mimetype and encoding as ISO-8859-1
+        {
+            String mimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN + "; charset=" + utfEncoding;
+            // NOTE that we intentionally specify the wrong charset here.
+            // Alfresco will detect the encoding (as ISO-8859-1 - given by the ContentStreamImpl with streams)
+            String content = "<html><head><title>aegif Mind Share Leader Generating New Paradigms by aegif corporation</title></head><body><p> Test html</p></body></html></body></html>";
+            byte[] buf = null;
+            try
+            {
+                buf = content.getBytes(isoEncoding); // set the encoding here for the content stream
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                e.printStackTrace();
+            }
+
+            ByteArrayInputStream input = new ByteArrayInputStream(buf);
+
+            final ContentStream contentStreamHTML = new ContentStreamImpl(null, BigInteger.valueOf(buf.length), mimeType, input);
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    Holder<String> latestObjectIdHolder = getHolderOfObjectOfLatestVersion(cmisService, repositoryId,
+                            objectIdHolder);
+                    cmisService.setContentStream(repositoryId, latestObjectIdHolder, true, null, contentStreamHTML, null);
+                    return null;
+                }
+            });
+
+            // check mimetype
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
+            {
+                @Override
+                public ObjectData execute(CmisService cmisService)
+                {
+                    ObjectData objectData = cmisService.getObjectByPath(repositoryId, path, null, false,
+                            IncludeRelationships.NONE, null, false, false, null);
+                    return objectData;
+                }
+            });
+            String contentType = withCmisService(new CmisServiceCallback<String>()
+            {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    String contentType = cmisService.getObjectInfo(repositoryId, objectData.getId()).getContentType();
+                    return contentType;
+                }
+            });
+            assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_TEXT_PLAIN, contentType);
+
+            // check that the encoding is detected correctly
+            checkEncoding(ffs, authenticationComponent, objectData, isoEncoding);
         }
 
         // checkout/checkin object with mimetype and encoding
@@ -957,9 +1034,50 @@ public class CMISTest
     			}
             });
             assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_HTML, contentType);
+
+            checkEncoding(ffs, authenticationComponent, objectData, utfEncoding);
         }
     }
 
+    protected void checkEncoding(FileFolderService ffs, AuthenticationComponent authenticationComponent,
+            final ObjectData objectData, String expectedEncoding)
+    {
+        // Authenticate as system to check the properties in alfresco
+        authenticationComponent.setSystemUserAsCurrentUser();
+        try
+        {
+            NodeRef doc1NodeRef = cmisIdToNodeRef(objectData.getId());
+            doc1NodeRef.getId();
+
+            FileInfo fileInfo = ffs.getFileInfo(doc1NodeRef);
+            Map<QName, Serializable> properties2 = fileInfo.getProperties();
+
+            ContentDataWithId contentData = (ContentDataWithId) properties2
+                    .get(QName.createQName("{http://www.alfresco.org/model/content/1.0}content"));
+            String encoding = contentData.getEncoding();
+            
+            assertEquals(expectedEncoding, encoding);
+        }
+        finally
+        {
+            authenticationComponent.clearCurrentSecurityContext();
+        }
+    }
+    /**
+     * Turns a CMIS id into a node ref
+     * @param nodeId
+     * @return
+     */
+    private NodeRef cmisIdToNodeRef(String nodeId)
+    {
+        int idx = nodeId.indexOf(";");
+        if(idx != -1)
+        {
+            nodeId = nodeId.substring(0, idx);
+        }
+        NodeRef nodeRef = new NodeRef(nodeId);
+        return nodeRef;
+    }
     private Holder<String> getHolderOfObjectOfLatestVersion(CmisService cmisService, String repositoryId, Holder<String> currentHolder)
     {
         ObjectData oData = cmisService.getObjectOfLatestVersion(repositoryId, currentHolder.getValue(), null, Boolean.FALSE, null, null, null, null, null, null, null);

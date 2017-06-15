@@ -483,6 +483,7 @@ public class SearchMapper
                     {
                         interval.getSets().addAll(globalSets);
                     }
+                    ParameterCheck.mandatoryCollection("facetIntervals intervals sets", interval.getSets());
                 }
             }
 

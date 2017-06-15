@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,8 +42,8 @@ import net.sf.acegisecurity.providers.dao.User;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
-import org.alfresco.repo.node.db.traitextender.NodeServiceTrait;
 import org.alfresco.repo.domain.permissions.FixedAclUpdater;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -55,6 +57,11 @@ import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnGrantLocalPermission;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsDisabled;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsEnabled;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnRevokeLocalPermission;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.security.permissions.impl.traitextender.PermissionServiceExtension;
 import org.alfresco.repo.security.permissions.impl.traitextender.PermissionServiceTrait;
@@ -76,14 +83,14 @@ import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.traitextender.AJExtender;
+import org.alfresco.traitextender.AJProxyTrait;
 import org.alfresco.traitextender.Extend;
 import org.alfresco.traitextender.ExtendedTrait;
 import org.alfresco.traitextender.Extensible;
-import org.alfresco.traitextender.AJProxyTrait;
 import org.alfresco.traitextender.Trait;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PolicyIgnoreUtil;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -162,6 +169,13 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     protected boolean anyDenyDenies = false;
 
     private final ExtendedTrait<PermissionServiceTrait> permissionServiceTrait;
+    
+    private ClassPolicyDelegate<OnGrantLocalPermission> onGrantLocalPermissionDelegate;
+    private ClassPolicyDelegate<OnRevokeLocalPermission> onRevokeLocalPermissionDelegate;
+    private ClassPolicyDelegate<OnInheritPermissionsEnabled> onInheritPermissionsEnabledDelegate;
+    private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;
+  
+    private PolicyIgnoreUtil policyIgnoreUtil;
     
     /**
      * Standard spring construction.
@@ -323,6 +337,11 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     {
         this.policyComponent = policyComponent;
     }
+    
+    public void setPolicyIgnoreUtil(PolicyIgnoreUtil policyIgnoreUtil)
+    {
+        this.policyIgnoreUtil = policyIgnoreUtil;
+    }
 
     /**
      * Cache clear on move node
@@ -386,6 +405,11 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(this, "onCreateChildAssociation"));
         policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteChildAssociation"), ContentModel.TYPE_AUTHORITY_CONTAINER, new JavaBehaviour(this, "beforeDeleteChildAssociation"));
+        
+        onGrantLocalPermissionDelegate = policyComponent.registerClassPolicy(PermissionServicePolicies.OnGrantLocalPermission.class);
+        onRevokeLocalPermissionDelegate = policyComponent.registerClassPolicy(PermissionServicePolicies.OnRevokeLocalPermission.class);
+        onInheritPermissionsEnabledDelegate = policyComponent.registerClassPolicy(PermissionServicePolicies.OnInheritPermissionsEnabled.class);
+        onInheritPermissionsDisabledDelegate = policyComponent.registerClassPolicy(PermissionServicePolicies.OnInheritPermissionsDisabled.class);
     }
 
     //
@@ -979,6 +1003,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     {
         permissionsDaoComponent.deletePermissions(tenantService.getName(nodeRef));
         accessCache.clear();
+        
+        invokeUpdateLocalPermissionsPolicy(nodeRef, null, null, false);
     }
 
     @Override
@@ -1006,6 +1032,25 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     {
         permissionsDaoComponent.deletePermission(tenantService.getName(nodeRef), authority, perm);
         accessCache.clear();
+        
+        invokeUpdateLocalPermissionsPolicy(nodeRef, authority, perm.getName(), false);
+    }
+    
+    private void invokeUpdateLocalPermissionsPolicy(NodeRef nodeRef, String authority, String permission, boolean grantPermission)
+    {
+        if (!policyIgnoreUtil.ignorePolicy(nodeRef))
+        {
+            if (grantPermission)
+            {
+                OnGrantLocalPermission grantPermPolicy = onGrantLocalPermissionDelegate.get(nodeService.getType(nodeRef));
+                grantPermPolicy.onGrantLocalPermission(nodeRef, authority, permission);
+            }
+            else
+            {
+                OnRevokeLocalPermission revokePermPolicy = onRevokeLocalPermissionDelegate.get(nodeService.getType(nodeRef));
+                revokePermPolicy.onRevokeLocalPermission(nodeRef, authority, permission);
+            }
+        }
     }
 
     @Override
@@ -1020,6 +1065,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     {
         permissionsDaoComponent.setPermission(tenantService.getName(nodeRef), authority, perm, allow);
         accessCache.clear();
+        
+        invokeUpdateLocalPermissionsPolicy(nodeRef, authority, perm.getName(), allow);
     }
 
     @Override
@@ -1047,6 +1094,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         NodeRef actualRef = tenantService.getName(nodeRef);
         permissionsDaoComponent.setInheritParentPermissions(actualRef, inheritParentPermissions);
         accessCache.clear();
+        
+        invokeOnPermissionsInheritedPolicy(nodeRef, inheritParentPermissions, false);
     }
     
     @Override
@@ -1060,20 +1109,40 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             AlfrescoTransactionSupport.bindResource(FixedAclUpdater.FIXED_ACL_ASYNC_CALL_KEY, true);
             permissionsDaoComponent.setInheritParentPermissions(actualRef, inheritParentPermissions);
             //check if asynchronous call was required
-            Boolean asyncCallRequired = (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY);
-            if (asyncCallRequired != null && asyncCallRequired)
+            boolean asyncCallRequired = toBoolean((Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY));
+            if (asyncCallRequired)
             {
                 //after transaction is committed FixedAclUpdater will be started in a new thread to process pending nodes 
                 AlfrescoTransactionSupport.bindListener(fixedAclUpdater);
-            }
+            } 
+            invokeOnPermissionsInheritedPolicy(nodeRef, inheritParentPermissions, asyncCallRequired);
         }
         else
         {
             //regular method call
             permissionsDaoComponent.setInheritParentPermissions(actualRef, inheritParentPermissions);
+            
+            invokeOnPermissionsInheritedPolicy(nodeRef, inheritParentPermissions, false);
         }
         
         accessCache.clear();
+    }
+    
+    private void invokeOnPermissionsInheritedPolicy(NodeRef nodeRef, final boolean inheritParentPermissions, boolean async)
+    {
+        if (!policyIgnoreUtil.ignorePolicy(nodeRef))
+        {
+            if (inheritParentPermissions)
+            {
+                OnInheritPermissionsEnabled onInheritEnabledPolicy = onInheritPermissionsEnabledDelegate.get(ContentModel.TYPE_BASE);
+                onInheritEnabledPolicy.onInheritPermissionsEnabled(nodeRef);
+            }
+            else
+            {
+                OnInheritPermissionsDisabled onInheritDisabledPolicy = onInheritPermissionsDisabledDelegate.get(ContentModel.TYPE_BASE);
+                onInheritDisabledPolicy.onInheritPermissionsDisabled(nodeRef, async);
+            }
+        }
     }
 
     /**

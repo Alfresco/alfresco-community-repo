@@ -12,7 +12,7 @@
 <!--                                                                          -->
 <beans>
 
-    <bean id="authorityService" class="org.alfresco.repo.security.authority.AuthorityServiceImpl">
+    <bean id="authorityService" class="org.alfresco.repo.security.authority.AuthorityServiceImpl" init-method="init">
         <property name="personService">
             <ref bean="personService" />
         </property>
@@ -45,6 +45,9 @@
         <property name="guestGroups">
             <set>
             </set>
+        </property>
+         <property name="policyComponent">
+            <ref bean="policyComponent"/>
         </property>
     </bean>
 

@@ -32,7 +32,7 @@
                 <setInstallerVariable name="manager_distribution_folder" value="${local_binaries_folder}/manager"/>
                 <setInstallerVariable name="common_distribution_folder" value="${local_binaries_folder}/common"/>
                 <setInstallerVariable name="postgres_distribution_folder" value="${local_binaries_folder}/postgresql"/>
-                <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${local_binaries_folder}/ImageMagick"/>
+                <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${local_binaries_folder}/imagemagick"/>
                 <setInstallerVariable name="imagemagick_distribution_folder_unix" value="${local_binaries_folder}/ImageMagick"/>
                 <setInstallerVariable name="java_distribution_folder" value="${local_binaries_folder}/java"/>
                 <setInstallerVariable name="libreoffice_distribution_folder" value="${local_binaries_folder}/libreoffice"/>

@@ -26,27 +26,6 @@
 package org.alfresco.repo.search.impl.solr;
 
 import static org.alfresco.util.SearchDateConversion.parseDateInterval;
-import static org.alfresco.util.SearchDateConversion.parseDateString;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
@@ -112,6 +91,23 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
 
 /**
  * @author Andy
@@ -840,7 +836,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 {
                     for (RangeParameters aRange:searchParameters.getRanges())
                     {
-                        Optional<String> found = pivotKeys.stream().filter(aKey -> aRange.getTags().contains(aKey)).findFirst();
+                        Optional<String> found = pivotKeys.stream().filter(aKey -> aKey.equals(aRange.getLabel())).findFirst();
 
                         if (found.isPresent())
                         {
@@ -885,14 +881,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 IntervalSet rangeSet = parseDateInterval(new IntervalSet(facetRange.getStart(), facetRange.getEnd(), facetRange.getGap(), startIncl, endInc), isDate);
                 url.append("&facet.range=");
 
-                if(!facetRange.getTags().isEmpty())
+                if(facetRange.getLabel()!= null && !facetRange.getLabel().isEmpty())
                 {
                     url.append(encoder.encode("{!", "UTF-8"));
-
-                    for(String tag:facetRange.getTags())
-                    {
-                        url.append(encoder.encode(String.format("tag=%s ",tag), "UTF-8"));
-                    }
+                    url.append(encoder.encode(String.format("tag=%s ",facetRange.getLabel()), "UTF-8"));
                     url.append(encoder.encode("}", "UTF-8"));
                 }
 

@@ -57,7 +57,7 @@ public class RangeResultMapper
     public static List<GenericFacetResponse> getGenericFacetsForRanges(Map<String,List<Map<String,String>>> facetFields, List<RangeParameters> ranges)
     {
         List<GenericFacetResponse> ffcs = new ArrayList<>(facetFields.size());
-        if (facetFields != null && !facetFields.isEmpty())
+        if (facetFields != null && !facetFields.isEmpty() && ranges != null)
         {
             for (Entry<String, List<Map<String, String>>> facet : facetFields.entrySet())
             {
@@ -76,14 +76,43 @@ public class RangeResultMapper
      * @param facet
      * @return
      */
-    private static GenericBucket buildGenericBucketFromRange(String facetField, Map<String,String> facet, List<RangeParameters> ranges)
+    public static GenericBucket buildGenericBucketFromRange(String facetField, Map<String,String> facet, List<RangeParameters> ranges)
     {
         String start = facet.get(GenericFacetResponse.START);
         String end = facet.get(GenericFacetResponse.END);
         boolean startInclusive = true;
         boolean endInclusive = false;
-
-        if (ranges!= null) {
+        String startFilterQuery = "[";
+        String endFilterQuery = ">";
+        StringBuilder filterQ = new StringBuilder();
+        //We take the position of the bucket into consideration.
+        switch (facet.get("bucketPosition"))
+        {
+        case "head":
+            for(RangeParameters range : ranges)
+            {
+                if(range.getField().equalsIgnoreCase(facetField))
+                {
+                    startInclusive = range.isRangeStartInclusive(); 
+                    endInclusive = range.isRangeEndInclusive();
+                    startFilterQuery = range.getRangeFirstBucketStartInclusive();
+                    endFilterQuery = range.getRangeFirstBucketEndInclusive();
+                }
+            }
+            break;
+        case "tail":
+            for(RangeParameters range : ranges)
+            {
+                if(range.getField().equalsIgnoreCase(facetField))
+                {
+                    startInclusive = range.isRangeStartInclusive(); 
+                    endInclusive = range.isRangeEndInclusive();
+                    startFilterQuery = range.getRangeLastBucketStartInclusive();
+                    endFilterQuery = range.getRangeLastBucketEndInclusive();
+                }
+            }
+            break;
+        default:
             for(RangeParameters range : ranges)
             {
                 if(range.getField().equalsIgnoreCase(facetField))
@@ -91,23 +120,23 @@ public class RangeResultMapper
                     List<String> includes = range.getInclude();
                     if(includes != null && !includes.isEmpty())
                     {
-                        startInclusive = range.isRangeStartInclusive();
-                        endInclusive = range.isRangeEndInclusive();
+                        startFilterQuery = range.getRangeBucketStartInclusive();
+                        endFilterQuery = range.getRangeBucketEndInclusive();
                     }
                 }
             }
+            break;
         }
-
+        
         facet.put(GenericFacetResponse.START_INC.toString(), Boolean.toString(startInclusive));
         facet.put(GenericFacetResponse.END_INC.toString(), Boolean.toString(endInclusive));
   
         facet.remove(GenericFacetResponse.LABEL);
-        StringBuilder filterQ = new StringBuilder();
         filterQ.append(facetField).append(":")
-            .append(startInclusive ? "[" :"<")
+            .append(startFilterQuery)
             .append(start).append(" TO ")
             .append(end)
-            .append(endInclusive ? "]" :">");
+            .append(endFilterQuery);
         
         Set<Metric> metrics = new HashSet<Metric>(
                 Arrays.asList(new SimpleMetric(
@@ -121,6 +150,7 @@ public class RangeResultMapper
              .append(" - ")
              .append(end)
              .append(endInclusive ? "]" :")");
+        
         
         return new GenericBucket(label.toString(),
                                  filterQ.toString(),

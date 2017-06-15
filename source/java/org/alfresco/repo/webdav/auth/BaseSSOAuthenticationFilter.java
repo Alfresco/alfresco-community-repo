@@ -598,9 +598,10 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
 
             final PrintWriter out = resp.getWriter();
             out.println("<html><head>");
-            out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + 
-                    req.getContextPath() + getLoginPageLink() +
-                    "\">");
+            // Remove the auto refresh to avoid refresh loop, MNT-16931
+//            out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" +
+//                    req.getContextPath() + getLoginPageLink() +
+//                    "\">");
             out.println("</head><body><p>Please <a href=\"" +
                     req.getContextPath() + "/faces" + getLoginPage() +
                     "\">log in</a>.</p>");

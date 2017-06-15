@@ -58,33 +58,52 @@ public class RangeResultMapperTests
         //=============== start bucket
         GenericBucket response = queryWithInclude(null, "head");
         assertEquals("test:[0 TO 10>", response.getFilterQuery());
+        assertEquals("true", response.getBucketInfo().get("startInclusive"));
+        assertEquals("false", response.getBucketInfo().get("endInclusive"));
         
         response = queryWithInclude("outer", "head");
         assertEquals("test:[0 TO 10]", response.getFilterQuery());
+        assertEquals("true", response.getBucketInfo().get("startInclusive"));
+        assertEquals("false", response.getBucketInfo().get("endInclusive"));
         
         response = queryWithInclude("lower", "head");
         assertEquals("test:[0 TO 10<", response.getFilterQuery());
+        assertEquals("true", response.getBucketInfo().get("startInclusive"));
+        assertEquals("false", response.getBucketInfo().get("endInclusive"));
         
         response = queryWithInclude("edge", "head");
         assertEquals("test:[0 TO 10<", response.getFilterQuery());
         
         response = queryWithInclude("upper", "head");
         assertEquals("test:]0 TO 10>", response.getFilterQuery());
+        assertEquals("false", response.getBucketInfo().get("startInclusive"));
+        assertEquals("true", response.getBucketInfo().get("endInclusive"));
         
         //=============== Non start end bucket
         response = queryWithInclude("lower", "body");
         assertEquals("test:[0 TO 10<", response.getFilterQuery());
+        assertEquals("true", response.getBucketInfo().get("startInclusive"));
+        assertEquals("false", response.getBucketInfo().get("endInclusive"));
+        
         response = queryWithInclude("upper", "body");
         assertEquals("test:]0 TO 10>", response.getFilterQuery());
+        assertEquals("false", response.getBucketInfo().get("startInclusive"));
+        assertEquals("true", response.getBucketInfo().get("endInclusive"));
         //=============== End bucket
         response = queryWithInclude("lower", "tail");
         assertEquals("test:[0 TO 10>", response.getFilterQuery());
+        assertEquals("true", response.getBucketInfo().get("startInclusive"));
+        assertEquals("false", response.getBucketInfo().get("endInclusive"));
 
         response = queryWithInclude("edge", "tail");
         assertEquals("test:]0 TO 10]", response.getFilterQuery());
-
+        assertEquals("false", response.getBucketInfo().get("startInclusive"));
+        assertEquals("true", response.getBucketInfo().get("endInclusive"));
+        
         response = queryWithInclude("upper", "tail");
         assertEquals("test:]0 TO 10]", response.getFilterQuery());
+        assertEquals("false", response.getBucketInfo().get("startInclusive"));
+        assertEquals("true", response.getBucketInfo().get("endInclusive"));
     }
     
     private GenericBucket queryWithInclude(String param, String bucketPosition)

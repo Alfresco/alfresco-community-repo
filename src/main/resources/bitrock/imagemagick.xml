@@ -126,35 +126,33 @@ System variables provided by this component:
         </setInstallerVariable>
         <setInstallerVariable name="IMAGEMAGICK_ENV_VAR">
             <value>##### IMAGEMAGICK ENV #####
-			MAGICK_HOME="${imagemagick_root_directory}"
-			export MAGICK_HOME
-			MAGICK_CONFIGURE_PATH="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16HDRI"
-			export MAGICK_CONFIGURE_PATH
-			MAGICK_CODER_MODULE_PATH="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/modules-Q16HDRI/coders"
-			export MAGICK_CODER_MODULE_PATH
-			</value>
+MAGICK_HOME="${imagemagick_root_directory}"
+export MAGICK_HOME
+MAGICK_CONFIGURE_PATH="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16HDRI"
+export MAGICK_CONFIGURE_PATH
+MAGICK_CODER_MODULE_PATH="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/modules-Q16HDRI/coders"
+export MAGICK_CODER_MODULE_PATH
+
+</value>
             <ruleList>
                 <platformTest type="unix"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="IMAGEMAGICK_ENV_VAR">
             <value>rem ##### IMAGEMAGICK ENV #####
-			set MAGICK_HOME=${imagemagick_root_directory.dos}
-			set MAGICK_CODER_MODULE_PATH=${imagemagick_root_directory.dos}\modules\coders
-			set MAGICK_CONFIGURE_PATH=${imagemagick_root_directory.dos}
-			</value>
+set MAGICK_HOME=${imagemagick_root_directory.dos}
+set MAGICK_CODER_MODULE_PATH=${imagemagick_root_directory.dos}\modules\coders
+set MAGICK_CONFIGURE_PATH=${imagemagick_root_directory.dos}
+</value>
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>
         </setInstallerVariable>
-        
-     
         <setInstallerVariable name="ENV_VAR">
             <value>${IMAGEMAGICK_ENV_VAR}${ENV_VAR}</value>
         </setInstallerVariable>
         <setInstallerVariable name="IMAGEMAGICK_WRAPPERS">
-            <value>         
-            ${imagemagick_root_directory}/bin/animate
+            <value>         ${imagemagick_root_directory}/bin/animate
             ${imagemagick_root_directory}/bin/compare 
             ${imagemagick_root_directory}/bin/composite 
             ${imagemagick_root_directory}/bin/conjure 
@@ -206,15 +204,20 @@ System variables provided by this component:
                 <actionGroup>
                     <actionList>
                         <copyFile origin="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type.xml" destination="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16HDRI/" >
-                		<ruleList>
-                			<fileExists path="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type.xml" />
-                		</ruleList>
-            			</copyFile>
-                		<copyFile origin="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/delegates.xml" destination="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16HDRI/" >
-                		<ruleList>
-                			<fileExists path="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/delegates.xml" />
-                		</ruleList>
-            			</copyFile>
+                <ruleList>
+                <fileExists path="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type.xml" />
+                </ruleList>
+            </copyFile>
+                        <copyFile origin="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type-ghostscript.xml" destination="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16HDRI/" >
+                <ruleList>
+                <fileExists path="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/type-ghostscript.xml" />
+                </ruleList>
+            </copyFile>
+                        <copyFile origin="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/delegates.xml" destination="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16HDRI/" >
+                <ruleList>
+                <fileExists path="${imagemagick_root_directory}/share/doc/ImageMagick/www/source/delegates.xml" />
+                </ruleList>
+            </copyFile>
                     </actionList>
                 </actionGroup>
                 <substitute>

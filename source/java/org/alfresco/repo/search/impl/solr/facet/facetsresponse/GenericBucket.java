@@ -37,6 +37,8 @@ public class GenericBucket
     private final String filterQuery;
     private final Object display;
     private final Set<Metric> metrics;
+    //Addtional information relating to facets such as to and from.
+    private Set facetSpecificData;
     private final List<GenericFacetResponse> facets;
 
     public GenericBucket(String label, String filterQuery, Object display, Set<Metric> metrics, List<GenericFacetResponse> facets)
@@ -46,6 +48,7 @@ public class GenericBucket
         this.display = display;
         this.metrics = metrics;
         this.facets = facets;
+        
     }
 
     public String getFilterQuery()

@@ -98,6 +98,8 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     private Map<NodeRef, List<Pair<String, List<String>>>> highlighting = new HashMap<>();
 
     private Map<String, List<Pair<String, Integer>>> facetIntervals = new HashMap<String, List<Pair<String, Integer>>>(1);
+    
+    private Map<String, List<Pair<String, Integer>>> facetRanges = new HashMap<String, List<Pair<String, Integer>>>(1);
 
     private List<GenericFacetResponse> pivotFacets = new ArrayList<>();
 
@@ -298,7 +300,23 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                         pivotFacets = buildPivot(facet_pivot, pivotName);
                     }
                 }
-
+                if(facet_counts.has("facet_ranges"))
+                {
+                    JSONObject facet_ranges = facet_counts.getJSONObject("facet_ranges");
+                    for(Iterator it = facet_ranges.keys(); it.hasNext();)
+                    {
+                        String fieldName = (String) it.next();
+                        JSONArray rangeCollection = facet_ranges.getJSONObject(fieldName).getJSONArray("counts");
+                        ArrayList<Pair<String, Integer>> facetRangeValues = new ArrayList<Pair<String, Integer>>(rangeCollection.length()/2);
+                        for(int i = 0; i < rangeCollection.length(); i+=2)
+                        {
+                            String facetEntryName = rangeCollection.getString(i);
+                            Integer facetEntryCount = Integer.parseInt(rangeCollection.getString(i+1));
+                            facetRangeValues.add(new Pair<String, Integer>(facetEntryName, facetEntryCount));
+                        }
+                        facetRanges.put(fieldName,facetRangeValues);
+                    }
+                }
             }
 
             if(json.has("stats"))
@@ -697,4 +715,10 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     {
         return processedDenies;
     }
+
+    public Map<String, List<Pair<String, Integer>>> getFacetRanges()
+    {
+        return facetRanges;
+    }
+    
 }

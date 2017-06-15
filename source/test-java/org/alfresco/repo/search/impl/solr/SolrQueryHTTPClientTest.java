@@ -27,7 +27,10 @@ package org.alfresco.repo.search.impl.solr;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_PREFIX;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
@@ -47,33 +50,27 @@ import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.Interval;
 import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.IntervalSet;
+import org.alfresco.service.cmr.search.RangeParameters;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsParameters;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.net.URLCodec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -403,6 +400,24 @@ public class SolrQueryHTTPClientTest
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.pivot="+ encoder.encode("creator,cm:name,{!stats=piv1}cat", "UTF-8")));
+    }
+    @Test
+    public void testBuildRange() throws UnsupportedEncodingException
+    {
+        SearchParameters params = new SearchParameters();
+        params.setSearchTerm("A*");
+        RangeParameters range = new RangeParameters("content.size", 1,"0", "1000000", "10000", true, null, null, null, null);
+        params.setRange(range);
+        StringBuilder urlBuilder = new StringBuilder();
+        client.buildRangeParameters(params, encoder, urlBuilder);
+        String url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains("&facet.range=content.size"));
+        assertTrue(url.contains("&facet.range.start=0"));
+        assertTrue(url.contains("&facet.range.end=1000000"));
+        assertTrue(url.contains("&facet.range.gap=10000"));
+        System.out.println(url);
     }
 
 }

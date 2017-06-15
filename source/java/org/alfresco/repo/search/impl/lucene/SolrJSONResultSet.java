@@ -83,7 +83,9 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     private Map<String, Integer> facetQueries = new HashMap<String, Integer>();
 
     private Map<NodeRef, List<Pair<String, List<String>>>> highlighting = new HashMap<>();
-    
+
+    private HashMap<String, List<Pair<String, Integer>>> facetIntervals = new HashMap<String, List<Pair<String, Integer>>>(1);
+
     private NodeDAO nodeDao;
     
     private long lastIndexedTxId;
@@ -184,6 +186,17 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 }
             }
 
+            Map<String, String> intervalMappings = new HashMap<>();
+            if(json.has("_interval_mappings_"))
+            {
+                JSONObject interval_mappings = json.getJSONObject("_interval_mappings_");
+                for(Iterator it = interval_mappings.keys(); it.hasNext(); /**/)
+                {
+                    String original = (String) it.next();
+                    intervalMappings.put(interval_mappings.getString(original), original);
+                }
+            }
+
             //Process hightlight response
             if(json.has("highlighting"))
             {
@@ -252,6 +265,27 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                         fieldFacets.put(fieldName, facetValues);
                     }
                 }
+                if(facet_counts.has("facet_intervals"))
+                {
+                    JSONObject facet_intervals = facet_counts.getJSONObject("facet_intervals");
+                    for(Iterator it = facet_intervals.keys(); it.hasNext(); /**/)
+                    {
+                        String fieldName = (String)it.next();
+                        JSONObject intervals = facet_intervals.getJSONObject(fieldName);
+                        //TODO: Handle a label
+                        String fieldkey = intervalMappings.containsKey(fieldName)?intervalMappings.get(fieldName):fieldName;
+
+                        ArrayList<Pair<String, Integer>> intervalValues = new ArrayList<Pair<String, Integer>>(intervals.length());
+                        for(Iterator itk = intervals.keys(); itk.hasNext(); /**/)
+                        {
+                            String key = (String) itk.next();
+                            Integer count = Integer.parseInt(intervals.getString(key));
+                            intervalValues.add(new Pair<String, Integer>(key, count));
+                        }
+                        facetIntervals.put(fieldkey,intervalValues);
+                    }
+                }
+
             }
             // process Spell check 
             JSONObject spellCheckJson = (JSONObject) json.opt("spellcheck");
@@ -510,6 +544,11 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     public Map<String, List<Pair<String, Integer>>> getFieldFacets()
     {
         return Collections.unmodifiableMap(fieldFacets);
+    }
+
+    public Map<String, List<Pair<String, Integer>>> getFacetIntervals()
+    {
+        return Collections.unmodifiableMap(facetIntervals);
     }
 
     public long getLastIndexedTxId()

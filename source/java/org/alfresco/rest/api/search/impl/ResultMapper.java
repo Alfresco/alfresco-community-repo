@@ -506,10 +506,10 @@ public class ResultMapper
     }
     private static GenericBucket buildGenericBucketFromRange(String facetField, Map<String,String> facet)
     {
-        String from = facet.get("from");
-        String to = facet.get("to");
-        String label = facet.get("label");
-        facet.remove("label");
+        String from = facet.get(GenericFacetResponse.START);
+        String to = facet.get(GenericFacetResponse.END);
+        String label = facet.get(GenericFacetResponse.LABEL);
+        facet.remove(GenericFacetResponse.LABEL);
         String filterQ = String.format("%s:(%s TO %s)",
                                         facetField,
                                         from,
@@ -517,7 +517,7 @@ public class ResultMapper
         return new GenericBucket(label,
                                  filterQ,
                                  null, 
-                                 new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,facet.get("count")))),
+                                 new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,facet.get(GenericFacetResponse.COUNT)))),
                                  null,
                                  facet);
         
@@ -543,6 +543,8 @@ public class ResultMapper
                     for (Pair<String, Integer> buck:facet.getValue())
                     {
                         String filterQuery = null;
+                        Map<String, String> bucketInfo = new HashMap<>();
+
                         if (searchQuery != null
                                     && searchQuery.getFacetIntervals() != null
                                     && searchQuery.getFacetIntervals().getIntervals() != null
@@ -555,11 +557,18 @@ public class ResultMapper
                                 if (found.get().getSets() != null)
                                 {
                                     Optional<IntervalSet> foundSet = found.get().getSets().stream().filter(aSet -> buck.getFirst().equals(aSet.getLabel())).findFirst();
-                                    if (foundSet.isPresent()) filterQuery = found.get().getField()+":"+foundSet.get().toAFTSQuery();
+                                    if (foundSet.isPresent())
+                                    {
+                                        filterQuery = found.get().getField() + ":" + foundSet.get().toAFTSQuery();
+                                        bucketInfo.put(GenericFacetResponse.START, foundSet.get().getStart());
+                                        bucketInfo.put(GenericFacetResponse.END, foundSet.get().getEnd());
+                                        bucketInfo.put(GenericFacetResponse.START_INC, String.valueOf(foundSet.get().isStartInclusive()));
+                                        bucketInfo.put(GenericFacetResponse.END_INC, String.valueOf(foundSet.get().isEndInclusive()));
+                                    }
                                 }
                             }
                         }
-                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(buck.getSecond())))), null);
+                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(buck.getSecond())))), null, bucketInfo);
                         buckets.add(bucket);
                     }
                     ffcs.add(new GenericFacetResponse(FACET_TYPE.interval, facet.getKey(), buckets));

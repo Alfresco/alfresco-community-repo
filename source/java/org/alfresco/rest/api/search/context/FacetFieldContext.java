@@ -27,8 +27,10 @@ package org.alfresco.rest.api.search.context;
 
 import java.util.List;
 
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
+
 /**
- * The results of a Field Facetting
+ * The results of a Field Faceting
  */
 public class FacetFieldContext
 {

@@ -301,11 +301,10 @@ public class ResultMapper
         if(facetQueries!= null && !facetQueries.isEmpty())
         {
             //If group by field populated in query facet return bucketing into facet field.
-            List<FacetFieldContext> facetQueryForFields = 
-                    getFacetBucketsFromFacetQueries(facetQueries,searchQuery);
+            List<GenericFacetResponse> facetQueryForFields = getFacetBucketsFromFacetQueries(facetQueries,searchQuery);
             if(!facetQueryForFields.isEmpty())
             {
-                ffcs.addAll(facetQueryForFields);
+                facets.addAll(facetQueryForFields);
             }
             else
             {
@@ -351,15 +350,24 @@ public class ResultMapper
         return isNullContext(context)?null:context;
     }
 
+    private boolean hasGroup(Map<String, Integer> facetQueries, SearchQuery searchQuery)
+    {
+        for (Entry<String, Integer> fq:facetQueries.entrySet())
+        {
+            Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
+            return (found.isPresent() && found.get().getGroup() != null);
+        }
+        return false;
+    }
     /**
      * Builds a facet field from facet queries.
      * @param facetQueries
      * @return
      */
-    protected List<FacetFieldContext> getFacetBucketsFromFacetQueries(Map<String, Integer> facetQueries, SearchQuery searchQuery)
+    protected List<GenericFacetResponse> getFacetBucketsFromFacetQueries(Map<String, Integer> facetQueries, SearchQuery searchQuery)
     {
-        List<FacetFieldContext> facetResults = new ArrayList<FacetFieldContext>();
-        Map<String,List<Bucket>> groups = new HashMap<>();
+        List<GenericFacetResponse> facetResults = new ArrayList<GenericFacetResponse>();
+        Map<String,List<GenericBucket>> groups = new HashMap<>();
         String group = null;
         
         for (Entry<String, Integer> fq:facetQueries.entrySet())
@@ -371,26 +379,30 @@ public class ResultMapper
                 filterQuery = found.isPresent()? found.get().getQuery():fq.getKey();
                 if(found.isPresent() && found.get().getGroup() != null)
                 {
-                    group= found.get().getGroup();
+                    group = found.get().getGroup();
                 }
             }
             if(group != null && !group.isEmpty())
             {
                 if(groups.containsKey(group)) 
                 {
-                    groups.get(group).add(new Bucket(fq.getKey(), filterQuery, fq.getValue(), null));
+                    Set<Metric> metrics = new HashSet<>(1);
+                    metrics.add(new SimpleMetric(METRIC_TYPE.count, fq.getValue()));
+                    groups.get(group).add(new GenericBucket(fq.getKey(), filterQuery, null,metrics, null));
                 }
                 else
                 {
-                    List<Bucket> l = new ArrayList<Bucket>();
-                    l.add(new Bucket(fq.getKey(),filterQuery, fq.getValue(),null));
+                    List<GenericBucket> l = new ArrayList<GenericBucket>();
+                    Set<Metric> metrics = new HashSet<>(1);
+                    metrics.add(new SimpleMetric(METRIC_TYPE.count, fq.getValue()));
+                    l.add(new GenericBucket(fq.getKey(),filterQuery, fq.getValue(), metrics, null));
                     groups.put(group, l);
                 }
             }
         }
         if(!groups.isEmpty())
         {
-            groups.forEach((a,v) -> facetResults.add(new FacetFieldContext(a,v)));
+            groups.forEach((a,v) -> facetResults.add(new GenericFacetResponse(FACET_TYPE.query, a, v)));
         }
         return facetResults;
     }
@@ -452,7 +464,7 @@ public class ResultMapper
             {
                 if (facet.getValue() != null && !facet.getValue().isEmpty())
                 {
-                    List<FacetFieldContext.Bucket> buckets = new ArrayList<>(facet.getValue().size());
+                    List<Bucket> buckets = new ArrayList<>(facet.getValue().size());
                     for (Pair<String, Integer> buck:facet.getValue())
                     {
                         Object display = null;
@@ -474,7 +486,9 @@ public class ResultMapper
                                 }
                             }
                         }
-                        buckets.add(new FacetFieldContext.Bucket(buck.getFirst(), filterQuery, buck.getSecond(), display));
+//                        Set<Metric> metrics = new HashSet<>(1);
+//                        metrics.add(new SimpleMetric(METRIC_TYPE.count,buck.getSecond()));
+                        buckets.add(new Bucket(buck.getFirst(), filterQuery,buck.getSecond(),display));
                     }
                     ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
                 }

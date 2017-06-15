@@ -32,7 +32,7 @@ import java.util.List;
  */
 public class GenericFacetResponse
 {
-    public static enum FACET_TYPE {range, interval, pivot, stats};
+    public static enum FACET_TYPE {query, field, range, interval, pivot, stats};
     private final FACET_TYPE type;
     private final String label;
     private final List<GenericBucket> buckets;

@@ -35,8 +35,18 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import org.alfresco.httpclient.HttpClientFactory;
-import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.dictionary.NamespaceDAO;
@@ -45,7 +55,6 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.Interval;
@@ -66,18 +75,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.BeanFactory;
-
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Basic test of SolrQueryHTTPClient
@@ -87,10 +84,8 @@ import java.util.TimeZone;
  */
 public class SolrQueryHTTPClientTest
 {
-    private static final int SHARDED_FACET_LIMIT = 55;
     static SolrQueryHTTPClient client = new SolrQueryHTTPClient();
     static URLCodec encoder = new URLCodec();
-    static final StoreRef STORE_REF_HISTORY = new StoreRef("workspace", "history");
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
@@ -120,50 +115,17 @@ public class SolrQueryHTTPClientTest
 
         });
 
-        HttpClientFactory clientFactory = new HttpClientFactory();
-        clientFactory.setSecureCommsType(SecureCommsType.NONE.toString());
-        clientFactory.setHost("myhost");
-        clientFactory.setPort(5678);
-
-        BeanFactory beanFactory = mock(BeanFactory.class);
-        when(beanFactory.getBean(anyString())).thenReturn(clientFactory);
-        client.setBeanFactory(beanFactory);
-
-        SolrStoreMapping sharded = new SolrStoreMapping();
-        sharded.setBaseUrl("/archive");
-        sharded.setHttpClientFactory("httpClientFactory");
-        sharded.setIdentifier(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.getIdentifier());
-        sharded.setNodeString("host, 123, /woof, port:234, full:345/meep/sheep, 456/cabbage, base/url,,:,:/,:567,:678/,789/more,/");
-        sharded.setNumShards(24);
-        sharded.setProtocol(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.getProtocol());
-        sharded.setReplicationFactor(3);
-
-        SolrStoreMapping unsharded = new SolrStoreMapping();
-        unsharded.setBaseUrl("/solr");
-        unsharded.setHttpClientFactory("httpClientFactory");
-        unsharded.setIdentifier(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier());
-        unsharded.setProtocol(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol());
-
-        SolrStoreMapping history = new SolrStoreMapping();
-        history.setBaseUrl("/history");
-        history.setHttpClientFactory("httpClientFactory");
-        history.setIdentifier(STORE_REF_HISTORY.getIdentifier());
-        history.setProtocol(STORE_REF_HISTORY.getProtocol());
-
-        client.setStoreMappings(Arrays.asList(sharded, unsharded, history));
-
         client.setLanguageMappings(languageMappings);
         client.setDictionaryService(dictionaryService);
         client.setNamespaceDAO(namespaceDAO);
 
-        client.setDefaultShardedFacetLimit(SHARDED_FACET_LIMIT);
         //required for init() but not used.
         client.setNodeService(mock(NodeService.class));
         client.setTenantService(mock(TenantService.class));
-        client.setPermissionService(mock(PermissionService.class));;
+        client.setPermissionService(mock(PermissionService.class));
+        client.setStoreMappings(Collections.emptyList());
         client.setRepositoryState(mock(RepositoryState.class));
         client.init();
-        client.afterPropertiesSet();
     }
 
     @Test
@@ -209,29 +171,6 @@ public class SolrQueryHTTPClientTest
         return params;
     }
 
-    @Test
-    public void testBuildShards() throws UnsupportedEncodingException
-    {
-        StringBuilder urlBuilder = new StringBuilder();
-        client.buildShards(urlBuilder, Arrays.asList(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, STORE_REF_HISTORY));
-        String[] shards = urlBuilder.toString().split(",");
-
-        assertEquals(2, shards.length);
-        assertEquals("myhost:5678"+encoder.encode("/solr", "UTF-8"), shards[0]);
-        assertEquals("myhost:5678"+encoder.encode("/history", "UTF-8"), shards[1]);
-
-        urlBuilder = new StringBuilder();
-        client.buildShards(urlBuilder, Arrays.asList(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, StoreRef.STORE_REF_ARCHIVE_SPACESSTORE));
-        shards = urlBuilder.toString().split(",");
-        assertEquals(25, shards.length);
-        assertEquals("myhost:5678"+encoder.encode("/solr", "UTF-8"), shards[0]);
-
-        for (int i = 1; i < shards.length; i++)
-        {
-            assertFalse(shards[i].contains("solr"));
-            assertTrue("The shard url must end with a number because its sharded",shards[i].matches("^.+?\\d$"));
-        }
-    }
 
     @Test
     public void testBuildTimezone() throws UnsupportedEncodingException
@@ -388,9 +327,9 @@ public class SolrQueryHTTPClientTest
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.field=creator"));
-        assertTrue(url.contains("f.creator.facet.limit="+SHARDED_FACET_LIMIT));
+        assertTrue(url.contains("f.creator.facet.limit=100"));
         assertTrue(url.contains("facet.field=" + encoder.encode("{!afts something=right}modifier", "UTF-8")));
-        assertTrue(url.contains("f.modifier.facet.limit="+SHARDED_FACET_LIMIT));
+        assertTrue(url.contains("f.modifier.facet.limit=100"));
 
         prefixff.setLabel("myLabel");
         ff.setLabel("yourLabel");
@@ -401,9 +340,9 @@ public class SolrQueryHTTPClientTest
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.field=" + encoder.encode("{!afts key=yourLabel}creator", "UTF-8")));
-        assertTrue(url.contains("f.creator.facet.limit="+SHARDED_FACET_LIMIT));
+        assertTrue(url.contains("f.creator.facet.limit=100"));
         assertTrue(url.contains("facet.field=" + encoder.encode("{!afts key=myLabel something=right}modifier", "UTF-8")));
-        assertTrue(url.contains("f.modifier.facet.limit="+SHARDED_FACET_LIMIT));
+        assertTrue(url.contains("f.modifier.facet.limit=100"));
 
         prefixff.setExcludeFilters(Arrays.asList("x", "y"));
         ff.setExcludeFilters(Arrays.asList("B"));
@@ -414,9 +353,9 @@ public class SolrQueryHTTPClientTest
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.field=" + encoder.encode("{!afts ex=B key=yourLabel}creator", "UTF-8")));
-        assertTrue(url.contains("f.creator.facet.limit="+SHARDED_FACET_LIMIT));
+        assertTrue(url.contains("f.creator.facet.limit=100"));
         assertTrue(url.contains("facet.field=" + encoder.encode("{!afts ex=x,y key=myLabel something=right}modifier", "UTF-8")));
-        assertTrue(url.contains("f.modifier.facet.limit="+SHARDED_FACET_LIMIT));
+        assertTrue(url.contains("f.modifier.facet.limit=100"));
 
         prefixff.setField("bill");
         prefixff.setExcludeFilters(Collections.emptyList());
@@ -429,9 +368,9 @@ public class SolrQueryHTTPClientTest
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.field=" + encoder.encode("{!afts ex=B}ben", "UTF-8")));
-        assertTrue(url.contains("f.ben.facet.limit="+SHARDED_FACET_LIMIT));
+        assertTrue(url.contains("f.ben.facet.limit=100"));
         assertTrue(url.contains("facet.field=" + encoder.encode("{!afts key=myLabel}bill", "UTF-8")));
-        assertTrue(url.contains("f.bill.facet.limit="+SHARDED_FACET_LIMIT));
+        assertTrue(url.contains("f.bill.facet.limit=100"));
 
     }
 

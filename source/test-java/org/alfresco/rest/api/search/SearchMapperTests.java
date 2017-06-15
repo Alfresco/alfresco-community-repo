@@ -890,7 +890,7 @@ public class SearchMapperTests
         RangeParameters rangeParams = new RangeParameters(null, null, null, null,false,null,null,null,null);
         try
         {
-            searchMapper.fromFacetRange(searchParameters, rangeParams);
+            searchMapper.fromRange(searchParameters, rangeParams);
             fail();
         }
         catch (IllegalArgumentException iae)
@@ -898,11 +898,11 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
         rangeParams = new RangeParameters("content.size", "0", "100000", "1000",true,null,null,null,null);
-        searchMapper.fromFacetRange(searchParameters, rangeParams);
+        searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRange(), rangeParams);
         
         rangeParams = new RangeParameters("content.size", "0", "100000", "1000",true,"before","lower",null,null);
-        searchMapper.fromFacetRange(searchParameters, rangeParams);
+        searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRange(), rangeParams);
         
     }

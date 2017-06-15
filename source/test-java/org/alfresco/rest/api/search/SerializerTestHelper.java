@@ -64,7 +64,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"facetFields\": {\"facets\": [{\"field\": \"cm:creator\",\"prefix\": \"myquery2\",\"sort\": \"COUNT\",\"missing\": \"false\"}, {\"field\": \"modifier\",\"label\": \"mylabel\",\"method\": \"FC\",\"mincount\": \"5\"}, {\"field\": \"owner\",\"label\": \"ownerLabel\"}]},"
                 + "\"facetQueries\": [{\"query\": \"cm:created:bob\",\"label\": \"small\"}],"
                 + "\"pivots\": [{\"key\": \"mylabel\"}],"
-                + "\"facetRange\": {\"field\": \"content.size\",\"facet.range.start\": \"0\",\"facet.range.end\": \"300\",\"facet.range.gap\": \"100\"},"
+                + "\"range\": {\"field\": \"content.size\",\"start\": \"0\",\"end\": \"300\",\"gap\": \"100\"},"
                 + "\"facetIntervals\": {\"sets\": [{ \"label\": \"king\", \"start\": \"1\", \"end\": \"2\",\"startInclusive\": true,\"endInclusive\": false}]"
                 + ",\"intervals\": [{\"field\": \"cm:creator\",\"label\": \"creator\","
                 + "\"sets\": [{\"label\": \"last\",\"start\": \"a\",\"end\": \"b\",\"startInclusive\": false}]"

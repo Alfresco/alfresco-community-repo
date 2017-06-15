@@ -76,7 +76,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
-import java.util.TimeZone;
 import java.util.regex.Matcher;
 
 /**
@@ -122,7 +121,7 @@ public class SearchMapper
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromHighlight(sp, searchQuery.getHighlight());
         fromFacetIntervals(sp, searchQuery.getFacetIntervals());
-        fromFacetRange(sp, searchQuery.getFacetRange());
+        fromRange(sp, searchQuery.getFacetRange());
         fromScope(sp, searchQuery.getScope(), searchRequestContext);
         fromLimits(sp, searchQuery.getLimits());
         fromTimezone(sp, searchQuery.getTimezone());
@@ -529,11 +528,11 @@ public class SearchMapper
      * @param sp SearchParameters
      * @param rangeParams RangeParameters
      */
-    public void fromFacetRange(SearchParameters sp, RangeParameters rangeParams)
+    public void fromRange(SearchParameters sp, RangeParameters rangeParams)
     {
         if(rangeParams != null)
         {
-            ParameterCheck.mandatory("facetRange", rangeParams);
+            ParameterCheck.mandatory("range", rangeParams);
             ParameterCheck.mandatory("field ", rangeParams.getField());
             ParameterCheck.mandatory("facet range start ", rangeParams.getStart());
             ParameterCheck.mandatory("facet range end ", rangeParams.getEnd());

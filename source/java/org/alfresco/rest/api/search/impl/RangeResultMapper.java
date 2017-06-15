@@ -71,46 +71,7 @@ public class RangeResultMapper
         }
         return ffcs;
     }
-    private static boolean isRangeStartInclusive(List<String> values)
-    {
-        if(values != null && !values.isEmpty())
-        {
-            for(String startInc : values)
-            switch (startInc)
-            {
-            case "upper":
-                return  false;
-            case "outer":
-                return  false;
-            default:
-                break;
-            }
-        }
-        return true;
-    }
-    private static boolean isRangeEndInclusive(List<String> endIncs)
-    {
-        if(endIncs != null && !endIncs.isEmpty())
-        {
-            for(String endInc : endIncs)
-            {
-                switch (endInc)
-                {
-                case "upper":
-                    return  true;
-                case "edge":
-                    return  true;
-                case "outer":
-                    return  true;
-                case "all":
-                    return  true;
-                default:
-                    break;
-                }
-            }
-        }
-        return false;
-    }
+    
     /**
      * Builds the generic facet response out of range results.
      * @param facetField
@@ -131,8 +92,8 @@ public class RangeResultMapper
                 List<String> includes = range.getInclude();
                 if(includes != null && !includes.isEmpty())
                 {
-                    startInclusive = isRangeStartInclusive(includes); 
-                    endInclusive = isRangeEndInclusive(includes);
+                    startInclusive = range.isRangeStartInclusive(); 
+                    endInclusive = range.isRangeEndInclusive();
                 }
             }
         }

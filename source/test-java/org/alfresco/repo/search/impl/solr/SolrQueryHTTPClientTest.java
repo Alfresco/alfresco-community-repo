@@ -37,6 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -441,7 +442,13 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet.range.other=before"));
         assertTrue(url.contains("&facet.range.hardend=true"));
 
-        RangeParameters range2 = new RangeParameters("content.size", "0", "1000000", "10000", true, null, null, null, null);
+        List<String> filters = new ArrayList<String>();
+        filters.add("bart");
+        filters.add("homer");
+        List<String> tags = new ArrayList<String>();
+        tags.add("dt");
+        tags.add("doc");
+        RangeParameters range2 = new RangeParameters("content.size", "0", "1000000", "10000", true, null, null, tags, filters);
         params.setRange(range2);
         urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
@@ -454,6 +461,9 @@ public class SolrQueryHTTPClientTest
         assertFalse(url2.contains("&facet.range.include=lower"));
         assertFalse(url2.contains("&facet.range.other=before"));
         assertTrue(url2.contains("&facet.range.hardend=true"));
+        assertTrue(url2.contains("&range.field={!ex=bart,homer}"));
+        assertTrue(url2.contains("&fq={!tag=dt}dt"));
+        assertTrue(url2.contains("&fq={!tag=doc}doc"));
     }
 
 }

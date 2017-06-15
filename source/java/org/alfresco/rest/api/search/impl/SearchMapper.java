@@ -28,12 +28,14 @@ package org.alfresco.rest.api.search.impl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
+import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.FacetFields;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Limits;
+import org.alfresco.rest.api.search.model.Pivot;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.Scope;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -68,8 +70,8 @@ import static org.alfresco.service.cmr.search.SearchService.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Maps from a json request and a solr SearchParameters object.
@@ -93,7 +95,7 @@ public class SearchMapper
      * @param params
      * @return SearchParameters
      */
-    public SearchParameters toSearchParameters(Params params, SearchQuery searchQuery)
+    public SearchParameters toSearchParameters(Params params, SearchQuery searchQuery, SearchRequestContext searchRequestContext)
     {
         ParameterCheck.mandatory("query", searchQuery.getQuery());
 
@@ -108,6 +110,7 @@ public class SearchMapper
         fromDefault(sp, searchQuery.getDefaults());
         fromFilterQuery(sp, searchQuery.getFilterQueries());
         fromFacetQuery(sp, searchQuery.getFacetQueries());
+        fromPivot(sp, searchQuery.getFacetFields(), searchQuery.getPivots(), searchRequestContext);
         fromFacetFields(sp, searchQuery.getFacetFields());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromHighlight(sp, searchQuery.getHighlight());
@@ -409,6 +412,7 @@ public class SearchMapper
             }
         }
     }
+
     /**
      * SearchParameters from SpellCheck object
      * @param sp SearchParameters
@@ -502,6 +506,38 @@ public class SearchMapper
             }
         }
         sp.setInterval(facetIntervals);
+    }
+
+    public void fromPivot(SearchParameters sp, FacetFields facetFields, List<Pivot> pivots, SearchRequestContext searchRequestContext)
+    {
+        if (facetFields != null && pivots != null && !pivots.isEmpty())
+        {
+            ParameterCheck.mandatory("facetFields facets", facetFields.getFacets());
+
+            if (facetFields.getFacets() != null && !facetFields.getFacets().isEmpty())
+            {
+                for (Pivot pivot:pivots)
+                {
+                    ParameterCheck.mandatoryString("pivot key", pivot.getKey());
+
+                    String pivotKey = pivot.getKey();
+                    Optional<FacetField> found = facetFields.getFacets().stream().filter(
+                                queryable -> pivotKey.equals(queryable.getLabel()!=null?queryable.getLabel():queryable.getField())).findFirst();
+
+                    if (found.isPresent())
+                    {
+                        sp.addPivot(found.get().getField());
+                        facetFields.getFacets().remove(found.get());
+                        searchRequestContext.getPivotKeys().put(found.get().getField(), pivotKey);
+                    }
+                    else
+                    {
+                        throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                    new Object[] { ": Pivot parameter "+pivotKey+" is does not reference a facet Field." });
+                    }
+                }
+            }
+        }
     }
 
     protected void validateSets(List<IntervalSet> intervalSets, String prefix)

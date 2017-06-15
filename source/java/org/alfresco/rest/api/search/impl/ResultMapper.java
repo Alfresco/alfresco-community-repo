@@ -472,7 +472,7 @@ public class ResultMapper
                                 if (found.get().getSets() != null)
                                 {
                                     Optional<IntervalSet> foundSet = found.get().getSets().stream().filter(aSet -> buck.getFirst().equals(aSet.getLabel())).findFirst();
-                                    if (foundSet.isPresent()) filterQuery = found.get().getField()+":"+foundSet.get().toRange();
+                                    if (foundSet.isPresent()) filterQuery = found.get().getField()+":"+foundSet.get().toAFTSQuery();
                                 }
                             }
                         }

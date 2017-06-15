@@ -113,7 +113,7 @@ public class ResultMapperTests
                 +"\"facet_dates\":{},"
                 +"\"facet_ranges\":{},"
                 +"\"facet_pivot\":{\"creator,modifier\":[{\"field\":\"creator\",\"count\":7,\"pivot\":[{\"field\":\"modifier\",\"count\":3,\"value\":\"mjackson\"},{\"field\":\"modifier\",\"count\":4,\"value\":\"admin\"}],\"value\":\"mjackson\"}]},"
-                +"\"facet_intervals\":{\"creator\":{\"last\":4,\"first\":0},\"datetime@sd@{http://www.alfresco.org/model/content/1.0}created\":{\"earlier\":5,\"lastYear\":0,\"currentYear\":0}}"
+                +"\"facet_intervals\":{\"creator\":{\"last\":4,\"first\":0},\"TheCreated\":{\"earlier\":5,\"lastYear\":0,\"currentYear\":854}}"
                 + "},"
                 + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
                 + "\"highlighting\": {"
@@ -303,7 +303,7 @@ public class ResultMapperTests
         assertEquals(2, intervalFacets.size());
         assertEquals("creator",intervalFacets.get(0).getLabel());
         assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
-        assertEquals("cm:creator:(a,b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("cm:creator:<a TO b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
         assertEquals(METRIC_TYPE.count,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getType());
         assertEquals(4,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
 
@@ -371,7 +371,45 @@ public class ResultMapperTests
         assertEquals("(",sp.getHighlight().getFields().get(1).getPrefix());
         assertEquals(")",sp.getHighlight().getFields().get(1).getPostfix());
     }
-    
+
+
+    @Test
+    public void testInterval() throws Exception
+    {
+        ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
+        SearchQuery searchQuery = helper.searchQueryFromJson();
+        SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
+        SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
+        SearchContext searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+
+        //Facet intervals
+        List<GenericFacetResponse> intervalFacets = searchContext.getFacets().stream()
+                    .filter(f -> f.getType().equals(FACET_TYPE.interval)).collect(Collectors.toList());
+        assertEquals(2, intervalFacets.size());
+        assertEquals("creator",intervalFacets.get(0).getLabel());
+        assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
+        assertEquals("cm:creator:<a TO b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals(METRIC_TYPE.count,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getType());
+        assertEquals(4,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
+
+
+        assertEquals("TheCreated",intervalFacets.get(1).getLabel());
+        assertEquals("earlier",intervalFacets.get(1).getBuckets().get(0).getLabel());
+        assertEquals("cm:created:[* TO 2016>",intervalFacets.get(1).getBuckets().get(0).getFilterQuery());
+        assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(0).getMetrics().get(0).getType());
+        assertEquals(5,intervalFacets.get(1).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
+
+        assertEquals("lastYear",intervalFacets.get(1).getBuckets().get(1).getLabel());
+        assertEquals("cm:created:[2016 TO 2017>",intervalFacets.get(1).getBuckets().get(1).getFilterQuery());
+        assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(1).getMetrics().get(0).getType());
+        assertEquals(0,intervalFacets.get(1).getBuckets().get(1).getMetrics().get(0).getValue().get("count"));
+
+        assertEquals("currentYear",intervalFacets.get(1).getBuckets().get(2).getLabel());
+        assertEquals("cm:created:[NOW/YEAR TO NOW/YEAR+1YEAR]",intervalFacets.get(1).getBuckets().get(2).getFilterQuery());
+        assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(2).getMetrics().get(0).getType());
+        assertEquals(854,intervalFacets.get(1).getBuckets().get(2).getMetrics().get(0).getValue().get("count"));
+    }
+
     @Test
     /**
      * Test facet group with out facet fields

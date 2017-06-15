@@ -875,10 +875,14 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                     isDate = true;
                 }
                 
-                boolean startIncl = facetRange.isRangeStartInclusive();
-                boolean endInc = facetRange.isRangeEndInclusive();
                 
-                IntervalSet rangeSet = parseDateInterval(new IntervalSet(facetRange.getStart(), facetRange.getEnd(), facetRange.getGap(), startIncl, endInc), isDate);
+                IntervalSet rangeSet =
+                        parseDateInterval(
+                                new IntervalSet(facetRange.getStart(), 
+                                                facetRange.getEnd(), 
+                                                facetRange.getGap(), 
+                                                null, 
+                                                null), isDate);
                 url.append("&facet.range=");
 
                 if(facetRange.getLabel()!= null && !facetRange.getLabel().isEmpty())

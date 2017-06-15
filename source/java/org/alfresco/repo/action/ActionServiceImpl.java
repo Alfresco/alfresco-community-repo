@@ -702,7 +702,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         {
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug("Node = " + actionedUponNodeRef.toString() + " skip action because node doesn't exist");
+                logger.debug("Node = " + actionedUponNodeRef.getId() + " skip action because node doesn't exist");
             }
             return;
         }

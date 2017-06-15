@@ -29,8 +29,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
+import org.alfresco.rest.api.search.context.FacetQueryContext;
+import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.Default;
@@ -38,8 +45,6 @@ import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.api.search.context.SearchContext;
-import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.Interval;
@@ -48,9 +53,6 @@ import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.RangeParameters;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Tests json -> SearchQuery deserialization
@@ -164,8 +166,8 @@ public class SearchQuerySerializerTests
         assertEquals("cm:creator",searchQuery.getStats().get(0).getField());
         assertEquals("mylabel",searchQuery.getStats().get(0).getLabel());
         //Range Facet
-        RangeParameters range = searchQuery.getFacetRanges();
-        assertNotNull(range);
+        List<RangeParameters> ranges = searchQuery.getFacetRanges();
+        assertNotNull(ranges);
         
     }
 

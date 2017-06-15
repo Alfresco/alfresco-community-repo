@@ -28,39 +28,13 @@ package org.alfresco.rest.api.search;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
-import static junit.framework.TestCase.fail;
-import static org.alfresco.service.cmr.repository.StoreRef.PROTOCOL_DELETED;
-import static org.alfresco.service.cmr.repository.StoreRef.PROTOCOL_TEST;
-import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
-import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
-import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import org.alfresco.rest.api.search.impl.SearchMapper;
-import org.alfresco.rest.api.search.model.Default;
-import org.alfresco.rest.api.search.model.FacetField;
-import org.alfresco.rest.api.search.model.FacetFields;
-import org.alfresco.rest.api.search.model.FacetQuery;
-import org.alfresco.rest.api.search.model.FilterQuery;
-import org.alfresco.rest.api.search.model.Limits;
-import org.alfresco.rest.api.search.model.Query;
-import org.alfresco.rest.api.search.model.Scope;
-import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.rest.api.search.model.SortDef;
-import org.alfresco.rest.api.search.model.Spelling;
-import org.alfresco.rest.api.search.model.Template;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.resource.parameters.Paging;
-import org.alfresco.rest.framework.resource.parameters.Params;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.LimitBy;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
-import org.alfresco.service.cmr.search.SearchService;
-import org.junit.Assert;
-import org.junit.Test;
 
 import java.util.Arrays;
+
+import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.parameters.Params;
+import org.junit.Test;
 
 /**
  * Tests the SearchApiWebscript class

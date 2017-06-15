@@ -495,9 +495,9 @@ public class ResultMapper
         List<GenericFacetResponse> ffcs = new ArrayList<>(facetFields.size());
         if (facetFields != null && !facetFields.isEmpty() && searchQuery.getQuery() != null)
         {
-            List<GenericBucket> buckets = new ArrayList<>();
             for (Entry<String, List<Map<String, String>>> facet : facetFields.entrySet())
             {
+                List<GenericBucket> buckets = new ArrayList<>();
                 facet.getValue().forEach(action -> buckets.add(buildGenericBucketFromRange(facet.getKey(), (Map<String, String>) action)));
                 ffcs.add(new GenericFacetResponse(FACET_TYPE.range, facet.getKey(), buckets));
             }

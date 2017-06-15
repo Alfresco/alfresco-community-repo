@@ -44,6 +44,8 @@ public interface ActivitiConstants
     public static final String DEFAULT_TRANSITION_DESCRIPTION = "Default Transition";
 
     public static final String USER_TASK_NODE_TYPE = "userTask";
+    public static final String SUB_PROCESS_NODE_TYPE = "subProcess";
+    public static final String PROP_INITIAL_ACTIVITY = "initial";
     public static final String PROP_TASK_FORM_KEY = "taskFormKey";
     public static final String PROP_POOLED_ACTORS_HISTORY = "pooledActorsHistory";
     public static final String DELETE_REASON_DELETED = "deleted";

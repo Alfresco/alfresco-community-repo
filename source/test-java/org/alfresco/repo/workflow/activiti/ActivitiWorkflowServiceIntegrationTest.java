@@ -37,7 +37,6 @@ import java.util.Map;
 
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
@@ -49,7 +48,6 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -76,6 +74,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     public static final String ALFRESCO_WORKFLOW_REVIEW_POOLED_BPMN20_XML = "alfresco/workflow/review-pooled.bpmn20.xml";
     public static final String ALFRESCO_WORKFLOW_PARALLEL_REVIEW_BPMN20_XML = "alfresco/workflow/parallel-review.bpmn20.xml";
     public static final String ACTIVITI_TEST_TIMER_BPMN20_XML = "activiti/testTimer.bpmn20.xml";
+    public static final String ACTIVITI_TEST_WITH_SUB_PROCESS_XML = "activiti/testWorkflowWithSubprocess.xml";
 
     public void testOutcome() throws Exception
     {
@@ -219,7 +218,18 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         WorkflowTaskDefinition taskDef = taskDefs.get(1);
         assertEquals("wf:activitiReviewTask", taskDef.getId());
     }
-    
+
+    // Added after MNT-17601. Failed to find any completed tasks when the workflow had a sub process.
+    public void testCompletedTaskInWorkflowWithSubProcess()
+    {
+        WorkflowDefinition definition = deployDefinition(ACTIVITI_TEST_WITH_SUB_PROCESS_XML);
+        String workflowDefId = definition.getId();
+        List<WorkflowTaskDefinition> taskDefs = workflowService.getTaskDefinitions(workflowDefId);
+        assertEquals(2, taskDefs.size()); // Prior to the fix for MNT-17601 this list only contained "Alfresco start".
+        assertEquals("Alfresco start", taskDefs.get(0).getNode().getTitle());
+        assertEquals("Alfresco User Task",   taskDefs.get(1).getNode().getTitle());
+    }
+
     public void testAccessStartTaskAsAssigneeFromTaskPartOfProcess()
     {
         // Test added to validate fix for CLOUD-1929 - start-task can be accesses by assignee of a task

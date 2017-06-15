@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.solr.facet.facetsresponse;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -37,8 +38,8 @@ public class GenericBucket
     private final String filterQuery;
     private final Object display;
     private final Set<Metric> metrics;
-    //Addtional information relating to facets such as to and from.
-    private Set facetSpecificData;
+    //Additional information relating to facets such as to and from.
+    private Map<String, String> facetInfo;
     private final List<GenericFacetResponse> facets;
 
     public GenericBucket(String label, String filterQuery, Object display, Set<Metric> metrics, List<GenericFacetResponse> facets)
@@ -49,6 +50,15 @@ public class GenericBucket
         this.metrics = metrics;
         this.facets = facets;
         
+    }
+    public GenericBucket(String label, String filterQuery, Object display, Set<Metric> metrics, List<GenericFacetResponse> facets, Map facetInfo)
+    {
+        this.label = label;
+        this.filterQuery = filterQuery;
+        this.display = display;
+        this.metrics = metrics;
+        this.facets = facets;
+        this.facetInfo = facetInfo;
     }
 
     public String getFilterQuery()
@@ -75,4 +85,9 @@ public class GenericBucket
     {
         return facets;
     }
+    public Map<String, String> getFacetInfo()
+    {
+        return facetInfo;
+    }
+    
 }

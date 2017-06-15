@@ -26,7 +26,6 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -99,7 +98,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
 
     private Map<String, List<Pair<String, Integer>>> facetIntervals = new HashMap<String, List<Pair<String, Integer>>>(1);
     
-    private Map<String, List<Pair<String, Integer>>> facetRanges = new HashMap<String, List<Pair<String, Integer>>>(1);
+    private Map<String,List> facetRanges = new HashMap<String,List>();
 
     private List<GenericFacetResponse> pivotFacets = new ArrayList<>();
 
@@ -300,6 +299,12 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                         pivotFacets = buildPivot(facet_pivot, pivotName);
                     }
                 }
+                /*
+                 * "0":4
+                 * start:0
+                 * end:100
+                 * 
+                 */
 
                 if(facet_counts.has("facet_ranges"))
                 {
@@ -307,15 +312,24 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     for(Iterator it = facet_ranges.keys(); it.hasNext();)
                     {
                         String fieldName = (String) it.next();
+                        String gap = facet_ranges.getJSONObject(fieldName).getString("gap");
+                        String end = facet_ranges.getJSONObject(fieldName).getString("end");
                         JSONArray rangeCollection = facet_ranges.getJSONObject(fieldName).getJSONArray("counts");
-                        ArrayList<Pair<String, Integer>> facetRangeValues = new ArrayList<Pair<String, Integer>>(rangeCollection.length()/2);
+                        List<Map<String, String>> buckets = new ArrayList<Map<String, String>>();
                         for(int i = 0; i < rangeCollection.length(); i+=2)
                         {
-                            String facetEntryName = rangeCollection.getString(i);
-                            Integer facetEntryCount = Integer.parseInt(rangeCollection.getString(i+1));
-                            facetRangeValues.add(new Pair<String, Integer>(facetEntryName, facetEntryCount));
+                            Map<String,String> rangeMap = new HashMap<String,String>(3);
+                            String rangeFrom = rangeCollection.getString(i);
+                            String facetRangeCount = rangeCollection.getString(i+1);
+                            String rangeTo = (i+2 < rangeCollection.length() ? rangeCollection.getString(i+2):end);
+                            String label = rangeFrom + " - " + rangeTo;
+                            rangeMap.put("label", label);
+                            rangeMap.put("count", facetRangeCount);
+                            rangeMap.put("from", rangeFrom);
+                            rangeMap.put("to", rangeTo);
+                            buckets.add(rangeMap);
                         }
-                        facetRanges.put(fieldName,facetRangeValues);
+                        facetRanges.put(fieldName, buckets);
                     }
                 }
             }
@@ -717,7 +731,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         return processedDenies;
     }
 
-    public Map<String, List<Pair<String, Integer>>> getFacetRanges()
+    public Map<String,List> getFacetRanges()
     {
         return facetRanges;
     }

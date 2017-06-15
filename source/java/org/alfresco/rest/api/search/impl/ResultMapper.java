@@ -323,7 +323,7 @@ public class ResultMapper
                     {
                         Object display = withDisplay?propertyLookup.lookup(facet.getKey(), buck.getFirst()):null;
                         String filterQuery = lookupQuery(facet.getKey(), buck.getFirst(), searchQuery);
-                        buckets.add(new Bucket(buck.getFirst(), facet.getKey()+":"+filterQuery, buck.getSecond(), display));
+                        buckets.add(new Bucket(buck.getFirst(), filterQuery, buck.getSecond(), display));
                     }
                     ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
                 }
@@ -341,13 +341,14 @@ public class ResultMapper
                     && searchQuery.getFacetIntervals().getIntervals() != null
                     && !searchQuery.getFacetIntervals().getIntervals().isEmpty())
         {
-            Optional<Interval> found = searchQuery.getFacetIntervals().getIntervals().stream().filter(interval -> facetKey.equals(interval.getField())).findFirst();
+            Optional<Interval> found = searchQuery.getFacetIntervals().getIntervals().stream().filter(
+                        interval -> facetKey.equals(interval.getLabel()!=null?interval.getLabel():interval.getField())).findFirst();
             if (found.isPresent())
             {
                 if (found.get().getSets() != null)
                 {
                     Optional<IntervalSet> foundSet = found.get().getSets().stream().filter(aSet -> key.equals(aSet.getLabel())).findFirst();
-                    if (foundSet.isPresent()) return foundSet.get().toRange();
+                    if (foundSet.isPresent()) return found.get().getField()+":"+foundSet.get().toRange();
                 }
             }
         }

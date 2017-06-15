@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -50,15 +50,18 @@ import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferTarget;
 import org.alfresco.service.cmr.transfer.TransferVersion;
+import org.alfresco.util.HttpClientHelper;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.json.ExceptionJsonSerializer;
 import org.alfresco.util.json.JsonSerializer;
+import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.ProxyHost;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -71,7 +74,6 @@ import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.commons.httpclient.protocol.SSLProtocolSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -106,6 +108,13 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     private NodeService nodeService;
     private boolean isAuthenticationPreemptive = false;
 
+    private ProxyHost httpProxyHost;
+    private ProxyHost httpsProxyHost;
+    private Credentials httpProxyCredentials;
+    private Credentials httpsProxyCredentials;
+    private AuthScope httpAuthScope;
+    private AuthScope httpsAuthScope;
+
     public HttpClientTransmitterImpl()
     {
         protocolMap = new TreeMap<String,Protocol>();
@@ -116,6 +125,16 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         httpClient.setHttpConnectionManager(new MultiThreadedHttpConnectionManager());
         httpMethodFactory = new StandardHttpMethodFactoryImpl();
         jsonErrorSerializer = new ExceptionJsonSerializer();
+
+        // Create an HTTP Proxy Host if appropriate system properties are set
+        httpProxyHost = HttpClientHelper.createProxyHost("http.proxyHost", "http.proxyPort", DEFAULT_HTTP_PORT);
+        httpProxyCredentials = HttpClientHelper.createProxyCredentials("http.proxyUser", "http.proxyPassword");
+        httpAuthScope = createProxyAuthScope(httpProxyHost);
+
+        // Create an HTTPS Proxy Host if appropriate system properties are set
+        httpsProxyHost = HttpClientHelper.createProxyHost("https.proxyHost", "https.proxyPort", DEFAULT_HTTPS_PORT);
+        httpsProxyCredentials = HttpClientHelper.createProxyCredentials("https.proxyUser", "https.proxyPassword");
+        httpsAuthScope = createProxyAuthScope(httpsProxyHost);
     }
 
     public void init()
@@ -123,7 +142,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         PropertyCheck.mandatory(this, "contentService", contentService);
         httpClient.getParams().setAuthenticationPreemptive(isAuthenticationPreemptive);
     }
-
+    
     /**
      * By default this class uses the standard SSLProtocolSocketFactory, but this method allows this to be overridden.
      * Useful if, for example, one wishes to permit support of self-signed certificates on the target.
@@ -226,12 +245,52 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
      * @param target TransferTarget
      * @return HttpState
      */
-    protected HttpState getHttpState(TransferTarget target)
+    private HttpState getHttpState(TransferTarget target)
     {
         HttpState httpState = new HttpState();
         httpState.setCredentials(new AuthScope(target.getEndpointHost(), target.getEndpointPort(),
-                AuthScope.ANY_REALM),
-                new UsernamePasswordCredentials(target.getUsername(), new String(target.getPassword())));
+                                 AuthScope.ANY_REALM),
+                                 new UsernamePasswordCredentials(target.getUsername(), new String(target.getPassword())));
+
+        String requiredProtocol = target.getEndpointProtocol();
+        if (requiredProtocol == null)
+        {
+            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {requiredProtocol});
+        }
+
+        Protocol protocol = protocolMap.get(requiredProtocol.toLowerCase().trim());
+        if (protocol == null) 
+        {
+            log.error("Unsupported protocol: " + requiredProtocol);
+            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {requiredProtocol});
+        }
+
+        // Use the appropriate Proxy credentials if required
+        if (httpProxyHost != null && HTTP_SCHEME_NAME.equals(protocol.getScheme()) && HttpClientHelper.requiresProxy(target.getEndpointHost()))
+        {
+            if (httpProxyCredentials != null)
+            {
+                httpState.setProxyCredentials(httpAuthScope, httpProxyCredentials);
+
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Using HTTP proxy credentials for proxy: " + httpProxyHost.getHostName());
+                }
+            }
+        }
+        else if (httpsProxyHost != null && HTTPS_SCHEME_NAME.equals(protocol.getScheme()) && HttpClientHelper.requiresProxy(target.getEndpointHost()))
+        {
+            if (httpsProxyCredentials != null)
+            {
+                httpState.setProxyCredentials(httpsAuthScope, httpsProxyCredentials);
+
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Using HTTPS proxy credentials for proxy: " + httpsProxyHost.getHostName());
+                }
+            }
+        } 
+
         return httpState;
     }
 
@@ -244,18 +303,54 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         String requiredProtocol = target.getEndpointProtocol();
         if (requiredProtocol == null)
         {
-            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {target.getEndpointProtocol()});
+            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {requiredProtocol});
         }
 
         Protocol protocol = protocolMap.get(requiredProtocol.toLowerCase().trim());
-        if (protocol == null) {
+        if (protocol == null) 
+        {
             log.error("Unsupported protocol: " + target.getEndpointProtocol());
-            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {target.getEndpointProtocol()});
+            throw new TransferException(MSG_UNSUPPORTED_PROTOCOL, new Object[] {requiredProtocol});
         }
 
         HostConfiguration hostConfig = new HostConfiguration();
         hostConfig.setHost(target.getEndpointHost(), target.getEndpointPort(), protocol);
+        
+        // Use the appropriate Proxy Host if required
+        if (httpProxyHost != null && HTTP_SCHEME_NAME.equals(protocol.getScheme()) && HttpClientHelper.requiresProxy(target.getEndpointHost()))
+        {
+            hostConfig.setProxyHost(httpProxyHost);
+
+            if (log.isDebugEnabled())
+            {
+                log.debug("Using HTTP proxy host for: " + target.getEndpointHost());
+            }
+        }
+        else if (httpsProxyHost != null && HTTPS_SCHEME_NAME.equals(protocol.getScheme()) && HttpClientHelper.requiresProxy(target.getEndpointHost()))
+        {
+            hostConfig.setProxyHost(httpsProxyHost);
+
+            if (log.isDebugEnabled())
+            {
+                log.debug("Using HTTPS proxy host for: " + target.getEndpointHost());
+            }
+        } 
         return hostConfig;
+    }
+    
+    /**
+     * Create suitable AuthScope for ProxyHost. If the ProxyHost is null, no AuthsScope will be created.
+     * @param proxyHost ProxyHost
+     * @return AuthScope for provided ProxyHost, null otherwise.
+     */
+    private AuthScope createProxyAuthScope(final ProxyHost proxyHost)
+    {
+        AuthScope authScope = null;
+        if (proxyHost !=  null) 
+        {
+            authScope = new AuthScope(proxyHost.getHostName(), proxyHost.getPort());
+        }
+        return authScope;
     }
 
     public Transfer begin(TransferTarget target, String fromRepositoryId, TransferVersion fromVersion) throws TransferException

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,8 +25,14 @@
  */
 package org.alfresco.util;
 
+import java.util.StringTokenizer;
+
 import org.alfresco.httpclient.HttpClientFactory;
+import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.ProxyHost;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.connector.RemoteClient;
@@ -40,6 +46,19 @@ import org.springframework.extensions.webscripts.connector.RemoteClient;
  * 
  * TODO Merge me back to Spring Surf, which is where this code has been
  *  pulled out from (was in {@link RemoteClient} but not available externally)
+ *  
+ * This class also provides support for creating proxy configurations, 
+ * taking into account System properties like:
+ * </p>
+ * <ul>
+ *  <li>http.proxyHost</li>
+ *  <li>http.proxyPort</li>
+ *  <li>http.nonProxyHosts</li>
+ *  <li>http.proxyUser</li>
+ *  <li>http.proxyPassword</li>
+ * </ul>
+ * <p>
+ *  
  */
 public class HttpClientHelper
 {   
@@ -63,5 +82,84 @@ public class HttpClientHelper
     public static HttpClient getHttpClient()
     {
         return httpClient.get();
+    }
+    
+    /**
+     * Create proxy host for the given system host and port properties.
+     * If the properties are not set, no proxy will be created.
+     * 
+     * @param hostProperty the name of the system property for the proxy server (<code>http.proxyHost</code> or <code>https.proxyHost</code>)
+     * @param portProperty the name of the system property for the proxy server port (http.proxyPort)
+     * @param defaultPort 
+     * 
+     * @return ProxyHost if appropriate properties have been set, null otherwise
+     */
+    public static ProxyHost createProxyHost(final String hostProperty, final String portProperty, final int defaultPort)
+    {
+        final String proxyHost = System.getProperty(hostProperty);
+        ProxyHost proxy = null;
+        if (proxyHost != null && proxyHost.length() != 0)
+        {
+            final String strProxyPort = System.getProperty(portProperty);
+            if (strProxyPort == null || strProxyPort.length() == 0)
+            {
+                proxy = new ProxyHost(proxyHost, defaultPort);
+            }
+            else
+            {
+                proxy = new ProxyHost(proxyHost, Integer.parseInt(strProxyPort));
+            }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("ProxyHost: " + proxy.toString());
+            }
+        }
+        return proxy;
+    }
+    
+    /**
+     * Create the proxy credentials for the given proxy user and password properties.
+     * If the properties are not set, not credentials will be created.
+     * @param proxyUserProperty the name of the system property for the proxy user
+     * @param proxyPasswordProperty the name of the system property for the proxy password
+     * @return Credentials if appropriate properties have been set, null otherwise
+     */
+    public static Credentials createProxyCredentials(final String proxyUserProperty, final String proxyPasswordProperty) 
+    {
+        final String proxyUser = System.getProperty(proxyUserProperty);
+        final String proxyPassword = System.getProperty(proxyPasswordProperty);
+        Credentials credentials = null;
+        if (StringUtils.isNotBlank(proxyUser))
+        {
+            credentials = new UsernamePasswordCredentials(proxyUser, proxyPassword);
+        }
+        return credentials;
+    }
+    
+    /**
+     * Return true unless the given target host is specified in the <code>http.nonProxyHosts</code> system property.
+     * See http://docs.oracle.com/javase/8/docs/api/java/net/doc-files/net-properties.html
+     * @param targetHost    Non-null host name to verify
+     * @return true if not specified in the list, false if it is specified and therefore should be excluded from proxy
+     */
+    public static boolean requiresProxy(final String targetHost)
+    {
+        boolean requiresProxy = true;
+        final String nonProxyHosts = System.getProperty("http.nonProxyHosts");
+        if (nonProxyHosts != null)
+        {
+            StringTokenizer tokenizer = new StringTokenizer(nonProxyHosts, "|");
+            while (tokenizer.hasMoreTokens())
+            {
+                String pattern = tokenizer.nextToken();
+                pattern = pattern.replaceAll("\\.", "\\\\.").replaceAll("\\*", ".*");
+                if (targetHost.matches(pattern))
+                {
+                    requiresProxy = false;
+                    break;
+                }
+            }
+        }
+        return requiresProxy;
     }
 }

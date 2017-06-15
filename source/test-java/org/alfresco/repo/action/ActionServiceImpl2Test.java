@@ -62,6 +62,8 @@ import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
 import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
 import org.alfresco.util.test.junitrules.WellKnownNodes;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -144,6 +146,36 @@ public class ActionServiceImpl2Test
         });
     }
 
+    // MNT-15365
+    @Test
+    public void testIncrementCounterOnDeletedNode() throws Exception
+    {
+        NodeRef deletedNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                // get the Document Library NodeRef
+                final NodeRef docLibNodeRef = testSiteAndMemberInfo.doclib;
+
+                NodeRef result = nodeService.createNode(docLibNodeRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS,
+                        ContentModel.TYPE_CONTENT).getChildRef();
+                nodeService.deleteNode(result);
+                return result;
+            }
+        });
+
+        // before the fix that would thrown an error
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                Action incrementAction = actionService.createAction(CounterIncrementActionExecuter.NAME);
+
+                actionService.executeAction(incrementAction, deletedNode);
+                return null;
+            }
+        });
+    }
 
     @Test
     public void testIncrementCounter() throws Exception

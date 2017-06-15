@@ -76,6 +76,7 @@ import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.FacetFormat;
 import org.alfresco.service.cmr.search.Interval;
 import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -303,7 +304,7 @@ public class ResultMapper
         {
             //If group by field populated in query facet return bucketing into facet field.
             List<GenericFacetResponse> facetQueryForFields = getFacetBucketsFromFacetQueries(facetQueries,searchQuery);
-            if(!facetQueryForFields.isEmpty())
+            if(!facetQueryForFields.isEmpty() || FacetFormat.V2 == searchQuery.getFacetFormat())
             {
                 facets.addAll(facetQueryForFields);
             }
@@ -383,7 +384,7 @@ public class ResultMapper
                     group = found.get().getGroup();
                 }
             }
-            if(group != null && !group.isEmpty())
+            if(group != null && !group.isEmpty() || FacetFormat.V2 == searchQuery.getFacetFormat())
             {
                 if(groups.containsKey(group)) 
                 {
@@ -487,8 +488,6 @@ public class ResultMapper
                                 }
                             }
                         }
-//                        Set<Metric> metrics = new HashSet<>(1);
-//                        metrics.add(new SimpleMetric(METRIC_TYPE.count,buck.getSecond()));
                         buckets.add(new Bucket(buck.getFirst(), filterQuery,buck.getSecond(),display));
                     }
                     ffcs.add(new FacetFieldContext(facet.getKey(), buckets));

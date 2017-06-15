@@ -407,7 +407,15 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         for(Iterator it = facet_ranges.keys(); it.hasNext();)
         {
             String fieldName = (String) it.next();
-            String end = facet_ranges.getJSONObject(fieldName).getString("end");
+            String end = "";
+            try
+            {
+                end = facet_ranges.getJSONObject(fieldName).getString("end");
+            }
+            catch(JSONException e)
+            {
+                end = String.valueOf(facet_ranges.getJSONObject(fieldName).getInt("end"));
+            }
             JSONArray rangeCollection = facet_ranges.getJSONObject(fieldName).getJSONArray("counts");
             List<Map<String, String>> buckets = new ArrayList<Map<String, String>>();
             for(int i = 0; i < rangeCollection.length(); i+=2)
@@ -419,11 +427,11 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 }
                 Map<String,String> rangeMap = new HashMap<String,String>(3);
                 String rangeFrom = rangeCollection.getString(i);
-                String facetRangeCount = rangeCollection.getString(i+1);
+                int facetRangeCount = rangeCollection.getInt(i+1);
                 String rangeTo = (i+2 < rangeCollection.length() ? rangeCollection.getString(i+2):end);
                 String label = rangeFrom + " - " + rangeTo;
                 rangeMap.put(GenericFacetResponse.LABEL, label);
-                rangeMap.put(GenericFacetResponse.COUNT, facetRangeCount);
+                rangeMap.put(GenericFacetResponse.COUNT, String.valueOf(facetRangeCount));
                 rangeMap.put(GenericFacetResponse.START, rangeFrom);
                 rangeMap.put(GenericFacetResponse.END, rangeTo);
                 rangeMap.put("bucketPosition", position);

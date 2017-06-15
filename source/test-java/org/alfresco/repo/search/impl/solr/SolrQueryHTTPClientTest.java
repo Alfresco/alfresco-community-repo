@@ -101,8 +101,7 @@ public class SolrQueryHTTPClientTest
         when(namespaceDAO.getPrefixes()).thenReturn(Arrays.asList(CONTENT_MODEL_PREFIX, "exif"));
         when(namespaceDAO.getNamespaceURI(anyString())).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        when(dictionaryService.getProperty(notNull(QName.class))).thenAnswer(invocation ->
-        {
+        when(dictionaryService.getProperty(notNull(QName.class))).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             QName qName = (QName) args[0];
             if (qName.getLocalName().contains("created"))
@@ -309,7 +308,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.field=creator"));
         assertTrue(url.contains("f.creator.facet.limit=100"));
-        assertTrue(url.contains("facet.field="+encoder.encode("{!afts something=right}modifier", "UTF-8")));
+        assertTrue(url.contains("facet.field=" + encoder.encode("{!afts something=right}modifier", "UTF-8")));
         assertTrue(url.contains("f.modifier.facet.limit=100"));
 
         prefixff.setLabel("myLabel");
@@ -320,9 +319,9 @@ public class SolrQueryHTTPClientTest
         url = urlBuilder.toString();
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
-        assertTrue(url.contains("facet.field="+encoder.encode("{!afts key=yourLabel}creator", "UTF-8")));
+        assertTrue(url.contains("facet.field=" + encoder.encode("{!afts key=yourLabel}creator", "UTF-8")));
         assertTrue(url.contains("f.creator.facet.limit=100"));
-        assertTrue(url.contains("facet.field="+encoder.encode("{!afts key=myLabel something=right}modifier", "UTF-8")));
+        assertTrue(url.contains("facet.field=" + encoder.encode("{!afts key=myLabel something=right}modifier", "UTF-8")));
         assertTrue(url.contains("f.modifier.facet.limit=100"));
 
         prefixff.setExcludeFilters(Arrays.asList("x", "y"));
@@ -333,9 +332,9 @@ public class SolrQueryHTTPClientTest
         url = urlBuilder.toString();
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
-        assertTrue(url.contains("facet.field="+encoder.encode("{!afts ex=B key=yourLabel}creator", "UTF-8")));
+        assertTrue(url.contains("facet.field=" + encoder.encode("{!afts ex=B key=yourLabel}creator", "UTF-8")));
         assertTrue(url.contains("f.creator.facet.limit=100"));
-        assertTrue(url.contains("facet.field="+encoder.encode("{!afts ex=x,y key=myLabel something=right}modifier", "UTF-8")));
+        assertTrue(url.contains("facet.field=" + encoder.encode("{!afts ex=x,y key=myLabel something=right}modifier", "UTF-8")));
         assertTrue(url.contains("f.modifier.facet.limit=100"));
 
         prefixff.setField("bill");
@@ -348,10 +347,37 @@ public class SolrQueryHTTPClientTest
         url = urlBuilder.toString();
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
-        assertTrue(url.contains("facet.field="+encoder.encode("{!afts ex=B}ben", "UTF-8")));
+        assertTrue(url.contains("facet.field=" + encoder.encode("{!afts ex=B}ben", "UTF-8")));
         assertTrue(url.contains("f.ben.facet.limit=100"));
-        assertTrue(url.contains("facet.field="+encoder.encode("{!afts key=myLabel}bill", "UTF-8")));
+        assertTrue(url.contains("facet.field=" + encoder.encode("{!afts key=myLabel}bill", "UTF-8")));
         assertTrue(url.contains("f.bill.facet.limit=100"));
 
     }
+
+    @Test
+    public void testBuildPivots() throws UnsupportedEncodingException
+    {
+        SearchParameters params = new SearchParameters();
+        params.setSearchTerm("bob");
+        params.addPivot("creator");
+
+        StringBuilder urlBuilder = new StringBuilder();
+
+        client.buildPivotParameters(params, encoder, urlBuilder);
+        String url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains("facet.pivot=creator"));
+
+        params.addPivot("cm:name");
+        params.addPivot("{!stats=piv1}cat");
+
+        urlBuilder = new StringBuilder();
+        client.buildPivotParameters(params, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains("facet.pivot="+ encoder.encode("creator,cm:name,{!stats=piv1}cat", "UTF-8")));
+    }
+
 }

@@ -634,6 +634,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         }
 
         buildFacetParameters(searchParameters, isSharded, encoder, url);
+        buildPivotParameters(searchParameters, encoder, url);
         buildFacetIntervalParameters(searchParameters, encoder, url);
         buildHightlightParameters(searchParameters, encoder, url);
     }
@@ -732,6 +733,15 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 }
                 url.append("&facet.query=").append(encoder.encode(facetQuery, "UTF-8"));
             }
+        }
+    }
+
+    protected void buildPivotParameters(SearchParameters searchParameters, URLCodec encoder, StringBuilder url) throws UnsupportedEncodingException
+    {
+        if (searchParameters.getPivots() != null && !searchParameters.getPivots().isEmpty())
+        {
+            url.append("&facet=").append(encoder.encode("true", "UTF-8"));
+            url.append("&facet.pivot=").append(encoder.encode(String.join(",", searchParameters.getPivots()), "UTF-8"));
         }
     }
 

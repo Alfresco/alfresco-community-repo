@@ -28,21 +28,31 @@ package org.alfresco.rest.api.search.model;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * POJO class representing Pivot
  */
 public class Pivot
 {
     private final String key;
+    private final List<Pivot> pivots;
 
     @JsonCreator
-    public Pivot(@JsonProperty("key")  String key)
+    public Pivot(@JsonProperty("key") String key, @JsonProperty("pivots") List<Pivot> pivots)
     {
         this.key = key;
+        this.pivots = pivots == null? Collections.emptyList():pivots;
     }
 
     public String getKey()
     {
         return key;
+    }
+
+    public List<Pivot> getPivots()
+    {
+        return pivots;
     }
 }

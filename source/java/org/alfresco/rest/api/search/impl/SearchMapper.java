@@ -576,59 +576,78 @@ public class SearchMapper
         }
         
     }
-    public void fromPivot(SearchParameters sp, List<StatsRequestParameters> stats, FacetFields facetFields, List<Pivot> pivots, SearchRequestContext searchRequestContext)
+
+    public void fromPivot(SearchParameters sp, List<StatsRequestParameters> stats, FacetFields facetFields, List<Pivot> multiplePivots, SearchRequestContext searchRequestContext)
     {
-        if (facetFields != null && pivots != null && !pivots.isEmpty())
+        if (multiplePivots != null && !multiplePivots.isEmpty())
         {
-            ParameterCheck.mandatory("facetFields facets", facetFields.getFacets());
+            multiplePivots.forEach(aPivot -> {
+                List<String> pivotKeys = new ArrayList<>();
+                buildPivotKeys(pivotKeys, aPivot, stats,facetFields, searchRequestContext);
+                sp.addPivots(pivotKeys);
+            });
 
-            ListIterator<Pivot> piterator = pivots.listIterator();
+        }
+    }
 
-            while (piterator.hasNext()) {
+    protected void buildPivotKeys(List<String> pivotKeys, Pivot aPivot, List<StatsRequestParameters> stats, FacetFields facetFields, SearchRequestContext searchRequestContext)
+    {
+        if (aPivot == null) return;
+        String pivotKey = null;
+        ParameterCheck.mandatoryString("pivot key", aPivot.getKey());
 
-                Pivot pivot = piterator.next();
-                ParameterCheck.mandatoryString("pivot key", pivot.getKey());
-                String pivotKey = pivot.getKey();
+        if (facetFields.getFacets() != null && !facetFields.getFacets().isEmpty())
+        {
+            Optional<FacetField> found = facetFields.getFacets().stream()
+                        .filter(queryable -> aPivot.getKey().equals(queryable.getLabel() != null ? queryable.getLabel() : queryable.getField())).findFirst();
 
-                if (facetFields.getFacets() != null && !facetFields.getFacets().isEmpty())
+            if (found.isPresent())
+            {
+                pivotKey = aPivot.getKey();
+                if (searchRequestContext.getPivotKeys().containsValue(pivotKey))
                 {
-                    Optional<FacetField> found = facetFields.getFacets().stream()
-                                .filter(queryable -> pivotKey.equals(queryable.getLabel() != null ? queryable.getLabel() : queryable.getField())).findFirst();
-
-                    if (found.isPresent())
-                    {
-                        sp.addPivot(found.get().getField());
-                        facetFields.getFacets().remove(found.get());
-                        searchRequestContext.getPivotKeys().put(found.get().getField(), pivotKey);
-                        continue;
-                    }
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                new Object[] { ": Duplicate pivot parameter " + aPivot.getKey() + "" });
                 }
 
-                if (piterator.hasNext())
-                {
-                    //Its not the last one so lets complain
-                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
-                                new Object[] { ": Pivot parameter " + pivotKey + " is does not reference a facet Field." });
-                }
-                else
-                {
-                    if (stats != null && !stats.isEmpty())
-                    {
-                        //It is the last one so it can reference stats
-                        Optional<StatsRequestParameters> foundStat =  stats.stream().filter(stas -> pivotKey.equals(stas.getLabel()!=null?stas.getLabel():stas.getField())).findFirst();
-                        if (foundStat.isPresent())
-                        {
-                            sp.addPivot(pivotKey);
-                            searchRequestContext.getPivotKeys().put(pivotKey, pivotKey);
-                            continue;
-                        }
+                pivotKeys.add(found.get().getField());
+                facetFields.getFacets().remove(found.get());
+                searchRequestContext.getPivotKeys().put(found.get().getField(), pivotKey);
+            }
+        }
 
-                    }
-                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
-                                new Object[] { ": Pivot parameter " + pivotKey + " is does not reference a facet Field or stats." });
+        if (pivotKey == null && ((aPivot.getPivots() == null) || aPivot.getPivots().isEmpty()))
+        {
+            //It is the last one so it can reference stats
+            if (stats != null && !stats.isEmpty())
+            {
+                Optional<StatsRequestParameters> foundStat =  stats.stream().filter(stas -> aPivot.getKey().equals(stas.getLabel()!=null?stas.getLabel():stas.getField())).findFirst();
+                if (foundStat.isPresent())
+                {
+                    pivotKey = aPivot.getKey();
+                    pivotKeys.add(pivotKey);
+                    searchRequestContext.getPivotKeys().put(pivotKey, pivotKey);
                 }
             }
         }
+
+        if (pivotKey == null)
+        {
+            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                        new Object[] { ": Pivot parameter " + aPivot.getKey() + " does not reference a facet Field or stats." });
+        }
+
+        if (aPivot.getPivots() != null && !aPivot.getPivots().isEmpty() && aPivot.getPivots().size()>1)
+        {
+            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                        new Object[] { ": Currently only 1 nested pivot is supported, you have "+aPivot.getPivots().size()});
+        }
+
+        aPivot.getPivots().forEach(subPivot ->
+        {
+            buildPivotKeys(pivotKeys, subPivot, stats, facetFields, searchRequestContext);
+        });
+
     }
 
     public void fromStats(SearchParameters sp, List<StatsRequestParameters> stats)

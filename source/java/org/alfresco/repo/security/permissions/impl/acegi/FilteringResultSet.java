@@ -68,7 +68,7 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
         this.inclusionMask = inclusionMask;
     }
 
-    /* package */ResultSet getUnFilteredResultSet()
+    public ResultSet getUnFilteredResultSet()
     {
         return unfiltered;
     }

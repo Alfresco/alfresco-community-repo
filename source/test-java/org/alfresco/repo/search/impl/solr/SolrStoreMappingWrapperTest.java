@@ -34,6 +34,7 @@ import static org.mockito.Mockito.doReturn;
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
+import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.junit.Before;
@@ -42,6 +43,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.beans.factory.BeanFactory;
+
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author Andy
@@ -232,7 +235,16 @@ public class SolrStoreMappingWrapperTest
         String[] fragments = shards.split(",");
         assertEquals(mapping.getNumShards(), fragments.length);
     }
-    
+
+    @Test
+    public void testSingleShard() throws UnsupportedEncodingException
+    {
+        URLCodec encoder = new URLCodec();
+        String shards = unshardedWrapper.getShards();
+        assertNotNull(shards);
+        assertEquals("common:999"+encoder.encode("/solr4", "UTF-8"), shards);
+    }
+
     @Test
     public void testDistribution()
     {

@@ -205,52 +205,6 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
         return getShards2();
     }
 
-    private String getShards1()
-    {
-        try
-        {
-            URLCodec encoder = new URLCodec();
-            StringBuilder builder = new StringBuilder();
-
-            Set<Integer> shards = new HashSet<Integer>();
-            for (int i = 0; i < httpClientsAndBaseURLs.size(); i += wrapped.getReplicationFactor())
-            {
-                for (Integer shardId : policy.getShardIdsForNode(i + 1))
-                {
-                    if (!shards.contains(shardId % wrapped.getNumShards()))
-                    {
-                        if (shards.size() > 0)
-                        {
-                            builder.append(',');
-                        }
-                        HttpClientAndBaseUrl httpClientAndBaseUrl = httpClientsAndBaseURLs.toArray(new HttpClientAndBaseUrl[0])[i];
-                        builder.append(encoder.encode(httpClientAndBaseUrl.getHost(), "UTF-8"));
-                        builder.append(':');
-                        builder.append(encoder.encode("" + httpClientAndBaseUrl.getPort(), "UTF-8"));
-                        if (httpClientAndBaseUrl.getBaseUrl().startsWith("/"))
-                        {
-                            builder.append(encoder.encode(httpClientAndBaseUrl.getBaseUrl(), "UTF-8"));
-                        }
-                        else
-                        {
-                            builder.append(encoder.encode("/" + httpClientAndBaseUrl.getBaseUrl(), "UTF-8"));
-                        }
-
-                        builder.append('-').append(shardId);
-
-                        shards.add(shardId % wrapped.getNumShards());
-                    }
-
-                }
-            }
-            return builder.toString();
-        }
-        catch (UnsupportedEncodingException e)
-        {
-            throw new LuceneQueryParserException("", e);
-        }
-    }
-
     private String getShards2()
     {
         try
@@ -281,7 +235,7 @@ public class ExplicitSolrStoreMappingWrapper implements SolrStoreMappingWrapper
                     builder.append(encoder.encode("/" + httpClientAndBaseUrl.getBaseUrl(), "UTF-8"));
                 }
 
-                builder.append('-').append(shard);
+                if (isSharded()) builder.append('-').append(shard);
 
             }
             return builder.toString();

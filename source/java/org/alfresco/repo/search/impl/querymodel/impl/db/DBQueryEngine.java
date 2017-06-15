@@ -180,7 +180,12 @@ public class DBQueryEngine implements QueryEngine
         StoreRef storeRef = options.getStores().get(0);
         storeRef = storeRef != null ? tenantService.getName(storeRef) : null;
 
-        dbQuery.setStoreId(nodeDAO.getStore(storeRef).getFirst());
+        Pair<Long, StoreRef> store = nodeDAO.getStore(storeRef);
+        if(store == null)
+        {
+        	  throw new QueryModelException("Unknown store: "+storeRef);
+        }
+        dbQuery.setStoreId(store.getFirst());
         Pair<Long, QName> sysDeletedType = qnameDAO.getQName(ContentModel.TYPE_DELETED);
         if(sysDeletedType == null)
         {

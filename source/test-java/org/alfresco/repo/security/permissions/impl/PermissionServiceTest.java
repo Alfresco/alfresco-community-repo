@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
-import java.io.Serializable;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import net.sf.acegisecurity.Authentication;
@@ -38,6 +39,8 @@ import net.sf.acegisecurity.GrantedAuthority;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.permissions.ADMAccessControlListDAO;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.Policy;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
@@ -45,6 +48,10 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnGrantLocalPermission;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsDisabled;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnInheritPermissionsEnabled;
+import org.alfresco.repo.security.permissions.PermissionServicePolicies.OnRevokeLocalPermission;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,9 +62,12 @@ import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.junit.FixMethodOrder;
 import org.junit.experimental.categories.Category;
+import org.junit.runners.MethodSorters;
 
 @Category(OwnJVMTestsCategory.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PermissionServiceTest extends AbstractPermissionTest
 {
     private SimplePermissionEntry denyAndyAll;
@@ -3930,4 +3940,77 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     // TODO: Test permissions on missing nodes
 
+    /**
+     * Test that the PermissionServicePolicies are invoked whenever a local permission is granted/revoked, or permission inheritance is enabled/disabled
+     */
+    public void testPermissionPolicies()
+    {
+        //test that OnGrantLocalPermission is invoked when a local permission is granted
+        OnGrantLocalPermission onGrantLocalPermission = createClassPolicy(OnGrantLocalPermission.class, OnGrantLocalPermission.QNAME, ContentModel.TYPE_BASE);
+
+        permissionService.setPermission(rootNodeRef, USER1_ANDY, PermissionService.CONTRIBUTOR, true);
+
+        verify(onGrantLocalPermission).onGrantLocalPermission(rootNodeRef, USER1_ANDY, PermissionService.CONTRIBUTOR);
+
+        
+        //test that OnRevokeLocalPermission is invoked when a local permission is revoked
+        OnRevokeLocalPermission onRevokeLocalPermission = createClassPolicy(OnRevokeLocalPermission.class, OnRevokeLocalPermission.QNAME, ContentModel.TYPE_BASE);
+
+        permissionService.setPermission(rootNodeRef, USER1_ANDY, PermissionService.CONTRIBUTOR, false);
+
+        verify(onRevokeLocalPermission).onRevokeLocalPermission(rootNodeRef, USER1_ANDY, PermissionService.CONTRIBUTOR);
+        
+        
+        //test that OnRevokeLocalPermission is invoked when a local permission is deleted
+        onRevokeLocalPermission = createClassPolicy(OnRevokeLocalPermission.class, OnRevokeLocalPermission.QNAME, ContentModel.TYPE_BASE);
+        
+        permissionService.deletePermission(rootNodeRef, USER1_ANDY, PermissionService.CONTRIBUTOR);
+
+        verify(onRevokeLocalPermission).onRevokeLocalPermission(rootNodeRef, USER1_ANDY, PermissionService.CONTRIBUTOR);
+        
+        //test that OnRevokeLocalPermission is invoked when all local permissions are revoked
+        onRevokeLocalPermission = createClassPolicy(OnRevokeLocalPermission.class, OnRevokeLocalPermission.QNAME, ContentModel.TYPE_BASE);
+        
+        permissionService.deletePermissions(rootNodeRef);
+
+        verify(onRevokeLocalPermission).onRevokeLocalPermission(rootNodeRef, null, null);
+        
+        //test that OnInheritPermissionsEnabled is invoked when permission inheritance is disabled
+        OnInheritPermissionsDisabled onInheritPermissionsDisabled = createClassPolicy(OnInheritPermissionsDisabled.class, OnInheritPermissionsDisabled.QNAME, ContentModel.TYPE_BASE);
+        
+        permissionService.setInheritParentPermissions(rootNodeRef, false);
+
+        verify(onInheritPermissionsDisabled).onInheritPermissionsDisabled(rootNodeRef, false);
+        
+        //test that OnInheritPermissionsEnabled is invoked when permission inheritance is disabled with async=false
+        onInheritPermissionsDisabled = createClassPolicy(OnInheritPermissionsDisabled.class, OnInheritPermissionsDisabled.QNAME, ContentModel.TYPE_BASE);
+        
+        permissionService.setInheritParentPermissions(rootNodeRef, false, false);
+
+        verify(onInheritPermissionsDisabled).onInheritPermissionsDisabled(rootNodeRef, false);
+        
+        //test that OnInheritPermissionsEnabled is invoked when permission inheritance is disabled with async=true
+        onInheritPermissionsDisabled = createClassPolicy(OnInheritPermissionsDisabled.class, OnInheritPermissionsDisabled.QNAME, ContentModel.TYPE_BASE);
+        
+        permissionService.setInheritParentPermissions(rootNodeRef, false, true);
+
+        verify(onInheritPermissionsDisabled).onInheritPermissionsDisabled(rootNodeRef, false);
+        
+        //test that OnInheritPermissionsEnabled is invoked when permission inheritance is enabled
+        OnInheritPermissionsEnabled onInheritPermissionsEnabled = createClassPolicy(OnInheritPermissionsEnabled.class, OnInheritPermissionsEnabled.QNAME, ContentModel.TYPE_BASE);
+        
+        permissionService.setInheritParentPermissions(rootNodeRef, true);
+
+        verify(onInheritPermissionsEnabled).onInheritPermissionsEnabled(rootNodeRef);
+    }
+    
+    private <T extends Policy> T createClassPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)
+    {
+        T policy = mock(policyInterface);
+        policyComponent.bindClassBehaviour(
+                    policyQName, 
+                    triggerOnClass, 
+                    new JavaBehaviour(policy, policyQName.getLocalName()));
+        return policy;
+    }    
 }

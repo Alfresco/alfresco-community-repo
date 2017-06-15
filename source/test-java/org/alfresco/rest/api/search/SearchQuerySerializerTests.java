@@ -164,7 +164,7 @@ public class SearchQuerySerializerTests
         assertEquals("cm:creator",searchQuery.getStats().get(0).getField());
         assertEquals("mylabel",searchQuery.getStats().get(0).getLabel());
         //Range Facet
-        RangeParameters range = searchQuery.getFacetRange();
+        RangeParameters range = searchQuery.getFacetRanges();
         assertNotNull(range);
         
     }

@@ -123,7 +123,7 @@ public class SearchMapper
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromHighlight(sp, searchQuery.getHighlight());
         fromFacetIntervals(sp, searchQuery.getFacetIntervals());
-        fromRange(sp, searchQuery.getFacetRange());
+        fromRange(sp, searchQuery.getFacetRanges());
         fromScope(sp, searchQuery.getScope(), searchRequestContext);
         fromLimits(sp, searchQuery.getLimits());
         fromTimezone(sp, searchQuery.getTimezone());
@@ -534,7 +534,7 @@ public class SearchMapper
     {
         if(rangeParams != null)
         {
-            ParameterCheck.mandatory("range", rangeParams);
+            ParameterCheck.mandatory("ranges", rangeParams);
             ParameterCheck.mandatory("field", rangeParams.getField());
             ParameterCheck.mandatory("start", rangeParams.getStart());
             ParameterCheck.mandatory("end", rangeParams.getEnd());

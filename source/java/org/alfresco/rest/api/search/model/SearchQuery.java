@@ -61,7 +61,7 @@ public class SearchQuery
     private final boolean includeRequest;
     private final List<Pivot> pivots;
     private final List<StatsRequestParameters> stats;
-    private final RangeParameters range;
+    private final RangeParameters ranges;
     private final String timezone;
 
     public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,
@@ -87,7 +87,7 @@ public class SearchQuery
                 @JsonProperty("facetIntervals")IntervalParameters facetIntervals,
                 @JsonProperty("pivots") List<Pivot> pivots,
                 @JsonProperty("stats") List<StatsRequestParameters> stats,
-                @JsonProperty("range") RangeParameters range,
+                @JsonProperty("ranges") RangeParameters ranges,
                 @JsonProperty("timezone") String timezone)
     {
         this.query = query;
@@ -108,7 +108,7 @@ public class SearchQuery
         this.facetIntervals = facetIntervals;
         this.pivots = pivots;
         this.stats = stats;
-        this.range = range;
+        this.ranges = ranges;
         this.timezone = timezone;
     }
 
@@ -201,9 +201,9 @@ public class SearchQuery
         return stats;
     }
 
-    public RangeParameters getFacetRange()
+    public RangeParameters getFacetRanges()
     {
-        return range;
+        return ranges;
     }
 
     public String getTimezone()

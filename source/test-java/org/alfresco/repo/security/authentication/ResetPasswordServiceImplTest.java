@@ -473,8 +473,8 @@ public class ResetPasswordServiceImplTest
                         .setPassword("newPassword")
                         .setWorkflowId(pair.getFirst())
                         .setWorkflowKey(pair.getSecond());
-            // Wait for 4 seconds, so the end timer expires!
-            Thread.sleep(4000);
+            // Wait for 5 seconds, so the end timer expires!
+            Thread.sleep(5000);
             try
             {
                 resetPasswordService.initiateResetPassword(passwordDetails);

@@ -83,6 +83,7 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -475,17 +476,27 @@ public class ResultMapperTests
         assertEquals(1, rangeFacets.size());
         assertEquals(3, rangeFacets.get(0).getBuckets().size());
         assertEquals("content.size",rangeFacets.get(0).getLabel());
-        assertEquals("0",rangeFacets.get(0).getBuckets().get(0).getLabel());
+        assertEquals("0 - 100",rangeFacets.get(0).getBuckets().get(0).getLabel());
         Object[] metrics = rangeFacets.get(0).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
-
-        assertEquals("100",rangeFacets.get(0).getBuckets().get(1).getLabel());
+        
+        Map<String, String> facetInfo = rangeFacets.get(0).getBuckets().get(0).getFacetInfo();
+        assertEquals("0",facetInfo.get("from"));
+        assertEquals("100",facetInfo.get("to"));
+        
+        assertEquals("100 - 200",rangeFacets.get(0).getBuckets().get(1).getLabel());
         metrics = rangeFacets.get(0).getBuckets().get(1).getMetrics().toArray();
         assertEquals("6",((SimpleMetric) metrics[0]).getValue().get("count"));
+        facetInfo = rangeFacets.get(0).getBuckets().get(1).getFacetInfo();
+        assertEquals("100",facetInfo.get("from"));
+        assertEquals("200",facetInfo.get("to"));
 
-        assertEquals("200",rangeFacets.get(0).getBuckets().get(2).getLabel());
+        assertEquals("200 - 300",rangeFacets.get(0).getBuckets().get(2).getLabel());
         metrics = rangeFacets.get(0).getBuckets().get(2).getMetrics().toArray();
         assertEquals("3",((SimpleMetric) metrics[0]).getValue().get("count"));
+        facetInfo = rangeFacets.get(0).getBuckets().get(2).getFacetInfo();
+        assertEquals("200",facetInfo.get("from"));
+        assertEquals("300",facetInfo.get("to"));
     }
 
     @Test

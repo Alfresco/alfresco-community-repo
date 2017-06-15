@@ -792,7 +792,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 prefix.append("min="+aStat.getMin()+" ");
                 prefix.append("max="+aStat.getMax()+" ");
                 prefix.append("sum="+aStat.getSum()+" ");
-                prefix.append("count="+aStat.getCount()+" ");
+                prefix.append("count="+aStat.getCountValues()+" ");
                 prefix.append("missing="+aStat.getMissing()+" ");
                 prefix.append("sumOfSquares="+aStat.getSumOfSquares()+" ");
                 prefix.append("mean="+aStat.getMean()+" ");

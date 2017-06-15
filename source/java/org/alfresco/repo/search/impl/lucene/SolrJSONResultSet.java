@@ -457,7 +457,9 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 for(Iterator it = theStats.keys(); it.hasNext(); /**/)
                 {
                     String key = (String) it.next();
-                    fieldStats.put(key, theStats.get(key));
+                    Object val = theStats.get(key);
+                    if ("count".equals(key)) key = METRIC_TYPE.countValues.toString();
+                    fieldStats.put(key, val);
                 }
                 statsMap.put(fieldName, fieldStats);
             }

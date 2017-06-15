@@ -37,7 +37,6 @@ import java.util.TreeSet;
 
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetService.SyntheticPropertyDefinition;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.facet.FacetablePropertyFTL.FacetablePropertyFTLComparator;
 import org.alfresco.repo.web.scripts.facet.FacetablePropertyFTL.SpecialFacetablePropertyFTL;
 import org.alfresco.repo.web.scripts.facet.FacetablePropertyFTL.StandardFacetablePropertyFTL;
@@ -130,8 +129,9 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         }
         
         // Always add some hard-coded facetable "properties"
+        // Note: TAG and SITE are Solr specials and don’t have namespaces
         facetableProperties.add(new SpecialFacetablePropertyFTL("TAG", "Tag"));
-        facetableProperties.add(new SpecialFacetablePropertyFTL("SITE", "Site", SiteModel.TYPE_SITE));
+        facetableProperties.add(new SpecialFacetablePropertyFTL("SITE", "Site"));
         
         // The webscript allows for some further filtering of results:
         List<ResultFilter> filters = new ArrayList<>();

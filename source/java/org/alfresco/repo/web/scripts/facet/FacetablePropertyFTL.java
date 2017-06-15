@@ -279,8 +279,7 @@ public abstract class FacetablePropertyFTL<T> implements Comparable<T>
         private final String name;
         
         private final String displayName;
-        
-        private final QName qName;
+
         
         /**
          * @param localisedTitle        The localised title of this synthetic property e.g. "taille".
@@ -290,25 +289,17 @@ public abstract class FacetablePropertyFTL<T> implements Comparable<T>
             super(localisedTitle);
             this.name = name;
             this.displayName = localisedTitle;
-            this.qName = null;
         }
-        public SpecialFacetablePropertyFTL(String name, String localisedTitle, QName qName)
-        {
-            super(localisedTitle);
-            this.name = name;
-            this.displayName = localisedTitle;
-            this.qName = qName;
-        }
-        
+
         @Override public String getShortQname()        { return name; }
         
-        @Override public QName getQname()              { return qName; }
+        @Override public QName getQname()              { return null; }
         
         @Override public QName getDataType()           { return null; }
         
         @Override public QName getContainerClassType() { return null; }
         
-        @Override public QName getModelQname()         { return qName; }
+        @Override public QName getModelQname()         { return null; }
         
         @Override public String getDisplayName()       { return displayName; }
         

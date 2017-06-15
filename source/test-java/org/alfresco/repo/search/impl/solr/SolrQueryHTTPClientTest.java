@@ -406,7 +406,7 @@ public class SolrQueryHTTPClientTest
     {
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("A*");
-        RangeParameters range = new RangeParameters("content.size", 1,"0", "1000000", "10000", true, null, null, null, null);
+        RangeParameters range = new RangeParameters("content.size", "0", "1000000", "10000", true, "before", "lower");
         params.setRange(range);
         StringBuilder urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
@@ -417,6 +417,23 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet.range.start=0"));
         assertTrue(url.contains("&facet.range.end=1000000"));
         assertTrue(url.contains("&facet.range.gap=10000"));
+        assertTrue(url.contains("&facet.range.include=lower"));
+        assertTrue(url.contains("&facet.range.other=before"));
+        assertTrue(url.contains("&facet.range.hardend=true"));
+        
+        RangeParameters range2 = new RangeParameters("content.size", "0", "1000000", "10000", true, null, null);
+        params.setRange(range2);
+        urlBuilder = new StringBuilder();
+        client.buildRangeParameters(params, encoder, urlBuilder);
+        String url2 = urlBuilder.toString();
+        assertTrue(url2.contains("&facet=true"));
+        assertTrue(url2.contains("&facet.range=content.size"));
+        assertTrue(url2.contains("&facet.range.start=0"));
+        assertTrue(url2.contains("&facet.range.end=1000000"));
+        assertTrue(url2.contains("&facet.range.gap=10000"));
+        assertFalse(url2.contains("&facet.range.include=lower"));
+        assertFalse(url2.contains("&facet.range.other=before"));
+        assertTrue(url2.contains("&facet.range.hardend=true"));
     }
 
 }

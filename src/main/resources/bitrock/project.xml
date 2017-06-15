@@ -191,7 +191,7 @@
         <include file="base-unix-service.xml" />
 
         <include file="imagemagick.xml"/>
-        <include file="pdfium.xml"/>
+        <include file="alfresco-pdf-renderer.xml"/>
         <include file="alfresco-customstack-postgres-settings.xml" />
         <include file="alfresco-customstack-shortcuts.xml" />
         <include file="alfresco-customstack-validations.xml"/>

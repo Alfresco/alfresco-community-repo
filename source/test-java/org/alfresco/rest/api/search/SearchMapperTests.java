@@ -69,7 +69,9 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Tests the SearchMapper class
@@ -830,7 +832,7 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
-        List<IntervalSet> intervalSets = Arrays.asList(new IntervalSet(null,"1", null, null, null));
+        Set<IntervalSet> intervalSets = new HashSet(Arrays.asList(new IntervalSet(null,"1", null, null, null)));
         List<Interval> intervalList = Arrays.asList(new Interval(null, "bob", null));
         intervalParameters = new IntervalParameters(intervalSets,intervalList);
 
@@ -858,7 +860,7 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
-        intervalSets = Arrays.asList(new IntervalSet("1",null, null, null, true));
+        intervalSets = new HashSet(Arrays.asList(new IntervalSet("1",null, null, null, true)));
         intervalParameters = new IntervalParameters(intervalSets,intervalList);
 
         try
@@ -872,10 +874,10 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
-        intervalSets =  new ArrayList<>();
+        intervalSets =  new HashSet<>();
         intervalSets.add(new IntervalSet("0", "3", "bob", null, null));
         intervalSets.add(new IntervalSet("30", "50", "bill", true,true));
-        List<IntervalSet> anIntervalSet = new ArrayList<>();
+        Set<IntervalSet> anIntervalSet = new HashSet<>();
         anIntervalSet.add(new IntervalSet("1", "10", "bert", false, false));
         intervalList = Arrays.asList(new Interval("cm:price", "Price", null), new Interval("cm:price", "Price", anIntervalSet));
         intervalParameters = new IntervalParameters(intervalSets,intervalList);

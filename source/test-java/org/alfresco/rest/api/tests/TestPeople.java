@@ -1760,12 +1760,12 @@ public class TestPeople extends AbstractBaseApiTest
             assertEquals("A reset password email should have been sent.", 1, emailUtil.getSentCount());
 
             MimeMessage msg = emailUtil.getLastEmail();
-            assertNotNull(msg);
+            assertNotNull("There should be an email.", msg);
             assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
             // Check the recipient is the person who requested the reset password
             assertEquals(person.getEmail(), msg.getAllRecipients()[0].toString());
             // There should be a subject
-            assertNotNull(msg.getSubject());
+            assertNotNull("There should be a subject.", msg.getSubject());
 
             // Check the reset password url.
             String resetPasswordUrl = (String) emailUtil.getLastEmailTemplateModelValue("reset_password_url");
@@ -1786,11 +1786,11 @@ public class TestPeople extends AbstractBaseApiTest
             post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordReset), 202);
             assertEquals("A reset password confirmation email should have been sent.", 1, emailUtil.getSentCount());
             msg = emailUtil.getLastEmail();
-            assertNotNull(msg);
+            assertNotNull("There should be an email.", msg);
             assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
             assertEquals(person.getEmail(), msg.getAllRecipients()[0].toString());
             // There should be a subject
-            assertNotNull(msg.getSubject());
+            assertNotNull("There should be a subject.", msg.getSubject());
 
             // Try to login with old credential
             post("tickets", RestApiUtil.toJsonAsString(loginRequest), null, null, "authentication", 403);
@@ -1804,7 +1804,7 @@ public class TestPeople extends AbstractBaseApiTest
 
 
             /*
-             * -ve tests
+             * Negative tests
              */
             // First, reset the email helper
             emailUtil.reset();
@@ -1815,7 +1815,7 @@ public class TestPeople extends AbstractBaseApiTest
             post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordReset), 202);
             assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
 
-            // Request reset password - Invalid user (user dose not exist)
+            // Request reset password - Invalid user (user does not exist)
             post(getRequestResetPasswordUrl(System.currentTimeMillis() + "noUser"), RestApiUtil.toJsonAsString(client), 202);
             assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
 

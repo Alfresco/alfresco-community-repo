@@ -277,7 +277,7 @@ public class PublicApiHttpClient
             }
             else
             {
-                response = authenticatedHttp.executeHttpMethodUnAuthenticated(req, callback);
+                response = authenticatedHttp.executeHttpMethodUnauthenticated(req, callback);
             }
             return response;
         }

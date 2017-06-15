@@ -480,6 +480,8 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                         return new ListMetric(metricType, val);
                     case percentiles:
                         return new PercentileMetric(metricType, val);
+                    case facets:
+                    	return null;
                     case mean:
                         if ("NaN".equals(String.valueOf(val))) return null; //else fall through
                     default:

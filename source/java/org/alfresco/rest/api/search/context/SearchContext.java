@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.search.context;
 
+import org.alfresco.rest.api.search.model.SearchQuery;
+
 import java.util.List;
 
 /**
@@ -37,10 +39,13 @@ public class SearchContext
     private final SpellCheckContext spellCheck;
     private final List<FacetFieldContext> facetsFields;
     private final List<FacetFieldContext> facetIntervals;
+    private final SearchQuery request;
 
-    public SearchContext(long lastTxId, List<FacetQueryContext> facetQueries, List<FacetFieldContext> facetsFields, List<FacetFieldContext> facetIntervals, SpellCheckContext spellCheck)
+    public SearchContext(long lastTxId, List<FacetQueryContext> facetQueries, List<FacetFieldContext> facetsFields, List<FacetFieldContext> facetIntervals, SpellCheckContext spellCheck,
+                SearchQuery request)
     {
         this.spellCheck = spellCheck;
+        this.request = request;
         if (lastTxId > 0)
         {
             consistency = new Consistency(lastTxId);
@@ -77,6 +82,11 @@ public class SearchContext
     public List<FacetFieldContext> getFacetsFields()
     {
         return facetsFields;
+    }
+
+    public SearchQuery getRequest()
+    {
+        return request;
     }
 
     public class Consistency

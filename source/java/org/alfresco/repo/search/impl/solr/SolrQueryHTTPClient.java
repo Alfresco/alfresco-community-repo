@@ -826,29 +826,29 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     }
     protected void buildRangeParameters(SearchParameters searchParameters, URLCodec encoder, StringBuilder url) throws UnsupportedEncodingException
     {
-        if (searchParameters.getRange() != null)
+        if (searchParameters.getRanges() != null)
         {
             url.append("&facet=").append(encoder.encode("true", "UTF-8"));
-            url.append("&facet.range=").append(encoder.encode(searchParameters.getRange().getField(), "UTF-8"));
-            url.append("&facet.range.start=").append(encoder.encode(""+searchParameters.getRange().getStart(), "UTF-8"));
-            url.append("&facet.range.end=").append(encoder.encode(""+searchParameters.getRange().getEnd(), "UTF-8"));
-            url.append("&facet.range.gap=").append(encoder.encode(""+searchParameters.getRange().getGap(), "UTF-8"));
-            if(searchParameters.getRange().getInclude() != null)
+            url.append("&facet.range=").append(encoder.encode(searchParameters.getRanges().getField(), "UTF-8"));
+            url.append("&facet.range.start=").append(encoder.encode(""+searchParameters.getRanges().getStart(), "UTF-8"));
+            url.append("&facet.range.end=").append(encoder.encode(""+searchParameters.getRanges().getEnd(), "UTF-8"));
+            url.append("&facet.range.gap=").append(encoder.encode(""+searchParameters.getRanges().getGap(), "UTF-8"));
+            if(searchParameters.getRanges().getInclude() != null)
             {
-                url.append("&facet.range.include=").append(encoder.encode(""+searchParameters.getRange().getInclude(), "UTF-8"));
+                url.append("&facet.range.include=").append(encoder.encode(""+searchParameters.getRanges().getInclude(), "UTF-8"));
             }
-            if(searchParameters.getRange().getOther() != null)
+            if(searchParameters.getRanges().getOther() != null)
             {
-                url.append("&facet.range.other=").append(encoder.encode(""+searchParameters.getRange().getOther(), "UTF-8"));
+                url.append("&facet.range.other=").append(encoder.encode(""+searchParameters.getRanges().getOther(), "UTF-8"));
             }
-            url.append("&facet.range.hardend=").append(encoder.encode(""+searchParameters.getRange().isHardend(), "UTF-8"));
-            if(!searchParameters.getRange().getExcludeFilters().isEmpty())
+            url.append("&facet.range.hardend=").append(encoder.encode(""+searchParameters.getRanges().isHardend(), "UTF-8"));
+            if(!searchParameters.getRanges().getExcludeFilters().isEmpty())
             {
                 url.append("&range.field=");
-                if (searchParameters.getRange().getExcludeFilters() != null && !searchParameters.getRange().getExcludeFilters().isEmpty())
+                if (searchParameters.getRanges().getExcludeFilters() != null && !searchParameters.getRanges().getExcludeFilters().isEmpty())
                 {
                     StringBuilder prefix = new StringBuilder("{!ex=");
-                    Iterator<String> itr = searchParameters.getRange().getExcludeFilters().iterator();
+                    Iterator<String> itr = searchParameters.getRanges().getExcludeFilters().iterator();
                     while(itr.hasNext())
                     {
                         String val = itr.next();
@@ -863,9 +863,9 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 }
                 
             }
-            if(!searchParameters.getRange().getTags().isEmpty())
+            if(!searchParameters.getRanges().getTags().isEmpty())
             {
-                for(String tag:searchParameters.getRange().getTags())
+                for(String tag:searchParameters.getRanges().getTags())
                 {
                     
                     url.append(String.format("&fq={!tag=%1$s}%1$s",tag));

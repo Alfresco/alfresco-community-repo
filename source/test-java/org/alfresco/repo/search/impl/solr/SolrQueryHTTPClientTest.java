@@ -429,7 +429,7 @@ public class SolrQueryHTTPClientTest
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("A*");
         RangeParameters range = new RangeParameters("content.size", "0", "1000000", "10000", true, "before", "lower", null, null);
-        params.setRange(range);
+        params.setRanges(range);
         StringBuilder urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
         String url = urlBuilder.toString();
@@ -450,7 +450,7 @@ public class SolrQueryHTTPClientTest
         tags.add("dt");
         tags.add("doc");
         RangeParameters range2 = new RangeParameters("content.size", "0", "1000000", "10000", true, null, null, tags, filters);
-        params.setRange(range2);
+        params.setRanges(range2);
         urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
         String url2 = urlBuilder.toString();

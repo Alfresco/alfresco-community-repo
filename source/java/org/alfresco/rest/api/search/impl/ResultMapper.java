@@ -78,10 +78,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -382,7 +384,7 @@ public class ResultMapper
         return facetResults;
     }
 
-    protected List<GenericFacetResponse> getFieldStats(SearchRequestContext searchRequestContext, Map<String, List<Metric>> stats)
+    protected List<GenericFacetResponse> getFieldStats(SearchRequestContext searchRequestContext, Map<String, Set<Metric>> stats)
     {
         if(stats != null && !stats.isEmpty())
         {
@@ -507,7 +509,7 @@ public class ResultMapper
                                 }
                             }
                         }
-                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(buck.getSecond()))), null);
+                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(buck.getSecond())))), null);
                         buckets.add(bucket);
                     }
                     ffcs.add(new GenericFacetResponse(FACET_TYPE.interval, facet.getKey(), buckets));

@@ -41,8 +41,11 @@ import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.ListMetric;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric.METRIC_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.PercentileMetric;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.SimpleMetric;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionImpl;
@@ -80,6 +83,7 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -96,6 +100,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -306,8 +311,9 @@ public class ResultMapperTests
         assertEquals("creator",intervalFacets.get(0).getLabel());
         assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
         assertEquals("cm:creator:<a TO b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
-        assertEquals(METRIC_TYPE.count,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getType());
-        assertEquals("4",intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
+        Metric[] metrics = intervalFacets.get(0).getBuckets().get(0).getMetrics().toArray(new Metric[intervalFacets.get(0).getBuckets().get(0).getMetrics().size()]);
+        assertEquals(METRIC_TYPE.count,metrics[0].getType());
+        assertEquals("4",metrics[0].getValue().get("count"));
 
         //Requests search Query
         assertNotNull(searchContext.getRequest());
@@ -322,7 +328,8 @@ public class ResultMapperTests
         GenericBucket pivotBucket = pivotFacet.getBuckets().get(1);
         assertEquals("mjackson",pivotBucket.getLabel());
         assertEquals("creator:mjackson",pivotBucket.getFilterQuery());
-        assertEquals("{count=7}",pivotBucket.getMetrics().get(0).getValue().toString());
+        metrics =  pivotBucket.getMetrics().toArray(new Metric[pivotBucket.getMetrics().size()]);
+        assertEquals("{count=7}",metrics[0].getValue().toString());
         assertEquals(1,pivotBucket.getFacets().size());
         GenericFacetResponse nestedFacet = pivotBucket.getFacets().get(0);
         assertEquals(FACET_TYPE.pivot,nestedFacet.getType());
@@ -331,57 +338,48 @@ public class ResultMapperTests
         GenericBucket nestedBucket = nestedFacet.getBuckets().get(0);
         assertEquals("mjackson",nestedBucket.getLabel());
         assertEquals("modifier:mjackson",nestedBucket.getFilterQuery());
-        assertEquals("{count=3}",nestedBucket.getMetrics().get(0).getValue().toString());
+
+        metrics = nestedBucket.getMetrics().toArray(new Metric[nestedBucket.getMetrics().size()]);
+        assertEquals("{count=3}",metrics[0].getValue().toString());
         GenericBucket nestedBucket2 = nestedFacet.getBuckets().get(1);
         assertEquals("admin",nestedBucket2.getLabel());
         assertEquals("modifier:admin",nestedBucket2.getFilterQuery());
-        assertEquals("{count=4}",nestedBucket2.getMetrics().get(0).getValue().toString());
+        metrics = nestedBucket2.getMetrics().toArray(new Metric[nestedBucket2.getMetrics().size()]);
+        assertEquals("{count=4}",metrics[0].getValue().toString());
 
         //Stats
         GenericFacetResponse statsFacet = searchContext.getFacets().get(3);
         assertEquals(FACET_TYPE.stats,statsFacet.getType());
         assertEquals("created",statsFacet.getLabel());
-        List<Metric> metrics = statsFacet.getBuckets().get(0).getMetrics();
-        assertEquals(8,metrics.size());
-        assertEquals(METRIC_TYPE.sumOfSquares,metrics.get(0).getType());
-        assertEquals(METRIC_TYPE.min,metrics.get(1).getType());
-        assertEquals(METRIC_TYPE.max,metrics.get(2).getType());
-        assertEquals(METRIC_TYPE.mean,metrics.get(3).getType());
-        assertEquals(METRIC_TYPE.count,metrics.get(4).getType());
-        assertEquals(METRIC_TYPE.missing,metrics.get(5).getType());
-        assertEquals(METRIC_TYPE.sum,metrics.get(6).getType());
-        assertEquals(METRIC_TYPE.stddev,metrics.get(7).getType());
+        Set<Metric> statsMetrics = statsFacet.getBuckets().get(0).getMetrics();
+        assertEquals(8,statsMetrics.size());
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sumOfSquares, 2.1513045770343806E27 )));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.min, "2011-02-15T20:16:27.080Z" )));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.max, "2017-04-10T15:06:30.143Z" )));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.mean, "2016-09-05T04:20:12.898Z" )));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.count, 990 )));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.missing, 290 )));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sum, 1.458318720769983E15)));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.stddev, 5.6250677994522545E10)));
 
         statsFacet = searchContext.getFacets().get(4);
-        metrics = statsFacet.getBuckets().get(0).getMetrics();
         assertEquals("numericLabel",statsFacet.getLabel());
-        assertEquals(7,metrics.size());
-        assertEquals(METRIC_TYPE.sumOfSquares,metrics.get(0).getType());
-        assertEquals("{sumOfSquares=0}",metrics.get(0).getValue().toString());
-        /**
-        assertEquals(METRIC_TYPE.min,metrics.get(1).getType());
-        assertEquals("{min=null}",metrics.get(1).getValue().toString());
-        assertEquals(METRIC_TYPE.max,metrics.get(2).getType());
-        assertEquals("{max=null}",metrics.get(2).getValue().toString());
-        assertEquals(METRIC_TYPE.mean,metrics.get(3).getType());
-        assertEquals("{mean=NaN}",metrics.get(3).getValue().toString());
-         **/
-        assertEquals(METRIC_TYPE.percentiles,metrics.get(1).getType());
-        assertEquals("{percentiles={0.99=20.0685, 0.0=12.0}}",metrics.get(1).getValue().toString());
-        Map percentiles = (Map) metrics.get(1).getValue().get("percentiles");
-        assertEquals(2, percentiles.size());
-        assertEquals(METRIC_TYPE.count,metrics.get(2).getType());
-        assertEquals("{count=0}",metrics.get(2).getValue().toString());
-        assertEquals(METRIC_TYPE.missing,metrics.get(3).getType());
-        assertEquals("{missing=0}",metrics.get(3).getValue().toString());
-        assertEquals(METRIC_TYPE.distinctValues,metrics.get(4).getType());
-        List distinctValues = (List) metrics.get(4).getValue().get("distinctValues");
-        assertEquals(7, distinctValues.size());
-        assertEquals("{distinctValues=[12, 13, 14, 15, 16, 17, 1]}",metrics.get(4).getValue().toString());
-        assertEquals(METRIC_TYPE.sum,metrics.get(5).getType());
-        assertEquals("{sum=0}",metrics.get(5).getValue().toString());
-        assertEquals(METRIC_TYPE.stddev,metrics.get(6).getType());
-        assertEquals("{stddev=0}",metrics.get(6).getValue().toString());
+        statsMetrics = statsFacet.getBuckets().get(0).getMetrics();
+        assertEquals(7,statsMetrics.size());
+
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sumOfSquares, 0)));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.count, 0)));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.missing, 0)));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sum, 0)));
+        assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.stddev, 0)));
+        JSONArray dVals = new JSONArray(Arrays.asList(12, 13, 14, 15, 16, 17, 1));
+        assertTrue(statsMetrics.contains(new ListMetric(METRIC_TYPE.distinctValues, dVals)));
+        JSONArray pers = new JSONArray(Arrays.asList("0.99",20.0685, "0.0", 12.0));
+        assertTrue(statsMetrics.contains(new PercentileMetric(METRIC_TYPE.percentiles, pers)));
+
+        assertEquals("min must be excluded because its null",0,statsMetrics.stream().filter(metric -> METRIC_TYPE.min.equals(metric.getType())).count());
+        assertEquals("max must be excluded because its null",0,statsMetrics.stream().filter(metric -> METRIC_TYPE.max.equals(metric.getType())).count());
+        assertEquals("mean must be excluded because its NaN",0,statsMetrics.stream().filter(metric -> METRIC_TYPE.mean.equals(metric.getType())).count());
     }
 
     @Test
@@ -437,25 +435,29 @@ public class ResultMapperTests
         assertEquals("creator",intervalFacets.get(0).getLabel());
         assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
         assertEquals("cm:creator:<a TO b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
-        assertEquals(METRIC_TYPE.count,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getType());
-        assertEquals("4",intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
 
+        Object[] metrics = intervalFacets.get(0).getBuckets().get(0).getMetrics().toArray();
+        assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
+        assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
 
+        metrics = intervalFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("TheCreated",intervalFacets.get(1).getLabel());
         assertEquals("earlier",intervalFacets.get(1).getBuckets().get(0).getLabel());
         assertEquals("cm:created:[* TO 2016>",intervalFacets.get(1).getBuckets().get(0).getFilterQuery());
-        assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(0).getMetrics().get(0).getType());
-        assertEquals("5",intervalFacets.get(1).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
+        assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
+        assertEquals("5",((SimpleMetric) metrics[0]).getValue().get("count"));
 
+        metrics = intervalFacets.get(1).getBuckets().get(1).getMetrics().toArray();
         assertEquals("lastYear",intervalFacets.get(1).getBuckets().get(1).getLabel());
         assertEquals("cm:created:[2016 TO 2017>",intervalFacets.get(1).getBuckets().get(1).getFilterQuery());
-        assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(1).getMetrics().get(0).getType());
-        assertEquals("0",intervalFacets.get(1).getBuckets().get(1).getMetrics().get(0).getValue().get("count"));
+        assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
+        assertEquals("0",((SimpleMetric) metrics[0]).getValue().get("count"));
 
+        metrics = intervalFacets.get(1).getBuckets().get(2).getMetrics().toArray();
         assertEquals("currentYear",intervalFacets.get(1).getBuckets().get(2).getLabel());
         assertEquals("cm:created:[NOW/YEAR TO NOW/YEAR+1YEAR]",intervalFacets.get(1).getBuckets().get(2).getFilterQuery());
-        assertEquals(METRIC_TYPE.count,intervalFacets.get(1).getBuckets().get(2).getMetrics().get(0).getType());
-        assertEquals("854",intervalFacets.get(1).getBuckets().get(2).getMetrics().get(0).getValue().get("count"));
+        assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
+        assertEquals("854",((SimpleMetric) metrics[0]).getValue().get("count"));
     }
 
     @Test

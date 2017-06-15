@@ -37,20 +37,6 @@ import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
-
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.stream.Collectors;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.rest.api.search.context.SearchRequestContext;
@@ -87,6 +73,19 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.alfresco.util.ParameterCheck;
 
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.stream.Collectors;
+
 /**
  * Maps from a json request and a solr SearchParameters object.
  *
@@ -120,6 +119,7 @@ public class SearchMapper
         fromPaging(sp, params.getPaging());
         fromSort(sp, searchQuery.getSort());
         fromTemplate(sp, searchQuery.getTemplates());
+        fromTimezone(sp, searchQuery.getTimezone());
         validateInclude(searchQuery.getInclude());
         fromDefault(sp, searchQuery.getDefaults());
         fromFilterQuery(sp, searchQuery.getFilterQueries());
@@ -133,7 +133,6 @@ public class SearchMapper
         fromRange(sp, searchQuery.getFacetRanges());
         fromScope(sp, searchQuery.getScope(), searchRequestContext);
         fromLimits(sp, searchQuery.getLimits());
-        fromTimezone(sp, searchQuery.getTimezone());
         return sp;
     }
 
@@ -690,22 +689,46 @@ public class SearchMapper
     /**
      * Validates and sets the timezone
      * @param sp SearchParameters
-     * @param timezone a valid java.time.ZoneId
+     * @param timezoneId a valid java.time.ZoneId
      */
-    public void fromTimezone(SearchParameters sp, String timezone)
+    public void fromTimezone(SearchParameters sp, String timezoneId)
     {
-        if (timezone!= null && !timezone.isEmpty())
+        /*
+         * java.util.TimeZone will not error if you set an invalid timezone
+         * it just falls back to GMT without telling you.
+         *
+         * So I am using java.time.ZoneId because that throws an error,
+         * if I then convert a ZoneId to Timezone I have the same problem (silently uses GMT)
+         * so
+         * I am converting using both methods:
+         * If a timezoneId is invalid then an Invalid error is thrown
+         * If its not possible to take a java.time.ZoneId and convert it to a java.util.TimeZone then an Incompatible error is thrown
+         *
+         */
+        if (timezoneId!= null && !timezoneId.isEmpty())
         {
             ZoneId validZoneId = null;
+            TimeZone timeZone = null;
+
             try
             {
-                validZoneId = ZoneId.of(timezone);
-                sp.setTimezone(validZoneId.toString());
+                validZoneId = ZoneId.of(timezoneId);
+                timeZone = TimeZone.getTimeZone(timezoneId);
             }
             catch (Exception e)
             {
-                throw new IllegalArgumentException("Invalid timezone "+timezone);
+                throw new IllegalArgumentException("Invalid timezoneId "+timezoneId);
             }
+
+            if (validZoneId.getId().equals(timeZone.getID()))
+            {
+                sp.setTimezone(validZoneId.getId());
+            }
+            else
+            {
+                throw new IllegalArgumentException("Incompatible timezoneId "+timezoneId);
+            }
+
         }
     }
 

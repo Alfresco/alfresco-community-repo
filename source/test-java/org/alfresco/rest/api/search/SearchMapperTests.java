@@ -549,12 +549,34 @@ public class SearchMapperTests
         assertEquals("Europe/Madrid", searchParameters.getTimezone());
         searchMapper.fromTimezone(searchParameters, "GMT+1");
         assertEquals("GMT+01:00", searchParameters.getTimezone());
+        searchMapper.fromTimezone(searchParameters, "GMT+01:00");
+        assertEquals("GMT+01:00", searchParameters.getTimezone());
         searchMapper.fromTimezone(searchParameters, "GMT-9");
         assertEquals("GMT-09:00", searchParameters.getTimezone());
         searchMapper.fromTimezone(searchParameters, "GMT+08:00");
         assertEquals("GMT+08:00", searchParameters.getTimezone());
         searchMapper.fromTimezone(searchParameters, "GMT-12:00");
         assertEquals("GMT-12:00", searchParameters.getTimezone());
+
+        try
+        {
+            searchMapper.fromTimezone(searchParameters, "UTC+5");
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue("UTC is not support by java.util.timezone",iae.getLocalizedMessage().contains("Incompatible timezoneId"));
+        }
+
+        try
+        {
+            searchMapper.fromTimezone(searchParameters, "UTC+06:00");
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("Incompatible timezoneId"));
+        }
     }
 
     @Test

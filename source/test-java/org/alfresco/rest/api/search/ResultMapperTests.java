@@ -36,6 +36,18 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.alfresco.repo.search.EmptyResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
@@ -83,7 +95,6 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.alfresco.util.Pair;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,17 +104,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Tests the ResultMapper class
@@ -481,14 +481,14 @@ public class ResultMapperTests
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
         assertEquals("content.size:(0 TO 100)", rangeFacets.get(0).getBuckets().get(0).getFilterQuery());
         
-        Map<String, String> facetInfo = rangeFacets.get(0).getBuckets().get(0).getFacetInfo();
+        Map<String, String> facetInfo = rangeFacets.get(0).getBuckets().get(0).getBucketInfo();
         assertEquals("0",facetInfo.get("from"));
         assertEquals("100",facetInfo.get("to"));
         
         assertEquals("100 - 200",rangeFacets.get(0).getBuckets().get(1).getLabel());
         metrics = rangeFacets.get(0).getBuckets().get(1).getMetrics().toArray();
         assertEquals("6",((SimpleMetric) metrics[0]).getValue().get("count"));
-        facetInfo = rangeFacets.get(0).getBuckets().get(1).getFacetInfo();
+        facetInfo = rangeFacets.get(0).getBuckets().get(1).getBucketInfo();
         assertEquals("100",facetInfo.get("from"));
         assertEquals("200",facetInfo.get("to"));
         assertEquals("content.size:(100 TO 200)", rangeFacets.get(0).getBuckets().get(1).getFilterQuery());
@@ -496,7 +496,7 @@ public class ResultMapperTests
         assertEquals("200 - 300",rangeFacets.get(0).getBuckets().get(2).getLabel());
         metrics = rangeFacets.get(0).getBuckets().get(2).getMetrics().toArray();
         assertEquals("3",((SimpleMetric) metrics[0]).getValue().get("count"));
-        facetInfo = rangeFacets.get(0).getBuckets().get(2).getFacetInfo();
+        facetInfo = rangeFacets.get(0).getBuckets().get(2).getBucketInfo();
         assertEquals("200",facetInfo.get("from"));
         assertEquals("300",facetInfo.get("to"));
         assertEquals("content.size:(200 TO 300)", rangeFacets.get(0).getBuckets().get(2).getFilterQuery());

@@ -479,6 +479,7 @@ public class ResultMapperTests
         assertEquals("0 - 100",rangeFacets.get(0).getBuckets().get(0).getLabel());
         Object[] metrics = rangeFacets.get(0).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
+        assertEquals("content.size:(0 TO 100)", rangeFacets.get(0).getBuckets().get(0).getFilterQuery());
         
         Map<String, String> facetInfo = rangeFacets.get(0).getBuckets().get(0).getFacetInfo();
         assertEquals("0",facetInfo.get("from"));
@@ -490,13 +491,15 @@ public class ResultMapperTests
         facetInfo = rangeFacets.get(0).getBuckets().get(1).getFacetInfo();
         assertEquals("100",facetInfo.get("from"));
         assertEquals("200",facetInfo.get("to"));
-
+        assertEquals("content.size:(100 TO 200)", rangeFacets.get(0).getBuckets().get(1).getFilterQuery());
+        
         assertEquals("200 - 300",rangeFacets.get(0).getBuckets().get(2).getLabel());
         metrics = rangeFacets.get(0).getBuckets().get(2).getMetrics().toArray();
         assertEquals("3",((SimpleMetric) metrics[0]).getValue().get("count"));
         facetInfo = rangeFacets.get(0).getBuckets().get(2).getFacetInfo();
         assertEquals("200",facetInfo.get("from"));
         assertEquals("300",facetInfo.get("to"));
+        assertEquals("content.size:(200 TO 300)", rangeFacets.get(0).getBuckets().get(2).getFilterQuery());
     }
 
     @Test

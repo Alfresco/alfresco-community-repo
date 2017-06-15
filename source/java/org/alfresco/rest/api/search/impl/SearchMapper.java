@@ -539,7 +539,7 @@ public class SearchMapper
             ParameterCheck.mandatory("start", rangeParams.getStart());
             ParameterCheck.mandatory("end", rangeParams.getEnd());
             ParameterCheck.mandatory("gap", rangeParams.getGap());
-            sp.setRange(rangeParams);
+            sp.setRanges(rangeParams);
         }
         
     }

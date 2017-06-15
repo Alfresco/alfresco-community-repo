@@ -901,11 +901,11 @@ public class SearchMapperTests
         }
         rangeParams = new RangeParameters("content.size", "0", "100000", "1000",true,null,null,null,null);
         searchMapper.fromRange(searchParameters, rangeParams);
-        assertEquals(searchParameters.getRange(), rangeParams);
+        assertEquals(searchParameters.getRanges(), rangeParams);
         
         rangeParams = new RangeParameters("content.size", "0", "100000", "1000",true,"before","lower",null,null);
         searchMapper.fromRange(searchParameters, rangeParams);
-        assertEquals(searchParameters.getRange(), rangeParams);
+        assertEquals(searchParameters.getRanges(), rangeParams);
         
     }
     

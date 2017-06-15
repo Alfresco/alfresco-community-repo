@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.search.model;
 
 import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.service.cmr.search.FacetFormat;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.RangeParameters;
@@ -63,10 +64,11 @@ public class SearchQuery
     private final List<StatsRequestParameters> stats;
     private final List<RangeParameters> ranges;
     private final Localization localization;
+    private final FacetFormat facetFormat;
 
     public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,
                 null,null, null, null, null,null, null, null, null,
-                null, null, null,null, null);
+                null, null, null,null, null,null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -88,7 +90,8 @@ public class SearchQuery
                 @JsonProperty("pivots") List<Pivot> pivots,
                 @JsonProperty("stats") List<StatsRequestParameters> stats,
                 @JsonProperty("ranges") List<RangeParameters> ranges,
-                @JsonProperty("localization") Localization localization)
+                @JsonProperty("localization") Localization localization,
+                @JsonProperty("facetFormat") FacetFormat facetFormat)
     {
         this.query = query;
         this.includeRequest = includeRequest==null?false:includeRequest;
@@ -110,6 +113,7 @@ public class SearchQuery
         this.stats = stats;
         this.ranges = ranges;
         this.localization = localization;
+        this.facetFormat = facetFormat;
     }
 
     public Query getQuery()
@@ -209,6 +213,11 @@ public class SearchQuery
     public Localization getLocalization()
     {
         return localization;
+    }
+
+    public FacetFormat getFacetFormat()
+    {
+        return facetFormat;
     }
 
 }

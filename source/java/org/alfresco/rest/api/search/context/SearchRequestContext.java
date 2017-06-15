@@ -25,24 +25,14 @@
  */
 package org.alfresco.rest.api.search.context;
 
-import static java.util.stream.Collectors.*;
-import org.alfresco.rest.api.search.model.FacetFields;
-import org.alfresco.rest.api.search.model.FacetQuery;
-import org.alfresco.rest.api.search.model.Pivot;
-import org.alfresco.rest.api.search.model.Query;
-import org.alfresco.rest.api.search.model.SearchQuery;
-import org.alfresco.service.cmr.search.IntervalParameters;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import org.alfresco.rest.api.search.model.Query;
+import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.service.cmr.search.FacetFormat;
 
 /**
  * This is a snapshot of the SearchQuery before the request is made.
@@ -97,5 +87,4 @@ public class SearchRequestContext
     {
         return stores;
     }
-
 }

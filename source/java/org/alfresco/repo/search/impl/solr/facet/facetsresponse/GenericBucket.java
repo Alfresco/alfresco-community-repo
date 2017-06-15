@@ -26,6 +26,7 @@
 package org.alfresco.repo.search.impl.solr.facet.facetsresponse;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * A Generic Bucket response covering range, interval, pivot etc.
@@ -35,10 +36,10 @@ public class GenericBucket
     private final String label;
     private final String filterQuery;
     private final Object display;
-    private final List<Metric> metrics;
+    private final Set<Metric> metrics;
     private final List<GenericFacetResponse> facets;
 
-    public GenericBucket(String label, String filterQuery, Object display, List<Metric> metrics, List<GenericFacetResponse> facets)
+    public GenericBucket(String label, String filterQuery, Object display, Set<Metric> metrics, List<GenericFacetResponse> facets)
     {
         this.label = label;
         this.filterQuery = filterQuery;
@@ -62,7 +63,7 @@ public class GenericBucket
         return label;
     }
 
-    public List<Metric> getMetrics()
+    public Set<Metric> getMetrics()
     {
         return metrics;
     }

@@ -829,8 +829,9 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             {
                 for (Interval interval:searchParameters.getInterval().getIntervals())
                 {
+                    ParameterCheck.mandatory("facetIntervals intervals field", interval.getField());
+
                     url.append("&facet.interval=");
-                    String intervalField = interval.getField();
                     boolean isDate = false;
 
                     PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(searchParameters.getNamespace(),
@@ -844,7 +845,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                     if (interval.getLabel() != null && !interval.getLabel().isEmpty())
                     {
                         url.append(encoder.encode("{!key="+interval.getLabel()+"}", "UTF-8"));
-                        intervalField = interval.getLabel();
                     }
                     url.append(encoder.encode(interval.getField(), "UTF-8"));
 
@@ -853,7 +853,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                         for (IntervalSet aSet:interval.getSets())
                         {
                             IntervalSet validated = parseDateInterval(aSet,isDate);
-                            url.append("&").append(encoder.encode("f."+intervalField+".facet.interval.set", "UTF-8")).append("=").append(encoder.encode(validated.toParam(), "UTF-8"));
+                            url.append("&").append(encoder.encode("f."+interval.getField()+".facet.interval.set", "UTF-8")).append("=").append(encoder.encode(validated.toParam(), "UTF-8"));
                         }
                     }
                 }

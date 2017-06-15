@@ -25,21 +25,47 @@
  */
 package org.alfresco.repo.search.impl.solr.facet.facetsresponse;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * A metric with one value
  */
-public class SimpleMetric implements Metric
+public class PercentileMetric implements Metric
 {
+    private static Log logger = LogFactory.getLog(PercentileMetric.class);
     private final METRIC_TYPE type;
     private final Map<String, Object> value = new HashMap<>(1);
 
-    public SimpleMetric(METRIC_TYPE type, Object val)
+    public PercentileMetric(METRIC_TYPE type, Object val)
     {
         this.type = type;
-        value.put(type.toString(), val);
+        try
+        {
+            JSONArray jsonArray = (JSONArray) val;
+            Map<String,Number> percentiles = new HashMap<>(jsonArray.length()/2);
+
+            for (int i = 0, length = jsonArray.length(); i < length; i++)
+            {
+                percentiles.put(jsonArray.getString(i++),jsonArray.getDouble(i));
+            }
+            value.put(type.toString(), percentiles);
+        }
+        catch (ClassCastException cce)
+        {
+            logger.debug("ClassCastException for "+val);
+        }
+        catch (JSONException e)
+        {
+            logger.debug("Failed to process percentile for "+val+ " "+e.getMessage());
+        }
     }
 
     @Override

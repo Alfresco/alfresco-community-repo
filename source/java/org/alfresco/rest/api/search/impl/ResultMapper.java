@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.search.impl;
 
 import static org.alfresco.rest.api.search.impl.StoreMapper.DELETED;
+import static org.alfresco.rest.api.search.impl.StoreMapper.HISTORY;
 import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
 import static org.alfresco.rest.api.search.impl.StoreMapper.VERSIONS;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
@@ -148,10 +149,11 @@ public class ResultMapper
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
         Map<NodeRef, List<Pair<String, List<String>>>> hightLighting = results.getHighlighting();
         int notFound = 0;
+        boolean isHistory = searchRequestContext.getStores().contains(StoreMapper.HISTORY);
 
         for (ResultSetRow row:results)
         {
-            Node aNode = getNode(row, params, mapUserInfo);
+            Node aNode = getNode(row, params, mapUserInfo, isHistory);
 
             if (aNode != null)
             {
@@ -201,18 +203,25 @@ public class ResultMapper
 
     /**
      * Builds a node representation based on a ResultSetRow;
+     * @param searchRequestContext
      * @param aRow
      * @param params
      * @param mapUserInfo
+     * @param isHistory
      * @return Node
      */
-    public Node getNode(ResultSetRow aRow, Params params, Map<String, UserInfo> mapUserInfo)
+    public Node getNode(ResultSetRow aRow, Params params, Map<String, UserInfo> mapUserInfo, boolean isHistory)
     {
         String nodeStore = storeMapper.getStore(aRow.getNodeRef());
+        if (isHistory) nodeStore = HISTORY;
         Node aNode = null;
+
         switch (nodeStore)
         {
             case LIVE_NODES:
+                aNode = nodes.getFolderOrDocument(aRow.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                break;
+            case HISTORY:
                 aNode = nodes.getFolderOrDocument(aRow.getNodeRef(), null, null, params.getInclude(), mapUserInfo);
                 break;
             case VERSIONS:

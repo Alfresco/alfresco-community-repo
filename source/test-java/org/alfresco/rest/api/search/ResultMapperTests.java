@@ -704,6 +704,41 @@ public class ResultMapperTests
         assertEquals("content.size:[0 TO 102400]",searchContext.getFacetQueries().get(0).getFilterQuery());
         assertEquals(52, searchContext.getFacetQueries().get(0).getCount());
         assertEquals("large",searchContext.getFacetQueries().get(1).getLabel());
+        
+        //FacetField Test
+        jsonQuery = 
+                "{\"query\": {\"query\": \"A*\"},"
+                + "\"facetFields\": {\"facets\": ["
+                + "{\"field\": \"creator\", \"mincount\": 1},"
+                + "{\"field\": \"modifier\", \"mincount\": 1}]},"
+                + "\"facetFormat\":\"V1\"}";
+        expectedResponse = "{\"responseHeader\":{\"status\":0,\"QTime\":9},\"_original_parameters_\":\"org.apache.solr.common.params.DefaultSolrParams:{params(df=TEXT&alternativeDic=DEFAULT_DICTIONARY&fl=DBID,score&start=0&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=1000&locale=en_US&wt=json),defaults(carrot.url=id&spellcheck.collateExtendedResults=true&carrot.produceSummary=true&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.alternativeTermCount=2&spellcheck.extendedResults=false&defType=afts&spellcheck.maxResultsForSuggest=5&spellcheck=false&carrot.outputSubClusters=false&spellcheck.count=5&carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&spellcheck.collate=true)}\",\"_field_mappings_\":{},\"_date_mappings_\":{},\"_range_mappings_\":{},\"_pivot_mappings_\":{},\"_interval_mappings_\":{},\"_stats_field_mappings_\":{},\"_stats_facet_mappings_\":{},\"_facet_function_mappings_\":{},\"response\":{\"numFound\":6,\"start\":0,\"maxScore\":0.7849362,\"docs\":[{\"DBID\":565,\"score\":0.7849362},{\"DBID\":566,\"score\":0.7849362},{\"DBID\":521,\"score\":0.3540957},{\"DBID\":514,\"score\":0.33025497},{\"DBID\":420,\"score\":0.32440513},{\"DBID\":415,\"score\":0.2780319}]},"
+                + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
+                + "\"facet_counts\":{\"facet_fields\":{\"creator\":[\"System\",124,\"mjackson\",11,\"abeecher\",4],\"modifier\":[\"System\",124,\"mjackson\",8,\"admin\",7]}},"
+                + "\"processedDenies\":true, \"lastIndexedTx\":34}";
+        results = mockResultset(expectedResponse);
+        searchQuery = helper.extractFromJson(jsonQuery);
+        searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        assertFalse(searchContext.getFacetsFields().isEmpty());
+        assertTrue(searchContext.getFacets().isEmpty());
+        assertEquals("creator",searchContext.getFacetsFields().get(0).getLabel());
+        assertEquals(3,searchContext.getFacetsFields().get(0).getBuckets().size());
+        assertEquals(124,searchContext.getFacetsFields().get(0).getBuckets().get(0).getCount());
+        assertEquals("creator:System",searchContext.getFacetsFields().get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("System",searchContext.getFacetsFields().get(0).getBuckets().get(0).getLabel());
+        assertEquals("modifier",searchContext.getFacetsFields().get(1).getLabel());
+        jsonQuery = jsonQuery.replace("V1", "V2");
+        searchQuery = helper.extractFromJson(jsonQuery);
+        searchContext = mapper.toSearchContext((SolrJSONResultSet) results, searchRequest, searchQuery, 0);
+        assertTrue(searchContext.getFacetsFields().isEmpty());
+        assertFalse(searchContext.getFacets().isEmpty());
+        assertEquals("creator",searchContext.getFacets().get(0).getLabel());
+        assertEquals(3,searchContext.getFacets().get(0).getBuckets().size());
+        metrics = searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().toArray(new Metric[searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().size()]);
+        assertEquals("{count=124}",metrics[0].getValue().toString());
+        assertEquals("creator:System",searchContext.getFacets().get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals("System",searchContext.getFacets().get(0).getBuckets().get(0).getLabel());
+        assertEquals("modifier",searchContext.getFacets().get(1).getLabel());
     }
 
 }

@@ -28,9 +28,6 @@ package org.alfresco.repo.content.transform;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Test case for {@link AppleIWorksContentTransformer} content transformer.
  * 
@@ -59,37 +56,10 @@ public class AppleIWorksContentTransformerTest extends AbstractContentTransforme
         return transformer;
     }
 
-// Commented out rather than removed, in case we can get SHARE to fall back to using JPEG when a PDF is not available
-//    @Override
-//    protected String[] getQuickFilenames(String sourceMimetype)
-//    {
-//        List<String> filenames = Arrays.asList(super.getQuickFilenames(sourceMimetype));
-//        filenames.add("quick2009.pages");
-//        return (String[])filenames.toArray();
-//    }
-//
-//    @Override
-//    protected boolean doTestTransformation(String quickFile, String sourceMimetype, String targetMimetype)
-//    {
-//        // This transformer can only do transforms to PDF when a iWorks 2008/9 file (rather than 2013/14) file is used.
-//        return !MimetypeMap.MIMETYPE_PDF.equals(targetMimetype) || !"quick2009.pages".endsWith(quickFile);
-//    }
-//
-//    @Override
-//    protected boolean isTransformationExcluded(String sourceExtension, String targetExtension)
-//    {
-//    	return "pdf".equals(targetExtension); // Our quick files are 2013/14 format so don't include a pdf, only jpgs.
-//    }
-
     public void testIsTransformable() throws Exception
     {
         assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_IWORK_KEYNOTE, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions()));
         assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_IWORK_NUMBERS, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions()));
         assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_IWORK_PAGES, MimetypeMap.MIMETYPE_IMAGE_JPEG, new TransformationOptions()));
-
-// Commented out rather than removed, in case we can get SHARE to fall back to using JPEG when a PDF is not available
-//        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_IWORK_KEYNOTE, MimetypeMap.MIMETYPE_PDF, new TransformationOptions()));
-//        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_IWORK_NUMBERS, MimetypeMap.MIMETYPE_PDF, new TransformationOptions()));
-//        assertTrue(transformer.isTransformable(MimetypeMap.MIMETYPE_IWORK_PAGES, MimetypeMap.MIMETYPE_PDF, new TransformationOptions()));
     }
 }

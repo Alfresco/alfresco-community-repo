@@ -45,6 +45,9 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
+import org.alfresco.service.cmr.search.Interval;
+import org.alfresco.service.cmr.search.IntervalParameters;
+import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
@@ -108,6 +111,7 @@ public class SearchMapper
         fromFacetFields(sp, searchQuery.getFacetFields());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromHighlight(sp, searchQuery.getHighlight());
+        fromFacetIntervals(sp, searchQuery.getFacetIntervals());
         fromScope(sp, searchQuery.getScope());
         fromLimits(sp, searchQuery.getLimits());
 
@@ -448,6 +452,56 @@ public class SearchMapper
                                     new Object[] { aStore });
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Sets the Interval Parameters object on search parameters
+     *
+     * It does some valiation then takes any "SETS" at the top level and sets them at every field level.
+     *
+     * @param sp SearchParameters
+     * @param facetIntervals IntervalParameters
+     */
+    public void fromFacetIntervals(SearchParameters sp, IntervalParameters facetIntervals)
+    {
+        if (facetIntervals != null)
+        {
+            ParameterCheck.mandatory("facetIntervals intervals", facetIntervals.getIntervals());
+
+            List<IntervalSet> globalSets = facetIntervals.getSets();
+            validateSets(globalSets, "facetIntervals");
+
+            if (facetIntervals.getIntervals() != null && !facetIntervals.getIntervals().isEmpty())
+            {
+                for (Interval interval:facetIntervals.getIntervals())
+                {
+                    ParameterCheck.mandatory("facetIntervals intervals field", interval.getField());
+                    validateSets(interval.getSets(), "facetIntervals intervals "+interval.getField());
+                    if (interval.getSets() != null && globalSets != null)
+                    {
+                        interval.getSets().addAll(globalSets);
+                    }
+                }
+            }
+
+            if (facetIntervals.getSets() != null)
+            {
+                facetIntervals.getSets().clear();
+            }
+        }
+        sp.setInterval(facetIntervals);
+    }
+
+    protected void validateSets(List<IntervalSet> intervalSets, String prefix)
+    {
+        if (intervalSets != null && !intervalSets.isEmpty())
+        {
+            for (IntervalSet aSet:intervalSets)
+            {
+                ParameterCheck.mandatory(prefix+" sets start", aSet.getStart());
+                ParameterCheck.mandatory(prefix+" sets end", aSet.getEnd());
             }
         }
     }

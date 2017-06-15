@@ -282,23 +282,10 @@ public class ResultMapper
 
         //Field Facets
         Map<String, List<Pair<String, Integer>>> facetFields = solrResultSet.getFieldFacets();
-        if (facetFields != null && !facetFields.isEmpty())
-        {
-            ffcs = new ArrayList<>(facetFields.size());
-            for (Entry<String, List<Pair<String, Integer>>> facet:facetFields.entrySet())
-            {
-                if (facet.getValue() != null && !facet.getValue().isEmpty())
-                {
-                    List<Bucket> buckets = new ArrayList<>(facet.getValue().size());
-                    for (Pair<String, Integer> buck:facet.getValue())
-                    {
-                        Object display = propertyLookup.lookup(facet.getKey(), buck.getFirst());
-                        buckets.add(new Bucket(buck.getFirst(), buck.getSecond(), display));
-                    }
-                    ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
-                }
-            }
-        }
+        ffcs = getFacetBuckets(facetFields, true);
+
+        Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
+        List<FacetFieldContext> intervals = getFacetBuckets(facetInterval, false);
 
         //Spelling
         SpellCheckResult spell = solrResultSet.getSpellCheckResult();
@@ -308,8 +295,32 @@ public class ResultMapper
         }
 
         //Put it all together
-        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, ffcs, spellCheckContext);
+        context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, ffcs, intervals, spellCheckContext);
         return isNullContext(context)?null:context;
+    }
+
+    protected List<FacetFieldContext> getFacetBuckets(Map<String, List<Pair<String, Integer>>> facetFields, boolean withDisplay)
+    {
+        if (facetFields != null && !facetFields.isEmpty())
+        {
+            List<FacetFieldContext> ffcs = new ArrayList<>(facetFields.size());
+            for (Entry<String, List<Pair<String, Integer>>> facet:facetFields.entrySet())
+            {
+                if (facet.getValue() != null && !facet.getValue().isEmpty())
+                {
+                    List<Bucket> buckets = new ArrayList<>(facet.getValue().size());
+                    for (Pair<String, Integer> buck:facet.getValue())
+                    {
+                        Object display = withDisplay?propertyLookup.lookup(facet.getKey(), buck.getFirst()):null;
+                        buckets.add(new Bucket(buck.getFirst(), buck.getSecond(), display));
+                    }
+                    ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
+                }
+            }
+
+            return ffcs;
+        }
+        return null;
     }
 
     /**
@@ -322,7 +333,8 @@ public class ResultMapper
         return (context.getFacetQueries() == null
                     && context.getConsistency() == null
                     && context.getSpellCheck() == null
-                    && context.getFacetsFields() == null);
+                    && context.getFacetsFields() == null
+                    && context.getFacetIntervals() == null);
     }
 
     /**

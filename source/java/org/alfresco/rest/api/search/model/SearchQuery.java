@@ -28,6 +28,7 @@ package org.alfresco.rest.api.search.model;
 
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
+import org.alfresco.service.cmr.search.IntervalParameters;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -54,8 +55,9 @@ public class SearchQuery
     private final Scope scope;
     private final Limits limits;
     private final GeneralHighlightParameters highlight;
+    private final IntervalParameters facetIntervals;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null,null, null, null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null,null, null, null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -71,7 +73,8 @@ public class SearchQuery
                 @JsonProperty("spellcheck") Spelling spellcheck,
                 @JsonProperty("scope") Scope scope,
                 @JsonProperty("limits")Limits limits,
-                @JsonProperty("highlight")GeneralHighlightParameters highlight)
+                @JsonProperty("highlight")GeneralHighlightParameters highlight,
+                @JsonProperty("facetIntervals")IntervalParameters facetIntervals)
     {
         this.query = query;
         this.paging = paging;
@@ -87,6 +90,7 @@ public class SearchQuery
         this.facetFields = facetFields;
         this.limits = limits;
         this.highlight = highlight;
+        this.facetIntervals = facetIntervals;
     }
 
     public Query getQuery()
@@ -152,6 +156,12 @@ public class SearchQuery
     {
         return highlight;
     }
+
+    public IntervalParameters getFacetIntervals()
+    {
+        return facetIntervals;
+    }
+
     public Limits getLimits()
     {
         return limits;

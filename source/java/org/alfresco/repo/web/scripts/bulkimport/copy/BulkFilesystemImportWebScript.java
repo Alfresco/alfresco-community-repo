@@ -73,7 +73,8 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
         String targetNodeRefStr = null;
         String targetPath = null;
         String sourceDirectoryStr = null;
-        String replaceExistingStr = null;
+        @Deprecated String replaceExistingStr = null;
+        String existingFileModeStr = null;
         String batchSizeStr = null;
         String numThreadsStr = null;
         String disableRulesStr = null;
@@ -87,6 +88,7 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
                 NodeRef targetNodeRef = null;
                 File sourceDirectory = null;
                 boolean replaceExisting = false;
+                BulkImportParameters.ExistingFileMode existingFileMode = null;
                 int batchSize = bulkImporter.getDefaultBatchSize();
                 int numThreads = bulkImporter.getDefaultNumThreads();
                 boolean disableRules = false;
@@ -96,6 +98,8 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
                 targetPath = request.getParameter(PARAMETER_TARGET_PATH);
                 sourceDirectoryStr = request.getParameter(PARAMETER_SOURCE_DIRECTORY);
                 replaceExistingStr = request.getParameter(PARAMETER_REPLACE_EXISTING);
+                existingFileModeStr = request.getParameter(PARAMETER_EXISTING_FILE_MODE);
+
                 batchSizeStr = request.getParameter(PARAMETER_BATCH_SIZE);
                 numThreadsStr = request.getParameter(PARAMETER_NUM_THREADS);
                 disableRulesStr = request.getParameter(PARAMETER_DISABLE_RULES);
@@ -108,10 +112,25 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
                 }
                 
                 sourceDirectory = new File(sourceDirectoryStr.trim());
-                
+
+                if (replaceExistingStr != null && existingFileModeStr != null)
+                {
+                    // Check that we haven't had both the deprecated and new (existingFileMode)
+                    // parameters supplied.
+                    throw new IllegalStateException(
+                            String.format("Only one of these parameters may be used, not both: %s, %s",
+                                    PARAMETER_REPLACE_EXISTING,
+                                    PARAMETER_EXISTING_FILE_MODE));
+                }
+
                 if (replaceExistingStr != null && replaceExistingStr.trim().length() > 0)
                 {
                     replaceExisting = PARAMETER_VALUE_REPLACE_EXISTING.equals(replaceExistingStr);
+                }
+
+                if (existingFileModeStr != null && existingFileModeStr.trim().length() > 0)
+                {
+                    existingFileMode = BulkImportParameters.ExistingFileMode.valueOf(existingFileModeStr);
                 }
 
                 if (disableRulesStr != null && disableRulesStr.trim().length() > 0)
@@ -157,7 +176,16 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
                 	}
                 }
 
-                bulkImportParameters.setReplaceExisting(replaceExisting);
+                if (existingFileMode != null)
+                {
+                    bulkImportParameters.setExistingFileMode(existingFileMode);
+                }
+                else
+                {
+                    // Fall back to the old/deprecated way.
+                    bulkImportParameters.setReplaceExisting(replaceExisting);
+                }
+
                 bulkImportParameters.setTarget(targetNodeRef);
                 bulkImportParameters.setDisableRulesService(disableRules);
 

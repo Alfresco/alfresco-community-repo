@@ -1450,8 +1450,8 @@
         <property name="id"><value>patch.addInviteModeratedEmailTemplates</value></property>
         <property name="description"><value>patch.addInviteModeratedEmailTemplates.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>10003</value></property>
-        <property name="targetSchema"><value>10004</value></property>
+        <property name="fixesToSchema"><value>10050</value></property>
+        <property name="targetSchema"><value>10051</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
@@ -1471,8 +1471,8 @@
         <property name="id"><value>patch.db-V5.2-remove-jbpm-tables-from-db</value></property>
         <property name="description"><value>patch.db-V5.2-remove-jbpm-tables-from-db.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>10004</value></property>
-        <property name="targetSchema"><value>10005</value></property>
+        <property name="fixesToSchema"><value>10051</value></property>
+        <property name="targetSchema"><value>10052</value></property>
         <property name="ignored"><value>${system.remove-jbpm-tables-from-db.ignored}</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/5.2/${db.script.dialect}/remove-jbpm-tables-from-db.sql</value>

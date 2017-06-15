@@ -429,7 +429,13 @@ public class SolrQueryHTTPClientTest
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("A*");
         List<RangeParameters> ranges = new ArrayList<RangeParameters>();
-        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, "before", "lower", null, null));
+        List<String>includes = new ArrayList<String>();
+        includes.add("upper");
+        includes.add("outer");
+        List<String> other = new ArrayList<String>();
+        other.add("before");
+        other.add("between");
+        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, other, includes, null, null));
         params.setRanges(ranges);
         StringBuilder urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
@@ -440,8 +446,10 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&f.content.size.facet.range.start=0"));
         assertTrue(url.contains("&f.content.size.facet.range.end=1000000"));
         assertTrue(url.contains("&f.content.size.facet.range.gap=10000"));
-        assertTrue(url.contains("&f.content.size.facet.range.include=lower"));
+        assertTrue(url.contains("&f.content.size.facet.range.include=upper"));
+        assertTrue(url.contains("&f.content.size.facet.range.include=outer"));
         assertTrue(url.contains("&f.content.size.facet.range.other=before"));
+        assertTrue(url.contains("&f.content.size.facet.range.other=between"));
         assertTrue(url.contains("&f.content.size.facet.range.hardend=true"));
 
         List<String> filters = new ArrayList<String>();
@@ -450,8 +458,9 @@ public class SolrQueryHTTPClientTest
         List<String> tags = new ArrayList<String>();
         tags.add("dt");
         tags.add("doc");
+        
         ranges.clear();
-        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, null, null, tags, filters));
+        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), tags, filters));
         params.setRanges(ranges);
         urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
@@ -461,7 +470,8 @@ public class SolrQueryHTTPClientTest
         assertTrue(url2.contains("&f.content.size.facet.range.start=0"));
         assertTrue(url2.contains("&f.content.size.facet.range.end=1000000"));
         assertTrue(url2.contains("&f.content.size.facet.range.gap=10000"));
-        assertFalse(url2.contains("&f.content.size.facet.range.include=lower"));
+        assertFalse(url2.contains("&f.content.size.facet.range.include=upper"));
+        assertFalse(url2.contains("&f.content.size.facet.range.include=outer"));
         assertFalse(url2.contains("&f.content.size.facet.range.other=before"));
         assertTrue(url2.contains("&f.content.size.facet.range.hardend=true"));
         assertTrue(url2.contains("&range.field={!ex=bart,homer}"));
@@ -474,8 +484,15 @@ public class SolrQueryHTTPClientTest
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("A*");
         List<RangeParameters> ranges = new ArrayList<RangeParameters>();
-        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, "before", "lower", null, null));
-        ranges.add(new RangeParameters("created", "2015-09-29T10:45:15.729Z", "2016-09-29T10:45:15.729Z", "+100DAY", true, "before", "lower", null, null));
+        List<String>includes = new ArrayList<String>();
+        includes.add("upper");
+        includes.add("outer");
+        List<String>includes2 = new ArrayList<String>();
+        includes2.add("lower");
+        List<String> other = new ArrayList<String>();
+        other.add("before");
+        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, other, includes, null, null));
+        ranges.add(new RangeParameters("created", "2015-09-29T10:45:15.729Z", "2016-09-29T10:45:15.729Z", "+100DAY", true, other, includes2, null, null));
         params.setRanges(ranges);
         StringBuilder urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
@@ -486,15 +503,15 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&f.content.size.facet.range.start=0"));
         assertTrue(url.contains("&f.content.size.facet.range.end=1000000"));
         assertTrue(url.contains("&f.content.size.facet.range.gap=10000"));
-        assertTrue(url.contains("&f.content.size.facet.range.include=lower"));
-        assertTrue(url.contains("&f.content.size.facet.range.other=before"));
+        assertTrue(url.contains("&f.content.size.facet.range.include=upper"));
+        assertTrue(url.contains("&f.content.size.facet.range.include=outer"));
         assertTrue(url.contains("&f.content.size.facet.range.hardend=true"));
         assertTrue(url.contains("&facet.range=created"));
         assertTrue(url.contains("&f.created.facet.range.start=2015-09-29T10%3A45%3A15.729Z"));
         assertTrue(url.contains("&f.created.facet.range.end=2016-09-29T10%3A45%3A15.729Z"));
         assertTrue(url.contains("&f.created.facet.range.gap=%2B100DAY"));
-        assertTrue(url.contains("&f.created.facet.range.include=lower"));
         assertTrue(url.contains("&f.created.facet.range.other=before"));
+        assertTrue(url.contains("&f.created.facet.range.include=lower"));
         assertTrue(url.contains("&f.created.facet.range.hardend=true"));
     }
 

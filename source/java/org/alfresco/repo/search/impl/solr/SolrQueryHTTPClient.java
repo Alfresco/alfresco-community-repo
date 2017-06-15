@@ -842,13 +842,19 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 url.append(String.format("&f.%s.facet.range.start=",fieldName)).append(encoder.encode(""+ facetRange.getStart(), "UTF-8"));
                 url.append(String.format("&f.%s.facet.range.end=",fieldName)).append(encoder.encode(""+ facetRange.getEnd(), "UTF-8"));
                 url.append(String.format("&f.%s.facet.range.gap=",fieldName)).append(encoder.encode(""+ facetRange.getGap(), "UTF-8"));
-                if(facetRange.getInclude() != null)
+                if(facetRange.getInclude() != null && !facetRange.getInclude().isEmpty())
                 {
-                    url.append(String.format("&f.%s.facet.range.include=",fieldName)).append(encoder.encode("" + facetRange.getInclude(), "UTF-8"));
+                    for(String include : facetRange.getInclude())
+                    {
+                        url.append(String.format("&f.%s.facet.range.include=",fieldName)).append(encoder.encode("" + include, "UTF-8"));
+                    }
                 }
-                if(facetRange.getOther() != null)
+                if(facetRange.getOther() != null && !facetRange.getOther().isEmpty())
                 {
-                    url.append(String.format("&f.%s.facet.range.other=",fieldName)).append(encoder.encode("" + facetRange.getOther(), "UTF-8"));
+                    for(String other : facetRange.getOther())
+                    {
+                        url.append(String.format("&f.%s.facet.range.other=",fieldName)).append(encoder.encode("" + other, "UTF-8"));
+                    }
                 }
                 url.append(String.format("&f.%s.facet.range.hardend=",fieldName)).append(encoder.encode("" + facetRange.isHardend(), "UTF-8"));
                 if(!facetRange.getExcludeFilters().isEmpty())

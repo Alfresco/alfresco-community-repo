@@ -125,7 +125,6 @@ public class SerializerTestHelper implements RequestReader
                 objectMapper.writeValue(generator, respons);
             }
         });
-        System.out.println(out.toString());
         return out.toString();
     }
 }

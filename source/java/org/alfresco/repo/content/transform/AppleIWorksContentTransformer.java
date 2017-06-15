@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,11 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -40,10 +35,16 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * Converts Apple iWorks files to PDFs or JPEGs for thumbnailing & previewing.
- * The transformer will only work for iWorks 09 files and later as previous versions of those files
- * were actually saved as directories.
+ * Converts Apple iWorks files to JPEGs for thumbnailing & previewing.
+ * The transformer will only work for iWorks 2013/14 files. Support for iWorks 2008/9 has been dropped as we cannot
+ * support both, because the newer format does not contain a PDF. If we say this transformer supports PDF, Share will
+ * assume incorrectly that we can convert to PDF and we would only get a preview for the older format and never the
+ * newer one. Both formats have the same mimetype.
  * 
  * @author Neil Mc Erlean
  * @since 4.0
@@ -51,23 +52,29 @@ import org.apache.commons.logging.LogFactory;
 public class AppleIWorksContentTransformer extends AbstractContentTransformer2
 {
     private static final Log log = LogFactory.getLog(AppleIWorksContentTransformer.class);
-    
-    // Apple's zip entry names for the front-page and all-doc previews in iWorks.
-    // We don't attempt to parse the XML 'manifest' (index.xml) within the iWorks file.
-    private static final String QUICK_LOOK_PREVIEW_PDF   = "QuickLook/Preview.pdf";
-    private static final String QUICK_LOOK_THUMBNAIL_JPG = "QuickLook/Thumbnail.jpg";
-    
-    private static final List<String> IWORKS_MIMETYPES = Arrays.asList(new String[]{MimetypeMap.MIMETYPE_IWORK_KEYNOTE,
-                                                                                    MimetypeMap.MIMETYPE_IWORK_NUMBERS,
-                                                                                    MimetypeMap.MIMETYPE_IWORK_PAGES});
-    private static final List<String> TARGET_MIMETYPES = Arrays.asList(new String[]{MimetypeMap.MIMETYPE_IMAGE_JPEG,
-                                                                                    MimetypeMap.MIMETYPE_PDF});
-    
+
+    // Apple's zip entry names for previews in iWorks have changed over time.
+    private static final List<String> PDF_PATHS = Arrays.asList(
+        "QuickLook/Preview.pdf");  // iWorks 2008/9
+    private static final List<String> JPG_PATHS = Arrays.asList(
+        "QuickLook/Thumbnail.jpg", // iWorks 2008/9
+        "preview.jpg");            // iWorks 2013/14 (720 x 552) We use the best quality image. Others are:
+                                   //                (225 x 173) preview-web.jpg
+                                   //                 (53 x  41) preview-micro.jpg
+
+    private static final List<String> IWORKS_MIMETYPES = Arrays.asList(MimetypeMap.MIMETYPE_IWORK_KEYNOTE,
+                                                                       MimetypeMap.MIMETYPE_IWORK_NUMBERS,
+                                                                       MimetypeMap.MIMETYPE_IWORK_PAGES);
+    private static final List<String> TARGET_MIMETYPES = Arrays.asList(MimetypeMap.MIMETYPE_IMAGE_JPEG
+// Commented out rather than removed, in case we can get SHARE to fall back to using JPEG when a PDF is not available
+//                                                                    ,MimetypeMap.MIMETYPE_PDF
+                                                                      );
+
     @Override
     public boolean isTransformable(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
-        // only support [iWorks] -> JPEG | PDF
-        // This is because iWorks 09+ files are zip files containing embedded jpeg/pdf previews.
+        // only support [iWorks] -> JPEG but only if these are embedded in the file.
+        // This is because iWorks 13+ files are zip files containing embedded jpeg previews.
         return TARGET_MIMETYPES.contains(targetMimetype) && IWORKS_MIMETYPES.contains(sourceMimetype);
     }
 
@@ -85,8 +92,8 @@ public class AppleIWorksContentTransformer extends AbstractContentTransformer2
         final String sourceMimetype = reader.getMimetype();
         final String sourceExtension = getMimetypeService().getExtension(sourceMimetype);
         final String targetMimetype = writer.getMimetype();
-        
-        
+        final String targetExtension = getMimetypeService().getExtension(targetMimetype);
+
         if (log.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();
@@ -94,45 +101,37 @@ public class AppleIWorksContentTransformer extends AbstractContentTransformer2
                .append(" to ").append(targetMimetype);
             log.debug(msg.toString());
         }
-        
-        
+
         ZipArchiveInputStream iWorksZip = null;
-        try 
+        try
         {
-            // iWorks files are zip files (at least in recent versions, iWork 09).
+            // iWorks files are zip (or package) files.
             // If it's not a zip file, the resultant ZipException will be caught as an IOException below.
             iWorksZip = new ZipArchiveInputStream(reader.getContentInputStream());
-            
-            ZipArchiveEntry entry = null;
+
+            // Look through the zip file entries for the preview/thumbnail.
+            List<String> paths = MimetypeMap.MIMETYPE_IMAGE_JPEG.equals(targetMimetype) ? JPG_PATHS : PDF_PATHS;
+            ZipArchiveEntry entry;
             boolean found = false;
-            while ( !found && (entry = iWorksZip.getNextZipEntry()) != null )
+            while ((entry=iWorksZip.getNextZipEntry()) != null)
             {
-                if (MimetypeMap.MIMETYPE_IMAGE_JPEG.equals(targetMimetype) && 
-                    entry.getName().equals(QUICK_LOOK_THUMBNAIL_JPG))
+                String name = entry.getName();
+                if (paths.contains(name))
                 {
                     writer.putContent( iWorksZip );
                     found = true;
-                }
-                else if (MimetypeMap.MIMETYPE_PDF.equals(targetMimetype) &&
-                         entry.getName().equals(QUICK_LOOK_PREVIEW_PDF))
-                {
-                    writer.putContent( iWorksZip );
-                    found = true;
+                    break;
                 }
             }
             
             if (! found)
             {
-                throw new AlfrescoRuntimeException("Unable to transform " + sourceExtension + " file to " + targetMimetype);
+                throw new AlfrescoRuntimeException("The source " + sourceExtension + " file did not contain a " + targetExtension + " preview");
             }
         } 
-        catch (FileNotFoundException e1) 
+        catch (IOException e)
         {
-           throw new AlfrescoRuntimeException("Unable to transform " + sourceExtension + " file.", e1);
-        } 
-        catch (IOException e) 
-        {
-           throw new AlfrescoRuntimeException("Unable to transform " + sourceExtension + " file.", e);
+           throw new AlfrescoRuntimeException("Unable to transform " + sourceExtension + " file. It should have been a zip format file.", e);
         }
         finally
         {

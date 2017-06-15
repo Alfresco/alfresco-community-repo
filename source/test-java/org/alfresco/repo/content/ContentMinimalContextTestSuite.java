@@ -32,6 +32,7 @@ import junit.framework.TestSuite;
 import org.alfresco.repo.content.metadata.*;
 import org.alfresco.repo.content.transform.AbstractContentTransformerLimitsTest;
 import org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest;
+import org.alfresco.repo.content.transform.ArchiveContentTransformerTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
 import org.alfresco.repo.content.transform.ComplexContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformerRegistryTest;
@@ -85,21 +86,43 @@ public class ContentMinimalContextTestSuite extends TestSuite
    {
        // Setup the context
        getContext();
-      
+
        // Off we go
        TestSuite suite = new TestSuite();
-       
+
        // Limits
        suite.addTest(new JUnit4TestAdapter(AbstractContentTransformerLimitsTest.class));
        suite.addTest(new JUnit4TestAdapter(TransformationOptionLimitsTest.class));
        suite.addTest(new JUnit4TestAdapter(TransformationOptionPairTest.class));
-       
+
        // Transformer Config
        suite.addTest(new JUnit4TestAdapter(TransformerConfigTestSuite.class));
-       
+
        // Source options
        suite.addTest(new JUnit4TestAdapter(TemporalSourceOptionsTest.class));
-       
+
+       // Transform tests
+       suite.addTestSuite(BinaryPassThroughContentTransformerTest.class);
+       suite.addTestSuite(ComplexContentTransformerTest.class);
+       suite.addTestSuite(ContentTransformerRegistryTest.class);
+       suite.addTestSuite(HtmlParserContentTransformerTest.class);
+       suite.addTestSuite(MailContentTransformerTest.class);
+       suite.addTestSuite(EMLTransformerTest.class);
+       suite.addTestSuite(MediaWikiContentTransformerTest.class);
+       suite.addTestSuite(OpenOfficeContentTransformerTest.class);
+       suite.addTestSuite(PdfBoxContentTransformerTest.class);
+       suite.addTestSuite(PoiContentTransformerTest.class);
+       suite.addTestSuite(PoiHssfContentTransformerTest.class);
+       suite.addTestSuite(PoiOOXMLContentTransformerTest.class);
+       suite.addTestSuite(RuntimeExecutableContentTransformerTest.class);
+       suite.addTestSuite(StringExtractingContentTransformerTest.class);
+       suite.addTestSuite(TextMiningContentTransformerTest.class);
+       suite.addTestSuite(TextToPdfContentTransformerTest.class);
+       suite.addTestSuite(TikaAutoContentTransformerTest.class);
+       suite.addTestSuite(ImageMagickContentTransformerTest.class);
+       suite.addTestSuite(AppleIWorksContentTransformerTest.class);
+       suite.addTestSuite(ArchiveContentTransformerTest.class);
+
        // Metadata tests
        suite.addTest(new JUnit4TestAdapter(MetadataExtracterLimitsTest.class));
        suite.addTestSuite( DWGMetadataExtracterTest.class );
@@ -114,28 +137,7 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTestSuite( PoiMetadataExtracterTest.class );
        suite.addTestSuite( RFC822MetadataExtracterTest.class );
        suite.addTestSuite( TikaAutoMetadataExtracterTest.class );
-       
-       // Transform tests
-       suite.addTestSuite(BinaryPassThroughContentTransformerTest.class);
-       suite.addTestSuite(ComplexContentTransformerTest.class);
-       suite.addTestSuite(ContentTransformerRegistryTest.class);
-       suite.addTestSuite(HtmlParserContentTransformerTest.class);
-       suite.addTestSuite(MailContentTransformerTest.class);
-       suite.addTest(new JUnit4TestAdapter(EMLTransformerTest.class));
-       suite.addTestSuite(MediaWikiContentTransformerTest.class);
-       suite.addTestSuite(OpenOfficeContentTransformerTest.class);
-       suite.addTestSuite(PdfBoxContentTransformerTest.class);
-       suite.addTestSuite(PoiContentTransformerTest.class);
-       suite.addTestSuite(PoiHssfContentTransformerTest.class);
-       suite.addTestSuite(PoiOOXMLContentTransformerTest.class);
-       suite.addTestSuite(RuntimeExecutableContentTransformerTest.class);
-       suite.addTestSuite(StringExtractingContentTransformerTest.class);
-       suite.addTestSuite(TextMiningContentTransformerTest.class);
-       suite.addTestSuite(TextToPdfContentTransformerTest.class);
-       suite.addTestSuite(TikaAutoContentTransformerTest.class);
-       suite.addTestSuite(ImageMagickContentTransformerTest.class);
-       suite.addTestSuite(AppleIWorksContentTransformerTest.class);
-       
+
        return suite;
    }
 }

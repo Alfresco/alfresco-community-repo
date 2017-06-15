@@ -93,6 +93,11 @@ public class FacetField
         return label;
     }
 
+    public String toFilterQuery(String value)
+    {
+        return field+":"+value;
+    }
+
     public String getPrefix()
     {
         return prefix;

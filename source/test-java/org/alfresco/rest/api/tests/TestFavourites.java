@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,6 +28,7 @@ package org.alfresco.rest.api.tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -42,6 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -61,11 +63,13 @@ import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.Favourite;
 import org.alfresco.rest.api.tests.client.data.FavouriteDocument;
 import org.alfresco.rest.api.tests.client.data.FavouriteFolder;
+import org.alfresco.rest.api.tests.client.data.FavouriteNode;
 import org.alfresco.rest.api.tests.client.data.FavouritesTarget;
 import org.alfresco.rest.api.tests.client.data.FileFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.FolderFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.InvalidFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
+import org.alfresco.rest.api.tests.client.data.PathInfo;
 import org.alfresco.rest.api.tests.client.data.Site;
 import org.alfresco.rest.api.tests.client.data.SiteFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.SiteImpl;
@@ -91,7 +95,7 @@ import com.google.common.collect.Lists;
  * @author steveglover
  * @since publicapi1.0
  */
-public class TestFavourites extends EnterpriseTestApi
+public class TestFavourites extends AbstractBaseApiTest
 {
 	private static enum TARGET_TYPE
 	{
@@ -291,7 +295,7 @@ public class TestFavourites extends EnterpriseTestApi
 		this.siteMembershipRequestsProxy = publicApiClient.siteMembershipRequests();
 	}
 
-	private void sort(List<Favourite> favourites, final List<Pair<FavouritesService.SortFields, Boolean>> sortProps)
+    private void sort(List<Favourite> favourites, final List<Pair<FavouritesService.SortFields, Boolean>> sortProps)
 	{
     	Comparator<Favourite> comparator = new Comparator<Favourite>()
     	{
@@ -1712,4 +1716,187 @@ public class TestFavourites extends EnterpriseTestApi
 			}
 		}
 	}
+
+    /**
+     * Tests get favourites with 'include' parameter.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?include=path}
+     */
+    @Test
+    public void testGetFavouritesWithPath() throws Exception
+    {
+        // As person12 user
+        setRequestContext(network1.getId(), person12Id, "password");
+
+        final NodeRef folderNodeRef = person1PublicFolders.get(0); // person1's folder (Test Folder1)
+        final NodeRef nodeRef = person1PublicDocs.get(1); // a file (Test Doc2) in the folder (Test Folder1)
+        final TestSite publicSite = person1PublicSites.get(0); // person1's public site
+
+        // Favourite the doc (Test Doc2)
+        Favourite fileFavourite = makeFileFavourite(nodeRef.getId());
+        favouritesProxy.createFavourite(person12Id, fileFavourite);
+
+        //Favourite the folder (Test Folder1)
+        Favourite folderFavourite = makeFolderFavourite(folderNodeRef.getId());
+        favouritesProxy.createFavourite(person12Id, folderFavourite);
+
+        // Favourite the public site
+        final Favourite siteFavourite = makeSiteFavourite(publicSite);
+        favouritesProxy.createFavourite(person12Id, siteFavourite);
+
+        Paging paging = getPaging(0, 100);
+        Map<String, String> otherParams = Collections.singletonMap("include", "path");
+
+        ListResponse<Favourite> resp = favouritesProxy.getFavourites(person12Id, createParams(paging, otherParams));
+        List<Favourite> actualFavouritesList = resp.getList();
+        assertEquals("Incorrect number of entries returned", 3, actualFavouritesList.size());
+
+        actualFavouritesList.forEach(fav ->
+        {
+            FavouriteNode node;
+            switch (fav.getType())
+            {
+                case FILE:
+                {
+                    node = ((FileFavouriteTarget) fav.getTarget()).getDocument();
+                    assertNotNull("node is null.", node);
+                    assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary/Test Folder1", true);
+                    break;
+                }
+                case FOLDER:
+                {
+                    node = ((FolderFavouriteTarget) fav.getTarget()).getFolder();
+                    assertNotNull("node is null.", node);
+                    assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary", true);
+                    break;
+                }
+                case SITE:
+                {
+                    JSONObject siteJsonObject = fav.getTarget().toJSON();
+                    assertNotNull("There should be a site JSON object.", siteJsonObject);
+                    assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
+                    break;
+                }
+            }
+        });
+
+        // Get favourites without 'include' option
+        resp = favouritesProxy.getFavourites(person12Id, createParams(paging, null));
+        actualFavouritesList = resp.getList();
+        assertEquals("Incorrect number of entries returned", 3, actualFavouritesList.size());
+
+        actualFavouritesList.forEach(fav ->
+        {
+            FavouriteNode node;
+            switch (fav.getType())
+            {
+                case FILE:
+                {
+                    node = ((FileFavouriteTarget) fav.getTarget()).getDocument();
+                    assertNotNull("node is null.", node);
+                    assertNull("Path info should not be returned by default", node.getPath());
+                    break;
+                }
+                case FOLDER:
+                {
+                    node = ((FolderFavouriteTarget) fav.getTarget()).getFolder();
+                    assertNotNull("node is null.", node);
+                    assertNull("Path info should not be returned by default", node.getPath());
+                    break;
+                }
+                case SITE:
+                {
+                    JSONObject siteJsonObject = fav.getTarget().toJSON();
+                    assertNotNull("There should be a site JSON object.", siteJsonObject);
+                    assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
+                    break;
+                }
+            }
+        });
+    }
+
+    /**
+     * Tests create and get favourite with 'include' parameter.
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites?include=path}
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userName>/favorites/<targetId>?include=path}
+     */
+    @Test
+    public void testCreateAndGetFavouriteWithPath() throws Exception
+    {
+        Map<String, String> includePath = Collections.singletonMap("include", "path");
+
+        // As person12 user
+        setRequestContext(network1.getId(), person12Id, "password");
+
+        final NodeRef folderNodeRef = person1PublicFolders.get(0); // person1's folder (Test Folder1)
+        final NodeRef nodeRef1= person1PublicDocs.get(0); // a file in the site's document library (Test Doc1)
+        final NodeRef nodeRef2 = person1PublicDocs.get(1); // a file (Test Doc2) in the folder (Test Folder1)
+        final TestSite publicSite = person1PublicSites.get(0); // person1's public site
+
+        // Favourite the doc (Test Doc1)
+        Favourite file1Favourite = makeFileFavourite(nodeRef1.getId());
+        file1Favourite = favouritesProxy.createFavourite(person12Id, file1Favourite, includePath);
+        FavouriteNode node = ((FileFavouriteTarget) file1Favourite.getTarget()).getDocument();
+        assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary", true);
+
+
+        // Favourite the doc (Test Doc2)
+        Favourite file2Favourite = makeFileFavourite(nodeRef2.getId());
+        file2Favourite = favouritesProxy.createFavourite(person12Id, file2Favourite);
+        node = ((FileFavouriteTarget) file2Favourite.getTarget()).getDocument();
+        assertNull("Path info should not be returned by default", node.getPath());
+
+        //Favourite the folder (Test Folder1)
+        Favourite folderFavourite = makeFolderFavourite(folderNodeRef.getId());
+        folderFavourite = favouritesProxy.createFavourite(person12Id, folderFavourite, includePath);
+        node = ((FolderFavouriteTarget) folderFavourite.getTarget()).getFolder();
+        assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary", true);
+
+        // Favourite the public site
+        Favourite siteFavourite = makeSiteFavourite(publicSite);
+        siteFavourite = favouritesProxy.createFavourite(person12Id, siteFavourite);
+        JSONObject siteJsonObject = siteFavourite.getTarget().toJSON();
+        assertNotNull("There should be a site JSON object.", siteJsonObject);
+        assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
+
+        // Get single favourite (Test Doc2) with include path
+        Favourite favouriteResp = favouritesProxy.getFavourite(person12Id, file2Favourite.getTargetGuid(), includePath);
+        node = ((FileFavouriteTarget) favouriteResp.getTarget()).getDocument();
+        assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary/Test Folder1", true);
+
+        favouriteResp = favouritesProxy.getFavourite(person12Id, folderFavourite.getTargetGuid(), includePath);
+        node = ((FolderFavouriteTarget) favouriteResp.getTarget()).getFolder();
+        assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary", true);
+
+        favouriteResp = favouritesProxy.getFavourite(person12Id, siteFavourite.getTargetGuid(), includePath);
+        siteJsonObject = favouriteResp.getTarget().toJSON();
+        assertNotNull("There should be a site JSON object.", siteJsonObject);
+        assertNull("Path info should not be returned for sites.", siteJsonObject.get("path"));
+    }
+
+    private void assertPathInfo(PathInfo expectedPathInfo, String expectedPathName, boolean expectedIsComplete)
+    {
+        assertNotNull("Path info was requested.", expectedPathInfo);
+        assertEquals("IsComplete should have been true.", expectedIsComplete, expectedPathInfo.getIsComplete());
+        assertEquals("Incorrect path name.", expectedPathName, expectedPathInfo.getName());
+
+        // substring(1) -> so we can ignore the first '/'
+        List<String> expectedPathElements = Arrays.asList(expectedPathName.substring(1).split("/"));
+        assertEquals("Incorrect number of path elements.", expectedPathElements.size(), expectedPathInfo.getElements().size());
+
+        AtomicInteger i = new AtomicInteger(0);
+        expectedPathElements.forEach(path -> assertEquals("Incorrect path element.", path,
+                    expectedPathInfo.getElements().get(i.getAndIncrement()).getName()));
+    }
+
+    @Override
+    public String getScope()
+    {
+        return "public";
+    }
+
 }

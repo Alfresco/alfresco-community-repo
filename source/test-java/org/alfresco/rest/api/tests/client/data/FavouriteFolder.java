@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -110,8 +110,10 @@ public class FavouriteFolder extends FavouriteNode implements ExpectedComparison
 		folder.setModifiedAt(modifiedAt);
 		folder.setCreatedAt(createdAt);
 		folder.setDescription(description);
-		return folder;
-	}
+        // set path if available
+        folder.parseAndSetPath(jsonObject);
+        return folder;
+    }
 
 	@Override
 	public void expected(Object o)
@@ -119,13 +121,21 @@ public class FavouriteFolder extends FavouriteNode implements ExpectedComparison
 		super.expected(o);
 	}
 
-	@Override
-	public String toString()
-	{
-		return "Folder [nodeId=" + nodeId + ", guid=" + guid + ", name=" + name
-				+ ", title=" + title + ", description=" + description
-				+ ", createdAt=" + createdAt + ", modifiedAt=" + modifiedAt
-				+ ", createdBy=" + createdBy + ", modifiedBy=" + modifiedBy
-				+ "]";
-	}
+    @Override
+    public String toString()
+    {
+        final StringBuilder sb = new StringBuilder(250);
+        sb.append("FavouriteFolder [nodeId=").append(nodeId)
+                    .append(", guid=").append(guid)
+                    .append(", name=").append(name)
+                    .append(", title=").append(title)
+                    .append(", description=").append(description)
+                    .append(", createdAt=").append(createdAt)
+                    .append(", modifiedAt=").append(modifiedAt)
+                    .append(", createdBy=").append(createdBy)
+                    .append(", modifiedBy=").append(modifiedBy)
+                    .append(", path=").append(path)
+                    .append(']');
+        return sb.toString();
+    }
 }

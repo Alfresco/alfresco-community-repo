@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -170,17 +170,29 @@ public class FavouriteDocument extends FavouriteNode implements ExpectedComparis
 		document.setMimeType(mimeType);
 		document.setSizeInBytes(BigInteger.valueOf(sizeInBytes));
 		document.setVersionLabel(versionLabel);
-		return document;
-	}
+        // set path if available
+        document.parseAndSetPath(jsonObject);
+        return document;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "FavouriteDocument [mimeType=" + mimeType + ", sizeInBytes="
-				+ sizeInBytes + ", versionLabel=" + versionLabel + ", nodeId="
-				+ nodeId + ", guid=" + guid + ", name=" + name + ", title="
-				+ title + ", description=" + description + ", createdAt="
-				+ createdAt + ", modifiedAt=" + modifiedAt + ", createdBy="
-				+ createdBy + ", modifiedBy=" + modifiedBy + "]";
-	}
+    @Override
+    public String toString()
+    {
+        final StringBuilder sb = new StringBuilder(250);
+        sb.append("FavouriteDocument [nodeId=").append(nodeId)
+                    .append(", guid=").append(guid)
+                    .append(", name=").append(name)
+                    .append(", title=").append(title)
+                    .append(", description=").append(description)
+                    .append(", createdAt=").append(createdAt)
+                    .append(", modifiedAt=").append(modifiedAt)
+                    .append(", createdBy=").append(createdBy)
+                    .append(", modifiedBy=").append(modifiedBy)
+                    .append(", mimeType=").append(mimeType)
+                    .append(", sizeInBytes=").append(sizeInBytes)
+                    .append(", versionLabel=").append(versionLabel)
+                    .append(", path=").append(path)
+                    .append(']');
+        return sb.toString();
+    }
 }

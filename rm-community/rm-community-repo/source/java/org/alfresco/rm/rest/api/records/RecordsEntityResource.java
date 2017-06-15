@@ -283,7 +283,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         }
         else
         {
-            throw new IntegrityException("Model integrity exception: the record is already completed.", null);
+            throw new IntegrityException("Model integrity exception: the record is frozen or already completed.", null);
         }
 
         // return record state

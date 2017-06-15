@@ -1799,6 +1799,47 @@ paths:
           description: Unexpected error
           schema:
             $ref: '#/definitions/Error'
+  '/records/{recordId}/complete':
+    post:
+      tags:
+        - records
+      summary: Complete a record
+      description: |
+        Completes the record **recordId**.
+      operationId: completeRecord
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordIdParam** is not a valid format or
+            **recordIdParam** is not a record
+        '401':
+          description: Authentication failed
+        '403':
+          description: >-
+            Current user does not have permission to complete record
+            **recordIdParam**
+        '404':
+          description: |
+            **recordIdParam** does not exist
+        '422':
+          description: |
+            Model integrity exception: the record is frozen or already completed
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
   ## Files
   '/files/{fileId}/declare':
     post:

@@ -35,13 +35,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 
-import javax.xml.namespace.QName;
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -153,7 +147,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Incomplete records with mandatory meta-data missing
+     * Record to be completed is frozen
      */
     @DataProvider (name = "FrozenRecords")
     public Object[][] getFrozenRecords() throws Exception
@@ -330,6 +324,7 @@ public class CompleteRecordTests extends BaseRMRestTest
 
     private void createMandatoryMetadata()
     {
+
     }
 
     private void setMandatoryMetadata(Record record)

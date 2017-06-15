@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,6 +27,11 @@ package org.alfresco.rest.api.tests;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl;
+import org.alfresco.rest.api.model.Client;
+import org.alfresco.rest.api.model.LoginTicket;
+import org.alfresco.rest.api.model.LoginTicketResponse;
+import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.Pair;
@@ -37,6 +42,8 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.util.email.EmailUtil;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -63,6 +70,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.mail.internet.MimeMessage;
+
+import static org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest.getWorkflowIdAndKeyFromUrl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -71,8 +81,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class TestPeople extends EnterpriseTestApi
+public class TestPeople extends AbstractBaseApiTest
 {
+    private static final String URL_PEOPLE = "people";
     private static final QName ASPECT_COMMS = QName.createQName("test.people.api", "comms");
     private static final QName PROP_TELEHASH = QName.createQName("test.people.api", "telehash");
     private static final QName ASPECT_LUNCHABLE = QName.createQName("test.people.api", "lunchable");
@@ -156,7 +167,7 @@ public class TestPeople extends EnterpriseTestApi
         
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
         personService = applicationContext.getBean("PersonService", PersonService.class);
-        
+
         // Capture authentication pre-test, so we can restore it again afterwards.
         AuthenticationUtil.pushAuthentication();
     }
@@ -1690,5 +1701,228 @@ public class TestPeople extends EnterpriseTestApi
         expectedList.add((Person) personBen);
 
         checkList(expectedList, paging.getExpectedPaging(), resp);
+    }
+
+    /**
+     * Tests reset password.
+     * <p>POST:</p>
+     * <ul>
+     * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userId>/request-password-reset} </li>
+     * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/people/<userId>/reset-password} </li>
+     * </ul>
+     */
+    @Test
+    public void testResetPassword() throws Exception
+    {
+        // As Admin, create a user
+        setRequestContext(account1.getId(), account1Admin, "admin");
+
+        Person person = new Person();
+        person.setUserName("john.doe@" + account1.getId());
+        person.setFirstName("John");
+        person.setLastName("Doe");
+        person.setEmail("john.doe@alfresco.com");
+        person.setEnabled(true);
+        person.setEmailNotificationsEnabled(true);
+        person.setPassword("password");
+        people.create(person);
+
+        // un-authenticated API
+        setRequestContext(account1.getId(), null, null);
+        // Just try to login, to test the new created user credential
+        LoginTicket loginRequest = new LoginTicket();
+        loginRequest.setUserId(person.getUserName());
+        loginRequest.setPassword(person.getPassword());
+        // Authenticate and create a ticket
+        HttpResponse response = post("tickets", RestApiUtil.toJsonAsString(loginRequest), null, null, "authentication", 201);
+        LoginTicketResponse loginResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
+        assertNotNull(loginResponse.getId());
+        assertNotNull(loginResponse.getUserId());
+
+        /**
+         * Reset Password
+         */
+        // First make the service to send a synchronous email
+        ResetPasswordServiceImpl passwordService = applicationContext.getBean("resetPasswordService", ResetPasswordServiceImpl.class);
+        passwordService.setSendEmailAsynchronously(false);
+        // Get the 'mail' bean in a test mode.
+        EmailUtil emailUtil = new EmailUtil(applicationContext);
+        try
+        {
+            // Un-authenticated API
+            setRequestContext(account1.getId(), null, null);
+            // Reset email (just in case other tests didn't clean up...)
+            emailUtil.reset();
+
+            // Request reset password
+            Client client = new Client().setClient("share");
+            post(getRequestResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(client), 202);
+            assertEquals("A reset password email should have been sent.", 1, emailUtil.getSentCount());
+
+            MimeMessage msg = emailUtil.getLastEmail();
+            assertNotNull(msg);
+            assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
+            // Check the recipient is the person who requested the reset password
+            assertEquals(person.getEmail(), msg.getAllRecipients()[0].toString());
+            // There should be a subject
+            assertNotNull(msg.getSubject());
+
+            // Check the reset password url.
+            String resetPasswordUrl = (String) emailUtil.getLastEmailTemplateModelValue("reset_password_url");
+            assertNotNull("Wrong email is sent.", resetPasswordUrl);
+            // Get the workflow id and key
+            org.alfresco.util.Pair<String, String> pair = getWorkflowIdAndKeyFromUrl(resetPasswordUrl);
+            assertNotNull("Workflow Id can't be null.", pair.getFirst());
+            assertNotNull("Workflow Key can't be null.", pair.getSecond());
+
+            // Reset the email helper, to get rid of the request reset password email
+            emailUtil.reset();
+            // Un-authenticated APIs as we are still using the 'setRequestContext(account1.getId(), null, null)' set above.
+            // Reset the password
+            PasswordReset passwordReset = new PasswordReset()
+                        .setPassword("changed")
+                        .setId(pair.getFirst())
+                        .setKey(pair.getSecond());
+            post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordReset), 202);
+            assertEquals("A reset password confirmation email should have been sent.", 1, emailUtil.getSentCount());
+            msg = emailUtil.getLastEmail();
+            assertNotNull(msg);
+            assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
+            assertEquals(person.getEmail(), msg.getAllRecipients()[0].toString());
+            // There should be a subject
+            assertNotNull(msg.getSubject());
+
+            // Try to login with old credential
+            post("tickets", RestApiUtil.toJsonAsString(loginRequest), null, null, "authentication", 403);
+
+            // Set the new password
+            loginRequest.setPassword(passwordReset.getPassword());
+            response = post("tickets", RestApiUtil.toJsonAsString(loginRequest), null, null, "authentication", 201);
+            loginResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
+            assertNotNull(loginResponse.getId());
+            assertNotNull(loginResponse.getUserId());
+
+
+            /*
+             * -ve tests
+             */
+            // First, reset the email helper
+            emailUtil.reset();
+
+            // Try reset with the used workflow
+            // Note: we still return 202 response for security reasons
+            passwordReset.setPassword("changedAgain");
+            post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordReset), 202);
+            assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
+
+            // Request reset password - Invalid user (user dose not exist)
+            post(getRequestResetPasswordUrl(System.currentTimeMillis() + "noUser"), RestApiUtil.toJsonAsString(client), 202);
+            assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
+
+            // As Admin disable the user
+            setRequestContext(account1.getId(), account1Admin, "admin");
+            Map<String, String> params = Collections.singletonMap("fields", "enabled");
+            Person updatedPerson = people.update(person.getUserName(), qjson("{`enabled`:" + false + "}"), params, 200);
+            assertFalse(updatedPerson.isEnabled());
+
+            // Un-authenticated API
+            setRequestContext(account1.getId(), null, null);
+            // Request reset password - Invalid user (user is disabled)
+            post(getRequestResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(client), 202);
+            assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
+
+            // Client is not specified
+            client = new Client();
+            post(getRequestResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(client), 400);
+
+            // Reset password
+            // First, reset the email helper and enable the user
+            emailUtil.reset();
+            // As Admin enable the user
+            setRequestContext(account1.getId(), account1Admin, "admin");
+            params = Collections.singletonMap("fields", "enabled");
+            updatedPerson = people.update(person.getUserName(), qjson("{`enabled`:" + true + "}"), params, 200);
+            assertTrue(updatedPerson.isEnabled());
+
+            // Un-authenticated API
+            setRequestContext(account1.getId(), null, null);
+            client = new Client().setClient("share");
+            post(getRequestResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(client), 202);
+            assertEquals("A reset password email should have been sent.", 1, emailUtil.getSentCount());
+
+            resetPasswordUrl = (String) emailUtil.getLastEmailTemplateModelValue("reset_password_url");
+            // Check the reset password url.
+            assertNotNull("Wrong email is sent.", resetPasswordUrl);
+            // Get the workflow id and key
+            pair = getWorkflowIdAndKeyFromUrl(resetPasswordUrl);
+            assertNotNull("Workflow Id can't be null.", pair.getFirst());
+            assertNotNull("Workflow Key can't be null.", pair.getSecond());
+
+            // Reset the email helper, to get rid of the request reset password email
+            emailUtil.reset();
+            // Invalid request - password is not provided
+            PasswordReset passwordResetInvalid = new PasswordReset()
+                        .setId(pair.getFirst())
+                        .setKey(pair.getSecond());
+            post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 400);
+
+            // Invalid request - workflow id is not provided
+            passwordResetInvalid.setPassword("changedAgain")
+                        .setId(null);
+            post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 400);
+
+            // Invalid request - workflow key is not provided
+            passwordResetInvalid.setId(pair.getFirst())
+                        .setKey(null);
+            post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 400);
+
+            // Invalid request - Invalid workflow id
+            // Note: we still return 202 response for security reasons
+            passwordResetInvalid = new PasswordReset()
+                        .setPassword("changedAgain")
+                        .setId("activiti$" + System.currentTimeMillis()) // Invalid Id
+                        .setKey(pair.getSecond());
+            post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 202);
+            assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
+
+            // Invalid request - Invalid workflow key
+            // Note: we still return 202 response for security reasons
+            passwordResetInvalid = new PasswordReset()
+                        .setPassword("changedAgain")
+                        .setId(pair.getFirst())
+                        .setKey(GUID.generate()); // Invalid Key
+            post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 202);
+            assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
+
+            // Invalid request (not the same user) - The given user id 'user1' does not match the person's user id who requested the password reset.
+            // Note: we still return 202 response for security reasons
+            passwordResetInvalid = new PasswordReset()
+                        .setPassword("changedAgain")
+                        .setId(pair.getFirst())
+                        .setKey(pair.getSecond());
+            post(getResetPasswordUrl(user1), RestApiUtil.toJsonAsString(passwordResetInvalid), 202);
+            assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
+        }
+        finally
+        {
+            passwordService.setSendEmailAsynchronously(true);
+            emailUtil.reset();
+        }
+    }
+
+    private String getRequestResetPasswordUrl(String userId)
+    {
+        return URL_PEOPLE + '/' + userId + "/request-password-reset";
+    }
+
+    private String getResetPasswordUrl(String userId)
+    {
+        return URL_PEOPLE + '/' + userId + "/reset-password";
+    }
+
+    @Override
+    public String getScope()
+    {
+        return "public";
     }
 }

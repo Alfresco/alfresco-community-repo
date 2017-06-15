@@ -638,7 +638,7 @@ public class SearchMapper
             {
                 for (RangeParameters aRange:ranges)
                 {
-                    if (aRange.getTags().contains(aPivot.getKey()))
+                    if (aPivot.getKey().equals(aRange.getLabel()))
                     {
                         pivotKey = aPivot.getKey();
                         if (pivotKeys.isEmpty())

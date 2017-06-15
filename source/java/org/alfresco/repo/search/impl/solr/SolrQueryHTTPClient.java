@@ -71,6 +71,7 @@ import org.alfresco.service.cmr.search.Interval;
 import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
+import org.alfresco.service.cmr.search.RangeParameters;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
@@ -826,49 +827,54 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     }
     protected void buildRangeParameters(SearchParameters searchParameters, URLCodec encoder, StringBuilder url) throws UnsupportedEncodingException
     {
-        if (searchParameters.getRanges() != null)
+        if (searchParameters.getRanges() != null && !searchParameters.getRanges().isEmpty())
         {
+            List<RangeParameters> ranges = searchParameters.getRanges();
             url.append("&facet=").append(encoder.encode("true", "UTF-8"));
-            url.append("&facet.range=").append(encoder.encode(searchParameters.getRanges().getField(), "UTF-8"));
-            url.append("&facet.range.start=").append(encoder.encode(""+searchParameters.getRanges().getStart(), "UTF-8"));
-            url.append("&facet.range.end=").append(encoder.encode(""+searchParameters.getRanges().getEnd(), "UTF-8"));
-            url.append("&facet.range.gap=").append(encoder.encode(""+searchParameters.getRanges().getGap(), "UTF-8"));
-            if(searchParameters.getRanges().getInclude() != null)
+            for(RangeParameters facetRange : ranges)
             {
-                url.append("&facet.range.include=").append(encoder.encode(""+searchParameters.getRanges().getInclude(), "UTF-8"));
-            }
-            if(searchParameters.getRanges().getOther() != null)
-            {
-                url.append("&facet.range.other=").append(encoder.encode(""+searchParameters.getRanges().getOther(), "UTF-8"));
-            }
-            url.append("&facet.range.hardend=").append(encoder.encode(""+searchParameters.getRanges().isHardend(), "UTF-8"));
-            if(!searchParameters.getRanges().getExcludeFilters().isEmpty())
-            {
-                url.append("&range.field=");
-                if (searchParameters.getRanges().getExcludeFilters() != null && !searchParameters.getRanges().getExcludeFilters().isEmpty())
+                String fieldName = facetRange.getField();
+                url.append("&facet.range=").append(encoder.encode(facetRange.getField(), "UTF-8"));
+                url.append(String.format("&f.%s.facet.range.start=",fieldName)).append(encoder.encode(""+ facetRange.getStart(), "UTF-8"));
+                url.append(String.format("&f.%s.facet.range.end=",fieldName)).append(encoder.encode(""+ facetRange.getEnd(), "UTF-8"));
+                url.append(String.format("&f.%s.facet.range.gap=",fieldName)).append(encoder.encode(""+ facetRange.getGap(), "UTF-8"));
+                if(facetRange.getInclude() != null)
                 {
-                    StringBuilder prefix = new StringBuilder("{!ex=");
-                    Iterator<String> itr = searchParameters.getRanges().getExcludeFilters().iterator();
-                    while(itr.hasNext())
-                    {
-                        String val = itr.next();
-                        prefix.append(val);
-                        if(itr.hasNext())
-                        {
-                            prefix.append(",");
-                        }
-                    }
-                    prefix.append("}");
-                    url.append(prefix);
+                    url.append(String.format("&f.%s.facet.range.include=",fieldName)).append(encoder.encode("" + facetRange.getInclude(), "UTF-8"));
                 }
-                
-            }
-            if(!searchParameters.getRanges().getTags().isEmpty())
-            {
-                for(String tag:searchParameters.getRanges().getTags())
+                if(facetRange.getOther() != null)
                 {
+                    url.append(String.format("&f.%s.facet.range.other=",fieldName)).append(encoder.encode("" + facetRange.getOther(), "UTF-8"));
+                }
+                url.append(String.format("&f.%s.facet.range.hardend=",fieldName)).append(encoder.encode("" + facetRange.isHardend(), "UTF-8"));
+                if(!facetRange.getExcludeFilters().isEmpty())
+                {
+                    url.append("&range.field=");
+                    if (facetRange.getExcludeFilters() != null && !facetRange.getExcludeFilters().isEmpty())
+                    {
+                        StringBuilder prefix = new StringBuilder("{!ex=");
+                        Iterator<String> itr = facetRange.getExcludeFilters().iterator();
+                        while(itr.hasNext())
+                        {
+                            String val = itr.next();
+                            prefix.append(val);
+                            if(itr.hasNext())
+                            {
+                                prefix.append(",");
+                            }
+                        }
+                        prefix.append("}");
+                        url.append(prefix);
+                    }
                     
-                    url.append(String.format("&fq={!tag=%1$s}%1$s",tag));
+                }
+                if(!facetRange.getTags().isEmpty())
+                {
+                    for(String tag:facetRange.getTags())
+                    {
+                        
+                        url.append(String.format("&fq={!tag=%1$s}%1$s",tag));
+                    }
                 }
             }
         }

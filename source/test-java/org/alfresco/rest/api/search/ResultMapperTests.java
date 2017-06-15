@@ -99,7 +99,11 @@ public class ResultMapperTests
     static ResultMapper mapper;
     public static final String JSON_REPONSE = "{\"responseHeader\":{\"status\":0,\"QTime\":9},\"_original_parameters_\":\"org.apache.solr.common.params.DefaultSolrParams:{params(df=TEXT&alternativeDic=DEFAULT_DICTIONARY&fl=DBID,score&start=0&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=1000&locale=en_US&wt=json),defaults(carrot.url=id&spellcheck.collateExtendedResults=true&carrot.produceSummary=true&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.alternativeTermCount=2&spellcheck.extendedResults=false&defType=afts&spellcheck.maxResultsForSuggest=5&spellcheck=false&carrot.outputSubClusters=false&spellcheck.count=5&carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&spellcheck.collate=true)}\",\"_field_mappings_\":{},\"_date_mappings_\":{},\"_range_mappings_\":{},\"_pivot_mappings_\":{},\"_interval_mappings_\":{},\"_stats_field_mappings_\":{},\"_stats_facet_mappings_\":{},\"_facet_function_mappings_\":{},\"response\":{\"numFound\":6,\"start\":0,\"maxScore\":0.7849362,\"docs\":[{\"DBID\":565,\"score\":0.7849362},{\"DBID\":566,\"score\":0.7849362},{\"DBID\":521,\"score\":0.3540957},{\"DBID\":514,\"score\":0.33025497},{\"DBID\":420,\"score\":0.32440513},{\"DBID\":415,\"score\":0.2780319}]},"
                 + "\"facet_counts\":{\"facet_queries\":{\"small\":0,\"large\":0,\"xtra small\":3,\"xtra large\":0,\"medium\":8,\"XX large\":0},"
-                + "\"facet_fields\":{\"content.size\":[\"Big\",8,\"Brown\",3,\"Fox\",5,\"Jumped\",2,\"somewhere\",3]},\"facet_dates\":{},\"facet_ranges\":{},\"facet_intervals\":{}\n" + "    },"
+                + "\"facet_fields\":{\"content.size\":[\"Big\",8,\"Brown\",3,\"Fox\",5,\"Jumped\",2,\"somewhere\",3]},"
+                +"\"facet_dates\":{},"
+                +"\"facet_ranges\":{},"
+                +"\"facet_intervals\":{\"creator\":{\"last\":4,\"first\":0},\"datetime@sd@{http://www.alfresco.org/model/content/1.0}created\":{\"earlier\":5,\"lastYear\":0,\"currentYear\":0}}"
+                + "},"
                 + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
                 + "\"highlighting\": {"
                 + "  \"_DEFAULT_!800001579e3d1964!800001579e3d1969\": {\"name\": [\"some very <al>long<fresco> name\"],\"title\": [\"title1 is very <al>long<fresco>\"], \"DBID\": \"521\"},"
@@ -267,6 +271,13 @@ public class ResultMapperTests
         assertEquals(1, searchContext.getFacetsFields().size());
         assertEquals("content.size",searchContext.getFacetsFields().get(0).getLabel());
         assertEquals(5,searchContext.getFacetsFields().get(0).getBuckets().size());
+
+        //Facet intervals
+        assertEquals(2, searchContext.getFacetIntervals().size());
+        assertEquals("creator",searchContext.getFacetIntervals().get(0).getLabel());
+        assertEquals("last",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getLabel());
+        assertEquals("creator:(a,b]",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals(4,searchContext.getFacetIntervals().get(0).getBuckets().get(0).getCount());
     }
 
     @Test

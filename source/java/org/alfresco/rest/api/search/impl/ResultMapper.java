@@ -52,6 +52,9 @@ import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.Interval;
+import org.alfresco.service.cmr.search.IntervalParameters;
+import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SpellCheckResult;
@@ -289,10 +292,10 @@ public class ResultMapper
 
         //Field Facets
         Map<String, List<Pair<String, Integer>>> facetFields = solrResultSet.getFieldFacets();
-        ffcs = getFacetBuckets(facetFields, true);
+        ffcs = getFacetBuckets(facetFields, true, null);
 
         Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
-        List<FacetFieldContext> intervals = getFacetBuckets(facetInterval, false);
+        List<FacetFieldContext> intervals = getFacetBuckets(facetInterval, false, searchQuery);
 
         //Spelling
         SpellCheckResult spell = solrResultSet.getSpellCheckResult();
@@ -306,7 +309,7 @@ public class ResultMapper
         return isNullContext(context)?null:context;
     }
 
-    protected List<FacetFieldContext> getFacetBuckets(Map<String, List<Pair<String, Integer>>> facetFields, boolean withDisplay)
+    protected List<FacetFieldContext> getFacetBuckets(Map<String, List<Pair<String, Integer>>> facetFields, boolean withDisplay, SearchQuery searchQuery)
     {
         if (facetFields != null && !facetFields.isEmpty())
         {
@@ -319,7 +322,8 @@ public class ResultMapper
                     for (Pair<String, Integer> buck:facet.getValue())
                     {
                         Object display = withDisplay?propertyLookup.lookup(facet.getKey(), buck.getFirst()):null;
-                        buckets.add(new Bucket(buck.getFirst(), facet.getKey()+":NOT_DONE", buck.getSecond(), display));
+                        String filterQuery = lookupQuery(facet.getKey(), buck.getFirst(), searchQuery);
+                        buckets.add(new Bucket(buck.getFirst(), facet.getKey()+":"+filterQuery, buck.getSecond(), display));
                     }
                     ffcs.add(new FacetFieldContext(facet.getKey(), buckets));
                 }
@@ -328,6 +332,26 @@ public class ResultMapper
             return ffcs;
         }
         return null;
+    }
+
+    protected String lookupQuery(String facetKey, String key, SearchQuery searchQuery)
+    {
+        if (searchQuery != null
+                    && searchQuery.getFacetIntervals() != null
+                    && searchQuery.getFacetIntervals().getIntervals() != null
+                    && !searchQuery.getFacetIntervals().getIntervals().isEmpty())
+        {
+            Optional<Interval> found = searchQuery.getFacetIntervals().getIntervals().stream().filter(interval -> facetKey.equals(interval.getField())).findFirst();
+            if (found.isPresent())
+            {
+                if (found.get().getSets() != null)
+                {
+                    Optional<IntervalSet> foundSet = found.get().getSets().stream().filter(aSet -> key.equals(aSet.getLabel())).findFirst();
+                    if (foundSet.isPresent()) return foundSet.get().toRange();
+                }
+            }
+        }
+        return key;
     }
 
     /**

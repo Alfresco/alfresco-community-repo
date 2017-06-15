@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,15 +26,18 @@
 package org.alfresco.repo.lock.mem;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.lock.traitextender.LockableAspectInterceptorExtension;
 import org.alfresco.repo.lock.traitextender.LockableAspectInterceptorTrait;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -334,6 +337,17 @@ public class LockableAspectInterceptor implements MethodInterceptor, Extensible
     private LockState getLockState(NodeRef nodeRef)
     {
         LockState lockState = lockStore.get(nodeRef);
+        // Disregard in-memory lock if expired
+        if (lockState != null)
+        {
+            String lockOwner = lockState.getOwner();
+            Date expiryDate = lockState.getExpires();
+            LockStatus status = LockUtils.lockStatus(lockOwner, lockOwner, expiryDate);
+            if (status.equals(LockStatus.LOCK_EXPIRED))
+            {
+                lockState = null;
+            }
+        }
         return lockState;
     }
 

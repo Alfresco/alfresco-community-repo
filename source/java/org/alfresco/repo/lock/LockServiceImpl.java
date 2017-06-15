@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -540,7 +540,7 @@ public class LockServiceImpl implements LockService,
                 }
                 finally
                 {
-                	behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
                     lockableAspectInterceptor.enableForThread();
                     removeFromIgnoreSet(nodeRef);
                 }
@@ -919,6 +919,18 @@ public class LockServiceImpl implements LockService,
         nodeRef = tenantService.getName(nodeRef);
         LockState lockState = lockStore.get(nodeRef);
         
+        if (lockState != null)
+        {
+            String lockOwner = lockState.getOwner();
+            Date expiryDate = lockState.getExpires();
+            LockStatus status = LockUtils.lockStatus(lockOwner, lockOwner, expiryDate);
+            // in-memory ephemeral lock which is expired is irrelevant
+            if (status.equals(LockStatus.LOCK_EXPIRED))
+            {
+                lockState = null;
+            }
+        }
+
         //ALF-20361: It is possible that a rollback has resulted in a "non-lock" lock state being added to 
         //the lock store. Because of that, we check both whether the retrieved lockState is null and, if it isn't, 
         //whether it represents a real lock

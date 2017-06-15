@@ -288,8 +288,20 @@ public class SearchMapper
             }
             for (FilterQuery fq:filterQueries)
             {
-                ParameterCheck.mandatoryString("filterQueries query", fq.getQuery());
-                String query = fq.getQuery().trim();
+                String query = null;
+
+                if (fq.getQuery() != null && !fq.getQuery().isEmpty())
+                {
+                    query = fq.getQuery().trim();
+                }
+
+                if (fq.getQueries() != null && !fq.getQueries().isEmpty() && query == null)
+                {
+                    query = String.join(" OR ", fq.getQueries());
+                }
+
+                ParameterCheck.mandatoryString("filterQueries query", query);
+
                 if (fq.getTags() == null || fq.getTags().isEmpty() || query.contains("afts tag"))
                 {
                     //If its already got tags then just let it through

@@ -314,7 +314,7 @@ public class SearchMapperTests
         //Doesn't error
         searchMapper.fromFilterQuery(searchParameters, null);
 
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null), new FilterQuery("king", null)));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null, null), new FilterQuery("king", null, null)));
         assertEquals(2 ,searchParameters.getFilterQueries().size());
         assertEquals("hedgehog" ,searchParameters.getFilterQueries().get(0));
         assertEquals("king" ,searchParameters.getFilterQueries().get(1));
@@ -323,7 +323,7 @@ public class SearchMapperTests
         searchParameters.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
         try
         {
-            searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null)));
+            searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("hedgehog", null, null)));
             fail();
         }
         catch (InvalidArgumentException iae)
@@ -332,32 +332,52 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
+        try
+        {
+            searchParameters.setLanguage(SearchService.LANGUAGE_SOLR_ALFRESCO);
+            searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, null, null)));
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            //You can't specify FilterQuery when using the CMIS language
+            assertNotNull(iae);
+        }
+
         searchParameters = new SearchParameters();
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts}description:xyz", Arrays.asList("desc1", "desc2"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts}description:xyz", Arrays.asList("desc1", "desc2"), null)));
         assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts}description:xyz", Arrays.asList("desc1"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts}description:xyz", Arrays.asList("desc1"), null)));
         assertEquals("{!afts tag=desc1 }description:xyz" ,searchParameters.getFilterQueries().get(1));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("description:xyz", Arrays.asList("desc1"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("description:xyz", Arrays.asList("desc1"), null)));
         assertEquals("{!afts tag=desc1 }description:xyz" ,searchParameters.getFilterQueries().get(2));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts} description:xyz", Arrays.asList("desc1"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts} description:xyz", Arrays.asList("desc1"), null)));
         assertEquals("{!afts tag=desc1 } description:xyz" ,searchParameters.getFilterQueries().get(3));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(" {!afts cake} description:xyz", Arrays.asList("desc1"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(" {!afts cake} description:xyz", Arrays.asList("desc1"), null)));
         assertEquals("{!afts tag=desc1 cake} description:xyz" ,searchParameters.getFilterQueries().get(4));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts tag=desc1}description:xyz", Arrays.asList("desc1"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts tag=desc1}description:xyz", Arrays.asList("desc1"), null)));
         assertEquals("{!afts tag=desc1}description:xyz" ,searchParameters.getFilterQueries().get(5));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("created:2011", Arrays.asList("desc1"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("created:2011", Arrays.asList("desc1"), null)));
         assertEquals("{!afts tag=desc1 }created:2011" ,searchParameters.getFilterQueries().get(6));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("=cm:name:cabbage", Arrays.asList("desc1"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("=cm:name:cabbage", Arrays.asList("desc1"), null)));
         assertEquals("{!afts tag=desc1 }=cm:name:cabbage" ,searchParameters.getFilterQueries().get(7));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{http://www.alfresco.org/model/content/1.0}title:workflow", null)));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{http://www.alfresco.org/model/content/1.0}title:workflow", null, null)));
         assertEquals("{http://www.alfresco.org/model/content/1.0}title:workflow" ,searchParameters.getFilterQueries().get(8));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{http://www.alfresco.org/model/content/1.0}title:workflow", Arrays.asList("desc1"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{http://www.alfresco.org/model/content/1.0}title:workflow", Arrays.asList("desc1"), null)));
         assertEquals("{!afts tag=desc1 }{http://www.alfresco.org/model/content/1.0}title:workflow" ,searchParameters.getFilterQueries().get(9));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts} description:xyz", Arrays.asList("desc1", "desc2"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{!afts} description:xyz", Arrays.asList("desc1", "desc2"), null)));
         assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
-        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{ !afts } description:xyz", Arrays.asList("desc1", "desc2"))));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("{ !afts } description:xyz", Arrays.asList("desc1", "desc2"), null)));
         assertEquals("{!afts tag=desc1,desc2 }description:xyz" ,searchParameters.getFilterQueries().get(0));
 
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, Arrays.asList("desc1"),  Arrays.asList("cm:name:cabbage", "cm:creator:bob"))));
+        assertEquals("{!afts tag=desc1 }cm:name:cabbage OR cm:creator:bob" ,searchParameters.getFilterQueries().get(12));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, null,  Arrays.asList("cm:name:cabbage", "cm:creator:bob"))));
+        assertEquals("cm:name:cabbage OR cm:creator:bob" ,searchParameters.getFilterQueries().get(13));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery(null, null,  Arrays.asList("cm:name:cabbage"))));
+        assertEquals("cm:name:cabbage" ,searchParameters.getFilterQueries().get(14));
+        searchMapper.fromFilterQuery(searchParameters, Arrays.asList(new FilterQuery("created:2011", null,  Arrays.asList("cm:name:cabbage"))));
+        assertEquals("Single query should take precident over multiple queries ORed together.","created:2011" ,searchParameters.getFilterQueries().get(15));
     }
 
     @Test

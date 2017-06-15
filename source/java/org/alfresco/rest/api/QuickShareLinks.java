@@ -131,4 +131,6 @@ public interface QuickShareLinks
     String PARAM_SHAREDBY = "sharedByUser";
 
     String PARAM_INCLUDE_ALLOWABLEOPERATIONS = Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
+
+    String PARAM_INCLUDE_PATH = Nodes.PARAM_INCLUDE_PATH;
 }

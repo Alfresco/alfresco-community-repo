@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,11 +37,13 @@ import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -289,6 +291,15 @@ public interface Nodes
      * @return
      */
     Map<QName, Serializable> mapToNodeProperties(Map<String, Object> props);
+
+    /**
+     * Returns the path to the given nodeRef {@code nodeRefIn} or the archived nodeRef {@code archivedParentAssoc}.
+     *
+     * @param nodeRefIn           the NodeRef
+     * @param archivedParentAssoc the ChildAssociationRef of the archived NodeRef
+     * @return the path to the given node
+     */
+    PathInfo lookupPathInfo(NodeRef nodeRefIn, ChildAssociationRef archivedParentAssoc);
 
     /**
      * Map from a String representation of aspect names to a set

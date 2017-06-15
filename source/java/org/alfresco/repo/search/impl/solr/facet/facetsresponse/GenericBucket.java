@@ -42,6 +42,14 @@ public class GenericBucket
     private Map<String, String> facetInfo;
     private final List<GenericFacetResponse> facets;
 
+    /**
+     * 
+     * @param label
+     * @param filterQuery
+     * @param display
+     * @param metrics
+     * @param facets
+     */
     public GenericBucket(String label, String filterQuery, Object display, Set<Metric> metrics, List<GenericFacetResponse> facets)
     {
         this.label = label;

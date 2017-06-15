@@ -98,7 +98,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
 
     private Map<String, List<Pair<String, Integer>>> facetIntervals = new HashMap<String, List<Pair<String, Integer>>>(1);
     
-    private Map<String,List> facetRanges = new HashMap<String,List>();
+    private Map<String,List<Map<String,String>>> facetRanges = new HashMap<String,List<Map<String,String>>>();
 
     private List<GenericFacetResponse> pivotFacets = new ArrayList<>();
 
@@ -312,7 +312,6 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     for(Iterator it = facet_ranges.keys(); it.hasNext();)
                     {
                         String fieldName = (String) it.next();
-                        String gap = facet_ranges.getJSONObject(fieldName).getString("gap");
                         String end = facet_ranges.getJSONObject(fieldName).getString("end");
                         JSONArray rangeCollection = facet_ranges.getJSONObject(fieldName).getJSONArray("counts");
                         List<Map<String, String>> buckets = new ArrayList<Map<String, String>>();
@@ -731,7 +730,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
         return processedDenies;
     }
 
-    public Map<String,List> getFacetRanges()
+    public Map<String,List<Map<String,String>>> getFacetRanges()
     {
         return facetRanges;
     }

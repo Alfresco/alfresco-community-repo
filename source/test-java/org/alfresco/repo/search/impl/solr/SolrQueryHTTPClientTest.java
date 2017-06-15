@@ -404,6 +404,13 @@ public class SolrQueryHTTPClientTest
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("bob");
         params.addPivots(Arrays.asList("creator"));
+        params.setStats(Arrays.asList(
+                    new StatsRequestParameters("created", "piv1", null, null, null,null, null, null, null,
+                                null, null, null, null,null, null,  null)
+                    ));
+        List<RangeParameters> ranges = new ArrayList<RangeParameters>();
+        ranges.add(new RangeParameters("content.size", "0", "1000000", "10000", true, Collections.emptyList(), Collections.emptyList(), Arrays.asList("csize"), null));
+        params.setRanges(ranges);
 
         StringBuilder urlBuilder = new StringBuilder();
 
@@ -413,7 +420,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.pivot=creator"));
 
-        params.addPivots(Arrays.asList("cm:name", "{!stats=piv1}cat"));
+        params.addPivots(Arrays.asList("cm:name", "piv1", "csize"));
 
         urlBuilder = new StringBuilder();
         client.buildPivotParameters(params, encoder, urlBuilder);
@@ -421,7 +428,7 @@ public class SolrQueryHTTPClientTest
         assertNotNull(url);
         assertTrue(url.contains("&facet=true"));
         assertTrue(url.contains("facet.pivot="+ encoder.encode("creator", "UTF-8")));
-        assertTrue(url.contains("facet.pivot="+ encoder.encode("cm:name,{!stats=piv1}cat", "UTF-8")));
+        assertTrue(url.contains("facet.pivot="+ encoder.encode("{! stats=piv1 range=csize}cm:name", "UTF-8")));
     }
 
     @Test
@@ -467,7 +474,7 @@ public class SolrQueryHTTPClientTest
         client.buildRangeParameters(params, encoder, urlBuilder);
         String url2 = urlBuilder.toString();
         assertTrue(url2.contains("&facet=true"));
-        assertTrue(url2.contains("&facet.range=content.size"));
+        assertTrue(url2.contains("&facet.range="+encoder.encode("{!tag=dt tag=doc }", "UTF-8")+"content.size"));
         assertTrue(url2.contains("&f.content.size.facet.range.start=0"));
         assertTrue(url2.contains("&f.content.size.facet.range.end=1000000"));
         assertTrue(url2.contains("&f.content.size.facet.range.gap=10000"));
@@ -476,8 +483,6 @@ public class SolrQueryHTTPClientTest
         assertFalse(url2.contains("&f.content.size.facet.range.other=before"));
         assertTrue(url2.contains("&f.content.size.facet.range.hardend=true"));
         assertTrue(url2.contains("&range.field={!ex=bart,homer}"));
-        assertTrue(url2.contains("&fq={!tag=dt}dt"));
-        assertTrue(url2.contains("&fq={!tag=doc}doc"));
     }
     @Test
     public void testBuildMulitRange() throws UnsupportedEncodingException

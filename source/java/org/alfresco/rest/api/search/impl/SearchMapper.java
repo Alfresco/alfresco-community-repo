@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.search.impl;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
@@ -37,12 +39,17 @@ import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESC
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TimeZone;
+import java.util.function.Function;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
@@ -506,6 +513,7 @@ public class SearchMapper
 
             if (facetIntervals.getIntervals() != null && !facetIntervals.getIntervals().isEmpty())
             {
+                List<String> intervalLabels = new ArrayList<>(facetIntervals.getIntervals().size());
                 for (Interval interval:facetIntervals.getIntervals())
                 {
                     ParameterCheck.mandatory("facetIntervals intervals field", interval.getField());
@@ -515,6 +523,26 @@ public class SearchMapper
                         interval.getSets().addAll(globalSets);
                     }
                     ParameterCheck.mandatoryCollection("facetIntervals intervals sets", interval.getSets());
+
+                    List<Map.Entry<String, Long>> duplicateSetLabels =
+                                interval.getSets().stream().collect(groupingBy(IntervalSet::getLabel, Collectors.counting()))
+                                .entrySet().stream().filter(e -> e.getValue().intValue() > 1).collect(toList());
+                    if (!duplicateSetLabels.isEmpty())
+                    {
+                        throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                    new Object[] { ": duplicate set interval label "+duplicateSetLabels.toString() });
+
+                    }
+                    if (interval.getLabel() != null) intervalLabels.add(interval.getLabel());
+                }
+
+                List<Map.Entry<String, Long>> duplicateIntervalLabels =
+                            intervalLabels.stream().collect(groupingBy(Function.identity(), Collectors.counting()))
+                            .entrySet().stream().filter(e -> e.getValue().intValue() > 1).collect(toList());
+                if (!duplicateIntervalLabels.isEmpty())
+                {
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                new Object[] { ": duplicate interval label "+duplicateIntervalLabels.toString() });
                 }
             }
 

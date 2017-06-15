@@ -42,7 +42,7 @@ public class StatsRequestParameters
     private final Boolean min;
     private final Boolean max;
     private final Boolean sum;
-    private final Boolean count;
+    private final Boolean countValues;
     private final Boolean missing;
     private final Boolean sumOfSquares;
     private final Boolean mean;
@@ -61,7 +61,7 @@ public class StatsRequestParameters
                  @JsonProperty("min") Boolean min,
                  @JsonProperty("max") Boolean max,
                  @JsonProperty("sum") Boolean sum,
-                 @JsonProperty("count") Boolean count,
+                 @JsonProperty("countValues") Boolean countValues,
                  @JsonProperty("missing") Boolean missing,
                  @JsonProperty("sumOfSquares") Boolean sumOfSquares,
                  @JsonProperty("mean") Boolean mean,
@@ -79,7 +79,7 @@ public class StatsRequestParameters
         this.min = min == null?true:min;
         this.max = max == null?true:max;
         this.sum = sum == null?true:sum;
-        this.count = count == null?true:count;
+        this.countValues = countValues == null?true:countValues;
         this.missing = missing == null?true:missing;
         this.sumOfSquares = sumOfSquares == null?true:sumOfSquares;
         this.mean = mean == null?true:mean;
@@ -147,9 +147,9 @@ public class StatsRequestParameters
         return sum;
     }
 
-    public Boolean getCount()
+    public Boolean getCountValues()
     {
-        return count;
+        return countValues;
     }
 
     public Boolean getMissing()
@@ -176,7 +176,7 @@ public class StatsRequestParameters
     public String toString()
     {
         return "StatsRequestParameters{" + "field='" + field + '\'' + ", label='" + label + '\'' + ", percentiles=" + percentiles + ", min=" + min
-                    + ", max=" + max + ", sum=" + sum + ", count=" + count + ", missing=" + missing + ", sumOfSquares=" + sumOfSquares + ", mean="
+                    + ", max=" + max + ", sum=" + sum + ", countValues=" + countValues + ", missing=" + missing + ", sumOfSquares=" + sumOfSquares + ", mean="
                     + mean + ", stddev=" + stddev + ", distinctValues=" + distinctValues + ", countDistinct=" + countDistinct + ", cardinality="
                     + cardinality + ", cardinalityAccuracy=" + cardinalityAccuracy + ", excludeFilters=" + excludeFilters + '}';
     }

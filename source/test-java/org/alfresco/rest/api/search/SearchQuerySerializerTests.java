@@ -95,8 +95,8 @@ public class SearchQuerySerializerTests
         assertEquals(2, searchQuery.getFilterQueries().get(0).getTags().size());
         assertEquals("myquery2",searchQuery.getFilterQueries().get(1).getQuery());
         assertEquals(1, searchQuery.getFacetQueries().size());
-        assertEquals("facquery",searchQuery.getFacetQueries().get(0).getQuery());
-        assertEquals("facnoused",searchQuery.getFacetQueries().get(0).getLabel());
+        assertEquals("cm:created:bob",searchQuery.getFacetQueries().get(0).getQuery());
+        assertEquals("small",searchQuery.getFacetQueries().get(0).getLabel());
         assertEquals("alfrezco", searchQuery.getSpellcheck().getQuery());
         assertEquals(1, searchQuery.getScope().getLocations().size());
         assertEquals(StoreMapper.LIVE_NODES, searchQuery.getScope().getLocations().get(0));

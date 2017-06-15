@@ -31,7 +31,6 @@ import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
 import static org.alfresco.rest.api.search.impl.StoreMapper.VERSIONS;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.version.Version2Model;
-import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.lookups.PropertyLookupRegistry;
@@ -43,20 +42,20 @@ import org.alfresco.rest.api.search.context.FacetFieldContext.Bucket;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
+import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.HighlightEntry;
 import org.alfresco.rest.api.search.model.SearchEntry;
+import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -68,6 +67,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 /**
  * Maps from a ResultSet to a json public api representation.
@@ -121,10 +121,10 @@ public class ResultMapper
     /**
      * Turns the results into a CollectionWithPagingInfo
      * @param params
-     * @param results
-     * @return CollectionWithPagingInfo<Node>
+     * @param searchQuery
+     *@param results  @return CollectionWithPagingInfo<Node>
      */
-    public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, ResultSet results)
+    public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(Params params, SearchQuery searchQuery, ResultSet results)
     {
         SearchContext context = null;
         Integer total = null;
@@ -166,7 +166,7 @@ public class ResultMapper
         if (solrResultSet != null)
         {
             //We used Solr for this query
-            context = toSearchContext(solrResultSet, notFound);
+            context = toSearchContext(solrResultSet, searchQuery, notFound);
             total = setTotal(solrResultSet);
         }
         else
@@ -260,9 +260,10 @@ public class ResultMapper
     /**
      * Uses the results from Solr to set the Search Context
      * @param SolrJSONResultSet
+     * @param searchQuery
      * @return SearchContext
      */
-    public SearchContext toSearchContext(SolrJSONResultSet solrResultSet, int notFound)
+    public SearchContext toSearchContext(SolrJSONResultSet solrResultSet, SearchQuery searchQuery, int notFound)
     {
         SearchContext context = null;
         Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
@@ -276,7 +277,13 @@ public class ResultMapper
             facetResults = new ArrayList<>(facetQueries.size());
             for (Entry<String, Integer> fq:facetQueries.entrySet())
             {
-                facetResults.add(new FacetQueryContext(fq.getKey(), ":NOT_DONE", fq.getValue()));
+                String filterQuery = null;
+                if (searchQuery != null)
+                {
+                    Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
+                    if (found.isPresent()) filterQuery = found.get().getQuery();
+                }
+                facetResults.add(new FacetQueryContext(fq.getKey(), filterQuery, fq.getValue()));
             }
         }
 

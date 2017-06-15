@@ -27,8 +27,8 @@
 package org.alfresco.repo.security.authentication;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.client.config.ClientAppNotFoundException;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.InvalidResetPasswordWorkflowException;
@@ -41,15 +41,18 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.TestHelper;
 import org.alfresco.util.email.EmailUtil;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -84,6 +87,7 @@ public class ResetPasswordServiceImplTest
     private static RetryingTransactionHelper transactionHelper;
     private static PersonService personService;
     private static Properties globalProperties;
+    private static WorkflowService workflowService;
 
     private static TestPerson testPerson;
     private static EmailUtil emailUtil;
@@ -98,6 +102,7 @@ public class ResetPasswordServiceImplTest
         transactionHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
         personService = APP_CONTEXT_INIT.getApplicationContext().getBean("personService", PersonService.class);
         globalProperties = APP_CONTEXT_INIT.getApplicationContext().getBean("global-properties", Properties.class);
+        workflowService = APP_CONTEXT_INIT.getApplicationContext().getBean("WorkflowService", WorkflowService.class);
         emailUtil = new EmailUtil(APP_CONTEXT_INIT.getApplicationContext());
         emailUtil.reset();
 
@@ -142,12 +147,6 @@ public class ResetPasswordServiceImplTest
         }
     }
 
-    @Before
-    public void setUp()
-    {
-        AuthenticationUtil.setRunAsUserSystem();
-    }
-
     @After
     public void tearDown() throws Exception
     {
@@ -169,14 +168,14 @@ public class ResetPasswordServiceImplTest
         assertEquals("A reset password email should have been sent.", 1, emailUtil.getSentCount());
         // Check the email
         MimeMessage msg = emailUtil.getLastEmail();
-        assertNotNull(msg);
+        assertNotNull("There should be an email.", msg);
         assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
         // Check the recipient is the person who requested the reset password
         assertEquals(testPerson.email, msg.getAllRecipients()[0].toString());
         //Check the sender is what we set as default
         assertEquals(DEFAULT_SENDER, msg.getFrom()[0].toString());
         // There should be a subject
-        assertNotNull(msg.getSubject());
+        assertNotNull("There should be a subject.", msg.getSubject());
         // Check the default email subject - (check that we are sending the right email)
         String emailSubjectKey = getDeclaredField(SendResetPasswordEmailDelegate.class, "EMAIL_SUBJECT_KEY");
         assertNotNull(emailSubjectKey);
@@ -202,29 +201,23 @@ public class ResetPasswordServiceImplTest
         assertEquals("A reset password confirmation email should have been sent.", 1, emailUtil.getSentCount());
         // Check the email
         msg = emailUtil.getLastEmail();
-        assertNotNull(msg);
+        assertNotNull("There should be an email.", msg);
         assertEquals("Should've been only one email recipient.", 1, msg.getAllRecipients().length);
         // Check the recipient is the person who requested the reset password
         assertEquals(testPerson.email, msg.getAllRecipients()[0].toString());
         // Check the sender is what we set as default
         assertEquals(DEFAULT_SENDER, msg.getFrom()[0].toString());
         // There should be a subject
-        assertNotNull(msg.getSubject());
+        assertNotNull("There should be a subject.", msg.getSubject());
         // Check the default email subject - (check that we are sending the right email)
         emailSubjectKey = getDeclaredField(SendResetPasswordConfirmationEmailDelegate.class, "EMAIL_SUBJECT_KEY");
         assertNotNull(emailSubjectKey);
         assertEquals(msg.getSubject(), I18NUtil.getMessage(emailSubjectKey));
 
-        try
-        {
-            // Try the old credential
-            authenticateUser(testPerson.userName, testPerson.password);
-            fail("As the user changed her password, the authentication should have failed.");
-        }
-        catch (AuthenticationException e)
-        {
-            // expected
-        }
+        // Try the old credential
+        TestHelper.assertThrows(() -> authenticateUser(testPerson.userName, testPerson.password),
+                    AuthenticationException.class,
+                    "As the user changed her password, the authentication should have failed.");
 
         // Try the new credential
         authenticateUser(testPerson.userName, "newPassword");
@@ -234,81 +227,45 @@ public class ResetPasswordServiceImplTest
         AuthenticationUtil.setRunAsUserSystem();
         emailUtil.reset();
         // Try reset again with the used workflow
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("The workflow instance is not active (it has already been used).");
-        }
-        catch (InvalidResetPasswordWorkflowException ex)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    InvalidResetPasswordWorkflowException.class,
+                    "The workflow instance is not active (it has already been used).");
         assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
     }
 
     @Test
     public void testRequestResetPasswordInvalid() throws Exception
     {
-        try
-        {
-            // Request password reset
-            resetPasswordService.requestReset(testPerson.userName, null);
-            fail("Client name is mandatory.");
-        }
-        catch (IllegalArgumentException ix)
-        {
-            // Expected
-        }
+        // Request password reset
+        TestHelper.assertThrows(() -> resetPasswordService.requestReset(testPerson.userName, null),
+                    IllegalArgumentException.class,
+                    "Client name is mandatory.");
 
-        try
-        {
-            // Request password reset
-            resetPasswordService.requestReset(testPerson.userName, "TestClient" + System.currentTimeMillis());
-            fail("Client is not found.");
-        }
-        catch (ClientAppNotFoundException ex)
-        {
-            // Expected
-        }
+        // Request password reset
+        TestHelper.assertThrows(() -> resetPasswordService.requestReset(testPerson.userName, "TestClient" + System.currentTimeMillis()),
+                    ClientAppNotFoundException.class,
+                    "Client is not found.");
         assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
 
-        try
-        {
-            // Request password reset
-            resetPasswordService.requestReset(null, "share");
-            fail("userId is mandatory.");
-        }
-        catch (IllegalArgumentException ix)
-        {
-            // Expected
-        }
+        // Request password reset
+        TestHelper.assertThrows(() -> resetPasswordService.requestReset(null, "share"),
+                    IllegalArgumentException.class,
+                    "userId is mandatory.");
         assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
 
-        try
-        {
-            // Request password reset
-            resetPasswordService.requestReset("NoUser" + System.currentTimeMillis(), "share");
-            fail("user does not exist.");
-        }
-        catch (ResetPasswordWorkflowInvalidUserException ex)
-        {
-            // Expected
-        }
+        // Request password reset
+        TestHelper.assertThrows(() -> resetPasswordService.requestReset("NoUser" + System.currentTimeMillis(), "share"),
+                    ResetPasswordWorkflowInvalidUserException.class,
+                    "user does not exist.");
         assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
 
         // Disable the user
         enableUser(testPerson.userName, false);
 
-        try
-        {
-            // Request password reset
-            resetPasswordService.requestReset(testPerson.userName, "share");
-            fail("user is disabled.");
-        }
-        catch (ResetPasswordWorkflowInvalidUserException ex)
-        {
-            // Expected
-        }
+        // Request password reset
+        TestHelper.assertThrows(() -> resetPasswordService.requestReset(testPerson.userName, "share"),
+                    ResetPasswordWorkflowInvalidUserException.class,
+                    "user is disabled.");
         assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
 
         // Enable the user
@@ -334,15 +291,11 @@ public class ResetPasswordServiceImplTest
         assertNotNull("Workflow Key can't be null.", pair.getSecond());
 
         emailUtil.reset();
-        try
-        {
-            resetPasswordService.initiateResetPassword(null);
-            fail("null parameter.");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected
-        }
+
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(null),
+                    IllegalArgumentException.class,
+                    "null parameter.");
+
         // Now that we have got the email, try to reset the password
         ResetPasswordDetails passwordDetails = new ResetPasswordDetails()
                     .setUserId(null)// user id is not provided
@@ -350,99 +303,54 @@ public class ResetPasswordServiceImplTest
                     .setWorkflowId(pair.getFirst())
                     .setWorkflowKey(pair.getSecond());
 
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("User id is mandatory.");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    IllegalArgumentException.class,
+                    "User id is mandatory.");
 
         passwordDetails.setUserId(testPerson.userName)
                     .setPassword(null); // Password is not provided
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("Password is mandatory.");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    IllegalArgumentException.class,
+                    "Password is mandatory.");
+
 
         passwordDetails.setPassword(""); // Invalid password value
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("Invalid password value.");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    IllegalArgumentException.class,
+                    "Invalid password value.");
 
         passwordDetails.setPassword("newPassword")
                     .setWorkflowId(null); // Workflow id is not provided
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("Workflow id is mandatory.");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    IllegalArgumentException.class,
+                    "Workflow id is mandatory.");
 
         passwordDetails.setWorkflowId(pair.getFirst())
                     .setWorkflowKey(null); //Workflow key is not provided
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("Workflow key is mandatory.");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    IllegalArgumentException.class,
+                    "Workflow key is mandatory.");
+
 
         passwordDetails.setWorkflowId("activiti$" + System.currentTimeMillis()) // Invalid Id
                     .setWorkflowKey(pair.getSecond());
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("The workflow instance with the invalid id should not have been found.");
-        }
-        catch (ResetPasswordWorkflowNotFoundException e)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    ResetPasswordWorkflowNotFoundException.class,
+                    "The workflow instance with the invalid id should not have been found.");
 
         passwordDetails.setWorkflowId(pair.getFirst())
                     .setWorkflowKey(GUID.generate()); // Invalid key
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("The recovered key does not match the given workflow key.");
-        }
-        catch (InvalidResetPasswordWorkflowException e)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    InvalidResetPasswordWorkflowException.class,
+                    "The recovered key does not match the given workflow key.");
 
         passwordDetails.setUserId("marco.polo")
                     .setWorkflowId(pair.getFirst())
                     .setWorkflowKey(pair.getSecond());
-        try
-        {
-            resetPasswordService.initiateResetPassword(passwordDetails);
-            fail("The given user id does not match the person's user id who requested the password reset.");
-        }
-        catch (InvalidResetPasswordWorkflowException e)
-        {
-            // Expected
-        }
+        TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                    InvalidResetPasswordWorkflowException.class,
+                    "The given user id does not match the person's user id who requested the password reset.");
+
         assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
     }
 
@@ -452,8 +360,8 @@ public class ResetPasswordServiceImplTest
         String defaultTimer = globalProperties.getProperty("system.reset-password.endTimer");
         try
         {
-            // Set the duration for two seconds
-            resetPasswordService.setTimerEnd("PT2S");
+            // Set the duration for 1 second
+            resetPasswordService.setTimerEnd("PT1S");
             // Request password reset
             resetPasswordService.requestReset(testPerson.userName, "share");
             assertEquals("A reset password email should have been sent.", 1, emailUtil.getSentCount());
@@ -473,17 +381,13 @@ public class ResetPasswordServiceImplTest
                         .setPassword("newPassword")
                         .setWorkflowId(pair.getFirst())
                         .setWorkflowKey(pair.getSecond());
-            // Wait for 5 seconds, so the end timer expires!
-            Thread.sleep(5000);
-            try
-            {
-                resetPasswordService.initiateResetPassword(passwordDetails);
-                fail("The workflow instance is not active (expired).");
-            }
-            catch (InvalidResetPasswordWorkflowException ex)
-            {
-                // Expected
-            }
+            // Wait for the maximum of 10 seconds, so the end timer expires!
+            boolean active = TestHelper.waitBeforeRetry(() -> isActive(pair.getFirst()), false, 10, 1000);
+            assertFalse("The workflow should have been inactive.", active);
+            TestHelper.assertThrows(() -> resetPasswordService.initiateResetPassword(passwordDetails),
+                        InvalidResetPasswordWorkflowException.class,
+                        "The workflow instance is not active (expired).");
+
             assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
         }
         finally
@@ -492,26 +396,23 @@ public class ResetPasswordServiceImplTest
         }
     }
 
+    private boolean isActive(String workflowId)
+    {
+        WorkflowInstance workflowInstance = workflowService.getWorkflowById(workflowId);
+        assertNotNull(workflowInstance);
+        return workflowInstance.isActive();
+    }
+
     public static Pair<String, String> getWorkflowIdAndKeyFromUrl(String url)
     {
         //url example: http://localhost:8081/share/page/reset-password?key=164e37bf-2590-414e-94db-8b8cfe5be790&id=activiti$156
         assertNotNull(url);
 
-        String id = null;
-        String key = null;
-        int idIndex = url.indexOf("id=");
-        if (idIndex > 0)
-        {
-            id = url.substring(idIndex + 3); // 3 => 'id='
-        }
+        String id = StringUtils.trimToNull(
+                    StringUtils.substringAfter(url, "id="));
+        String key = StringUtils.substringBetween(url, "key=", "&id=");
 
-        int keyIndex = url.indexOf("key");
-        if (keyIndex > 0)
-        {
-            key = url.substring(keyIndex + 4, idIndex - 1); // // 3 => 'key='
-        }
         Pair<String, String> pair = new Pair<>(id, key);
-
         return pair;
     }
 

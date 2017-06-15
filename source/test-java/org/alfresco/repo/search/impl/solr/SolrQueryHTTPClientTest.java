@@ -63,6 +63,7 @@ import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsParameters;
+import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
@@ -351,6 +352,30 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("f.ben.facet.limit=100"));
         assertTrue(url.contains("facet.field=" + encoder.encode("{!afts key=myLabel}bill", "UTF-8")));
         assertTrue(url.contains("f.bill.facet.limit=100"));
+
+    }
+
+    @Test
+    public void testBuildStats() throws UnsupportedEncodingException
+    {
+        SearchParameters params = new SearchParameters();
+        params.setSearchTerm("bob");
+        params.setStats(Arrays.asList(
+                    new StatsRequestParameters("created", null, null, null, null,null, null, null, null,
+                                null, null, null, null,null, null,  null),
+                    new StatsRequestParameters("cm:name", "statLabel",
+                    Arrays.asList(2.4f, 99.9f),null, null, false, null,false, null, false, null, true, true,
+                    true, 0.5f, Arrays.asList("excludeme"))));
+
+        StringBuilder urlBuilder = new StringBuilder();
+        client.buildStatsParameters(params, encoder, urlBuilder);
+        String url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&stats=true"));
+        assertTrue(url.contains("stats.field=" + encoder.encode(
+                   "{! countDistinct=false distinctValues=false min=true max=true sum=true count=true missing=true sumOfSquares=true mean=true stddev=true}created", "UTF-8")));
+        assertTrue(url.contains("stats.field=" + encoder.encode(
+                   "{! ex=excludeme tag=statLabel key=statLabel percentiles='2.4,99.9' cardinality=0.5 countDistinct=true distinctValues=true min=true max=true sum=false count=true missing=false sumOfSquares=true mean=false stddev=true}cm:name", "UTF-8")));
 
     }
 

@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.alfresco.util.ParameterCheck;
+import sun.util.calendar.ZoneInfo;
 
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASSOCIATION;
@@ -70,10 +71,12 @@ import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
 import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
 import static org.alfresco.service.cmr.search.SearchService.*;
 
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 
 /**
@@ -122,7 +125,7 @@ public class SearchMapper
         fromFacetRange(sp, searchQuery.getFacetRange());
         fromScope(sp, searchQuery.getScope(), searchRequestContext);
         fromLimits(sp, searchQuery.getLimits());
-
+        fromTimezone(sp, searchQuery.getTimezone());
         return sp;
     }
 
@@ -645,6 +648,28 @@ public class SearchMapper
     public void fromHighlight(SearchParameters sp, GeneralHighlightParameters highlight)
     {
         sp.setHighlight(highlight);
+    }
+
+    /**
+     * Validates and sets the timezone
+     * @param sp SearchParameters
+     * @param timezone a valid java.time.ZoneId
+     */
+    public void fromTimezone(SearchParameters sp, String timezone)
+    {
+        if (timezone!= null && !timezone.isEmpty())
+        {
+            ZoneId validZoneId = null;
+            try
+            {
+                validZoneId = ZoneId.of(timezone);
+                sp.setTimezone(validZoneId.toString());
+            }
+            catch (Exception e)
+            {
+                throw new IllegalArgumentException("Invalid timezone "+timezone);
+            }
+        }
     }
 
     /**

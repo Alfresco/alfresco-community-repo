@@ -44,6 +44,15 @@
                     <platformTest type="windows"/>
                 </ruleList>
              </setInstallerVariableFromRegEx>
+             <setInstallerVariableFromRegEx>
+                <name>alfresco_pdf_renderer_root_directory_windows</name>
+                <pattern>/</pattern>
+                <substitution>\</substitution>
+                <text>${alfresco_pdf_renderer_root_directory}</text>
+                <ruleList>
+                    <platformTest type="windows"/>
+                </ruleList>
+             </setInstallerVariableFromRegEx>
             <substitute>
             <files>${alfrescoFiles}</files>
             <substitutionList>
@@ -104,6 +113,22 @@ img.exe=${'${img.root}'}/bin/convert</value>
 img.coders=${'${img.root}'}\\modules\\coders
 img.config=${'${img.root}'}
 img.exe=${'${img.root}'}\\convert.exe</value>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_PDF_RENDERER_ENV@@</pattern>
+                            <value>alfresco-pdf-renderer.root=${alfresco_pdf_renderer_root_directory.unix}
+alfresco-pdf-renderer.exe=${'${alfresco-pdf-renderer.root}'}/alfresco-pdf-renderer</value>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_ALFRESCO_PDF_RENDERER_ENV@@</pattern>
+                            <value>alfresco-pdf-renderer.root=${alfresco_pdf_renderer_root_directory_windows.escape_backslashes}
+alfresco-pdf-renderer.exe=${'${alfresco-pdf-renderer.root}'}\\alfresco-pdf-renderer.exe</value>
                             <ruleList>
                                 <platformTest type="windows"/>
                             </ruleList>

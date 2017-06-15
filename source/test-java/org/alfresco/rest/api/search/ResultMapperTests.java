@@ -491,7 +491,7 @@ public class ResultMapperTests
         assertEquals("[0 - 100)",rangeFacets.get(1).getBuckets().get(0).getLabel());
         Object[] metrics = rangeFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
-        assertEquals("content.size:[0 TO 100<", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
+        assertEquals("content.size:[0 TO 100>", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
         assertEquals(null,rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("count"));
         Map<String, String> facetInfo = rangeFacets.get(1).getBuckets().get(0).getBucketInfo();
         assertEquals("0",facetInfo.get("start"));
@@ -503,7 +503,7 @@ public class ResultMapperTests
         facetInfo = rangeFacets.get(1).getBuckets().get(1).getBucketInfo();
         assertEquals("100",facetInfo.get("start"));
         assertEquals("200",facetInfo.get("end"));
-        assertEquals("content.size:[100 TO 200<", rangeFacets.get(1).getBuckets().get(1).getFilterQuery());
+        assertEquals("content.size:[100 TO 200>", rangeFacets.get(1).getBuckets().get(1).getFilterQuery());
         assertEquals(null,rangeFacets.get(1).getBuckets().get(1).getBucketInfo().get("count"));
         assertEquals("false",rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("endInclusive"));
         assertEquals("true",rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("startInclusive"));
@@ -536,7 +536,7 @@ public class ResultMapperTests
         assertEquals("(0 - 100]",rangeFacets.get(1).getBuckets().get(0).getLabel());
         Object[] metrics = rangeFacets.get(1).getBuckets().get(0).getMetrics().toArray();
         assertEquals("4",((SimpleMetric) metrics[0]).getValue().get("count"));
-        assertEquals("content.size:]0 TO 100>", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
+        assertEquals("content.size:<0 TO 100]", rangeFacets.get(1).getBuckets().get(0).getFilterQuery());
         assertEquals(null,rangeFacets.get(1).getBuckets().get(0).getBucketInfo().get("count"));
         Map<String, String> facetInfo = rangeFacets.get(1).getBuckets().get(0).getBucketInfo();
         assertEquals("0",facetInfo.get("start"));

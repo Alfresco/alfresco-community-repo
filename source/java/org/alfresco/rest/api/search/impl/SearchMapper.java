@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.search.Interval;
 import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.RangeParameters;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
@@ -510,7 +511,24 @@ public class SearchMapper
         }
         sp.setInterval(facetIntervals);
     }
-
+    /**
+     * Sets the Range Parameters object on search parameters
+     * @param sp SearchParameters
+     * @param rangeParams RangeParameters
+     */
+    public void fromFacetRange(SearchParameters sp, RangeParameters rangeParams)
+    {
+        if(rangeParams != null)
+        {
+            ParameterCheck.mandatory("facetRange", rangeParams);
+            ParameterCheck.mandatory("field ", rangeParams.getField());
+            ParameterCheck.mandatory("facet range start ", rangeParams.getStart());
+            ParameterCheck.mandatory("facet range end ", rangeParams.getEnd());
+            ParameterCheck.mandatory("facet range gap ", rangeParams.getGap());
+            sp.setRange(rangeParams);
+        }
+        
+    }
     public void fromPivot(SearchParameters sp, List<StatsRequestParameters> stats, FacetFields facetFields, List<Pivot> pivots, SearchRequestContext searchRequestContext)
     {
         if (facetFields != null && pivots != null && !pivots.isEmpty())

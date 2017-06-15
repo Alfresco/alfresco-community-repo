@@ -29,6 +29,7 @@ package org.alfresco.rest.api.search.model;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.IntervalParameters;
+import org.alfresco.service.cmr.search.RangeParameters;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -60,9 +61,10 @@ public class SearchQuery
     private final boolean includeRequest;
     private final List<Pivot> pivots;
     private final List<StatsRequestParameters> stats;
+    private final RangeParameters facetRange;
 
     public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,
-                null,null, null, null, null,null, null, null, null, null, null, null);
+                null,null, null, null, null,null, null, null, null, null, null, null,null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -82,7 +84,8 @@ public class SearchQuery
                 @JsonProperty("highlight")GeneralHighlightParameters highlight,
                 @JsonProperty("facetIntervals")IntervalParameters facetIntervals,
                 @JsonProperty("pivots") List<Pivot> pivots,
-                @JsonProperty("stats") List<StatsRequestParameters> stats)
+                @JsonProperty("stats") List<StatsRequestParameters> stats,
+                @JsonProperty("facetRange") RangeParameters facetRange)
     {
         this.query = query;
         this.includeRequest = includeRequest==null?false:includeRequest;
@@ -102,6 +105,7 @@ public class SearchQuery
         this.facetIntervals = facetIntervals;
         this.pivots = pivots;
         this.stats = stats;
+        this.facetRange = facetRange;
     }
 
     public Query getQuery()
@@ -192,4 +196,10 @@ public class SearchQuery
     {
         return stats;
     }
+
+    public RangeParameters getFacetRange()
+    {
+        return facetRange;
+    }
+    
 }

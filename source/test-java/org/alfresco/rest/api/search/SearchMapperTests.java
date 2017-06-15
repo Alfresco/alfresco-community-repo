@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.search.Interval;
 import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.RangeParameters;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchService;
@@ -797,16 +798,31 @@ public class SearchMapperTests
         searchMapper.fromFacetIntervals(searchParameters, intervalParameters);
         assertEquals(searchParameters.getInterval(), intervalParameters);
     }
-
+    
+    @Test
+    public void facetRange()
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        RangeParameters rangeParams = new RangeParameters(null, null, null, null);
+        try
+        {
+            searchMapper.fromFacetRange(searchParameters, rangeParams);
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertNotNull(iae);
+        }
+        rangeParams = new RangeParameters("content.size", "0", "100000", "1000");
+        searchMapper.fromFacetRange(searchParameters, rangeParams);
+        assertEquals(searchParameters.getRange(), rangeParams);
+    }
+    
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,null);
         return sq;
     }
-    @Test
-    public void facetGroup()
-    {
-        
-    }
+
 }

@@ -657,13 +657,13 @@
       </property>
    </bean>
    
-   <!-- Import the Pdfium transformer from the third party subsystem -->
-   <bean id="transformer.worker.Pdfium" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+   <!-- Import the Alfresco-PDF-Renderer transformer from the third party subsystem -->
+   <bean id="transformer.worker.alfresco-pdf-renderer" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="thirdparty" />
       </property>
       <property name="sourceBeanName">
-         <value>transformer.worker.Pdfium</value>
+         <value>transformer.worker.subsys.alfresco-pdf-renderer</value>
       </property>
       <property name="interfaces">
          <list>
@@ -672,9 +672,9 @@
       </property>
    </bean>
 
-   <bean id="transformer.Pdfium" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+   <bean id="transformer.alfresco-pdf-renderer" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
       <property name="worker">
-         <ref bean="transformer.worker.Pdfium" />
+         <ref bean="transformer.worker.alfresco-pdf-renderer" />
       </property>
    </bean>
    

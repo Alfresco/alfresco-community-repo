@@ -101,6 +101,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     private ClientAppConfig clientAppConfig;
     private String timerEnd = TIMER_END;
     private String defaultEmailSender;
+    private boolean sendEmailAsynchronously = true;
 
     public void setWorkflowService(WorkflowService workflowService)
     {
@@ -163,6 +164,11 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     public void setDefaultEmailSender(String defaultEmailSender)
     {
         this.defaultEmailSender = defaultEmailSender;
+    }
+
+    public void setSendEmailAsynchronously(boolean sendEmailAsynchronously)
+    {
+        this.sendEmailAsynchronously = sendEmailAsynchronously;
     }
 
     public void init()
@@ -228,11 +234,15 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     }
 
     @Override
-    public void resetPassword(ResetPasswordDetails resetDetails)
+    public void initiateResetPassword(ResetPasswordDetails resetDetails)
     {
         ParameterCheck.mandatory("resetDetails", resetDetails);
 
         validateIdAndKey(resetDetails.getWorkflowId(), resetDetails.getWorkflowKey(), resetDetails.getUserId());
+        if (StringUtils.isBlank(resetDetails.getPassword()))
+        {
+            throw new IllegalArgumentException("Invalid password value [" + resetDetails.getPassword() + ']');
+        }
 
         // So now we know that the workflow instance exists, is active and has the correct key. We can proceed.
         WorkflowTaskQuery processTaskQuery = new WorkflowTaskQuery();
@@ -275,6 +285,10 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
      */
     private void validateIdAndKey(String id, String key, String userId)
     {
+        ParameterCheck.mandatory("id", id);
+        ParameterCheck.mandatory("key", key);
+        ParameterCheck.mandatory("userId", userId);
+
         WorkflowInstance workflowInstance = null;
         try
         {
@@ -287,11 +301,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
 
         if (workflowInstance == null)
         {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("The reset password workflow instance with the id [" + id + "] is not found.");
-            }
-            throw new ResetPasswordWorkflowNotFoundException("Reset Password cannot be linked to an ongoing secure process.");
+            throw new ResetPasswordWorkflowNotFoundException("The reset password workflow instance with the id [" + id + "] is not found.");
         }
 
         String recoveredKey;
@@ -306,40 +316,31 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         }
         else
         {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("The reset password workflow instance with the id [" + id + "] is not active.");
-            }
-            throw new InvalidResetPasswordWorkflowException("Reset Password cannot be linked to an ongoing secure process.");
+            throw new InvalidResetPasswordWorkflowException("The reset password workflow instance with the id [" + id + "] is not active (it might be expired or has already been used).");
         }
         if (username == null || recoveredKey == null || !recoveredKey.equals(key))
         {
-            if (LOGGER.isDebugEnabled())
+            String msg;
+            if (username == null)
             {
-                if (username == null)
-                {
-                    LOGGER.debug("The recovered user name is null for the reset password workflow instance with the id [" + id + "]");
-                }
-                else if (recoveredKey == null)
-                {
-                    LOGGER.debug("The recovered key is null for the reset password workflow instance with the id [" + id + "]");
-                }
-                else
-                {
-                    LOGGER.debug("The recovered key [" + recoveredKey + "] does not match the given workflow key [" + key
-                                + "] for the reset password workflow instance with the id [" + id + "]");
-                }
+                msg = "The recovered user name is null for the reset password workflow instance with the id [" + id + "]";
             }
-            throw new InvalidResetPasswordWorkflowException("Reset Password cannot be linked to an ongoing secure process.");
+            else if (recoveredKey == null)
+            {
+                msg = "The recovered key is null for the reset password workflow instance with the id [" + id + "]";
+            }
+            else
+            {
+                msg = "The recovered key [" + recoveredKey + "] does not match the given workflow key [" + key
+                            + "] for the reset password workflow instance with the id [" + id + "]";
+            }
+
+            throw new InvalidResetPasswordWorkflowException(msg);
         }
         else if (!username.equals(userId))
         {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("The given user id [" + userId + "] does not match the person's user id [" + username
-                            + "] who requested the password reset.");
-            }
-            throw new InvalidResetPasswordWorkflowException("Reset Password cannot be linked to an ongoing secure process.");
+            throw new InvalidResetPasswordWorkflowException("The given user id [" + userId + "] does not match the person's user id [" + username
+                        + "] who requested the password reset.");
         }
     }
 
@@ -387,16 +388,13 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     }
 
     @Override
-    public void performResetPassword(DelegateExecution execution, String fallbackEmailTemplatePath, String emailSubject)
+    public void performResetPassword(DelegateExecution execution)
     {
         // This method chooses to take a rather indirect route to access the password value.
         // This is for security reasons. We do not want to store the password in the Activiti DB.
 
         // We can get the username from the execution (process scope).
-        Map<String, Object> variables = execution.getVariables();
-        final String userName = (String) variables.get(WorkflowModelResetPassword.WF_PROP_USERNAME_ACTIVITI);
-        final String userEmail = (String) variables.get(WorkflowModelResetPassword.WF_PROP_USER_EMAIL_ACTIVITI);
-        final String clientName = (String) variables.get(WorkflowModelResetPassword.WF_PROP_CLIENT_NAME_ACTIVITI);
+        final String userName = (String) execution.getVariable(WorkflowModelResetPassword.WF_PROP_USERNAME_ACTIVITI);
 
         // But we cannot get the password from the execution as we have intentionally not stored the password there.
         // Instead we recover the password from the specific task in which it was set.
@@ -425,6 +423,15 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         }
 
         this.authenticationService.setAuthentication(userName, password.toCharArray());
+    }
+
+    @Override
+    public void sendResetPasswordConfirmationEmail(DelegateExecution execution, String fallbackEmailTemplatePath, String emailSubject)
+    {
+        Map<String, Object> variables = execution.getVariables();
+        final String userName = (String) variables.get(WorkflowModelResetPassword.WF_PROP_USERNAME_ACTIVITI);
+        final String userEmail = (String) variables.get(WorkflowModelResetPassword.WF_PROP_USER_EMAIL_ACTIVITI);
+        final String clientName = (String) variables.get(WorkflowModelResetPassword.WF_PROP_CLIENT_NAME_ACTIVITI);
 
         // Now notify the user
         final ClientApp clientApp = getClientAppConfig(clientName);
@@ -445,8 +452,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         sendEmail(emailRequest);
     }
 
-    @Override
-    public void sendEmail(ResetPasswordEmailDetails emailRequest)
+    protected void sendEmail(ResetPasswordEmailDetails emailRequest)
     {
         // Prepare the email
         Map<String, Serializable> templateModel = new HashMap<>();
@@ -458,7 +464,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
             templateModel.putAll(emailRequest.getTemplateModel());
         }
 
-        Map<String, Serializable> actionParams = new HashMap<>(8);
+        Map<String, Serializable> actionParams = new HashMap<>(7);
         String fromEmail = emailRequest.getFromEmail();
         if(StringUtils.isEmpty(fromEmail))
         {
@@ -474,11 +480,10 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         final Locale locale = emailHelper.getUserLocaleOrDefault(emailRequest.getUserName());
         actionParams.put(MailActionExecuter.PARAM_LOCALE, locale);
 
-        actionParams.put(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, true);
         actionParams.put(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, emailRequest.ignoreSendFailure);
         // Now send the email
         Action mailAction = actionService.createAction(MailActionExecuter.NAME, actionParams);
-        actionService.executeAction(mailAction, null, false, true);
+        actionService.executeAction(mailAction, null, false, sendEmailAsynchronously);
     }
 
     private String getUrl(String url, String propName)

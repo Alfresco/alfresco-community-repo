@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,16 +30,19 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 
 /**
- * This {@link JavaDelegate activiti delegate} is executed when a user resets his/her password.
+ * This {@link JavaDelegate activiti delegate} is executed when a user is finished resetting his/her password.
  *
  * @author Jamal Kaabi-Mofrad
  * @since 5.2.1
  */
-public class PerformResetPasswordDelegate extends AbstractResetPasswordDelegate
+public class SendResetPasswordConfirmationEmailDelegate extends AbstractResetPasswordDelegate
 {
+    private static final String EMAIL_SUBJECT_KEY = "reset-password-confirmation.email.subject";
+    private static final String EMAIL_TEMPLATE_PATH = "alfresco/templates/reset-password-email-templates/reset-password-confirmation-email-template.ftl";
+
     @Override
-    public void execute(DelegateExecution execution) throws Exception
+    public void execute(DelegateExecution delegateExecution) throws Exception
     {
-        resetPasswordService.performResetPassword(execution);
+        resetPasswordService.sendResetPasswordConfirmationEmail(delegateExecution, EMAIL_TEMPLATE_PATH, EMAIL_SUBJECT_KEY);
     }
 }

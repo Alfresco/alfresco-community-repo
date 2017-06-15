@@ -285,7 +285,10 @@ public class ClientAppConfig extends AbstractLifecycleBean
 
     private void logInvalidPropertyValue(String propName, String propValue)
     {
-        logger.warn("Ignoring client app config (invalid value) [" + propValue + "] for the property:" + propName);
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Ignoring client app config (invalid value) [" + propValue + "] for the property:" + propName);
+        }
     }
 
     private String getPropertyKey(String clientName, String clientProp)

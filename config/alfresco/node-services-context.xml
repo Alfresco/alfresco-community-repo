@@ -203,7 +203,10 @@
          <list>
             <value>{http://www.alfresco.org/model/content/1.0}source</value>
          </list>
-      </property>	  
+      </property>
+      <property name="behaviourFilter">
+         <ref bean="policyBehaviourFilter"/>
+      </property>
    </bean>
 
    <!-- Node cleanup -->

@@ -34,14 +34,6 @@ import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESC
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
 import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
@@ -76,6 +68,13 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * Tests the SearchMapper class
@@ -827,13 +826,13 @@ public class SearchMapperTests
     public void fromPivot() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        searchMapper.fromPivot(searchParameters, null, null, null, null);
+        searchMapper.fromPivot(searchParameters, null, null, null, null, null);
 
         List<FacetField> facets = new ArrayList<>(1);
         facets.add(new FacetField("myfield",null,null,null,null,null,null,null,null,null,null));
         FacetFields ff = new FacetFields(facets);
         searchMapper.fromFacetFields(searchParameters,ff);
-        searchMapper.fromPivot(searchParameters, null, ff, null, null);
+        searchMapper.fromPivot(searchParameters, null, ff, null, null, null);
         assertEquals(1 ,searchParameters.getFieldFacets().size());
         assertEquals(0 ,searchParameters.getPivots().size());
 
@@ -842,7 +841,7 @@ public class SearchMapperTests
 
         try
         {
-            searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot(null, null)), null);
+            searchMapper.fromPivot(searchParameters, null, ff, null, Arrays.asList(new Pivot(null, null)), null);
             fail();
         }
         catch (IllegalArgumentException iae)
@@ -853,7 +852,7 @@ public class SearchMapperTests
 
         try
         {
-            searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot("", null)), null);
+            searchMapper.fromPivot(searchParameters, null, ff, null, Arrays.asList(new Pivot("", null)), null);
             fail();
         }
         catch (IllegalArgumentException iae)
@@ -866,16 +865,17 @@ public class SearchMapperTests
         //"bob" doesn't refer to a field facet but its the last one so needs to refer to a stat
         StatsRequestParameters bobf = new StatsRequestParameters("bob", null, null, null,null, null, null, null,null, null, null, null,null, null, null, null);
         StatsRequestParameters bobL = new StatsRequestParameters("creator", "bob", null, null,null, null, null, null,null, null, null, null,null, null, null, null);
-        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, Arrays.asList(new Pivot("bob", null)), searchRequestContext);
+        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null, Arrays.asList(new Pivot("bob", null)), searchRequestContext);
         assertEquals(1 ,searchParameters.getPivots().size());
 
         searchParameters = new SearchParameters();
-        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, Arrays.asList(new Pivot("bob", null)), searchRequestContext);
+        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null, Arrays.asList(new Pivot("bob", null)), searchRequestContext);
         assertEquals(1 ,searchParameters.getPivots().size());
 
         try
         {
-            searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot("ken", null),new Pivot("bob", null)), searchRequestContext);
+            searchMapper.fromPivot(searchParameters, null, ff, null,
+                        Arrays.asList(new Pivot("ken", null),new Pivot("bob", null)), searchRequestContext);
             fail();
         }
         catch (InvalidArgumentException iae)
@@ -886,7 +886,7 @@ public class SearchMapperTests
 
         searchParameters = new SearchParameters();
 
-        searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot("myfield", null)), searchRequestContext);
+        searchMapper.fromPivot(searchParameters, null, ff, null, Arrays.asList(new Pivot("myfield", null)), searchRequestContext);
         searchMapper.fromFacetFields(searchParameters,ff);
         //Moved from a field facet to a pivot
         assertEquals(0 ,searchParameters.getFieldFacets().size());
@@ -896,7 +896,8 @@ public class SearchMapperTests
         searchParameters = new SearchParameters();
         try
         {
-            searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, Arrays.asList(new Pivot("bob", Arrays.asList(new Pivot("hope", null)))), searchRequestContext);
+            searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null,
+                        Arrays.asList(new Pivot("bob", Arrays.asList(new Pivot("hope", null)))), searchRequestContext);
             fail();
         }
         catch (InvalidArgumentException iae)
@@ -909,7 +910,8 @@ public class SearchMapperTests
         facets = new ArrayList<>(1);
         facets.add(new FacetField("king",null,null,null,null,null,null,null,null,null,null));
         ff = new FacetFields(facets);
-        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null)))), searchRequestContext);
+        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null,
+                    Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null)))), searchRequestContext);
         assertEquals(1 ,searchParameters.getPivots().size());
         assertEquals(2 ,searchParameters.getPivots().get(0).size());
         assertEquals("king" ,searchParameters.getPivots().get(0).get(0));
@@ -922,12 +924,29 @@ public class SearchMapperTests
         facets.add(new FacetField("kong",null,null,null,null,null,null,null,null,null,null));
         facets.add(new FacetField("kang",null,null,null,null,null,null,null,null,null,null));
         ff = new FacetFields(facets);
-        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null))), new Pivot("kong", null)), searchRequestContext);
+        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, null,
+                    Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null))), new Pivot("kong", null)), searchRequestContext);
         assertEquals(2 ,searchParameters.getPivots().size());
         assertEquals(2 ,searchParameters.getPivots().get(0).size());
         assertEquals("king" ,searchParameters.getPivots().get(0).get(0));
         assertEquals("bob" ,searchParameters.getPivots().get(0).get(1));
         assertEquals("kong" ,searchParameters.getPivots().get(1).get(0));
+
+        searchRequestContext = SearchRequestContext.from(minimalQuery());
+        searchParameters = new SearchParameters();
+        List<RangeParameters> rangeParams = new ArrayList<RangeParameters>();
+        facets = new ArrayList<>(2);
+        facets.add(new FacetField("king",null,null,null,null,null,null,null,null,null,null));
+        facets.add(new FacetField("kong",null,null,null,null,null,null,null,null,null,null));
+        ff = new FacetFields(facets);
+        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true,null,null,Arrays.asList("hope"),null));
+        searchMapper.fromPivot(searchParameters, Arrays.asList(bobf), ff, rangeParams,
+                    Arrays.asList(new Pivot("king", Arrays.asList(new Pivot("bob", null))), new Pivot("hope", null)), searchRequestContext);
+        assertEquals(2 ,searchParameters.getPivots().size());
+        assertEquals(2 ,searchParameters.getPivots().get(0).size());
+        assertEquals("king" ,searchParameters.getPivots().get(0).get(0));
+        assertEquals("bob"  ,searchParameters.getPivots().get(0).get(1));
+        assertEquals("hope" ,searchParameters.getPivots().get(1).get(0));
 
     }
 
@@ -1021,7 +1040,7 @@ public class SearchMapperTests
         SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null,
                     null, null, null, null, null, null, null, null,
                     null, null,null, null,FacetFormat.V2);
-        
+
         SearchRequestContext searchRequestContext = SearchRequestContext.from(sq);
         SearchParameters searchParameters = searchMapper.toSearchParameters(ResultMapperTests.EMPTY_PARAMS, sq, searchRequestContext);
         assertNotNull(searchParameters);
@@ -1031,9 +1050,10 @@ public class SearchMapperTests
         assertEquals("workspaces store is the default", StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, searchParameters.getStores().get(0));
         assertEquals(LimitBy.FINAL_SIZE, searchParameters.getLimitBy());
         assertEquals(100, searchParameters.getLimit());
+
         
     }
-    
+
     @Test
     public void facetRange()
     {

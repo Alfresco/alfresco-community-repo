@@ -50,6 +50,7 @@ import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetRespo
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric.METRIC_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.RangeResultMapper;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.SimpleMetric;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.repo.version.Version2Model;
@@ -340,7 +341,7 @@ public class ResultMapper
         facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
         
         Map<String,List<Map<String,String>>> facetRanges = solrResultSet.getFacetRanges();
-        facets.addAll(RangeResultMapper.getGenericFacetsForRanges(facetRanges, searchQuery));
+        facets.addAll(RangeResultMapper.getGenericFacetsForRanges(facetRanges, searchQuery.getFacetRanges()));
 
         List<GenericFacetResponse> stats = getFieldStats(searchRequestContext, solrResultSet.getStats());
         List<GenericFacetResponse> pimped = getPivots(searchRequestContext, solrResultSet.getPivotFacets(), stats);

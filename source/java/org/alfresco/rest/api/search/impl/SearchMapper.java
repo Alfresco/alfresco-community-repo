@@ -78,9 +78,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
-import java.util.Locale.Builder;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -126,7 +124,7 @@ public class SearchMapper
         fromDefault(sp, searchQuery.getDefaults());
         fromFilterQuery(sp, searchQuery.getFilterQueries());
         fromFacetQuery(sp, searchQuery.getFacetQueries());
-        fromPivot(sp, searchQuery.getStats(), searchQuery.getFacetFields(), searchQuery.getPivots(), searchRequestContext);
+        fromPivot(sp, searchQuery.getStats(), searchQuery.getFacetFields(), searchQuery.getFacetRanges(), searchQuery.getPivots(), searchRequestContext);
         fromStats(sp, searchQuery.getStats());
         fromFacetFields(sp, searchQuery.getFacetFields());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
@@ -576,20 +574,22 @@ public class SearchMapper
         
     }
 
-    public void fromPivot(SearchParameters sp, List<StatsRequestParameters> stats, FacetFields facetFields, List<Pivot> multiplePivots, SearchRequestContext searchRequestContext)
+    public void fromPivot(SearchParameters sp, List<StatsRequestParameters> stats, FacetFields facetFields, List<RangeParameters> ranges, List<Pivot> multiplePivots,
+                SearchRequestContext searchRequestContext)
     {
         if (multiplePivots != null && !multiplePivots.isEmpty())
         {
             multiplePivots.forEach(aPivot -> {
                 List<String> pivotKeys = new ArrayList<>();
-                buildPivotKeys(pivotKeys, aPivot, stats,facetFields, searchRequestContext);
+                buildPivotKeys(pivotKeys, aPivot, stats, facetFields, ranges, searchRequestContext);
                 sp.addPivots(pivotKeys);
             });
 
         }
     }
 
-    protected void buildPivotKeys(List<String> pivotKeys, Pivot aPivot, List<StatsRequestParameters> stats, FacetFields facetFields, SearchRequestContext searchRequestContext)
+    protected void buildPivotKeys(List<String> pivotKeys, Pivot aPivot, List<StatsRequestParameters> stats, FacetFields facetFields,
+                List<RangeParameters> ranges, SearchRequestContext searchRequestContext)
     {
         if (aPivot == null) return;
         String pivotKey = null;
@@ -617,7 +617,7 @@ public class SearchMapper
 
         if (pivotKey == null && ((aPivot.getPivots() == null) || aPivot.getPivots().isEmpty()))
         {
-            //It is the last one so it can reference stats
+            //It is the last one so it can reference stats or range
             if (stats != null && !stats.isEmpty())
             {
                 Optional<StatsRequestParameters> foundStat =  stats.stream().filter(stas -> aPivot.getKey().equals(stas.getLabel()!=null?stas.getLabel():stas.getField())).findFirst();
@@ -628,12 +628,25 @@ public class SearchMapper
                     searchRequestContext.getPivotKeys().put(pivotKey, pivotKey);
                 }
             }
+
+            if (ranges != null && !ranges.isEmpty())
+            {
+                for (RangeParameters aRange:ranges)
+                {
+                    if (aRange.getTags().contains(aPivot.getKey()))
+                    {
+                        pivotKey = aPivot.getKey();
+                        pivotKeys.add(pivotKey);
+                        searchRequestContext.getPivotKeys().put(pivotKey, pivotKey);
+                    }
+                }
+            }
         }
 
         if (pivotKey == null)
         {
             throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
-                        new Object[] { ": Pivot parameter " + aPivot.getKey() + " does not reference a facet Field or stats." });
+                        new Object[] { ": Pivot parameter " + aPivot.getKey() + " does not reference a facet Field, range or stats." });
         }
 
         if (aPivot.getPivots() != null && !aPivot.getPivots().isEmpty() && aPivot.getPivots().size()>1)
@@ -644,7 +657,7 @@ public class SearchMapper
 
         aPivot.getPivots().forEach(subPivot ->
         {
-            buildPivotKeys(pivotKeys, subPivot, stats, facetFields, searchRequestContext);
+            buildPivotKeys(pivotKeys, subPivot, stats, facetFields, ranges, searchRequestContext);
         });
 
     }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -92,6 +92,7 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.cmr.repository.TransformationOptionPairTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.tools.RenameUserTest.class));
         suite.addTestSuite(org.alfresco.util.FileNameValidatorTest.class);
+        suite.addTestSuite(org.alfresco.util.HttpClientHelperTest.class);
         suite.addTestSuite(org.alfresco.util.JSONtoFmModelTest.class);
         suite.addTestSuite(org.alfresco.util.ModelUtilTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.PropertyMapTest.class));

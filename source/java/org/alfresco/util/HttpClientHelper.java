@@ -53,9 +53,15 @@ import org.springframework.extensions.webscripts.connector.RemoteClient;
  * <ul>
  *  <li>http.proxyHost</li>
  *  <li>http.proxyPort</li>
- *  <li>http.nonProxyHosts</li>
  *  <li>http.proxyUser</li>
  *  <li>http.proxyPassword</li>
+ *  
+ *  <li>http.nonProxyHosts</li>
+ *  
+ *  <li>https.proxyHost</li>
+ *  <li>https.proxyPort</li>
+ *  <li>https.proxyUser</li>
+ *  <li>https.proxyPassword</li>
  * </ul>
  * <p>
  *  
@@ -89,7 +95,7 @@ public class HttpClientHelper
      * If the properties are not set, no proxy will be created.
      * 
      * @param hostProperty the name of the system property for the proxy server (<code>http.proxyHost</code> or <code>https.proxyHost</code>)
-     * @param portProperty the name of the system property for the proxy server port (http.proxyPort)
+     * @param portProperty the name of the system property for the proxy server port (<code>http.proxyPort</code> or <code>https.proxyPort</code>)
      * @param defaultPort 
      * 
      * @return ProxyHost if appropriate properties have been set, null otherwise
@@ -137,8 +143,8 @@ public class HttpClientHelper
     }
     
     /**
-     * Return true unless the given target host is specified in the <code>http.nonProxyHosts</code> system property.
-     * See http://docs.oracle.com/javase/8/docs/api/java/net/doc-files/net-properties.html
+     * Return true unless the given target host is specified in the <code>http.nonProxyHosts</code> system property (used for both protocols, http and https).
+     * See <a href=http://docs.oracle.com/javase/8/docs/api/java/net/doc-files/net-properties.html>Networking Properties</a>.
      * @param targetHost    Non-null host name to verify
      * @return true if not specified in the list, false if it is specified and therefore should be excluded from proxy
      */

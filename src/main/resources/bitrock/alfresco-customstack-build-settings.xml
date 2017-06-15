@@ -37,7 +37,6 @@
                 <setInstallerVariable name="java_distribution_folder" value="${local_binaries_folder}/java"/>
                 <setInstallerVariable name="libreoffice_distribution_folder" value="${local_binaries_folder}/libreoffice"/>
                 <setInstallerVariable name="tomcat_distribution_folder" value="${local_binaries_folder}/apache-tomcat"/>
-                <setInstallerVariable name="ghostscript_distribution_folder" value="${local_binaries_folder}/ghostscript"/>
                 <!-- END ALFRESCO BUILD SYSTEM-->
             </actionList>
             <ruleList>

@@ -1,4 +1,4 @@
-<component>
+<!--  component>
     <name>ghostscript</name>
     <description>GhostScript</description>
     <canBeEdited>0</canBeEdited>
@@ -89,5 +89,5 @@ export GS_LIB
     </folderList>
     
     <postInstallationActionList/>
-</component>
+</component-->
 

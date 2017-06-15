@@ -169,6 +169,26 @@ public class SolrQueryHTTPClientTest
         return params;
     }
 
+
+    @Test
+    public void testBuildTimezone() throws UnsupportedEncodingException
+    {
+        SearchParameters params = new SearchParameters();
+        params.setTimezone("");
+        StringBuilder urlBuilder = new StringBuilder();
+        client.buildUrlParameters(params, false, encoder, urlBuilder);
+        String url = urlBuilder.toString();
+        assertFalse(url.contains("&TZ"));;
+
+        params.setTimezone("bob");
+        urlBuilder = new StringBuilder();
+        client.buildUrlParameters(params, false, encoder, urlBuilder);
+        url = urlBuilder.toString();
+
+        //Timezone formats are not validated here so its just passing a string.
+        assertTrue(url.contains("&TZ=bob"));;
+    }
+
     @Test
     public void testBuildHighlightQuery() throws UnsupportedEncodingException
     {
@@ -420,7 +440,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet.range.include=lower"));
         assertTrue(url.contains("&facet.range.other=before"));
         assertTrue(url.contains("&facet.range.hardend=true"));
-        
+
         RangeParameters range2 = new RangeParameters("content.size", "0", "1000000", "10000", true, null, null, null, null);
         params.setRange(range2);
         urlBuilder = new StringBuilder();

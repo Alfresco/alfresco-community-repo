@@ -624,6 +624,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             url.append("&fq=").append(encoder.encode("{!afts}TENANT_FILTER_FROM_JSON", "UTF-8"));
         }
 
+        if(searchParameters.getTimezone() != null && !searchParameters.getTimezone().isEmpty())
+        {
+            url.append("&TZ=").append(encoder.encode(searchParameters.getTimezone(), "UTF-8"));
+        }
 
         // filter queries
         for(String filterQuery : searchParameters.getFilterQueries())

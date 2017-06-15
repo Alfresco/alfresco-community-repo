@@ -60,6 +60,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsParameters;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -119,6 +120,7 @@ public class SolrQueryHTTPClientTest
         //required for init() but not used.
         client.setNodeService(mock(NodeService.class));
         client.setTenantService(mock(TenantService.class));
+        client.setPermissionService(mock(PermissionService.class));
         client.setStoreMappings(Collections.emptyList());
         client.setRepositoryState(mock(RepositoryState.class));
         client.init();

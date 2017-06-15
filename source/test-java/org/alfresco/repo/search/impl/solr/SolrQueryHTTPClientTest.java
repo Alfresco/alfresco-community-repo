@@ -406,7 +406,7 @@ public class SolrQueryHTTPClientTest
     {
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("A*");
-        RangeParameters range = new RangeParameters("content.size", "0", "1000000", "10000", true, "before", "lower");
+        RangeParameters range = new RangeParameters("content.size", "0", "1000000", "10000", true, "before", "lower", null, null);
         params.setRange(range);
         StringBuilder urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);
@@ -421,7 +421,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&facet.range.other=before"));
         assertTrue(url.contains("&facet.range.hardend=true"));
         
-        RangeParameters range2 = new RangeParameters("content.size", "0", "1000000", "10000", true, null, null);
+        RangeParameters range2 = new RangeParameters("content.size", "0", "1000000", "10000", true, null, null, null, null);
         params.setRange(range2);
         urlBuilder = new StringBuilder();
         client.buildRangeParameters(params, encoder, urlBuilder);

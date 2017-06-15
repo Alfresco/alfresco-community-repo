@@ -296,7 +296,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     for(Iterator it = facet_pivot.keys(); it.hasNext(); /**/)
                     {
                         String pivotName = (String)it.next();
-                        pivotFacets = buildPivot(facet_pivot, pivotName);
+                        pivotFacets.addAll(buildPivot(facet_pivot, pivotName));
                     }
                 }
 
@@ -403,7 +403,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
 
     protected List<GenericFacetResponse> buildPivot(JSONObject facet_pivot, String pivotName) throws JSONException
     {
-        if (!facet_pivot.has(pivotName)) return null;
+        if (!facet_pivot.has(pivotName)) return Collections.emptyList();
 
         JSONArray pivots = facet_pivot.getJSONArray(pivotName);
         Map<String,List<GenericBucket>> pivotBuckets = new HashMap<>(pivots.length());
@@ -437,7 +437,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
 
         if (!facetResponses.isEmpty()) return facetResponses;
 
-        return null;
+        return Collections.emptyList();
     }
 
     protected Set<Metric> getMetrics(Map<String, Object> metrics)

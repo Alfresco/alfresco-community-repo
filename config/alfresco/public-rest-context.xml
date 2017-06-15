@@ -652,6 +652,7 @@
         <property name="contentUsageService" ref="contentUsageImpl" />
         <property name="contentService" ref="ContentService" />
         <property name="thumbnailService" ref="ThumbnailService" />
+        <property name="resetPasswordService" ref="resetPasswordService" />
     </bean>
 
     <bean id="People" class="org.springframework.aop.framework.ProxyFactoryBean">

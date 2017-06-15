@@ -137,7 +137,8 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
             JSONObject response = json.getJSONObject("response");
             numberFound = response.getLong("numFound");
             start = response.getLong("start");
-            maxScore = Float.valueOf(response.getString("maxScore"));
+            Double d = response.getDouble("maxScore");
+            maxScore = d.floatValue();
             if (json.has("lastIndexedTx"))
             {
                 lastIndexedTxId = json.getLong("lastIndexedTx");
@@ -159,7 +160,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 if(dbids != null)
                 {
                     Long dbid = dbids.getLong(0);
-                    Float score = Float.valueOf(doc.getString("score"));
+                    Float score = Float.valueOf((float)doc.getDouble("score"));
                     rawDbids.add(dbid);
                     rawScores.add(score);
                 }
@@ -168,7 +169,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     Long dbid = doc.optLong("DBID");
                     if(dbid != null)
                     {
-                        Float score = Float.valueOf(doc.getString("score"));
+                        Float score = Float.valueOf((float)doc.getDouble("score"));
                         rawDbids.add(dbid);
                         rawScores.add(score);
                     }
@@ -251,7 +252,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     for(Iterator it = facet_queries.keys(); it.hasNext(); /**/)
                     {
                         String fq = (String) it.next();
-                        Integer count =Integer.parseInt(facet_queries.getString(fq));
+                        Integer count =Integer.valueOf(facet_queries.getInt(fq));
                         facetQueries.put(fq, count);
                     }
                 }
@@ -267,7 +268,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                         for(int i = 0; i < facetArraySize; i+=2)
                         {
                             String facetEntryName = facets.getString(i);
-                            Integer facetEntryCount = Integer.parseInt(facets.getString(i+1));
+                            Integer facetEntryCount = Integer.valueOf(facets.getInt(i+1));
                             Pair<String, Integer> pair = new Pair<String, Integer>(facetEntryName, facetEntryCount);
                             facetValues.add(pair);
                         }
@@ -286,7 +287,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                         for(Iterator itk = intervals.keys(); itk.hasNext(); /**/)
                         {
                             String key = (String) itk.next();
-                            Integer count = Integer.parseInt(intervals.getString(key));
+                            Integer count = Integer.valueOf(intervals.getInt(key));
                             intervalValues.add(new Pair<String, Integer>(key, count));
                         }
                         facetIntervals.put(fieldName,intervalValues);
@@ -308,7 +309,16 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     for(Iterator it = facet_ranges.keys(); it.hasNext();)
                     {
                         String fieldName = (String) it.next();
-                        String end = facet_ranges.getJSONObject(fieldName).getString("end");
+                        String end = "";
+                        try
+                        {
+                            end = facet_ranges.getJSONObject(fieldName).getString("end");
+                        }
+                        catch(JSONException e)
+                        {
+                            end = String.valueOf(facet_ranges.getJSONObject(fieldName).getInt("end"));
+                            
+                        }
                         JSONArray rangeCollection = facet_ranges.getJSONObject(fieldName).getJSONArray("counts");
                         List<Map<String, String>> buckets = new ArrayList<Map<String, String>>();
                         for(int i = 0; i < rangeCollection.length(); i += 2)
@@ -320,7 +330,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                             }
                             Map<String,String> rangeMap = new HashMap<String,String>(3);
                             String rangeFrom = rangeCollection.getString(i);
-                            String facetRangeCount = rangeCollection.getString(i+1);
+                            String facetRangeCount = String.valueOf(rangeCollection.getInt(i+1));
                             String rangeTo = (i+2 < rangeCollection.length() ? rangeCollection.getString(i+2):end);
                             String label = rangeFrom + " - " + rangeTo;
                             rangeMap.put(GenericFacetResponse.LABEL, label);
@@ -471,7 +481,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                 });
             }
 
-            Integer count = Integer.parseInt(piv.getString("count"));
+            Integer count = Integer.valueOf(piv.getInt("count"));
             metrics.add(new SimpleMetric(METRIC_TYPE.count,count));
             nested.addAll(buildPivot(piv, "pivot", rangeParameters));
 

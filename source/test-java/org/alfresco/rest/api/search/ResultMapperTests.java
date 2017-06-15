@@ -51,6 +51,9 @@ import org.alfresco.rest.api.search.context.FacetFieldContext;
 import org.alfresco.rest.api.search.context.FacetQueryContext;
 import org.alfresco.rest.api.search.context.SearchContext;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
+import org.alfresco.rest.api.search.context.facetsresponse.GenericFacetResponse;
+import org.alfresco.rest.api.search.context.facetsresponse.GenericFacetResponse.FACET_TYPE;
+import org.alfresco.rest.api.search.context.facetsresponse.Metric.METRIC_TYPE;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
 import org.alfresco.rest.api.search.model.HighlightEntry;
@@ -88,6 +91,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Tests the ResultMapper class
@@ -272,11 +276,14 @@ public class ResultMapperTests
         assertEquals("content.size",searchContext.getFacetsFields().get(0).getLabel());
 
         //Facet intervals
-        assertEquals(2, searchContext.getFacetIntervals().size());
-        assertEquals("creator",searchContext.getFacetIntervals().get(0).getLabel());
-        assertEquals("last",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getLabel());
-        assertEquals("cm:creator:(a,b]",searchContext.getFacetIntervals().get(0).getBuckets().get(0).getFilterQuery());
-        assertEquals(4,searchContext.getFacetIntervals().get(0).getBuckets().get(0).getCount());
+        List<GenericFacetResponse> intervalFacets = searchContext.getFacets().stream()
+                    .filter(f -> f.getType().equals(FACET_TYPE.interval)).collect(Collectors.toList());
+        assertEquals(2, intervalFacets.size());
+        assertEquals("creator",intervalFacets.get(0).getLabel());
+        assertEquals("last",intervalFacets.get(0).getBuckets().get(0).getLabel());
+        assertEquals("cm:creator:(a,b]",intervalFacets.get(0).getBuckets().get(0).getFilterQuery());
+        assertEquals(METRIC_TYPE.count,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getType());
+        assertEquals(4,intervalFacets.get(0).getBuckets().get(0).getMetrics().get(0).getValue().get("count"));
 
         //Requests search Query
         assertNotNull(searchContext.getRequest());
@@ -289,9 +296,9 @@ public class ResultMapperTests
         assertTrue(mapper.isNullContext(new SearchContext(0l,null,null,null,null, null)));
         assertFalse(mapper.isNullContext(new SearchContext(1l,null,null,null,null, null)));
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,null,new SpellCheckContext(null, null), null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new FacetQueryContext(null, null, 0)),null,null,null, null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,null,Arrays.asList(new FacetFieldContext(null, null)),null,null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,null, Arrays.asList(new FacetQueryContext(null, null, 0)),null,null, null)));
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,Arrays.asList(new FacetFieldContext(null, null)),null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new GenericFacetResponse(null,null, null)),null,null, null, null)));
     }
 
     @Test

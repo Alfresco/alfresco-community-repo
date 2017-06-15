@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.search.context;
 
+import org.alfresco.rest.api.search.context.facetsresponse.GenericFacetResponse;
 import org.alfresco.rest.api.search.model.SearchQuery;
 
 import java.util.List;
@@ -38,10 +39,10 @@ public class SearchContext
     private final List<FacetQueryContext> facetQueries;
     private final SpellCheckContext spellCheck;
     private final List<FacetFieldContext> facetsFields;
-    private final List<FacetFieldContext> facetIntervals;
+    private final List<GenericFacetResponse> facets;
     private final SearchQuery request;
 
-    public SearchContext(long lastTxId, List<FacetQueryContext> facetQueries, List<FacetFieldContext> facetsFields, List<FacetFieldContext> facetIntervals, SpellCheckContext spellCheck,
+    public SearchContext(long lastTxId, List<GenericFacetResponse> facets, List<FacetQueryContext> facetQueries, List<FacetFieldContext> facetsFields, SpellCheckContext spellCheck,
                 SearchQuery request)
     {
         this.spellCheck = spellCheck;
@@ -56,7 +57,7 @@ public class SearchContext
         }
         this.facetQueries = facetQueries;
         this.facetsFields = facetsFields;
-        this.facetIntervals = facetIntervals;
+        this.facets = facets;
     }
 
     public Consistency getConsistency()
@@ -74,9 +75,9 @@ public class SearchContext
         return spellCheck;
     }
 
-    public List<FacetFieldContext> getFacetIntervals()
+    public List<GenericFacetResponse> getFacets()
     {
-        return facetIntervals;
+        return facets;
     }
 
     public List<FacetFieldContext> getFacetsFields()

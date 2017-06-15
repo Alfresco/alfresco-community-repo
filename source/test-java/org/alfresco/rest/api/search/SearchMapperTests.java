@@ -34,6 +34,13 @@ import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESC
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.alfresco.rest.api.search.context.SearchRequestContext;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.impl.StoreMapper;
@@ -1000,12 +1007,17 @@ public class SearchMapperTests
         assertEquals(searchParameters.getRanges(), rangeParams);
         
         rangeParams.clear();
-        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true,"before","lower",null,null));
+        List<String> includes = new ArrayList<String>();
+        includes.add("lower");
+        List<String> other = new ArrayList<String>();
+        includes.add("before");
+        
+        rangeParams.add(new RangeParameters("content.size", "0", "100000", "1000",true, other,includes,null,null));
         searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRanges(), rangeParams);
         
         //Assert multiple ranges
-        rangeParams.add(new RangeParameters("created", "2015-09-29T10:45:15.729Z", "2016-09-29T10:45:15.729Z", "+100DAY", true, "before", "lower", null, null));
+        rangeParams.add(new RangeParameters("created", "2015-09-29T10:45:15.729Z", "2016-09-29T10:45:15.729Z", "+100DAY", true, other, includes, null, null));
         searchMapper.fromRange(searchParameters, rangeParams);
         assertEquals(searchParameters.getRanges(), rangeParams);
         assertEquals(2,searchParameters.getRanges().size());

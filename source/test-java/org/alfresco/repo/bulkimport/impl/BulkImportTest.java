@@ -25,28 +25,6 @@
  */
 package org.alfresco.repo.bulkimport.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.nio.charset.Charset;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
-
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
@@ -69,6 +47,31 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @since 4.0
@@ -665,7 +668,35 @@ public class BulkImportTest extends AbstractBulkImportTests
          Files.deleteIfExists(destFile);
          Files.deleteIfExists(dest);
     }
-    
+
+    /**
+     * Simplifies calling {@ResourceUtils.getFile} so that a {@link RuntimeException}
+     * is thrown rather than a checked {@link FileNotFoundException} exception.
+     *
+     * @param resourceName e.g. "classpath:folder/file"
+     * @return File object
+     */
+    private File resourceAsFile(String resourceName)
+    {
+        try
+        {
+            return ResourceUtils.getFile(resourceName);
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new RuntimeException("Resource "+resourceName+" not found", e);
+        }
+    }
+
+    @Test
+    public void canVersionDocsWithoutSpecialInputFileNameExtension()
+            throws HeuristicMixedException, IOException, SystemException,
+            HeuristicRollbackException, NotSupportedException, RollbackException
+    {
+        testCanVersionDocsWithoutSpecialInputFileNameExtension(file ->
+            streamingNodeImporterFactory.getNodeImporter(resourceAsFile("classpath:bulkimport-autoversion/"+file)));
+    }
+
     private void unpack(Path source, Path destFile)
     {
         Path archive = source.resolve("testbulk.gz");

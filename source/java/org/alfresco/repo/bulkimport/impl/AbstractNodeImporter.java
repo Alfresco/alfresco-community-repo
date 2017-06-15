@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.bulkimport.BulkFilesystemImporter;
+import org.alfresco.repo.bulkimport.BulkImportParameters;
 import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.MetadataLoader;
@@ -99,7 +100,7 @@ public abstract class AbstractNodeImporter implements NodeImporter
         this.behaviourFilter = behaviourFilter;
     }
 
-    protected abstract NodeRef importImportableItemImpl(ImportableItem importableItem, boolean replaceExisting);
+    protected abstract NodeRef importImportableItemImpl(ImportableItem importableItem, BulkImportParameters.ExistingFileMode existingFileMode);
     protected abstract void importContentAndMetadata(NodeRef nodeRef, ImportableItem.ContentAndMetadata contentAndMetadata, MetadataLoader.Metadata metadata);
 
     /*
@@ -181,11 +182,19 @@ public abstract class AbstractNodeImporter implements NodeImporter
         return(result);
     }
 
-    protected final int importImportableItemFile(NodeRef nodeRef, ImportableItem importableItem, MetadataLoader.Metadata metadata, NodeState nodeState)
+    protected final int importImportableItemFile(NodeRef nodeRef, ImportableItem importableItem, MetadataLoader.Metadata metadata, NodeState nodeState, BulkImportParameters.ExistingFileMode existingFileMode)
     {
         int result = 0;
 
-        if (importableItem.hasVersionEntries())
+        if (nodeState == NodeState.REPLACED && existingFileMode == BulkImportParameters.ExistingFileMode.ADD_VERSION)
+        {
+            // It is being replaced, and ADD_VERSION is the selected method of dealing with overwrites.
+            Map<QName, Serializable> versionProperties = new HashMap<>();
+            versionProperties.put(ContentModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+            versionService.ensureVersioningEnabled(nodeRef, versionProperties);
+            result = importContentVersions(nodeRef, importableItem, nodeState);
+        }
+        else if (importableItem.hasVersionEntries())
         {
             result = importContentVersions(nodeRef, importableItem, nodeState);
         }
@@ -242,9 +251,18 @@ public abstract class AbstractNodeImporter implements NodeImporter
         return(result);
     }
 
-    protected final Triple<NodeRef, Boolean, NodeState> createOrFindNode(NodeRef target, ImportableItem importableItem,
-            boolean replaceExisting, MetadataLoader.Metadata metadata)
+    // TODO: this is a confusing method that does too many things. It doesn't just "create or find"
+    // but also decides whether an existing node (i.e. the 'find' in 'create or find') WILL BE
+    // skipped or replaced further on in the calling code.
+    // TODO: refactor?
+    protected final Triple<NodeRef, Boolean, NodeState> createOrFindNode(
+            NodeRef target, ImportableItem importableItem,
+            BulkImportParameters.ExistingFileMode existingFileMode, MetadataLoader.Metadata metadata)
     {
+        // ADD_VERSION isn't strictly a replacement option, but we need to deal with it as such, at least as an
+        // interim measure while the new ExistingFileMode options are introduced (MNT-17703)
+        boolean replaceExisting = (existingFileMode == BulkImportParameters.ExistingFileMode.REPLACE ||
+                existingFileMode == BulkImportParameters.ExistingFileMode.ADD_VERSION);
         Triple<NodeRef, Boolean, NodeState> result      = null;
         boolean                             isDirectory = false;
         NodeState                           nodeState   = replaceExisting ? NodeState.REPLACED : NodeState.SKIPPED;
@@ -424,14 +442,14 @@ public abstract class AbstractNodeImporter implements NodeImporter
         return(result);
     }
 
-    public NodeRef importImportableItem(ImportableItem importableItem, boolean replaceExisting)
+    public NodeRef importImportableItem(ImportableItem importableItem, BulkImportParameters.ExistingFileMode existingFileMode)
     {
         if(logger.isDebugEnabled())
         {
             logger.debug("Importing " + String.valueOf(importableItem));
         }
 
-        NodeRef nodeRef = importImportableItemImpl(importableItem, replaceExisting);
+        NodeRef nodeRef = importImportableItemImpl(importableItem, existingFileMode);
 
         // allow parent to be garbage collected
         //importableItem.setParent(null);

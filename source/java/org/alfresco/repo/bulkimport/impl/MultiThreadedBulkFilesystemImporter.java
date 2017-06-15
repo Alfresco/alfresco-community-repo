@@ -126,7 +126,7 @@ public abstract class MultiThreadedBulkFilesystemImporter extends AbstractBulkFi
 		                {
 		                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
 
-		                    NodeRef nodeRef = nodeImporter.importImportableItem(importableItem, bulkImportParameters.isReplaceExisting());
+		                    NodeRef nodeRef = nodeImporter.importImportableItem(importableItem, bulkImportParameters.getExistingFileMode());
 		                    filesystemTracker.itemImported(nodeRef, importableItem);
 		                }
 		                finally

@@ -29,8 +29,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 public class BulkImportParameters
 {
+	// MNT-17703: Provide configurable behaviour for when the target file already exists in the repository.
+	public enum ExistingFileMode
+	{
+		// If the file already exists...
+		SKIP,          // skip the import from the source.
+		REPLACE,       // replace the file, loosing any previous version history.
+		ADD_VERSION    // create a new version of the file during import, preserving previous history.
+	};
+
+	private ExistingFileMode existingFileMode = ExistingFileMode.SKIP;
 	private NodeRef target;
-	private boolean replaceExisting = false;
 	private Integer batchSize;
 	private Integer numThreads;
 	private Integer loggingInterval;
@@ -60,14 +69,6 @@ public class BulkImportParameters
 	{
 		this.target = target;
 	}
-	public boolean isReplaceExisting()
-	{
-		return replaceExisting;
-	}
-	public void setReplaceExisting(boolean replaceExisting)
-	{
-		this.replaceExisting = replaceExisting;
-	}
 	public Integer getBatchSize()
 	{
 		return batchSize;
@@ -84,5 +85,40 @@ public class BulkImportParameters
 	{
 		this.numThreads = numThreads;
 	}
-	
+
+	/**
+	 * @deprecated Use {@link #getExistingFileMode} (MNT-17703)
+	 * @return
+	 */
+	public boolean isReplaceExisting()
+	{
+		return existingFileMode == ExistingFileMode.REPLACE;
+	}
+
+	/**
+	 * @deprecated Use {@link #setExistingFileMode} (MNT-17703)
+	 * @param replaceExisting
+	 */
+	@Deprecated()
+	public void setReplaceExisting(boolean replaceExisting)
+	{
+		if (replaceExisting)
+		{
+			setExistingFileMode(ExistingFileMode.REPLACE);
+		}
+		else
+		{
+			setExistingFileMode(ExistingFileMode.SKIP);
+		}
+	}
+
+	public ExistingFileMode getExistingFileMode()
+	{
+		return existingFileMode;
+	}
+
+	public void setExistingFileMode(ExistingFileMode existingFileMode)
+	{
+		this.existingFileMode = existingFileMode;
+	}
 }

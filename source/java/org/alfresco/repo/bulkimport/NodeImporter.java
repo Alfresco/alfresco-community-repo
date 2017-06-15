@@ -37,6 +37,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface NodeImporter
 {
-    public NodeRef importImportableItem(ImportableItem importableItem, boolean replaceExisting);
+    public NodeRef importImportableItem(ImportableItem importableItem, BulkImportParameters.ExistingFileMode existingFileMode);
     public File getSourceFolder();
 }

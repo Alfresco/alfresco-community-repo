@@ -151,6 +151,11 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
         {
             return;
         }
+        // MNT-15365 No rule applying on working copies
+        if (nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            return;
+        }
     	// Do not trigger rules for rule and action type nodes
     	if (ignoreTrigger(actionedUponNodeRef) == false)
     	{

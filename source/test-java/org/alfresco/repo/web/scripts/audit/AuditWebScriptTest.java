@@ -29,19 +29,26 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.AuditServiceImpl;
 import org.alfresco.repo.audit.UserAuditFilter;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.GUID;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.experimental.categories.Category;
@@ -63,14 +70,23 @@ public class AuditWebScriptTest extends BaseWebScriptTest
 {
     private static final String APP_REPOTEST_NAME = "AlfrescoRepositoryTest";
     private static final String APP_REPOTEST_PATH = "/repositorytest";
+    private static final String APP_SEARCHTEST_NAME = "SearchAudit";
+    private static final String APP_SEARCHTEST_PATH = "/searchaudit";
 
     private ApplicationContext ctx;
     private AuditService auditService;
+    private SearchService searchService;
     private AuthenticationService authenticationService;
+    private FileFolderService fileFolderService;
+    private Repository repositoryHelper;
+    
     private String admin;
     private boolean wasGloballyEnabled;
     boolean wasRepoEnabled;
-
+    private boolean wasSearchEnabled;
+    
+    private NodeRef testRoot;
+    
     @Override
     protected void setUp() throws Exception
     {
@@ -86,18 +102,24 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         auditServiceImpl.setAuditComponent(auditComponent);
         authenticationService = (AuthenticationService) ctx.getBean("AuthenticationService");
         auditService = (AuditService) ctx.getBean("AuditService");
+        searchService = (SearchService) ctx.getBean("SearchService");
+        repositoryHelper = (Repository)getServer().getApplicationContext().getBean("repositoryHelper");
+        fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
         admin = AuthenticationUtil.getAdminUserName();
 
-        // Register the test model
+        // Register the test models
         AuditModelRegistryImpl auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-repository.xml");
+        URL testModelUrl1 = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-mnt-16748.xml");
         auditModelRegistry.registerModel(testModelUrl);
+        auditModelRegistry.registerModel(testModelUrl1);
         auditModelRegistry.loadAuditModels();
         
         AuthenticationUtil.setFullyAuthenticatedUser(admin);
         
         wasGloballyEnabled = auditService.isAuditEnabled();
         wasRepoEnabled = auditService.isAuditEnabled(APP_REPOTEST_NAME, APP_REPOTEST_PATH);
+        wasSearchEnabled = auditService.isAuditEnabled(APP_SEARCHTEST_NAME, APP_SEARCHTEST_PATH);
         // Only enable if required
         if (!wasGloballyEnabled)
         {
@@ -115,6 +137,15 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             if (!wasRepoEnabled)
             {
                 fail("Failed to enable repo audit for test");
+            }
+        }
+        if (!wasSearchEnabled)
+        {
+            auditService.enableAudit(APP_SEARCHTEST_NAME, APP_SEARCHTEST_PATH);
+            wasSearchEnabled = auditService.isAuditEnabled(APP_SEARCHTEST_NAME, APP_SEARCHTEST_PATH);
+            if (!wasSearchEnabled)
+            {
+                fail("Failed to enable search audit for test");
             }
         }
     }
@@ -149,6 +180,21 @@ public class AuditWebScriptTest extends BaseWebScriptTest
         catch (Throwable e)
         {
             throw new RuntimeException("Failed to set repo audit back to enabled/disabled state", e);
+        }
+        try
+        {
+            if (wasSearchEnabled)
+            {
+                auditService.enableAudit(APP_SEARCHTEST_NAME, APP_SEARCHTEST_PATH);
+            }
+            else
+            {
+                auditService.disableAudit(APP_SEARCHTEST_NAME, APP_SEARCHTEST_PATH);
+            }
+        }
+        catch (Throwable e)
+        {
+            throw new RuntimeException("Failed to set search audit back to enabled/disabled state", e);
         }
     }
     
@@ -210,7 +256,7 @@ public class AuditWebScriptTest extends BaseWebScriptTest
 
         String url = "/api/audit/control/" + APP_REPOTEST_NAME + APP_REPOTEST_PATH;
         TestWebScriptServer.GetRequest req = new TestWebScriptServer.GetRequest(url);
-        
+
         if (wasEnabled)
         {
             Response response = sendRequest(req, Status.STATUS_OK, admin);
@@ -225,12 +271,46 @@ public class AuditWebScriptTest extends BaseWebScriptTest
             assertEquals("Mismatched application audit name", APP_REPOTEST_NAME, appName);
             assertEquals("Mismatched application audit path", APP_REPOTEST_PATH, appPath);
         }
-        else
-        {
-            
-        }
     }
-    
+
+    public void testGetAuditSearchService() throws Exception
+    {
+        // Delete search audit entries (if any)
+        String url = "/api/audit/clear/" + APP_SEARCHTEST_NAME;
+        TestWebScriptServer.PostRequest postReq = new TestWebScriptServer.PostRequest(url, "", MimetypeMap.MIMETYPE_JSON);
+        Response response = sendRequest(postReq, Status.STATUS_OK, admin);
+        JSONObject json = new JSONObject(response.getContentAsString());
+        assertTrue(json.getInt(AbstractAuditWebScript.JSON_KEY_CLEARED) >= 0);
+
+        // create a file
+        this.testRoot = this.repositoryHelper.getCompanyHome();
+        String filename = "test_doc" + GUID.generate() + ".txt";
+        NodeRef testFile = this.fileFolderService.create(this.testRoot, filename, ContentModel.TYPE_CONTENT).getNodeRef();
+
+        // search the newly created file
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+        sp.setQuery("=cm:name:" + filename);
+        sp.addStore(testFile.getStoreRef());
+        searchService.query(sp);
+
+        // construct the get audit request
+        url = "/api/audit/query/" + APP_SEARCHTEST_NAME + "/searchaudit/queryX/searchParametersX?verbose=true";
+        TestWebScriptServer.GetRequest getReq = new TestWebScriptServer.GetRequest(url);
+
+        response = sendRequest(getReq, Status.STATUS_OK, admin);
+        json = new JSONObject(response.getContentAsString());
+
+        JSONArray jsonEntries = json.getJSONArray(AbstractAuditWebScript.JSON_KEY_ENTRIES);
+        assertEquals("Incorrect number of entries reported", 1, jsonEntries.length());
+
+        JSONObject values = (JSONObject) ((JSONObject) jsonEntries.get(0)).get(AbstractAuditWebScript.JSON_KEY_ENTRY_VALUES);
+        assertTrue("Audit entry was not found", values.toString(0).contains("query==cm:name:" + filename));
+
+        // clear audit entries for the application
+        auditService.clearAudit(APP_SEARCHTEST_NAME, null, null);
+    }
+
     public void testSetAuditEnabledRepo() throws Exception
     {
         boolean wasEnabled = auditService.isAuditEnabled(APP_REPOTEST_NAME, APP_REPOTEST_PATH);

@@ -29,6 +29,7 @@ package org.alfresco.rest.api.search.model;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.IntervalParameters;
+import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -58,8 +59,10 @@ public class SearchQuery
     private final IntervalParameters facetIntervals;
     private final boolean includeRequest;
     private final List<Pivot> pivots;
+    private final List<StatsRequestParameters> stats;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,null, null, null, null,null, null, null, null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null, null,
+                null,null, null, null, null,null, null, null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -78,7 +81,8 @@ public class SearchQuery
                 @JsonProperty("limits")Limits limits,
                 @JsonProperty("highlight")GeneralHighlightParameters highlight,
                 @JsonProperty("facetIntervals")IntervalParameters facetIntervals,
-                @JsonProperty("pivots") List<Pivot> pivots)
+                @JsonProperty("pivots") List<Pivot> pivots,
+                @JsonProperty("stats") List<StatsRequestParameters> stats)
     {
         this.query = query;
         this.includeRequest = includeRequest==null?false:includeRequest;
@@ -97,6 +101,7 @@ public class SearchQuery
         this.highlight = highlight;
         this.facetIntervals = facetIntervals;
         this.pivots = pivots;
+        this.stats = stats;
     }
 
     public Query getQuery()
@@ -181,5 +186,10 @@ public class SearchQuery
     public List<Pivot> getPivots()
     {
         return pivots;
+    }
+
+    public List<StatsRequestParameters> getStats()
+    {
+        return stats;
     }
 }

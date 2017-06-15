@@ -62,6 +62,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -585,16 +586,87 @@ public class SearchMapperTests
     }
 
     @Test
+    public void fromStats() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchMapper.fromStats(searchParameters, null);
+
+        List<StatsRequestParameters> statsRequestParameters = new ArrayList<>(1);
+        statsRequestParameters.add(new StatsRequestParameters(null, null, null, null, null,null, null, null, null,null, null, null,null, null, null, null));
+
+        try
+        {
+          searchMapper.fromStats(searchParameters, statsRequestParameters);
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("field is a mandatory parameter"));
+        }
+
+        statsRequestParameters.clear();
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null,null, null, null, null,null, null, null, null,null, null, null, null));
+        searchMapper.fromStats(searchParameters, statsRequestParameters);
+        assertEquals(1 ,searchParameters.getStats().size());
+
+        statsRequestParameters.clear();
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(3.4f, 12f, 10f), null, null,null, null, null, null,null, null, null,null, null, null, null));
+        searchMapper.fromStats(searchParameters, statsRequestParameters);
+        assertEquals(1 ,searchParameters.getStats().size());
+
+        statsRequestParameters.clear();
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(-3.4f), null, null,null, null, null, null,null, null, null,null, null, null, null));
+
+        try
+        {
+          searchMapper.fromStats(searchParameters, statsRequestParameters);
+        }
+        catch (IllegalArgumentException iae)
+        {
+          assertTrue(iae.getLocalizedMessage().contains("Invalid percentile -3.4"));
+        }
+
+        statsRequestParameters.clear();
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", Arrays.asList(101f),null, null,null, null, null, null,null, null,  null,null, null, null, null));
+
+        try
+        {
+            searchMapper.fromStats(searchParameters, statsRequestParameters);
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("Invalid percentile 101"));
+        }
+
+        statsRequestParameters.clear();
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null,null, null, null, null,null, null, null, null,null, true, 12f, null));
+        try
+        {
+            searchMapper.fromStats(searchParameters, statsRequestParameters);
+        }
+        catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("Invalid cardinality accuracy 12.0"));
+        }
+
+        statsRequestParameters.clear();
+        statsRequestParameters.add(new StatsRequestParameters("cm:content", "myLabel", null, null,null, null, null, null,null, null, null, null,null, null, 12f, null));
+        searchMapper.fromStats(searchParameters, statsRequestParameters);
+        //cardinality is ignored if not true
+        assertEquals(1 ,searchParameters.getStats().size());
+
+    }
+
+    @Test
     public void fromPivot() throws Exception
     {
         SearchParameters searchParameters = new SearchParameters();
-        searchMapper.fromPivot(searchParameters,null, null, null);
+        searchMapper.fromPivot(searchParameters, null, null, null, null);
 
         List<FacetField> facets = new ArrayList<>(1);
         facets.add(new FacetField("myfield",null,null,null,null,null,null,null,null,null,null));
         FacetFields ff = new FacetFields(facets);
         searchMapper.fromFacetFields(searchParameters,ff);
-        searchMapper.fromPivot(searchParameters,ff, null, null);
+        searchMapper.fromPivot(searchParameters, null, ff, null, null);
         assertEquals(1 ,searchParameters.getFieldFacets().size());
         assertEquals(0 ,searchParameters.getPivots().size());
 
@@ -603,7 +675,7 @@ public class SearchMapperTests
 
         try
         {
-            searchMapper.fromPivot(searchParameters,ff, Arrays.asList(new Pivot(null)), null);
+            searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot(null)), null);
             fail();
         }
         catch (IllegalArgumentException iae)
@@ -614,7 +686,7 @@ public class SearchMapperTests
 
         try
         {
-            searchMapper.fromPivot(searchParameters,ff, Arrays.asList(new Pivot("")), null);
+            searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot("")), null);
             fail();
         }
         catch (IllegalArgumentException iae)
@@ -623,20 +695,25 @@ public class SearchMapperTests
             assertNotNull(iae);
         }
 
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
+
+        //"bob" doesn't refer to a field facet but its the last one so lets be kind
+        searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot("bob")), searchRequestContext);
+
         try
         {
-            searchMapper.fromPivot(searchParameters,ff, Arrays.asList(new Pivot("bob")), null);
+            searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot("ken"),new Pivot("bob")), searchRequestContext);
             fail();
         }
         catch (InvalidArgumentException iae)
         {
-            //"bob" doesn't refer to a field facet
+            //"ken" doesn't refer to a field facet and its not the last one
             assertNotNull(iae);
         }
 
         searchParameters = new SearchParameters();
-        SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
-        searchMapper.fromPivot(searchParameters,ff, Arrays.asList(new Pivot("myfield")), searchRequestContext);
+
+        searchMapper.fromPivot(searchParameters, null, ff, Arrays.asList(new Pivot("myfield")), searchRequestContext);
         searchMapper.fromFacetFields(searchParameters,ff);
         //Moved from a field facet to a pivot
         assertEquals(0 ,searchParameters.getFieldFacets().size());
@@ -717,7 +794,7 @@ public class SearchMapperTests
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
         return sq;
     }
     @Test

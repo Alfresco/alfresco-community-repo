@@ -29,11 +29,14 @@ package org.alfresco.rest.api.search.impl;
 import static org.alfresco.rest.api.search.impl.StoreMapper.DELETED;
 import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
 import static org.alfresco.rest.api.search.impl.StoreMapper.VERSIONS;
+import com.sun.javafx.font.Metrics;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericBucket;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse.FACET_TYPE;
-import org.alfresco.repo.search.impl.solr.facet.facetsresponse.MetricCount;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric.METRIC_TYPE;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.SimpleMetric;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.rest.api.DeletedNodes;
@@ -318,8 +321,10 @@ public class ResultMapper
         Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
         facets.addAll(getGenericFacetsForIntervals(facetInterval, searchQuery));
 
-        List<GenericFacetResponse> pimped = getPivots(searchRequestContext, solrResultSet.getPivotFacets());
+        List<GenericFacetResponse> stats = getFieldStats(searchRequestContext, solrResultSet.getStats());
+        List<GenericFacetResponse> pimped = getPivots(searchRequestContext, solrResultSet.getPivotFacets(), stats);
         facets.addAll(pimped);
+        facets.addAll(stats);
 
         //Spelling
         SpellCheckResult spell = solrResultSet.getSpellCheckResult();
@@ -332,6 +337,7 @@ public class ResultMapper
         context = new SearchContext(solrResultSet.getLastIndexedTxId(), facets, facetResults, ffcs, spellCheckContext, searchRequestContext.includeRequest()?searchQuery:null);
         return isNullContext(context)?null:context;
     }
+
     /**
      * Builds a facet field from facet queries.
      * @param facetQueries
@@ -376,7 +382,23 @@ public class ResultMapper
         return facetResults;
     }
 
-    protected List<GenericFacetResponse> getPivots(SearchRequestContext searchRequest, List<GenericFacetResponse> pivots)
+    protected List<GenericFacetResponse> getFieldStats(SearchRequestContext searchRequestContext, Map<String, List<Metric>> stats)
+    {
+        if(stats != null && !stats.isEmpty())
+        {
+            return stats.entrySet().stream().map(statsFieldEntry -> {
+               return new GenericFacetResponse(FACET_TYPE.stats, statsFieldEntry.getKey(),
+                           Arrays.asList(new GenericBucket(null,null, null,
+                                       statsFieldEntry.getValue(), null)) );
+            }
+            ).collect(Collectors.toList());
+        }
+
+        return Collections.emptyList();
+    }
+
+    protected List<GenericFacetResponse> getPivots(SearchRequestContext searchRequest, List<GenericFacetResponse> pivots,
+                List<GenericFacetResponse> stats)
     {
         if(pivots != null && !pivots.isEmpty())
         {
@@ -386,11 +408,20 @@ public class ResultMapper
 
                 String pivotLabel = pivotKeys.containsKey(aFacet.getLabel())?pivotKeys.get(aFacet.getLabel()):aFacet.getLabel();
 
-                List<GenericBucket> bucks = aFacet.getBuckets().stream().map(genericBucket -> {
+                //can reference, facetfield, the last one can be rangefacet, facetquery or stats
+                List<GenericBucket> bucks = new ArrayList<>();
+                Optional<GenericFacetResponse> foundStat = stats.stream().filter(
+                            aStat -> aStat.getLabel().equals(pivotLabel)).findFirst();
+                if (foundStat.isPresent())
+                {
+                   bucks.add(foundStat.get().getBuckets().get(0));
+                   stats.remove(foundStat.get());
+                }
+                bucks.addAll(aFacet.getBuckets().stream().map(genericBucket -> {
                     Object display = propertyLookup.lookup(aFacet.getLabel(), genericBucket.getLabel());
                     return new GenericBucket(genericBucket.getLabel(), genericBucket.getFilterQuery(),
-                                display,genericBucket.getMetrics(), getPivots(searchRequest, genericBucket.getFacets()));
-                }).collect(Collectors.toList());
+                                display,genericBucket.getMetrics(), getPivots(searchRequest, genericBucket.getFacets(), stats));
+                }).collect(Collectors.toList()));
 
                 return new GenericFacetResponse(aFacet.getType(), pivotLabel, bucks);
             }).collect(Collectors.toList());
@@ -476,7 +507,7 @@ public class ResultMapper
                                 }
                             }
                         }
-                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , Arrays.asList(new MetricCount(buck.getSecond())), null);
+                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(buck.getSecond()))), null);
                         buckets.add(bucket);
                     }
                     ffcs.add(new GenericFacetResponse(FACET_TYPE.interval, facet.getKey(), buckets));

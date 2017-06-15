@@ -166,6 +166,10 @@ public class SearchQuerySerializerTests
 
         assertEquals(1,searchQuery.getPivots().size());
         assertEquals("mylabel",searchQuery.getPivots().get(0).getKey());
+
+        assertEquals(1,searchQuery.getStats().size());
+        assertEquals("cm:creator",searchQuery.getStats().get(0).getField());
+        assertEquals("mylabel",searchQuery.getStats().get(0).getLabel());
     }
 
     @Test

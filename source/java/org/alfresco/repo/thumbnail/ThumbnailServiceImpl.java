@@ -39,6 +39,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -212,6 +216,12 @@ public class ThumbnailServiceImpl implements ThumbnailService,
                 NodeServicePolicies.OnDeleteNodePolicy.QNAME,
                 ContentModel.TYPE_THUMBNAIL,
                 new JavaBehaviour(this, "onDeleteNode", Behaviour.NotificationFrequency.EVERY_EVENT));
+
+        // Register copy class behaviour
+        this.policyComponent.bindClassBehaviour(
+                CopyServicePolicies.OnCopyNodePolicy.QNAME,
+                ContentModel.ASPECT_THUMBNAIL_MODIFICATION,
+                new JavaBehaviour(this, "getCopyCallback"));
 
         transactionListener = new ThumbnailTransactionListenerAdapter();
     }
@@ -927,5 +937,15 @@ public class ThumbnailServiceImpl implements ThumbnailService,
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
+    }
+
+    /**
+     * See init - eg. registers "do nothing" copy behaviour for "cm:thumbnailModification" aspect
+     * 
+     * @return          Returns {@link DoNothingCopyBehaviourCallback}
+     */
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return DoNothingCopyBehaviourCallback.getInstance();
     }
 }

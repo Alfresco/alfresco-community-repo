@@ -31,7 +31,7 @@
         <!-- Take the entire post-call data for 'SearchService.query' method and route it to '/searchaudit/query'-->
         <PathMap source="/alfresco-api/post/SearchService/query" target="/searchaudit/query" />
     </PathMappings>
- 
+
     <Application name="SearchAudit" key="searchaudit">
         <AuditPath key="queryX">
             <RecordValue key="storeX" dataExtractor="simpleValue"
@@ -40,6 +40,8 @@
                         dataSource="/searchaudit/query/args/language" dataTrigger="/searchaudit/query/no-error" />
             <RecordValue key="queryX" dataExtractor="simpleValue"
                         dataSource="/searchaudit/query/args/query" dataTrigger="/searchaudit/query/no-error" />
+            <RecordValue key="searchParametersX" dataExtractor="simpleValue"
+                        dataSource="/searchaudit/query/args/searchParameters" dataTrigger="/searchaudit/query/no-error" />
         </AuditPath>
     </Application>
 

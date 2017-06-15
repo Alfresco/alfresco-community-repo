@@ -63,7 +63,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"facetFields\": {\"facets\": [{\"field\": \"cm:creator\",\"prefix\": \"myquery2\",\"sort\": \"COUNT\",\"missing\": \"false\"}, {\"field\": \"modifier\",\"label\": \"mylabel\",\"method\": \"FC\",\"mincount\": \"5\"}]},"
                 + "\"facetQueries\": [{\"query\": \"cm:created:bob\",\"label\": \"small\"}],"
                 + "\"facetIntervals\": {\"sets\": [{ \"label\": \"king\", \"start\": \"1\", \"end\": \"2\",\"startInclusive\": true,\"endInclusive\": false}]"
-                + ",\"intervals\": [{\"field\": \"creator\",\"label\": \"Creator\","
+                + ",\"intervals\": [{\"field\": \"cm:creator\",\"label\": \"creator\","
                 + "\"sets\": [{\"label\": \"last\",\"start\": \"a\",\"end\": \"b\",\"startInclusive\": false}]"
                 + "}]},"
                 + "\"spellcheck\": {\"query\": \"alfrezco\"},"

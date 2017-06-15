@@ -25,19 +25,25 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import static org.alfresco.util.SearchDateConversion.parseDateInterval;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.index.shard.Floc;
 import org.alfresco.repo.index.shard.ShardInstance;
 import org.alfresco.repo.index.shard.ShardRegistry;
+import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.search.impl.lucene.JSONResult;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.search.impl.lucene.SolrJsonProcessor;
 import org.alfresco.repo.search.impl.lucene.SolrStatsResult;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -105,6 +111,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
 {
     static Log s_logger = LogFactory.getLog(SolrQueryHTTPClient.class);
 
+    private DictionaryService dictionaryService;
+
     private NodeService nodeService;
 
     private PermissionService permissionService;
@@ -141,6 +149,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     
     private int defaultShardedFacetLimit = 20;
 
+    private NamespaceDAO namespaceDAO;
+
     public SolrQueryHTTPClient()
     {
     }
@@ -153,7 +163,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         PropertyCheck.mandatory(this, "LanguageMappings", languageMappings);
         PropertyCheck.mandatory(this, "StoreMappings", storeMappings);
         PropertyCheck.mandatory(this, "RepositoryState", repositoryState);
-
+        PropertyCheck.mandatory(this, "namespaceDAO", namespaceDAO);
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
     }
 
     public void setAlternativeDictionary(String alternativeDictionary)
@@ -190,6 +201,16 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    public void setNamespaceDAO(NamespaceDAO namespaceDAO)
+    {
+        this.namespaceDAO = namespaceDAO;
     }
 
     public void setShardRegistry(ShardRegistry shardRegistry)
@@ -810,6 +831,15 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                 {
                     url.append("&facet.interval=");
                     String intervalField = interval.getField();
+                    boolean isDate = false;
+
+                    PropertyDefinition propertyDef = QueryParserUtils.matchPropertyDefinition(searchParameters.getNamespace(),
+                                namespaceDAO, dictionaryService, interval.getField());
+                    if (propertyDef.getDataType().getName().equals(DataTypeDefinition.DATETIME)
+                                || propertyDef.getDataType().getName().equals(DataTypeDefinition.DATE))
+                    {
+                        isDate = true;
+                    }
 
                     if (interval.getLabel() != null && !interval.getLabel().isEmpty())
                     {
@@ -822,7 +852,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
                     {
                         for (IntervalSet aSet:interval.getSets())
                         {
-                            url.append("&").append(encoder.encode("f."+intervalField+".facet.interval.set", "UTF-8")).append("=").append(encoder.encode(aSet.toParam(), "UTF-8"));
+                            IntervalSet validated = parseDateInterval(aSet,isDate);
+                            url.append("&").append(encoder.encode("f."+intervalField+".facet.interval.set", "UTF-8")).append("=").append(encoder.encode(validated.toParam(), "UTF-8"));
                         }
                     }
                 }

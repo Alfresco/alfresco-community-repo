@@ -25,22 +25,45 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import static org.alfresco.service.namespace.NamespaceService.CONTENT_MODEL_PREFIX;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.notNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.RepositoryState;
+import org.alfresco.repo.dictionary.NamespaceDAO;
+import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
+import org.alfresco.service.cmr.search.Interval;
+import org.alfresco.service.cmr.search.IntervalParameters;
+import org.alfresco.service.cmr.search.IntervalSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsParameters;
+import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.net.URLCodec;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,28 +80,53 @@ import org.junit.Test;
  */
 public class SolrQueryHTTPClientTest
 {
-  
-    static Map<String, String> languageMappings;
-    
+    static SolrQueryHTTPClient client = new SolrQueryHTTPClient();
+    static URLCodec encoder = new URLCodec();
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
     {
-        languageMappings = new HashMap<String, String>();
+        Map<String, String> languageMappings = new HashMap<String, String>();
         languageMappings.put("solr-alfresco", "alfresco");
         languageMappings.put("solr-fts-alfresco", "afts");
         languageMappings.put("solr-cmis", "cmis");
-    }
 
-    @Before
-    public void setUp() throws Exception
-    {
+        NamespaceDAO namespaceDAO = mock(NamespaceDAO.class);
+        DictionaryService dictionaryService = mock(DictionaryService.class);
+
+        when(namespaceDAO.getPrefixes()).thenReturn(Arrays.asList(CONTENT_MODEL_PREFIX, "exif"));
+        when(namespaceDAO.getNamespaceURI(anyString())).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
+
+        when(dictionaryService.getProperty(notNull(QName.class))).thenAnswer(invocation ->
+        {
+            Object[] args = invocation.getArguments();
+            QName qName = (QName)args[0];
+            if (qName.getLocalName().contains("created"))
+            {
+                return MockClassAttributeDefinition.mockPropertyDefinition(qName, DataTypeDefinition.DATE);
+            }
+            else
+            {
+                return MockClassAttributeDefinition.mockPropertyDefinition(qName, DataTypeDefinition.ANY);
+            }
+
+        });
+
+        client.setLanguageMappings(languageMappings);
+        client.setDictionaryService(dictionaryService);
+        client.setNamespaceDAO(namespaceDAO);
+
+        //required for init() but not used.
+        client.setNodeService(mock(NodeService.class));
+        client.setTenantService(mock(TenantService.class));
+        client.setStoreMappings(Collections.emptyList());
+        client.setRepositoryState(mock(RepositoryState.class));
+        client.init();
     }
 
     @Test
     public void testBuildStatsUrl() throws UnsupportedEncodingException
     {
-        SolrQueryHTTPClient client = new SolrQueryHTTPClient();
-        client.setLanguageMappings(languageMappings);
         StatsParameters params = getParameters();
         String url = client.buildStatsUrl(params, "http://localhost:8080/solr/alfresco/select", Locale.CANADA_FRENCH, null);
         assertNotNull(url);
@@ -91,7 +139,7 @@ public class SolrQueryHTTPClientTest
     @Test
     public void testBuildStatsBody() throws JSONException
     {
-        SolrQueryHTTPClient client = new SolrQueryHTTPClient();
+
         StatsParameters params = getParameters();
         JSONObject body = client.buildStatsBody(params, "myTenant", Locale.US);
         assertNotNull(body);
@@ -108,7 +156,6 @@ public class SolrQueryHTTPClientTest
 
         StringBuilder luceneQuery = new StringBuilder();
         luceneQuery.append(" +TYPE:\"" + ContentModel.TYPE_CONTENT + "\"");
-        
         String filterQuery = "ANCESTOR:\"workspace://SpacesStore/a1c1a0a1-9d68-4912-b853-b3b277f31288\"";
         StatsParameters params = new StatsParameters(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO, luceneQuery.toString(), filterQuery, false);
         params.addSort(new SortDefinition(SortDefinition.SortType.FIELD, "contentsize", false));
@@ -122,9 +169,6 @@ public class SolrQueryHTTPClientTest
     @Test
     public void testBuildHighlightQuery() throws UnsupportedEncodingException
     {
-        SolrQueryHTTPClient client = new SolrQueryHTTPClient();
-        client.setLanguageMappings(languageMappings);
-        URLCodec encoder = new URLCodec();
         SearchParameters params = new SearchParameters();
         params.setSearchTerm("bob");
         StringBuilder urlBuilder = new StringBuilder();
@@ -191,7 +235,47 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains("&f.title.hl.simple.pre="+encoder.encode("*", "UTF-8")));
         assertTrue(url.contains("&f.title.hl.simple.post="+encoder.encode("¿", "UTF-8")));
 
+    }
 
+    @Test
+    public void testBuildFacetIntervalQuery() throws UnsupportedEncodingException
+    {
+        SearchParameters params = new SearchParameters();
+        params.setSearchTerm("bob");
+
+        IntervalSet intervalSet = new IntervalSet("8", "12", null, null, null);
+        params.setInterval(new IntervalParameters(Arrays.asList(intervalSet), null));
+        StringBuilder urlBuilder = new StringBuilder();
+        client.buildFacetIntervalParameters(params, encoder, urlBuilder);
+        String url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains(encoder.encode("{!afts}[8,12]", "UTF-8")));
+
+        intervalSet = new IntervalSet("1", "10", "numbers", false, true);
+        params.setInterval(new IntervalParameters(Arrays.asList(intervalSet), null));
+        urlBuilder = new StringBuilder();
+        client.buildFacetIntervalParameters(params, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains(encoder.encode("{!afts key=numbers}(1,10]", "UTF-8")));
+
+        List<Interval> intervalList = Arrays.asList(new Interval("cm:price", "Price", null), new Interval("cm:created", "Created", Arrays.asList(new IntervalSet("2015", "2016-12", "special", false, true))));
+        params.setInterval(new IntervalParameters(Arrays.asList(intervalSet), intervalList));
+        urlBuilder = new StringBuilder();
+        client.buildFacetIntervalParameters(params, encoder, urlBuilder);
+        url = urlBuilder.toString();
+        assertNotNull(url);
+        assertTrue(url.contains("&facet=true"));
+        assertTrue(url.contains(encoder.encode("{!afts key=numbers}(1,10]", "UTF-8")));
+
+        assertTrue(url.contains(encoder.encode("{!key=Price}cm:price", "UTF-8")));
+        assertTrue(url.contains(encoder.encode("{!key=Created}cm:created", "UTF-8")));
+        assertTrue(url.contains("f.Created.facet.interval.set"));
+        assertTrue(url.contains(encoder.encode("{!afts key=numbers}", "UTF-8")));
+        assertTrue(url.contains(encoder.encode("(2015-12-31T22:59:59.999Z", "UTF-8")));
+        assertTrue(url.contains(encoder.encode("2016-12-31T22:59:59.999Z]", "UTF-8")));
     }
 
 }

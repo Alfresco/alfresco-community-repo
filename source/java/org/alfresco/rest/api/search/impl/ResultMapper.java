@@ -403,7 +403,7 @@ public class ResultMapper
                     List<GenericBucket> l = new ArrayList<GenericBucket>();
                     Set<Metric> metrics = new HashSet<>(1);
                     metrics.add(new SimpleMetric(METRIC_TYPE.count, fq.getValue()));
-                    l.add(new GenericBucket(fq.getKey(),filterQuery, fq.getValue(), metrics, null));
+                    l.add(new GenericBucket(fq.getKey(),filterQuery, null, metrics, null));
                     groups.put(group, l);
                 }
             }
@@ -493,7 +493,7 @@ public class ResultMapper
                                 }
                             }
                         }
-                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, null , new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(buck.getSecond())))), null, null);
+                        GenericBucket bucket = new GenericBucket(buck.getFirst(), filterQuery, display, new HashSet<Metric>(Arrays.asList(new SimpleMetric(METRIC_TYPE.count,String.valueOf(buck.getSecond())))), null, null);
                         buckets.add(bucket);
                     }
                     ffcs.add(new GenericFacetResponse(FACET_TYPE.field,facet.getKey(), buckets));

@@ -29,6 +29,16 @@ package org.alfresco.rest.api.search.impl;
 import static org.alfresco.rest.api.search.impl.StoreMapper.DELETED;
 import static org.alfresco.rest.api.search.impl.StoreMapper.LIVE_NODES;
 import static org.alfresco.rest.api.search.impl.StoreMapper.VERSIONS;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.rest.api.DeletedNodes;
@@ -64,13 +74,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
+import com.google.gdata.data.introspection.Collection;
 
 /**
  * Maps from a ResultSet to a json public api representation.
@@ -131,7 +135,7 @@ public class ResultMapper
     {
         SearchContext context = null;
         Integer total = null;
-        List<Node> noderesults = new ArrayList();
+        List<Node> noderesults = new ArrayList<Node>();
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
         Map<NodeRef, List<Pair<String, List<String>>>> hightLighting = results.getHighlighting();
         int notFound = 0;
@@ -272,27 +276,38 @@ public class ResultMapper
         Map<String, Integer> facetQueries = solrResultSet.getFacetQueries();
         List<FacetQueryContext> facetResults = null;
         SpellCheckContext spellCheckContext = null;
-        List<FacetFieldContext> ffcs = null;
+        List<FacetFieldContext> ffcs = new ArrayList<FacetFieldContext>();
 
         //Facet queries
         if(facetQueries!= null && !facetQueries.isEmpty())
         {
-            facetResults = new ArrayList<>(facetQueries.size());
-            for (Entry<String, Integer> fq:facetQueries.entrySet())
+            //If group by field populated in query facet return bucketing into facet field.
+            List<FacetFieldContext> facetQueryForFields = 
+                    getFacetBucketsFromFacetQueries(facetQueries,searchQuery);
+            if(!facetQueryForFields.isEmpty())
             {
-                String filterQuery = null;
-                if (searchQuery != null && searchQuery.getFacetQueries() != null)
+                ffcs.addAll(facetQueryForFields);
+            }
+            else
+            {
+                // Return the old way facet query with no bucketing.
+                facetResults = new ArrayList<>(facetQueries.size());
+                for (Entry<String, Integer> fq:facetQueries.entrySet())
                 {
-                    Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
-                    filterQuery = found.isPresent()? found.get().getQuery():fq.getKey();
+                    String filterQuery = null;
+                    if (searchQuery != null && searchQuery.getFacetQueries() != null)
+                    {
+                        Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
+                        filterQuery = found.isPresent()? found.get().getQuery():fq.getKey();
+                    }
+                    facetResults.add(new FacetQueryContext(fq.getKey(), filterQuery, fq.getValue()));
                 }
-                facetResults.add(new FacetQueryContext(fq.getKey(), filterQuery, fq.getValue()));
             }
         }
 
         //Field Facets
         Map<String, List<Pair<String, Integer>>> facetFields = solrResultSet.getFieldFacets();
-        ffcs = getFacetBucketsForFacetFields(facetFields, searchQuery);
+        ffcs.addAll(getFacetBucketsForFacetFields(facetFields, searchQuery));
 
         Map<String, List<Pair<String, Integer>>> facetInterval = solrResultSet.getFacetIntervals();
         List<FacetFieldContext> intervals = getFacetBucketsForIntervals(facetInterval, searchQuery);
@@ -308,7 +323,49 @@ public class ResultMapper
         context = new SearchContext(solrResultSet.getLastIndexedTxId(), facetResults, ffcs, intervals, spellCheckContext, searchQuery.includeRequest()?searchQuery:null);
         return isNullContext(context)?null:context;
     }
-
+    /**
+     * Builds a facet field from facet queries.
+     * @param facetQueries
+     * @return
+     */
+    protected List<FacetFieldContext> getFacetBucketsFromFacetQueries(Map<String, Integer> facetQueries, SearchQuery searchQuery)
+    {
+        List<FacetFieldContext> facetResults = new ArrayList<FacetFieldContext>();
+        Map<String,List<Bucket>> groups = new HashMap<>();
+        String group = null;
+        
+        for (Entry<String, Integer> fq:facetQueries.entrySet())
+        {
+            String filterQuery = null;
+            if (searchQuery != null && searchQuery.getFacetQueries() != null)
+            {
+                Optional<FacetQuery> found = searchQuery.getFacetQueries().stream().filter(facetQuery -> fq.getKey().equals(facetQuery.getLabel())).findFirst();
+                filterQuery = found.isPresent()? found.get().getQuery():fq.getKey();
+                if(found.isPresent() && found.get().getGroup() != null)
+                {
+                    group= found.get().getGroup();
+                }
+            }
+            if(group != null && !group.isEmpty())
+            {
+                if(groups.containsKey(group)) 
+                {
+                    groups.get(group).add(new Bucket(fq.getKey(), filterQuery, fq.getValue(), null));
+                }
+                else
+                {
+                    List<Bucket> l = new ArrayList<Bucket>();
+                    l.add(new Bucket(fq.getKey(),filterQuery, fq.getValue(),null));
+                    groups.put(group, l);
+                }
+            }
+        }
+        if(!groups.isEmpty())
+        {
+            groups.forEach((a,v) -> facetResults.add(new FacetFieldContext(a,v)));
+        }
+        return facetResults;
+    }
     protected List<FacetFieldContext> getFacetBucketsForFacetFields(Map<String, List<Pair<String, Integer>>> facetFields, SearchQuery searchQuery)
     {
         if (facetFields != null && !facetFields.isEmpty())
@@ -348,7 +405,7 @@ public class ResultMapper
 
             return ffcs;
         }
-        return null;
+        return Collections.emptyList();
     }
 
     protected List<FacetFieldContext> getFacetBucketsForIntervals(Map<String, List<Pair<String, Integer>>> facetFields, SearchQuery searchQuery)

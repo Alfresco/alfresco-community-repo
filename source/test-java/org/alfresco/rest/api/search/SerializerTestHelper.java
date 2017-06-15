@@ -94,7 +94,7 @@ public class SerializerTestHelper implements RequestReader
         }
     }
 
-    private SearchQuery extractFromJson(String json) throws IOException
+    public SearchQuery extractFromJson(String json) throws IOException
     {
         Content content = mock(Content.class);
         when(content.getReader()).thenReturn(new StringReader(json));

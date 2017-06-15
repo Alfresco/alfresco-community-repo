@@ -137,8 +137,9 @@ public class RangeResultMapper
         facet.remove(GenericFacetResponse.LABEL);
         filterQ.append(facetField).append(":")
             .append(startFilterQuery)
-            .append(start).append(" TO ")
-            .append(end)
+            .append("\"").append(start).append("\"")
+            .append(" TO ")
+            .append("\"").append(end).append("\"")
             .append(endFilterQuery);
         
         Set<Metric> metrics = new HashSet<Metric>(

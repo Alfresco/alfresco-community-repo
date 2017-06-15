@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -272,7 +273,7 @@ public class SolrQueryHTTPClientTest
         params.setSearchTerm("bob");
 
         IntervalSet intervalSet = new IntervalSet("8", "12", null, null, null);
-        params.setInterval(new IntervalParameters(Arrays.asList(intervalSet), null));
+        params.setInterval(new IntervalParameters(new HashSet(Arrays.asList(intervalSet)), null));
         StringBuilder urlBuilder = new StringBuilder();
         client.buildFacetIntervalParameters(params, encoder, urlBuilder);
         String url = urlBuilder.toString();
@@ -281,7 +282,7 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains(encoder.encode("{!afts}[8,12]", "UTF-8")));
 
         intervalSet = new IntervalSet("1", "10", "numbers", false, true);
-        params.setInterval(new IntervalParameters(Arrays.asList(intervalSet), null));
+        params.setInterval(new IntervalParameters(new HashSet(Arrays.asList(intervalSet)), null));
         urlBuilder = new StringBuilder();
         client.buildFacetIntervalParameters(params, encoder, urlBuilder);
         url = urlBuilder.toString();
@@ -290,8 +291,8 @@ public class SolrQueryHTTPClientTest
         assertTrue(url.contains(encoder.encode("{!afts key=numbers}(1,10]", "UTF-8")));
 
         List<Interval> intervalList = Arrays.asList(new Interval("cm:price", "Price", null),
-                    new Interval("cm:created", "Created", Arrays.asList(new IntervalSet("2015", "2016-12", "special", false, true))));
-        params.setInterval(new IntervalParameters(Arrays.asList(intervalSet), intervalList));
+                    new Interval("cm:created", "Created", new HashSet(Arrays.asList(new IntervalSet("2015", "2016-12", "special", false, true)))));
+        params.setInterval(new IntervalParameters(new HashSet(Arrays.asList(intervalSet)), intervalList));
         urlBuilder = new StringBuilder();
         client.buildFacetIntervalParameters(params, encoder, urlBuilder);
         url = urlBuilder.toString();

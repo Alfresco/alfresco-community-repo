@@ -3,30 +3,10 @@
     <target name="build-all">
         <!-- Build installers in parallel -->
         <parallel threadCount="2" failonany="true">
-            <antcall target="build-win32-installer" unless:set="skipWinInstaller" />
             <antcall target="build-win64-installer" unless:set="skipWinInstaller" />
             <antcall target="build-linux-installer" unless:set="skipLinInstaller" />
             <antcall target="build-osx-installer" unless:set="skipOSXInstaller" />
         </parallel>
-    </target>
-
-    <target name="build-win32-installer">
-        <exec failonerror="true" executable="${bitrock.executable}" dir="${project.build.directory}">
-            <arg value="build" />
-            <arg value="classes/bitrock/project.xml" />
-            <arg value="windows" />
-            <arg value="--license" />
-            <arg value="${license.file.location}"/>
-            <arg value="--setvars" />
-            <arg line="${bitrock.arguments}" />
-            <arg value="alfresco_distribution_folder=${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}" />
-            <arg value="aos_module_distribution_folder=${project.build.directory}/distribution/aos-module" />
-            <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-windows" />
-            <arg value="local_binaries_folder=${project.build.directory}/binaries-windows" />
-            <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />
-            <arg value="wcmqs_folder=${project.build.directory}/wcmqs" />
-            <arg value="project.installerFilename=${alfresco.package.name}-installer-${installer.version.name}-win-x32.exe" /> 
-        </exec>
     </target>
 
     <target name="build-win64-installer">

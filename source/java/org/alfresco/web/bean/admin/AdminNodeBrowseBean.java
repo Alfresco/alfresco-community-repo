@@ -267,6 +267,7 @@ public class AdminNodeBrowseBean implements Serializable
         properties = null;
         children = null;
         assocs = null;
+        sourceAssocs = null;
         inheritPermissions = null;
         permissions = null;
         permissionMasks = null;

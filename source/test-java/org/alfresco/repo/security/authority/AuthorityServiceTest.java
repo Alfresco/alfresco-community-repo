@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -104,6 +105,7 @@ public class AuthorityServiceTest extends TestCase
     private NodeArchiveService nodeArchiveService;
     private PolicyComponent policyComponent;
     private TransactionService transactionService;
+    private AuthorityDAO authorityDAO;
     
     public AuthorityServiceTest()
     {
@@ -141,6 +143,7 @@ public class AuthorityServiceTest extends TestCase
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
+        authorityDAO = ctx.getBean("authorityDAO", AuthorityDAO.class);
         
         String defaultAdminUser = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(defaultAdminUser);
@@ -1639,7 +1642,52 @@ public class AuthorityServiceTest extends TestCase
         
         verify(onGroupDeleted).onGroupDeleted(testGroup, true);
     }
-    
+
+    /**
+     * Test for MNT-17824
+     */
+    public void testGetDoublePrefixedGroupAuth()
+    {
+        List<String> createdAuthNames = new ArrayList<>(3);
+
+        // Simulate creating authority before upgrade to 5.0.4 or 5.1.1
+        final String oldPrefixedGroupName = "GROUP_MNT_17824";
+        Set<String> defaultZones = new HashSet<>();
+        defaultZones.add(AuthorityService.ZONE_APP_DEFAULT);
+        defaultZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
+        // Use authorityDAO to force create a double prefixed group name to simulate a scenario
+        // where a group is created with a double prefix, before MNT-14958 fix.
+        // This could happened if the admin created a group with a name 'GROUP_MNT_17824' before MNT-14958.
+        authorityDAO.createAuthority("GROUP_" + oldPrefixedGroupName, "GROUP_MNT_17824_DISPLAY_NAME", defaultZones);
+
+        // Now check that this group can be retrieved
+        String auth = pubAuthorityService.getName(AuthorityType.GROUP, oldPrefixedGroupName);
+        createdAuthNames.add(auth);
+        assertTrue("The group authority exists.", pubAuthorityService.authorityExists(auth));
+
+        // Create authority using the authority service after the fix (for sanity check sake!)
+        final String noPrefixGroupName = "NO_PREFIX_MNT_17824";
+        final String prefixedGroupName = "GROUP_PREFIXED_MNT_17824";
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, noPrefixGroupName);
+        pubAuthorityService.createAuthority(AuthorityType.GROUP, prefixedGroupName);
+
+        // Get 'noPrefixGroupName' authority
+        auth = pubAuthorityService.getName(AuthorityType.GROUP, noPrefixGroupName);
+        createdAuthNames.add(auth);
+        assertTrue("The group authority exists.", pubAuthorityService.authorityExists(auth));
+
+        // Get 'prefixedGroupName' authority
+        auth = pubAuthorityService.getName(AuthorityType.GROUP, prefixedGroupName);
+        createdAuthNames.add(auth);
+        assertTrue("The group authority exists.", pubAuthorityService.authorityExists(auth));
+
+        // Cleanup
+        for (String name : createdAuthNames)
+        {
+            pubAuthorityService.deleteAuthority(name);
+        }
+    }
+
     private <T extends Policy> T createClassPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)
     {
         T policy = mock(policyInterface);

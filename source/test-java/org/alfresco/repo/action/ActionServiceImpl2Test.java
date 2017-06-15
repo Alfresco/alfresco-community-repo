@@ -62,8 +62,6 @@ import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
 import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
 import org.alfresco.util.test.junitrules.WellKnownNodes;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -150,7 +148,7 @@ public class ActionServiceImpl2Test
     @Test
     public void testIncrementCounterOnDeletedNode() throws Exception
     {
-        NodeRef deletedNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        final NodeRef deletedNode = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Throwable
             {

@@ -79,4 +79,30 @@ public class PercentileMetric implements Metric
     {
         return value;
     }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        PercentileMetric that = (PercentileMetric) o;
+
+        if (type != that.type)
+            return false;
+        if (!value.equals(that.value))
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = type.hashCode();
+        result = 31 * result + value.hashCode();
+        return result;
+    }
 }

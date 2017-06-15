@@ -25,9 +25,10 @@
  */
 package org.alfresco.rest.api.search.context;
 
-import org.alfresco.rest.api.search.context.facetsresponse.GenericFacetResponse;
+import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.rest.api.search.model.SearchQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**

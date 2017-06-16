@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -46,7 +47,9 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -64,6 +67,7 @@ import org.alfresco.service.namespace.QName;
 )
 public class RecordAspect extends    AbstractDisposableItem
                           implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                                     NodeServicePolicies.OnAddAspectPolicy,
                                      RecordsManagementPolicies.OnCreateReference,
                                      RecordsManagementPolicies.OnRemoveReference,
                                      NodeServicePolicies.OnMoveNodePolicy,
@@ -81,6 +85,9 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /** record service */
     protected RecordService recordService;
+
+    /** quickShare service */
+    private QuickShareService quickShareService;
     
     /**
      * @param extendedSecurityService   extended security service
@@ -104,6 +111,15 @@ public class RecordAspect extends    AbstractDisposableItem
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
+    }
+
+    /**
+     * 
+     * @param quickShareService
+     */
+    public void setQuickShareService(QuickShareService quickShareService)
+    {
+        this.quickShareService = quickShareService;
     }
 
     /**
@@ -335,5 +351,31 @@ public class RecordAspect extends    AbstractDisposableItem
             // then remove any extended security from the newly copied record
             extendedSecurityService.remove(targetNodeRef);
         }        
+    }
+
+    /**
+     * Behaviour to remove the shared link when record is declared
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef,
+     *      org.alfresco.service.namespace.QName)
+     */
+    @Override
+    @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
+    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                String sharedId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+                if (sharedId != null)
+                {
+                    quickShareService.unshareContent(sharedId);
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 }

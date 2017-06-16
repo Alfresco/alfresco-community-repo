@@ -238,4 +238,102 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
         getRestAPIFactory().getFilesAPI().declareAsRecord(otherTestFolder.getNodeRefWithoutVersion());
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
+
+//    @Test(description = "Create 500 documents and declare them ass records concurently.")
+//    public void declare500DocumentsAsRecordsConcurrently() throws Exception
+//    {
+//        FolderModel testFolder1 = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+//        // create 500 documents in a folder in a collaboration site
+//        List<FileModel> listOfDocuments = new ArrayList<FileModel>();
+//        for(int i = 0; i < 500; i++)
+//        {
+//            FileModel document = dataContent.usingSite(testSite)
+//                        .usingUser(testUser)
+//                        .usingResource(testFolder1)
+//                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+//            listOfDocuments.add(document);
+//        }
+//
+//        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
+//        String unfiledContainerId = unfiledContainersAPI.getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId();
+//        Counter.initSuccessCount(0);
+//        Counter.initFailCount(0);
+//        ExecutorService pool = Executors.newFixedThreadPool(16);
+//        for (FileModel document : listOfDocuments)
+//        {
+//            pool.submit(new Task(document, unfiledContainerId));
+//        }
+//        pool.shutdown();
+//        pool.awaitTermination(120L, TimeUnit.SECONDS);
+//
+//        assertEquals(Counter.getSuccessCount(), 500 - Counter.getFailCount());
+//    }
+//
+//    class Task implements Runnable
+//    {
+//        private FileModel document;
+//        private String unfiledContainerId;
+//        public Task(FileModel document, String unfiledContainerId)
+//        {
+//            this.document = document;
+//            this.unfiledContainerId = unfiledContainerId;
+//        }
+//
+//        @Override
+//        public void run()
+//        {
+//            String parentId = "";
+//            try
+//            {
+//                Record record = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(document.getNodeRefWithoutVersion());
+//                assertStatusCode(CREATED);
+//
+//                parentId = record.getParentId();
+//            }
+//            catch (Exception e)
+//            {
+//                Counter.incrementFailCount();
+//                fail("Should not be here");
+//            }
+//
+//            assertEquals(parentId, unfiledContainerId, "Declare as record was unsuccessful.");
+//            Counter.incrementSuccessCount();
+//        }
+//    }
+//
+//    static class Counter
+//    {
+//        private static int successCount;
+//        private static int failCount;
+//
+//        public static void initSuccessCount(int initialCount)
+//        {
+//            successCount = initialCount;
+//        }
+//
+//        public static void initFailCount(int initialCount)
+//        {
+//            failCount = initialCount;
+//        }
+//
+//        public static synchronized void incrementSuccessCount()
+//        {
+//            successCount++;
+//        }
+//
+//        public static int getSuccessCount()
+//        {
+//            return successCount;
+//        }
+//
+//        public static synchronized void incrementFailCount()
+//        {
+//            failCount++;
+//        }
+//
+//        public static int getFailCount()
+//        {
+//            return failCount;
+//        }
+//    }
 }

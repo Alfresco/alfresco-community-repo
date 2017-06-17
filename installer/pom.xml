@@ -139,28 +139,28 @@
             <type>tgz</type>
         </dependency>
 
-        <!-- Ghostscript -->
-        <dependency>
-            <groupId>com.ghostscript</groupId>
-            <artifactId>ghostscript-distribution</artifactId>
-            <version>${installer.ghostscript.version}</version>
-            <classifier>linux</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>com.ghostscript</groupId>
-            <artifactId>ghostscript-distribution</artifactId>
-            <version>${installer.ghostscript.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>com.ghostscript</groupId>
-            <artifactId>ghostscript-distribution</artifactId>
-            <version>${installer.ghostscript.version}</version>
-            <classifier>win64</classifier>
-            <type>tgz</type>
-        </dependency>
+        <!-- Alfresco Pdf Renderer -->
+		<dependency>
+			<groupId>org.alfresco</groupId>
+			<artifactId>alfresco-pdf-renderer</artifactId>
+			<version>${installer.alfresco-pdf-renderer.version}</version>
+			<classifier>linux</classifier>
+			<type>tgz</type>
+		</dependency>
+		<dependency>
+			<groupId>org.alfresco</groupId>
+			<artifactId>alfresco-pdf-renderer</artifactId>
+			<version>${installer.alfresco-pdf-renderer.version}</version>
+			<classifier>osx</classifier>
+			<type>tgz</type>
+		</dependency>
+		<dependency>
+			<groupId>org.alfresco</groupId>
+			<artifactId>alfresco-pdf-renderer</artifactId>
+			<version>${installer.alfresco-pdf-renderer.version}</version>
+			<classifier>win64</classifier>
+			<type>tgz</type>
+		</dependency>
 
          <!-- ImageMagick -->
         <dependency>

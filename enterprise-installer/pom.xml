@@ -49,28 +49,6 @@
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>
-        <!-- Alfresco Pdf Renderer -->
-		<dependency>
-			<groupId>org.alfresco</groupId>
-			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.alfresco-pdf-renderer.version}</version>
-			<classifier>linux</classifier>
-			<type>tgz</type>
-		</dependency>
-		<dependency>
-			<groupId>org.alfresco</groupId>
-			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.alfresco-pdf-renderer.version}</version>
-			<classifier>osx</classifier>
-			<type>tgz</type>
-		</dependency>
-		<dependency>
-			<groupId>org.alfresco</groupId>
-			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.alfresco-pdf-renderer.version}</version>
-			<classifier>win64</classifier>
-			<type>tgz</type>
-		</dependency>
     </dependencies>
 
     <build>

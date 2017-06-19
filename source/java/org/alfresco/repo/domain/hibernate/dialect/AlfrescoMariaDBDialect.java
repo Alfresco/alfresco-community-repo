@@ -33,7 +33,8 @@ import org.hibernate.dialect.MySQLInnoDBDialect;
  */
 public class AlfrescoMariaDBDialect extends MySQLInnoDBDialect
 {
-    public AlfrescoMariaDBDialect(){
+    public AlfrescoMariaDBDialect()
+    {
         super();
     }
 }

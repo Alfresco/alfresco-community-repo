@@ -920,8 +920,20 @@ public class ThumbnailServiceImpl implements ThumbnailService,
                                 NodeRef thumbnailNodeRef = childAssoc.getChildRef();
                                 NodeRef sourceNodeRef = childAssoc.getParentRef();
 
+                                // check if thumbnail node exists
+                                if (thumbnailNodeRef == null || !nodeService.exists(thumbnailNodeRef))
+                                {
+                                    logger.debug("Thumbnail node " + thumbnailNodeRef + " does not exist. It will be skipped");
+                                    continue;
+                                }
+                                // check if source node exists
+                                if (sourceNodeRef == null || !nodeService.exists(sourceNodeRef))
+                                {
+                                    logger.debug("Parent node " + sourceNodeRef + " does not exist. It will be skipped");
+                                    continue;
+                                }
+
                                 String thumbnailName = (String) nodeService.getProperty(thumbnailNodeRef, ContentModel.PROP_NAME);
-                                //behaviourFilter.disableBehaviour(sourceNodeRef, ContentModel.ASPECT_VERSIONABLE);
                                 // Update the parent node with the thumbnail update...
                                 if (logger.isDebugEnabled())
                                 {

@@ -51,8 +51,10 @@ import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -91,6 +93,10 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggingEvent;
 import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.junit.experimental.categories.Category;
@@ -640,6 +646,106 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         // Check for an other thumbnail that doesn't exist
         NodeRef result3 = this.thumbnailService.getThumbnailByName(jpgOrig, ContentModel.PROP_CONTENT, "anotherone");
         assertNull("The thumbnail 'anotherone' should have been missing", result3);
+    }
+
+    /**
+     * A simple listener which will delete the given node after the transition is completed
+     */
+    private class CustomListener extends TransactionListenerAdapter
+    {
+        private final NodeRef nodeRef;
+        private CustomListener(NodeRef nodeRef)
+        {
+            this.nodeRef = nodeRef;
+        }
+
+        @Override
+        public void afterCommit()
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    secureNodeService.deleteNode(nodeRef);
+                    return null;
+                }
+            }, false, true);
+        }
+    }
+
+    /**
+     * This is a simple log error appender. You can simply add this appender to the root logger e.g.
+     * Logger.getRootLogger().addAppender(logErrorAppender);
+     *
+     * That is useful if you need to use the log output for your tests.
+     */
+    class LogErrorAppender extends AppenderSkeleton
+    {
+
+        private final List<LoggingEvent> log = new ArrayList<LoggingEvent>();
+
+        @Override
+        public boolean requiresLayout()
+        {
+            return false;
+        }
+
+        @Override
+        protected void append(final LoggingEvent loggingEvent)
+        {
+            if(loggingEvent.getLevel() == Level.ERROR)
+            {
+                log.add(loggingEvent);
+            }
+        }
+
+        @Override
+        public void close()
+        {
+        }
+
+        public List<LoggingEvent> getLog()
+        {
+            return new ArrayList<LoggingEvent>(log);
+        }
+    }
+
+    /**
+     * See REPO-2519, MNT-17113
+     *
+     * @throws IOException
+     */
+    public void testIfNodesExistsAfterCreateThumbnail() throws IOException
+    {
+        // Add the log appender to the root logger
+        LogErrorAppender logErrorAppender = new LogErrorAppender();
+        Logger.getRootLogger().addAppender(logErrorAppender);
+
+        // create content node for thumbnail node
+        NodeRef pdfOrig = createOriginalContent(folder, MimetypeMap.MIMETYPE_PDF);
+
+        QName qname = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
+        ThumbnailDefinition details = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(qname.getLocalName());
+
+        setComplete();
+        endTransaction();
+
+        // create thumbnail
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Delete the content node (pdfOrig) before the afterCommit code is executed
+                CustomListener customListener = new CustomListener(pdfOrig);
+                // I needs to have a higher priority as the implemented afterCommit. The priority in order are (0,1,2,3,4)
+                AlfrescoTransactionSupport.bindListener(customListener, 1);
+
+                thumbnailService.createThumbnail(pdfOrig, ContentModel.PROP_CONTENT, MimetypeMap.MIMETYPE_IMAGE_JPEG, details.getTransformationOptions(), "doclib");
+                return null;
+            }
+        }, false, true);
+
+        assertEquals("There should be no error anymore", 0, logErrorAppender.getLog().size());
     }
 
     /**

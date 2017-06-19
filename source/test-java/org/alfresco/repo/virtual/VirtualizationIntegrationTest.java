@@ -84,6 +84,8 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
     protected static final String VIRTUAL_FOLDER_1_NAME = "VirtualFolder1";
 
     protected static final String VIRTUAL_FOLDER_2_NAME = "VirtualFolder2";
+    
+    protected static final String VIRTUAL_FOLDER_3_NAME = "VirtualFolder3";
 
     protected static final String TEST_ROOT_FOLDER_NAME = "TestFolder";
 

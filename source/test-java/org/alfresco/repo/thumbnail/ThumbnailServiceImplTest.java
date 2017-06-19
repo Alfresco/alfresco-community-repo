@@ -651,10 +651,10 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * A simple listener which will delete the given node after the transition is completed
      */
-    private class CustomListener extends TransactionListenerAdapter
+    private class TestNodeDeleterListener extends TransactionListenerAdapter
     {
         private final NodeRef nodeRef;
-        private CustomListener(NodeRef nodeRef)
+        private TestNodeDeleterListener(NodeRef nodeRef)
         {
             this.nodeRef = nodeRef;
         }
@@ -736,9 +736,9 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
             public Void execute() throws Throwable
             {
                 // Delete the content node (pdfOrig) before the afterCommit code is executed
-                CustomListener customListener = new CustomListener(pdfOrig);
-                // I needs to have a higher priority as the implemented afterCommit. The priority in order are (0,1,2,3,4)
-                AlfrescoTransactionSupport.bindListener(customListener, 1);
+                TestNodeDeleterListener testNodeDeleterListener = new TestNodeDeleterListener(pdfOrig);
+                // It needs to have a higher priority as the implemented afterCommit. The priority in order are (0,1,2,3,4)
+                AlfrescoTransactionSupport.bindListener(testNodeDeleterListener, 1);
 
                 thumbnailService.createThumbnail(pdfOrig, ContentModel.PROP_CONTENT, MimetypeMap.MIMETYPE_IMAGE_JPEG, details.getTransformationOptions(), "doclib");
                 return null;

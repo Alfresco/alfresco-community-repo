@@ -93,7 +93,7 @@ public class VirtualQueryImpl implements VirtualQuery
      */
     @Override
     public PagingResults<Reference> perform(ActualEnvironment environment, boolean files, boolean folders,
-                String pattern, Set<QName> ignoreTypeQNames, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames,
+                String pattern, Set<QName> searchTypeQNames, Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
                 List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest, Reference parentReference)
                 throws VirtualizationException
     {

@@ -546,8 +546,8 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
                     true,
                     true,
                     null,
-                    Collections.<QName> emptySet(),
                     searchTypeQNames,
+                    Collections.<QName> emptySet(),
                     ignoreAspectQNames,
                     sortProps,
                     pagingRequest);

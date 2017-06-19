@@ -29,6 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
@@ -63,6 +65,13 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
         ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
-        recordService.complete(actionedUponNodeRef);
+        try
+        {
+            recordService.complete(actionedUponNodeRef);
+        }
+        catch (IntegrityException e) {
+            action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, e.getMessage());
+        }
+
     }
 }

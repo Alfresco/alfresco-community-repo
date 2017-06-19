@@ -83,6 +83,7 @@ import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServi
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.integrity.IncompleteNodeTagger;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -2014,10 +2015,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 else
                 {
                     LOGGER.debug(buildMissingPropertiesErrorString(missingProperties));
-
-                    // FIXME:
-                    //action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, "missingProperties");
+                    throw new IntegrityException("The record has missing mandatory properties.", null);
                 }
+            }
+            else
+            {
+                throw new IntegrityException("The record is already completed.", null);
             }
         }
         else
@@ -2026,6 +2029,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             {
                 LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
             }
+            throw new IntegrityException("The record does not exist or is frozen.", null);
         }
     }
 
@@ -2047,74 +2051,49 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @param nodeRef node reference
      * @return boolean true if all mandatory properties are set, false otherwise
      */
-    private boolean mandatoryPropertiesSet(NodeRef nodeRef, List<String> missingProperties)
+    private boolean mandatoryPropertiesSet(final NodeRef nodeRef, final List<String> missingProperties)
     {
-        boolean result = true;
-
         Map<QName, Serializable> nodeRefProps = nodeService.getProperties(nodeRef);
-
         QName nodeRefType = nodeService.getType(nodeRef);
 
+        // check for missing mandatory metadata from type definitions
         TypeDefinition typeDef = dictionaryService.getType(nodeRefType);
-        for (PropertyDefinition propDef : typeDef.getProperties().values())
+        checkDefinitionMandatoryPropsSet(typeDef, nodeRefProps, missingProperties);
+
+        // check for missing mandatory metadata from aspect definitions
+        Set<QName> aspects = nodeService.getAspects(nodeRef);
+        for (QName aspect : aspects)
         {
-            if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
-            {
-                logMissingProperty(propDef, missingProperties);
-
-                result = false;
-                break;
-            }
-        }
-
-        if (result)
-        {
-            Set<QName> aspects = nodeService.getAspects(nodeRef);
-            for (QName aspect : aspects)
-            {
-                AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
-                for (PropertyDefinition propDef : aspectDef.getProperties().values())
-                {
-                    if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
-                    {
-                        logMissingProperty(propDef, missingProperties);
-
-                        result = false;
-                        break;
-                    }
-                }
-            }
+            AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
+            checkDefinitionMandatoryPropsSet(aspectDef, nodeRefProps, missingProperties);
         }
 
         // check for missing mandatory metadata from custom aspect definitions
-        if (result)
+        QName customAspect = getCustomAspectImpl(nodeRefType);
+        AspectDefinition aspectDef = dictionaryService.getAspect(customAspect);
+        checkDefinitionMandatoryPropsSet(aspectDef, nodeRefProps, missingProperties);
+
+        return missingProperties.isEmpty();
+    }
+
+    /**
+     * Helper method to check whether all the definition mandatory properties of the node have been set
+     *
+     * @param classDef  the ClassDefinition defining the properties to be checked
+     * @param nodeRefProps  the properties of the node to be checked
+     * @param missingProperties  the list of mandatory properties found to be missing (currently only the first one)
+     * @return boolean true if all mandatory properties are set, false otherwise
+     */
+    private void checkDefinitionMandatoryPropsSet(final ClassDefinition classDef, final Map<QName, Serializable> nodeRefProps,
+                                                  final List<String> missingProperties)
+    {
+        for (PropertyDefinition propDef : classDef.getProperties().values())
         {
-            QName aspect = ASPECT_RECORD;
-            if (nodeRefType.equals(TYPE_NON_ELECTRONIC_DOCUMENT))
+            if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
             {
-                aspect = TYPE_NON_ELECTRONIC_DOCUMENT;
-            }
-
-            // get customAspectImpl
-            String localName = aspect.toPrefixString(namespaceService).replace(":", "");
-            localName = MessageFormat.format("{0}CustomProperties", localName);
-            QName customAspect = QName.createQName(RM_CUSTOM_URI, localName);
-
-            AspectDefinition aspectDef = dictionaryService.getAspect(customAspect);
-
-            for (PropertyDefinition propDef : aspectDef.getProperties().values())
-            {
-                if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
-                {
-                    logMissingProperty(propDef, missingProperties);
-
-                    result = false;
-                    break;
-                }
+                logMissingProperty(propDef, missingProperties);;
             }
         }
-
-        return result;
     }
 
     /**
@@ -2132,5 +2111,25 @@ public class RecordServiceImpl extends BaseBehaviourBean
             LOGGER.warn(msg.toString());
         }
         missingProperties.add(propDef.getName().toString());
+    }
+
+    /**
+     * Helper method to get the custom aspect for a given nodeRef type
+     *
+     * @param nodeRefType   the node type for which to return custom aspect QName
+     * @return QName    custom aspect
+     */
+    private QName getCustomAspectImpl(QName nodeRefType)
+    {
+        QName aspect = ASPECT_RECORD;
+        if (nodeRefType.equals(TYPE_NON_ELECTRONIC_DOCUMENT))
+        {
+            aspect = TYPE_NON_ELECTRONIC_DOCUMENT;
+        }
+
+        // get customAspectImpl
+        String localName = aspect.toPrefixString(namespaceService).replace(":", "");
+        localName = MessageFormat.format("{0}CustomProperties", localName);
+        return QName.createQName(RM_CUSTOM_URI, localName);
     }
 }

@@ -34,6 +34,7 @@ import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTI
 import static org.alfresco.repo.policy.annotation.BehaviourKind.ASSOCIATION;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -62,6 +63,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedul
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
@@ -82,9 +84,9 @@ import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.integrity.IncompleteNodeTagger;
 import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -160,6 +162,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private static final String MSG_NODE_HAS_ASPECT = "rm.service.node-has-aspect";
     private static final String FINAL_VERSION = "rm.service.final-version";
     private static final String FINAL_DESCRIPTION = "rm.service.final-version-description";
+    private static final String MSG_UNDECLARED_ONLY_RECORDS = "rm.action.undeclared-only-records";
+    private static final String MSG_NO_DECLARE_MAND_PROP = "rm.action.no-declare-mand-prop";
 
     /** Always edit property array */
     private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
@@ -169,6 +173,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** always edit model URI's */
     private List<String> alwaysEditURIs;
+
+    /**
+     * check mandatory properties
+     */
+    private boolean checkMandatoryPropertiesEnabled = true;
 
     /**
      * @param alwaysEditURIs the alwaysEditURIs to set
@@ -264,6 +273,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
+
+    /** Freeze service */
+    private FreezeService freezeService;
+
+    /** Namespace service */
+    private NamespaceService namespaceService;
 
     /** policies */
     private ClassPolicyDelegate<BeforeFileRecord> beforeFileRecord;
@@ -422,6 +437,30 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public void setIncompleteNodeTagger(IncompleteNodeTagger incompleteNodeTagger)
     {
         this.incompleteNodeTagger = incompleteNodeTagger;
+    }
+
+    /**
+     * @param freezeService freeze service
+     */
+    public void setFreezeService(FreezeService freezeService)
+    {
+        this.freezeService = freezeService;
+    }
+
+    /**
+     * @param namespaceService namespace service
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
+     * @param checkMandatoryPropertiesEnabled true if check mandatory properties is enabled, false otherwise
+     */
+    public void setCheckMandatoryPropertiesEnabled(boolean checkMandatoryPropertiesEnabled)
+    {
+        this.checkMandatoryPropertiesEnabled = checkMandatoryPropertiesEnabled;
     }
 
     /**
@@ -1348,94 +1387,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * Helper method to 'complete' a record.
-     *
-     * @param record node reference to record
-     */
-    public void complete(NodeRef record)
-    {
-        ParameterCheck.mandatory("item", record);
-
-        // TODO get this from config
-        boolean checkMandatoryPropertiesEnabled = true;
-
-        if (!checkMandatoryPropertiesEnabled || (isMandatoryPropertiesPopulated(record)))
-        {
-            disablePropertyEditableCheck();
-            // Add the declared aspect
-            Map<QName, Serializable> declaredProps = new HashMap<>(2);
-            declaredProps.put(RecordsManagementModel.PROP_DECLARED_AT, new Date());
-            declaredProps.put(RecordsManagementModel.PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
-            nodeService.addAspect(record, RecordsManagementModel.ASPECT_DECLARED_RECORD, declaredProps);
-            enablePropertyEditableCheck();
-        }
-    }
-
-    /**
-     * Helper method to determine whether a record's mandatory properties are set.
-     *
-     * @param nodeRef  node reference to record
-     * @return boolean true if all mandatory metadata properties are set, false otherwise
-     */
-    public boolean isMandatoryPropertiesPopulated(NodeRef nodeRef)
-    {
-        boolean result = true;
-
-        // check for missing mandatory metadata from type definitions
-        Map<QName, Serializable> nodeRefProps = nodeService.getProperties(nodeRef);
-        QName nodeRefType = nodeService.getType(nodeRef);
-
-        TypeDefinition typeDef = dictionaryService.getType(nodeRefType);
-        for (PropertyDefinition propDef : typeDef.getProperties().values())
-        {
-            if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
-            {
-                result = false;
-                break;
-            }
-        }
-
-        // check for missing mandatory metadata from aspect definitions
-        if (result)
-        {
-            // TODO change to aspects = getAspects(nodeRef) ?
-            Set<QName> aspects = nodeService.getAspects(nodeRef);
-            for (QName aspect : aspects)
-            {
-                AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
-                for (PropertyDefinition propDef : aspectDef.getProperties().values())
-                {
-                    if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
-                    {
-                        result = false;
-                        break;
-                    }
-                }
-            }
-        }
-
-        // check for missing mandatory metadata from custom aspect definitions
-        if (result)
-        {
-            Collection<QName> aspects = dictionaryService.getAspects(RM_CUSTOM_MODEL);
-            for (QName aspect : aspects)
-            {
-                AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
-                for (PropertyDefinition propDef : aspectDef.getProperties().values())
-                {
-                    if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
-                    {
-                        result = false;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#rejectRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @Override
@@ -2011,5 +1962,174 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             incompleteNodeTagger.beforeCommit(false);
         }
+    }
+
+    /**
+     * Completes a record
+     *
+     * @param nodeRef Record node reference
+     */
+    @Override
+    public void complete(NodeRef nodeRef)
+    {
+        if (nodeService.exists(nodeRef) && isRecord(nodeRef) && !freezeService.isFrozen(nodeRef))
+        {
+            if (!isDeclared(nodeRef))
+            {
+                // if the record is newly created make sure the record identifier is set before completing the record
+                Set<NodeRef> newRecords = transactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS);
+                if (newRecords.contains(nodeRef))
+                {
+                    generateRecordIdentifier(nodeService, identifierService, nodeRef);
+                }
+
+                List<String> missingProperties = new ArrayList<>(5);
+                // Aspect not already defined - check mandatory properties then add
+                if (!checkMandatoryPropertiesEnabled || mandatoryPropertiesSet(nodeRef, missingProperties))
+                {
+                    disablePropertyEditableCheck();
+                    try
+                    {
+                        // Add the declared aspect
+                        Map<QName, Serializable> declaredProps = new HashMap<>(2);
+                        declaredProps.put(PROP_DECLARED_AT, new Date());
+                        declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
+                        nodeService.addAspect(nodeRef, ASPECT_DECLARED_RECORD, declaredProps);
+
+                        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork()
+                            {
+                                // remove all owner related rights
+                                ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
+                                return null;
+                            }
+                        });
+                    }
+                    finally
+                    {
+                        enablePropertyEditableCheck();
+                    }
+                }
+                else
+                {
+                    LOGGER.debug(buildMissingPropertiesErrorString(missingProperties));
+                    throw new IntegrityException("The record has missing mandatory properties.", null);
+                }
+            }
+            else
+            {
+                throw new IntegrityException("The record is already completed.", null);
+            }
+        }
+        else
+        {
+            if (LOGGER.isWarnEnabled())
+            {
+                LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
+            }
+            throw new IntegrityException("The record does not exist or is frozen.", null);
+        }
+    }
+
+    private String buildMissingPropertiesErrorString(List<String> missingProperties)
+    {
+        StringBuilder builder = new StringBuilder(255);
+        builder.append(I18NUtil.getMessage(MSG_NO_DECLARE_MAND_PROP));
+        builder.append("  ");
+        for (String missingProperty : missingProperties)
+        {
+            builder.append(missingProperty).append(", ");
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Helper method to check whether all the mandatory properties of the node have been set
+     *
+     * @param nodeRef node reference
+     * @return boolean true if all mandatory properties are set, false otherwise
+     */
+    private boolean mandatoryPropertiesSet(final NodeRef nodeRef, final List<String> missingProperties)
+    {
+        Map<QName, Serializable> nodeRefProps = nodeService.getProperties(nodeRef);
+        QName nodeRefType = nodeService.getType(nodeRef);
+
+        // check for missing mandatory metadata from type definitions
+        TypeDefinition typeDef = dictionaryService.getType(nodeRefType);
+        checkDefinitionMandatoryPropsSet(typeDef, nodeRefProps, missingProperties);
+
+        // check for missing mandatory metadata from aspect definitions
+        Set<QName> aspects = nodeService.getAspects(nodeRef);
+        for (QName aspect : aspects)
+        {
+            AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
+            checkDefinitionMandatoryPropsSet(aspectDef, nodeRefProps, missingProperties);
+        }
+
+        // check for missing mandatory metadata from custom aspect definitions
+        QName customAspect = getCustomAspectImpl(nodeRefType);
+        AspectDefinition aspectDef = dictionaryService.getAspect(customAspect);
+        checkDefinitionMandatoryPropsSet(aspectDef, nodeRefProps, missingProperties);
+
+        return missingProperties.isEmpty();
+    }
+
+    /**
+     * Helper method to check whether all the definition mandatory properties of the node have been set
+     *
+     * @param classDef  the ClassDefinition defining the properties to be checked
+     * @param nodeRefProps  the properties of the node to be checked
+     * @param missingProperties  the list of mandatory properties found to be missing (currently only the first one)
+     * @return boolean true if all mandatory properties are set, false otherwise
+     */
+    private void checkDefinitionMandatoryPropsSet(final ClassDefinition classDef, final Map<QName, Serializable> nodeRefProps,
+                                                  final List<String> missingProperties)
+    {
+        for (PropertyDefinition propDef : classDef.getProperties().values())
+        {
+            if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+            {
+                logMissingProperty(propDef, missingProperties);;
+            }
+        }
+    }
+
+    /**
+     * Log information about missing properties.
+     *
+     * @param propDef           property definition
+     * @param missingProperties missing properties
+     */
+    private void logMissingProperty(PropertyDefinition propDef, List<String> missingProperties)
+    {
+        if (LOGGER.isWarnEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Mandatory property missing: ").append(propDef.getName());
+            LOGGER.warn(msg.toString());
+        }
+        missingProperties.add(propDef.getName().toString());
+    }
+
+    /**
+     * Helper method to get the custom aspect for a given nodeRef type
+     *
+     * @param nodeRefType   the node type for which to return custom aspect QName
+     * @return QName    custom aspect
+     */
+    private QName getCustomAspectImpl(QName nodeRefType)
+    {
+        QName aspect = ASPECT_RECORD;
+        if (nodeRefType.equals(TYPE_NON_ELECTRONIC_DOCUMENT))
+        {
+            aspect = TYPE_NON_ELECTRONIC_DOCUMENT;
+        }
+
+        // get customAspectImpl
+        String localName = aspect.toPrefixString(namespaceService).replace(":", "");
+        localName = MessageFormat.format("{0}CustomProperties", localName);
+        return QName.createQName(RM_CUSTOM_URI, localName);
     }
 }

@@ -388,8 +388,7 @@
 
    <bean id="declareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction" parent="rmAction">
       <property name="publicAction" value="true"/>
-      <property name="checkMandatoryPropertiesEnabled" value="${rm.completerecord.mandatorypropertiescheck.enabled}"/>
-      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
+      <property name="recordService" ref="RecordService" />
    </bean>
 
    <!-- undeclare record -->

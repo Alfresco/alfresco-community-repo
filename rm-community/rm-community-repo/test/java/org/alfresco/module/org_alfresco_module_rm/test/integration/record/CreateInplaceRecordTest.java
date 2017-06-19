@@ -27,12 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
+import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
@@ -42,10 +44,23 @@ import org.alfresco.service.cmr.security.AccessStatus;
  */
 public class CreateInplaceRecordTest extends BaseRMTestCase
 {
+    private QuickShareService quickShareService;
+
     @Override
     protected boolean isCollaborationSiteTest()
     {
         return true;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
+     */
+    @Override
+    protected void initServices()
+    {
+        super.initServices();
+
+        quickShareService = (QuickShareService) applicationContext.getBean("quickShareService");
     }
 
     /**
@@ -182,6 +197,51 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
                     }
                  }, dmConsumer);
                 
+            }
+        });
+    }
+
+    /**
+     * Given a shared document in a collaboration site 
+     * When the document is declared as record by a site collaborator 
+     * Then the document becomes a record and is not shared anymore
+     */
+    public void testCreateInplaceRecordFromCollabSiteRemovesSharedLink()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            public void given()
+            {
+                // Check that the document is not a record
+                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
+
+                quickShareService.shareContent(dmDocument);
+                // Check the document is shared
+                assertTrue("The document is shared", nodeService.hasAspect(dmDocument, QuickShareModel.ASPECT_QSHARE));
+            }
+
+            public void when()
+            {
+                // Declare the document as a record
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        // Declare record
+                        recordService.createRecord(filePlan, dmDocument);
+
+                        return null;
+                    }
+                }, dmCollaborator);
+            }
+
+            public void then()
+            {
+                // Check that the document is a record now
+                assertTrue("The document should now be a record", recordService.isRecord(dmDocument));
+
+                // Check that the record is not shared anymore
+                assertFalse("The document should not be shared anymore", nodeService.hasAspect(dmDocument, QuickShareModel.ASPECT_QSHARE));
             }
         });
     }

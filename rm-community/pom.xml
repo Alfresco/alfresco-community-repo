@@ -24,6 +24,6 @@
 
    <properties>
       <alfresco.version>5.1.g</alfresco.version>
-      <share.version>${alfresco.version}</share.version>
+      <share.version>5.1.f</share.version>
    </properties>
 </project>

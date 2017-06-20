@@ -29,7 +29,6 @@ package org.alfresco.repo.forum;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -42,7 +41,6 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
-import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -52,9 +50,6 @@ import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.repo.security.permissions.impl.PermissionServiceImpl;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.lock.LockService;
-import org.alfresco.service.cmr.lock.LockType;
-import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -70,7 +65,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
@@ -98,8 +92,6 @@ public class CommentsTest
     private static final ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
     
     public static final String USER_ONE_NAME = "userone";
-    public static final String USER_TWO_NAME = "usertwo";
-    public static final String USER_THREE_NAME = "userthree";
     public static final AlfrescoPerson TEST_USER1 = new AlfrescoPerson(APP_CONTEXT_INIT, USER_ONE_NAME);
     
     // Tie them together in a static Rule Chain
@@ -132,7 +124,6 @@ public class CommentsTest
     private static ActivityPostDAO postDAO;
     private static PermissionServiceImpl permissionServiceImpl;
     private static ModelDAO permissionModelDAO;
-    private static LockService lockService;
 
     // These NodeRefs are used by the test methods.
     private static NodeRef COMPANY_HOME;
@@ -156,10 +147,7 @@ public class CommentsTest
         postDAO = (ActivityPostDAO)APP_CONTEXT_INIT.getApplicationContext().getBean("postDAO");
         permissionServiceImpl = (PermissionServiceImpl)APP_CONTEXT_INIT.getApplicationContext().getBean("permissionServiceImpl");
         permissionModelDAO = (ModelDAO)APP_CONTEXT_INIT.getApplicationContext().getBean("permissionsModelDAO");
-
-        lockService = (LockService)APP_CONTEXT_INIT.getApplicationContext().getBean("lockService");
-
-
+        
         COMPANY_HOME = repositoryHelper.getCompanyHome();
     }
     
@@ -172,7 +160,7 @@ public class CommentsTest
         testDocs = new ArrayList<NodeRef>(3);
         for (int i = 0; i < 3; i++)
         {
-            NodeRef testNode = testNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, testFolder, "testDocInFolder_" + GUID.generate() + "_" + i, TEST_USER1.getUsername());
+            NodeRef testNode = testNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, COMPANY_HOME, "testDocInFolder" + i, TEST_USER1.getUsername());
             testDocs.add(testNode);
         }
     }
@@ -180,6 +168,8 @@ public class CommentsTest
     // MNT-11667 "createComment" method creates activity for users who are not supposed to see the file
     @Test public void testMNT11667() throws Exception
     {
+        final String userTwo = "usertwo";
+
         try
         {
             transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
@@ -189,17 +179,17 @@ public class CommentsTest
                 {
                     authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
-                    createUser(USER_TWO_NAME);
+                    createUser(userTwo);
 
                     assertTrue(siteService.hasSite(testSite.getShortName()));
 
                     authenticationComponent.setCurrentUser(USER_ONE_NAME);
 
                     // invite user to a site with 'Collaborator' role
-                    siteService.setMembership(testSite.getShortName(), USER_TWO_NAME, SiteModel.SITE_COLLABORATOR);
+                    siteService.setMembership(testSite.getShortName(), userTwo, SiteModel.SITE_COLLABORATOR);
 
                     assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(testSite.getShortName(), USER_ONE_NAME));
-                    assertEquals(SiteModel.SITE_COLLABORATOR, siteService.getMembersRole(testSite.getShortName(), USER_TWO_NAME));
+                    assertEquals(SiteModel.SITE_COLLABORATOR, siteService.getMembersRole(testSite.getShortName(), userTwo));
 
                     // get container of site
                     NodeRef doclib = siteService.getContainer(testSite.getShortName(), SiteService.DOCUMENT_LIBRARY);
@@ -243,7 +233,7 @@ public class CommentsTest
                     assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.WRITE)) == AccessStatus.ALLOWED);
                     assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.DELETE)) == AccessStatus.ALLOWED);
 
-                    authenticationComponent.setCurrentUser(USER_TWO_NAME);
+                    authenticationComponent.setCurrentUser(userTwo);
 
                     assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.READ)) == AccessStatus.DENIED);
                     assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.WRITE)) == AccessStatus.DENIED);
@@ -258,14 +248,14 @@ public class CommentsTest
         {
             authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
-            if (personService.personExists(USER_TWO_NAME))
+            if (personService.personExists(userTwo))
             {
-                personService.deletePerson(USER_TWO_NAME);
+                personService.deletePerson(userTwo);
             }
 
-            if (authenticationService.authenticationExists(USER_TWO_NAME))
+            if (authenticationService.authenticationExists(userTwo))
             {
-                authenticationService.deleteAuthentication(USER_TWO_NAME);
+                authenticationService.deleteAuthentication(userTwo);
             }
         }
 
@@ -405,93 +395,6 @@ public class CommentsTest
                     return null;
                 }
             });
-    }
-
-    /**
-     *  REPO-2557, ALF-21907
-     */
-    @Test public void testAddingCommentOnLockedNode()
-    {
-        // create user 2 and 3
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-                createUser(USER_TWO_NAME);
-                createUser(USER_THREE_NAME);
-                siteService.setMembership(testSite.getShortName(), USER_TWO_NAME, SiteModel.SITE_MANAGER);
-                siteService.setMembership(testSite.getShortName(), USER_THREE_NAME, SiteModel.SITE_MANAGER);
-                return null;
-            }
-        });
-
-        // switch to user 1
-        authenticationComponent.setCurrentUser(USER_ONE_NAME);
-
-        // create some comments
-        final NodeRef testDoc = testDocs.get(0);
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                applyComment(testDoc, "Hello 1");
-                applyComment(testDoc, "Hello 2");
-                return null;
-            }
-        });
-
-        authenticationComponent.setCurrentUser(USER_TWO_NAME);
-
-        // lock node
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                lockService.lock(testDoc, LockType.WRITE_LOCK, (int) 3600, Lifetime.PERSISTENT, "someInfo");
-                return null;
-            }
-        });
-
-        authenticationComponent.setCurrentUser(USER_THREE_NAME);
-
-        try
-        {
-            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    applyComment(testDoc, "Hello 3");
-                    return null;
-                }
-            });
-            fail("NodeLockedException not thrown");
-        }
-        catch(NodeLockedException e)
-        {
-            // Fails because is not the lock owner
-        }
-
-        // change to lock owner
-        authenticationComponent.setCurrentUser(USER_TWO_NAME);
-
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                applyComment(testDoc, "Hello 3");
-                return null;
-            }
-        });
-
-        assertCommentCountIs(testDoc, 3);
-
-        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
     }
     
     /**

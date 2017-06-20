@@ -236,27 +236,4 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
                                        false);
 
     }
-    
-    @Test
-    public void testCanExistsFolderNameV()
-    {
-        String vFile = "vfile.txt";
-
-        ChildAssociationRef vChildRef = createContent(companyHomeNodeRef, vFile);
-        assertFalse(Reference.isReference(vChildRef.getChildRef()));
-        assertTrue(nodeService.exists(vChildRef.getChildRef()));
-
-        String nFile = "nfile.txt";
-        ChildAssociationRef nfileRef = createFolder(companyHomeNodeRef, nFile);
-        assertFalse(Reference.isReference(nfileRef.getChildRef()));
-        assertTrue(nodeService.exists(nfileRef.getChildRef()));
-
-        NodeRef virtualFolder = createVirtualizedFolder(testRootFolder.getNodeRef(), VIRTUAL_FOLDER_3_NAME, TEST_TEMPLATE_4_JSON_SYS_PATH);
-
-        assertTrue(smartStore.canVirtualize(virtualFolder));
-        virtualFolder = smartStore.virtualize(virtualFolder).toNodeRef();
-        assertTrue(Reference.isReference(virtualFolder));
-        assertTrue(nodeService.exists(virtualFolder));
-
-    }
 }

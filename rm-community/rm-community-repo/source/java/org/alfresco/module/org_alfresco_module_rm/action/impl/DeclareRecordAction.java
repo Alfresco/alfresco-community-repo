@@ -74,7 +74,10 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
             recordService.complete(actionedUponNodeRef);
         } catch (IntegrityException e)
         {
-            action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, e.getMessage());
+            if (e.getMessage().contains("missing"))
+            {
+                action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, "missingProperties");
+            }
         }
 
     }

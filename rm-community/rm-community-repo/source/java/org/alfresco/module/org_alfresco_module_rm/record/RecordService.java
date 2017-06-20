@@ -293,11 +293,4 @@ public interface RecordService
     * @since 2.3
     */
    void unlink(NodeRef record, NodeRef recordFolder);
-
-    /**
-     * Completes a record
-     *
-     * @param nodeRef Record node reference
-     */
-    void complete(NodeRef nodeRef);
 }

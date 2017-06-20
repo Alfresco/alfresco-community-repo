@@ -53,7 +53,7 @@ public class PropertyTypeConverterTest
         assertEquals(PropertyValueEntity.PersistedType.STRING, persistedType);
 
         // String value with length grater then the DB supported threshold.
-        String stringValue = RandomStringUtils.randomAlphanumeric(SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH + 1);
+        String stringValue = RandomStringUtils.randomAlphanumeric(SchemaBootstrap.getMaxStringLength() + 1);
 
         // Check long string that was truncated (see MNT-17523 for details).
         persistedType = PropertyValueEntity.getPersistedTypeEnum(stringValue, defaultPropertyTypeConverter);

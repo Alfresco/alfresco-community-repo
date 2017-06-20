@@ -331,7 +331,12 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         personManager.setUser(USER2);
         List<WorkflowTask> tasks = workflowService.getAssignedTasks(USER2, WorkflowTaskState.IN_PROGRESS);
         assertEquals(1, tasks.size());
-        assertEquals("This is the description", tasks.get(0).getDescription());
+
+        //Assert task description
+        assertEquals("Documents for review and approval", tasks.get(0).getDescription());
+
+        //Assert workflow link name
+        assertEquals("This is the description", tasks.get(0).getProperties().get(WorkflowModel.PROP_DESCRIPTION));
     }
     
     /**

@@ -32,8 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionResult;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -55,9 +55,9 @@ public class CompleteRecordTest extends BaseRMTestCase
     private static final boolean OPTIONAL_METADATA = false;
 
     /**
-     * Record service impl
+     * complete record action
      */
-    private RecordServiceImpl recordServiceImpl;
+    private DeclareRecordAction action;
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
@@ -67,8 +67,8 @@ public class CompleteRecordTest extends BaseRMTestCase
     {
         super.initServices();
 
-        // get the record service
-        recordServiceImpl = (RecordServiceImpl) applicationContext.getBean("recordService");
+        // get the action
+        action = (DeclareRecordAction) applicationContext.getBean("declareRecord");
     }
 
     /**
@@ -80,7 +80,7 @@ public class CompleteRecordTest extends BaseRMTestCase
         super.tearDownImpl();
 
         // ensure action is returned to original state
-        recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+        action.setCheckMandatoryPropertiesEnabled(true);
     }
 
     /**
@@ -100,7 +100,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given()
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create a record
                 record = utils.createRecord(rmFolder, "record.txt", "title");
@@ -140,7 +140,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given()
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create a record
                 record = utils.createRecord(rmFolder, "record.txt", "title");
@@ -183,7 +183,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given() throws Exception
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create the custom metadata definition (that has a mandatory property) for electronic records
                 defineCustomMetadata(CUSTOM_ELECTRONIC_TEST, ASPECT_RECORD, MANDATORY_METADATA);
@@ -229,7 +229,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given() throws Exception
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // define the custom metadata definition (that has a mandatory property)
                 defineCustomMetadata(CUSTOM_ELECTRONIC_TEST, ASPECT_RECORD, MANDATORY_METADATA);
@@ -279,7 +279,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given() throws Exception
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create the custom metadata definition (that has a mandatory property) for non-electronic records
                 defineCustomMetadata(CUSTOM_NON_ELECTRONIC_TEST, TYPE_NON_ELECTRONIC_DOCUMENT, MANDATORY_METADATA);
@@ -326,7 +326,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given() throws Exception
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create the custom metadata definition (that has a mandatory property)
                 defineCustomMetadata(CUSTOM_NON_ELECTRONIC_TEST, TYPE_NON_ELECTRONIC_DOCUMENT, MANDATORY_METADATA);
@@ -375,7 +375,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given() throws Exception
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create the custom metadata definition (that does not have a mandatory property)
                 defineCustomMetadata(CUSTOM_ELECTRONIC_TEST, ASPECT_RECORD, OPTIONAL_METADATA);
@@ -422,7 +422,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given() throws Exception
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create the record custom metadata definition (that has a mandatory property)
                 defineCustomMetadata(CUSTOM_ELECTRONIC_TEST, ASPECT_RECORD, MANDATORY_METADATA);
@@ -469,7 +469,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given() throws Exception
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(true);
+                action.setCheckMandatoryPropertiesEnabled(true);
 
                 // create the non-electronic record custom metadata definition (that has a mandatory property)
                 defineCustomMetadata(CUSTOM_NON_ELECTRONIC_TEST, TYPE_NON_ELECTRONIC_DOCUMENT, MANDATORY_METADATA);
@@ -515,7 +515,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given()
             {
                 // disable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(false);
+                action.setCheckMandatoryPropertiesEnabled(false);
 
                 // create a record
                 record = utils.createRecord(rmFolder, "record.txt", "title");
@@ -555,7 +555,7 @@ public class CompleteRecordTest extends BaseRMTestCase
             public void given()
             {
                 // enable mandatory parameter check
-                recordServiceImpl.setCheckMandatoryPropertiesEnabled(false);
+                action.setCheckMandatoryPropertiesEnabled(false);
 
                 // create a record
                 record = utils.createRecord(rmFolder, "record.txt", "title");

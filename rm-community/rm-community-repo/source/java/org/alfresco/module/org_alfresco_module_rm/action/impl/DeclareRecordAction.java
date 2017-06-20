@@ -27,13 +27,33 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
+
+import java.io.Serializable;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
-import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.ParameterCheck;
+import org.alfresco.service.cmr.security.OwnableService;
+import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Declare record action
@@ -45,17 +65,33 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     /** action name */
     public static final String NAME = "declareRecord";
 
-    /** Record service */
-    private RecordService recordService;
+    /** I18N */
+    private static final String MSG_UNDECLARED_ONLY_RECORDS = "rm.action.undeclared-only-records";
+    private static final String MSG_NO_DECLARE_MAND_PROP = "rm.action.no-declare-mand-prop";
+
+    /** Logger */
+    private static Log logger = LogFactory.getLog(DeclareRecordAction.class);
+
+    /** check mandatory properties */
+    private boolean checkMandatoryPropertiesEnabled = true;
+
+    /** transactional resource helper */
+    private TransactionalResourceHelper transactionalResourceHelper;
 
     /**
-     * Sets the record service
-     *
-     * @param recordService record service
+     * @param checkMandatoryPropertiesEnabled true if check mandatory properties is enabled, false otherwise
      */
-    public void setRecordService(RecordService recordService)
+    public void setCheckMandatoryPropertiesEnabled(boolean checkMandatoryPropertiesEnabled)
     {
-        this.recordService = recordService;
+        this.checkMandatoryPropertiesEnabled = checkMandatoryPropertiesEnabled;
+    }
+
+    /**
+     * @param transactionalResourceHelper
+     */
+    public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
+    {
+        this.transactionalResourceHelper = transactionalResourceHelper;
     }
 
     /**
@@ -64,14 +100,167 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
-        ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
-        try
+        if (getNodeService().exists(actionedUponNodeRef) &&
+                getRecordService().isRecord(actionedUponNodeRef) &&
+                !getFreezeService().isFrozen(actionedUponNodeRef))
         {
-            recordService.complete(actionedUponNodeRef);
+            if (!getRecordService().isDeclared(actionedUponNodeRef))
+            {
+                // if the record is newly created make sure the record identifier is set before completing the record
+                Set<NodeRef> newRecords = transactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS);
+                if(newRecords.contains(actionedUponNodeRef))
+                {
+                    generateRecordIdentifier(getNodeService(), getIdentifierService(), actionedUponNodeRef);
+                }
+
+                List<String> missingProperties = new ArrayList<>(5);
+                // Aspect not already defined - check mandatory properties then add
+                if (!checkMandatoryPropertiesEnabled ||
+                    mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
+                {
+                    getRecordService().disablePropertyEditableCheck();
+                    try
+                    {
+                        // Add the declared aspect
+                        Map<QName, Serializable> declaredProps = new HashMap<>(2);
+                        declaredProps.put(PROP_DECLARED_AT, new Date());
+                        declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
+                        this.getNodeService().addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
+
+                        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork()
+                            {
+                                // remove all owner related rights
+                                getOwnableService().setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
+                                return null;
+                            }
+                        });
+                    }
+                    finally
+                    {
+                        getRecordService().enablePropertyEditableCheck();
+                    }
+                }
+                else
+                {
+                    logger.debug(buildMissingPropertiesErrorString(missingProperties));
+                    action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, "missingProperties");
+                }
+            }
         }
-        catch (IntegrityException e) {
-            action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, e.getMessage());
+        else
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, actionedUponNodeRef.toString()));
+            }
+        }
+    }
+
+    private String buildMissingPropertiesErrorString(List<String> missingProperties)
+    {
+        StringBuilder builder = new StringBuilder(255);
+        builder.append(I18NUtil.getMessage(MSG_NO_DECLARE_MAND_PROP));
+        builder.append("  ");
+        for (String missingProperty : missingProperties)
+        {
+            builder.append(missingProperty).append(", ");
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Helper method to check whether all the mandatory properties of the node have been set
+     *
+     * @param nodeRef node reference
+     * @return boolean true if all mandatory properties are set, false otherwise
+     */
+    private boolean mandatoryPropertiesSet(NodeRef nodeRef, List<String> missingProperties)
+    {
+        boolean result = true;
+
+        Map<QName, Serializable> nodeRefProps = this.getNodeService().getProperties(nodeRef);
+
+        QName nodeRefType = this.getNodeService().getType(nodeRef);
+
+        TypeDefinition typeDef = this.getDictionaryService().getType(nodeRefType);
+        for (PropertyDefinition propDef : typeDef.getProperties().values())
+        {
+            if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+            {
+                logMissingProperty(propDef, missingProperties);
+
+                result = false;
+                break;
+            }
         }
 
+        if (result)
+        {
+            Set<QName> aspects = this.getNodeService().getAspects(nodeRef);
+            for (QName aspect : aspects)
+            {
+                AspectDefinition aspectDef = this.getDictionaryService().getAspect(aspect);
+                for (PropertyDefinition propDef : aspectDef.getProperties().values())
+                {
+                    if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+                    {
+                        logMissingProperty(propDef, missingProperties);
+
+                        result = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // check for missing mandatory metadata from custom aspect definitions
+        if (result)
+        {
+            QName aspect = ASPECT_RECORD;
+            if (nodeRefType.equals(TYPE_NON_ELECTRONIC_DOCUMENT))
+            {
+                aspect = TYPE_NON_ELECTRONIC_DOCUMENT;
+            }
+
+            // get customAspectImpl
+            String localName = aspect.toPrefixString(getNamespaceService()).replace(":", "");
+            localName = MessageFormat.format("{0}CustomProperties", localName);
+            QName customAspect = QName.createQName(RM_CUSTOM_URI, localName);
+
+            AspectDefinition aspectDef = this.getDictionaryService().getAspect(customAspect);
+
+            for (PropertyDefinition propDef : aspectDef.getProperties().values())
+            {
+                if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
+                {
+                    logMissingProperty(propDef, missingProperties);
+
+                    result = false;
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Log information about missing properties.
+     *
+     * @param propDef               property definition
+     * @param missingProperties     missing properties
+     */
+    private void logMissingProperty(PropertyDefinition propDef, List<String> missingProperties)
+    {
+        if (logger.isWarnEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Mandatory property missing: ").append(propDef.getName());
+            logger.warn(msg.toString());
+        }
+        missingProperties.add(propDef.getName().toString());
     }
 }

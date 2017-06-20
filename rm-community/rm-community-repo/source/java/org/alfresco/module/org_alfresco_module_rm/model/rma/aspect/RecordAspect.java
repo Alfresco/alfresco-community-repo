@@ -67,7 +67,7 @@ import org.alfresco.service.namespace.QName;
 )
 public class RecordAspect extends    AbstractDisposableItem
                           implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                     NodeServicePolicies.OnAddAspectPolicy,
+                                     NodeServicePolicies.BeforeAddAspectPolicy,
                                      RecordsManagementPolicies.OnCreateReference,
                                      RecordsManagementPolicies.OnRemoveReference,
                                      NodeServicePolicies.OnMoveNodePolicy,
@@ -360,8 +360,8 @@ public class RecordAspect extends    AbstractDisposableItem
      *      org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT)
-    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
+    @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
+    public void beforeAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {

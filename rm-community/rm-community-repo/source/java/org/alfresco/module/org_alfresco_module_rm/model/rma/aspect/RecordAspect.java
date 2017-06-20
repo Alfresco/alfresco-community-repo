@@ -354,9 +354,9 @@ public class RecordAspect extends    AbstractDisposableItem
     }
 
     /**
-     * Behaviour to remove the shared link when record is declared
+     * Behaviour to remove the shared link before declare a record
      *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef,
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
      *      org.alfresco.service.namespace.QName)
      */
     @Override

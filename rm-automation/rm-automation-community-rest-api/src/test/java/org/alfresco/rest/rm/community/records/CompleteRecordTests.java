@@ -57,6 +57,8 @@ public class CompleteRecordTests extends BaseRMRestTest
     private static final Boolean COMPLETE = true;
     private static final Boolean INCOMPLETE = false;
     private static final String parameters = "include=isCompleted";
+    //private static final boolean MANDATORY_METADATA = true;
+    //private static final QName ASPECT_TEST = QName.createQName("http://www.alfresco.org/model/rmtest/1.0", "recordMetaDataWithProperty");
 
     /**
      * Incomplete records with mandatory meta-data present
@@ -76,7 +78,7 @@ public class CompleteRecordTests extends BaseRMRestTest
             getFile(IMAGE_FILE));
         assertStatusCode(CREATED);
         setMandatoryMetadata(electronicRecord);
-        // TODO verfiy mandatory metadata is present
+        // TODO verfiy mandatory metadata is present?
 
         //create non-electronic record in record folder
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
@@ -97,7 +99,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     public Object[][] getIncompleteRecordsMandatoryMetadataMissing() throws Exception
     {
         createRMSiteIfNotExists();
-        createMandatoryMetadata();
+        //createMandatoryMetadata();
 
         String recordFolderId = createCategoryFolderInFilePlan().getId();
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
@@ -106,6 +108,7 @@ public class CompleteRecordTests extends BaseRMRestTest
         Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId,
             getFile(IMAGE_FILE));
         assertStatusCode(CREATED);
+        createMissingMandatoryMetadata(electronicRecord);
 
         //create non-electronic record in record folder
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
@@ -322,12 +325,13 @@ public class CompleteRecordTests extends BaseRMRestTest
     }
 
 
-    private void createMandatoryMetadata()
+    private void createMissingMandatoryMetadata(Record record)
     {
-
+        nodeService.addAspect(record, ASPECT_TEST, null);
     }
 
     private void setMandatoryMetadata(Record record)
     {
+        nodeService.addAspect(record, ASPECT_TEST, "SomeTextValue");
     }
 }

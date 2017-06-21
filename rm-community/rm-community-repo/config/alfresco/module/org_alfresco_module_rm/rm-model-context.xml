@@ -138,6 +138,7 @@
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />
         <property name="recordService" ref="RecordService" />
         <property name="dispositionService" ref="DispositionService" />
+        <property name="quickShareService" ref="QuickShareService"/>
    </bean>
 
    <bean id="rma.recordComponentIdentifier" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordComponentIdentifierAspect" parent="rm.baseBehaviour">

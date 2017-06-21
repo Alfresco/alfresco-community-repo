@@ -25,13 +25,16 @@
  */
 package org.alfresco.repo.domain.propval;
 
-import static org.junit.Assert.assertEquals;
-
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.apache.commons.lang.RandomStringUtils;
+import org.hibernate.dialect.MySQLInnoDBDialect;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @see PropertyTypeConverter
@@ -42,9 +45,23 @@ import org.junit.experimental.categories.Category;
 @Category(OwnJVMTestsCategory.class)
 public class PropertyTypeConverterTest
 {
-
+    private int stringLen;
+    
+    @Before
+    public void setMaxStringLength()
+    {
+        stringLen = SchemaBootstrap.getMaxStringLength();
+        SchemaBootstrap.setMaxStringLength(2000, new MySQLInnoDBDialect());
+    }
+    
+    @After
+    public void resetMaxStringLength()
+    {
+        SchemaBootstrap.setMaxStringLength(stringLen, new MySQLInnoDBDialect());
+    }
+    
     @Test
-    public void testGetPersistentType()
+    public void testGetPersistentTypeForStrings()
     {
         DefaultPropertyTypeConverter defaultPropertyTypeConverter = new DefaultPropertyTypeConverter();
 
@@ -52,12 +69,17 @@ public class PropertyTypeConverterTest
         PropertyValueEntity.PersistedType persistedType = PropertyValueEntity.getPersistedTypeEnum("test", defaultPropertyTypeConverter);
         assertEquals(PropertyValueEntity.PersistedType.STRING, persistedType);
 
-        // String value with length grater then the DB supported threshold.
-        String stringValue = RandomStringUtils.randomAlphanumeric(SchemaBootstrap.getMaxStringLength() + 1);
-
-        // Check long string that was truncated (see MNT-17523 for details).
+        // String value with length greater than the DB supported threshold.
+        String stringValue = RandomStringUtils.randomAlphanumeric(2001);
+        // ... persisted as blobs (see MNT-17523 for details).
         persistedType = PropertyValueEntity.getPersistedTypeEnum(stringValue, defaultPropertyTypeConverter);
         assertEquals(PropertyValueEntity.PersistedType.SERIALIZABLE, persistedType);
+
+        // String value with length less than the DB supported threshold.
+        stringValue = RandomStringUtils.randomAlphanumeric(1999);
+        // ... persisted as strings
+        persistedType = PropertyValueEntity.getPersistedTypeEnum(stringValue, defaultPropertyTypeConverter);
+        assertEquals(PropertyValueEntity.PersistedType.STRING, persistedType);
     }
 
 }

@@ -189,7 +189,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * @see #DEFAULT_MAX_STRING_LENGTH
      */
-    private static final void setMaxStringLength(int length, Dialect dialect)
+    public static final void setMaxStringLength(int length, Dialect dialect)
     {
         int max = (dialect instanceof AlfrescoMySQLClusterNDBDialect ? DEFAULT_MAX_STRING_LENGTH_NDB : DEFAULT_MAX_STRING_LENGTH);
         

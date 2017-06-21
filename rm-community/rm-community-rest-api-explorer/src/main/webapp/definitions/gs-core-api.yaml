@@ -1801,7 +1801,7 @@ paths:
       tags:
         - files
       summary: Declare as record
-      description: Declares the file **fileId** in the unfiled records container. The original file node is moved to the Records Management site and a secondary association is created to it's original location. 
+      description: Declares the file **fileId** in the unfiled records container. The original file is moved to the Records Management site and a secondary association is created in the file's original site. 
       operationId: declareRecord
       parameters:
         - name: fileId

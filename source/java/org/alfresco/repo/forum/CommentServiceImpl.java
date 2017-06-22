@@ -613,17 +613,18 @@ public class CommentServiceImpl extends AbstractLifecycleBean implements Comment
         NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
         if (discussableNodeRef.equals(discussableNode))
         {
-            if (!isWorkingCopyOrLocked(discussableNode))
+            if (!isWorkingCopyOrLocked(discussableNode)
+                    || isLockOwner(discussableNode))
             {
                 canEdit = canEditPermission(commentNodeRef);
                 canDelete = canDeletePermission(commentNodeRef);
             }
         }
-        
+
         Map<String, Boolean> map = new HashMap<>(2);
         map.put(CommentService.CAN_EDIT, canEdit);
         map.put(CommentService.CAN_DELETE, canDelete);
-        
+
         return map;
     }
 
@@ -637,10 +638,15 @@ public class CommentServiceImpl extends AbstractLifecycleBean implements Comment
         boolean isCoordinator = permissionService.hasPermission(commentNodeRef, PermissionService.COORDINATOR) == (AccessStatus.ALLOWED);
         return (isSiteManager || isCoordinator || currentUser.equals(creator) || currentUser.equals(owner));
     }
-    
+
     private boolean canDeletePermission(NodeRef commentNodeRef)
     {
         return permissionService.hasPermission(commentNodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED;
+    }
+
+    private boolean isLockOwner(NodeRef nodeRef)
+    {
+        return lockService.getLockStatus(nodeRef) == LockStatus.LOCK_OWNER;
     }
 
     private boolean isWorkingCopyOrLocked(NodeRef nodeRef)
@@ -667,7 +673,7 @@ public class CommentServiceImpl extends AbstractLifecycleBean implements Comment
         }
         return (isWorkingCopy || isLocked);
     }
-    
+
     @Override
     public void onUpdateProperties(NodeRef commentNodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -675,10 +681,11 @@ public class CommentServiceImpl extends AbstractLifecycleBean implements Comment
         if (discussableNodeRef != null)
         {
             if (behaviourFilter.isEnabled(ContentModel.ASPECT_LOCKABLE)
-                    && isWorkingCopyOrLocked(discussableNodeRef))
+                    && isWorkingCopyOrLocked(discussableNodeRef)
+                    && !isLockOwner(discussableNodeRef))
             {
                 List<QName> changedProperties = getChangedProperties(before, after);
-                
+
                 // check if comment updated (rather than some other change, eg. addition of lockable aspect only)
                 boolean commentUpdated = false;
                 for (QName changedProperty : changedProperties)
@@ -693,7 +700,7 @@ public class CommentServiceImpl extends AbstractLifecycleBean implements Comment
                         }
                     }
                 }
-                
+
                 if (commentUpdated)
                 {
                     throw new NodeLockedException(discussableNodeRef);
@@ -741,20 +748,22 @@ public class CommentServiceImpl extends AbstractLifecycleBean implements Comment
 
         return results;
     }
-    
+
     @Override
     public void beforeDeleteNode(final NodeRef commentNodeRef)
     {
         NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
         if (discussableNodeRef != null)
         {
+            boolean canDelete = canDeletePermission(commentNodeRef);
             if (behaviourFilter.isEnabled(ContentModel.ASPECT_LOCKABLE) // eg. delete site (MNT-14671)
-                    && isWorkingCopyOrLocked(discussableNodeRef))
+                    && isWorkingCopyOrLocked(discussableNodeRef)
+                    && !isLockOwner(discussableNodeRef)
+                    && !canDelete)
             {
                 throw new NodeLockedException(discussableNodeRef);
             }
 
-            boolean canDelete = canDeletePermission(commentNodeRef);
             if (! canDelete)
             {
                 throw new AccessDeniedException("Cannot delete comment");

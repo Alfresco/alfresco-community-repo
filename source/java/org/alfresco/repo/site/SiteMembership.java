@@ -36,132 +36,140 @@ import org.alfresco.service.cmr.site.SiteRole;
  */
 public class SiteMembership
 {
-	private SiteInfo siteInfo;
-	private String personId;
-	private String firstName;
-	private String lastName;
-	private String role;
+    private SiteInfo siteInfo;
+    private String personId;
+    private String firstName;
+    private String lastName;
+    private String role;
 
-	public SiteMembership(SiteInfo siteInfo, String personId, String firstName, String lastName, String role)
-	{
-		super();
-		if(siteInfo == null)
-		{
-			throw new java.lang.IllegalArgumentException();
-		}
-		if(personId == null)
-		{
-			throw new java.lang.IllegalArgumentException();
-		}
-		if(firstName == null)
-		{
-			throw new java.lang.IllegalArgumentException();
-		}
-		if(lastName == null)
-		{
-			throw new java.lang.IllegalArgumentException();
-		}
-		if(role == null)
-		{
-			throw new java.lang.IllegalArgumentException();
-		}
-		this.siteInfo = siteInfo;
-		this.personId = personId;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.role = role;
-	}
+    public SiteMembership(SiteInfo siteInfo, String personId, String firstName, String lastName,
+            String role)
+    {
+        super();
+        if (siteInfo == null)
+        {
+            throw new java.lang.IllegalArgumentException();
+        }
+        if (personId == null)
+        {
+            throw new java.lang.IllegalArgumentException(
+                    "Person required building site membership of " + siteInfo.getShortName());
+        }
+        if (firstName == null)
+        {
+            throw new java.lang.IllegalArgumentException(
+                    "FirstName required building site membership of " + siteInfo.getShortName());
+        }
+        if (lastName == null)
+        {
+            throw new java.lang.IllegalArgumentException(
+                    "LastName required building site membership of " + siteInfo.getShortName());
+        }
+        if (role == null)
+        {
+            throw new java.lang.IllegalArgumentException(
+                    "Role required building site membership of " + siteInfo.getShortName());
+        }
+        this.siteInfo = siteInfo;
+        this.personId = personId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.role = role;
+    }
 
-	public SiteMembership(SiteInfo siteInfo, String personId, String role)
-	{
-		super();
-		if(siteInfo == null)
-		{
-			throw new java.lang.IllegalArgumentException();
-		}
-		if(personId == null)
-		{
-			throw new java.lang.IllegalArgumentException();
-		}
-		if(role == null)
-		{
-			throw new java.lang.IllegalArgumentException();
-		}
+    public SiteMembership(SiteInfo siteInfo, String personId, String role)
+    {
+        super();
+        if (siteInfo == null)
+        {
+            throw new java.lang.IllegalArgumentException();
+        }
+        if (personId == null)
+        {
+            throw new java.lang.IllegalArgumentException(
+                    "Person required building site membership of " + siteInfo.getShortName());
+        }
+        if (role == null)
+        {
+            throw new java.lang.IllegalArgumentException(
+                    "Role required building site membership of " + siteInfo.getShortName());
+        }
 
-		this.siteInfo = siteInfo;
-		this.personId = personId;
-		this.role = role;
-	}
+        this.siteInfo = siteInfo;
+        this.personId = personId;
+        this.role = role;
+    }
 
-	public SiteInfo getSiteInfo()
-	{
-		return siteInfo;
-	}
+    public SiteInfo getSiteInfo()
+    {
+        return siteInfo;
+    }
 
-	public String getPersonId()
-	{
-		return personId;
-	}
+    public String getPersonId()
+    {
+        return personId;
+    }
 
-	public String getFirstName()
-	{
-		return firstName;
-	}
+    public String getFirstName()
+    {
+        return firstName;
+    }
 
-	public String getLastName()
-	{
-		return lastName;
-	}
+    public String getLastName()
+    {
+        return lastName;
+    }
 
-	public String getRole()
-	{
-		return role;
-	}
+    public String getRole()
+    {
+        return role;
+    }
 
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((personId == null) ? 0 : personId.hashCode());
-		result = prime * result + ((role == null) ? 0 : role.hashCode());
-		result = prime * result
-				+ ((getSiteInfo() == null) ? 0 : getSiteInfo().hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((personId == null) ? 0 : personId.hashCode());
+        result = prime * result + ((role == null) ? 0 : role.hashCode());
+        result = prime * result + ((getSiteInfo() == null) ? 0 : getSiteInfo().hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SiteMembership other = (SiteMembership) obj;
-		if (personId == null) {
-			if (other.personId != null)
-				return false;
-		} else if (!personId.equals(other.personId))
-			return false;
-		if (role != other.role)
-			return false;
-		if (getSiteInfo() == null) {
-			if (other.getSiteInfo() != null)
-				return false;
-		} else if (!getSiteInfo().equals(other.getSiteInfo()))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        SiteMembership other = (SiteMembership) obj;
+        if (personId == null)
+        {
+            if (other.personId != null)
+                return false;
+        }
+        else if (!personId.equals(other.personId))
+            return false;
+        if (role != other.role)
+            return false;
+        if (getSiteInfo() == null)
+        {
+            if (other.getSiteInfo() != null)
+                return false;
+        }
+        else if (!getSiteInfo().equals(other.getSiteInfo()))
+            return false;
+        return true;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "SiteMembership [siteInfo=" + getSiteInfo()
-				+ ", personId=" + personId + ", firstName=" + firstName
-				+ ", lastName=" + lastName + ", role=" + role + "]";
-	}
+    @Override
+    public String toString()
+    {
+        return "SiteMembership [siteInfo=" + getSiteInfo() + ", personId=" + personId
+                + ", firstName=" + firstName + ", lastName=" + lastName + ", role=" + role + "]";
+    }
 
 }

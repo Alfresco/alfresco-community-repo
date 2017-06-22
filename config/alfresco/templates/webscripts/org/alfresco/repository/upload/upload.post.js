@@ -272,29 +272,20 @@ function main()
 
          if (updateNameAndMimetype)
          {
-             //update node name with the new extension if type is changed 
-             var existingFileName = updateNode.getName(),
-                dotIndexExistingFile = existingFileName.lastIndexOf("."),
-                dotIndexNewFile = filename.lastIndexOf(".");
-
-             var existingFileExtension = (dotIndexExistingFile !== -1) ? existingFileName.substring(dotIndexExistingFile) : "",
-                newFileExtension = (dotIndexNewFile !== -1) ? filename.substring(dotIndexNewFile) : "";
-             if (existingFileExtension != newFileExtension)
+             //check to see if name is already used in folder
+             var existingFile = updateNode.getParent().childByNamePath(filename),
+                 newFilename = filename;
+             var existingFileNodeRef = (existingFile !== null) ? String(existingFile.nodeRef) : '',
+            	 updateFileNodeRef = String(updateNodeRef);
+             if (existingFile !== null && existingFileNodeRef !== updateFileNodeRef)
              {
-                 var newFileName = ((dotIndexExistingFile !== -1) ? existingFileName.substring(0, dotIndexExistingFile) : existingFileName) + newFileExtension;
-                 var alreadyExistsFile = updateNode.getParent().childByNamePath(newFileName);
-
-                 var existingFileNodeRef = (alreadyExistsFile !== null) ? String(alreadyExistsFile.nodeRef) : '',
-                   updateFileNodeRef = String(updateNodeRef);
-                 if (alreadyExistsFile !== null && existingFileNodeRef !== updateFileNodeRef)
-                 {
-                    //name it's already used for other than node to update; create a new one
-                    newFileName = createUniqueNameInFolder(newFileName, updateNode.getParent());
-                 }
-                 updateNode.setName(newFileName);
+                 //name it's already used for other than node to update; create a new one
+                 newFilename = createUniqueNameInFolder(filename, updateNode.getParent());
              }
+             //update node name
+             updateNode.setName(newFilename);
          }
-
+         
          var workingcopy = updateNode.hasAspect("cm:workingcopy");
          if (!workingcopy && updateNode.isLocked)
          {

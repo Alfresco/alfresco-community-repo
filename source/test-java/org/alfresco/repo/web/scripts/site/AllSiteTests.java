@@ -30,6 +30,7 @@ import org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity;
 import org.alfresco.repo.site.SiteServiceImplMoreTest;
 import org.alfresco.repo.site.SiteServiceImplTest;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.repo.site.SiteMembershipTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -48,7 +49,8 @@ import org.junit.runners.Suite;
     SiteServiceTest.class,
     SiteExportServiceTest.class,
     SiteActivityTestCaseSensitivity.class,
-    SiteActivityTestCaseInsensitivity.class
+    SiteActivityTestCaseInsensitivity.class,
+    SiteMembershipTest.class
 })
 public class AllSiteTests
 {

@@ -122,7 +122,8 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     @Override
     public boolean isVirtual(NodeRef nodeRef) throws VirtualizationException
     {
-        if (Reference.isReference(nodeRef))
+    	Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference != null)
         {
             Protocol protocol = Reference.fromNodeRef(nodeRef).getProtocol();
             return Protocols.VIRTUAL.protocol.equals(protocol) || Protocols.VANILLA.protocol.equals(protocol);
@@ -150,7 +151,8 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
             return false;
         }
 
-        if (Reference.isReference(nodeRef))
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference != null)
         {
             return true;
         }
@@ -189,9 +191,10 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
                 ReferenceEncodingException
     {
         NodeRef theNodeRef = nodeRef;
-        if (Reference.isReference(nodeRef))
+        Reference ref = Reference.fromNodeRef(theNodeRef);
+        if (ref != null)
         {
-            Reference ref = Reference.fromNodeRef(theNodeRef);
+           
             if (Protocols.NODE.protocol.equals(ref.getProtocol()))
             {
                 theNodeRef = ref.execute(new GetActualNodeRefMethod(environment));
@@ -225,14 +228,12 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
 
             if (reference == null)
             {
-                if (Reference.isReference(nodeRef))
+            	reference = Reference.fromNodeRef(nodeRef);
+                if (reference == null)
                 {
-                    reference = Reference.fromNodeRef(nodeRef);
+                	 throw new VirtualizationException("No virtualization method for " + nodeRef);
                 }
-                else
-                {
-                    throw new VirtualizationException("No virtualization method for " + nodeRef);
-                }
+               
             }
 
         }
@@ -261,9 +262,9 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     @Override
     public NodeRef materializeIfPossible(NodeRef nodeRef) throws VirtualizationException
     {
-        if (Reference.isReference(nodeRef))
+    	Reference ref = Reference.fromNodeRef(nodeRef);
+        if (ref != null)
         {
-            Reference ref = Reference.fromNodeRef(nodeRef);
             if (canMaterialize(ref))
             {
                 return materialize(ref);

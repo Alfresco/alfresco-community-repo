@@ -165,7 +165,8 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         // note: see Reference.VIRTUAL_TOKEN
         String v = "v";
 
-        assertFalse(Reference.isReference(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, v)));
+        Reference reference = Reference.fromNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, v));
+        assertNull(reference);
         
         ChildAssociationRef folderChild = createFolder(companyHomeNodeRef, v);
         assertNotNull(folderChild);
@@ -265,7 +266,8 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
 
         assertTrue(smartStore.canVirtualize(virtualFolder));
         virtualFolder = smartStore.virtualize(virtualFolder).toNodeRef();
-        assertTrue(Reference.isReference(virtualFolder));
+        Reference reference = Reference.fromNodeRef(virtualFolder);
+        assertNotNull(reference);
         assertTrue(nodeService.exists(virtualFolder));
     }
 
@@ -278,7 +280,8 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
         NodeRef nfileNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT, props).getChildRef();
 
-        assertFalse(Reference.isReference(nfileNodeRef));
+        Reference reference =  Reference.fromNodeRef(nfileNodeRef);
+        assertNull(reference);
         assertTrue(nodeService.exists(nfileNodeRef));
     }
 }

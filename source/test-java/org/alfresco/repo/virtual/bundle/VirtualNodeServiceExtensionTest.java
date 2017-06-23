@@ -151,8 +151,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         ChildAssociationRef childAssocRef = createContent(assocNode2_1,
                                                           "Content");
         NodeRef node = childAssocRef.getChildRef();
-        assertTrue(Reference.isReference(node));
-        assertTrue(Reference.fromNodeRef(node).getProtocol().equals(Protocols.NODE.protocol));
+        Reference reference = Reference.fromNodeRef(node);
+        assertNotNull(reference);
+        assertTrue(reference.getProtocol().equals(Protocols.NODE.protocol));
         
         QName nodeTypeQName = ContentModel.TYPE_THUMBNAIL;
         QName assocQName = QName.createQName("cm", "contentThumbnail", environment.getNamespacePrefixResolver());
@@ -370,8 +371,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
      */
     private void assertNewVirtualChildAssocRef(NodeRef nodeRef, ChildAssociationRef childAssocsRef)
     {
-        assertTrue(Reference.isReference(nodeRef));
-        assertNewVirtualChildAssocRef(Reference.fromNodeRef(nodeRef),
+    	Reference reference = Reference.fromNodeRef(nodeRef);
+    	assertNotNull(reference);
+        assertNewVirtualChildAssocRef(reference,
                                       childAssocsRef);
     }
 
@@ -387,14 +389,13 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         assertNotNull(childAssocsRef);
         NodeRef childNodeRef = childAssocsRef.getChildRef();
         NodeRef parentNodeRef = childAssocsRef.getParentRef();
+        Reference parentNodeRefV = Reference.fromNodeRef(parentNodeRef);
+        
+        assertNotNull(parentNodeRefV);
+        assertEquals(reference,parentNodeRefV);
 
-        assertTrue(Reference.isReference(parentNodeRef));
-        assertEquals(reference,
-                     Reference.fromNodeRef(parentNodeRef));
-
-        assertTrue(Reference.isReference(childNodeRef));
-        Reference.fromNodeRef(childNodeRef);
         Reference childReference = Reference.fromNodeRef(childNodeRef);
+        assertNotNull(childReference);
         Reference parent = childReference.execute(new GetParentReferenceMethod());
         assertEquals(reference,
                      parent);
@@ -528,8 +529,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
     {
         List<ChildAssociationRef> actualAssocs = nodeService.getChildAssocs(actualParentNodeRef);
         NodeRef virtualChildNodeRef = virtualAssoc.getChildRef();
-        assertTrue(Reference.isReference(virtualChildNodeRef));
-        NodeRef materialNodeRef = smartStore.materialize(Reference.fromNodeRef(virtualChildNodeRef));
+        Reference vChildNodeRef = Reference.fromNodeRef(virtualChildNodeRef);
+        assertNotNull(vChildNodeRef);
+        NodeRef materialNodeRef = smartStore.materialize(vChildNodeRef);
 
         for (ChildAssociationRef actualAssocRef : actualAssocs)
         {

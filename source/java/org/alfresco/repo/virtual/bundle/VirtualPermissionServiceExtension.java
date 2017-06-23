@@ -71,14 +71,14 @@ public class VirtualPermissionServiceExtension extends
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         PermissionServiceTrait theTrait = getTrait();
-        if (!Reference.isReference(nodeRef))
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference == null)
         {
             return theTrait.hasPermission(nodeRef,
                                           perm);
         }
         else
         {
-            Reference reference = Reference.fromNodeRef(nodeRef);
             AccessStatus virtualAccessStatus = smartStore.hasPermission(reference,
                                                                         perm);
             if (!AccessStatus.UNDETERMINED.equals(virtualAccessStatus))
@@ -104,14 +104,14 @@ public class VirtualPermissionServiceExtension extends
     public AccessStatus hasPermission(NodeRef nodeRef, PermissionReference perm)
     {
         PermissionServiceTrait theTrait = getTrait();
-        if (!Reference.isReference(nodeRef))
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference == null)
         {
             return theTrait.hasPermission(nodeRef,
                                           perm);
         }
         else
         {
-            Reference reference = Reference.fromNodeRef(nodeRef);
             AccessStatus virtualAccessStatus = smartStore.hasPermission(reference,
                                                                         perm);
             if (!AccessStatus.UNDETERMINED.equals(virtualAccessStatus))
@@ -149,7 +149,8 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public Set<PermissionReference> getSettablePermissionReferences(NodeRef nodeRef)
     {
-        if (!Reference.isReference(nodeRef))
+    	Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference == null)
         {
             return getTrait().getSettablePermissionReferences(nodeRef);
         }
@@ -163,13 +164,13 @@ public class VirtualPermissionServiceExtension extends
     public NodePermissionEntry getSetPermissions(NodeRef nodeRef)
     {
         PermissionServiceTrait theTrait = getTrait();
-        if (!Reference.isReference(nodeRef))
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference == null)
         {
             return theTrait.getSetPermissions(nodeRef);
         }
         else
         {
-            Reference reference = Reference.fromNodeRef(nodeRef);
             NodePermissionEntry virtualSetPermissions = smartStore.getSetPermissions(reference);
 
             NodeRef nodeToAdhereTo = establishPermisisonAdherence(reference);
@@ -234,7 +235,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void deletePermissions(NodePermissionEntry nodePermissionEntry)
     {
-        if (!Reference.isReference(nodePermissionEntry.getNodeRef()))
+        if (Reference.fromNodeRef(nodePermissionEntry.getNodeRef()) == null)
         {
             getTrait().deletePermissions(nodePermissionEntry);
         }
@@ -247,7 +248,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void deletePermission(PermissionEntry permissionEntry)
     {
-        if (!Reference.isReference(permissionEntry.getNodeRef()))
+        if (Reference.fromNodeRef(permissionEntry.getNodeRef()) == null)
         {
             getTrait().deletePermission(permissionEntry);
         }
@@ -260,7 +261,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void setPermission(PermissionEntry permissionEntry)
     {
-        if (!Reference.isReference(permissionEntry.getNodeRef()))
+        if (Reference.fromNodeRef(permissionEntry.getNodeRef())==null)
         {
             getTrait().setPermission(permissionEntry);
         }
@@ -273,7 +274,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
-        if (!Reference.isReference(nodePermissionEntry.getNodeRef()))
+        if (Reference.fromNodeRef(nodePermissionEntry.getNodeRef()) == null)
         {
             getTrait().setPermission(nodePermissionEntry);
         }
@@ -335,13 +336,13 @@ public class VirtualPermissionServiceExtension extends
     public Set<AccessPermission> getPermissions(NodeRef nodeRef)
     {
         PermissionServiceTrait theTrait = getTrait();
-        if (!Reference.isReference(nodeRef))
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference == null)
         {
             return theTrait.getPermissions(nodeRef);
         }
         else
         {
-            Reference reference = Reference.fromNodeRef(nodeRef);
             Set<AccessPermission> virtualSetPermissions = smartStore.getAllSetPermissions(reference);
             NodeRef nodeToAdhereTo = establishPermisisonAdherence(reference);
             Set<AccessPermission> mergedEntries = new HashSet<>(virtualSetPermissions);
@@ -358,13 +359,13 @@ public class VirtualPermissionServiceExtension extends
     public Set<AccessPermission> getAllSetPermissions(NodeRef nodeRef)
     {
         PermissionServiceTrait theTrait = getTrait();
-        if (!Reference.isReference(nodeRef))
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference == null)
         {
             return theTrait.getAllSetPermissions(nodeRef);
         }
         else
         {
-            Reference reference = Reference.fromNodeRef(nodeRef);
             Set<AccessPermission> virtualSetPermissions = smartStore.getAllSetPermissions(reference);
             NodeRef nodeToAdhereTo = establishPermisisonAdherence(reference);
             Set<AccessPermission> actualSetPermissions;
@@ -399,7 +400,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public Set<String> getSettablePermissions(NodeRef nodeRef)
     {
-        if (!Reference.isReference(nodeRef))
+        if (Reference.fromNodeRef(nodeRef) == null)
         {
             return getTrait().getSettablePermissions(nodeRef);
         }
@@ -444,7 +445,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void deletePermissions(NodeRef nodeRef)
     {
-        if (!Reference.isReference(nodeRef))
+        if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().deletePermissions(nodeRef);
         }
@@ -457,7 +458,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void clearPermission(NodeRef nodeRef, String authority)
     {
-        if (!Reference.isReference(nodeRef))
+        if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().clearPermission(nodeRef,
                                        authority);
@@ -471,7 +472,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void deletePermission(NodeRef nodeRef, String authority, String permission)
     {
-        if (!Reference.isReference(nodeRef))
+        if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().deletePermission(nodeRef,
                                         authority,
@@ -486,7 +487,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void setPermission(NodeRef nodeRef, String authority, String permission, boolean allow)
     {
-        if (!Reference.isReference(nodeRef))
+        if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().setPermission(nodeRef,
                                      authority,
@@ -502,7 +503,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions)
     {
-        if (!Reference.isReference(nodeRef))
+        if (Reference.fromNodeRef(nodeRef) == null)
         {
             getTrait().setInheritParentPermissions(nodeRef,
                                                    inheritParentPermissions);
@@ -517,7 +518,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
-        if (!Reference.isReference(nodeRef))
+        if (Reference.fromNodeRef(nodeRef) == null)
         {
             return getTrait().getInheritParentPermissions(nodeRef);
         }

@@ -310,7 +310,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
 
     protected void assertVirtualNode(NodeRef nodeRef, Map<QName, Serializable> expectedProperties)
     {
-        assertTrue(Reference.isReference(nodeRef));
+        assertNotNull(Reference.fromNodeRef(nodeRef));
 
         assertTrue(nodeService.hasAspect(nodeRef,
                                          VirtualContentModel.ASPECT_VIRTUAL));

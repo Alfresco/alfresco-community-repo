@@ -107,10 +107,10 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         ChildAssociationRef contentWithVersionsAssocRef = createContent(node2_1,
                                                                         "ContentWithVersions");
         NodeRef contentWithVersionsNodeRef = contentWithVersionsAssocRef.getChildRef();
-        assertTrue(Reference.isReference(contentWithVersionsNodeRef));
-        NodeRef actualContentWithVersionsNodeRef = Reference
-                    .fromNodeRef(contentWithVersionsNodeRef)
-                        .execute(new GetActualNodeRefMethod(environment));
+        Reference reference = Reference.fromNodeRef(contentWithVersionsNodeRef);
+        assertNotNull(reference);
+        NodeRef actualContentWithVersionsNodeRef = 
+                        reference.execute(new GetActualNodeRefMethod(environment));
 
         VersionHistory versionHistory = versionService.getVersionHistory(contentWithVersionsNodeRef);
         assertNull(versionHistory);
@@ -121,7 +121,7 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
                                                           null);
 
         NodeRef newVersionNodeRef = newVersion.getVersionedNodeRef();
-        assertTrue(Reference.isReference(newVersionNodeRef));
+        assertNotNull(Reference.fromNodeRef(newVersionNodeRef));
 
         versionHistory = versionService.getVersionHistory(newVersionNodeRef);
         assertNotNull(versionHistory);
@@ -140,7 +140,7 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
         Version actualVersion = actualVersionHistory.getHeadVersion();
 
         NodeRef newActualVersionNodeRef = actualVersion.getVersionedNodeRef();
-        assertTrue(!Reference.isReference(newActualVersionNodeRef));
+        assertNull(Reference.fromNodeRef(newActualVersionNodeRef));
 
         assertEquals(newActualVersionNodeRef,
                      actualContentWithVersionsNodeRef);

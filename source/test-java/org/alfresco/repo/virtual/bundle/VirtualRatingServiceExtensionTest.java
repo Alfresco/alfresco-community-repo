@@ -107,8 +107,9 @@ public class VirtualRatingServiceExtensionTest extends VirtualizationIntegration
     @Test
     public void testApplyRatings() throws Exception
     {
-        assertTrue(Reference.isReference(virtualContent));
-        NodeRef actualNodeRef = Reference.fromNodeRef(virtualContent).execute(new GetActualNodeRefMethod(environment));
+    	Reference reference = Reference.fromNodeRef(virtualContent);
+        assertNotNull(reference);
+        NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(environment));
 
         applyRatingAs(virtualContent,
                       1f,

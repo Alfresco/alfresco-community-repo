@@ -93,8 +93,8 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                 StringBuilder queryBuffer = new StringBuilder();
                 queryBuffer.append("ASPECT:\"rma:vitalRecord\" ");
                 queryBuffer.append("AND @rma\\:reviewAsOf:[MIN TO NOW] ");
-                // exclude destroyed records with metadata
-                queryBuffer.append("AND (ISNOTNULL:\"cm:content\" OR TYPE:\"rma:nonElectronicDocument\")");
+                // exclude destroyed electronic records and destroyed nonElectronic records with kept metadata
+                queryBuffer.append("AND -ASPECT:\"rma:ghosted\" ");
                 String query = queryBuffer.toString();
 
                 ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, query);

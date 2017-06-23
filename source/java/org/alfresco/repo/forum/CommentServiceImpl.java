@@ -759,7 +759,7 @@ public class CommentServiceImpl extends AbstractLifecycleBean implements Comment
             if (behaviourFilter.isEnabled(ContentModel.ASPECT_LOCKABLE) // eg. delete site (MNT-14671)
                     && isWorkingCopyOrLocked(discussableNodeRef)
                     && !isLockOwner(discussableNodeRef)
-                    && !canDelete)
+                    && canDelete)
             {
                 throw new NodeLockedException(discussableNodeRef);
             }

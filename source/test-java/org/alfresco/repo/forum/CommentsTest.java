@@ -410,54 +410,96 @@ public class CommentsTest
      */
     @Test public void testAddingCommentOnLockedNode()
     {
-        // create user 2 and 3
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-                createUser(USER_TWO_NAME);
-                createUser(USER_THREE_NAME);
-                siteService.setMembership(testSite.getShortName(), USER_TWO_NAME, SiteModel.SITE_MANAGER);
-                siteService.setMembership(testSite.getShortName(), USER_THREE_NAME, SiteModel.SITE_MANAGER);
-                return null;
-            }
-        });
-
-        // switch to user 1
-        authenticationComponent.setCurrentUser(USER_ONE_NAME);
-
-        // create some comments
+        String user = authenticationComponent.getCurrentUserName();
         final NodeRef testDoc = testDocs.get(0);
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                applyComment(testDoc, "Hello 1");
-                applyComment(testDoc, "Hello 2");
-                return null;
-            }
-        });
-
-        authenticationComponent.setCurrentUser(USER_TWO_NAME);
-
-        // lock node
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                lockService.lock(testDoc, LockType.WRITE_LOCK, (int) 3600, Lifetime.PERSISTENT, "someInfo");
-                return null;
-            }
-        });
-
-        authenticationComponent.setCurrentUser(USER_THREE_NAME);
-
         try
         {
+            // create user 2 and 3
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+                    createUser(USER_TWO_NAME);
+                    createUser(USER_THREE_NAME);
+                    siteService.setMembership(testSite.getShortName(), USER_TWO_NAME, SiteModel.SITE_MANAGER);
+                    siteService.setMembership(testSite.getShortName(), USER_THREE_NAME, SiteModel.SITE_MANAGER);
+                    return null;
+                }
+            });
+
+            // switch to user 1
+            authenticationComponent.setCurrentUser(USER_ONE_NAME);
+
+            // create some comments
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    applyComment(testDoc, "Hello 1");
+                    applyComment(testDoc, "Hello 2");
+                    return null;
+                }
+            });
+
+            authenticationComponent.setCurrentUser(USER_TWO_NAME);
+
+            // lock node
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    lockService.lock(testDoc, LockType.WRITE_LOCK, (int) 3600, Lifetime.PERSISTENT, "someInfo");
+                    return null;
+                }
+            });
+
+            authenticationComponent.setCurrentUser(USER_THREE_NAME);
+
+            try
+            {
+                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                        applyComment(testDoc, "Hello 3");
+                        return null;
+                    }
+                });
+                fail("NodeLockedException not thrown");
+            }
+            catch (NodeLockedException e)
+            {
+                // Fails because is not the lock owner
+            }
+
+            authenticationComponent.setCurrentUser(USER_ONE_NAME);
+
+            try
+            {
+                transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                        applyComment(testDoc, "Hello 3");
+                        return null;
+                    }
+                });
+                fail("NodeLockedException not thrown");
+            }
+            catch (NodeLockedException e)
+            {
+                // Fails because is not the lock owner
+            }
+
+            // change to lock owner
+            authenticationComponent.setCurrentUser(USER_TWO_NAME);
+
             transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
@@ -467,29 +509,26 @@ public class CommentsTest
                     return null;
                 }
             });
-            fail("NodeLockedException not thrown");
-        }
-        catch(NodeLockedException e)
-        {
-            // Fails because is not the lock owner
-        }
 
-        // change to lock owner
-        authenticationComponent.setCurrentUser(USER_TWO_NAME);
-
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            assertCommentCountIs(testDoc, 3);
+        }
+        finally
         {
-            @Override
-            public Void execute() throws Throwable
+            authenticationComponent.setCurrentUser(USER_ONE_NAME);
+
+            // unlock node
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
-                applyComment(testDoc, "Hello 3");
-                return null;
-            }
-        });
+                @Override
+                public Void execute() throws Throwable
+                {
+                    lockService.unlock(testDoc);
+                    return null;
+                }
+            });
 
-        assertCommentCountIs(testDoc, 3);
-
-        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+            authenticationComponent.setCurrentUser(user);
+        }
     }
     
     /**
@@ -507,21 +546,21 @@ public class CommentsTest
                     applyComment(testDoc, "Hello 1");
                     applyComment(testDoc, "Hello 2");
                     applyComment(testDoc, "Hello 3");
-                    
+
                     assertCommentCountIs(testDoc, 3);
-                    
+
                     // We'll cheat and just set it to an arbitrary value.
                     nodeService.setProperty(testDoc, ForumModel.PROP_COMMENT_COUNT, 42);
-                    
+
                     // It should have that value - even though it's wrong.
                     assertCommentCountIs(testDoc, 42);
-                    
+
                     // Now we'll set it to the trigger value -1.
                     nodeService.setProperty(testDoc, ForumModel.PROP_COMMENT_COUNT, ForumPostBehaviours.COUNT_TRIGGER_VALUE);
-                    
+
                     // It should have the correct, recalculated value.
                     assertCommentCountIs(testDoc, 3);
-                    
+
                     return null;
                 }
             });

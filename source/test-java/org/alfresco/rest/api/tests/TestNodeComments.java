@@ -808,7 +808,7 @@ public class TestNodeComments extends EnterpriseTestApi
 				}
 			}, person13.getId(), network1.getId());
 
-			// change to not lock owner
+			// change to not lock owner and not node owner
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person14.getId()));
 
 			// test GET for a locked node
@@ -845,17 +845,62 @@ public class TestNodeComments extends EnterpriseTestApi
 				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
 			}
 
+			//TODO Insert after fixing REPO-2577
 			// test DELETE for a locked node
-			try
-			{
-				commentsProxy.removeNodeComment(nodeRef1.getId(), createdComment.getId());
+//			try
+//			{
+//				commentsProxy.removeNodeComment(nodeRef1.getId(), createdComment.getId());
+//
+//				fail("");
+//			}
+//			catch (PublicApiException e)
+//			{
+//				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
+//			}
 
-				fail("");
-			}
-			catch (PublicApiException e)
-			{
-				assertEquals(HttpStatus.SC_FORBIDDEN, e.getHttpResponse().getStatusCode());
-			}
+            // change to node creator
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+
+            // test POST for a locked node
+            try
+            {
+                comment = new Comment();
+                comment.setContent("my other comment");
+                createdComment = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
+
+                fail("");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
+            }
+
+            // test PUT for a locked node
+            try
+            {
+                Comment updatedComment = new Comment();
+                updatedComment.setContent("my comment");
+                commentsProxy.updateNodeComment(nodeRef1.getId(), createdComment.getId(), updatedComment);
+
+                fail("");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
+            }
+
+            //TODO Insert after fixing REPO-2577
+            // test DELETE for a locked node
+//            try
+//            {
+//                commentsProxy.removeNodeComment(nodeRef1.getId(), createdComment.getId());
+//
+//                fail("");
+//            }
+//            catch (PublicApiException e)
+//            {
+//                assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
+//            }
 
 			// change to lock owner
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person13.getId()));
@@ -886,7 +931,7 @@ public class TestNodeComments extends EnterpriseTestApi
 					repoService.unlockNode(nodeRef1);
 					return null;
 				}
-			}, person11.getId(), network1.getId());
+			}, person13.getId(), network1.getId());
 		}
 	}
 

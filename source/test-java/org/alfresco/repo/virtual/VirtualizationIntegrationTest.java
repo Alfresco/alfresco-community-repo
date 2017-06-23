@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -67,12 +66,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.traitextender.SpringExtensionBundle;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Ignore;
 import org.springframework.context.ApplicationContext;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Ignore
 public abstract class VirtualizationIntegrationTest extends TestCase implements VirtualizationTest
@@ -84,6 +81,8 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
     protected static final String VIRTUAL_FOLDER_1_NAME = "VirtualFolder1";
 
     protected static final String VIRTUAL_FOLDER_2_NAME = "VirtualFolder2";
+    
+    protected static final String VIRTUAL_FOLDER_3_NAME = "VirtualFolder3";
 
     protected static final String TEST_ROOT_FOLDER_NAME = "TestFolder";
 

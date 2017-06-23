@@ -35,7 +35,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
-import org.alfresco.repo.virtual.ref.Encoding;
 import org.alfresco.repo.virtual.ref.Encodings;
 import org.alfresco.repo.virtual.ref.Protocols;
 import org.alfresco.repo.virtual.ref.Reference;

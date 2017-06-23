@@ -160,10 +160,9 @@ public class VirtualPreferenceServiceExtension extends
                 if (documentNodeRefStr != null && !documentNodeRefStr.isEmpty())
                 {
                     NodeRef documentNodeRef = new NodeRef(documentNodeRefStr);
-
-                    if (Reference.isReference(documentNodeRef))
+                    Reference reference = Reference.fromNodeRef(documentNodeRef);
+                    if (reference != null)
                     {
-                        Reference reference = Reference.fromNodeRef(documentNodeRef);
                         NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(null));
                         String actualNodeRefStr = actualNodeRef.toString();
                         String actualExtPreference = extFavKey + actualNodeRefStr + CREATED_AT;

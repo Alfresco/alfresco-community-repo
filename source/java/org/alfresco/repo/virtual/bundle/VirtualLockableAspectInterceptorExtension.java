@@ -55,8 +55,8 @@ public class VirtualLockableAspectInterceptorExtension extends
     @Override
     public LockState getLockState(NodeRef nodeRef)
     {
-        if(Reference.isReference(nodeRef)){
-            Reference reference = Reference.fromNodeRef(nodeRef);
+    	Reference reference = Reference.fromNodeRef(nodeRef);
+        if(reference != null){
             NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(environment));
             return getTrait().traitImplOf_getLockState(actualNodeRef);
         }

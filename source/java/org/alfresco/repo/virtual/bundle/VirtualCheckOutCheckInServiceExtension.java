@@ -68,9 +68,9 @@ public class VirtualCheckOutCheckInServiceExtension extends
                                                 destinationAssocTypeQName,
                                                 destinationAssocQName);
 
-        if (Reference.isReference(destinationParentNodeRef))
+        Reference parentReference = Reference.fromNodeRef(destinationParentNodeRef);
+        if (parentReference != null)
         {
-            Reference parentReference = Reference.fromNodeRef(destinationParentNodeRef);
             Reference workingCopyReference = NodeProtocol.newReference(workingCopy,
                                                                        parentReference);
             return workingCopyReference.toNodeRef(workingCopy.getStoreRef());
@@ -122,9 +122,9 @@ public class VirtualCheckOutCheckInServiceExtension extends
 
     private NodeRef virtualizeOriginalIfNeeded(NodeRef workingCopyNodeRef, NodeRef materialOriginalNode)
     {
-        if (materialOriginalNode != null && Reference.isReference(workingCopyNodeRef))
+    	Reference workingCopyReference = Reference.fromNodeRef(workingCopyNodeRef);
+        if ((materialOriginalNode != null) && (workingCopyReference != null))
         {
-            Reference workingCopyReference = Reference.fromNodeRef(workingCopyNodeRef);
             Reference parentReference = workingCopyReference.execute(new GetParentReferenceMethod());
             Reference originalReference = NodeProtocol.newReference(materialOriginalNode,
                                                                     parentReference);
@@ -169,10 +169,10 @@ public class VirtualCheckOutCheckInServiceExtension extends
 
     private NodeRef virtualizeVersionIfNeeded(NodeRef originalNodeRef, NodeRef materialVersion)
     {
-        if (materialVersion != null && Reference.isReference(originalNodeRef)
-                    && !Reference.isReference(materialVersion))
+    	Reference reference = Reference.fromNodeRef(originalNodeRef);
+        if ((materialVersion != null) && (reference != null)
+                    && (Reference.fromNodeRef(materialVersion)==null))
         {
-            Reference reference = Reference.fromNodeRef(originalNodeRef);
             Reference parentReference = reference.execute(new GetParentReferenceMethod());
             Reference workingCopyReference = NodeProtocol.newReference(materialVersion,
                                                                        parentReference);

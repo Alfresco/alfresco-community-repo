@@ -794,6 +794,19 @@ public class TestNodeComments extends EnterpriseTestApi
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    TestSite site = sites.get(0);
+                    site.updateMember(person13.getId(), SiteRole.SiteManager);
+                    site.updateMember(person14.getId(), SiteRole.SiteManager);
+
+                    return null;
+                }
+            }, person11.getId(), network1.getId());
+
 			Comment comment = new Comment();
 			comment.setContent("my comment");
 			Comment createdComment = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
@@ -845,18 +858,17 @@ public class TestNodeComments extends EnterpriseTestApi
 				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
 			}
 
-			//TODO Insert after fixing REPO-2577
 			// test DELETE for a locked node
-//			try
-//			{
-//				commentsProxy.removeNodeComment(nodeRef1.getId(), createdComment.getId());
-//
-//				fail("");
-//			}
-//			catch (PublicApiException e)
-//			{
-//				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
-//			}
+			try
+			{
+				commentsProxy.removeNodeComment(nodeRef1.getId(), createdComment.getId());
+
+				fail("");
+			}
+			catch (PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
+			}
 
             // change to node creator
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
@@ -889,18 +901,17 @@ public class TestNodeComments extends EnterpriseTestApi
                 assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
             }
 
-            //TODO Insert after fixing REPO-2577
             // test DELETE for a locked node
-//            try
-//            {
-//                commentsProxy.removeNodeComment(nodeRef1.getId(), createdComment.getId());
-//
-//                fail("");
-//            }
-//            catch (PublicApiException e)
-//            {
-//                assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
-//            }
+            try
+            {
+                commentsProxy.removeNodeComment(nodeRef1.getId(), createdComment.getId());
+
+                fail("");
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
+            }
 
 			// change to lock owner
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person13.getId()));
@@ -923,6 +934,7 @@ public class TestNodeComments extends EnterpriseTestApi
 		}
 		finally
 		{
+		    // undo the lock
 			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
 			{
 				@Override
@@ -932,6 +944,20 @@ public class TestNodeComments extends EnterpriseTestApi
 					return null;
 				}
 			}, person13.getId(), network1.getId());
+
+            // put the other members back to SiteCollaborator
+            TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    TestSite site = sites.get(0);
+                    site.updateMember(person13.getId(), SiteRole.SiteCollaborator);
+                    site.updateMember(person14.getId(), SiteRole.SiteCollaborator);
+
+                    return null;
+                }
+            }, person11.getId(), network1.getId());
 		}
 	}
 

@@ -143,10 +143,10 @@ public class RecordsAPI extends RMModelRequest
      * Complete the record recordId
      *
      * @param recordId The id of the record to complete
-     * @return The {@link Record} with the given properties
+     * @return The completed {@link Record} with the given properties
      * @throws Exception for the following cases:
      *                   <ul>
-     *                   <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
+     *                   <li>Invalid parameter: {@code recordId} is not a record</li>
      *                   <li>authentication fails</li>
      *                   <li>current user does not have permission to complete {@code recordId}</li>
      *                   <li>{@code recordId} does not exist</li>

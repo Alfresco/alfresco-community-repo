@@ -26,7 +26,10 @@
 
 package org.alfresco.repo.virtual.store;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -41,6 +44,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
@@ -235,5 +240,33 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
                                        PermissionService.WRITE_PROPERTIES,
                                        false);
 
+    }
+    
+    // MNT-17845
+    @Test
+    public void testCanExistNodeIDwithV()
+    {
+        Map<QName, Serializable> properties = new HashMap<>(1);
+        properties.put(ContentModel.PROP_NODE_UUID, "vfile");
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("specialFile1.txt"));
+        NodeRef vfileNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT, properties).getChildRef();
+
+        assertFalse(Reference.isReference(vfileNodeRef));
+        assertTrue(nodeService.exists(vfileNodeRef));
+
+        properties = new HashMap<>(1);
+        properties.put(ContentModel.PROP_NODE_UUID, "nfile");
+        assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("specialFile2.txt"));
+        NodeRef nfileNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT, properties).getChildRef();
+
+        assertFalse(Reference.isReference(nfileNodeRef));
+        assertTrue(nodeService.exists(nfileNodeRef));
+
+        NodeRef virtualFolder = createVirtualizedFolder(testRootFolder.getNodeRef(), VIRTUAL_FOLDER_3_NAME, TEST_TEMPLATE_4_JSON_SYS_PATH);
+
+        assertTrue(smartStore.canVirtualize(virtualFolder));
+        virtualFolder = smartStore.virtualize(virtualFolder).toNodeRef();
+        assertTrue(Reference.isReference(virtualFolder));
+        assertTrue(nodeService.exists(virtualFolder));
     }
 }

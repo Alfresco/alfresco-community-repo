@@ -74,20 +74,21 @@ public class Reference
         if (nodeRef != null)
         {
             String id = nodeRef.getId();
-            if ((id != null) && (id.length() > 1))
+            if ((id != null) && (id.length() > 1) && (id.startsWith("" + VIRTUAL_TOKEN)))
             {
-                char zeroChar = id.charAt(0);
-                return VIRTUAL_TOKEN.equals(zeroChar);
-            }
-            else
-            {
-                if (logger.isDebugEnabled())
+                char token = id.charAt(1);
+                Encoding encoding = Encodings.fromToken(token);
+                if (encoding != null)
                 {
-                    logger.debug("NodeRef with null ID.");
+                    return true;
                 }
             }
-        }
 
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("NodeRef is not a reference: "+nodeRef);
+            }
+        }
         return false;
     }
 
@@ -107,18 +108,16 @@ public class Reference
      * @param nodeRef
      * @return the {@link Reference} object corresponding to the given
      *         {@link NodeRef}
-     * @throws ReferenceParseException if an error occurs during the reference
-     *             string parsing
-     * @throws ReferenceEncodingException if the {@link NodeRef} ID has an
-     *             invalid virtual token prefix or it uses an invalid encoding
-     *             token
+     * @throws ReferenceParseException
+     *             if an error occurs during the reference string parsing
+     * @throws ReferenceEncodingException
+     *             if the {@link NodeRef} ID has an invalid virtual token prefix
+     *             or it uses an invalid encoding token
      */
-    public static final Reference fromNodeRef(NodeRef nodeRef) throws ReferenceParseException,
-                ReferenceEncodingException
+    public static final Reference fromNodeRef(NodeRef nodeRef) throws ReferenceParseException, ReferenceEncodingException
     {
         String id = nodeRef.getId();
-        if (id.startsWith("" + VIRTUAL_TOKEN)
-            && (id.length() > 1)) // belts-and-braces
+        if (id.startsWith("" + VIRTUAL_TOKEN) && (id.length() > 1)) // belts-and-braces
         {
             char token = id.charAt(1);
             Encoding encoding = Encodings.fromToken(token);
@@ -150,7 +149,7 @@ public class Reference
 
     private static long _trace_refCount = 0;
 
-    private static final long _trace_refBatchSize = 4096*2;
+    private static final long _trace_refBatchSize = 4096 * 2;
 
     private static synchronized void _trace_avg_ref_length(long refLength)
     {
@@ -175,12 +174,14 @@ public class Reference
     /**
      * Constructor
      * 
-     * @param encoding the default {@link Encoding} of the new resource - to be
-     *            used where an encoding is required and none is specified
+     * @param encoding
+     *            the default {@link Encoding} of the new resource - to be used
+     *            where an encoding is required and none is specified
      * @param protocol
      * @param resource
-     * @param parameters resource parameters - a copy of the provided list will
-     *            be stored by this reference
+     * @param parameters
+     *            resource parameters - a copy of the provided list will be
+     *            stored by this reference
      */
     public Reference(Encoding encoding, Protocol protocol, Resource resource, List<? extends Parameter> parameters)
     {
@@ -192,10 +193,7 @@ public class Reference
 
     public Reference(Encoding encoding, Protocol protocol, Resource resource)
     {
-        this(encoding,
-             protocol,
-             resource,
-             Collections.<Parameter> emptyList());
+        this(encoding, protocol, resource, Collections.<Parameter> emptyList());
     }
 
     /**
@@ -261,8 +259,7 @@ public class Reference
      */
     public NodeRef toNodeRef(StoreRef storeRef) throws ReferenceEncodingException
     {
-        return toNodeRef(storeRef,
-                         this.encoding);
+        return toNodeRef(storeRef, this.encoding);
     }
 
     /**
@@ -278,16 +275,14 @@ public class Reference
         // TODO: move non-native encoding to encoding object itself
         if (!encoding.urlNative)
         {
-            id = new String(org.apache.commons.codec.binary.Base64.encodeBase64(id.getBytes(),
-                                                                                false));
+            id = new String(org.apache.commons.codec.binary.Base64.encodeBase64(id.getBytes(), false));
         }
         StringBuilder idBuilder = new StringBuilder();
         idBuilder.append(VIRTUAL_TOKEN);
         idBuilder.append(encoding.token);
         idBuilder.append(id);
 
-        NodeRef theNode = new NodeRef(storeRef,
-                                      idBuilder.toString());
+        NodeRef theNode = new NodeRef(storeRef, idBuilder.toString());
 
         if (logger.isTraceEnabled())
         {
@@ -310,8 +305,7 @@ public class Reference
      */
     public <R> R execute(ProtocolMethod<R> method) throws ProtocolMethodException
     {
-        return this.protocol.dispatch(method,
-                                      this);
+        return this.protocol.dispatch(method, this);
     }
 
     /**
@@ -323,13 +317,12 @@ public class Reference
      * 
      * @param mutatedNodeRef
      * @return a mutated version of this {@link Reference} corresponding to the
-     *         given mutated node or
-     *         <code>this</code> Reference if no mutations are detected
+     *         given mutated node or <code>this</code> Reference if no mutations
+     *         are detected
      */
     public Reference propagateNodeRefMutations(NodeRef mutatedNodeRef)
     {
-        return protocol.propagateNodeRefMutations(mutatedNodeRef,
-                                                  this);
+        return protocol.propagateNodeRefMutations(mutatedNodeRef, this);
     }
 
     @Override
@@ -341,8 +334,7 @@ public class Reference
         }
         catch (ReferenceEncodingException e)
         {
-            logger.error("Invalid reference",
-                         e);
+            logger.error("Invalid reference", e);
             return super.toString();
         }
     }

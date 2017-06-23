@@ -46,11 +46,10 @@ paths:
         - gs-sites
       summary: Create the Records Management (RM) site
       description: |
-        **Note:** this endpoint is available in Records Management 2.6 and newer versions.
 
         Creates the RM site with the given details.
 
-        **Note:** the id of a site cannot be updated once the site has been created.
+        **Note:** The default site id is rm and the default site name is Records Management. The id of a site cannot be updated once the site has been created.
 
         For example, to create an RM site named "Records Management" with "Records Management Description" as description, the following body could be used:
         ```JSON
@@ -62,7 +61,7 @@ paths:
 
         The creator will be added as a member with Site Manager role.
 
-        When you create the RM site, the **filePlan** structure is also created.
+        When you create the RM site, the **filePlan** structure is also created including special containers, such as containers for transfers, holds and, unfiled records.
 
       operationId: createRMSite
       produces:
@@ -102,8 +101,7 @@ paths:
         - gs-sites
       summary: Get the Records Management (RM) site
       description: |
-        **Note:** this endpoint is available in Records Management 2.6 and newer versions.
-
+ 
         Gets information for RM site.
 
       operationId: getRMSite
@@ -133,7 +131,6 @@ paths:
         - gs-sites
       summary: Delete the Records Management (RM) site
       description: |
-        **Note:** this endpoint is available in Records Management 2.6 and newer versions.
 
         Deletes the RM site.
       operationId: deleteRMSite
@@ -161,7 +158,6 @@ paths:
         - gs-sites
       summary: Update the Records Management (RM) site
       description: |
-        **Note:** this endpoint is available in Records Management 2.6 and newer versions.
 
         Update the details for the RM site. Site Manager or other (site) admin can update title or description.
 
@@ -795,7 +791,7 @@ paths:
     delete:
       tags:
         - unfiled-record-folders
-      summary : Delete an unfiled record folder
+      summary : Delete an unfiled record folder. Deleted file plan components cannot be recovered, they are deleted permanently.
       description: |
         Deletes the unfiled record folder **unfiledRecordFolderId**.
       operationId: deleteUnfiledRecordFolder
@@ -1403,7 +1399,7 @@ paths:
         - record-folders
       summary : Delete a record folder
       description: |
-        Deletes record folder **recordFolderId**.
+        Deletes record folder **recordFolderId**. Deleted file plan components cannot be recovered, they are deleted permanently.
       operationId: deleteRecordFolder
       parameters:
         - $ref: '#/parameters/recordFolderIdParam'
@@ -1661,7 +1657,7 @@ paths:
         - $ref: '#/parameters/fieldsParam'
         - in: body
           name: recordBodyUpdate
-          description: The node information to update.
+          description: The record information to update.
           required: true
           schema:
             $ref: '#/definitions/FilePlanComponentBodyUpdate'
@@ -1694,7 +1690,7 @@ paths:
         - records
       summary : Delete a record
       description: |
-        Deletes the record **recordId**.
+        Deletes the record **recordId**. Deleted file plan components cannot be recovered, they are deleted permanently.
       operationId: deleteRecord
       parameters:
         - $ref: '#/parameters/recordIdParam'
@@ -1756,7 +1752,7 @@ paths:
       description: |
         Files the record **recordId** in the target record folder.
 
-        You can specify the target record folder by providing its id **targetParentId**
+        You need to specify the target record folder by providing its id **targetParentId**
 
         If the record is already filed, a link to the target record folder is created.
         
@@ -1846,7 +1842,7 @@ paths:
       tags:
         - files
       summary: Declare as record
-      description: Declares the file **fileId** in the unfiled records container.
+      description: Declares the file **fileId** in the unfiled records container. The original file is moved to the Records Management site and a secondary parent association is created in the file's original site. 
       operationId: declareRecord
       parameters:
         - name: fileId

@@ -72,7 +72,8 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
         try
         {
             recordService.complete(actionedUponNodeRef);
-        } catch (IntegrityException e)
+        }
+        catch (IntegrityException e)
         {
             if (e.getMessage().contains("missing"))
             {

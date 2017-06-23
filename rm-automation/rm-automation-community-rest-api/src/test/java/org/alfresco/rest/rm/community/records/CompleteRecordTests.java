@@ -30,6 +30,8 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createNonElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createDOD5015RMSiteModel;
+import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -39,6 +41,7 @@ import java.util.Arrays;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
@@ -57,40 +60,6 @@ public class CompleteRecordTests extends BaseRMRestTest
     private static final Boolean COMPLETE = true;
     private static final Boolean INCOMPLETE = false;
     private static final String parameters = "include=isCompleted";
-    //private static final boolean MANDATORY_METADATA = true;
-    //private static final QName ASPECT_TEST = QName.createQName("http://www.alfresco.org/model/rmtest/1.0", "recordMetaDataWithProperty");
-
-    /**
-     * Incomplete records with mandatory meta-data present
-     */
-    @DataProvider (name = "IncompleteRecordsMandatoryMetadataPresent")
-    public Object[][] getIncompleteRecordsMandatoryMetadataPresent() throws Exception
-    {
-        createRMSiteIfNotExists();
-        createMandatoryMetadata();
-
-        // create record folder
-        String recordFolderId = createCategoryFolderInFilePlan().getId();
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-
-        //create electronic record in record folder
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId,
-            getFile(IMAGE_FILE));
-        assertStatusCode(CREATED);
-        setMandatoryMetadata(electronicRecord);
-        // TODO verfiy mandatory metadata is present?
-
-        //create non-electronic record in record folder
-        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
-        assertStatusCode(CREATED);
-        setMandatoryMetadata(nonElectronicRecord);
-
-        return new String[][]
-            {
-                // an arbitrary record folder
-                { electronicRecord.getId(), nonElectronicRecord.getId() },
-            };
-    }
 
     /**
      * Incomplete records with mandatory meta-data missing
@@ -98,21 +67,17 @@ public class CompleteRecordTests extends BaseRMRestTest
     @DataProvider (name = "IncompleteRecordsMandatoryMetadataMissing")
     public Object[][] getIncompleteRecordsMandatoryMetadataMissing() throws Exception
     {
-        createRMSiteIfNotExists();
-        //createMandatoryMetadata();
+        //create RM site
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+        rmSiteAPI.deleteRMSite();
+        rmSiteAPI.createRMSite(createDOD5015RMSiteModel());
+        assertStatusCode(CREATED);
 
+        // create record folder
         String recordFolderId = createCategoryFolderInFilePlan().getId();
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
 
-        //create electronic record in record folder
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId,
-            getFile(IMAGE_FILE));
-        assertStatusCode(CREATED);
-        createMissingMandatoryMetadata(electronicRecord);
-
-        //create non-electronic record in record folder
-        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
-        assertStatusCode(CREATED);
+        Record electronicRecord = createAndVerifyElectronicRecord(recordFolderId);
+        Record nonElectronicRecord = createAndVerifyNonElectronicRecord(recordFolderId);
 
         return new String[][]
             {
@@ -121,101 +86,43 @@ public class CompleteRecordTests extends BaseRMRestTest
             };
     }
 
-    // TODO repeat previous 2 providers but with config set to not chk for mandatory data
+    /**
+     * Incomplete records with mandatory meta-data present
+     */
+    @DataProvider (name = "IncompleteRecordsMandatoryMetadataPresent")
+    public Object[][] getIncompleteRecordsMandatoryMetadataPresent() throws Exception
+    {
+        //create RM site
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+        rmSiteAPI.deleteRMSite();
+        rmSiteAPI.createRMSite(createStandardRMSiteModel());
+        assertStatusCode(CREATED);
+
+        // create record folder
+        String recordFolderId = createCategoryFolderInFilePlan().getId();
+
+        Record electronicRecord = createAndVerifyElectronicRecord(recordFolderId);
+        Record nonElectronicRecord = createAndVerifyNonElectronicRecord(recordFolderId);
+
+        return new String[][]
+            {
+                // an arbitrary record folder
+                { electronicRecord.getId(), nonElectronicRecord.getId() },
+            };
+    }
 
     /**
      * Document to be completed is not a record
      */
     @DataProvider (name = "Supplied node is not a record")
-    // TODO include is a document but not a record
-
     public Object[][] getNodesWhichAreNotRecords() throws Exception
     {
-        //create record folder
-        String recordFolderId = createCategoryFolderInFilePlan().getId();
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId,
-            getFile(IMAGE_FILE));
-        assertStatusCode(CREATED);
-
-        //create non-electronic record in record folder
-        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
-        assertStatusCode(CREATED);
-
+        createRMSiteIfNotExists();
         return new String[][]
             {
                 { createCategoryFolderInFilePlan().getId() },
 
             };
-    }
-
-    /**
-     * Record to be completed is frozen
-     */
-    @DataProvider (name = "FrozenRecords")
-    public Object[][] getFrozenRecords() throws Exception
-    {
-        // TODO consider adding method to BaseRMRestTest eg. createRMSiteIfNotExists(DOD5015);
-        createRMSiteIfNotExists();
-
-        // TODO add custom metadata to record model, and do not populate it
-        //create electronic record in record folder
-        String recordFolderId = createCategoryFolderInFilePlan().getId();
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId,
-            getFile(IMAGE_FILE));
-        assertStatusCode(CREATED);
-
-        //create non-electronic record in record folder
-        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
-        assertStatusCode(CREATED);
-
-        return new String[][]
-            {
-                // an arbitrary record folder
-                { electronicRecord.getId(), nonElectronicRecord.getId() },
-            };
-    }
-
-    // TODO Add test for authentication fails (see yaml file)
-    // TODO Add test for user does not have permission to complete record
-
-    /**
-     * <pre>
-     * Given the repository is configured to check mandatory data before completing a record
-     * And an incomplete record with all mandatory meta-data present
-     * When I complete the record
-     * Then the record is successfully completed
-     * </pre>
-     */
-    @Test
-        (
-            dataProvider = "IncompleteRecordsMandatoryMetadataPresent",
-            description = "Can complete electronic and non-electronic records with mandatory metadata present"
-        )
-    @AlfrescoTest (jira = "RM-4431")
-    public void completeRecordWithMandatoryMetadataPresent(String electronicRecordId, String nonElectronicRecordId)
-        throws Exception
-    {
-        // Get the recordsAPI
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
-        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
-
-        for (Record record : Arrays.asList(electronicRecord, nonElectronicRecord))
-        {
-            Record recordModel;
-            // Verify the record is incomplete
-            recordModel = recordsAPI.getRecord(record.getId(), parameters);
-            assertEquals(recordModel.getIsCompleted(), INCOMPLETE);
-
-            // Complete record
-            recordModel = recordsAPI.completeRecord(record.getId(), parameters);
-            assertStatusCode(CREATED);
-
-            // Verify the record has been completed
-            assertEquals(recordModel.getIsCompleted(), COMPLETE);
-        }
     }
 
     /**
@@ -241,23 +148,49 @@ public class CompleteRecordTests extends BaseRMRestTest
         Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
         Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
 
-        for (Record record : Arrays.asList(nonElectronicRecord))
+        for (Record record : Arrays.asList(electronicRecord, nonElectronicRecord))
         {
-            Record recordModel;
-            // Verify the record is incomplete
-            recordModel = recordsAPI.getRecord(record.getId(), parameters);
-            assertEquals(recordModel.getIsCompleted(), INCOMPLETE);
-
-            //Verify the record has missing mandatory metadata
-            // TODO change next line to get custom metadata and check not populated
-            //assertEquals(recordModel.  .getProperties()  .getTitle(), INCOMPLETE);
+            verifyRecordIsIncomplete(record);
 
             // Complete record
-            recordModel = recordsAPI.completeRecord(record.getId(), parameters);
+            recordsAPI.completeRecord(record.getId(), parameters);
             assertStatusCode(UNPROCESSABLE_ENTITY);
 
-            // Verify the record has not been completed
-            assertEquals(recordModel.getIsCompleted(), INCOMPLETE);
+            verifyRecordIsIncomplete(record);
+        }
+    }
+
+    /**
+     * <pre>
+     * Given the repository is configured to check mandatory data before completing a record
+     * And an incomplete record with all mandatory meta-data present
+     * When I complete the record
+     * Then the record is successfully completed
+     * </pre>
+     */
+    @Test
+        (
+            dataProvider = "IncompleteRecordsMandatoryMetadataPresent",
+            description = "Can complete electronic and non-electronic records with mandatory metadata present"
+        )
+    @AlfrescoTest (jira = "RM-4431")
+    public void completeRecordWithMandatoryMetadataPresent(String electronicRecordId, String nonElectronicRecordId)
+        throws Exception
+    {
+        // Get the recordsAPI
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
+        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
+
+        for (Record record : Arrays.asList(electronicRecord, nonElectronicRecord))
+        {
+            verifyRecordIsIncomplete(record);
+
+            // Complete record
+            recordsAPI.completeRecord(record.getId(), parameters);
+            assertStatusCode(CREATED);
+
+            verifyRecordIsComplete(record);
         }
     }
 
@@ -279,8 +212,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     {
         // Get the recordsAPI
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        Record recordModel;
-        recordModel = recordsAPI.completeRecord(nonRecordId, parameters);
+        recordsAPI.completeRecord(nonRecordId, parameters);
         assertStatusCode(BAD_REQUEST);
     }
 
@@ -305,33 +237,67 @@ public class CompleteRecordTests extends BaseRMRestTest
         Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
         Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
 
-        for (Record record : Arrays.asList(nonElectronicRecord))
+        for (Record record : Arrays.asList(electronicRecord, nonElectronicRecord))
         {
-            Record recordModel;
-            // If the record is incomplete, complete it
-            recordModel = recordsAPI.getRecord(record.getId(), parameters);
-            if (recordModel.getIsCompleted().equals(INCOMPLETE))
-            {
-                recordModel = recordsAPI.completeRecord(record.getId(), parameters);
-            }
-
-            // Verify the record is already completed
-            assertEquals(recordModel.getIsCompleted(), COMPLETE);
+            verifyRecordIsIncomplete(record);
 
             // Complete record
-            recordModel = recordsAPI.completeRecord(record.getId(), parameters);
+            recordsAPI.completeRecord(record.getId(), parameters);
+            assertStatusCode(CREATED);
+
+            verifyRecordIsComplete(record);
+
+            // Complete record
+            recordsAPI.completeRecord(record.getId(), parameters);
             assertStatusCode(UNPROCESSABLE_ENTITY);
         }
     }
 
-
-    private void createMissingMandatoryMetadata(Record record)
+    /**
+     * Helper method to create an electronic record and and assert successfully creation
+     */
+    private Record createAndVerifyElectronicRecord(String recordFolderId) throws Exception
     {
-        nodeService.addAspect(record, ASPECT_TEST, null);
+        //create electronic record in record folder
+        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId,
+            getFile(IMAGE_FILE));
+        assertStatusCode(CREATED);
+
+        return electronicRecord;
     }
 
-    private void setMandatoryMetadata(Record record)
+    /**
+     * Helper method to create a non-electronic record and and assert successfully creation
+     */
+    private Record createAndVerifyNonElectronicRecord(String recordFolderId) throws Exception
     {
-        nodeService.addAspect(record, ASPECT_TEST, "SomeTextValue");
+        //create non-electronic record in record folder
+        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
+        assertStatusCode(CREATED);
+
+        return nonElectronicRecord;
     }
+
+    /**
+     * Helper method to verify that a record is not complete
+     */
+    private void verifyRecordIsIncomplete(Record record)
+    {
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        Record recordModel = recordsAPI.getRecord(record.getId(), parameters);
+        assertEquals(recordModel.getIsCompleted(), INCOMPLETE);
+    }
+
+    /**
+     * Helper method to verify that a record is completed
+     */
+    private void verifyRecordIsComplete(Record record)
+    {
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        Record recordModel = recordsAPI.getRecord(record.getId(), parameters);
+        assertEquals(recordModel.getIsCompleted(), COMPLETE);
+    }
+
 }

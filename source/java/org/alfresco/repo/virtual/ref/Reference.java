@@ -80,7 +80,33 @@ public class Reference
                 Encoding encoding = Encodings.fromToken(token);
                 if (encoding != null)
                 {
-                    return true;
+                    //
+                    // TODO experimental step 2 (sub-optimal) - remove & refactor so that we don't parse twice (for smart folder virtual ids)
+                    //
+                    try
+                    {
+                        Reference ref = fromNodeRef(nodeRef);
+                        if (ref != null)
+                        {
+                            return true;
+                        }
+                    }
+                    catch (ReferenceParseException rpe)
+                    {
+                        // ignore
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("Ignore parse exception: "+rpe.getMessage());
+                        }
+                    }
+                    catch (ReferenceEncodingException ree)
+                    {
+                        // ignore
+                        if (logger.isTraceEnabled())
+                        {
+                            logger.trace("Ignore encoding exception: "+ree.getMessage());
+                        }
+                    }
                 }
             }
 

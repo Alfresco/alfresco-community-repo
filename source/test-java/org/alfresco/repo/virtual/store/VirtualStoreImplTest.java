@@ -35,6 +35,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
+import org.alfresco.repo.virtual.ref.Encoding;
+import org.alfresco.repo.virtual.ref.Encodings;
 import org.alfresco.repo.virtual.ref.Protocols;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.repo.virtual.ref.VanillaProtocol;
@@ -241,26 +243,23 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
                                        false);
 
     }
-    
+
     // MNT-17845
     @Test
     public void testCanExistNodeIDwithV()
     {
-        Map<QName, Serializable> properties = new HashMap<>(1);
-        properties.put(ContentModel.PROP_NODE_UUID, "vfile");
-        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("specialFile1.txt"));
-        NodeRef vfileNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT, properties).getChildRef();
+        createAndCheckNodeId("nfile", "specialFile1.txt");
 
-        assertFalse(Reference.isReference(vfileNodeRef));
-        assertTrue(nodeService.exists(vfileNodeRef));
+        createAndCheckNodeId("vfile", "specialFile2.txt");
 
-        properties = new HashMap<>(1);
-        properties.put(ContentModel.PROP_NODE_UUID, "nfile");
-        assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("specialFile2.txt"));
-        NodeRef nfileNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT, properties).getChildRef();
+        // v0...
+        createAndCheckNodeId("v"+Encodings.ZERO.encoding.token+"file", "specialFile3.txt");
 
-        assertFalse(Reference.isReference(nfileNodeRef));
-        assertTrue(nodeService.exists(nfileNodeRef));
+        // vH...
+        createAndCheckNodeId("v"+Encodings.HASH.encoding.token+"file", "specialFile4.txt");
+
+        // vp...
+        createAndCheckNodeId("v"+Encodings.PLAIN.encoding.token+"file", "specialFile5.txt");
 
         NodeRef virtualFolder = createVirtualizedFolder(testRootFolder.getNodeRef(), VIRTUAL_FOLDER_3_NAME, TEST_TEMPLATE_4_JSON_SYS_PATH);
 
@@ -268,5 +267,18 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         virtualFolder = smartStore.virtualize(virtualFolder).toNodeRef();
         assertTrue(Reference.isReference(virtualFolder));
         assertTrue(nodeService.exists(virtualFolder));
+    }
+
+    private void createAndCheckNodeId(String nodeId, String nodeName)
+    {
+        Map<QName, Serializable> props = new HashMap<>(1);
+        props.put(ContentModel.PROP_NODE_UUID, nodeId);
+        props.put(ContentModel.PROP_NAME, nodeName);
+
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
+        NodeRef nfileNodeRef = nodeService.createNode(companyHomeNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT, props).getChildRef();
+
+        assertFalse(Reference.isReference(nfileNodeRef));
+        assertTrue(nodeService.exists(nfileNodeRef));
     }
 }

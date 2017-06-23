@@ -63,7 +63,8 @@ public class Reference
      * NodeRef Reference representations validated by this method should produce
      * valid Reference objects based on the given {@link NodeRef} when passed to
      * the {@link #fromNodeRef(NodeRef)} method.
-     * @deprecated 
+     * 
+     * @deprecated
      * @param nodeRef
      * @return <code>true</code> if the given {@link NodeRef} is a valid
      *         Reference representation<br>
@@ -80,89 +81,73 @@ public class Reference
                 Encoding encoding = Encodings.fromToken(token);
                 if (encoding != null)
                 {
-                    //
-                    // TODO experimental step 2 (sub-optimal) - remove & refactor so that we don't parse twice (for smart folder virtual ids)
-                    //
-                    try
-                    {
-                        Reference ref = fromNodeRef(nodeRef);
-                        if (ref != null)
-                        {
-                            return true;
-                        }
-                    }
-                    catch (ReferenceParseException rpe)
-                    {
-                        // ignore
-                        if (logger.isTraceEnabled())
-                        {
-                            logger.trace("Ignore parse exception: "+rpe.getMessage());
-                        }
-                    }
-                    catch (ReferenceEncodingException ree)
-                    {
-                        // ignore
-                        if (logger.isTraceEnabled())
-                        {
-                            logger.trace("Ignore encoding exception: "+ree.getMessage());
-                        }
-                    }
+                    return true;
                 }
             }
-
-            if (logger.isTraceEnabled())
+            else
             {
-                logger.trace("NodeRef is not a reference: "+nodeRef);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("NodeRef is not a reference.");
+                }
             }
         }
         return false;
     }
 
     /**
-	 * 
-	 * {@link NodeRef} {@link Reference} representation decoder/converter
-	 * method.<br>
-	 * Creates a {@link Reference} representation based on the ID of the given
-	 * {@link NodeRef}.<br>
-	 * It expects a {@link #VIRTUAL_TOKEN} prefixed encoded string. The encoded
-	 * string must start with a valid {@link Encoding} token. The Reference
-	 * representation structure is (no delimiters between the 3 elements):
-	 * VIRTUAL_TOKEN ENCODING_TOKEN referenceString Given that a valid encoding
-	 * was detected {@link Encoding#urlNative} information is used to obtain a
-	 * reference string. The reference string is parsed using the encoding
-	 * configured parser.
-	 * @param nodeRef
-	 * @return the {@link Reference} object corresponding to the given
-	 *         {@link NodeRef}
-	 *
-	 */
-	public static final Reference fromNodeRef(NodeRef nodeRef) {
-		String id = nodeRef.getId();
-		if (id.startsWith("" + VIRTUAL_TOKEN) && (id.length() > 1)) // belts-and-braces
-		{
-			char token = id.charAt(1);
-			Encoding encoding = Encodings.fromToken(token);
-			if (encoding != null) {
-				try {
-					String referenceString = id.substring(2);
-					if (!encoding.urlNative) {
-						referenceString = new String(
-								org.apache.commons.codec.binary.Base64.decodeBase64(referenceString));
-					}
-					Reference reference = encoding.parser.parse(referenceString);
-					return reference.propagateNodeRefMutations(nodeRef);
-				} catch (ReferenceParseException rpe) {
-					logger.debug("Parse exception:", rpe);
-					return null;
-				}catch (ReferenceEncodingException ree) {
-					logger.debug("encoding exception:", ree) ;
-					return null;
-				}
-				
-			}
-		}
-		return null;
-	}
+     * 
+     * {@link NodeRef} {@link Reference} representation decoder/converter
+     * method.<br>
+     * Creates a {@link Reference} representation based on the ID of the given
+     * {@link NodeRef}.<br>
+     * It expects a {@link #VIRTUAL_TOKEN} prefixed encoded string. The encoded
+     * string must start with a valid {@link Encoding} token. The Reference
+     * representation structure is (no delimiters between the 3 elements):
+     * VIRTUAL_TOKEN ENCODING_TOKEN referenceString Given that a valid encoding
+     * was detected {@link Encoding#urlNative} information is used to obtain a
+     * reference string. The reference string is parsed using the encoding
+     * configured parser.
+     * 
+     * @param nodeRef
+     * @return the {@link Reference} object corresponding to the given
+     *         {@link NodeRef}
+     *
+     */
+    public static final Reference fromNodeRef(NodeRef nodeRef)
+    {
+        String id = nodeRef.getId();
+        if (id.startsWith("" + VIRTUAL_TOKEN) && (id.length() > 1)) // belts-and-braces
+        {
+            char token = id.charAt(1);
+            Encoding encoding = Encodings.fromToken(token);
+            if (encoding != null)
+            {
+                try
+                {
+                    String referenceString = id.substring(2);
+                    if (!encoding.urlNative)
+                    {
+                        referenceString = new String(org.apache.commons.codec.binary.Base64.decodeBase64(referenceString));
+                    }
+                    Reference reference = encoding.parser.parse(referenceString);
+                    return reference.propagateNodeRefMutations(nodeRef);
+                }
+                catch (ReferenceParseException rpe)
+                {
+                    logger.debug("Parse exception:", rpe);
+                    return null;
+                }
+                catch (ReferenceEncodingException ree)
+                {
+                    logger.debug("Encoding exception:", ree);
+                    return null;
+                }
+
+            }
+        }
+        return null;
+    }
 
     // Average reference length log trace
 

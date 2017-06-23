@@ -364,7 +364,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         Map<NodeRef, Reference> materializedNodeRefs = new HashMap<>();
         for (NodeRef nodeRef : nodeRefs)
         {
-        	Reference reference = Reference.fromNodeRef(nodeRef);
+            Reference reference = Reference.fromNodeRef(nodeRef);
             if (reference == null)
             {
                 materialNodeRefs.add(nodeRef);

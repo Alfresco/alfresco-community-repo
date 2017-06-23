@@ -185,13 +185,13 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     public Set<QName> getAspects(NodeRef nodeRef)
     {
         NodeServiceTrait theTrait = getTrait();
-        Reference vRef = Reference.fromNodeRef(nodeRef);
-        if (vRef != null)
+        Reference reference = Reference.fromNodeRef(nodeRef);
+        if (reference != null)
         {
             GetAspectsMethod method = new GetAspectsMethod(theTrait,
                                                            environment);
 
-            return vRef.execute(method);
+            return reference.execute(method);
         }
         else
         {

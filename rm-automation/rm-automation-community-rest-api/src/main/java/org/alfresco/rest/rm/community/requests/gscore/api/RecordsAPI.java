@@ -148,7 +148,7 @@ public class RecordsAPI extends RMModelRequest
      *                   <ul>
      *                   <li>Invalid parameter: {@code recordBodyFile} is not a valid format,{@code recordId} is not a record</li>
      *                   <li>authentication fails</li>
-     *                   <li>current user does not have permission to file to {@code fileplanComponentId}</li>
+     *                   <li>current user does not have permission to complete {@code recordId}</li>
      *                   <li>{@code recordId} does not exist</li>
      *                   <li>model integrity exception: the record is already complete</li>
      *                   <li>model integrity exception: the record has missing meta-data</li>

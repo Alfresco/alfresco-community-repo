@@ -42,14 +42,10 @@ import org.alfresco.util.ParameterCheck;
  */
 public class DeclareRecordAction extends RMActionExecuterAbstractBase
 {
-    /**
-     * action name
-     */
+    /** action name */
     public static final String NAME = "declareRecord";
 
-    /**
-     * Record service
-     */
+    /** Record service */
     private RecordService recordService;
 
     /**

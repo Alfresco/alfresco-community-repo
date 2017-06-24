@@ -149,8 +149,8 @@ public class RecordsAPI extends RMModelRequest
      *                   <li>Invalid parameter: {@code recordId} is not a record</li>
      *                   <li>authentication fails</li>
      *                   <li>current user does not have permission to complete {@code recordId}</li>
-     *                   <li>{@code recordId} does not exist</li>
-     *                   <li>model integrity exception: the record is already complete</li>
+     *                   <li>{@code recordId} does not exist or is frozen</li>
+     *                   <li>model integrity exception: the record is already completed</li>
      *                   <li>model integrity exception: the record has missing meta-data</li>
      *                   </ul>
      */
@@ -242,7 +242,7 @@ public class RecordsAPI extends RMModelRequest
      * @param recordModel The record model which holds the information
      * @param recordId The identifier of a record
      * @param parameters The URL parameters to add
-     * @param returns The updated {@link Record}
+     * @return The updated {@link Record}
      * @throws Exception for the following cases:
      * <ul>
      *  <li>the update request is invalid or {@code recordId} is not a valid format or {@code recordModel} is invalid</li>

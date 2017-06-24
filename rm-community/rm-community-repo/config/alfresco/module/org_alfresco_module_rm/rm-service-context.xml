@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xsi:schemaLocation="
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:util="http://www.springframework.org/schema/util"
+   xsi:schemaLocation="
       http://www.springframework.org/schema/context
       http://www.springframework.org/schema/context/spring-context-3.0.xsd
       http://www.springframework.org/schema/beans
@@ -16,134 +16,129 @@
 
    <!--  Helper beans -->
 
-   <bean id="baseTransaction" abstract="true"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+   <bean id="baseTransaction" abstract="true" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="baseSecurity" abstract="true"
-         class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
-      <property name="authenticationManager">
-         <ref bean="authenticationManager" />
-      </property>
-      <property name="accessDecisionManager">
-         <ref bean="accessDecisionManager" />
-      </property>
-      <property name="afterInvocationManager">
-         <ref bean="afterInvocationManager" />
-      </property>
-   </bean>
+    <bean id="baseSecurity" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref bean="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref bean="afterInvocationManager"/>
+        </property>
+     </bean>
 
-   <bean id="baseService" abstract="true">
-      <property name="nodeService" ref="NodeService" />
-      <property name="dictionaryService" ref="DictionaryService" />
-      <property name="authenticationUtil" ref="rm.authenticationUtil" />
-      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
-      <property name="renditionService" ref="RenditionService" />
-   </bean>
+     <bean id="baseService" abstract="true">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+        <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+        <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
+        <property name="renditionService" ref="RenditionService" />
+     </bean>
 
-   <!-- Records Management Service Registry -->
+    <!-- Records Management Service Registry -->
 
-   <bean id="RecordsManagementServiceRegistry"
-         class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistryImpl" />
+    <bean id="RecordsManagementServiceRegistry" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistryImpl" />
 
-   <!--  Vital Record Service -->
+    <!--  Vital Record Service -->
 
-   <bean id="vitalRecordService" parent="baseService"
-         class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl">
-      <property name="filePlanService" ref="FilePlanService" />
-   </bean>
+    <bean id="vitalRecordService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl">
+        <property name="filePlanService" ref="FilePlanService" />
+    </bean>
 
-   <bean id="VitalRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService</value>
-      </property>
-      <property name="target">
-         <ref bean="vitalRecordService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="VitalRecordService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="VitalRecordService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="VitalRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService</value>
+        </property>
+        <property name="target">
+            <ref bean="vitalRecordService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="VitalRecordService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="VitalRecordService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="VitalRecordService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="VitalRecordService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="VitalRecordService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="VitalRecordService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService.*=RM_ALLOW
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  Disposition Service -->
-   <bean id="dispositionService" parent="baseService"
-         class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl">
-      <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry" />
-      <property name="behaviourFilter" ref="policyBehaviourFilter" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="recordFolderService" ref="RecordFolderService" />
-      <property name="recordService" ref="RecordService" />
-      <property name="freezeService" ref="FreezeService" />
-   </bean>
+    <!--  Disposition Service -->
+    <bean id="dispositionService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl">
+        <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordFolderService" ref="RecordFolderService"/>
+        <property name="recordService" ref="RecordService"/>
+        <property name="freezeService" ref="FreezeService"/>
+    </bean>
 
-   <bean id="DispositionService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService</value>
-      </property>
-      <property name="targetSource">
-         <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
-            <property name="targetBeanName">
-               <idref bean="dispositionService" />
-            </property>
-         </bean>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="DispositionService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="DispositionService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="DispositionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService</value>
+        </property>
+        <property name="targetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                <property name="targetBeanName">
+                   <idref bean="dispositionService"/>
+                </property>
+            </bean>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="DispositionService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="DispositionService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="DispositionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="DispositionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="DispositionService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="DispositionService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.registerDispositionProperty=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionProperties=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionSchedule=RM.Read.0
@@ -167,116 +162,114 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.calculateAsOfDate=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  Transfer Service -->
-   <bean id="rmTransferService" class="org.alfresco.module.org_alfresco_module_rm.transfer.TransferServiceImpl"
-         parent="baseService">
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="dispositionService" ref="dispositionService" />
-      <property name="recordService" ref="RecordService" />
-      <property name="recordFolderService" ref="RecordFolderService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="freezeService" ref="FreezeService" />
-      <property name="transferContainerType" ref="rma.transferContainer" />
-      <property name="transferType" ref="rma.transfer" />
-   </bean>
+    <!--  Transfer Service -->
+    <bean id="rmTransferService" class="org.alfresco.module.org_alfresco_module_rm.transfer.TransferServiceImpl" parent="baseService">
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="dispositionService" ref="dispositionService" />
+        <property name="recordService" ref="RecordService" />
+        <property name="recordFolderService" ref="RecordFolderService" />
+        <property name="nodeService" ref="nodeService"/>
+        <property name="freezeService" ref="FreezeService"/>
+        <property name="transferContainerType" ref="rma.transferContainer"/>
+        <property name="transferType" ref="rma.transfer"/>
+    </bean>
 
-   <bean id="RmTransferService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.transfer.TransferService</value>
-      </property>
-      <property name="target">
-         <ref bean="rmTransferService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="rmTransferService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="rmTransferService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="RmTransferService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.transfer.TransferService</value>
+        </property>
+        <property name="target">
+            <ref bean="rmTransferService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="rmTransferService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="rmTransferService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="rmTransferService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="rmTransferService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="rmTransferService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="rmTransferService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.isTransfer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.transfer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.completeTransfer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.transfer.TransferService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  Capability Service -->
+    <!--  Capability Service -->
 
-   <bean id="capabilityService" class="org.alfresco.module.org_alfresco_module_rm.capability.CapabilityServiceImpl">
-   </bean>
+    <bean id="capabilityService" class="org.alfresco.module.org_alfresco_module_rm.capability.CapabilityServiceImpl">
+    </bean>
 
-   <bean id="CapabilityService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService</value>
-      </property>
-      <property name="target">
-         <ref bean="capabilityService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="CapabilityService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <!-- <idref local="CapabilityService_security"/>  -->
-         </list>
-      </property>
-   </bean>
+    <bean id="CapabilityService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService</value>
+        </property>
+        <property name="target">
+            <ref bean="capabilityService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="CapabilityService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <!-- <idref local="CapabilityService_security"/>  -->
+            </list>
+        </property>
+    </bean>
 
-   <bean id="CapabilityService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="CapabilityService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="CapabilityService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="CapabilityService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService.*=RM_ALLOW
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  Records Management Search Service -->
+    <!--  Records Management Search Service -->
 
-   <bean id="recordsManagementSearchService"
-         class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl">
-      <property name="fileFolderService" ref="FileFolderService" />
-      <property name="siteService" ref="SiteService" />
-      <property name="namespaceService" ref="NamespaceService" />
-      <property name="searchService" ref="SearchService" />
-      <property name="reportsJSON">
-         <value>
-            <![CDATA[
+    <bean id="recordsManagementSearchService" class="org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl">
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="siteService" ref="SiteService"/>
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="searchService" ref="SearchService" />
+        <property name="reportsJSON">
+           <value>
+                <![CDATA[
                 [
                    {
                       "name" : "rm.savedsearch.vitalRecordsName",
@@ -346,42 +339,41 @@
                    }
                 ]
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService</value>
-      </property>
-      <property name="target">
-         <ref bean="recordsManagementSearchService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="RecordsManagementSearchService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RecordsManagementSearchService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="RecordsManagementSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService</value>
+        </property>
+        <property name="target">
+            <ref bean="recordsManagementSearchService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordsManagementSearchService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordsManagementSearchService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementSearchService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="RecordsManagementSearchService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementSearchService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="RecordsManagementSearchService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.search=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.getSavedSearches=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.getSavedSearch=RM_ALLOW
@@ -390,46 +382,46 @@
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.addReports=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  File Plan Service -->
+    <!--  File Plan Service -->
 
    <bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
 
    <bean id="filePlanService"
          parent="baseService"
-         class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
-      <property name="rootContainerCache" ref="rootContainerCache" />
-   </bean>
+          class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
+        <property name="rootContainerCache" ref="rootContainerCache" />
+    </bean>
 
-   <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService</value>
-      </property>
-      <property name="targetSource">
-         <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
-            <property name="targetBeanName">
-               <idref bean="filePlanService" />
-            </property>
-         </bean>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="FilePlanService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="FilePlanService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService</value>
+        </property>
+        <property name="targetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                <property name="targetBeanName">
+                   <idref bean="filePlanService"/>
+                </property>
+            </bean>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FilePlanService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FilePlanService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="FilePlanService_transaction" parent="baseTransaction" />
+    <bean id="FilePlanService_transaction" parent="baseTransaction" />
 
-   <bean id="FilePlanService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="FilePlanService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlanComponent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlanComponentKind=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlanComponentKindFromType=RM_ALLOW
@@ -454,114 +446,112 @@
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createRecordCategory=RM.Create.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
    <!--  File Plan Permission Service -->
 
    <bean id="filePlanPermissionService"
          parent="baseService"
-         class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl"
-         init-method="init">
-      <property name="permissionService" ref="PermissionService" />
-      <property name="policyComponent" ref="policyComponent" />
-      <property name="ownableService" ref="ownableService" />
-      <property name="authorityService" ref="AuthorityService" />
-      <property name="filePlanRoleService" ref="FilePlanRoleService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
-   </bean>
+          class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl"
+          init-method="init">
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="ownableService" ref="ownableService" />
+        <property name="authorityService" ref="AuthorityService" />
+        <property name="filePlanRoleService" ref="FilePlanRoleService" />
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
+    </bean>
 
-   <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService</value>
-      </property>
-      <property name="target">
-         <ref bean="filePlanPermissionService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="FilePlanPermissionService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="FilePlanPermissionService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService</value>
+        </property>
+        <property name="target">
+            <ref bean="filePlanPermissionService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FilePlanPermissionService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FilePlanPermissionService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="FilePlanPermissionService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="FilePlanPermissionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="FilePlanPermissionService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="FilePlanPermissionService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.setupRecordCategoryPermissions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.setupPermissions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.setPermission=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.deletePermission=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!-- File Plan Role Service -->
+    <!-- File Plan Role Service -->
 
-   <bean id="filePlanRoleService"
-         class="org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl"
-         depends-on="org_alfresco_module_rm_dictionaryBootstrap">
-      <property name="capabilityService" ref="CapabilityService" />
-      <property name="authorityService" ref="AuthorityService" />
-      <property name="permissionService" ref="PermissionService" />
-      <property name="nodeService" ref="NodeService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <!-- init repo for when a tenant is created -->
-      <property name="bootstrapImporterModuleComponent" ref="org_alfresco_module_rm_bootstrapData" />
+    <bean id="filePlanRoleService"
+          class="org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleServiceImpl"
+          depends-on="org_alfresco_module_rm_dictionaryBootstrap">
+        <property name="capabilityService" ref="CapabilityService"/>
+        <property name="authorityService" ref="AuthorityService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="filePlanService" ref="FilePlanService" />
+        <!-- init repo for when a tenant is created -->
+        <property name="bootstrapImporterModuleComponent" ref="org_alfresco_module_rm_bootstrapData"/>
 
-   </bean>
+    </bean>
 
-   <bean id="FilePlanRoleService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService</value>
-      </property>
-      <property name="target">
-         <ref bean="filePlanRoleService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="FilePlanRoleService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="FilePlanRoleService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="FilePlanRoleService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService</value>
+        </property>
+        <property name="target">
+            <ref bean="filePlanRoleService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FilePlanRoleService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FilePlanRoleService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="FilePlanRoleService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="FilePlanRoleService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="FilePlanRoleService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="FilePlanRoleService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+               <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.setupFilePlanRoles=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.tearDownFilePlanRoles=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRoles=RM_ALLOW
@@ -580,142 +570,138 @@
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getAllRolesContainerGroup=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
 
-   <!--  Records Management Extended Security Service -->
+    <!--  Records Management Extended Security Service -->
 
-   <bean id="extendedSecurityService"
-         class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl"
-         parent="baseService">
-      <property name="nodeService" ref="nodeService" />
-      <property name="filePlanService" ref="filePlanService" />
-      <property name="filePlanRoleService" ref="filePlanRoleService" />
-      <property name="authorityService" ref="authorityService" />
-      <property name="permissionService" ref="permissionService" />
-      <property name="transactionService" ref="transactionService" />
-   </bean>
+    <bean id="extendedSecurityService"
+          class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl"
+          parent="baseService">
+        <property name="nodeService" ref="nodeService"/>
+        <property name="filePlanService" ref="filePlanService" />
+        <property name="filePlanRoleService" ref="filePlanRoleService" />
+        <property name="authorityService" ref="authorityService"/>
+        <property name="permissionService" ref="permissionService"/>
+        <property name="transactionService" ref="transactionService"/>
+    </bean>
 
-   <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService</value>
-      </property>
-      <property name="target">
-         <ref bean="extendedSecurityService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="ExtendedSecurityService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="ExtendedSecurityService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService</value>
+        </property>
+        <property name="target">
+            <ref bean="extendedSecurityService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ExtendedSecurityService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="ExtendedSecurityService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="ExtendedSecurityService_transaction" parent="baseTransaction" />
+    <bean id="ExtendedSecurityService_transaction" parent="baseTransaction"/>
 
-   <bean id="ExtendedSecurityService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="ExtendedSecurityService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
              org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService.*=RM_ALLOW
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  Model Security service -->
+    <!--  Model Security service -->
 
-   <bean id="modelSecurityService"
-         class="org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityServiceImpl"
-         parent="rm.baseBehaviour">
-      <property name="enabled" value="true" />
-      <property name="namespaceService" ref="namespaceService" />
-      <property name="filePlanService" ref="FilePlanService" />
-   </bean>
+    <bean id="modelSecurityService"
+          class="org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityServiceImpl"
+          parent = "rm.baseBehaviour">
+        <property name="enabled" value="true" />
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="filePlanService" ref="FilePlanService" />
+    </bean>
 
-   <bean id="ModelSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService</value>
-      </property>
-      <property name="target">
-         <ref bean="modelSecurityService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="ModelSecurityService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="ModelSecurityService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="ModelSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService</value>
+        </property>
+        <property name="target">
+            <ref bean="modelSecurityService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="ModelSecurityService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="ModelSecurityService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="ModelSecurityService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="ModelSecurityService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="ModelSecurityService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="ModelSecurityService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
              org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService.*=RM_ALLOW
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!-- Records Management Action Service -->
+    <!-- Records Management Action Service -->
 
-   <bean id="recordsManagementActionService"
-         class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl"
-         init-method="init">
-      <property name="policyComponent" ref="policyComponent" />
-      <property name="nodeService" ref="nodeService" />
-   </bean>
+    <bean id="recordsManagementActionService" class="org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionServiceImpl" init-method="init">
+        <property name="policyComponent" ref="policyComponent"/>
+        <property name="nodeService" ref="nodeService"/>
+    </bean>
 
-   <bean id="RecordsManagementActionService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService</value>
-      </property>
-      <property name="target">
-         <ref bean="recordsManagementActionService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="RecordsManagementActionService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RecordsManagementActionService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="RecordsManagementActionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService</value>
+        </property>
+        <property name="target">
+            <ref bean="recordsManagementActionService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordsManagementActionService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordsManagementActionService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementActionService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="RecordsManagementActionService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
 
-   <bean id="RecordsManagementActionService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="RecordsManagementActionService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getRecordsManagementActions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getRecordsManagementActionConditions=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.getDispositionActions=RM_ALLOW
@@ -730,51 +716,49 @@
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.register=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!-- Records Management Event Service -->
+    <!-- Records Management Event Service -->
 
-   <bean id="recordsManagementEventService"
-         class="org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventServiceImpl">
-      <property name="nodeService" ref="NodeService" />
-      <property name="contentService" ref="ContentService" />
-   </bean>
+    <bean id="recordsManagementEventService" class="org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventServiceImpl">
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="ContentService"/>
+    </bean>
 
-   <bean id="RecordsManagementEventService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService</value>
-      </property>
-      <property name="target">
-         <ref bean="recordsManagementEventService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="RecordsManagementEventService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RecordsManagementEventService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="RecordsManagementEventService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService</value>
+        </property>
+        <property name="target">
+            <ref bean="recordsManagementEventService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordsManagementEventService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordsManagementEventService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementEventService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="RecordsManagementEventService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
 
-   <bean id="RecordsManagementEventService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="RecordsManagementEventService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.registerEventType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.getEventTypes=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.getEventType=RM_ALLOW
@@ -787,26 +771,23 @@
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.canEditEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <bean id="recordsManagementAdminBase"
-         class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminBase" abstract="true">
-      <property name="dictionaryService" ref="DictionaryService" />
-      <property name="nodeService" ref="NodeService" />
-      <property name="contentService" ref="contentService" />
-      <property name="namespaceService" ref="NamespaceService" />
-      <property name="dictionaryRepositoryBootstrap" ref="dictionaryRepositoryBootstrap" />
+   <bean id="recordsManagementAdminBase" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminBase" abstract="true">
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="dictionaryRepositoryBootstrap" ref="dictionaryRepositoryBootstrap"/>
    </bean>
 
    <!-- Records Management Admin Service -->
 
-   <bean id="recordsManagementAdminService"
-         class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl"
-         parent="recordsManagementAdminBase">
+   <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl" parent="recordsManagementAdminBase">
       <property name="relationshipService" ref="RelationshipService" />
-      <property name="transactionService" ref="transactionService" />
+      <property name="transactionService" ref="transactionService"/>
       <property name="customisableTypes">
          <list>
             <value>rma:recordCategory</value>
@@ -817,39 +798,38 @@
       </property>
    </bean>
 
-   <bean id="RecordsManagementAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService</value>
-      </property>
-      <property name="target">
-         <ref bean="recordsManagementAdminService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="RecordsManagementAdminService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RecordsManagementAdminService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="RecordsManagementAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService</value>
+        </property>
+        <property name="target">
+            <ref bean="recordsManagementAdminService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordsManagementAdminService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordsManagementAdminService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementAdminService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="RecordsManagementAdminService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
 
-   <bean id="RecordsManagementAdminService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="RecordsManagementAdminService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomisable=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.isCustomisable=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.makeCustomisable=RM_ALLOW
@@ -882,50 +862,50 @@
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCompoundIdFor=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  Freeze Service  -->
+    <!--  Freeze Service  -->
 
-   <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl">
-      <property name="nodeService" ref="nodeService" />
-      <property name="dictionaryService" ref="DictionaryService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="holdService" ref="HoldService" />
-   </bean>
+    <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl">
+        <property name="nodeService" ref="nodeService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="holdService" ref="HoldService" />
+    </bean>
 
-   <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService</value>
-      </property>
-      <property name="target">
-         <ref bean="freezeService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="FreezeService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="FreezeService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="FreezeService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService</value>
+        </property>
+        <property name="target">
+            <ref bean="freezeService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="FreezeService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="FreezeService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="FreezeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="FreezeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="FreezeService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="FreezeService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.isHold=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.isFrozen=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.getFrozen=RM_ALLOW
@@ -940,67 +920,65 @@
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.getFreezeInitiator=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!-- Records Management Audit Service -->
+    <!-- Records Management Audit Service -->
 
-   <bean id="recordsManagementAuditService"
-         class="org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl" init-method="init">
-      <property name="policyComponent" ref="policyComponent" />
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="transactionService" ref="transactionService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="auditComponent" ref="auditComponent" />
-      <property name="auditService" ref="auditService" />
-      <property name="contentService" ref="ContentService" />
-      <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="namespaceService" ref="NamespaceService" />
-      <property name="capabilityService" ref="CapabilityService" />
-      <property name="ignoredAuditProperties">
-         <list>
-            <value>cm:lastThumbnailModification</value>
-            <value>cm:autoVersion</value>
-            <value>cm:autoVersionOnUpdateProps</value>
-            <value>cm:initialVersion</value>
-         </list>
-      </property>
-   </bean>
+    <bean id="recordsManagementAuditService" class="org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl" init-method="init">
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="dictionaryService" ref="dictionaryService" />
+        <property name="transactionService" ref="transactionService" />
+        <property name="nodeService" ref="nodeService" />
+        <property name="auditComponent" ref="auditComponent" />
+        <property name="auditService" ref="auditService" />
+        <property name="contentService" ref="ContentService" />
+        <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="capabilityService" ref="CapabilityService" />
+        <property name="ignoredAuditProperties">
+            <list>
+                <value>cm:lastThumbnailModification</value>
+                <value>cm:autoVersion</value>
+                <value>cm:autoVersionOnUpdateProps</value>
+                <value>cm:initialVersion</value>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementAuditService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService</value>
-      </property>
-      <property name="target">
-         <ref bean="recordsManagementAuditService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="RecordsManagementAuditService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RecordsManagementAuditService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="RecordsManagementAuditService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService</value>
+        </property>
+        <property name="target">
+            <ref bean="recordsManagementAuditService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordsManagementAuditService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordsManagementAuditService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementAuditService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="RecordsManagementAuditService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="RecordsManagementAuditService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="RecordsManagementAuditService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.registerAuditEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.auditEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.auditOrUpdateEvent=RM_ALLOW
@@ -1016,53 +994,51 @@
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditEvents=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  Record Folder Service -->
+    <!--  Record Folder Service -->
 
-   <bean id="recordFolderService"
-         class="org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl">
-      <property name="nodeService" ref="NodeService" />
-      <property name="dispositionService" ref="DispositionService" />
-      <property name="dictionaryService" ref="DictionaryService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="recordService" ref="RecordService" />
-   </bean>
+    <bean id="recordFolderService" class="org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServiceImpl">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="dispositionService" ref="DispositionService" />
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordService" ref="RecordService" />
+    </bean>
 
-   <bean id="RecordFolderService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService</value>
-      </property>
-      <property name="target">
-         <ref bean="recordFolderService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="RecordFolderService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RecordFolderService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="RecordFolderService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService</value>
+        </property>
+        <property name="target">
+            <ref bean="recordFolderService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordFolderService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordFolderService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="RecordFolderService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="RecordFolderService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="RecordFolderService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="RecordFolderService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolder=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderClosed=RM.Read.0
@@ -1072,39 +1048,38 @@
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.closeRecordFolder=RM_CAP.0.rma:filePlanComponent.CloseFolders
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!--  Record Service -->
+    <!--  Record Service -->
 
-   <bean id="recordService" parent="rm.baseBehaviour"
-         class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
-      <property name="identifierService" ref="recordsManagementIdentifierService" />
-      <property name="extendedPermissionService" ref="ExtendedPermissionService" />
-      <property name="extendedSecurityService" ref="ExtendedSecurityService" />
-      <property name="policyComponent" ref="policyComponent" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="ownableService" ref="OwnableService" />
-      <property name="notificationHelper" ref="recordsManagementNotificationHelper" />
-      <property name="capabilityService" ref="CapabilityService" />
-      <property name="ruleService" ref="RuleService" />
-      <property name="fileFolderService" ref="FileFolderService" />
-      <property name="recordFolderService" ref="RecordFolderService" />
-      <property name="filePlanRoleService" ref="FilePlanRoleService" />
-      <property name="permissionService" ref="permissionService" />
-      <property name="versionService" ref="VersionService" />
-      <property name="relationshipService" ref="RelationshipService" />
-      <property name="recordsManagementContainerType" ref="rma.recordsManagementContainer" />
-      <property name="renditionService" ref="RenditionService" />
-      <property name="dispositionService" ref="DispositionService" />
-      <property name="recordableVersionService" ref="RecordableVersionService" />
-      <property name="alwaysEditURIs" ref="recordService_alwaysEditURIs" />
-      <property name="incompleteNodeTagger" ref="incompleteNodeTagger" />
-      <property name="freezeService" ref="FreezeService" />
-      <property name="namespaceService" ref="NamespaceService" />
-      <property name="checkMandatoryPropertiesEnabled" value="${rm.completerecord.mandatorypropertiescheck.enabled}" />
-   </bean>
+    <bean id="recordService" parent="rm.baseBehaviour" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
+        <property name="identifierService" ref="recordsManagementIdentifierService"/>
+        <property name="extendedPermissionService" ref="ExtendedPermissionService"/>
+        <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+        <property name="policyComponent" ref="policyComponent" />
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="ownableService" ref="OwnableService" />
+        <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
+        <property name="capabilityService" ref="CapabilityService" />
+        <property name="ruleService" ref="RuleService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="recordFolderService" ref="RecordFolderService" />
+        <property name="filePlanRoleService" ref="FilePlanRoleService" />
+        <property name="permissionService" ref="permissionService" />
+        <property name="versionService" ref="VersionService" />
+        <property name="relationshipService" ref="RelationshipService" />
+        <property name="recordsManagementContainerType" ref="rma.recordsManagementContainer"/>
+        <property name="renditionService" ref="RenditionService" />
+        <property name="dispositionService" ref="DispositionService"/>
+        <property name="recordableVersionService" ref="RecordableVersionService"/>
+        <property name="alwaysEditURIs" ref="recordService_alwaysEditURIs" />
+        <property name="incompleteNodeTagger" ref="incompleteNodeTagger" />
+        <property name="freezeService" ref="FreezeService" />
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="checkMandatoryPropertiesEnabled" value="${rm.completerecord.mandatorypropertiescheck.enabled}"/>
+    </bean>
 
    <!-- Defines a list of namespace URIs for properties, which should be always editable -->
    <util:list id="recordService_alwaysEditURIs" value-type="java.lang.String">
@@ -1118,48 +1093,46 @@
       <value>http://www.alfresco.org/model/rendition/1.0</value>
    </util:list>
 
-   <bean id="recordMetadataAspectBootstrap"
-         class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init"
-         abstract="true">
-      <property name="recordService" ref="recordService" />
-      <property name="namespaceService" ref="namespaceService" />
-   </bean>
+    <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
+      <property name="recordService" ref="recordService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+    </bean>
 
-   <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.record.RecordService</value>
-      </property>
-      <property name="targetSource">
-         <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
-            <property name="targetBeanName">
-               <idref bean="recordService" />
-            </property>
-         </bean>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="RecordService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RecordService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.record.RecordService</value>
+        </property>
+        <property name="targetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                <property name="targetBeanName">
+                   <idref bean="recordService"/>
+                </property>
+            </bean>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="RecordService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="RecordService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="RecordService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="RecordService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="RecordService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="RecordService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.registerRecordMetadataAspect=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.disablePropertyEditableCheck=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.enablePropertyEditableCheck=RM_ALLOW
@@ -1185,18 +1158,17 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.complete=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
    <!--  Inplace Record Service -->
 
-   <bean id="inplaceRecordService" parent="baseService"
-         class="org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordServiceImpl">
+   <bean id="inplaceRecordService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordServiceImpl">
       <property name="siteService" ref="SiteService" />
       <property name="extendedSecurityService" ref="ExtendedSecurityService" />
       <property name="fileFolderService" ref="FileFolderService" />
-   </bean>
+    </bean>
 
    <bean id="InplaceRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
@@ -1205,23 +1177,22 @@
       <property name="targetSource">
          <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
             <property name="targetBeanName">
-               <idref bean="inplaceRecordService" />
+               <idref bean="inplaceRecordService"/>
             </property>
          </bean>
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="InplaceRecordService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="InplaceRecordService_security" />
+            <idref local="InplaceRecordService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="InplaceRecordService_security"/>
          </list>
       </property>
    </bean>
 
-   <bean id="InplaceRecordService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
+   <bean id="InplaceRecordService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
       <property name="transactionManager">
-         <ref bean="transactionManager" />
+         <ref bean="transactionManager"/>
       </property>
       <property name="transactionAttributes">
          <props>
@@ -1244,25 +1215,25 @@
 
    <!--  File Plan Authentication Service -->
    <bean id="filePlanAuthenticationService"
-         class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl" />
+      class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl" />
 
    <bean id="FilePlanAuthenticationService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
          <value>org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService</value>
       </property>
       <property name="target">
-         <ref bean="filePlanAuthenticationService" />
+         <ref bean="filePlanAuthenticationService"/>
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="FilePlanAuthenticationService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="FilePlanAuthenticationService_security" />
+            <idref local="FilePlanAuthenticationService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="FilePlanAuthenticationService_security"/>
          </list>
       </property>
    </bean>
 
-   <bean id="FilePlanAuthenticationService_transaction" parent="baseTransaction" />
+   <bean id="FilePlanAuthenticationService_transaction" parent="baseTransaction"/>
 
    <bean id="FilePlanAuthenticationService_security" parent="baseSecurity">
       <property name="objectDefinitionSource">
@@ -1274,18 +1245,16 @@
       </property>
    </bean>
 
-   <!--  Custom EMail Mapping Service -->
-   <bean id="customEmailMappingService"
-         class="org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingServiceImpl">
+    <!--  Custom EMail Mapping Service -->
+    <bean id="customEmailMappingService"
+      class="org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingServiceImpl" >
       <property name="extracter" ref="extracter.RFC822" />
       <property name="nodeService" ref="nodeService" />
-      <property name="contentService" ref="contentService" />
+      <property name="contentService" ref="contentService"/>
       <property name="namespacePrefixResolver">
          <ref bean="namespaceService"></ref>
       </property>
-      <property name="transactionService">
-         <ref bean="transactionService" />
-      </property>
+      <property name="transactionService"><ref bean="transactionService" /></property>
       <property name="emailMappingKeys">
          <list>
             <value>Thread-Index</value>
@@ -1298,112 +1267,110 @@
       </property>
    </bean>
 
-   <bean id="CustomEmailMappingService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="CustomEmailMappingService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="CustomEmailMappingService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+        <bean id="CustomEmailMappingService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.getCustomMappings=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.addCustomMapping=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.deleteCustomMapping=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.getEmailMappingKeys=RM_ALLOW
                     org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
 
-   <bean id="CustomEmailMappingService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <list>
-            <value>org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService</value>
-         </list>
-      </property>
-      <property name="targetName">
-         <value>customEmailMappingService</value>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="CustomEmailMappingService_transaction" />
-            <idref local="CustomEmailMappingService_security" />
-            <idref bean="exceptionTranslator" />
-         </list>
-      </property>
-   </bean>
+    <bean id="CustomEmailMappingService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>customEmailMappingService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="CustomEmailMappingService_transaction"/>
+                <idref local="CustomEmailMappingService_security"/>
+                <idref bean="exceptionTranslator"/>
+            </list>
+        </property>
+    </bean>
 
-   <!--  RM Notification Helper -->
-   <bean id="recordsManagementNotificationHelper"
-         class="org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper">
-      <property name="filePlanRoleService" ref="FilePlanRoleService" />
-      <property name="notificationService" ref="NotificationService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="tenantAdminService" ref="tenantAdminService" />
-      <property name="namespaceService" ref="namespaceService" />
-      <property name="searchService" ref="searchService" />
-      <property name="siteService" ref="SiteService" />
-      <property name="authorityService" ref="authorityService" />
-      <property name="notificationRole" value="${rm.notification.role}" />
-   </bean>
+    <!--  RM Notification Helper -->
+    <bean id="recordsManagementNotificationHelper" class="org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper" >
+        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+       <property name="notificationService" ref="NotificationService"/>
+       <property name="filePlanService" ref="FilePlanService"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="tenantAdminService" ref="tenantAdminService"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="searchService" ref="searchService"/>
+        <property name="siteService" ref="SiteService" />
+        <property name="authorityService" ref="authorityService" />
+       <property name="notificationRole" value="${rm.notification.role}"/>
+    </bean>
 
-   <!-- RM caveats -->
+    <!-- RM caveats -->
 
-   <bean id="caveatConfigService" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigServiceImpl">
-      <property name="caveatConfigComponent" ref="caveatConfigComponent" />
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="namespaceService" ref="namespaceService" />
-      <property name="recordsManagementAdminService" ref="recordsManagementAdminService" />
-   </bean>
+    <bean id="caveatConfigService" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigServiceImpl">
+        <property name="caveatConfigComponent" ref="caveatConfigComponent"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="namespaceService" ref="namespaceService" />
+        <property name="recordsManagementAdminService" ref = "recordsManagementAdminService"/>
+    </bean>
 
-   <bean id="caveatConfigComponent"
-         class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponentImpl"
-         depends-on="org_alfresco_module_rm_dictionaryBootstrap">
-      <property name="contentService" ref="contentService" />
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="namespaceService" ref="namespaceService" />
-      <property name="authorityService" ref="authorityService" />
-      <property name="personService" ref="personService" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="caveatAspects" ref="caveatAspects" />
-      <property name="caveatModels" ref="caveatModels" />
-      <property name="caveatConfig" ref="caveatConfigCache" />
-   </bean>
+    <bean id="caveatConfigComponent"
+          class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponentImpl"
+          depends-on="org_alfresco_module_rm_dictionaryBootstrap">
+        <property name="contentService" ref="contentService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="authorityService" ref="authorityService"/>
+        <property name="personService" ref="personService"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="caveatAspects" ref="caveatAspects"/>
+        <property name="caveatModels" ref="caveatModels"/>
+        <property name="caveatConfig" ref="caveatConfigCache"/>
+    </bean>
 
-   <!-- ===================================== -->
-   <!-- Record Management Caveat Config Cache -->
-   <!-- ===================================== -->
+     <!-- ===================================== -->
+     <!-- Record Management Caveat Config Cache -->
+     <!-- ===================================== -->
 
-   <!-- The cross-transaction shared cache for in-memory CaveatConfig -->
+     <!-- The cross-transaction shared cache for in-memory CaveatConfig -->
 
-   <bean name="caveatConfigSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+     <bean name="caveatConfigSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache"/>
 
-   <!-- The transactional cache for in-memory CaveatConfig -->
+    <!-- The transactional cache for in-memory CaveatConfig -->
 
-   <bean name="caveatConfigCache" class="org.alfresco.repo.cache.TransactionalCache">
-      <property name="sharedCache">
-         <ref bean="caveatConfigSharedCache" />
-      </property>
-      <property name="name">
-         <value>org.alfresco.caveatConfigTransactionalCache</value>
-      </property>
-      <property name="maxCacheSize" value="500" />
-      <property name="mutable" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
-   </bean>
+    <bean name="caveatConfigCache" class="org.alfresco.repo.cache.TransactionalCache">
+        <property name="sharedCache">
+            <ref bean="caveatConfigSharedCache" />
+        </property>
+        <property name="name">
+            <value>org.alfresco.caveatConfigTransactionalCache</value>
+        </property>
+        <property name="maxCacheSize" value="500" />
+        <property name="mutable" value="true" />
+        <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+    </bean>
 
-   <bean id="caveatAspects" class="java.util.ArrayList">
+    <bean id="caveatAspects" class="java.util.ArrayList" >
       <constructor-arg>
          <list>
             <value>{http://www.alfresco.org/model/recordsmanagement/1.0}recordComponentIdentifier</value>
@@ -1411,7 +1378,7 @@
       </constructor-arg>
    </bean>
 
-   <bean id="caveatModels" class="java.util.ArrayList">
+   <bean id="caveatModels" class="java.util.ArrayList" >
       <constructor-arg>
          <list>
             <value>{http://www.alfresco.org/model/rmcustom/1.0}rmcustom</value>
@@ -1419,15 +1386,14 @@
       </constructor-arg>
    </bean>
 
-   <bean id="rmListOfValuesContraintInit"
-         class="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
-      <property name="caveatConfigService" ref="caveatConfigService" />
-   </bean>
+    <bean id="rmListOfValuesContraintInit" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
+        <property name="caveatConfigService" ref="caveatConfigService"/>
+    </bean>
 
-   <bean id="CaveatConfigService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="CaveatConfigService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getRMAllowedValues=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.hasAccess=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getRMConstraint=RM_ALLOW
@@ -1445,118 +1411,115 @@
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.removeRMConstraintListValue=RM_ALLOW
                    org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.*=RM_DENY
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <bean id="CaveatConfigService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="CaveatConfigService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="CaveatConfigService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <list>
-            <value>org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService</value>
-         </list>
-      </property>
-      <property name="targetName">
-         <value>caveatConfigService</value>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="CaveatConfigService_transaction" />
-            <idref local="CaveatConfigService_security" />
-            <idref bean="exceptionTranslator" />
-         </list>
-      </property>
-   </bean>
+    <bean id="CaveatConfigService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService</value>
+            </list>
+        </property>
+        <property name="targetName">
+            <value>caveatConfigService</value>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="CaveatConfigService_transaction"/>
+                <idref local="CaveatConfigService_security"/>
+                <idref bean="exceptionTranslator"/>
+            </list>
+        </property>
+    </bean>
 
-   <!--  Site service work around (see https://issues.alfresco.com/jira/browse/RM-387) -->
-   <bean name="siteGetChildrenCannedQueryFactory"
-         class="org.alfresco.module.org_alfresco_module_rm.site.GetChildrenCannedQueryFactory">
-      <property name="registry" ref="siteCannedQueryRegistry" />
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="tenantService" ref="tenantService" />
-      <property name="nodeDAO" ref="nodeDAO" />
-      <property name="nodeService" ref="nodeService" />
-      <property name="qnameDAO" ref="qnameDAO" />
-      <property name="localeDAO" ref="localeDAO" />
-      <property name="contentDataDAO" ref="contentDataDAO" />
-      <property name="cannedQueryDAO" ref="cannedQueryDAO" />
-      <property name="methodSecurity" ref="SiteService_security_listSites" />
-   </bean>
+    <!--  Site service work around (see https://issues.alfresco.com/jira/browse/RM-387) -->
+    <bean name="siteGetChildrenCannedQueryFactory" class="org.alfresco.module.org_alfresco_module_rm.site.GetChildrenCannedQueryFactory">
+        <property name="registry" ref="siteCannedQueryRegistry"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="nodeService" ref="nodeService"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
+        <property name="localeDAO" ref="localeDAO"/>
+        <property name="contentDataDAO" ref="contentDataDAO"/>
+        <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
+        <property name="methodSecurity" ref="SiteService_security_listSites"/>
+    </bean>
 
-   <!--  Data Set Service -->
+    <!--  Data Set Service -->
 
-   <bean id="dataSetService" class="org.alfresco.module.org_alfresco_module_rm.dataset.DataSetServiceImpl">
-      <property name="importerService" ref="ImporterService" />
-      <property name="searchService" ref="SearchService" />
-      <property name="nodeService" ref="NodeService" />
-      <property name="filePlanService" ref="FilePlanService" />
-      <property name="permissionService" ref="PermissionService" />
-      <property name="authorityService" ref="AuthorityService" />
-      <property name="filePlanRoleService" ref="FilePlanRoleService" />
-      <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour" />
-      <property name="dispositionService" ref="DispositionService" />
-      <property name="recordFolderService" ref="RecordFolderService" />
-   </bean>
+    <bean id="dataSetService" class="org.alfresco.module.org_alfresco_module_rm.dataset.DataSetServiceImpl">
+        <property name="importerService" ref="ImporterService"/>
+        <property name="searchService" ref="SearchService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="filePlanService" ref="FilePlanService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="authorityService" ref="AuthorityService"/>
+        <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+        <property name="recordsManagementSearchBehaviour" ref="recordsManagementSearchBehaviour"/>
+        <property name="dispositionService" ref="DispositionService"/>
+        <property name="recordFolderService" ref="RecordFolderService"/>
+    </bean>
 
-   <bean id="DataSetService" class="org.springframework.aop.framework.ProxyFactoryBean">
-      <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService</value>
-      </property>
-      <property name="target">
-         <ref bean="dataSetService" />
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref local="DataSetService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="DataSetService_security" />
-         </list>
-      </property>
-   </bean>
+    <bean id="DataSetService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService</value>
+        </property>
+        <property name="target">
+            <ref bean="dataSetService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="DataSetService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="DataSetService_security"/>
+            </list>
+        </property>
+    </bean>
 
-   <bean id="DataSetService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
-      <property name="transactionManager">
-         <ref bean="transactionManager" />
-      </property>
-      <property name="transactionAttributes">
-         <props>
-            <prop key="*">${server.transaction.mode.default}</prop>
-         </props>
-      </property>
-   </bean>
+    <bean id="DataSetService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 
-   <bean id="DataSetService_security" parent="baseSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            <![CDATA[
+    <bean id="DataSetService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService.*=RM_ALLOW
                 ]]>
-         </value>
-      </property>
-   </bean>
+            </value>
+        </property>
+    </bean>
 
-   <!-- Data Set Implementations -->
+    <!-- Data Set Implementations -->
 
-   <bean id="dataSetBase" abstract="true" init-method="register"
-         class="org.alfresco.module.org_alfresco_module_rm.dataset.DataSetBase">
-      <property name="dataSetService" ref="dataSetService" />
-   </bean>
+    <bean id="dataSetBase" abstract="true" init-method="register" class="org.alfresco.module.org_alfresco_module_rm.dataset.DataSetBase">
+        <property name="dataSetService" ref="dataSetService"/>
+    </bean>
 
-   <bean id="dataSetDOD5015" parent="dataSetBase">
-      <property name="id" value="dod5015" />
-      <property name="path" value="alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml" />
-   </bean>
+    <bean id="dataSetDOD5015" parent="dataSetBase">
+        <property name="id" value="dod5015"/>
+        <property name="path" value="alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml" />
+    </bean>
 
    <!--  Hold Service -->
 
@@ -1567,7 +1530,7 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="RecordFolderService" />
-      <property name="permissionService" ref="PermissionService" />
+      <property name="permissionService" ref="PermissionService"/>
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
    </bean>
 
@@ -1577,13 +1540,13 @@
          <value>org.alfresco.module.org_alfresco_module_rm.hold.HoldService</value>
       </property>
       <property name="target">
-         <ref bean="holdService" />
+         <ref bean="holdService"/>
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="HoldService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="HoldService_security" />
+            <idref local="HoldService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="HoldService_security"/>
          </list>
       </property>
    </bean>
@@ -1616,10 +1579,8 @@
 
    <!--  Relationship Service  -->
 
-   <bean id="relationshipService"
-         class="org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipServiceImpl" init-method="init"
-         parent="recordsManagementAdminBase">
-      <property name="policyComponent" ref="policyComponent" />
+   <bean id="relationshipService" class="org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipServiceImpl" init-method="init" parent="recordsManagementAdminBase">
+      <property name="policyComponent" ref="policyComponent"/>
    </bean>
 
    <bean id="RelationshipService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1627,21 +1588,20 @@
          <value>org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService</value>
       </property>
       <property name="target">
-         <ref bean="relationshipService" />
+         <ref bean="relationshipService"/>
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="RelationshipService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RelationshipService_security" />
+            <idref local="RelationshipService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="RelationshipService_security"/>
          </list>
       </property>
    </bean>
 
-   <bean id="RelationshipService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
+   <bean id="RelationshipService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
       <property name="transactionManager">
-         <ref bean="transactionManager" />
+         <ref bean="transactionManager"/>
       </property>
       <property name="transactionAttributes">
          <props>
@@ -1672,9 +1632,8 @@
 
    <!--  Recordable Verison Config Service  -->
 
-   <bean id="recordableVersionConfigService"
-         class="org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigServiceImpl">
-      <property name="nodeService" ref="NodeService" />
+   <bean id="recordableVersionConfigService" class="org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigServiceImpl">
+      <property name="nodeService" ref="NodeService"/>
    </bean>
 
    <bean id="RecordableVersionConfigService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1682,21 +1641,20 @@
          <value>org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService</value>
       </property>
       <property name="target">
-         <ref bean="recordableVersionConfigService" />
+         <ref bean="recordableVersionConfigService"/>
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="RecordableVersionConfigService_transaction" />
-            <idref bean="exceptionTranslator" />
-            <idref local="RecordableVersionConfigService_security" />
+            <idref local="RecordableVersionConfigService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="RecordableVersionConfigService_security"/>
          </list>
       </property>
    </bean>
 
-   <bean id="RecordableVersionConfigService_transaction"
-         class="org.springframework.transaction.interceptor.TransactionInterceptor">
+   <bean id="RecordableVersionConfigService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
       <property name="transactionManager">
-         <ref bean="transactionManager" />
+         <ref bean="transactionManager"/>
       </property>
       <property name="transactionAttributes">
          <props>

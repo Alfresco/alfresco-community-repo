@@ -207,8 +207,7 @@ public class CompleteRecordTests extends BaseRMRestTest
             description = "Cannot complete a document that is not a record"
         )
     @AlfrescoTest (jira = "RM-4431")
-    public void completeNonRecord(String nonRecordId)
-        throws Exception
+    public void completeNonRecord(String nonRecordId) throws Exception
     {
         // Get the recordsAPI
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
@@ -254,7 +253,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Helper method to create an electronic record and and assert successfully creation
+     * Helper method to create an electronic record and and assert successful creation
      */
     private Record createAndVerifyElectronicRecord(String recordFolderId) throws Exception
     {
@@ -268,7 +267,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Helper method to create a non-electronic record and and assert successfully creation
+     * Helper method to create a non-electronic record and and assert successful creation
      */
     private Record createAndVerifyNonElectronicRecord(String recordFolderId) throws Exception
     {

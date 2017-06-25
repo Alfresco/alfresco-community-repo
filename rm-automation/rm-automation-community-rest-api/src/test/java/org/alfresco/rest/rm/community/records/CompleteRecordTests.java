@@ -38,9 +38,11 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
+import org.alfresco.rest.rm.community.model.site.RMSite;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
@@ -68,22 +70,10 @@ public class CompleteRecordTests extends BaseRMRestTest
     public Object[][] getIncompleteRecordsMandatoryMetadataMissing() throws Exception
     {
         //create RM site
-        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
-        rmSiteAPI.deleteRMSite();
-        rmSiteAPI.createRMSite(createDOD5015RMSiteModel());
-        assertStatusCode(CREATED);
+        createRMSite(createDOD5015RMSiteModel());
 
-        // create record folder
-        String recordFolderId = createCategoryFolderInFilePlan().getId();
-
-        Record electronicRecord = createAndVerifyElectronicRecord(recordFolderId);
-        Record nonElectronicRecord = createAndVerifyNonElectronicRecord(recordFolderId);
-
-        return new String[][]
-            {
-                // an arbitrary record folder
-                { electronicRecord.getId(), nonElectronicRecord.getId() },
-            };
+        // create electronic and non-electronic records
+        return createAndVerifyRecordsInFolder();
     }
 
     /**
@@ -93,22 +83,10 @@ public class CompleteRecordTests extends BaseRMRestTest
     public Object[][] getIncompleteRecordsMandatoryMetadataPresent() throws Exception
     {
         //create RM site
-        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
-        rmSiteAPI.deleteRMSite();
-        rmSiteAPI.createRMSite(createStandardRMSiteModel());
-        assertStatusCode(CREATED);
+        createRMSite(createStandardRMSiteModel());
 
-        // create record folder
-        String recordFolderId = createCategoryFolderInFilePlan().getId();
-
-        Record electronicRecord = createAndVerifyElectronicRecord(recordFolderId);
-        Record nonElectronicRecord = createAndVerifyNonElectronicRecord(recordFolderId);
-
-        return new String[][]
-            {
-                // an arbitrary record folder
-                { electronicRecord.getId(), nonElectronicRecord.getId() },
-            };
+        // create electronic and non-electronic records
+        return createAndVerifyRecordsInFolder();
     }
 
     /**
@@ -143,20 +121,17 @@ public class CompleteRecordTests extends BaseRMRestTest
     public void completeRecordWithMandatoryMetadataMissing(String electronicRecordId, String nonElectronicRecordId)
         throws Exception
     {
-        // Get the recordsAPI
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
-        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
+        List<Record> records = getRecordsList(electronicRecordId, nonElectronicRecordId);
 
-        for (Record record : Arrays.asList(electronicRecord, nonElectronicRecord))
+        for (Record record : records)
         {
-            verifyRecordIsIncomplete(record);
+            verifyRecordCompletionStatus(record, INCOMPLETE);
 
             // Complete record
-            recordsAPI.completeRecord(record.getId(), parameters);
+            completeRecord(record);
             assertStatusCode(UNPROCESSABLE_ENTITY);
 
-            verifyRecordIsIncomplete(record);
+            verifyRecordCompletionStatus(record, INCOMPLETE);
         }
     }
 
@@ -177,20 +152,17 @@ public class CompleteRecordTests extends BaseRMRestTest
     public void completeRecordWithMandatoryMetadataPresent(String electronicRecordId, String nonElectronicRecordId)
         throws Exception
     {
-        // Get the recordsAPI
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
-        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
+        List<Record> records = getRecordsList(electronicRecordId, nonElectronicRecordId);
 
-        for (Record record : Arrays.asList(electronicRecord, nonElectronicRecord))
+        for (Record record : records)
         {
-            verifyRecordIsIncomplete(record);
+            verifyRecordCompletionStatus(record, INCOMPLETE);
 
             // Complete record
-            recordsAPI.completeRecord(record.getId(), parameters);
+            completeRecord(record);
             assertStatusCode(CREATED);
 
-            verifyRecordIsComplete(record);
+            verifyRecordCompletionStatus(record, COMPLETE);
         }
     }
 
@@ -231,72 +203,90 @@ public class CompleteRecordTests extends BaseRMRestTest
     public void completeAlreadyCompletedRecord(String electronicRecordId, String nonElectronicRecordId)
         throws Exception
     {
-        // Get the recordsAPI
-        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
-        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
+        List<Record> records = getRecordsList(electronicRecordId, nonElectronicRecordId);
 
-        for (Record record : Arrays.asList(electronicRecord, nonElectronicRecord))
+        for (Record record : records)
         {
-            verifyRecordIsIncomplete(record);
+            verifyRecordCompletionStatus(record, INCOMPLETE);
 
             // Complete record
-            recordsAPI.completeRecord(record.getId(), parameters);
+            completeRecord(record);
             assertStatusCode(CREATED);
 
-            verifyRecordIsComplete(record);
+            verifyRecordCompletionStatus(record, COMPLETE);
 
             // Complete record
-            recordsAPI.completeRecord(record.getId(), parameters);
+            completeRecord(record);
             assertStatusCode(UNPROCESSABLE_ENTITY);
         }
     }
 
     /**
-     * Helper method to create an electronic record and and assert successful creation
+     * Helper method to create an RM site and assert successful creation
      */
-    private Record createAndVerifyElectronicRecord(String recordFolderId) throws Exception
+    private void createRMSite(RMSite rmSiteModel) throws Exception
     {
-        //create electronic record in record folder
+        RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
+        rmSiteAPI.deleteRMSite();
+        rmSiteAPI.createRMSite(rmSiteModel);
+        assertStatusCode(CREATED);
+    }
+
+    /**
+     * Helper method to create records and and assert successful creation
+     */
+    private String[][] createAndVerifyRecordsInFolder() throws Exception
+    {
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+
+        // create record folder
+        String recordFolderId = createCategoryFolderInFilePlan().getId();
+
+        // create electronic record in record folder
         Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId,
             getFile(IMAGE_FILE));
         assertStatusCode(CREATED);
 
-        return electronicRecord;
-    }
-
-    /**
-     * Helper method to create a non-electronic record and and assert successful creation
-     */
-    private Record createAndVerifyNonElectronicRecord(String recordFolderId) throws Exception
-    {
-        //create non-electronic record in record folder
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+        // create non-electronic record in record folder
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
         assertStatusCode(CREATED);
 
-        return nonElectronicRecord;
+        return new String[][]
+            {
+                { electronicRecord.getId(), nonElectronicRecord.getId() },
+            };
     }
 
     /**
-     * Helper method to verify that a record is not complete
+     * Helper method to provide list of records from record Ids
      */
-    private void verifyRecordIsIncomplete(Record record)
+    private List<Record> getRecordsList(String electronicRecordId, String nonElectronicRecordId)
     {
+        // Get the recordsAPI
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        Record recordModel = recordsAPI.getRecord(record.getId(), parameters);
-        assertEquals(recordModel.getIsCompleted(), INCOMPLETE);
+
+        Record electronicRecord = recordsAPI.getRecord(electronicRecordId);
+        Record nonElectronicRecord = recordsAPI.getRecord(nonElectronicRecordId);
+
+        return Arrays.asList(electronicRecord,nonElectronicRecord);
     }
 
     /**
-     * Helper method to verify that a record is completed
+     * Helper method to verify record is complete or incomplete
      */
-    private void verifyRecordIsComplete(Record record)
+    private void verifyRecordCompletionStatus(Record record, Boolean completionStatus)
     {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
         Record recordModel = recordsAPI.getRecord(record.getId(), parameters);
-        assertEquals(recordModel.getIsCompleted(), COMPLETE);
+        assertEquals(recordModel.getIsCompleted(), completionStatus);
     }
 
+    /**
+     * Helper method to complete a record
+     */
+    private void completeRecord(Record record) throws Exception
+    {
+        RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        recordsAPI.completeRecord(record.getId(), parameters);
+    }
 }

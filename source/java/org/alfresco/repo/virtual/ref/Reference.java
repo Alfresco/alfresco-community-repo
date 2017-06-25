@@ -116,34 +116,36 @@ public class Reference
      */
     public static final Reference fromNodeRef(NodeRef nodeRef)
     {
-        String id = nodeRef.getId();
-        if (id.startsWith("" + VIRTUAL_TOKEN) && (id.length() > 1)) // belts-and-braces
+        if (nodeRef != null)
         {
-            char token = id.charAt(1);
-            Encoding encoding = Encodings.fromToken(token);
-            if (encoding != null)
+            String id = nodeRef.getId();
+            if (id.startsWith("" + VIRTUAL_TOKEN) && (id.length() > 1)) // belts-and-braces
             {
-                try
+                char token = id.charAt(1);
+                Encoding encoding = Encodings.fromToken(token);
+                if (encoding != null)
                 {
-                    String referenceString = id.substring(2);
-                    if (!encoding.urlNative)
+                    try
                     {
-                        referenceString = new String(org.apache.commons.codec.binary.Base64.decodeBase64(referenceString));
+                        String referenceString = id.substring(2);
+                        if (!encoding.urlNative)
+                        {
+                            referenceString = new String(org.apache.commons.codec.binary.Base64.decodeBase64(referenceString));
+                        }
+                        Reference reference = encoding.parser.parse(referenceString);
+                        return reference.propagateNodeRefMutations(nodeRef);
                     }
-                    Reference reference = encoding.parser.parse(referenceString);
-                    return reference.propagateNodeRefMutations(nodeRef);
+                    catch (ReferenceParseException rpe)
+                    {
+                        logger.debug("Parse exception:", rpe);
+                        return null;
+                    }
+                    catch (ReferenceEncodingException ree)
+                    {
+                        logger.debug("Encoding exception:", ree);
+                        return null;
+                    }
                 }
-                catch (ReferenceParseException rpe)
-                {
-                    logger.debug("Parse exception:", rpe);
-                    return null;
-                }
-                catch (ReferenceEncodingException ree)
-                {
-                    logger.debug("Encoding exception:", ree);
-                    return null;
-                }
-
             }
         }
         return null;

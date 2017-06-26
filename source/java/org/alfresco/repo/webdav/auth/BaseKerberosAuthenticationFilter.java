@@ -365,14 +365,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                         req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
             
             // Send back a request for SPNEGO authentication
-            if (req.getRequestURL().toString().contains("webdav"))
-            {
-            	logonStartAgain(context, req, resp, false);
-            }
-            else
-            {
-            	logonStartAgain(context, req, resp, true);
-            }
+            logonStartAgain(context, req, resp, true);
+
             return false;
         }
         else
@@ -684,7 +678,6 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         
         resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         writeLoginPageLink(context, req, resp);
-        
         resp.flushBuffer();
     }
 }

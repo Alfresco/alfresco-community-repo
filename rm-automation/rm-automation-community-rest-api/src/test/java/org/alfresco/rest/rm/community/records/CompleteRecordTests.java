@@ -61,7 +61,7 @@ public class CompleteRecordTests extends BaseRMRestTest
 {
     private static final Boolean COMPLETE = true;
     private static final Boolean INCOMPLETE = false;
-    private static final String parameters = "include=isCompleted";
+    private static final String PARAMETERS = "include=isCompleted";
 
     /**
      * Incomplete records with mandatory meta-data missing
@@ -106,7 +106,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     /**
      * <pre>
      * Given the repository is configured to check mandatory data before completing a record
-     * And an incomplete record with missing mandatory meta-data
+     * And an incomplete record with its mandatory meta-data missing
      * When I complete the record
      * Then I receive an error indicating that I can't complete the operation,
      * because some of the mandatory meta-data of the record is missing
@@ -183,7 +183,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     {
         // Get the recordsAPI
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        recordsAPI.completeRecord(nonRecordId, parameters);
+        recordsAPI.completeRecord(nonRecordId, PARAMETERS);
         assertStatusCode(BAD_REQUEST);
     }
 
@@ -277,7 +277,7 @@ public class CompleteRecordTests extends BaseRMRestTest
     private void verifyRecordCompletionStatus(Record record, Boolean completionStatus)
     {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        Record recordModel = recordsAPI.getRecord(record.getId(), parameters);
+        Record recordModel = recordsAPI.getRecord(record.getId(), PARAMETERS);
         assertEquals(recordModel.getIsCompleted(), completionStatus);
     }
 
@@ -287,6 +287,6 @@ public class CompleteRecordTests extends BaseRMRestTest
     private void completeRecord(Record record) throws Exception
     {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        recordsAPI.completeRecord(record.getId(), parameters);
+        recordsAPI.completeRecord(record.getId(), PARAMETERS);
     }
 }

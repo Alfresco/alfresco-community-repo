@@ -111,6 +111,22 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(nodes);
         assertEquals(numOfNodes+3,nodes.size());
 
+        //The list is ordered with the most recently deleted node first
+        checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
+
+        // sanity check paging
+        paging = getPaging(1, 1);
+        response = getAll(URL_DELETED_NODES, paging, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        assertNotNull(nodes);
+        assertEquals(1, nodes.size());
+        PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+        assertEquals(numOfNodes+3, expectedPaging.getTotalItems().intValue());
+        assertEquals(1, expectedPaging.getCount().intValue());
+        assertEquals(1, expectedPaging.getSkipCount().intValue());
+        assertEquals(1, expectedPaging.getMaxItems().intValue());
+        assertTrue(expectedPaging.getHasMoreItems().booleanValue());
+
         Map<String, String> params = Collections.singletonMap("include", "path");
         response = getSingle(URL_DELETED_NODES, document.getId(), params, 200);
         Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
@@ -142,9 +158,6 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals("/Company Home/User Homes/"+user1, path.getName());
         assertTrue(path.getIsComplete());
 
-        //The list is ordered with the most recently deleted node first
-        checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
-
         //User 2 can't get it but user 1 can.
         setRequestContext(user2);
         getSingle(URL_DELETED_NODES, createdFolderNonSite.getId(), Status.STATUS_FORBIDDEN);
@@ -156,6 +169,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         //Now as admin
         setRequestContext(networkAdmin);
+        paging = getPaging(0, 100);
         response = publicApiClient.get(getScope(), URL_DELETED_NODES, null, null, null, createParams(paging, null));
         checkStatus(200, response.getStatusCode());
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);

@@ -118,6 +118,9 @@ public class DeletedNodesImpl implements DeletedNodes
 
         // Query the DB
         PagingResults<NodeRef> result = nodeArchiveService.listArchivedNodes(queryBuilder);
+
+        Integer totalItems = result.getTotalResultCount().getFirst();
+
         List<Node> nodesFound = new ArrayList<Node>(result.getPage().size());
         Map mapUserInfo = new HashMap<>();
         for (NodeRef nRef:result.getPage())
@@ -126,7 +129,8 @@ public class DeletedNodesImpl implements DeletedNodes
             mapArchiveInfo(foundNode,mapUserInfo);
             nodesFound.add(foundNode);
         }
-        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), nodesFound);
+
+        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), nodesFound, result.hasMoreItems(), (totalItems == null ? null : totalItems.intValue()));
     }
 
     @Override

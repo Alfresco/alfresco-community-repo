@@ -1972,6 +1972,39 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     public void complete(NodeRef nodeRef)
     {
+        validateForCompletion(nodeRef);
+        disablePropertyEditableCheck();
+        try
+        {
+            // Add the declared aspect
+            Map<QName, Serializable> declaredProps = new HashMap<>(2);
+            declaredProps.put(PROP_DECLARED_AT, new Date());
+            declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
+            nodeService.addAspect(nodeRef, ASPECT_DECLARED_RECORD, declaredProps);
+
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork()
+                {
+                    // remove all owner related rights
+                    ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
+                    return null;
+                }
+            });
+        } finally
+        {
+            enablePropertyEditableCheck();
+        }
+    }
+
+    /**
+     * Helper method to validate whether the node is in a state suitable for completion
+     *
+     * @param nodeRef node reference
+     * @throws Exception if node not valid for completion
+     */
+    private void validateForCompletion(NodeRef nodeRef) {
         if (nodeService.exists(nodeRef) && isRecord(nodeRef) && !freezeService.isFrozen(nodeRef))
         {
             if (!isDeclared(nodeRef))
@@ -1985,32 +2018,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                 List<String> missingProperties = new ArrayList<>(5);
                 // Aspect not already defined - check mandatory properties then add
-                if (!checkMandatoryPropertiesEnabled || mandatoryPropertiesSet(nodeRef, missingProperties))
-                {
-                    disablePropertyEditableCheck();
-                    try
-                    {
-                        // Add the declared aspect
-                        Map<QName, Serializable> declaredProps = new HashMap<>(2);
-                        declaredProps.put(PROP_DECLARED_AT, new Date());
-                        declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
-                        nodeService.addAspect(nodeRef, ASPECT_DECLARED_RECORD, declaredProps);
-
-                        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                        {
-                            @Override
-                            public Void doWork()
-                            {
-                                // remove all owner related rights
-                                ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
-                                return null;
-                            }
-                        });
-                    } finally
-                    {
-                        enablePropertyEditableCheck();
-                    }
-                } else
+                if (checkMandatoryPropertiesEnabled && !mandatoryPropertiesSet(nodeRef, missingProperties))
                 {
                     LOGGER.debug(buildMissingPropertiesErrorString(missingProperties));
                     throw new IntegrityException("The record has missing mandatory properties.", null);
@@ -2025,10 +2033,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
             {
                 LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
             }
-            throw new IntegrityException("The record does not exist or is frozen.", null);
+            throw new IntegrityException("The node is not a record or the record does not exist or is frozen.", null);
         }
     }
-
     private String buildMissingPropertiesErrorString(List<String> missingProperties)
     {
         StringBuilder builder = new StringBuilder(255);
@@ -2087,27 +2094,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
             {
-                logMissingProperty(propDef, missingProperties);
-                ;
+                if (LOGGER.isWarnEnabled())
+                {
+                    StringBuilder msg = new StringBuilder();
+                    msg.append("Mandatory property missing: ").append(propDef.getName());
+                    LOGGER.warn(msg.toString());
+                }
+                missingProperties.add(propDef.getName().toString());
             }
         }
-    }
-
-    /**
-     * Log information about missing properties.
-     *
-     * @param propDef           property definition
-     * @param missingProperties missing properties
-     */
-    private void logMissingProperty(PropertyDefinition propDef, List<String> missingProperties)
-    {
-        if (LOGGER.isWarnEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Mandatory property missing: ").append(propDef.getName());
-            LOGGER.warn(msg.toString());
-        }
-        missingProperties.add(propDef.getName().toString());
     }
 
     /**

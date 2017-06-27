@@ -105,6 +105,15 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         }
 
         M2Model customModel = readCustomContentModel();
+        if (customModel == null)
+        {
+            final String msg = "Custom content model could not be read";
+            if (logger.isErrorEnabled())
+            {
+                logger.error(msg);
+            }
+            throw new AlfrescoRuntimeException(msg);
+        }
 
         String customAspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(namespaceService);
         M2Aspect customAssocsAspect = customModel.getAspect(customAspectName);

@@ -38,6 +38,7 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="dispositionService" ref="DispositionService" />
       <property name="recordFolderService" ref="RecordFolderService" />
+      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
    </bean>
 
    <bean id="jsonConversionComponent.baseIndicator"

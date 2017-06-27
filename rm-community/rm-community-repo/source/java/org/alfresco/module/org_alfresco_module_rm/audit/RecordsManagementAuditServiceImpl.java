@@ -774,11 +774,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         ParameterCheck.mandatory("params", params);
 
         Writer fileWriter = null;
+        FileOutputStream fileOutputStream = null;
         try
         {
             File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
                 format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
-            fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(auditTrailFile),"UTF8"));
+            fileOutputStream = new FileOutputStream(auditTrailFile);
+            fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream,"UTF8"));
             // Get the results, dumping to file
             getAuditTrailImpl(params, null, fileWriter, format);
             // Done
@@ -790,6 +792,11 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
         finally
         {
+            // close the file output stream
+            if (fileOutputStream != null)
+            {
+                try { fileOutputStream.close(); } catch (IOException closeEx) {}
+            }
             // close the writer
             if (fileWriter != null)
             {

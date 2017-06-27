@@ -2008,19 +2008,19 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private void validateForCompletion(NodeRef nodeRef) {
         if (!nodeService.exists(nodeRef))
         {
-            logError(nodeRef);
+            LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
             throw new IntegrityException("The record does not exist.", null);
         }
         
         if (!isRecord(nodeRef))
         {
-            logError(nodeRef);
+            LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
             throw new IntegrityException("The node is not a record.", null);
         }
         
         if (freezeService.isFrozen(nodeRef))
         {
-            logError(nodeRef);
+            LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
             throw new IntegrityException("The record is frozen.", null);
         }
 
@@ -2066,18 +2066,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 LOGGER.debug(buildMissingPropertiesErrorString(missingProperties));
                 throw new RecordMissingMetadataException("The record has missing mandatory properties.");
             }
-        }
-    }
-
-    /**
-     * Helper method to log a warning to the log file
-     *
-     * @param nodeRef           node for which error occurred
-     */
-    private void logError(NodeRef nodeRef) {
-        if (LOGGER.isWarnEnabled())
-        {
-            LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
         }
     }
 

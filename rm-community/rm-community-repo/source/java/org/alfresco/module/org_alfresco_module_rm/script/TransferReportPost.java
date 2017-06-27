@@ -235,6 +235,7 @@ public class TransferReportPost extends BaseTransferWebScript
     {
         File report = TempFileProvider.createTempFile(REPORT_FILE_PREFIX, REPORT_FILE_SUFFIX);
         Writer writer = null;
+        FileOutputStream fileOutputStream = null;
         try
         {
             // get all 'transferred' nodes
@@ -247,7 +248,8 @@ public class TransferReportPost extends BaseTransferWebScript
             }
 
             // create the writer
-            writer = new OutputStreamWriter(new FileOutputStream(report), Charset.forName("UTF-8"));
+            fileOutputStream = new FileOutputStream(report);
+            writer = new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8"));
 
             // use RMService to get disposition authority
             String dispositionAuthority = null;
@@ -324,6 +326,10 @@ public class TransferReportPost extends BaseTransferWebScript
         }
         finally
         {
+            if (fileOutputStream != null)
+            {
+                try { fileOutputStream.close(); } catch (IOException ioe) {}
+            }
             if (writer != null)
             {
                 try { writer.close(); } catch (IOException ioe) {}

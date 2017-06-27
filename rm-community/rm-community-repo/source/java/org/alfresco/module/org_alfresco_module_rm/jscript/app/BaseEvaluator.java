@@ -46,16 +46,20 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
+import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Base evaluator.
  *
  * @author Roy Wetherall
  */
-public abstract class BaseEvaluator implements RecordsManagementModel
+public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameAware
 {
     /** Name */
     protected String name;
+    
+    /** bean name */
+    protected String beanName;
 
     /** JSON conversion component */
     protected JSONConversionComponent jsonConversionComponent;
@@ -90,6 +94,15 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     /** transactional resource helper */
     protected TransactionalResourceHelper transactionalResourceHelper; 
 
+    /**
+     * @param   beanName  bean name
+     */
+    @Override
+    public void setBeanName(String beanName)
+    {
+        this.beanName = beanName;
+    }
+    
     /**
      * @param jsonConversionComponent   json conversion component
      */
@@ -231,7 +244,7 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     public boolean evaluate(NodeRef nodeRef)
     {
         Map<String, Boolean> results = transactionalResourceHelper.getMap("BaseEvaluator.evaluate");
-        String key = new StringBuffer(nodeRef.toString()).append(AuthenticationUtil.getRunAsUser()).append(name).toString();
+        String key = new StringBuffer(nodeRef.toString()).append(AuthenticationUtil.getRunAsUser()).append(beanName).toString();
         
         if (!results.containsKey(key))
         {

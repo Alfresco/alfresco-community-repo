@@ -41,6 +41,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -229,9 +230,10 @@ public abstract class BaseEvaluator implements RecordsManagementModel
      */
     public boolean evaluate(NodeRef nodeRef)
     {
-        Map<NodeRef, Boolean> results = transactionalResourceHelper.getMap("BaseEvaluator.evaluate");
+        Map<String, Boolean> results = transactionalResourceHelper.getMap("BaseEvaluator.evaluate");
+        String key = new StringBuffer(nodeRef.toString()).append(AuthenticationUtil.getRunAsUser()).append(name).toString();
         
-        if (!results.containsKey(nodeRef))
+        if (!results.containsKey(key))
         {
             boolean result = false;
             
@@ -243,10 +245,10 @@ public abstract class BaseEvaluator implements RecordsManagementModel
                 result = evaluateImpl(nodeRef);
             }
             
-            results.put(nodeRef, result);
+            results.put(key, result);
         }
 
-        return results.get(nodeRef);
+        return results.get(key);
     }
 
     /**

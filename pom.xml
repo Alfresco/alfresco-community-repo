@@ -122,10 +122,9 @@
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
 
-
-     <!-- license properties -->
-     <license.update.dryrun>true</license.update.dryrun>
-     <license.verbose>false</license.verbose>
+      <!-- license properties -->
+      <license.update.dryrun>true</license.update.dryrun>
+      <license.verbose>false</license.verbose>
 
    </properties>
 

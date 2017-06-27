@@ -140,6 +140,16 @@ public class RecordsAPI extends RMModelRequest
     }
 
     /**
+     * see {@link #completeRecord(String, String)
+     */
+    public Record completeRecord(String recordId) throws Exception
+    {
+        mandatoryString("recordId", recordId);
+
+        return completeRecord(recordId, EMPTY);
+    }
+
+    /**
      * Complete the record recordId
      *
      * @param recordId The id of the record to complete

@@ -27,10 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordMissingMetadataException;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -74,27 +72,15 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
         {
             recordService.complete(actionedUponNodeRef);
         }
+        catch (RecordMissingMetadataException e)
+        {
+            action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, MISSING_PROPERTIES);
+        }
         catch (IntegrityException e)
         {
-            Map<String, String> errorMap = getErrorMessageMap();
-            if (e.getMsgId().equals(errorMap.get(MISSING_PROPERTIES)))
-            {
-                action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, MISSING_PROPERTIES);
-            }
+            // IntegrityException is deliberately ignored here, there should be no action taken
         }
 
     }
-
-    /**
-     * TODO: needs to be properties file
-     * Temporary Helper method to get the map of complete record error message keys with associated message text
-     * @return errorMap
-     */
-    private Map<String, String> getErrorMessageMap() {
-        Map<String, String> errorMap = new HashMap<>();
-        errorMap.put("missingProperties", "The record has missing mandatory properties.");
-        errorMap.put("alreadyCompleted", "The record is already completed.");
-        errorMap.put("unsuitableNode", "The node is not a record or the record does not exist or is frozen.");
-        return errorMap;
-    }
+    
 }

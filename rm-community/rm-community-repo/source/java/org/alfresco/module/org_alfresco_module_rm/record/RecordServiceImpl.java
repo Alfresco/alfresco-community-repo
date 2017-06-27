@@ -1992,7 +1992,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     return null;
                 }
             });
-        } finally
+        }
+        finally
         {
             enablePropertyEditableCheck();
         }
@@ -2005,37 +2006,87 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @throws Exception if node not valid for completion
      */
     private void validateForCompletion(NodeRef nodeRef) {
-        if (nodeService.exists(nodeRef) && isRecord(nodeRef) && !freezeService.isFrozen(nodeRef))
+        if (!nodeService.exists(nodeRef))
         {
-            if (!isDeclared(nodeRef))
-            {
-                // if the record is newly created make sure the record identifier is set before completing the record
-                Set<NodeRef> newRecords = transactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS);
-                if (newRecords.contains(nodeRef))
-                {
-                    generateRecordIdentifier(nodeService, identifierService, nodeRef);
-                }
+            logError(nodeRef);
+            throw new IntegrityException("The record does not exist.", null);
+        }
+        
+        if (!isRecord(nodeRef))
+        {
+            logError(nodeRef);
+            throw new IntegrityException("The node is not a record.", null);
+        }
+        
+        if (freezeService.isFrozen(nodeRef))
+        {
+            logError(nodeRef);
+            throw new IntegrityException("The record is frozen.", null);
+        }
 
-                List<String> missingProperties = new ArrayList<>(5);
-                // Aspect not already defined - check mandatory properties then add
-                if (checkMandatoryPropertiesEnabled && !mandatoryPropertiesSet(nodeRef, missingProperties))
-                {
-                    LOGGER.debug(buildMissingPropertiesErrorString(missingProperties));
-                    throw new IntegrityException("The record has missing mandatory properties.", null);
-                }
-            } else
-            {
-                throw new IntegrityException("The record is already completed.", null);
-            }
-        } else
+        if (isDeclared(nodeRef))
         {
-            if (LOGGER.isWarnEnabled())
+            throw new IntegrityException("The record is already completed.", null);
+        }
+
+        // if the record is newly created make sure the record identifier is set before completing the record
+        Set<NodeRef> newRecords = transactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS);
+        if (newRecords.contains(nodeRef))
+        {
+            generateRecordIdentifier(nodeService, identifierService, nodeRef);
+        }
+
+        // Validate that all mandatory properties, if any, are present
+        List<String> missingProperties = new ArrayList<>(5);
+        // Aspect not already defined - check mandatory properties then add
+        if (checkMandatoryPropertiesEnabled)
+        {
+            Map<QName, Serializable> nodeRefProps = nodeService.getProperties(nodeRef);
+            QName nodeRefType = nodeService.getType(nodeRef);
+
+            // check for missing mandatory metadata from type definitions
+            TypeDefinition typeDef = dictionaryService.getType(nodeRefType);
+            checkDefinitionMandatoryPropsSet(typeDef, nodeRefProps, missingProperties);
+
+            // check for missing mandatory metadata from aspect definitions
+            Set<QName> aspects = nodeService.getAspects(nodeRef);
+            for (QName aspect : aspects)
             {
-                LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
+                AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
+                checkDefinitionMandatoryPropsSet(aspectDef, nodeRefProps, missingProperties);
             }
-            throw new IntegrityException("The node is not a record or the record does not exist or is frozen.", null);
+
+            // check for missing mandatory metadata from custom aspect definitions
+            QName customAspect = getCustomAspectImpl(nodeRefType);
+            AspectDefinition aspectDef = dictionaryService.getAspect(customAspect);
+            checkDefinitionMandatoryPropsSet(aspectDef, nodeRefProps, missingProperties);
+
+            if (!missingProperties.isEmpty())
+            {
+                LOGGER.debug(buildMissingPropertiesErrorString(missingProperties));
+                throw new RecordMissingMetadataException("The record has missing mandatory properties.");
+            }
         }
     }
+
+    /**
+     * Helper method to log a warning to the log file
+     *
+     * @param nodeRef           node for which error occurred
+     */
+    private void logError(NodeRef nodeRef) {
+        if (LOGGER.isWarnEnabled())
+        {
+            LOGGER.warn(I18NUtil.getMessage(MSG_UNDECLARED_ONLY_RECORDS, nodeRef.toString()));
+        }
+    }
+
+    /**
+     * Helper method to build single string containing list of missing properties 
+     *
+     * @param missingProperties list of missing properties
+     * @return String of missing properties
+     */
     private String buildMissingPropertiesErrorString(List<String> missingProperties)
     {
         StringBuilder builder = new StringBuilder(255);
@@ -2046,37 +2097,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
             builder.append(missingProperty).append(", ");
         }
         return builder.toString();
-    }
-
-    /**
-     * Helper method to check whether all the mandatory properties of the node have been set
-     *
-     * @param nodeRef node reference
-     * @return boolean true if all mandatory properties are set, false otherwise
-     */
-    private boolean mandatoryPropertiesSet(final NodeRef nodeRef, final List<String> missingProperties)
-    {
-        Map<QName, Serializable> nodeRefProps = nodeService.getProperties(nodeRef);
-        QName nodeRefType = nodeService.getType(nodeRef);
-
-        // check for missing mandatory metadata from type definitions
-        TypeDefinition typeDef = dictionaryService.getType(nodeRefType);
-        checkDefinitionMandatoryPropsSet(typeDef, nodeRefProps, missingProperties);
-
-        // check for missing mandatory metadata from aspect definitions
-        Set<QName> aspects = nodeService.getAspects(nodeRef);
-        for (QName aspect : aspects)
-        {
-            AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
-            checkDefinitionMandatoryPropsSet(aspectDef, nodeRefProps, missingProperties);
-        }
-
-        // check for missing mandatory metadata from custom aspect definitions
-        QName customAspect = getCustomAspectImpl(nodeRefType);
-        AspectDefinition aspectDef = dictionaryService.getAspect(customAspect);
-        checkDefinitionMandatoryPropsSet(aspectDef, nodeRefProps, missingProperties);
-
-        return missingProperties.isEmpty();
     }
 
     /**

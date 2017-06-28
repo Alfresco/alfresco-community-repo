@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-full-installation</artifactId>
-        <version>Communit-201706y</version>
+        <version>5.2-SNAPSHOT</version>
     </parent>
     <packaging>pom</packaging>
 

@@ -773,14 +773,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         ParameterCheck.mandatory("params", params);
 
-        Writer fileWriter = null;
-        FileOutputStream fileOutputStream = null;
-        try
+        File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
+            format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(auditTrailFile);
+            Writer fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream,"UTF8"));)
         {
-            File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
-                format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
-            fileOutputStream = new FileOutputStream(auditTrailFile);
-            fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream,"UTF8"));
             // Get the results, dumping to file
             getAuditTrailImpl(params, null, fileWriter, format);
             // Done
@@ -789,19 +787,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         catch (IOException e)
         {
             throw new AlfrescoRuntimeException(MSG_TRAIL_FILE_FAIL, e);
-        }
-        finally
-        {
-            // close the file output stream
-            if (fileOutputStream != null)
-            {
-                try { fileOutputStream.close(); } catch (IOException closeEx) {}
-            }
-            // close the writer
-            if (fileWriter != null)
-            {
-                try { fileWriter.close(); } catch (IOException closeEx) {}
-            }
         }
     }
 

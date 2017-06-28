@@ -214,7 +214,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             }
             else
             {
-                if (logger.isDebugEnabled() && object.getClass() != null)
+                if (logger.isDebugEnabled() && object != null)
                 {
                     logger.debug("Uncontrolled object - access allowed for " + object.getClass().getName());
                 }

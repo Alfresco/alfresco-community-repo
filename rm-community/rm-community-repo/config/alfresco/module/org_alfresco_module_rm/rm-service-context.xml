@@ -1076,6 +1076,9 @@
         <property name="recordableVersionService" ref="RecordableVersionService"/>
         <property name="alwaysEditURIs" ref="recordService_alwaysEditURIs" />
         <property name="incompleteNodeTagger" ref="incompleteNodeTagger" />
+        <property name="freezeService" ref="FreezeService" />
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="checkMandatoryPropertiesEnabled" value="${rm.completerecord.mandatorypropertiescheck.enabled}"/>
     </bean>
 
    <!-- Defines a list of namespace URIs for properties, which should be always editable -->
@@ -1152,6 +1155,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.makeRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.link=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.unlink=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.complete=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>

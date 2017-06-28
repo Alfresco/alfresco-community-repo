@@ -140,6 +140,42 @@ public class RecordsAPI extends RMModelRequest
     }
 
     /**
+     * see {@link #completeRecord(String, String)
+     */
+    public Record completeRecord(String recordId) throws Exception
+    {
+        mandatoryString("recordId", recordId);
+
+        return completeRecord(recordId, EMPTY);
+    }
+
+    /**
+     * Complete the record recordId
+     *
+     * @param recordId The id of the record to complete
+     * @return The completed {@link Record} with the given properties
+     * @throws Exception for the following cases:
+     *                   <ul>
+     *                   <li>Invalid parameter: {@code recordId} is not a record</li>
+     *                   <li>authentication fails</li>
+     *                   <li>current user does not have permission to complete {@code recordId}</li>
+     *                   <li>{@code recordId} does not exist or is frozen</li>
+     *                   <li>model integrity exception: the record is already completed</li>
+     *                   <li>model integrity exception: the record has missing meta-data</li>
+     *                   </ul>
+     */
+    public Record completeRecord(String recordId, String parameters) throws Exception
+    {
+        mandatoryString("recordId", recordId);
+
+        return getRmRestWrapper().processModel(Record.class, simpleRequest(
+            POST,
+            "/records/{recordId}/complete?{parameters}",
+            recordId,
+            parameters
+        ));
+    }
+    /**
      * Deletes a record.
      *
      * @param recordId The identifier of a record
@@ -216,7 +252,7 @@ public class RecordsAPI extends RMModelRequest
      * @param recordModel The record model which holds the information
      * @param recordId The identifier of a record
      * @param parameters The URL parameters to add
-     * @param returns The updated {@link Record}
+     * @return The updated {@link Record}
      * @throws Exception for the following cases:
      * <ul>
      *  <li>the update request is invalid or {@code recordId} is not a valid format or {@code recordModel} is invalid</li>

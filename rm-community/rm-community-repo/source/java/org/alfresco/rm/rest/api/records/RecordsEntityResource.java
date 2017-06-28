@@ -31,6 +31,7 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordMissingMetadataException;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -227,6 +228,31 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
         
         apiUtils.postActivity(info, recordInfo.getParentId(), ActivityType.FILE_UPDATED);
+        return nodesModelFactory.createRecord(info, parameters, null, false);
+    }
+
+    @Operation ("complete")
+    @WebApiDescription (title = "Complete record", description = "Complete a record.")
+    public Record completeRecord(String recordId, Void body, Parameters parameters, WithResponse withResponse)
+    {
+        checkNotBlank("recordId", recordId);
+        mandatory("parameters", parameters);
+
+        // Get record
+        NodeRef record = apiUtils.validateRecord(recordId);
+
+        // Complete the record
+        try
+        {
+            recordService.complete(record);
+        }
+        catch (RecordMissingMetadataException e)
+        {
+            throw new IntegrityException("The record has missing mandatory properties.", null); 
+        }
+
+        // return record state
+        FileInfo info = fileFolderService.getFileInfo(record);
         return nodesModelFactory.createRecord(info, parameters, null, false);
     }
 

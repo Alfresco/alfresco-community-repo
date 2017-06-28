@@ -201,7 +201,7 @@ public interface RecordService
    /**
     * Indicates whether the record is filed or not
     *
-    * @param nodeRef    record
+    * @param record    nodeRef of record
     * @return boolean   true if filed, false otherwise
     */
    boolean isFiled(NodeRef record);
@@ -209,7 +209,7 @@ public interface RecordService
    /**
     * 'File' a new document that arrived in the file plan structure.
     *
-    * @param nodeRef    record
+    * @param record    noderef of record
     */
    void file(NodeRef record);
 
@@ -278,4 +278,11 @@ public interface RecordService
     * @since 2.3
     */
    void unlink(NodeRef record, NodeRef recordFolder);
+
+    /**
+     * Completes a record
+     *
+     * @param nodeRef Record node reference
+     */
+    void complete(NodeRef nodeRef);
 }

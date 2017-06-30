@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
@@ -172,7 +173,12 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             }
             else if (StoreRef.class.isAssignableFrom(returnedObject.getClass()))
             {
-                return decide(authentication, object, config, nodeService.getRootNode((StoreRef) returnedObject)).getStoreRef();
+                NodeRef rootNodeRef = decide(authentication, object, config, nodeService.getRootNode((StoreRef) returnedObject));
+                if (rootNodeRef == null)
+                {
+                    throw new AlfrescoRuntimeException("Root node reference of '" + returnedObject + "' is null.");
+                }
+                return rootNodeRef.getStoreRef();
             }
             else if (NodeRef.class.isAssignableFrom(returnedObject.getClass()))
             {
@@ -208,7 +214,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             }
             else
             {
-                if (logger.isDebugEnabled())
+                if (logger.isDebugEnabled() && object != null)
                 {
                     logger.debug("Uncontrolled object - access allowed for " + object.getClass().getName());
                 }

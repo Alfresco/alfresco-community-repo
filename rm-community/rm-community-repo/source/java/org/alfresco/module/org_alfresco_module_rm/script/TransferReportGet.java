@@ -126,8 +126,10 @@ public class TransferReportGet extends BaseTransferWebScript
     File generateJSONTransferReport(NodeRef transferNode) throws IOException
     {
         File report = TempFileProvider.createTempFile(REPORT_FILE_PREFIX, REPORT_FILE_SUFFIX);
-        Writer writer = null;
-        try
+
+        // create the writer
+        try (FileOutputStream fileOutputStream = new FileOutputStream(report);
+            Writer writer = new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8"));)
         {
             // get all 'transferred' nodes
             NodeRef[] itemsToTransfer = getTransferNodes(transferNode);
@@ -137,9 +139,6 @@ public class TransferReportGet extends BaseTransferWebScript
                 logger.debug("Generating JSON transfer report for " + itemsToTransfer.length +
                             " items into file: " + report.getAbsolutePath());
             }
-
-            // create the writer
-            writer = new OutputStreamWriter(new FileOutputStream(report), Charset.forName("UTF-8"));
 
             // use RMService to get disposition authority
             String dispositionAuthority = null;
@@ -169,13 +168,6 @@ public class TransferReportGet extends BaseTransferWebScript
 
             // write the JSON footer
             writer.write("\n\t\t]\n\t}\n}");
-        }
-        finally
-        {
-            if (writer != null)
-            {
-                try { writer.close(); } catch (IOException ioe) {}
-            }
         }
 
         return report;

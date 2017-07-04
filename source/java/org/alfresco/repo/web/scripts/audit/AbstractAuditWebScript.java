@@ -32,6 +32,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -64,6 +66,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     public static final boolean DEFAULT_FORWARD = true;
     public static final int DEFAULT_LIMIT = 100;
     public static final boolean DEFAULT_VERBOSE = false;
+    public static final boolean DEFAULT_ENABLE = false;
     
     public static final String JSON_KEY_ENABLED = "enabled";
     public static final String JSON_KEY_APPLICATIONS = "applications";
@@ -173,8 +176,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
     
     protected boolean getParamEnableDisable(WebScriptRequest req)
     {
-        String enableStr = req.getParameter(PARAM_ENABLE);
-        return Boolean.parseBoolean(enableStr);
+        return getBooleanParam(req.getParameter(PARAM_ENABLE), DEFAULT_ENABLE);
     }
     
     protected String getParamValue(WebScriptRequest req)
@@ -192,15 +194,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      */
     protected Long getParamFromTime(WebScriptRequest req)
     {
-        String paramStr = req.getParameter(PARAM_FROM_TIME);
-        try
-        {
-            return Long.parseLong(paramStr);
-        }
-        catch (NumberFormatException e)
-        {
-            return DEFAULT_TO_TIME;
-        }
+        return getLongParam(req.getParameter(PARAM_FROM_TIME), DEFAULT_FROM_TIME);
     }
     
     /**
@@ -208,15 +202,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      */
     protected Long getParamToTime(WebScriptRequest req)
     {
-        String paramStr = req.getParameter(PARAM_TO_TIME);
-        try
-        {
-            return Long.parseLong(paramStr);
-        }
-        catch (NumberFormatException e)
-        {
-            return DEFAULT_TO_TIME;
-        }
+        return getLongParam(req.getParameter(PARAM_TO_TIME), DEFAULT_TO_TIME);
     }
     
     /**
@@ -224,15 +210,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      */
     protected Long getParamFromId(WebScriptRequest req)
     {
-        String paramStr = req.getParameter(PARAM_FROM_ID);
-        try
-        {
-            return Long.parseLong(paramStr);
-        }
-        catch (NumberFormatException e)
-        {
-            return DEFAULT_FROM_ID;
-        }
+        return getLongParam(req.getParameter(PARAM_FROM_ID), DEFAULT_FROM_ID);
     }
     
     /**
@@ -240,15 +218,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      */
     protected Long getParamToId(WebScriptRequest req)
     {
-        String paramStr = req.getParameter(PARAM_TO_ID);
-        try
-        {
-            return Long.parseLong(paramStr);
-        }
-        catch (NumberFormatException e)
-        {
-            return DEFAULT_TO_ID;
-        }
+        return getLongParam(req.getParameter(PARAM_TO_ID), DEFAULT_TO_ID);
     }
     
     /**
@@ -264,12 +234,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      */
     protected boolean getParamForward(WebScriptRequest req)
     {
-        String paramStr = req.getParameter(PARAM_FORWARD);
-        if (paramStr == null)
-        {
-            return DEFAULT_FORWARD;
-        }
-        return Boolean.parseBoolean(paramStr);
+        return getBooleanParam(req.getParameter(PARAM_FORWARD), DEFAULT_FORWARD);
     }
     
     /**
@@ -277,15 +242,7 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      */
     protected int getParamLimit(WebScriptRequest req)
     {
-        String paramStr = req.getParameter(PARAM_LIMIT);
-        try
-        {
-            return Integer.parseInt(paramStr);
-        }
-        catch (NumberFormatException e)
-        {
-            return DEFAULT_LIMIT;
-        }
+        return getIntParam(req.getParameter(PARAM_LIMIT), DEFAULT_LIMIT);
     }
     
     /**
@@ -293,11 +250,50 @@ public abstract class AbstractAuditWebScript extends DeclarativeWebScript
      */
     protected boolean getParamVerbose(WebScriptRequest req)
     {
-        String paramStr = req.getParameter(PARAM_VERBOSE);
+        return getBooleanParam(req.getParameter(PARAM_VERBOSE), DEFAULT_VERBOSE);
+    }
+
+    private Long getLongParam(String paramStr, Long defaultVal)
+    {
         if (paramStr == null)
         {
-            return DEFAULT_VERBOSE;
+            // note: defaultVal can be null
+            return defaultVal;
         }
+        try
+        {
+            return Long.parseLong(paramStr);
+        }
+        catch (NumberFormatException e)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, e.getMessage());
+        }
+    }
+
+    private boolean getBooleanParam(String paramStr, boolean defaultVal)
+    {
+        if (paramStr == null)
+        {
+            return defaultVal;
+        }
+
+        // note: will return false if paramStr does not equals "true" (ignoring case)
         return Boolean.parseBoolean(paramStr);
+    }
+
+    private int getIntParam(String paramStr, int defaultVal)
+    {
+        if (paramStr == null)
+        {
+            return defaultVal;
+        }
+        try
+        {
+            return Integer.parseInt(paramStr);
+        }
+        catch (NumberFormatException e)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, e.getMessage());
+        }
     }
 }

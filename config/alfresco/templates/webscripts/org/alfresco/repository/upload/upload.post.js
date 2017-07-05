@@ -54,6 +54,30 @@ function createUniqueNameInFolder(filename, destNode)
    return tmpFilename;
 }
 
+/**
+ * Determines if new filename looks like it was renamed as a result of the user's OS's duplicate file name avoidance.
+ * This is particularly a problem for "Edit Offline" functionality where the user's workflow may require multiple
+ * download, modification and upload cycles. See MNT-18018 for details.
+ *
+ * The de-duplication marker manifests itself as a " (1)" appended after the filename, before the extension.
+ */
+function containsOSDeDupeMarkers(fileName, updateNode) {
+
+   var originalFileName = updateNode.name,
+      // Components of RegEx:
+      deDupeMarker = "\\s\\([\\d]+\\)", // single space followed by one or more digits in literal brackets; e.g." (1)", " (2)", " (13)"
+      fileExtension = "\\.[A-z\\d]+$"; // a single dot followed by one or more letters or numbers at end of string.  e.g. ".jpg", ".mp3", ".docx"
+
+   // Extract file extension from originalFileName if it exists & remove from original file name.
+   var regExMatch = new RegExp(fileExtension).exec(originalFileName),
+      originalFileExtension = (regExMatch)? regExMatch[0] : "",
+      originalFileNameWithoutExtension = (regExMatch) ? originalFileName.substr(0, regExMatch["index"]) : "";
+
+   var combinedRegEx = new RegExp("^" + originalFileNameWithoutExtension + deDupeMarker + originalFileExtension + "$");
+
+   return combinedRegEx.test(fileName);
+}
+
 function main()
 {
    try
@@ -264,6 +288,8 @@ function main()
           * Update existing file specified in updateNodeRef
           */
          var updateNode = search.findNode(updateNodeRef);
+         var workingcopy = updateNode.hasAspect("cm:workingcopy");
+
          if (updateNode === null)
          {
             exitUpload(404, "Node specified by updateNodeRef (" + updateNodeRef + ") not found.");
@@ -282,11 +308,15 @@ function main()
                  //name it's already used for other than node to update; create a new one
                  newFilename = createUniqueNameInFolder(filename, updateNode.getParent());
              }
-             //update node name
-             updateNode.setName(newFilename);
+            // MNT-18018: Avoid getting stuck in a loop of renamed files when using the Edit Offline functionality
+            // Only rename the file if it is not a working copy and it does not contain any OS de-duplication markers
+            if (!(workingcopy && containsOSDeDupeMarkers(filename, updateNode)))
+            {
+               //update node name
+               updateNode.setName(newFilename);
+            }
          }
-         
-         var workingcopy = updateNode.hasAspect("cm:workingcopy");
+
          if (!workingcopy && updateNode.isLocked)
          {
             // We cannot update a locked document (except working copy as per MNT-8736)

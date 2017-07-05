@@ -62,6 +62,9 @@ function createUniqueNameInFolder(filename, destNode)
  * The de-duplication marker manifests itself as a " (1)" appended after the filename, before the extension.
  * @param fileName {string}
  * @param originalFileName {string}
+ * @return {boolean}
+ *
+ * NOTE: duplicated in slingshot/source/web/components/upload/dnd-upload.js to allow client side detection too.
  */
 function containsOSDeDupeMarkers(fileName, originalFileName) {
    // Components of RegEx:
@@ -77,10 +80,12 @@ function containsOSDeDupeMarkers(fileName, originalFileName) {
 
    return combinedRegEx.test(fileName);
 }
+
 /**
  * Make user input safe to pass into a RegEx
  *
  * @param string {string}
+ * @return {string}
  */
 function escapeRegExp(string) {
    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

@@ -60,12 +60,12 @@ function createUniqueNameInFolder(filename, destNode)
  * download, modification and upload cycles. See MNT-18018 for details.
  *
  * The de-duplication marker manifests itself as a " (1)" appended after the filename, before the extension.
+ * @param fileName {string}
+ * @param originalFileName {string}
  */
-function containsOSDeDupeMarkers(fileName, updateNode) {
-
-   var originalFileName = updateNode.name,
-      // Components of RegEx:
-      deDupeMarker = "\\s\\([\\d]+\\)", // single space followed by one or more digits in literal brackets; e.g." (1)", " (2)", " (13)"
+function containsOSDeDupeMarkers(fileName, originalFileName) {
+   // Components of RegEx:
+   var deDupeMarker = "\\s\\([\\d]+\\)", // single space followed by one or more digits in literal brackets; e.g." (1)", " (2)", " (13)"
       fileExtension = "\\.[A-z\\d]+$"; // a single dot followed by one or more letters or numbers at end of string.  e.g. ".jpg", ".mp3", ".docx"
 
    // Extract file extension from originalFileName if it exists & remove from original file name.
@@ -73,9 +73,17 @@ function containsOSDeDupeMarkers(fileName, updateNode) {
       originalFileExtension = (regExMatch)? regExMatch[0] : "",
       originalFileNameWithoutExtension = (regExMatch) ? originalFileName.substr(0, regExMatch["index"]) : "";
 
-   var combinedRegEx = new RegExp("^" + originalFileNameWithoutExtension + deDupeMarker + originalFileExtension + "$");
+   var combinedRegEx = new RegExp("^" + escapeRegExp(originalFileNameWithoutExtension) + deDupeMarker + escapeRegExp(originalFileExtension) + "$");
 
    return combinedRegEx.test(fileName);
+}
+/**
+ * Make user input safe to pass into a RegEx
+ *
+ * @param string {string}
+ */
+function escapeRegExp(string) {
+   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function main()
@@ -310,7 +318,7 @@ function main()
              }
             // MNT-18018: Avoid getting stuck in a loop of renamed files when using the Edit Offline functionality
             // Only rename the file if it is not a working copy and it does not contain any OS de-duplication markers
-            if (!(workingcopy && containsOSDeDupeMarkers(filename, updateNode)))
+            if (!(workingcopy && containsOSDeDupeMarkers(filename, updateNode.name)))
             {
                //update node name
                updateNode.setName(newFilename);

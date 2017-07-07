@@ -7,6 +7,7 @@
  */
 package org.alfresco.repo.events;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
@@ -59,6 +60,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileFilterMode;
+import org.apache.commons.lang.ClassUtils;
+import org.apache.commons.lang.reflect.FieldUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -71,8 +74,12 @@ import org.apache.commons.logging.LogFactory;
  */
 public class EventsServiceImpl extends AbstractEventsService implements EventsService
 {
-    public static final QName PROP_RMA_RECORD_ORIGINATING_LOCATION = QName.createQName("http://www.alfresco.org/model/recordsmanagement/1.0", "recordOriginatingLocation");
     private static Log logger = LogFactory.getLog(EventsServiceImpl.class);
+
+    private static final String RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION = "PROP_RECORD_ORIGINATING_LOCATION";
+    private static final String RECORDS_MANAGEMENT_MODEL = "org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel";
+
+    public static QName PROP_RMA_RECORD_ORIGINATING_LOCATION = getRmPropOriginatingLocation();
 
     private NodeRenamedEvent nodeRenamedEvent(NodeInfo nodeInfo, String oldName, String newName)
     {
@@ -940,7 +947,13 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
         if(nodeInfo.checkNodeInfo())
         {
             //The event should contain the path that points to the original location of the file.
-            //We'll use a RM specific property that stores the original location of the file.
+            //Since the record creation, the record might've been hidden on the collaboration site, thus removing the secondary parent-child association, 
+            //we'll use a RM specific property that stores the original location of the file.
+            if (PROP_RMA_RECORD_ORIGINATING_LOCATION == null)
+            {
+                logger.error(format("Could not generate %s event for node %s because %s property is not found.", RecordRejectedEvent.EVENT_TYPE, nodeRef, RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION));
+                return;
+            }
             NodeRef recordOriginatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RMA_RECORD_ORIGINATING_LOCATION);
             String recordOriginatingParentName = (String) nodeService.getProperty(recordOriginatingLocation, ContentModel.PROP_NAME);
             Path originatingParentPath = nodeService.getPath(recordOriginatingLocation);
@@ -964,6 +977,29 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
                               .build();
             sendEvent(event);
         }
+    }
+
+    /**
+     * <pre>
+     * In order to avoid hard-coding of RM property names, the name of the property that designates the original location of a record,
+     * is retrieved from the {@value #RECORDS_MANAGEMENT_MODEL} interface(marked as @AlfrescoPublicApi) using constant {@value #RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION}
+     * </pre>
+     * 
+     * @return the QName of the RM property pointing to the original location of a node that has been declared as a record
+     */
+    private static QName getRmPropOriginatingLocation()
+    {
+        QName originatingLocation = null;
+        try
+        {
+            Class<?> recordsManagementModel = ClassUtils.getClass(RECORDS_MANAGEMENT_MODEL);
+            originatingLocation = (QName) FieldUtils.readStaticField(recordsManagementModel, RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION);
+        }
+        catch (ClassNotFoundException | IllegalAccessException e)
+        {
+            logger.error(format("Could not retrieve property %s from class %s", RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION, RECORDS_MANAGEMENT_MODEL), e);
+        }
+        return originatingLocation;
     }
 
     @Override

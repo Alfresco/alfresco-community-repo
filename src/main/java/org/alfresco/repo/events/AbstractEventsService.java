@@ -18,7 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -60,6 +59,9 @@ import org.apache.commons.logging.LogFactory;
 import org.gytheio.messaging.MessageProducer;
 import org.gytheio.messaging.MessagingException;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Sets;
+
 /**
  * 
  * @author steveglover
@@ -70,6 +72,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     private static Log logger = LogFactory.getLog(AbstractEventsService.class);
 
     private static final String EVENTS_KEY = "camel.events";
+    protected static final String TRANSACTION_HAS_EVENTS = "transaction.has.events";
 
     private MessageProducer messageProducer;
 
@@ -111,13 +114,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
 
     public void setIncludeEventTypes(String includeEventTypesStr)
     {
-        StringTokenizer st = new StringTokenizer(includeEventTypesStr, ",");
-        this.includeEventTypes = new HashSet<String>();
-        while(st.hasMoreTokens())
-        {
-            String eventType = st.nextToken().trim();
-            this.includeEventTypes.add(eventType);
-        }
+        this.includeEventTypes = Sets.newHashSet(Splitter.on(",").trimResults().omitEmptyStrings().split(includeEventTypesStr));
     }
 
     public void setFileFolderService(FileFolderService fileFolderService)
@@ -177,10 +174,12 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         if(sendEventsBeforeCommit)
         {
             // send all events
-            final TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-            if(events != null)
+            final TxnEvents transactionEvents = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+            if(transactionEvents != null)
             {
-                events.sendEvents();
+                List<Event> filteredEvents = filterEventsBeforeSend(transactionEvents.getEvents());
+                updateTransactionEvents(transactionEvents, filteredEvents);
+                transactionEvents.sendEvents();
             }
         }
     }
@@ -219,6 +218,10 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     {
         if(sendEventsBeforeCommit)
         {
+            if (!shouldSendCommitEvent())
+            {
+                return;
+            }
             // send txn committed event
             String txnId = AlfrescoTransactionSupport.getTransactionId();
             long timestamp = System.currentTimeMillis();
@@ -250,11 +253,54 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         else
         {
             // send all events
-            final TxnEvents events = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
-            if(events != null)
+            final TxnEvents transactionEvents = (TxnEvents)AlfrescoTransactionSupport.getResource(EVENTS_KEY);
+            if(transactionEvents != null)
             {
-                events.sendEvents();
+                List<Event> filteredEvents = filterEventsBeforeSend(transactionEvents.getEvents());
+                updateTransactionEvents(transactionEvents, filteredEvents);
+                transactionEvents.sendEvents();
             }
+        }
+    }
+    
+    /**
+     * Determines whether it still makes sense to create and send a TransactionCommittedEvent after the transaction is committed.
+     * (e.g. if there are no events for the specific transaction makes no sense to signal the end of transaction with TransactionCommittedEvent)
+     * 
+     * @return whether the TransactionCommitted event should be sent
+     */
+    protected boolean shouldSendCommitEvent()
+    {
+        //subclasses may decide otherwise
+        return true;
+    }
+
+    /**
+     * Filter out event before sending them to {@link org.gytheio.messaging.MessageProducer}
+     * 
+     * @param events the events to be filtered
+     * 
+     * @return a filtered list of events
+     */
+    protected List<Event> filterEventsBeforeSend(List<Event> events)
+    {
+        //no filtering here, maybe in subclasses
+        return events;
+    }
+
+    /**
+     * Update {@link TxnEvents} with a new set of events.
+     * 
+     * @param transactionEvents the {@link TxnEvents}  object to update
+     * 
+     * @param filteredEvents the new list of events to update the {@link TxnEvents} object with
+     */
+    private void updateTransactionEvents(final TxnEvents transactionEvents, List<Event> filteredEvents)
+    {
+        if (filteredEvents.size() < transactionEvents.getEvents().size())
+        {
+            transactionEvents.clear();
+            transactionEvents.addEvents(filteredEvents); 
         }
     }
 
@@ -352,6 +398,8 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
                  properties.put(ContentModel.PROP_WORKING_COPY_OWNER.toPrefixString(namespaceService),
                          workingCopyOwner);
             }
+            
+            retrieveAdditionalProps(properties, nodeRef);
 
             return properties;
         }
@@ -546,6 +594,17 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         return matches;
     }
 
+    /**
+     * Extract additional information for the provided node
+     * 
+     * @param properties the properties map to add the new info to
+     * @param nodeRef the node to extract the property from
+     */
+    protected void retrieveAdditionalProps(Map<String, Serializable> properties, NodeRef nodeRef)
+    {
+        //no additional properties needed at this point, may be different for subclasses.
+    }
+
     private boolean typeMatches(QName type)
     {
         boolean matches = false;
@@ -687,6 +746,11 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         {
             events.add(event);
         }
+        
+        void addEvents(List<Event> events)
+        {
+            events.addAll(events);
+        }
 
         void clear()
         {
@@ -717,6 +781,7 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
                 }
                 finally
                 {
+                    AlfrescoTransactionSupport.bindResource(TRANSACTION_HAS_EVENTS, true);
                     events.clear();
                 }
             }
@@ -739,7 +804,12 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
         return events;
     }
 
-    protected void sendEvent(Event event)
+    /**
+     * Register the event to be sent to a message producer once the transaction is over
+     * 
+     * @param event event to be sent
+     */
+    public void sendEvent(Event event)
     {
         String eventType = event.getType();
         if(!eventRegistry.isEventTypeRegistered(eventType))

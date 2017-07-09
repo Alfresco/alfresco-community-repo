@@ -59,7 +59,7 @@ public final class PoliciesUtil
      */
     public static Set<QName> getTypeAndAspectQNames(final NodeService nodeService, final NodeRef nodeRef)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<QName>>()
+        return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Set<QName>>()
         {
             public Set<QName> doWork()
             {
@@ -81,6 +81,6 @@ public final class PoliciesUtil
                 // done
                 return qnames;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        });
     }
 }

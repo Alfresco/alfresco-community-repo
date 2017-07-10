@@ -274,8 +274,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * @param namespaceService namespace service
@@ -377,8 +377,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public boolean isAuditLogEnabled(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         return auditService.isAuditEnabled(
                 RM_AUDIT_APPLICATION_NAME,
@@ -391,8 +391,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void startAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         auditService.enableAudit(
                 RM_AUDIT_APPLICATION_NAME,
@@ -412,8 +412,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void stopAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         auditEvent(filePlan, AUDIT_EVENT_STOP, null, null, true);
 
@@ -433,8 +433,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void clearAuditLog(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         auditService.clearAudit(RM_AUDIT_APPLICATION_NAME, null, null);
         if (logger.isInfoEnabled())
@@ -451,8 +451,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public Date getDateAuditLogLastStarted(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         // TODO: return proper date, for now it's today's date
         return getStartOfDay(new Date());
@@ -464,8 +464,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public Date getDateAuditLogLastStopped(NodeRef filePlan)
     {
-    	ParameterCheck.mandatory("filePlan", filePlan);
-    	// TODO use file plan to scope audit log
+        ParameterCheck.mandatory("filePlan", filePlan);
+        // TODO use file plan to scope audit log
 
         // TODO: return proper date, for now it's today's date
         return getEndOfDay(new Date());
@@ -495,7 +495,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     @Override
     public void auditEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before, Map<QName, Serializable> after, boolean immediate)
     {
-    	auditEvent(nodeRef, eventName, before, after, immediate, false);
+        auditEvent(nodeRef, eventName, before, after, immediate, false);
     }
 
     /**
@@ -773,12 +773,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         ParameterCheck.mandatory("params", params);
 
-        Writer fileWriter = null;
-        try
+        File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
+            format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(auditTrailFile);
+            Writer fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream,"UTF8"));)
         {
-            File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
-                format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
-            fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(auditTrailFile),"UTF8"));
             // Get the results, dumping to file
             getAuditTrailImpl(params, null, fileWriter, format);
             // Done
@@ -787,14 +787,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         catch (IOException e)
         {
             throw new AlfrescoRuntimeException(MSG_TRAIL_FILE_FAIL, e);
-        }
-        finally
-        {
-            // close the writer
-            if (fileWriter != null)
-            {
-                try { fileWriter.close(); } catch (IOException closeEx) {}
-            }
         }
     }
 

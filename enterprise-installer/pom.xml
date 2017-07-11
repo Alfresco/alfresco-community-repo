@@ -17,9 +17,7 @@
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
            project.version=${installer.version.name} 
-           project.fullName='Alfresco Content Services' 
-           project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
-           project.osxSigningPkcs12Password=${p12Password} 
+           project.fullName='Alfresco Content Services'
            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
            project.windowsSigningPkcs12Password=${p12Password} 
            alfresco_edition=enterprise 
@@ -211,17 +209,6 @@
             <activation>
                 <os>
                     <family>linux</family>
-                </os>
-            </activation>
-            <properties>
-                <bitrock.executable>${bitrock.folder}/bin/builder</bitrock.executable>
-            </properties>
-        </profile>
-        <profile>
-            <id>osx-bitrock</id>
-            <activation>
-                <os>
-                    <family>mac</family>
                 </os>
             </activation>
             <properties>

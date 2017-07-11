@@ -17,9 +17,7 @@
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
            project.version=${installer.version.name} 
-           project.fullName='Alfresco Community' 
-           project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
-           project.osxSigningPkcs12Password=${p12Password} 
+           project.fullName='Alfresco Community'
            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
            project.windowsSigningPkcs12Password=${p12Password} 
            alfresco_edition=community 
@@ -39,13 +37,6 @@
             <classifier>linux</classifier>
             <type>tgz</type>
         </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>installer-common</artifactId>
-            <version>${installer.common.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
 
         <!-- Tomcat -->
         <dependency>
@@ -53,13 +44,6 @@
             <artifactId>tomcat</artifactId>
             <version>${installer.tomcat.version}</version>
             <classifier>linux</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat</artifactId>
-            <version>${installer.tomcat.version}</version>
-            <classifier>osx</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
@@ -82,13 +66,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql-distribution</artifactId>
             <version>${installer.postgresql.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql-distribution</artifactId>
-            <version>${installer.postgresql.version}</version>
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
@@ -101,13 +78,6 @@
             <classifier>linux</classifier>
             <type>tgz</type>
         </dependency>
-        <dependency>
-            <groupId>com.oracle.java</groupId>
-            <artifactId>jre</artifactId>
-            <version>${installer.java.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>        
         <dependency>
             <groupId>com.oracle.java</groupId>
             <artifactId>jre</artifactId>
@@ -128,13 +98,6 @@
             <groupId>org.libreoffice</groupId>
             <artifactId>libreoffice-dist</artifactId>
             <version>${installer.libreoffice.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>        
-        <dependency>
-            <groupId>org.libreoffice</groupId>
-            <artifactId>libreoffice-dist</artifactId>
-            <version>${installer.libreoffice.version}</version>
             <classifier>windows</classifier>
             <type>tgz</type>
         </dependency>
@@ -145,13 +108,6 @@
 			<artifactId>alfresco-pdf-renderer</artifactId>
 			<version>${installer.alfresco-pdf-renderer.version}</version>
 			<classifier>linux</classifier>
-			<type>tgz</type>
-		</dependency>
-		<dependency>
-			<groupId>org.alfresco</groupId>
-			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.alfresco-pdf-renderer.version}</version>
-			<classifier>osx</classifier>
 			<type>tgz</type>
 		</dependency>
 		<dependency>
@@ -174,13 +130,6 @@
             <groupId>org.imagemagick</groupId>
             <artifactId>imagemagick-distribution</artifactId>
             <version>${installer.imagemagick.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.imagemagick</groupId>
-            <artifactId>imagemagick-distribution</artifactId>
-            <version>${installer.imagemagick.version}</version>
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
@@ -197,13 +146,6 @@
             <groupId>com.bitnami</groupId>
             <artifactId>installbuilder</artifactId>
             <version>${installer.installbuilder.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>com.bitnami</groupId>
-            <artifactId>installbuilder</artifactId>
-            <version>${installer.installbuilder.version}</version>
             <classifier>win</classifier>
             <type>tgz</type>
         </dependency>
@@ -214,13 +156,6 @@
             <artifactId>manager</artifactId>
             <version>${installer.manager.version}</version>
             <classifier>linux</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>manager</artifactId>
-            <version>${installer.manager.version}</version>
-            <classifier>osx</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
@@ -417,17 +352,6 @@
             <activation>
                 <os>
                     <family>linux</family>
-                </os>
-            </activation>
-            <properties>
-                <bitrock.executable>${bitrock.folder}/bin/builder</bitrock.executable>
-            </properties>
-        </profile>
-        <profile>
-            <id>osx-bitrock</id>
-            <activation>
-                <os>
-                    <family>mac</family>
                 </os>
             </activation>
             <properties>

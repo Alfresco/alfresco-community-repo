@@ -7,16 +7,16 @@
         <version>6</version>
     </parent>
     <artifactId>alfresco-full-installation</artifactId>
-    <version>Community-201707</version>
+    <version>5.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Full Installation</name>
 
     <properties>
         <!-- Alfresco Platform version -->
-        <alfresco.platform.version>5.2.g</alfresco.platform.version>
+        <alfresco.platform.version>5.2-SNAPSHOT</alfresco.platform.version>
 
         <!-- Alfresco Share version -->
-        <alfresco.share.version>5.2.f</alfresco.share.version>
+        <alfresco.share.version>5.2-SNAPSHOT</alfresco.share.version>
 
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledocs.version>3.0.4</alfresco.googledocs.version>

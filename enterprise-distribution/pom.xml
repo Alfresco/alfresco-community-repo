@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-full-installation</artifactId>
-        <version>Community-201707</version>
+        <version>5.2-SNAPSHOT</version>
     </parent>
     <artifactId>alfresco-content-services-distribution</artifactId>
     <packaging>jar</packaging>

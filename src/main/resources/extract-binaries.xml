@@ -12,13 +12,11 @@
 
     <target name="extract-base">
         <extract-base-for targetPlatform="linux" unless:set="skipLinInstaller" />
-        <extract-base-for targetPlatform="osx" unless:set="skipOSXInstaller" />
         <extract-base-for targetPlatform="win64" unless:set="skipWinInstaller" />
     </target>
 
     <target name="extract-platform">
         <extract-platform-for targetPlatform="linux" unless:set="skipLinInstaller" />
-        <extract-platform-for targetPlatform="osx" unless:set="skipOSXInstaller" />
         <extract-platform-for targetPlatform="win64" unless:set="skipWinInstaller" />
     </target>
 
@@ -31,9 +29,6 @@
             <local name="bin.folder"/>
             <condition property="bin.folder" value="${project.build.directory}/binaries-linux-x64">
                 <equals arg1="@{targetPlatform}" arg2="linux" />
-            </condition>
-            <condition property="bin.folder" value="${project.build.directory}/binaries-osx-x64">
-                <equals arg1="@{targetPlatform}" arg2="osx" />
             </condition>
             <condition property="bin.folder" value="${project.build.directory}/binaries-windows-x64">
                 <equals arg1="@{targetPlatform}" arg2="win64" />
@@ -95,9 +90,6 @@
             <condition property="bin.folder" value="${project.build.directory}/binaries-linux-x64">
                 <equals arg1="@{targetPlatform}" arg2="linux" />
             </condition>
-            <condition property="bin.folder" value="${project.build.directory}/binaries-osx-x64">
-                <equals arg1="@{targetPlatform}" arg2="osx" />
-            </condition>
             <condition property="bin.folder" value="${project.build.directory}/binaries-windows-x64">
                 <equals arg1="@{targetPlatform}" arg2="win64" />
             </condition>
@@ -157,9 +149,6 @@
 
     <target name="extract-installbuilder">
         <echo>  Check running platform for Installbuilder...</echo>
-        <condition property="runningPlatform" value="osx">
-            <os family="mac" />
-        </condition>
         <condition property="runningPlatform" value="linux">
             <os family="unix" />
         </condition>

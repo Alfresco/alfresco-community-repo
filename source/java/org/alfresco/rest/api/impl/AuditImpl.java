@@ -187,7 +187,7 @@ public class AuditImpl implements Audit
         // Parse where clause properties.
         List<AuditEntry> entriesAudit = new ArrayList<AuditEntry>();
         Query q = parameters.getQuery();
-        if (q != null && q.getTree() != null)
+        if (q != null)
         {
             // filtering via "where" clause
             AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
@@ -353,7 +353,7 @@ public class AuditImpl implements Audit
 
                 public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
                 {
-                    AuditEntry auditEntry = new AuditEntry(entryId, new Long(auditAppId), new UserInfo(null, user, null), new Date(time), values);
+                    AuditEntry auditEntry = new AuditEntry(entryId, auditAppId, new UserInfo(null, user, null), new Date(time), values);
                     results.add(auditEntry);
                     return true;
                 }

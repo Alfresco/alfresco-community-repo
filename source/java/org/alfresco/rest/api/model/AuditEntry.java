@@ -33,7 +33,7 @@ public class AuditEntry
 {
 
     private Long id;
-    private Long auditApplicationId;
+    private String auditApplicationId;
     protected UserInfo createdByUser;
     protected Date createdAt;
     protected Map<String, Serializable> values;
@@ -43,7 +43,7 @@ public class AuditEntry
 
     }
 
-    public AuditEntry(Long id, Long auditApplicationId, UserInfo createdByUser, Date createdAt, Map<String, Serializable> values2)
+    public AuditEntry(Long id, String auditApplicationId, UserInfo createdByUser, Date createdAt, Map<String, Serializable> values2)
     {
         this.id = id;
         this.auditApplicationId = auditApplicationId;
@@ -62,12 +62,12 @@ public class AuditEntry
         this.id = id;
     }
 
-    public Long getAuditApplicationId()
+    public String getAuditApplicationId()
     {
         return auditApplicationId;
     }
 
-    public void setAuditApplicationId(Long auditApplicationId)
+    public void setAuditApplicationId(String auditApplicationId)
     {
         this.auditApplicationId = auditApplicationId;
     }

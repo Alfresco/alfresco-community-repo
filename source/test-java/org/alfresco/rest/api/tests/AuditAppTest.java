@@ -25,7 +25,9 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,31 +35,23 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.rest.AbstractSingleNetworkSiteTest;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.AuditApps;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.AuditApp;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class AuditAppTest extends AbstractSingleNetworkSiteTest
+public class AuditAppTest extends AuditTest
 {
-
-    protected PermissionService permissionService;
-    protected AuthorityService authorityService;
 
     @Before
     public void setup() throws Exception
     {
         super.setup();
-
-        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
-        authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
     }
 
     @After
@@ -72,7 +66,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         try
         {
 
-            setRequestContext(DEFAULT_ADMIN);
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
             testGetAuditAppsSkipPaging();
 
         }
@@ -88,6 +82,10 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
         final AuditApps auditAppsProxy = publicApiClient.auditApps();
 
+        // Enable system audit
+        AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
+        enableSystemAudit();
+
         // Negative tests
         // Check with invalid audit application id.
         {
@@ -99,6 +97,29 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         {
             setRequestContext(networkOne.getId(), user1, null);
             auditAppsProxy.getAuditApp("randomAuditId", HttpServletResponse.SC_FORBIDDEN);
+        }
+
+        // Check that response code 501 is received when system audit is disabled
+        {
+            // Get an enabled audit application
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            int skipCount = 0;
+            int maxItems = 4;
+            Paging paging = getPaging(skipCount, maxItems);
+
+            ListResponse<AuditApp> auditApps = getAuditApps(paging);
+            AuditApp auditApp = auditAppsProxy.getAuditApp(auditApps.getList().get(0).getId());
+
+            // Disable system audit
+            AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
+            disableSystemAudit();
+
+            // Check response code
+            auditAppsProxy.getAuditApp(auditApp.getId(), HttpServletResponse.SC_NOT_IMPLEMENTED);
+
+            // Re-enable system audit
+            enableSystemAudit();
         }
 
         // Positive tests
@@ -186,6 +207,9 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         assertNotNull(auditApp.getId());
         assertNotNull(auditApp.getName());
         assertNotNull(auditApp.getIsEnabled());
+        assertFalse(auditApp.getId().isEmpty());
+        assertFalse(auditApp.getName().isEmpty());
+        assertTrue(auditApp.getIsEnabled());
     }
 
 }

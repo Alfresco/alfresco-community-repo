@@ -46,10 +46,12 @@ import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.api.tests.TestPeople;
 import org.alfresco.rest.api.tests.TestSites;
+import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.data.Activities;
 import org.alfresco.rest.api.tests.client.data.Activity;
+import org.alfresco.rest.api.tests.client.data.AuditApp;
 import org.alfresco.rest.api.tests.client.data.CMISNode;
 import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.ContentData;
@@ -120,6 +122,8 @@ public class PublicApiClient
     private SiteMembershipRequests siteMembershipRequests;
     private Groups groups;
     private RawProxy rawProxy;
+    private AuditApps auditApps;
+    
 
     private ThreadLocal<RequestContext> rc = new ThreadLocal<RequestContext>();
 
@@ -142,6 +146,7 @@ public class PublicApiClient
         siteMembershipRequests = new SiteMembershipRequests();
         groups = new Groups();
         rawProxy = new RawProxy();
+        auditApps = new AuditApps();
     }
 
     public void setRequestContext(RequestContext rc)
@@ -207,6 +212,10 @@ public class PublicApiClient
     public Groups groups()
     {
         return groups;
+    }
+    
+    public AuditApps auditApps(){
+        return auditApps;
     }
 
     public CmisSession createPublicApiCMISSession(Binding binding, String version)
@@ -2424,4 +2433,26 @@ public class PublicApiClient
 
 
     }
+
+    public class AuditApps extends AbstractProxy 
+    {
+
+        public ListResponse<AuditApp> getAuditApps(Map<String, String> params, String errorMessage, int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = getAll("audit-applications", null, null, null, params, errorMessage, expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return AuditApp.parseAuditApps(response.getJsonResponse());
+                }
+            }
+            return null;
+        }
+        
+    }
+
+   
 }

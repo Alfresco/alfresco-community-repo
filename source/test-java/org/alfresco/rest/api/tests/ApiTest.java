@@ -75,7 +75,8 @@ import org.junit.runners.Suite;
     TestFavourites.class,
     TestPublicApi128.class,
     TestPublicApiCaching.class,
-    TestDownloads.class
+    TestDownloads.class,
+    AuditAppTest.class
 })
 public class ApiTest
 {

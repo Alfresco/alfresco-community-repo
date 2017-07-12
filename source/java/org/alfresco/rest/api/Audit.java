@@ -62,8 +62,7 @@ public interface Audit
      * @param parameters
      * @return an audit entry
      */
-    // AuditApp update(String auditAppId, AuditApp auditApp, Parameters
-    // parameters);
+    AuditApp update(String auditAppId, AuditApp auditApp, Parameters parameters);
 
     /**
      * Gets a single audit entry by id

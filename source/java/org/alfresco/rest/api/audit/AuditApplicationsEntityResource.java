@@ -70,8 +70,7 @@ public class AuditApplicationsEntityResource implements EntityResourceAction.Rea
     @WebApiDescription(title = "Update audit", description = "Update audit")
     public AuditApp update(String auditAppId, AuditApp auditApp, Parameters parameters)
     {
-        // return audit.update(auditAppId, auditApp, parameters);
-        return null; // TODO fixme
+        return audit.update(auditAppId, auditApp, parameters);
     }
 
     @Override

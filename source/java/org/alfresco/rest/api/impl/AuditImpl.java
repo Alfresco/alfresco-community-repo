@@ -140,4 +140,30 @@ public class AuditImpl implements Audit
         return CollectionWithPagingInfo.asPaged(paging, auditApps, hasMoreItems, totalItems);
     }
 
+    @Override
+    public AuditApp update(String auditAppId, AuditApp auditApp, Parameters parameters)
+    {
+        checkEnabled();
+
+        AuditService.AuditApplication auditApplication = findAuditAppById(auditAppId);
+
+        // Check if id is valid
+        if (auditApplication == null)
+        {
+            throw new EntityNotFoundException(auditAppId);
+        }
+
+        // Enable/Disable audit application
+        if (auditApp.getIsEnabled() && !auditApplication.isEnabled())
+        {
+            auditService.enableAudit(auditApplication.getName(), auditApplication.getKey());
+        }
+        else if (!auditApp.getIsEnabled() && auditApplication.isEnabled())
+        {
+            auditService.disableAudit(auditApplication.getName(), auditApplication.getKey());
+        }
+
+        return new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApp.getIsEnabled());
+    }
+
 }

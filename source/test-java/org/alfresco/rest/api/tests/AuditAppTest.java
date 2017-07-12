@@ -249,9 +249,10 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
         setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
-        //Get one of the audit app ids (default tagging)
+        //Get one of the audit app ids ( fail test if there are no audit apps in the system )
         ListResponse<AuditApp> apps = publicApiClient.auditApps().getAuditApps(null, "Getting audit apps error ", HttpServletResponse.SC_OK);
-        appId = (apps.getList().size()>0) ? apps.getList().get(0).getId() : "tagging";
+        if (apps.getList().size() == 0) fail("There are no audit applications to run this test against.");
+        appId = apps.getList().get(0).getId();
 
         // +ve
         // Disable audit app
@@ -281,7 +282,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         // 501
         AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
         disableSystemAudit();
-        responseAuditApp = publicApiClient.auditApps().updateAuditApp(appId,requestAuditApp,null, HttpServletResponse.SC_NOT_IMPLEMENTED);
+        publicApiClient.auditApps().updateAuditApp(appId,requestAuditApp,null, HttpServletResponse.SC_NOT_IMPLEMENTED);
         enableSystemAudit();
     }
 

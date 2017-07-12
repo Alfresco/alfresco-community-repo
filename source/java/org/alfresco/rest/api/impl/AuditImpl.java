@@ -381,11 +381,11 @@ public class AuditImpl implements Audit
         // Enable/Disable audit application
         if (auditApp.getIsEnabled() && !auditApplication.isEnabled())
         {
-            auditService.enableAudit(auditApplication.getName(), auditApplication.getKey());
+            auditService.enableAudit(auditApplication.getName(), null);
         }
         else if (!auditApp.getIsEnabled() && auditApplication.isEnabled())
         {
-            auditService.disableAudit(auditApplication.getName(), auditApplication.getKey());
+            auditService.disableAudit(auditApplication.getName(), null);
         }
 
         return new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApp.getIsEnabled());

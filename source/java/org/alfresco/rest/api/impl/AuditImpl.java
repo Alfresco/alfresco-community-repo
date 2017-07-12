@@ -182,6 +182,8 @@ public class AuditImpl implements Audit
     public CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters)
     {
         checkEnabled();
+        
+        validateAuditAppId(auditAppId);
 
         // adding orderBy property
         Pair<String, Boolean> sortProp = getAuditEntrySortProp(parameters);
@@ -224,6 +226,18 @@ public class AuditImpl implements Audit
 
                 entriesAudit = entriesAudit.subList(skipCount, end);
                 return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
+        }
+        
+    }
+
+    private void validateAuditAppId(String auditAppId)
+    {
+        AuditService.AuditApplication auditApplication = findAuditAppById(auditAppId);
+
+        // Check if id is valid
+        if (auditApplication == null)
+        {
+            throw new EntityNotFoundException(auditAppId);
         }
         
     }
@@ -417,13 +431,7 @@ public class AuditImpl implements Audit
     {
         checkEnabled();
 
-        AuditService.AuditApplication auditApplication = findAuditAppById(auditAppId);
-
-        // Check if id is valid
-        if (auditApplication == null)
-        {
-            throw new EntityNotFoundException(auditAppId);
-        }
+        validateAuditAppId(auditAppId);
 
         // Enable/Disable audit application
         if (auditApp.getIsEnabled() && !auditApplication.isEnabled())

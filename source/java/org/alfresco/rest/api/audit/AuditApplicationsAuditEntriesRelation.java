@@ -54,6 +54,9 @@ public class AuditApplicationsAuditEntriesRelation implements RelationshipResour
         ParameterCheck.mandatory("audit", this.audit);
     }
 
+    /**
+     * If auditAppId does not exist, EntityNotFoundException (status 404).
+     */
     @WebApiDescription(title = "Returns audit entries for audit app id")
     @Override
     public CollectionWithPagingInfo<AuditEntry> readAll(String auditAppId, Parameters parameters)

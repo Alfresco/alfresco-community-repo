@@ -2431,10 +2431,9 @@ public class PublicApiClient
             return null;
         }
 
-
     }
 
-    public class AuditApps extends AbstractProxy 
+    public class AuditApps extends AbstractProxy
     {
 
         public ListResponse<AuditApp> getAuditApps(Map<String, String> params, String errorMessage, int expectedStatus) throws PublicApiException
@@ -2451,8 +2450,33 @@ public class PublicApiClient
             }
             return null;
         }
-        
+
+        public AuditApp getAuditApp(String applicationId) throws PublicApiException
+        {
+            return getAuditApp(applicationId, HttpServletResponse.SC_OK);
+        }
+
+        public AuditApp getAuditApp(String applicationId, int expectedStatus) throws PublicApiException
+        {
+            return getAuditApp(applicationId, null, expectedStatus);
+        }
+
+        public AuditApp getAuditApp(String applicationId, Map<String, String> params, int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = getSingle("audit-applications", applicationId, null, null, params, "Failed to get Audit Application " + applicationId,
+                    expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonEntry = (JSONObject) response.getJsonResponse().get("entry");
+                if (jsonEntry != null)
+                {
+                    return AuditApp.parseAuditApp(jsonEntry);
+                }
+            }
+            return null;
+        }
+
     }
 
-   
 }

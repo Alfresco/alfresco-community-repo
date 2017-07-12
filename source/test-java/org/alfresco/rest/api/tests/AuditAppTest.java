@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,13 +67,13 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
-    public void testGetAuditApp() throws Exception
+    public void testGetAuditApps() throws Exception
     {
         try
         {
 
             setRequestContext(DEFAULT_ADMIN);
-            testGetAuditAppSkipPaging();
+            testGetAuditAppsSkipPaging();
 
         }
         finally
@@ -80,7 +82,44 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         }
     }
 
-    private void testGetAuditAppSkipPaging() throws Exception
+    @Test
+    public void testGetAuditApp() throws Exception
+    {
+
+        final AuditApps auditAppsProxy = publicApiClient.auditApps();
+
+        // Negative tests
+        // Check with invalid audit application id.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+            auditAppsProxy.getAuditApp("invalidAuditId", HttpServletResponse.SC_NOT_FOUND);
+        }
+
+        // Check that non-admin user doesn't have access to audit applications
+        {
+            setRequestContext(networkOne.getId(), user1, null);
+            auditAppsProxy.getAuditApp("randomAuditId", HttpServletResponse.SC_FORBIDDEN);
+        }
+
+        // Positive tests
+        // Get audit application information
+        {
+            // Get the list of audit applications in the system
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            int skipCount = 0;
+            int maxItems = 4;
+            Paging paging = getPaging(skipCount, maxItems);
+
+            ListResponse<AuditApp> auditApps = getAuditApps(paging);
+
+            // Get audit application info
+            AuditApp auditApp = auditAppsProxy.getAuditApp(auditApps.getList().get(0).getId());
+            validateAuditApplicationFields(auditApp);
+        }
+    }
+
+    private void testGetAuditAppsSkipPaging() throws Exception
     {
         // +ve: check skip count.
         {
@@ -120,7 +159,7 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
     private ListResponse<AuditApp> getAuditApps(final PublicApiClient.Paging paging) throws Exception
     {
-        return getAuditApps(paging, "Failed to get groups", HttpServletResponse.SC_OK);
+        return getAuditApps(paging, "Failed to get audit applications", HttpServletResponse.SC_OK);
     }
 
     protected Map<String, String> createParams(Paging paging)
@@ -139,6 +178,14 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         }
 
         return params;
+    }
+
+    private void validateAuditApplicationFields(AuditApp auditApp)
+    {
+        assertNotNull(auditApp);
+        assertNotNull(auditApp.getId());
+        assertNotNull(auditApp.getName());
+        assertNotNull(auditApp.getIsEnabled());
     }
 
 }

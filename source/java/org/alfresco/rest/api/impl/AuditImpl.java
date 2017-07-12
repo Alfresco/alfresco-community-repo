@@ -44,6 +44,7 @@ import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Audit;
 import org.alfresco.rest.api.model.AuditApp;
 import org.alfresco.rest.api.model.AuditEntry;
+import org.alfresco.rest.api.model.SiteMembershipRequest;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -59,6 +60,8 @@ import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
+import org.alfresco.service.cmr.invitation.Invitation;
+import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.util.Pair;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
@@ -72,7 +75,6 @@ public class AuditImpl implements Audit
 {
 
     private final static String DISABLED = "Audit is disabled system-wide";
-    private final static int MAX_ITEMS_AUDIT_ENTRIES = 100;
 
     // list of equals filter's auditEntry (via where clause)
     private final static Set<String> LIST_AUDIT_ENTRY_EQUALS_QUERY_PROPERTIES = new HashSet<>(
@@ -190,37 +192,38 @@ public class AuditImpl implements Audit
         // Parse where clause properties.
         List<AuditEntry> entriesAudit = new ArrayList<AuditEntry>();
         Query q = parameters.getQuery();
+        // paging
+        Paging paging = parameters.getPaging();
+        int skipCount = paging.getSkipCount();
+        int maxItems = paging.getMaxItems();
+        int limit = skipCount + maxItems + 1; // to detect hasMoreItems
+        
         if (q != null)
         {
             // filtering via "where" clause
             AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
             QueryHelper.walk(q, propertyWalker);
-            entriesAudit = getQueryResultAuditEntries(auditAppId, propertyWalker, parameters.getInclude(), MAX_ITEMS_AUDIT_ENTRIES, forward);
+            entriesAudit = getQueryResultAuditEntries(auditAppId, propertyWalker, parameters.getInclude(), limit, forward);
         }
 
         // clear null elements
         entriesAudit.removeAll(Collections.singleton(null));
-        // paging
-        Paging paging = parameters.getPaging();
-
-        int skipCount = paging.getSkipCount();
-        int maxItems = paging.getMaxItems();
-        int max = skipCount + maxItems; // to detect hasMoreItems
         int totalItems = entriesAudit.size();
 
-        if (skipCount >= totalItems)
+        if(skipCount >= totalItems)
         {
-            List<AuditEntry> empty = Collections.emptyList();
-            return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+                List<AuditEntry> empty = Collections.emptyList();
+                return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
         }
         else
         {
-            int end = Math.min(max, totalItems);
-            boolean hasMoreItems = totalItems > end;
+                int end = Math.min(limit - 1, totalItems);
+                boolean hasMoreItems = totalItems > end;
 
-            entriesAudit = entriesAudit.subList(skipCount, end);
-            return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
+                entriesAudit = entriesAudit.subList(skipCount, end);
+                return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
         }
+        
     }
 
     /**
@@ -292,7 +295,7 @@ public class AuditImpl implements Audit
             if (propertyName.equals(ID))
             {
                 fromId = new Long(firstValue);
-                toId = new Long(secondValue);
+                toId = new Long(secondValue) + 1;
             }
         }
 

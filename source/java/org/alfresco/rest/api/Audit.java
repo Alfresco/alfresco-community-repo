@@ -26,9 +26,12 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.AuditApp;
+import org.alfresco.rest.api.model.AuditEntry;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+
+import com.sun.star.auth.InvalidArgumentException;
 
 /**
  * Handles audit (applications & entries)
@@ -37,6 +40,13 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  */
 public interface Audit
 {
+    String PARAM_ID = "id";
+    String PARAM_AUDIT_APP_ID = "auditApplicationId";
+    String VALUES_VALUE = "valuesValue";
+    String VALUES_KEY = "valuesKey";
+    String CREATED_BY_USER = "createdByUser";
+    String CREATED_AT = "createdAt";
+    
     /**
      * Gets a single audit application by id
      * 
@@ -80,9 +90,9 @@ public interface Audit
      *            if null then across all audit apps
      * @param parameters
      * @return Collection of audit entries
+     * @throws InvalidArgumentException 
      */
-    // CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId,
-    // Parameters parameters);
+     CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters);
 
     /**
      * Deletes a set of audit entries

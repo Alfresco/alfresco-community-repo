@@ -212,4 +212,47 @@ public class AuditAppTest extends AuditTest
         assertTrue(auditApp.getIsEnabled());
     }
 
+
+    @Test
+    public void testEnableDisableAuditApplication() throws Exception
+    {
+        AuditApp requestAuditApp = new AuditApp();
+        AuditApp responseAuditApp = null;
+        String appId = null;
+
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+        //Get one of the audit app ids (default tagging)
+        ListResponse<AuditApp> apps = publicApiClient.auditApps().getAuditApps(null, "Getting audit apps error ", HttpServletResponse.SC_OK);
+        appId = (apps.getList().size()>0) ? apps.getList().get(0).getId() : "tagging";
+
+        // +ve
+        // Disable audit app
+        requestAuditApp.setIsEnabled(false);
+        responseAuditApp = publicApiClient.auditApps().updateAuditApp(appId,requestAuditApp,null, HttpServletResponse.SC_OK);
+        assertFalse("Wrong response for request to disable audit app.", responseAuditApp.getIsEnabled());
+        assertFalse("Disable audit app test failed.", publicApiClient.auditApps().getAuditApp(appId).getIsEnabled());
+
+        // Enable audit app
+        requestAuditApp.setIsEnabled(true);
+        responseAuditApp = publicApiClient.auditApps().updateAuditApp(appId,requestAuditApp,null, HttpServletResponse.SC_OK);
+        assertTrue("Wrong response for request to enable audit app.", responseAuditApp.getIsEnabled());
+        assertTrue("Enable audit app test failed.", publicApiClient.auditApps().getAuditApp(appId).getIsEnabled());
+
+        // -ve
+        // 400
+        publicApiClient.auditApps().update("audit-applications",appId,null,null,"badBody",null,"Was expecting error 400",HttpServletResponse.SC_BAD_REQUEST);
+        // 401
+        setRequestContext(networkOne.getId(), networkAdmin, "fakepswd");
+        publicApiClient.auditApps().updateAuditApp(appId,requestAuditApp,null, HttpServletResponse.SC_UNAUTHORIZED);
+        // 403
+        setRequestContext(networkOne.getId(), user1, null);
+        publicApiClient.auditApps().updateAuditApp(appId,requestAuditApp,null, HttpServletResponse.SC_FORBIDDEN);
+        // 404
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+        publicApiClient.auditApps().updateAuditApp("fakeid",requestAuditApp,null, HttpServletResponse.SC_NOT_FOUND);
+        // 501
+
+    }
+
 }

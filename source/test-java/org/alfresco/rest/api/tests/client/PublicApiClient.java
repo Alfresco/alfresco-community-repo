@@ -2477,6 +2477,22 @@ public class PublicApiClient
             return null;
         }
 
+        public AuditApp updateAuditApp(String applicationId, AuditApp auditApp, Map<String, String> params,  int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = update("audit-applications", applicationId,null,null, auditApp.toJSON().toString(), params, "Eriks test failed", expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonEntry = (JSONObject) response.getJsonResponse().get("entry");
+                if (jsonEntry != null)
+                {
+                    return AuditApp.parseAuditApp(jsonEntry);
+                }
+            }
+
+            return null;
+        }
+
     }
 
 }

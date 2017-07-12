@@ -25,14 +25,23 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
 import org.alfresco.rest.api.Audit;
 import org.alfresco.rest.api.model.AuditApp;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.audit.AuditService;
-
-import java.util.Map;
+import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 
 /**
  * Handles audit (applications & entries)
@@ -52,7 +61,7 @@ public class AuditImpl implements Audit
 
     private void checkEnabled()
     {
-        if (! auditService.isAuditEnabled())
+        if (!auditService.isAuditEnabled())
         {
             throw new DisabledServiceException(DISABLED);
         }
@@ -89,4 +98,46 @@ public class AuditImpl implements Audit
         }
         return auditApp;
     }
+
+    @Override
+    public CollectionWithPagingInfo<AuditApp> getAuditApps(Paging paging)
+    {
+        checkEnabled();
+
+        Map<String, AuditService.AuditApplication> auditApplicationsByName = auditService.getAuditApplications();
+
+        Set<String> audAppsName = new TreeSet<String>(auditApplicationsByName.keySet());
+        Iterator<String> audAppsNameIt = audAppsName.iterator();
+
+        int skipCount = paging.getSkipCount();
+        int maxItems = paging.getMaxItems();
+        int totalItems = audAppsName.size();
+        int end = skipCount + maxItems;
+
+        if (skipCount >= totalItems)
+        {
+            List<AuditApp> empty = Collections.emptyList();
+            return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+        }
+
+        List<AuditApp> auditApps = new ArrayList<AuditApp>(totalItems);
+        int count = 0;
+        for (int i = 0; i < end && audAppsNameIt.hasNext(); i++)
+        {
+            String auditAppName = audAppsNameIt.next();
+            if (i < skipCount)
+            {
+                continue;
+            }
+            count++;
+            AuditApplication auditApplication = auditApplicationsByName.get(auditAppName);
+
+            auditApps.add(new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApplication.isEnabled()));
+        }
+
+        boolean hasMoreItems = (skipCount + count < totalItems);
+
+        return CollectionWithPagingInfo.asPaged(paging, auditApps, hasMoreItems, totalItems);
+    }
+
 }

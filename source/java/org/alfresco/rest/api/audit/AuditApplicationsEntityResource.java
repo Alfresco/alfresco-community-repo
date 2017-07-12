@@ -26,7 +26,6 @@
 
 package org.alfresco.rest.api.audit;
 
-
 import org.alfresco.rest.api.Audit;
 import org.alfresco.rest.api.model.AuditApp;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -43,9 +42,9 @@ import org.springframework.beans.factory.InitializingBean;
  *
  * @author janv
  */
-@EntityResource(name="audit-applications", title = "Audit Applications")
-public class AuditApplicationsEntityResource implements EntityResourceAction.ReadById<AuditApp>, 
-        EntityResourceAction.Read<AuditApp>, EntityResourceAction.Update<AuditApp>, InitializingBean
+@EntityResource(name = "audit-applications", title = "Audit Applications")
+public class AuditApplicationsEntityResource implements EntityResourceAction.ReadById<AuditApp>, EntityResourceAction.Read<AuditApp>,
+        EntityResourceAction.Update<AuditApp>, InitializingBean
 {
     private Audit audit;
 
@@ -61,25 +60,24 @@ public class AuditApplicationsEntityResource implements EntityResourceAction.Rea
     }
 
     @Override
-    @WebApiDescription(title="", description="")
+    @WebApiDescription(title = "Returns audit application for audit app id")
     public AuditApp readById(String auditAppId, Parameters parameters) throws EntityNotFoundException
     {
         return audit.getAuditApp(auditAppId, parameters);
     }
 
     @Override
-    @WebApiDescription(title = "Update group", description = "Update group")
+    @WebApiDescription(title = "Update audit", description = "Update audit")
     public AuditApp update(String auditAppId, AuditApp auditApp, Parameters parameters)
     {
-        //return audit.update(auditAppId, auditApp, parameters);
+        // return audit.update(auditAppId, auditApp, parameters);
         return null; // TODO fixme
     }
 
     @Override
-    @WebApiDescription(title="", description="")
-    public CollectionWithPagingInfo<AuditApp> readAll(Parameters params)
+    @WebApiDescription(title = "Get List of audit applications", description = "Get List of Audit Applications")
+    public CollectionWithPagingInfo<AuditApp> readAll(Parameters parameters)
     {
-        //return audit.listAuditApps(params);
-        return null; // TODO fixme
+        return audit.getAuditApps(parameters.getPaging());
     }
 }

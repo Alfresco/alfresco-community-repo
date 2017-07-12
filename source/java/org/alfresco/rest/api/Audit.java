@@ -26,6 +26,8 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.AuditApp;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 /**
@@ -47,10 +49,10 @@ public interface Audit
     /**
      * Lists audit applications
      * 
-     * @param parameters
+     * @param paging
      * @return Collection of audit apps
      */
-    //CollectionWithPagingInfo<AuditApp> listAuditApps(Parameters parameters);
+    CollectionWithPagingInfo<AuditApp> getAuditApps(Paging paging);
 
     /**
      * Updates a single audit application by id
@@ -60,7 +62,8 @@ public interface Audit
      * @param parameters
      * @return an audit entry
      */
-    //AuditApp update(String auditAppId, AuditApp auditApp, Parameters parameters);
+    // AuditApp update(String auditAppId, AuditApp auditApp, Parameters
+    // parameters);
 
     /**
      * Gets a single audit entry by id
@@ -69,22 +72,25 @@ public interface Audit
      * @param parameters
      * @return an audit entry
      */
-    //AuditEntry getAuditEntry(long auditEntryId, Parameters parameters);
+    // AuditEntry getAuditEntry(long auditEntryId, Parameters parameters);
 
     /**
      * Lists audit entries
      * 
-     * @param auditAppId if null then across all audit apps
+     * @param auditAppId
+     *            if null then across all audit apps
      * @param parameters
      * @return Collection of audit entries
      */
-    //CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters);
+    // CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId,
+    // Parameters parameters);
 
     /**
      * Deletes a set of audit entries
      * 
-     * @param set of auditEntryIds
+     * @param set
+     *            of auditEntryIds
      * @return
      */
-    //void deleteAuditEntries(List<Long> auditEntryIds);
+    // void deleteAuditEntries(List<Long> auditEntryIds);
 }

@@ -26,7 +26,6 @@
 package org.alfresco.rest.api.impl;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,7 +43,6 @@ import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Audit;
 import org.alfresco.rest.api.model.AuditApp;
 import org.alfresco.rest.api.model.AuditEntry;
-import org.alfresco.rest.api.model.SiteMembershipRequest;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -60,10 +58,7 @@ import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
-import org.alfresco.service.cmr.invitation.Invitation;
-import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.util.Pair;
-import org.apache.commons.beanutils.ConvertUtils;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
@@ -110,6 +105,13 @@ public class AuditImpl implements Audit
     {
         checkEnabled();
 
+        AuditService.AuditApplication auditApplication = findAuditAppByIdOr404(auditAppId);
+
+        return new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApplication.isEnabled());
+    }
+
+    private AuditService.AuditApplication findAuditAppByIdOr404(String auditAppId)
+    {
         AuditService.AuditApplication auditApplication = findAuditAppById(auditAppId);
 
         if (auditApplication == null)
@@ -117,7 +119,7 @@ public class AuditImpl implements Audit
             throw new EntityNotFoundException(auditAppId);
         }
 
-        return new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApplication.isEnabled());
+        return auditApplication;
     }
 
     private AuditService.AuditApplication findAuditAppById(String auditAppId)
@@ -182,8 +184,8 @@ public class AuditImpl implements Audit
     public CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters)
     {
         checkEnabled();
-        
-        validateAuditAppId(auditAppId);
+
+        AuditService.AuditApplication auditApplication = findAuditAppByIdOr404(auditAppId);
 
         // adding orderBy property
         Pair<String, Boolean> sortProp = getAuditEntrySortProp(parameters);
@@ -207,7 +209,7 @@ public class AuditImpl implements Audit
             // filtering via "where" clause
             AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
             QueryHelper.walk(q, propertyWalker);
-            entriesAudit = getQueryResultAuditEntries(auditAppId, propertyWalker, parameters.getInclude(), limit, forward);
+            entriesAudit = getQueryResultAuditEntries(auditApplication, propertyWalker, parameters.getInclude(), limit, forward);
         }
 
         // clear null elements
@@ -227,19 +229,6 @@ public class AuditImpl implements Audit
                 entriesAudit = entriesAudit.subList(skipCount, end);
                 return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
         }
-        
-    }
-
-    private void validateAuditAppId(String auditAppId)
-    {
-        AuditService.AuditApplication auditApplication = findAuditAppById(auditAppId);
-
-        // Check if id is valid
-        if (auditApplication == null)
-        {
-            throw new EntityNotFoundException(auditAppId);
-        }
-        
     }
 
     /**
@@ -361,68 +350,65 @@ public class AuditImpl implements Audit
      * @param forward
      * @return
      */
-    public List<AuditEntry> getQueryResultAuditEntries(String auditAppId, AuditEntryQueryWalker propertyWalker, List<String> includeParam,
+    public List<AuditEntry> getQueryResultAuditEntries(AuditService.AuditApplication auditApplication, AuditEntryQueryWalker propertyWalker, List<String> includeParam,
             int maxItem, Boolean forward)
     {
-        final List<AuditEntry> results = new ArrayList<AuditEntry>();
-        AuditApplication auditApplication = findAuditAppById(auditAppId);
-        if (auditApplication != null)
+        final List<AuditEntry> results = new ArrayList<>();
+
+        final String auditAppId = auditApplication.getKey().substring(1);
+        String auditApplicationName = auditApplication.getName();
+
+        // Execute the query
+        AuditQueryParameters params = new AuditQueryParameters();
+        // used to orderBY by field createdAt
+        params.setForward(forward);
+        params.setApplicationName(auditApplicationName);
+        params.setUser(propertyWalker.getCreatedByUser());
+        if (propertyWalker.getFromTime() != null)
         {
-            String auditApplicationName = auditApplication.getName();
-
-            // Execute the query
-            AuditQueryParameters params = new AuditQueryParameters();
-            // used to orderBY by field createdAt
-            params.setForward(forward);
-            params.setApplicationName(auditApplicationName);
-            params.setUser(propertyWalker.getCreatedByUser());
-            if (propertyWalker.getFromTime() != null)
-            {
-                params.setFromTime(ISO8601DateFormat.parse(propertyWalker.getFromTime().replace(" ", "+")).getTime());
-            }
-
-            if (propertyWalker.getToTime() != null)
-            {
-                params.setToTime(ISO8601DateFormat.parse(propertyWalker.getToTime().replace(" ", "+")).getTime());
-            }
-            params.setFromId(propertyWalker.getFromId());
-            params.setToId(propertyWalker.getToId());
-      
-            if (propertyWalker.getValuesKey() != null && propertyWalker.getValuesValue() != null)
-            {
-                params.addSearchKey(propertyWalker.getValuesKey(), propertyWalker.getValuesValue());
-            }
-
-            // create the callback for auditQuery method
-            final AuditQueryCallback callback = new AuditQueryCallback()
-            {
-
-                public boolean valuesRequired()
-                {
-                    if (includeParam != null && includeParam.contains(PARAM_INCLUDE_VALUES))
-                    {
-                        return true;
-                    }
-                    return false;
-                }
-
-                public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
-                {
-                    throw new AlfrescoRuntimeException("Failed to retrieve audit data.", error);
-                }
-
-                public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
-                {
-
-                    AuditEntry auditEntry = new AuditEntry(entryId, auditAppId, new UserInfo(null, user, null), new Date(time), values);
-                    results.add(auditEntry);
-                    return true;
-                }
-            };
-
-            auditService.auditQuery(callback, params, maxItem);
+            params.setFromTime(ISO8601DateFormat.parse(propertyWalker.getFromTime().replace(" ", "+")).getTime());
         }
 
+        if (propertyWalker.getToTime() != null)
+        {
+            params.setToTime(ISO8601DateFormat.parse(propertyWalker.getToTime().replace(" ", "+")).getTime());
+        }
+        params.setFromId(propertyWalker.getFromId());
+        params.setToId(propertyWalker.getToId());
+  
+        if (propertyWalker.getValuesKey() != null && propertyWalker.getValuesValue() != null)
+        {
+            params.addSearchKey(propertyWalker.getValuesKey(), propertyWalker.getValuesValue());
+        }
+
+        // create the callback for auditQuery method
+        final AuditQueryCallback callback = new AuditQueryCallback()
+        {
+
+            public boolean valuesRequired()
+            {
+                if (includeParam != null && includeParam.contains(PARAM_INCLUDE_VALUES))
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException("Failed to retrieve audit data.", error);
+            }
+
+            public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
+            {
+
+                AuditEntry auditEntry = new AuditEntry(entryId, auditAppId, new UserInfo(null, user, null), new Date(time), values);
+                results.add(auditEntry);
+                return true;
+            }
+        };
+
+        auditService.auditQuery(callback, params, maxItem);
         return results;
     }
 
@@ -431,7 +417,7 @@ public class AuditImpl implements Audit
     {
         checkEnabled();
 
-        validateAuditAppId(auditAppId);
+        AuditService.AuditApplication auditApplication = findAuditAppByIdOr404(auditAppId);
 
         // Enable/Disable audit application
         if (auditApp.getIsEnabled() && !auditApplication.isEnabled())

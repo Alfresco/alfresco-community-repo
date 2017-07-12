@@ -187,7 +187,9 @@ public class AuditImpl implements Audit
         Pair<String, Boolean> sortProp = getAuditEntrySortProp(parameters);
         Boolean forward = true;
         if ((sortProp != null) && (sortProp.getFirst().equals(CREATED_AT)))
+        {
             forward = sortProp.getSecond();
+        }
 
         // Parse where clause properties.
         List<AuditEntry> entriesAudit = new ArrayList<AuditEntry>();

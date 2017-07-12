@@ -99,10 +99,14 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         final AuditApps auditAppsProxy = publicApiClient.auditApps();
         String appId = null;
 
-        // Get one of the audit app ids (default tagging)
+        // Get one of the audit app ids
         setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
         ListResponse<AuditApp> apps = auditAppsProxy.getAuditApps(null, "Getting audit apps error ", HttpServletResponse.SC_OK);
-        appId = (apps.getList().size()>0) ? apps.getList().get(0).getId() : "tagging";
+        if (apps.getList().size() == 0)
+        {
+            fail("There are no audit applications to run this test against.");
+        }
+        appId = apps.getList().get(0).getId();
 
         // Enable system audit
         AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
@@ -140,10 +144,8 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         // Positive tests
         // Get audit application information
         {
-            // Get the list of audit applications in the system
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
-            // Get audit application info
             AuditApp auditApp = auditAppsProxy.getAuditApp(appId);
             validateAuditApplicationFields(auditApp);
         }
@@ -251,7 +253,10 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
         //Get one of the audit app ids ( fail test if there are no audit apps in the system )
         ListResponse<AuditApp> apps = publicApiClient.auditApps().getAuditApps(null, "Getting audit apps error ", HttpServletResponse.SC_OK);
-        if (apps.getList().size() == 0) fail("There are no audit applications to run this test against.");
+        if (apps.getList().size() == 0) 
+        {
+            fail("There are no audit applications to run this test against.");
+        }
         appId = apps.getList().get(0).getId();
 
         // +ve

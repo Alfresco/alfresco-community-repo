@@ -28,6 +28,7 @@ package org.alfresco.rest.api.tests;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.List;
@@ -36,22 +37,34 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.AuditApps;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.AuditApp;
+import org.alfresco.service.cmr.audit.AuditService;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class AuditAppTest extends AuditTest
+public class AuditAppTest extends AbstractSingleNetworkSiteTest
 {
+
+    protected PermissionService permissionService;
+    protected AuthorityService authorityService;
+    protected AuditService auditService;
 
     @Before
     public void setup() throws Exception
     {
         super.setup();
+
+        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
+        authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
+        auditService = applicationContext.getBean("AuditService", AuditService.class);
     }
 
     @After
@@ -255,4 +268,33 @@ public class AuditAppTest extends AuditTest
 
     }
 
+    protected void enableSystemAudit()
+    {
+        boolean isEnabled = auditService.isAuditEnabled();
+        if (!isEnabled)
+        {
+            auditService.setAuditEnabled(true);
+            isEnabled = auditService.isAuditEnabled();
+            if (!isEnabled)
+            {
+                fail("Failed to enable system audit for testing");
+            }
+        }
+
+    }
+
+    protected void disableSystemAudit()
+    {
+        boolean isEnabled = auditService.isAuditEnabled();
+        if (isEnabled)
+        {
+            auditService.setAuditEnabled(false);
+            isEnabled = auditService.isAuditEnabled();
+            if (isEnabled)
+            {
+                fail("Failed to disable system audit for testing");
+            }
+        }
+
+    }
 }

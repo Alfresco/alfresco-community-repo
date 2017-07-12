@@ -35,6 +35,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
+
+
 @RelationshipResource(name = "audit-entries", entityResource = AuditApplicationsEntityResource.class, title = "Audit Application Entries")
 public class AuditApplicationsAuditEntriesRelation implements RelationshipResourceAction.Read<AuditEntry>, InitializingBean
 {
@@ -56,7 +58,6 @@ public class AuditApplicationsAuditEntriesRelation implements RelationshipResour
     @Override
     public CollectionWithPagingInfo<AuditEntry> readAll(String auditAppId, Parameters parameters)
     {
-
         return audit.listAuditEntries(auditAppId, parameters);
     }
 

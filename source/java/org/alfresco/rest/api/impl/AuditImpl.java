@@ -173,7 +173,6 @@ public class AuditImpl implements Audit
         return CollectionWithPagingInfo.asPaged(paging, auditApps, hasMoreItems, totalItems);
     }
 
-
     @Override
     public CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters)
     {
@@ -186,14 +185,14 @@ public class AuditImpl implements Audit
             forward = sortProp.getSecond();
 
         // Parse where clause properties.
-        List<AuditEntry> entriesAfterWhereQuery = new ArrayList<AuditEntry>();
+        List<AuditEntry> entriesAudit = new ArrayList<AuditEntry>();
         Query q = parameters.getQuery();
-        if (q != null)
+        if (q != null && q.getTree() != null)
         {
             // filtering via "where" clause
             AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
             QueryHelper.walk(q, propertyWalker);
-            entriesAfterWhereQuery = getQueryResultAuditEntries(auditAppId, propertyWalker, MAX_ITEMS_AUDIT_ENTRIES, forward);
+            entriesAudit = getQueryResultAuditEntries(auditAppId, propertyWalker, MAX_ITEMS_AUDIT_ENTRIES, forward);
         }
 
         // paging
@@ -202,7 +201,7 @@ public class AuditImpl implements Audit
         int skipCount = paging.getSkipCount();
         int maxItems = paging.getMaxItems();
         int max = skipCount + maxItems; // to detect hasMoreItems
-        int totalItems = entriesAfterWhereQuery.size();
+        int totalItems = entriesAudit.size();
 
         if (skipCount >= totalItems)
         {
@@ -214,8 +213,8 @@ public class AuditImpl implements Audit
             int end = Math.min(max, totalItems);
             boolean hasMoreItems = totalItems > end;
 
-            entriesAfterWhereQuery = entriesAfterWhereQuery.subList(skipCount, end);
-            return CollectionWithPagingInfo.asPaged(paging, entriesAfterWhereQuery, hasMoreItems, totalItems);
+            entriesAudit = entriesAudit.subList(skipCount, end);
+            return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
         }
     }
 
@@ -225,7 +224,7 @@ public class AuditImpl implements Audit
      * @return
      * @throws InvalidArgumentException
      */
-    private Pair<String, Boolean> getAuditEntrySortProp(Parameters parameters) 
+    private Pair<String, Boolean> getAuditEntrySortProp(Parameters parameters)
     {
         Pair<String, Boolean> sortProp = null;
         List<SortColumn> sortCols = parameters.getSorting();
@@ -334,7 +333,10 @@ public class AuditImpl implements Audit
             params.setUser(propertyWalker.getCreatedByUser());
             params.setFromTime(propertyWalker.getFromTime());
             params.setToTime(propertyWalker.getToTime());
-            params.addSearchKey(propertyWalker.getValuesKey(), propertyWalker.getValuesValue());
+            if (propertyWalker.getValuesKey() != null && propertyWalker.getValuesValue() != null)
+            {
+                params.addSearchKey(propertyWalker.getValuesKey(), propertyWalker.getValuesValue());
+            }
 
             // create the callback for auditQuery method
             final AuditQueryCallback callback = new AuditQueryCallback()
@@ -363,7 +365,6 @@ public class AuditImpl implements Audit
         return results;
     }
 
-
     @Override
     public AuditApp update(String auditAppId, AuditApp auditApp, Parameters parameters)
     {
@@ -389,6 +390,5 @@ public class AuditImpl implements Audit
 
         return new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApp.getIsEnabled());
     }
-
 
 }

@@ -815,6 +815,10 @@
     <bean class="org.alfresco.rest.api.audit.AuditApplicationsEntityResource">
         <property name="audit" ref="AuditApi" />
     </bean>
+    
+     <bean class="org.alfresco.rest.api.audit.AuditApplicationsAuditEntriesRelation">
+        <property name="audit" ref="AuditApi" />
+    </bean>
 
     <bean class="org.alfresco.rest.api.downloads.DownloadsEntityResource">
         <property name="downloads" ref="Downloads" />

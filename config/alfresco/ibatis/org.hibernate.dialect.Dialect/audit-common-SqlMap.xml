@@ -149,6 +149,12 @@
            <if test="auditToTime != null">
                <![CDATA[and audit_time < #{auditToTime}]]>
            </if>
+           <if test="auditFromId != null">
+               <![CDATA[and id >= #{auditFromId}]]>
+           </if>
+           <if test="auditToId != null">
+               <![CDATA[and id < #{auditToId}]]>
+           </if>
        </where>
     </delete>
     

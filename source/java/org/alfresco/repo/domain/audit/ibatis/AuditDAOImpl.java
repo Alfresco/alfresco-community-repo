@@ -181,6 +181,15 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         return template.delete(DELETE_ENTRIES, params);
     }
 
+    public int deleteAuditEntriesByIdRange(Long applicationId, Long fromId, Long toId)
+    {
+        AuditDeleteParameters params = new AuditDeleteParameters();
+        params.setAuditApplicationId(applicationId);
+        params.setAuditFromId(fromId);
+        params.setAuditToId(toId);
+        return template.delete(DELETE_ENTRIES, params);
+    }
+
     @Override
     protected int deleteAuditEntriesImpl(List<Long> auditEntryIds)
     {

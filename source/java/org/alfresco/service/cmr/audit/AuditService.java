@@ -149,7 +149,19 @@ public interface AuditService
      * @since 3.4
      */
     int clearAudit(String applicationName, Long fromTime, Long toTime);
-    
+
+    /**
+     * Remove audit entries for the given application between the audit entry ids.
+     *
+     * @param applicationName   the name of the application for which to remove entries
+     * @param fromId            the start time of entries to remove (inclusive and optional)
+     * @param toId              the end time of entries to remove (exclusive and optional)
+     * @return                  Returns the number of audit entries deleted
+     *
+     * @since 5.2.2
+     */
+    int clearAuditByIdRange(String applicationName, Long fromId, Long toId);
+
     /**
      * Delete a discrete list of audit entries.
      * <p/>

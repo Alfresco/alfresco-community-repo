@@ -142,6 +142,16 @@ public class AuditServiceImpl implements AuditService
 
     /**
      * {@inheritDoc}
+     * @since 5.2.2
+     */
+    @Override
+    public int clearAuditByIdRange(String applicationName, Long fromId, Long toId)
+    {
+        return auditComponent.deleteAuditEntriesByIdRange(applicationName, fromId, toId);
+    }
+
+    /**
+     * {@inheritDoc}
      * @since 3.4
      */
     @Override

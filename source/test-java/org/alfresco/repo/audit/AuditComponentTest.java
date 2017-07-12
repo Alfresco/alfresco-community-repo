@@ -684,12 +684,32 @@ public class AuditComponentTest extends TestCase
 
         logger.debug(sb.toString());
         assertEquals("Incorrect number of audit entries after failed login", iterations, results.size());
-        
-        // Check that we can delete explicit entries
+
+
+        Collections.sort(results);
+        long minId = results.get(0);
+        long maxId = results.get(100);
+
+        List<Long> remainingResults = new ArrayList<>(results.subList(100, results.size()));
+
+        // Check that we can delete entries based on range of ids
         long before = System.currentTimeMillis();
-        deleteAuditEntries(results);
+        int deleted = deleteAuditEntries(APPLICATION_API_TEST, minId, maxId);
         System.out.println(
-                "Clearing " + results.size() + " entries by ID took " + (System.currentTimeMillis() - before) + "ms.");
+                "Clearing " + deleted + " entries by from/to ID took " + (System.currentTimeMillis() - before) + "ms.");
+        results.clear();
+        sb.delete(0, sb.length());
+        queryAuditLog(auditQueryCallback, params, Integer.MAX_VALUE);
+        logger.debug(sb.toString());
+        assertEquals("Range of audit entries were not deleted", remainingResults.size(), results.size());
+
+        // delete the rest ...
+
+        // Check that we can delete set of explicit entries
+        before = System.currentTimeMillis();
+        deleteAuditEntries(remainingResults);
+        System.out.println(
+                "Clearing " + remainingResults.size() + " entries by set of IDs took " + (System.currentTimeMillis() - before) + "ms.");
         results.clear();
         sb.delete(0, sb.length());
         queryAuditLog(auditQueryCallback, params, Integer.MAX_VALUE);
@@ -1081,7 +1101,7 @@ public class AuditComponentTest extends TestCase
     }
     
     /**
-     * Clearn the audit log as 'admin'
+     * Clear the audit log as 'admin'
      */
     private void clearAuditLog(final String applicationName)
     {
@@ -1098,7 +1118,7 @@ public class AuditComponentTest extends TestCase
     }
 
     /**
-     * Clearn the audit log as 'admin'
+     * Clear the audit log as 'admin'
      */
     private void deleteAuditEntries(final List<Long> auditEntryIds)
     {
@@ -1115,7 +1135,23 @@ public class AuditComponentTest extends TestCase
     }
 
     /**
-     * Clearn the audit log as 'admin'
+     * Clear the audit log as 'admin'
+     */
+    private Integer deleteAuditEntries(final String applicationName, final long fromId, final long toId)
+    {
+        RunAsWork<Integer> work = new RunAsWork<Integer>()
+        {
+            @Override
+            public Integer doWork() throws Exception
+            {
+                return new Integer(auditService.clearAuditByIdRange(applicationName, fromId, toId));
+            }
+        };
+        return AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminRoleName());
+    }    
+
+    /**
+     * Query the audit log as 'admin'
      */
     private void queryAuditLog(final AuditQueryCallback callback, final AuditQueryParameters parameters, final int maxResults)
     {

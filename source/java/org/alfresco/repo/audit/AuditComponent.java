@@ -108,7 +108,7 @@ public interface AuditComponent
     /**
      * Delete audit entries for the given application and time range
      * 
-     * @param applicationName   the name of the application being logged to
+     * @param applicationName   the name of the application
      * @param fromTime          the start time of entries to remove (inclusive and optional)
      * @param toTime            the end time of entries to remove (exclusive and optional)
      * @return                  Returns the number of entries deleted
@@ -116,7 +116,19 @@ public interface AuditComponent
      * @since 3.2
      */
     int deleteAuditEntries(String applicationName, Long fromTime, Long toTime);
-    
+
+    /**
+     * Delete audit entries for the given application and id range
+     *
+     * @param applicationName   the name of the application
+     * @param fromId          the start time of entries to remove (inclusive and optional)
+     * @param toId            the end time of entries to remove (exclusive and optional)
+     * @return                  Returns the number of entries deleted
+     *
+     * @since 5.2.2
+     */
+    int deleteAuditEntriesByIdRange(String applicationName, Long fromId, Long toId);
+
     /**
      * Delete a discrete list of audit entries based on ID
      * 

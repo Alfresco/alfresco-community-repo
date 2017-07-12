@@ -148,21 +148,12 @@ public class AuditComponentImpl implements AuditComponent
      */
     public int deleteAuditEntries(String applicationName, Long fromTime, Long toTime)
     {
-        ParameterCheck.mandatory("applicationName", applicationName);
-        AlfrescoTransactionSupport.checkTransactionReadState(true);
-        
-        AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
-        if (application == null)
+        Long applicationId = getApplicationId(applicationName);
+        if (applicationId == null)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("No audit application named '" + applicationName + "' has been registered.");
-            }
             return 0;
         }
-        
-        Long applicationId = application.getApplicationId();
-        
+
         int deleted = auditDAO.deleteAuditEntries(applicationId, fromTime, toTime);
         // Done
         if (logger.isDebugEnabled())
@@ -172,6 +163,47 @@ public class AuditComponentImpl implements AuditComponent
                     " (" + fromTime + " to " + toTime);
         }
         return deleted;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @since 5.2.2
+     */
+    public int deleteAuditEntriesByIdRange(String applicationName, Long fromId, Long toId)
+    {
+        Long applicationId = getApplicationId(applicationName);
+        if (applicationId == null)
+        {
+            return 0;
+        }
+
+        int deleted = auditDAO.deleteAuditEntriesByIdRange(applicationId, fromId, toId);
+        // Done
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(
+                    "Delete audit " + deleted + " entries for " + applicationName +
+                            " (" + fromId + " to " + toId);
+        }
+        return deleted;
+    }
+
+    private Long getApplicationId(String applicationName)
+    {
+        ParameterCheck.mandatory("applicationName", applicationName);
+        AlfrescoTransactionSupport.checkTransactionReadState(true);
+
+        AuditApplication application = auditModelRegistry.getAuditApplicationByName(applicationName);
+        if (application == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No audit application named '" + applicationName + "' has been registered.");
+            }
+            return null;
+        }
+
+        return application.getApplicationId();
     }
 
     /**

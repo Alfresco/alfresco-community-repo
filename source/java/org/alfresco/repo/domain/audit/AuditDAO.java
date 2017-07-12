@@ -165,15 +165,27 @@ public interface AuditDAO
     /**
      * Delete audit entries for the application, possibly limiting the time range.
      * 
-     * @param applicationId     and existing audit application ID
-     * @param from              the minimum entry time (inclusive, optional)
-     * @param to                the maximum entry time (exclusive, optional)
+     * @param applicationId     an existing audit application ID
+     * @param fromTime          the minimum entry time (inclusive, optional)
+     * @param toTime            the maximum entry time (exclusive, optional)
      * @return                  Returns the number of entries deleted
      * 
      * @since 3.2
      */
-    int deleteAuditEntries(Long applicationId, Long from, Long to);
-    
+    int deleteAuditEntries(Long applicationId, Long fromTime, Long toTime);
+
+    /**
+     * Delete audit entries for the application for given id range.
+     *
+     * @param applicationId     an existing audit application ID
+     * @param fromId            the minimum fromId (inclusive, optional)
+     * @param toId              the maximum toId (exclusive, optional)
+     * @return                  Returns the number of entries deleted
+     *
+     * @since 5.2.2
+     */
+    int deleteAuditEntriesByIdRange(Long applicationId, Long fromId, Long toId);
+
     /**
      * Delete a discrete list of audit entries.  Duplicate entries are collapsed
      * and the number of entries deleted will match the count of unique IDs in

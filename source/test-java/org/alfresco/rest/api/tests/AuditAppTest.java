@@ -265,7 +265,10 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
         publicApiClient.auditApps().updateAuditApp("fakeid",requestAuditApp,null, HttpServletResponse.SC_NOT_FOUND);
         // 501
-
+        AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
+        disableSystemAudit();
+        responseAuditApp = publicApiClient.auditApps().updateAuditApp(appId,requestAuditApp,null, HttpServletResponse.SC_NOT_IMPLEMENTED);
+        enableSystemAudit();
     }
 
     protected void enableSystemAudit()

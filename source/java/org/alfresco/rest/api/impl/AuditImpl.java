@@ -213,7 +213,7 @@ public class AuditImpl implements Audit
         if(skipCount >= totalItems)
         {
                 List<AuditEntry> empty = Collections.emptyList();
-                return CollectionWithPagingInfo.asPaged(paging, empty, false, 0);
+                return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
         }
         else
         {
@@ -221,7 +221,7 @@ public class AuditImpl implements Audit
                 boolean hasMoreItems = totalItems > end;
 
                 entriesAudit = entriesAudit.subList(skipCount, end);
-                return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, entriesAudit.size());
+                return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
         }
         
     }

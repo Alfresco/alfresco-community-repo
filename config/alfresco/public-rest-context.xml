@@ -416,7 +416,25 @@
           </list>
        </property>
    </bean>
-    
+
+    <bean id="auditApi" class="org.alfresco.rest.api.impl.AuditImpl">
+        <property name="auditService" ref="AuditService" />
+    </bean>
+
+    <bean id="AuditApi" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Audit</value>
+        </property>
+        <property name="target">
+            <ref bean="auditApi" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
     <bean id="comments" class="org.alfresco.rest.api.impl.CommentsImpl">
         <property name="nodes" ref="nodes" />
         <property name="nodeService" ref="NodeService" />
@@ -793,14 +811,18 @@
     </bean>
 
     <!-- API webscripts -->
-    
-     <bean class="org.alfresco.rest.api.downloads.DownloadsEntityResource">
-        <property name="downloads" ref="Downloads" />
-     </bean>
 
-	 <bean class="org.alfresco.rest.api.sites.SiteEntityResource">
-		<property name="sites" ref="Sites" />
-	 </bean>
+    <bean class="org.alfresco.rest.api.audit.AuditApplicationsEntityResource">
+        <property name="audit" ref="AuditApi" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.downloads.DownloadsEntityResource">
+        <property name="downloads" ref="Downloads" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.sites.SiteEntityResource">
+        <property name="sites" ref="Sites" />
+    </bean>
 
     <bean class="org.alfresco.rest.api.networks.NetworksEntityResource">
         <property name="networks" ref="Networks" />

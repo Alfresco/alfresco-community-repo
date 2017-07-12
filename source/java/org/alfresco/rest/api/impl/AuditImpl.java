@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.impl;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,6 +60,8 @@ import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
 import org.alfresco.util.Pair;
+import org.apache.commons.beanutils.ConvertUtils;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Handles audit (applications & entries)
@@ -195,6 +198,8 @@ public class AuditImpl implements Audit
             entriesAudit = getQueryResultAuditEntries(auditAppId, propertyWalker, MAX_ITEMS_AUDIT_ENTRIES, forward);
         }
 
+        // clear null elements
+        entriesAudit.removeAll(Collections.singleton(null));
         // paging
         Paging paging = parameters.getPaging();
 
@@ -256,9 +261,13 @@ public class AuditImpl implements Audit
      */
     private static class AuditEntryQueryWalker extends MapBasedQueryWalker
     {
-        private Long fromTime;
+        private String fromTime;
 
-        private Long toTime;
+        private String toTime;
+
+        private Long fromId;
+
+        private Long toId;
 
         public AuditEntryQueryWalker()
         {
@@ -276,17 +285,23 @@ public class AuditImpl implements Audit
         {
             if (propertyName.equals(CREATED_AT))
             {
-                fromTime = new Long(firstValue);
-                toTime = new Long(secondValue);
+                fromTime = firstValue;
+                toTime = secondValue;
+            }
+
+            if (propertyName.equals(ID))
+            {
+                fromId = new Long(firstValue);
+                toId = new Long(secondValue);
             }
         }
 
-        public Long getFromTime()
+        public String getFromTime()
         {
             return fromTime;
         }
 
-        public Long getToTime()
+        public String getToTime()
         {
             return toTime;
         }
@@ -305,6 +320,17 @@ public class AuditImpl implements Audit
         {
             return getProperty(VALUES_VALUE, WhereClauseParser.EQUALS, String.class);
         }
+
+        public Long getFromId()
+        {
+            return fromId;
+        }
+
+        public Long getToId()
+        {
+            return toId;
+        }
+
     }
 
     /**
@@ -317,9 +343,7 @@ public class AuditImpl implements Audit
      */
     public List<AuditEntry> getQueryResultAuditEntries(String auditAppId, AuditEntryQueryWalker propertyWalker, int maxItem, Boolean forward)
     {
-
         final List<AuditEntry> results = new ArrayList<AuditEntry>();
-
         AuditApplication auditApplication = findAuditAppById(auditAppId);
         if (auditApplication != null)
         {
@@ -331,8 +355,17 @@ public class AuditImpl implements Audit
             params.setForward(forward);
             params.setApplicationName(auditApplicationName);
             params.setUser(propertyWalker.getCreatedByUser());
-            params.setFromTime(propertyWalker.getFromTime());
-            params.setToTime(propertyWalker.getToTime());
+            if (propertyWalker.getFromTime() != null)
+            {
+                    params.setFromTime(ISO8601DateFormat.parse(propertyWalker.getFromTime().replace(" ","+")).getTime());
+            }
+
+            if (propertyWalker.getToTime() != null)
+            {
+                    params.setToTime(ISO8601DateFormat.parse(propertyWalker.getToTime().replace(" ","+")).getTime());
+            }
+            params.setFromId(propertyWalker.getFromId());
+            params.setToId(propertyWalker.getToId());
             if (propertyWalker.getValuesKey() != null && propertyWalker.getValuesValue() != null)
             {
                 params.addSearchKey(propertyWalker.getValuesKey(), propertyWalker.getValuesValue());
@@ -341,6 +374,7 @@ public class AuditImpl implements Audit
             // create the callback for auditQuery method
             final AuditQueryCallback callback = new AuditQueryCallback()
             {
+
                 public boolean valuesRequired()
                 {
                     return true;
@@ -353,6 +387,7 @@ public class AuditImpl implements Audit
 
                 public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
                 {
+
                     AuditEntry auditEntry = new AuditEntry(entryId, auditAppId, new UserInfo(null, user, null), new Date(time), values);
                     results.add(auditEntry);
                     return true;

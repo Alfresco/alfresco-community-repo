@@ -46,6 +46,7 @@ public interface Audit
     String VALUES_KEY = "valuesKey";
     String CREATED_BY_USER = "createdByUser";
     String CREATED_AT = "createdAt";
+    String ID = "id";
     
     /**
      * Gets a single audit application by id

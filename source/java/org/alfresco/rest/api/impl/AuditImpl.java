@@ -195,7 +195,7 @@ public class AuditImpl implements Audit
             // filtering via "where" clause
             AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
             QueryHelper.walk(q, propertyWalker);
-            entriesAudit = getQueryResultAuditEntries(auditAppId, propertyWalker, MAX_ITEMS_AUDIT_ENTRIES, forward);
+            entriesAudit = getQueryResultAuditEntries(auditAppId, propertyWalker, parameters.getInclude(), MAX_ITEMS_AUDIT_ENTRIES, forward);
         }
 
         // clear null elements
@@ -337,11 +337,13 @@ public class AuditImpl implements Audit
      * 
      * @param auditAppId
      * @param propertyWalker
+     * @param includeParams
      * @param maxItem
      * @param forward
      * @return
      */
-    public List<AuditEntry> getQueryResultAuditEntries(String auditAppId, AuditEntryQueryWalker propertyWalker, int maxItem, Boolean forward)
+    public List<AuditEntry> getQueryResultAuditEntries(String auditAppId, AuditEntryQueryWalker propertyWalker, List<String> includeParam,
+            int maxItem, Boolean forward)
     {
         final List<AuditEntry> results = new ArrayList<AuditEntry>();
         AuditApplication auditApplication = findAuditAppById(auditAppId);
@@ -357,15 +359,16 @@ public class AuditImpl implements Audit
             params.setUser(propertyWalker.getCreatedByUser());
             if (propertyWalker.getFromTime() != null)
             {
-                    params.setFromTime(ISO8601DateFormat.parse(propertyWalker.getFromTime().replace(" ","+")).getTime());
+                params.setFromTime(ISO8601DateFormat.parse(propertyWalker.getFromTime().replace(" ", "+")).getTime());
             }
 
             if (propertyWalker.getToTime() != null)
             {
-                    params.setToTime(ISO8601DateFormat.parse(propertyWalker.getToTime().replace(" ","+")).getTime());
+                params.setToTime(ISO8601DateFormat.parse(propertyWalker.getToTime().replace(" ", "+")).getTime());
             }
             params.setFromId(propertyWalker.getFromId());
             params.setToId(propertyWalker.getToId());
+      
             if (propertyWalker.getValuesKey() != null && propertyWalker.getValuesValue() != null)
             {
                 params.addSearchKey(propertyWalker.getValuesKey(), propertyWalker.getValuesValue());
@@ -377,7 +380,11 @@ public class AuditImpl implements Audit
 
                 public boolean valuesRequired()
                 {
-                    return true;
+                    if (includeParam != null && includeParam.contains(PARAM_INCLUDE_VALUES))
+                    {
+                        return true;
+                    }
+                    return false;
                 }
 
                 public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)

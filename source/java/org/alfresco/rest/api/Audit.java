@@ -47,6 +47,7 @@ public interface Audit
     String CREATED_BY_USER = "createdByUser";
     String CREATED_AT = "createdAt";
     String ID = "id";
+    String PARAM_INCLUDE_VALUES = "values";
     
     /**
      * Gets a single audit application by id

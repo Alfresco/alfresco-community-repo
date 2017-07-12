@@ -36,8 +36,11 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
+import org.alfresco.rest.api.tests.client.data.AuditEntry;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.AuditApps;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
@@ -94,6 +97,12 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
     {
 
         final AuditApps auditAppsProxy = publicApiClient.auditApps();
+        String appId = null;
+
+        // Get one of the audit app ids (default tagging)
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+        ListResponse<AuditApp> apps = auditAppsProxy.getAuditApps(null, "Getting audit apps error ", HttpServletResponse.SC_OK);
+        appId = (apps.getList().size()>0) ? apps.getList().get(0).getId() : "tagging";
 
         // Enable system audit
         AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
@@ -117,19 +126,12 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
             // Get an enabled audit application
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
-            int skipCount = 0;
-            int maxItems = 4;
-            Paging paging = getPaging(skipCount, maxItems);
-
-            ListResponse<AuditApp> auditApps = getAuditApps(paging);
-            AuditApp auditApp = auditAppsProxy.getAuditApp(auditApps.getList().get(0).getId());
-
             // Disable system audit
             AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
             disableSystemAudit();
 
             // Check response code
-            auditAppsProxy.getAuditApp(auditApp.getId(), HttpServletResponse.SC_NOT_IMPLEMENTED);
+            auditAppsProxy.getAuditApp(appId, HttpServletResponse.SC_NOT_IMPLEMENTED);
 
             // Re-enable system audit
             enableSystemAudit();
@@ -141,14 +143,8 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
             // Get the list of audit applications in the system
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
-            int skipCount = 0;
-            int maxItems = 4;
-            Paging paging = getPaging(skipCount, maxItems);
-
-            ListResponse<AuditApp> auditApps = getAuditApps(paging);
-
             // Get audit application info
-            AuditApp auditApp = auditAppsProxy.getAuditApp(auditApps.getList().get(0).getId());
+            AuditApp auditApp = auditAppsProxy.getAuditApp(appId);
             validateAuditApplicationFields(auditApp);
         }
     }
@@ -225,6 +221,24 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         assertTrue(auditApp.getIsEnabled());
     }
 
+    private void validateAuditEntryFields(AuditEntry auditEntry, AuditApp auditApp)
+    {
+        String auditAppid = auditApp.getId();
+
+        assertNotNull(auditEntry);
+        assertNotNull(auditEntry.getId());
+        assertNotNull(auditEntry.getAuditApplicationId());
+        assertNotNull(auditEntry.getCreatedAt());
+        assertNotNull(auditEntry.getCreatedByUser());
+        assertFalse(auditEntry.getId().toString().isEmpty());
+        assertFalse(auditEntry.getAuditApplicationId().isEmpty());
+
+        if (auditApp.getId().equals("alfresco-access"))
+        {
+            assertTrue(auditEntry.getAuditApplicationId().toString().equals(auditAppid));
+        }
+
+    }
 
     @Test
     public void testEnableDisableAuditApplication() throws Exception
@@ -299,5 +313,72 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
             }
         }
 
+    }
+
+    @Test
+    public void testGetAuditEntries() throws Exception
+    {
+        final AuditApps auditAppsProxy = publicApiClient.auditApps();
+
+        // Get and enable audit app
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+        AuditApp auditApp = auditAppsProxy.getAuditApp("alfresco-access");
+
+        // Positive tests
+        ListResponse<AuditEntry> auditEntries = auditAppsProxy.getAuditAppEntries(auditApp.getId(), null, HttpServletResponse.SC_OK);
+        for (AuditEntry ae : auditEntries.getList())
+        {
+            validateAuditEntryFields(ae, auditApp);
+        }
+
+        // Negative tests
+        // 400
+        Map<String, String> wrongParams = new HashMap<String, String>();
+        wrongParams.put("wrongkey", "wrongvalue");
+        wrongParams.put("wrongkey1", "wrongvalue1");
+
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+        auditAppsProxy.getAuditAppEntries(auditApp.getId(), wrongParams, HttpServletResponse.SC_BAD_REQUEST);
+        // 401
+        setRequestContext(networkOne.getId(), networkAdmin, "wrongPassword");
+        auditAppsProxy.getAuditAppEntries(auditApp.getId(), null, HttpServletResponse.SC_UNAUTHORIZED);
+        // 403
+        setRequestContext(networkOne.getId(), user1, null);
+        auditAppsProxy.getAuditAppEntries(auditApp.getId(), null, HttpServletResponse.SC_FORBIDDEN);
+        // 404
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+        auditAppsProxy.getAuditAppEntries("randomId", null, HttpServletResponse.SC_NOT_FOUND);
+        // 501
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+        AuthenticationUtil.setFullyAuthenticatedUser(networkAdmin);
+        disableSystemAudit();
+        auditAppsProxy.getAuditAppEntries("randomId", null, HttpServletResponse.SC_NOT_IMPLEMENTED);
+        enableSystemAudit();
+    }
+
+    /**
+     * Perform a login attempt (to be used to create audit entries)
+     */
+    private void login(final String username, final String password) throws Exception
+    {
+        // Force a failed login
+        RunAsWork<Void> failureWork = new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                try
+                {
+                    authenticationService.authenticate(username, password.toCharArray());
+                    fail("Failed to force authentication failure");
+                }
+                catch (AuthenticationException e)
+                {
+                    // Expected
+                }
+                return null;
+            }
+        };
+        AuthenticationUtil.runAs(failureWork, AuthenticationUtil.getSystemUserName());
     }
 }

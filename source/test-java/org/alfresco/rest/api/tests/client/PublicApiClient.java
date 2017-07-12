@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.rest.api.tests.client.data.AuditEntry;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.api.tests.TestPeople;
 import org.alfresco.rest.api.tests.TestSites;
@@ -2490,6 +2491,23 @@ public class PublicApiClient
                 }
             }
 
+            return null;
+        }
+
+        public ListResponse<AuditEntry> getAuditAppEntries(String applicationId, Map<String, String> params, int expectedStatus)
+                throws PublicApiException, ParseException
+        {
+            HttpResponse response = getAll("audit-applications", applicationId, "audit-entries", null, params,
+                    "Failed to get audit entries for " + applicationId, expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return AuditEntry.parseAuditEntries(response.getJsonResponse());
+                }
+            }
             return null;
         }
 

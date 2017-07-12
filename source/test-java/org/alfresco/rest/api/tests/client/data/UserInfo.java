@@ -28,13 +28,17 @@ package org.alfresco.rest.api.tests.client.data;
 
 import static org.junit.Assert.assertTrue;
 
+import org.json.simple.JSONObject;
+
 /**
  * Representation of a user info (initially for client tests for File Folder API)
  *
  * @author janv
  */
-public class UserInfo
+public class UserInfo extends org.alfresco.rest.api.model.UserInfo implements ExpectedComparison
 {
+    private static final long serialVersionUID = 1L;
+
     private String id;
     private String displayName;
 
@@ -89,5 +93,18 @@ public class UserInfo
 
         AssertUtil.assertEquals("id", id, other.getId());
         AssertUtil.assertEquals("displayName", displayName, other.getDisplayName());
+    }
+
+    public JSONObject toJSON()
+    {
+        JSONObject userInfoJson = new JSONObject();
+        if (getId() != null)
+        {
+            userInfoJson.put("id", getId());
+        }
+
+        userInfoJson.put("displayName", getDisplayName());
+
+        return userInfoJson;
     }
 }

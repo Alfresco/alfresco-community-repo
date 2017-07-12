@@ -29,8 +29,6 @@ import static org.alfresco.rest.api.Queries.PARAM_FIRSTNAME;
 import static org.alfresco.rest.api.Queries.PARAM_LASTNAME;
 import static org.alfresco.rest.api.Queries.PARAM_PERSON_ID;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -448,11 +446,14 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     {
         fields = PARAM_PERSON_ID;
         term = LAST_A;
+        
+        String tenantSuffix = (useDefaultNetwork ? "" : "@"+networkOne.getId());
+        
         expectedPeople = new String[]
         {
-            "Person [id=user5@org.alfresco.rest.api.tests.queriespeopleapitest, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER5
-            "Person [id=user1@org.alfresco.rest.api.tests.queriespeopleapitest, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER1
-            "Person [id=user3@org.alfresco.rest.api.tests.queriespeopleapitest, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER3
+            "Person [id=user5"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER5
+            "Person [id=user1"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER1
+            "Person [id=user3"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER3
         };
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);

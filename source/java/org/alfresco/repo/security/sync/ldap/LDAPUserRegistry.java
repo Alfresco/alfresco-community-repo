@@ -1202,7 +1202,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      * @throws InvalidNameException
      *             the invalid name exception
      */
-    private static Name jndiName(String dn) throws InvalidNameException
+    public static Name jndiName(String dn) throws InvalidNameException
     {
         Name n = new CompositeName();
         n.add(dn);

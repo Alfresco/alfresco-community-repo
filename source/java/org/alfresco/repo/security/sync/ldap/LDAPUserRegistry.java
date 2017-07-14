@@ -97,6 +97,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     /** The regular expression that will match the attribute at the end of a range. */
     private static final Pattern PATTERN_RANGE_END = Pattern.compile(";range=[0-9]+-\\*");
 
+    public static final String NAMING_TIMEOUT_EXCEPTION_MESSAGE = "LDAP response read timed out";
+
     /** Is this bean active? I.e. should this part of the subsystem be used? */
     private boolean active = true;
 
@@ -882,6 +884,13 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                                     }
                                     catch (NamingException e)
                                     {
+                                        // Check if it is a timeout and fail
+                                        // MNT-17966
+                                        if (e.getMessage() != null && e.getMessage().startsWith(NAMING_TIMEOUT_EXCEPTION_MESSAGE))
+                                        {
+                                            Object[] params = {e.getLocalizedMessage() };
+                                            throw new AlfrescoRuntimeException("synchronization.err.ldap.search", params, e);
+                                        }
                                         // Unresolvable name
                                         if (LDAPUserRegistry.this.errorOnMissingMembers)
                                         {
@@ -1193,7 +1202,7 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
      * @throws InvalidNameException
      *             the invalid name exception
      */
-    private static Name jndiName(String dn) throws InvalidNameException
+    public static Name jndiName(String dn) throws InvalidNameException
     {
         Name n = new CompositeName();
         n.add(dn);

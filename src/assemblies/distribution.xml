@@ -93,6 +93,17 @@
                 </includes>
             </unpackOptions>
         </dependencySet>
+
+        <!-- Alfresco Pdf Renderer -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>alfresco-pdf-renderer</outputDirectory>
+            <includes>
+                <include>org.alfresco:alfresco-pdf-renderer</include>
+            </includes>
+        </dependencySet>
+
     </dependencySets>
 
 </assembly>

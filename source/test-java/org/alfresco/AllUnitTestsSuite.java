@@ -135,5 +135,6 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTest(org.alfresco.repo.virtual.VirtualizationUnitTestSuite.suite());
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.security.authentication.AuthenticationServiceImplTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.EmailHelperTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.security.sync.LDAPUserRegistryTest.class));
     }
 }

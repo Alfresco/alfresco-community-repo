@@ -679,7 +679,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
      *
      * That is useful if you need to use the log output for your tests.
      */
-    class LogErrorAppender extends AppenderSkeleton
+    private class LogErrorAppender extends AppenderSkeleton
     {
 
         private final List<LoggingEvent> log = new ArrayList<LoggingEvent>();

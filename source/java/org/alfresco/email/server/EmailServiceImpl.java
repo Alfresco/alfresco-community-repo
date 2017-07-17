@@ -508,34 +508,38 @@ public class EmailServiceImpl implements EmailService
         
         
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        String query = "TYPE:cm\\:person +@cm\\:email:\"" + from + "\"";
+        String query = "TYPE:cm\\:person AND =@cm\\:email:\"" + from + "\"";
 
-        ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
+        ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_FTS_ALFRESCO, query);
         try
         {
-            if (resultSet.length() == 0)
+            if (resultSet == null || resultSet.length() == 0)
             {
                 return null;
             }
+            if (resultSet.length() > 1)
+            {
+                if(logger.isWarnEnabled())
+                {
+                    logger.warn("found more as one result for email '" + from + "'. The first will be used");
+                }
+            }
+            NodeRef userNode = resultSet.getNodeRef(0);
+            if (nodeService.exists(userNode))
+            {
+                userName = DefaultTypeConverter.INSTANCE.convert(
+                        String.class,
+                        nodeService.getProperty(userNode, ContentModel.PROP_USERNAME));
+
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("found username: " + userName);
+                }
+            }
             else
             {
-                NodeRef userNode = resultSet.getNodeRef(0);
-                if (nodeService.exists(userNode))
-                {
-                    userName = DefaultTypeConverter.INSTANCE.convert(
-                            String.class,
-                            nodeService.getProperty(userNode, ContentModel.PROP_USERNAME));
-                    
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("found username: " + userName);
-                    }
-                }
-                else
-                {
-                    // The Lucene index returned a dead result
-                    throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, from);
-                }
+                // The Lucene index returned a dead result
+                throw new EmailMessageException(ERR_UNKNOWN_SOURCE_ADDRESS, from);
             }
         }
         finally

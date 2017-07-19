@@ -83,6 +83,10 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         M2Model customModel = readCustomContentModel();
+        if (customModel == null)
+        {
+            throw new AlfrescoRuntimeException("Custom content model could not be read");
+        }
 
         // Go through every custom reference defined in the custom model and make sure that it
         // has many-to-many multiplicity

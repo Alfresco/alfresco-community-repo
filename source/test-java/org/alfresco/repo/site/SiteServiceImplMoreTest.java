@@ -1041,7 +1041,13 @@ public class SiteServiceImplMoreTest
         });
     }
 
-    // TODO currently not being run - requires fix for REPO-1688 (see also MNT-17093)
+    /**
+     * REPO-1688: Restore Site should disable lockable behaviour (to be
+     * symmetric with delete/purge). See also MNT-17093 for background on this.
+     *
+     * @throws Exception
+     */
+    @Test
     public void deleteSiteRestoreSiteWithLocks() throws Exception
     {
         final String userSiteOwner = "UserSiteOwner";

@@ -64,6 +64,8 @@ import org.alfresco.repo.events.EventPreparator;
 import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.node.NodeArchiveServicePolicies;
 import org.alfresco.repo.node.NodeArchiveServicePolicies.BeforePurgeNodePolicy;
+import org.alfresco.repo.node.NodeArchiveServicePolicies.BeforeRestoreArchivedNodePolicy;
+import org.alfresco.repo.node.NodeArchiveServicePolicies.OnRestoreArchivedNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
 import org.alfresco.repo.node.getchildren.FilterProp;
@@ -134,7 +136,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author Roy Wetherall
  */
-public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServiceInternal, SiteModel, NodeArchiveServicePolicies.BeforePurgeNodePolicy, NodeServicePolicies.OnRestoreNodePolicy
+public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServiceInternal, SiteModel, NodeArchiveServicePolicies.BeforePurgeNodePolicy, NodeServicePolicies.OnRestoreNodePolicy, NodeArchiveServicePolicies.BeforeRestoreArchivedNodePolicy, NodeArchiveServicePolicies.OnRestoreArchivedNodePolicy
 {
     /** Logger */
     protected static Log logger = LogFactory.getLog(SiteServiceImpl.class);
@@ -431,6 +433,14 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 OnRestoreNodePolicy.QNAME,
                 SiteModel.TYPE_SITE,
                 new JavaBehaviour(this, "onRestoreNode"));
+        this.policyComponent.bindClassBehaviour(
+                BeforeRestoreArchivedNodePolicy.QNAME,
+                SiteModel.TYPE_SITE,
+                new JavaBehaviour(this, "beforeRestoreArchivedNode"));
+        this.policyComponent.bindClassBehaviour(
+                OnRestoreArchivedNodePolicy.QNAME,
+                SiteModel.TYPE_SITE,
+                new JavaBehaviour(this, "onRestoreArchivedNode"));
     }
 
     /* (non-Javadoc)
@@ -1894,6 +1904,24 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 (String)directNodeService.getProperty(siteRef, ContentModel.PROP_NAME),
                 getSiteVisibility(siteRef),
                 (Map<String, Set<String>>)directNodeService.getProperty(siteRef, QName.createQName(null, "memberships")), true);
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeArchiveServicePolicies.BeforeRestoreArchivedNodePolicy#beforeRestoreArchivedNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void beforeRestoreArchivedNode(NodeRef nodeRef)
+    {
+        this.behaviourFilter.disableBehaviour(ContentModel.ASPECT_LOCKABLE);
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeArchiveServicePolicies.OnRestoreArchivedNodePolicy#onRestoreArchivedNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void onRestoreArchivedNode(NodeRef nodeRef)
+    {
+        this.behaviourFilter.enableBehaviour(ContentModel.ASPECT_LOCKABLE);
     }
 
     /**

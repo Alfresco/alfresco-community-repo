@@ -47,4 +47,27 @@ public interface NodeArchiveServicePolicies
          */
         public void beforePurgeNode(NodeRef nodeRef);
     }
+
+    interface BeforeRestoreArchivedNodePolicy extends ClassPolicy
+    {
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRestoreArchivedNode");
+        /**
+         * Called before an archived node is restored.
+         *
+         * @param nodeRef   the node reference
+         */
+        void beforeRestoreArchivedNode(NodeRef nodeRef);
+    }
+
+    interface OnRestoreArchivedNodePolicy extends ClassPolicy
+    {
+        QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRestoreArchivedNode");
+        /**
+         * Called after an archived node is restored.
+         *
+         * @param nodeRef   the node reference
+         */
+        void onRestoreArchivedNode(NodeRef nodeRef);
+    }
+
 }

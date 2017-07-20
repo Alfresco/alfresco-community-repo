@@ -46,6 +46,8 @@ import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.node.NodeArchiveServicePolicies;
 import org.alfresco.repo.node.NodeArchiveServicePolicies.BeforePurgeNodePolicy;
+import org.alfresco.repo.node.NodeArchiveServicePolicies.BeforeRestoreArchivedNodePolicy;
+import org.alfresco.repo.node.NodeArchiveServicePolicies.OnRestoreArchivedNodePolicy;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -102,6 +104,8 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     /** controls policy delegates */
     private PolicyComponent policyComponent;
     private ClassPolicyDelegate<BeforePurgeNodePolicy> beforePurgeNodeDelegate;
+    private ClassPolicyDelegate<BeforeRestoreArchivedNodePolicy> beforeRestoreArchivedNodeDelegate;
+    private ClassPolicyDelegate<OnRestoreArchivedNodePolicy> onRestoreArchivedNodeDelegate;
 
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -137,6 +141,8 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     {
         // Register the various policies
         beforePurgeNodeDelegate = policyComponent.registerClassPolicy(NodeArchiveServicePolicies.BeforePurgeNodePolicy.class);
+        beforeRestoreArchivedNodeDelegate = policyComponent.registerClassPolicy(NodeArchiveServicePolicies.BeforeRestoreArchivedNodePolicy.class);
+        onRestoreArchivedNodeDelegate = policyComponent.registerClassPolicy(NodeArchiveServicePolicies.OnRestoreArchivedNodePolicy.class);
     }
 
     public void setAuthorityService(AuthorityService authorityService)
@@ -290,7 +296,17 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             {
                 public NodeRef execute() throws Exception
                 {
-                    return nodeService.restoreNode(archivedNodeRef, destinationNodeRef, assocTypeQName, assocQName);
+                    NodeRef restoredNodeRef = null;
+                    invokeBeforeRestoreArchivedNode(archivedNodeRef);
+                    try
+                    {
+                        restoredNodeRef = nodeService.restoreNode(archivedNodeRef, destinationNodeRef, assocTypeQName, assocQName);
+                    }
+                    finally
+                    {
+                        invokeOnRestoreArchivedNode(restoredNodeRef);
+                    }
+                    return restoredNodeRef;
                 }
             };
             NodeRef newNodeRef = txnHelper.doInTransaction(restoreCallback, false, true);
@@ -391,6 +407,34 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             results.add(result);
         }
         return results;
+    }
+
+    protected void invokeBeforeRestoreArchivedNode(NodeRef nodeRef)
+    {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
+        // execute policy for node type and aspects
+        NodeArchiveServicePolicies.BeforeRestoreArchivedNodePolicy policy = beforeRestoreArchivedNodeDelegate.get(nodeRef, qnames);
+        policy.beforeRestoreArchivedNode(nodeRef);
+    }
+
+    protected void invokeOnRestoreArchivedNode(NodeRef nodeRef)
+    {
+        if (ignorePolicy(nodeRef))
+        {
+            return;
+        }
+
+        // get qnames to invoke against
+        Set<QName> qnames = getTypeAndAspectQNames(nodeRef);
+        // execute policy for node type and aspects
+        NodeArchiveServicePolicies.OnRestoreArchivedNodePolicy policy = onRestoreArchivedNodeDelegate.get(nodeRef, qnames);
+        policy.onRestoreArchivedNode(nodeRef);
     }
 
     /**

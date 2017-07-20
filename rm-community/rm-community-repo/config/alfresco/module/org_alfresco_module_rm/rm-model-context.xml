@@ -121,6 +121,10 @@
 
    <!-- rma model aspects -->
 
+    <bean id="rma.qShareAspect" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.QShareAspect"  parent="rm.baseBehaviour">
+        <property name="nodeService" ref="NodeService"/>
+    </bean>
+
    <bean id="rma.filePlanComponent" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.FilePlanComponentAspect" parent="rm.baseBehaviour">
         <property name="scriptService" ref="ScriptService" />
         <property name="namespaceService" ref="NamespaceService" />

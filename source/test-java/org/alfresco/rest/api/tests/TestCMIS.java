@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.model.ContentModel.ASSOC_ORIGINAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -51,12 +52,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.alfresco.cmis.client.AlfrescoDocument;
 import org.alfresco.cmis.client.AlfrescoFolder;
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.cmis.client.type.AlfrescoType;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.opencmis.PublicApiAlfrescoCmisServiceFactory;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
@@ -98,14 +101,17 @@ import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
@@ -141,6 +147,7 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.URLEncoder;
@@ -174,8 +181,15 @@ public class TestCMIS extends EnterpriseTestApi
     private CMISStrictDictionaryService cmisDictionary;
     private QNameFilter cmisTypeExclusions;
 	private NodeService nodeService;
+    private FileFolderService fileFolderService;
+    protected ContentService contentService;
     private PermissionService permissionService;
 	private Properties globalProperties;
+
+    private TestNetwork testNetwork;
+	private TestSite testSite;
+    private String testPersonId;
+    private String testFileIdWithTwoRenditions;
 
     @Before
     public void before() throws Exception
@@ -187,6 +201,8 @@ public class TestCMIS extends EnterpriseTestApi
         this.cmisDictionary = (CMISStrictDictionaryService)ctx.getBean("OpenCMISDictionaryService");
         this.cmisTypeExclusions = (QNameFilter)ctx.getBean("cmisTypeExclusions");
 		this.nodeService = (NodeService) ctx.getBean("NodeService");
+        this.fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
+    	this.contentService = (ContentService)applicationContext.getBean("ContentService");
 		this.permissionService = (PermissionService) ctx.getBean("permissionService");
         
 		this.globalProperties = (Properties) ctx.getBean("global-properties");
@@ -197,6 +213,256 @@ public class TestCMIS extends EnterpriseTestApi
     public void after()
     {
         this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "false");
+    }
+
+    private TestNetwork getTestNetwork() throws Exception
+    {
+        if (testNetwork == null)
+        {
+            testNetwork = getTestFixture().getRandomNetwork();
+        }
+        return testNetwork;
+    }
+
+    private String getTestPersonId() throws Exception
+    {
+        if (testPersonId == null)
+        {
+            getTestNetwork();
+
+            String username = "user" + System.currentTimeMillis();
+            PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+            TestPerson person = testNetwork.createUser(personInfo);
+            testPersonId = person.getId();
+        }
+        return testPersonId;
+    }
+
+    private TestSite getTestSite() throws Exception
+    {
+        if (testSite == null)
+        {
+            getTestNetwork();
+            getTestPersonId();
+
+            String siteName = "site" + System.currentTimeMillis();
+            testSite = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+            {
+                @Override
+                public TestSite doWork() throws Exception
+                {
+                    SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+                    return testNetwork.createSite(siteInfo);
+                }
+            }, testPersonId, testNetwork.getId());
+        }
+        return testSite;
+    }
+
+    private NodeRef makeRenditionNode(NodeRef parent, String title, String name, String mimetype)
+    {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, name);
+        props.put(ContentModel.PROP_TITLE, title);
+        QName assocQName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI, name);
+        ChildAssociationRef assoc = nodeService.createNode(parent, RenditionModel.ASSOC_RENDITION,
+            assocQName, ContentModel.TYPE_THUMBNAIL, props);
+        NodeRef childRef = assoc.getChildRef();
+
+        if (!nodeService.hasAspect(parent, RenditionModel.ASPECT_RENDITIONED))
+        {
+            nodeService.addAspect(parent, RenditionModel.ASPECT_RENDITIONED, null);
+        }
+
+        ContentWriter writer = contentService.getWriter(childRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(mimetype);
+        writer.setEncoding("UTF-8");
+		writer.putContent("Dummy "+name+" content");
+
+        return childRef;
+    }
+
+    private String getTestFileIdWithTwoRenditionsOneSourceAndTwoTargetAssociations() throws Exception
+    {
+        if (testFileIdWithTwoRenditions == null)
+        {
+            getTestNetwork();
+            getTestPersonId();
+            getTestSite();
+
+            NodeRef fileNode = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    NodeRef documentLibrary = testSite.getContainerNodeRef("documentLibrary");
+                    NodeRef folder = repoService.createFolder(documentLibrary, "myFoder");
+                    NodeRef testFile1 = repoService.createDocument(folder,
+                        "testdoc1.txt", "Test title 1", "Test description 1", "Test content 2");
+
+                    makeRenditionNode(testFile1,    "pdf",       "pdf", "application/pdf");
+                    makeRenditionNode(testFile1, "doclib", "thumbnail", "image/png");
+
+                    // Make three more files and associate one as the source of testFile1 and the others as a copy of it.
+                    NodeRef testFile0 = repoService.createDocument(folder,
+                        "testdoc0.txt", "Test title 0", "Test description 0", "Test content 0");
+                    NodeRef testFile2 = repoService.createDocument(folder,
+                        "testdoc2.txt", "Test title 2", "Test description 2", "Test content 2");
+                    NodeRef testFile3 = repoService.createDocument(folder,
+                        "testdoc3.txt", "Test title 3", "Test description 3", "Test content 3");
+                    nodeService.addAspect(testFile1, ContentModel.ASPECT_COPIEDFROM, null);
+                    nodeService.addAspect(testFile2, ContentModel.ASPECT_COPIEDFROM, null);
+                    nodeService.addAspect(testFile3, ContentModel.ASPECT_COPIEDFROM, null);
+                    nodeService.createAssociation(testFile1, testFile0, ASSOC_ORIGINAL);
+                    nodeService.createAssociation(testFile2, testFile1, ASSOC_ORIGINAL);
+                    nodeService.createAssociation(testFile3, testFile1, ASSOC_ORIGINAL);
+
+                    return testFile1;
+                }
+            }, testPersonId, testNetwork.getId());
+            testFileIdWithTwoRenditions = fileNode.getId();
+        }
+        return testFileIdWithTwoRenditions;
+    }
+
+    private void assertGetIdFilterParams(int expectedProperties,
+                                         int expectedRenditions,
+                                         int expecteRelationships,
+                                         int expectedAllowableActions,
+                                         int expectedPolicyIds,
+                                         int expectedAcls,
+                                         String... params) throws Exception
+    {
+        String cmisId = getTestFileIdWithTwoRenditionsOneSourceAndTwoTargetAssociations();
+
+        HashMap<String, String> reqParams = new HashMap<>();
+        reqParams.put("id", cmisId);
+        StringJoiner sj = new StringJoiner(", ");
+        for (int i=0; i<params.length; i+=2)
+        {
+            String param = params[i];
+            String value = params[i + 1];
+            reqParams.put(param, value);
+            sj.add(param+'='+value);
+        }
+
+        publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), testPersonId));
+        HttpResponse resp = publicApiClient.get(Binding.atom, CMIS_VERSION_11, "id", reqParams);
+        String xml = resp.getResponse();
+
+        String urlParams = sj.toString();
+        System.out.println(xml+"\n\n Expected props="+expectedProperties+
+            " allowed="+expectedAllowableActions+
+            " relationships="+expecteRelationships+
+            " renditions="+expectedRenditions+
+            " policies="+expectedPolicyIds+
+            " acls="+expectedAcls+
+            " URL params: "+ urlParams);
+
+        if (expectedProperties >= 0)
+        {
+            String fragment = assertSubstring("Properties", xml, expectedProperties, "cmisra:object");
+            fragment = assertSubstring("Properties", fragment, expectedProperties, "cmis:properties");
+            assertCount("Properties", fragment, expectedProperties, "propertyDefinitionId=");
+        }
+
+        if (expectedRenditions >= 0)
+        {
+            assertCount("Renditions", xml, expectedRenditions, "<cmis:rendition>");
+            assertCount("Renditions", xml, expectedRenditions, "<atom:link rel=\"alternate\"");
+        }
+
+        if (expecteRelationships >= 0)
+        {
+            assertCount("Relationships", xml, expecteRelationships, "<cmis:relationship>");
+        }
+
+        if (expectedRenditions >= 0 && expecteRelationships >= 0)
+        {
+            // The number of renditions and relationships will change this too.
+            assertCount("Links", xml, 12+expectedRenditions+expecteRelationships, "<atom:link rel=\"");
+        }
+
+        if (expectedAllowableActions >= 0)
+        {
+            String fragment = assertSubstring("Actions", xml, expectedAllowableActions, "cmis:allowableActions");
+            assertCount("Actions", fragment, expectedAllowableActions, "<cmis:can");
+        }
+
+        // When includePolicyIds=true is set we can end up with an empty tag
+        if (expectedPolicyIds == 0 && urlParams != null && urlParams.indexOf("includePolicyIds=true") != -1)
+        {
+            assertCount("Policies", xml, 1, "<cmis:policyIds/>");
+        }
+        else if (expectedPolicyIds >= 0)
+        {
+            String fragment = assertSubstring("Policies", xml, expectedPolicyIds, "cmis:policyIds");
+            // Not checked any further as it is always 0 in our test data.
+        }
+
+        if (expectedAcls >= 0)
+        {
+            String fragment = assertSubstring("ACL", xml, expectedAcls, "cmis:acl");
+            assertCount("ACL", fragment, expectedAcls, "<cmis:permission>");
+        }
+    }
+
+    private void assertCount(String message, String xml, int expected, String substring)
+    {
+        if (expected >= 0)
+        {
+            int count = 0;
+            for (int i = 0;;i++)
+            {
+                i = xml.indexOf(substring, i);
+                if (i < 0)
+                {
+                    break;
+                }
+                count++;
+            }
+            if (count != expected)
+            {
+                fail(message + ": Expected to find " + substring + " " + expected + " times, but there were " + count);
+            }
+        }
+    }
+
+    private String assertSubstring(String message, String string, int expected, String tag)
+    {
+        String substring = string;
+        if (expected >= 0)
+        {
+            String start = "<"+tag+">";
+            String end = "</"+tag+">";
+            int i = string.indexOf(start);
+            if (expected == 0)
+            {
+                if (i != -1)
+                {
+                    fail(message + ": Did not expect to find " + start);
+                }
+                substring = "";
+            }
+            else
+            {
+                if (i == -1)
+                {
+                    fail(message + ": Expected to find " + start);
+                }
+                else
+                {
+                    i += start.length();
+                    int j = string.indexOf(end, i);
+                    if (j == -1)
+                    {
+                        fail(message + ": Expected to find " + end);
+                    }
+                    substring = string.substring(i, j);
+                }
+            }
+        }
+        return substring;
     }
 
     private void checkSecondaryTypes(Document doc, Set<String> expectedSecondaryTypes, Set<String> expectedMissingSecondaryTypes)
@@ -939,8 +1205,8 @@ public class TestCMIS extends EnterpriseTestApi
                 nodes.add(nodeRef2);
 				NodeRef nodeRef3 = repoService.createDocument(site2.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), "Test Doc2", "Test Doc2 Title", "Test Doc2 Description", "Test Content");
                 nodes.add(nodeRef3);
-                repoService.createAssociation(nodeRef2, nodeRef1, ContentModel.ASSOC_ORIGINAL);
-                repoService.createAssociation(nodeRef3, nodeRef1, ContentModel.ASSOC_ORIGINAL);
+                repoService.createAssociation(nodeRef2, nodeRef1, ASSOC_ORIGINAL);
+                repoService.createAssociation(nodeRef3, nodeRef1, ASSOC_ORIGINAL);
 
                 site1.inviteToSite(person2Id, SiteRole.SiteCollaborator);
 
@@ -1738,7 +2004,7 @@ public class TestCMIS extends EnterpriseTestApi
     * @throws Exception
     */
    @Test
-   public void testGetXmlWithIncorrectDesctiption() throws Exception
+   public void testGetXmlWithIncorrectDescription() throws Exception
    {
        final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
@@ -2784,6 +3050,159 @@ public class TestCMIS extends EnterpriseTestApi
             {
                 // ok
             }
+        }
+    }
+
+    // Parameter               Optional?  Default value       Description
+    // filter                  Yes        Repository specific A comma-separated list of query names that defines which
+    //                                                        properties must be returned by the repository.
+    // renditionFilter         Yes        cmis:none           A filter describing the set of renditions that must be
+    //                                                        returned in the response.
+    // includeRelationships    Yes        NONE                The relationships in which the node participates that must
+    //                                                        be returned in the response.
+    // includeAllowableActions Yes        false               A boolean value. A value of true specifies that the
+    //                                                        repository must return the allowable actions for the node.
+    // includePolicyIds        Yes        false               A boolean value. A value of true specifies the repository
+    //                                                        must return the policy ids for the node.
+    // includeAcl              Yes        false               A boolean value. A value of true specifies the repository
+    //                                                        must return the Access Control List (ACL) for the node.
+
+    @Test
+    public void testGetIdParamsMaximum() throws Exception
+    {
+        assertGetIdFilterParams(45, 2, 3,  18, 0, 11,
+//          "filter", "none",
+            "renditionFilter", "*",
+            "includeRelationships", "both",
+            "includeAllowableActions", "true",
+            "includePolicyIds", "true",
+            "includeACL", "true");
+    }
+
+    @Test
+    public void testGetIdParamsDefault() throws Exception
+    {
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0);
+    }
+
+    @Test
+    public void testGetIdParamsMinimum() throws Exception
+    {
+        assertGetIdFilterParams( 6, 0, 0,   0, 0, 0, "filter", "none");
+    }
+
+    @Test
+    public void testGetIdParamsProperties() throws Exception
+    {
+        // A comma-separated list of query names that defines which properties must be returned by the repository.
+        // If not supplied it is repo specific and in Alfresco's case we return them all.
+
+        // This test identifies a bug. 6 properties are always returned even if none are requested.
+        // Not planing on fixing this at the moment as the problem is in Chemistry method:
+        // XMLConverter#writeObject(XMLStreamWriter, CmisVersion, boolean, String, String, ObjectData).
+        // It might be possible for the Alfresco code to not return any properties or aspects, but this likely to
+        // break quite a lot of stuff.
+
+        assertGetIdFilterParams( 45, 0, 0,   0, 0, 0);
+        assertGetIdFilterParams(  6, 0, 0,   0, 0, 0, "filter", "none");
+        assertGetIdFilterParams(6+2, 0, 0,   0, 0, 0, "filter", "cmis:isMajorVersion,cmis:isPrivateWorkingCopy");
+        assertGetIdFilterParams(6+0, 0, 0,   0, 0, 0, "filter", "doesNotExist");
+    }
+
+    @Test
+    public void testGetIdParamsRenditions() throws Exception
+    {
+        // A filter on mimetypes (including wildcards) or declared kinds
+        // (rendition names such as doclib/pdf/preview - not set up in test env).
+
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0); // default is cmis:none
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0, "renditionFilter", "cmis:none");
+        assertGetIdFilterParams(45, 2, 0,   0, 0, 0, "renditionFilter", "*");
+        assertGetIdFilterParams(45, 1, 0,   0, 0, 0, "renditionFilter", "application/pdf");
+        assertGetIdFilterParams(45, 1, 0,   0, 0, 0, "renditionFilter", "image/p*");
+    }
+
+    @Test
+    public void testGetIdParamsRelationships() throws Exception
+    {
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0);
+        assertGetIdFilterParams(45, 0, 3,   0, 0, 0, "includeRelationships", "both");
+        assertGetIdFilterParams(45, 0, 1,   0, 0, 0, "includeRelationships", "source");
+        assertGetIdFilterParams(45, 0, 2,   0, 0, 0, "includeRelationships", "target");
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0, "includeRelationships", "none");
+    }
+
+    @Test
+    public void testGetIdParamsActions() throws Exception
+    {
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0);
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0, "includeAllowableActions", "false");
+        assertGetIdFilterParams(45, 0, 0,  18, 0, 0, "includeAllowableActions", "true");
+    }
+
+    @Test
+    public void testGetIdParamsPolicies() throws Exception
+    {
+        // TODO We don't have any policies in the test data, so this test simply checks elements are not created.
+        // As the other include* parameters are working, I decided not to invest further time on policies at the moment.
+
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0);
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0, "includePolicyIds", "false");
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0, "includePolicyIds", "true");
+    }
+
+    @Test
+    public void testGetIdParamsACLs() throws Exception
+    {
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0);
+        assertGetIdFilterParams(45, 0, 0,   0, 0, 0, "includeACL", "false");
+        assertGetIdFilterParams(45, 0, 0,   0, 0,11, "includeACL", "true");
+    }
+
+    // The following property names were repeated: alfcmis:nodeRef, cmis:description, cmis:changeToken
+    // Not planing on fixing this at the moment as it will be having little effect.
+    @Ignore
+    @Test()
+    public void testGetIdParamsPropertiesAreUnique() throws Exception
+    {
+        String cmisId = getTestFileIdWithTwoRenditionsOneSourceAndTwoTargetAssociations();
+
+        HashMap<String, String> reqParams = new HashMap<>();
+        reqParams.put("id", cmisId);
+
+        publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), testPersonId));
+        HttpResponse resp = publicApiClient.get(Binding.atom, CMIS_VERSION_11, "id", reqParams);
+        String xml = resp.getResponse();
+
+        System.out.println(xml);
+
+        String tmp1 = xml.split("cmis:properties")[1];
+        String tmp2 = tmp1.substring(0, tmp1.indexOf("<e1:aspects"));
+        String[] tmp3 =  tmp2.split("queryName=\"");
+        List<String> names = new ArrayList<>();
+        for (int j=1; j<tmp3.length; j+=2)
+        {
+            String tmp4 = tmp3[j];
+            String name = tmp4.substring(0, tmp4.indexOf('"'));
+            names.add(name);
+        }
+        final Set<String> duplicates = new HashSet();
+        final Set<String> uniqueNames = new HashSet();
+        for (String name : names)
+        {
+            if (!uniqueNames.add(name))
+            {
+                duplicates.add(name);
+            }
+        }
+        if (!duplicates.isEmpty())
+        {
+            StringJoiner sj = new StringJoiner((", "));
+            for (String duplicate : duplicates)
+            {
+                sj.add(duplicate);
+            }
+            fail("The following property names were repeated: "+sj);
         }
     }
 }

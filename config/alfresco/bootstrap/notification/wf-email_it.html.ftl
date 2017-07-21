@@ -7,14 +7,14 @@
          font-size: 14px;
          color: #4c4c4c;
       }
-      
+
       a, a:visited
       {
          color: #0072cf;
       }
       --></style>
    </head>
-   
+
    <body bgcolor="#dddddd">
       <table width="100%" cellpadding="20" cellspacing="0" border="0" bgcolor="#dddddd">
          <tr>
@@ -57,15 +57,15 @@
                                                    Le è stato assegnato il seguente compito:
                                                 </#if>
                                              </p>
-                                             
+
                                              <p><b>"${args.workflowTitle?html}"</b></p>
-                                             
-                                             <#if (args.workflowDescription)??>                                             
-                                             	<p>${args.workflowDescription?html}</p>                                             
+
+                                             <#if (args.workflowDescription)??>
+                                             	<p>${args.workflowDescription?html}</p>
                                              </#if>
-                                             
+
                                              <p>
-                                                <#if (args.workflowDueDate)??>Due:&nbsp;&nbsp;<b>${args.workflowDueDate?date?string.full}</b><br></#if>
+                                                <#if (args.workflowDueDate)??>In scadenza:&nbsp;&nbsp;<b>${args.workflowDueDate?date?string.full}</b><br></#if>
                                                 <#if (args.workflowPriority)??>
                                                    Priorità:&nbsp;&nbsp;
                                                    <b>
@@ -79,7 +79,7 @@
                                                    </b>
                                                 </#if>
                                              </p>
-                                             
+
                                              <#if (args.workflowDocuments)??>
                                                 <table cellpadding="0" callspacing="0" border="0" bgcolor="#eeeeee" style="padding:10px; border: 1px solid #aaaaaa;">
                                                    <#list args.workflowDocuments as doc>
@@ -116,7 +116,7 @@
                                                    </#list>
                                                 </table>
                                              </#if>
-                                             
+
                                              <#if args.workflowPooled == true>
                                                 <p>Clicca su questo link per visualizzare il compito:</p>
                                                 <p><a href="${shareUrl}/page/task-details?taskId=${args.workflowId}">${shareUrl}/page/task-details?taskId=${args.workflowId}</a>
@@ -124,7 +124,7 @@
                                                 <p>Clicca su questo link per modificare il compito:</p>
                                                 <p><a href="${shareUrl}/page/task-edit?taskId=${args.workflowId}">${shareUrl}/page/task-edit?taskId=${args.workflowId}</a>
                                              </#if>
-                                             
+
                                              <p>Cordiali saluti,<br />
                                              Alfresco ${productName!""}</p>
                                           </div>

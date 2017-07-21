@@ -98,6 +98,19 @@ public class MimetypeDAOTest extends TestCase
             }
         }
     }
+
+    private Pair<Long, String> update(final String oldMimetype, final String newMimetype)
+    {
+        RetryingTransactionCallback<Pair<Long, String>> callback = new RetryingTransactionCallback<Pair<Long, String>>()
+        {
+            public Pair<Long, String> execute() throws Throwable
+            {
+                mimetypeDAO.updateMimetype(oldMimetype, newMimetype);
+                return mimetypeDAO.getMimetype(newMimetype);
+            }
+        };
+        return txnHelper.doInTransaction(callback, false, false);
+    }
     
     public void testCreateWithCommit() throws Exception
     {
@@ -139,14 +152,36 @@ public class MimetypeDAOTest extends TestCase
     {
         String mimetype = "AAA-" + GUID.generate();
         Pair<Long, String> lowercasePair = get(mimetype.toLowerCase(), true, true);
+        final Long id = lowercasePair.getFirst();
         // Check that the same pair is retrievable using uppercase
         Pair<Long, String> uppercasePair = get(mimetype.toUpperCase(), true, true);
         assertNotNull(uppercasePair);
         assertEquals(
                 "Upper and lowercase mimetype instance IDs were not the same",
-                lowercasePair.getFirst(), uppercasePair.getFirst());
+                id, uppercasePair.getFirst());
+
+        // Ensure that the mimetype is persisted and cached in lowercase
+        assertEquals(mimetype.toLowerCase(), lowercasePair.getSecond());
+        assertEquals(mimetype.toLowerCase(), uppercasePair.getSecond());
+
+        // Check lower case values come back from update.
+        String mimetypeFoobar = "APPLICATION/FOOBAR/"+GUID.generate();
+        Pair<Long, String> updatedMimetype = update(mimetype, mimetypeFoobar);
+        assertEquals(id, updatedMimetype.getFirst());
+        assertEquals(mimetypeFoobar.toLowerCase(), updatedMimetype.getSecond());
+
+        // Fresh retrieval - explicit check with lower and upper case for clarity.
+        updatedMimetype = get(mimetypeFoobar.toUpperCase(), false, true);
+        assertNotNull(updatedMimetype);
+        assertEquals(id, updatedMimetype.getFirst());
+        assertEquals(mimetypeFoobar.toLowerCase(), updatedMimetype.getSecond());
+
+        updatedMimetype = get(mimetypeFoobar.toLowerCase(), false, true);
+        assertNotNull(updatedMimetype);
+        assertEquals(id, updatedMimetype.getFirst());
+        assertEquals(mimetypeFoobar.toLowerCase(), updatedMimetype.getSecond());
     }
-    
+
     public void testUpdate() throws Exception
     {
         final String oldMimetype = GUID.generate();

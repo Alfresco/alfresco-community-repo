@@ -82,6 +82,7 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
     public Pair<Long, String> getMimetype(String mimetype)
     {
         ParameterCheck.mandatory("mimetype", mimetype);
+        mimetype = sanitizeMimetype(mimetype);
         
         // Check the cache
         Long id = (Long) mimetypeEntityCache.get(mimetype);
@@ -119,6 +120,7 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
     public Pair<Long, String> getOrCreateMimetype(String mimetype)
     {
         ParameterCheck.mandatory("mimetype", mimetype);
+        mimetype = sanitizeMimetype(mimetype);
         
         Pair<Long, String> result = getMimetype(mimetype);
         if (result == null)
@@ -136,7 +138,11 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
     public int updateMimetype(String oldMimetype, String newMimetype)
     {
         ParameterCheck.mandatory("oldMimetype", oldMimetype);
+        oldMimetype = sanitizeMimetype(oldMimetype);
+
         ParameterCheck.mandatory("newMimetype", newMimetype);
+        newMimetype = sanitizeMimetype(newMimetype);
+
         
         Pair<Long, String> oldMimetypePair = getMimetype(oldMimetype);
         if (oldMimetypePair == null)
@@ -160,6 +166,12 @@ public abstract class AbstractMimetypeDAOImpl implements MimetypeDAO
         mimetypeEntityCache.put(newMimetype, id);
         // Done
         return count;
+    }
+
+    protected String sanitizeMimetype(String mimetype)
+    {
+        assert mimetype != null;
+        return mimetype.toLowerCase();
     }
 
     /**

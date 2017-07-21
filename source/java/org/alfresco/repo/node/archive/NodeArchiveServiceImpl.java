@@ -411,7 +411,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
 
     protected void invokeBeforeRestoreArchivedNode(NodeRef nodeRef)
     {
-        if (ignorePolicy(nodeRef))
+        if (nodeRef == null || ignorePolicy(nodeRef))
         {
             return;
         }
@@ -425,7 +425,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
 
     protected void invokeOnRestoreArchivedNode(NodeRef nodeRef)
     {
-        if (ignorePolicy(nodeRef))
+        if (nodeRef == null || ignorePolicy(nodeRef))
         {
             return;
         }

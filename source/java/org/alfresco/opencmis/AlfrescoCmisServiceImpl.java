@@ -124,6 +124,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStorageException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStreamNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisVersioningException;
+import org.apache.chemistry.opencmis.commons.impl.CmisEnumHelper;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.AccessControlListImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.BulkUpdateObjectIdAndChangeTokenImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.FailedToDeleteDataImpl;
@@ -141,6 +142,7 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.ObjectInfo;
 import org.apache.chemistry.opencmis.commons.server.RenditionInfo;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
+import org.apache.chemistry.opencmis.server.shared.QueryStringHttpServletRequestWrapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -2843,6 +2845,26 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         return info;
     }
 
+    public String getRequestParameterRenditionFilter()
+    {
+        QueryStringHttpServletRequestWrapper httpServletRequest = getHttpServletRequest();
+        String value = httpServletRequest == null ? null : httpServletRequest.getParameter("renditionFilter");
+        return value == null ? CMISConnector.RENDITION_NONE : value;
+    }
+
+    public IncludeRelationships getRequestParameterIncludeRelationships()
+    {
+        QueryStringHttpServletRequestWrapper httpServletRequest = getHttpServletRequest();
+        String value = httpServletRequest == null ? null : httpServletRequest.getParameter("includeRelationships");
+        return value == null ? IncludeRelationships.NONE : CmisEnumHelper.fromValue(value, IncludeRelationships.class);
+    }
+
+    private QueryStringHttpServletRequestWrapper getHttpServletRequest()
+    {
+        CallContext context = getContext();
+        return (QueryStringHttpServletRequestWrapper)context.get(CallContext.HTTP_SERVLET_REQUEST);
+    }
+
     /**
      * Collects the {@link ObjectInfo} about an object.
      * 
@@ -2858,13 +2880,14 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisRuntimeException("No properties!");
         }
 
-        CMISNodeInfo ni = getOrCreateNodeInfo(object.getId());
+        String objectId = object.getId();
+        CMISNodeInfo ni = getOrCreateNodeInfo(objectId);
 
         ObjectInfoImpl info = new ObjectInfoImpl();
 
         // general properties
         info.setObject(object);
-        info.setId(object.getId());
+        info.setId(objectId);
         info.setName(getStringProperty(object, PropertyIds.NAME));
         info.setCreatedBy(getStringProperty(object, PropertyIds.CREATED_BY));
         info.setCreationDate(getDateTimeProperty(object, PropertyIds.CREATION_DATE));
@@ -2998,11 +3021,13 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             info.setSupportsPolicies(true);
 
             // renditions
-            info.setRenditionInfos(null);
-            List<RenditionData> renditions = object.getRenditions();
-            if (renditions != null && renditions.size() > 0)
+            String renditionFilter = getRequestParameterRenditionFilter();
+            List<RenditionInfo> renditionInfos = new ArrayList<>();
+            CMISNodeInfo nodeInfo = getOrCreateNodeInfo(objectId);
+            NodeRef nodeRef = nodeInfo.getNodeRef();
+            if (nodeRef != null)
             {
-                List<RenditionInfo> renditionInfos = new ArrayList<RenditionInfo>();
+                List<RenditionData> renditions = connector.getRenditions(nodeRef, renditionFilter, null, null);
                 for (RenditionData rendition : renditions)
                 {
                     RenditionInfoImpl renditionInfo = new RenditionInfoImpl();
@@ -3013,12 +3038,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     renditionInfo.setLength(rendition.getBigLength());
                     renditionInfos.add(renditionInfo);
                 }
-                info.setRenditionInfos(renditionInfos);
             }
-            else
-            {
-            	info.setRenditionInfos(Collections.EMPTY_LIST);
-            }
+            info.setRenditionInfos(renditionInfos);
 
             // relationships
             setRelaionshipsToObjectInfo(object, info);
@@ -3042,31 +3063,39 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         info.setRelationshipSourceIds(null);
         info.setRelationshipTargetIds(null);
 
-        List<ObjectData> relationships = object.getRelationships();
-        if (relationships != null && relationships.size() > 0)
+        IncludeRelationships includeRelationships = getRequestParameterIncludeRelationships();
+        if (includeRelationships != IncludeRelationships.NONE)
         {
-            List<String> sourceIds = new ArrayList<String>();
-            List<String> targetIds = new ArrayList<String>();
-            for (ObjectData relationship : relationships)
+            List<ObjectData> relationships = object.getRelationships();
+            if (relationships != null && relationships.size() > 0)
             {
-                String sourceId = getIdProperty(relationship, PropertyIds.SOURCE_ID);
-                String targetId = getIdProperty(relationship, PropertyIds.TARGET_ID);
-                if (object.getId().equals(sourceId))
+                List<String> sourceIds = new ArrayList<String>();
+                List<String> targetIds = new ArrayList<String>();
+                for (ObjectData relationship : relationships)
                 {
-                    sourceIds.add(relationship.getId());
+                    String sourceId = getIdProperty(relationship, PropertyIds.SOURCE_ID);
+                    String targetId = getIdProperty(relationship, PropertyIds.TARGET_ID);
+                    if (object.getId().equals(sourceId))
+                    {
+                        sourceIds.add(relationship.getId());
+                    }
+                    if (object.getId().equals(targetId))
+                    {
+                        targetIds.add(relationship.getId());
+                    }
                 }
-                if (object.getId().equals(targetId))
+                if (sourceIds.size() > 0 &&
+                    (includeRelationships == IncludeRelationships.SOURCE ||
+                     includeRelationships == IncludeRelationships.BOTH))
                 {
-                    targetIds.add(relationship.getId());
+                    info.setRelationshipSourceIds(sourceIds);
                 }
-            }
-            if (sourceIds.size() > 0)
-            {
-                info.setRelationshipSourceIds(sourceIds);
-            }
-            if (targetIds.size() > 0)
-            {
-                info.setRelationshipTargetIds(targetIds);
+                if (targetIds.size() > 0 &&
+                    (includeRelationships == IncludeRelationships.TARGET ||
+                     includeRelationships == IncludeRelationships.BOTH))
+                {
+                    info.setRelationshipTargetIds(targetIds);
+                }
             }
         }
     }

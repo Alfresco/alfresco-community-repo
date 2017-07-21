@@ -246,11 +246,6 @@ public class CMISRenditionMapping
             }
         }
 
-        if (filterSet == null || filterSet.contains("cmis:thumbnail"))
-        {
-
-        }
-
         return result;
     }
 

@@ -260,11 +260,23 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             throw new IllegalArgumentException("Cannot update ContentData with a null.");
         }
+        contentData = sanitizeMimetype(contentData);
         int updated = contentDataCache.updateValue(id, contentData);
         if (updated < 1)
         {
             throw new ConcurrencyFailureException("ContentData with ID " + id + " not updated");
         }
+    }
+
+    private ContentData sanitizeMimetype(ContentData contentData)
+    {
+        String mimetype = contentData.getMimetype();
+        if (mimetype != null)
+        {
+            mimetype = mimetype.toLowerCase();
+            contentData = ContentData.setMimetype(contentData, mimetype);
+        }
+        return contentData;
     }
 
     @Override
@@ -289,6 +301,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     {
         public Pair<Long, ContentData> createValue(ContentData value)
         {
+            value = sanitizeMimetype(value);
             ContentDataEntity contentDataEntity = createContentDataEntity(value);
             // Done
             return new Pair<Long, ContentData>(contentDataEntity.getId(), value);

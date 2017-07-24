@@ -119,7 +119,7 @@ public class ContentDataDAOTest extends TestCase
     /**
      * Retrieves and checks the ContentData for equality
      */
-    private void getAndCheck(final Long contentDataId, ContentData checkContentData)
+    private Pair<Long, ContentData> getAndCheck(final Long contentDataId, ContentData checkContentData)
     {
         RetryingTransactionCallback<Pair<Long, ContentData>> callback = new RetryingTransactionCallback<Pair<Long, ContentData>>()
         {
@@ -132,6 +132,7 @@ public class ContentDataDAOTest extends TestCase
         Pair<Long, ContentData> resultPair = txnHelper.doInTransaction(callback, true, false);
         assertNotNull("Failed to find result for ID " + contentDataId, resultPair);
         assertEquals("ContentData retrieved not the same as persisted: ", checkContentData, resultPair.getSecond());
+        return resultPair;
     }
     
     private ContentData getContentData()
@@ -202,19 +203,42 @@ public class ContentDataDAOTest extends TestCase
         Pair<Long, ContentData> resultPairLower = create(contentDataLower);
         getAndCheck(resultPairLower.getFirst(), contentDataLower);
     }
-    
+
+    /**
+     * the caveat to {@link #testEnsureCaseSensitiveStorage()} is that mimetypes
+     * must be normalized to lowercase.
+     *
+     * @throws Exception
+     */
+    public void testEnsureCaseInsensitiveMimetypeStorage() throws Exception
+    {
+        ContentData contentData = getContentData();
+        ContentData cdWithUpperMimetype = ContentData.setMimetype(contentData, "TEXT/MYFORMAT");
+        ContentData cdWithLowerMimetype = ContentData.setMimetype(contentData, "text/myformat");
+
+        // In both instances, the created entry should have a lowercase mimetype
+        Pair<Long, ContentData> result = create(cdWithUpperMimetype);
+        // Ensure the ContentData's mimetype was stored in lowercase
+        assertEquals("text/myformat", result.getSecond().getMimetype());
+
+        result = create(cdWithLowerMimetype);
+        assertEquals("text/myformat", result.getSecond().getMimetype());
+    }
+
     public void testUpdate() throws Exception
     {
         ContentData contentData = getContentData();
         Pair<Long, ContentData> resultPair = create(contentData);
         Long id = resultPair.getFirst();
         // Update
-        contentData = ContentData.setMimetype(contentData, MimetypeMap.MIMETYPE_HTML);
+        contentData = ContentData.setMimetype(contentData, "TEXT/HTML"); // Note the upper case mimetype
         contentData = ContentData.setEncoding(contentData, "UTF-16");
         // Don't update the content itself
         update(id, contentData);
         // Check
-        getAndCheck(id, contentData);
+        Pair<Long, ContentData> result = getAndCheck(id, contentData);
+        // Check the mimetype has been lowercased
+        assertEquals("text/html", result.getSecond().getMimetype());
     }
     
     public void testDelete() throws Exception

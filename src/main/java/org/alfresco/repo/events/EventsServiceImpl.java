@@ -997,7 +997,8 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
         }
         catch (ClassNotFoundException | IllegalAccessException e)
         {
-            logger.error(format("Could not retrieve property %s from class %s", RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION, RECORDS_MANAGEMENT_MODEL), e);
+            logger.info(format("Could not retrieve property %s from class %s. Maybe RM isn't installed, the property %s will be null.", 
+                                RM_MODEL_PROP_NAME_RECORD_ORIGINATING_LOCATION, RECORDS_MANAGEMENT_MODEL, "PROP_RMA_RECORD_ORIGINATING_LOCATION"));
         }
         return originatingLocation;
     }

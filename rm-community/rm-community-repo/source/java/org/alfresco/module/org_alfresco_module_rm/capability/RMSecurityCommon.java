@@ -149,8 +149,11 @@ public class RMSecurityCommon implements ApplicationContextAware
     protected int getTransactionCache(String prefix, NodeRef nodeRef)
     {
         int result = NOSET_VALUE;
-        String user = AuthenticationUtil.getRunAsUser();
-        Integer value = (Integer)AlfrescoTransactionSupport.getResource(prefix + nodeRef.toString() + user);
+        StringBuffer key = new StringBuffer(prefix)
+                .append(nodeRef)
+                .append(AuthenticationUtil.getRunAsUser());
+        
+        Integer value = (Integer)AlfrescoTransactionSupport.getResource(key);
         if (value != null)
         {
             result = value.intValue();

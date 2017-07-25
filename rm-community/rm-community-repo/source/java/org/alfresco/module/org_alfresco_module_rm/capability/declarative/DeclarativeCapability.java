@@ -29,9 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
@@ -43,8 +46,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Declarative capability implementation.
@@ -70,6 +71,9 @@ public class DeclarativeCapability extends AbstractCapability
 
     /** Indicates whether to return an undetermined result */
     protected boolean isUndetermined = false;
+    
+    /** List of available kinds */
+    private Set<FilePlanComponentKind> availableKinds;
 
     /**
      * @param permissions   permissions
@@ -258,6 +262,27 @@ public class DeclarativeCapability extends AbstractCapability
     {
         return checkConditions(nodeRef, conditions);
     }
+    
+    /**
+     * Get list of available kinds
+     * 
+     * @return  list of available kinds
+     */
+    
+    private Set<FilePlanComponentKind> getAvailableKinds()
+    {
+        if (kinds != null && availableKinds == null)
+        {
+            availableKinds = new HashSet<FilePlanComponentKind>(kinds.size());
+            for (String kindString : kinds)
+            {
+                FilePlanComponentKind kind = FilePlanComponentKind.valueOf(kindString);
+                availableKinds.add(kind);
+            }
+        }
+        
+        return availableKinds;
+    }
 
     /**
      * Checks that the node ref is of the expected kind
@@ -273,23 +298,9 @@ public class DeclarativeCapability extends AbstractCapability
 
         if (actualKind != null)
         {
-            if (kinds != null && !kinds.isEmpty())
+            Set<FilePlanComponentKind> availableKinds = getAvailableKinds();
+            if (availableKinds == null || availableKinds.contains(actualKind))
             {
-                // need to check the actual file plan kind is in the list specified
-                for (String kindString : kinds)
-                {
-                    FilePlanComponentKind kind = FilePlanComponentKind.valueOf(kindString);
-                    if (actualKind.equals(kind))
-                    {
-                        result = true;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                // we don't have any specific kinds to check, so we pass since we have a file
-                // plan component in our hands
                 result = true;
             }
         }

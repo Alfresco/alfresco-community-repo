@@ -40,20 +40,26 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
+import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Base evaluator.
  *
  * @author Roy Wetherall
  */
-public abstract class BaseEvaluator implements RecordsManagementModel
+public abstract class BaseEvaluator implements RecordsManagementModel, BeanNameAware
 {
     /** Name */
     protected String name;
+    
+    /** bean name */
+    protected String beanName;
 
     /** JSON conversion component */
     protected JSONConversionComponent jsonConversionComponent;
@@ -84,7 +90,19 @@ public abstract class BaseEvaluator implements RecordsManagementModel
 
     /** Record folder service */
     protected RecordFolderService recordFolderService;
+    
+    /** transactional resource helper */
+    protected TransactionalResourceHelper transactionalResourceHelper; 
 
+    /**
+     * @param   beanName  bean name
+     */
+    @Override
+    public void setBeanName(String beanName)
+    {
+        this.beanName = beanName;
+    }
+    
     /**
      * @param jsonConversionComponent   json conversion component
      */
@@ -147,6 +165,14 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
+    }
+    
+    /**
+     * @param transactionalResourceHelper   transactional resource helper
+     */
+    public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
+    {
+        this.transactionalResourceHelper = transactionalResourceHelper;
     }
 
     /**
@@ -217,17 +243,25 @@ public abstract class BaseEvaluator implements RecordsManagementModel
      */
     public boolean evaluate(NodeRef nodeRef)
     {
-        boolean result = false;
-
-        // Check that we are dealing with the correct kind of RM object
-        if ((kinds == null || checkKinds(nodeRef)) &&
-                // Check we have the required capabilities
-                (capabilities == null || checkCapabilities(nodeRef)))
+        Map<String, Boolean> results = transactionalResourceHelper.getMap("BaseEvaluator.evaluate");
+        String key = new StringBuffer(nodeRef.toString()).append(AuthenticationUtil.getRunAsUser()).append(beanName).toString();
+        
+        if (!results.containsKey(key))
         {
-            result = evaluateImpl(nodeRef);
+            boolean result = false;
+            
+            // Check that we are dealing with the correct kind of RM object
+            if ((kinds == null || checkKinds(nodeRef)) &&
+                    // Check we have the required capabilities
+                    (capabilities == null || checkCapabilities(nodeRef)))
+            {
+                result = evaluateImpl(nodeRef);
+            }
+            
+            results.put(key, result);
         }
 
-        return result;
+        return results.get(key);
     }
 
     /**

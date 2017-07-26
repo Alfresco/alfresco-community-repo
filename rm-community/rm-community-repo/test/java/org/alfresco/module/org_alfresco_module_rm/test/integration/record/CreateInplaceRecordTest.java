@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.model.FileExistsException;
@@ -242,6 +243,47 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
 
                 // Check that the record is not shared anymore
                 assertFalse("The document should not be shared anymore", nodeService.hasAspect(dmDocument, QuickShareModel.ASPECT_QSHARE));
+            }
+        });
+    }
+
+    /**
+     * Given a document in a collaboration site declared as record 
+     * When I try to share the document 
+     * Then it fails
+     */
+    public void testRecordsFromCollabSiteCannotBeShared()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(IntegrityException.class)
+        {
+            public void given()
+            {
+                // Check that the document is not a record
+                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));
+
+                // Declare the document as a record
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        // Declare record
+                        recordService.createRecord(filePlan, dmDocument);
+
+                        return null;
+                    }
+                }, dmCollaborator);
+            }
+
+            public void when()
+            {
+                // Try to share document
+                quickShareService.shareContent(dmDocument);
+            }
+
+            public void after()
+            {
+                // Check that the record is not shared
+                assertFalse("The document should not be shared", nodeService.hasAspect(dmDocument, QuickShareModel.ASPECT_QSHARE));
             }
         });
     }

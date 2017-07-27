@@ -26,8 +26,10 @@
  */
 package org.alfresco.rest.v0;
 
+import java.text.MessageFormat;
 import java.util.Map;
 
+import javafx.util.Pair;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.core.v0.BaseAPI;
@@ -52,6 +54,8 @@ public class RecordsAPI extends BaseAPI
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordsAPI.class);
 
     private static final String CREATE_NON_ELECTRONIC_RECORD_API = "{0}type/rma:nonElectronicDocument/formprocessor";
+
+
 
     @Autowired
     private ContentService contentService;
@@ -286,6 +290,33 @@ public class RecordsAPI extends BaseAPI
             return record.getName();
         }
         return "";
+    }
+
+
+    /**
+     * Share a document
+     *
+     * @param user     the user sharing the file
+     * @param password the user's password
+     * @param nodeId   the node id of the file
+     * @return {@link Pair}. on success will be true and the shareId.
+     * on failure will be false and the response status code.
+     */
+    public Pair<Boolean, String> shareDocument(String user, String password, String nodeId) throws JSONException
+    {
+        JSONObject response = doPostRequest(user, password, null,
+                MessageFormat.format(SHARE_ACTION_API, "{0}", nodeId));
+        try
+        {
+            if (response.has("sharedId"))
+            {
+                return new Pair<>(true, response.getString("sharedId"));
+            }
+        } catch (JSONException e)
+        {
+            LOGGER.info("Unable to extract response parameter", e);
+        }
+        return new Pair<>(false, String.valueOf(response.getJSONObject("status").getInt("code")));
     }
 
 }

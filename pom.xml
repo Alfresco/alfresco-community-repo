@@ -1096,7 +1096,20 @@
             </resource>
         </resources>
 
-      <plugins>
+        <plugins>
+            <!-- Create a jar of test classes -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>create-test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <executions>

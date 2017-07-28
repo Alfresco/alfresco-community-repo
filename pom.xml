@@ -2,26 +2,51 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-repository</artifactId>
     <name>Alfresco Repository</name>
+    <version>6.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
     <parent>
-        <artifactId>alfresco-parent</artifactId>
         <groupId>org.alfresco</groupId>
-        <version>5.3-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>8</version>
     </parent>
 
     <properties>
         <repositoryTestIncludes>**/org/alfresco/Repository*TestSuite.java</repositoryTestIncludes>
+
+        <dependency.alfresco-legacy-lucene.version>6.1</dependency.alfresco-legacy-lucene.version>
+        <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
+        <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
+        <dependency.alfresco-greenmail.version>6.0</dependency.alfresco-greenmail.version>
+        <dependency.alfresco-data-model.version>6.16</dependency.alfresco-data-model.version>
+        <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>
+        <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
+
+
+        <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
+        <dependency.httpcomponents.version>4.5.2</dependency.httpcomponents.version>
+        <dependency.truezip.version>7.7.9</dependency.truezip.version>
+        <dependency.poi.version>3.10.1-20151016-alfresco-patched</dependency.poi.version>
+        <dependency.webscripts.version>6.13</dependency.webscripts.version>
+        <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
+        <dependency.jackson2.version>2.8.3</dependency.jackson2.version>
+        <dependency.activiti-engine.version>5.19.0.3</dependency.activiti-engine.version>
+        <dependency.activiti.version>5.19.0.3</dependency.activiti.version>
+        <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
+        <dependency.antlr.version>3.5.2</dependency.antlr.version>
+
     </properties>
     
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-legacy-lucene</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-legacy-lucene.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
+            <version>${dependency.alfresco-jlan.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
@@ -32,11 +57,12 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-mbeans</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-mbeans.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${dependency.alfresco-core.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -56,67 +82,82 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-greenmail</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-greenmail.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>
+            <version>1.4-DBCP330</version>
         </dependency>
         <dependency>
             <groupId>commons-digester</groupId>
             <artifactId>commons-digester</artifactId>
+            <version>2.1</version>
         </dependency>
         <dependency>
             <groupId>commons-discovery</groupId>
             <artifactId>commons-discovery</artifactId>
+            <version>0.5</version>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
+            <version>1.3.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
+            <version>1.12</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
+            <version>1.10</version>
         </dependency>
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
+            <version>1.9.3</version>
         </dependency>
         <dependency>
-           <groupId>commons-collections</groupId>
-           <artifactId>commons-collections</artifactId>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <version>2.4</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
+            <version>3.5</version>
         </dependency>
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>commons-pool</groupId>
             <artifactId>commons-pool</artifactId>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
+            <version>1.5.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient-cache</artifactId>
+            <version>${dependency.httpcomponents.version}</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
+            <version>20090211</version>
         </dependency>
         <dependency>
             <groupId>com.ibm.icu</groupId>
@@ -216,10 +257,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>1.7.21</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.21</version>
         </dependency>
         <dependency>
             <groupId>org.beanshell</groupId>
@@ -227,8 +270,19 @@
             <version>1.3.0</version>
         </dependency>
         <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.10.0-alfresco-patched</version>
+        </dependency>
+        <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
+            <version>2.7.2-alfresco</version>
+        </dependency>
+        <dependency>
+            <groupId>xml-apis</groupId>
+            <artifactId>xml-apis</artifactId>
+            <version>1.4.01</version>
         </dependency>
         <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
@@ -259,18 +313,22 @@
         <dependency>
             <groupId>org.freemarker</groupId>
             <artifactId>freemarker</artifactId>
+            <version>2.3.20-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
         </dependency>
         <dependency>
             <groupId>org.apache.myfaces.core</groupId>
             <artifactId>myfaces-api</artifactId>
+            <version>1.1.10</version>
         </dependency>
         <dependency>
             <groupId>org.apache.myfaces.core</groupId>
             <artifactId>myfaces-impl</artifactId>
+            <version>1.1.10</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
@@ -462,10 +520,12 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         
@@ -473,10 +533,12 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-surf-core-configservice</artifactId>
+            <version>${dependency.webscripts.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
+            <version>${dependency.webscripts.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun</groupId>
@@ -491,6 +553,7 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts-api</artifactId>
+            <version>${dependency.webscripts.version}</version>
         </dependency>
 
         <!-- Spring Social -->
@@ -598,14 +661,17 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+            <version>${dependency.jackson2.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>${dependency.jackson2.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
+            <version>${dependency.jackson2.version}</version>
         </dependency>
         <!-- Activiti -->
         <dependency>
@@ -655,6 +721,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -666,40 +733,46 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${dependency.alfresco-core.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
+            <version>${dependency.alfresco-data-model.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-legacy-lucene</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-legacy-lucene.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>${dependency.postgresql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+            <version>${dependency.mysql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>1.4.192</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -717,6 +790,7 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
+            <version>${dependency.webscripts.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -808,7 +882,7 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${installer.alfresco-pdf-renderer.version}</version>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>win64</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -831,7 +905,7 @@
 										<echo message="Extracting alfresco-pdf-renderer (windows) for testing..." />
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 										<untar compression="gzip"
-											   src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${installer.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${installer.alfresco-pdf-renderer.version}-win64.tgz"
+											   src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz"
 											   dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 									</target>
 								</configuration>
@@ -855,7 +929,7 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${installer.alfresco-pdf-renderer.version}</version>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>linux</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -879,7 +953,7 @@
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
 											<arg value="xf" />
-											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${installer.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${installer.alfresco-pdf-renderer.version}-linux.tgz" />
+											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-linux.tgz" />
 										</exec>
 									</target>
 								</configuration>
@@ -903,7 +977,7 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${installer.alfresco-pdf-renderer.version}</version>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>osx</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -927,7 +1001,7 @@
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
 											<arg value="xf" />
-											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${installer.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${installer.alfresco-pdf-renderer.version}-osx.tgz" />
+											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-osx.tgz" />
 										</exec>
 									</target>
 								</configuration>
@@ -941,71 +1015,71 @@
 			</properties>
 		</profile>
 
-        <profile>
-            <id>integration-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                           <execution>
-                              <id>integration-tests</id>
-                              <goals>
-                                 <goal>test</goal>
-                              </goals>
-                              <configuration>
-                                  <systemPropertyVariables>
-                                    <smart.folders.enabled>true</smart.folders.enabled>
-                                    <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
-                                  </systemPropertyVariables>
-                                  <forkMode>always</forkMode>
-                                  <includes combine.self="override">
-                                      <include>${repositoryTestIncludes}</include>
-                                  </includes>
-                              </configuration>
-                           </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+        <!--<profile>-->
+            <!--<id>integration-tests</id>-->
+            <!--<activation>-->
+                <!--<activeByDefault>false</activeByDefault>-->
+            <!--</activation>-->
+            <!--<build>-->
+                <!--<plugins>-->
+                    <!--<plugin>-->
+                        <!--<artifactId>maven-surefire-plugin</artifactId>-->
+                        <!--<executions>-->
+                           <!--<execution>-->
+                              <!--<id>integration-tests</id>-->
+                              <!--<goals>-->
+                                 <!--<goal>test</goal>-->
+                              <!--</goals>-->
+                              <!--<configuration>-->
+                                  <!--<systemPropertyVariables>-->
+                                    <!--<smart.folders.enabled>true</smart.folders.enabled>-->
+                                    <!--<alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>-->
+                                  <!--</systemPropertyVariables>-->
+                                  <!--<forkMode>always</forkMode>-->
+                                  <!--<includes combine.self="override">-->
+                                      <!--<include>${repositoryTestIncludes}</include>-->
+                                  <!--</includes>-->
+                              <!--</configuration>-->
+                           <!--</execution>-->
+                        <!--</executions>-->
+                    <!--</plugin>-->
+                <!--</plugins>-->
+            <!--</build>-->
+        <!--</profile>-->
 
         <!-- Fail fast in case this very basic repository test does not pass -->
         <!-- Only enabled in continuous integration, otherwise SUREFIRE-806 prevents using -Dtest=... -->
-        <profile>
-            <id>repo-fail-fast</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>startup-test</id>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <phase>process-test-classes</phase>
-                                <configuration>
-                                    <includes combine.self="override">
-                                        <include>**/org/alfresco/RepositoryStartupTest.java</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+        <!--<profile>-->
+            <!--<id>repo-fail-fast</id>-->
+            <!--<build>-->
+                <!--<plugins>-->
+                    <!--<plugin>-->
+                        <!--<artifactId>maven-surefire-plugin</artifactId>-->
+                        <!--<executions>-->
+                            <!--<execution>-->
+                                <!--<id>startup-test</id>-->
+                                <!--<goals>-->
+                                    <!--<goal>test</goal>-->
+                                <!--</goals>-->
+                                <!--<phase>process-test-classes</phase>-->
+                                <!--<configuration>-->
+                                    <!--<includes combine.self="override">-->
+                                        <!--<include>**/org/alfresco/RepositoryStartupTest.java</include>-->
+                                    <!--</includes>-->
+                                <!--</configuration>-->
+                            <!--</execution>-->
+                        <!--</executions>-->
+                    <!--</plugin>-->
+                <!--</plugins>-->
+            <!--</build>-->
+        <!--</profile>-->
     </profiles>
 
     <build>
         <resources>
             <!-- Allow replacing variables inside version.properties -->
             <resource>
-                <directory>config</directory>
+                <directory>src/main/resources</directory>
                 <excludes>
                     <exclude>alfresco/version.properties</exclude>
                     <!-- ACE-2318 Exclude alfresco-jmxrmi.* from repository JAR -->
@@ -1014,18 +1088,13 @@
                 </excludes>
             </resource>
             <resource>
-                <directory>config</directory>
+                <directory>src/main/resources</directory>
                 <includes>
                     <include>alfresco/version.properties</include>
                 </includes>
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <testResources>
-            <testResource>
-                 <directory>source/test-resources</directory> 
-            </testResource>
-        </testResources>
 
       <plugins>
          <plugin>
@@ -1038,9 +1107,6 @@
                        <systemPropertyVariables>
                            <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
                        </systemPropertyVariables>
-                       <includes>
-                           <include>**/org/alfresco/AllUnitTestsSuite.java</include>
-                       </includes>
                   </configuration>
                </execution>
              </executions>
@@ -1078,7 +1144,7 @@
                         <configuration>
                             <target>
                                 <copy todir="${project.build.outputDirectory}">
-                                    <fileset dir="${basedir}/config"
+                                    <fileset dir="${basedir}/src/main/resources"
                                         includes="alfresco/messages/**/*.properties,alfresco/workflow/**/*.properties" />
                                     <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
                                 </copy>
@@ -1096,19 +1162,19 @@
                             <target>
                                 <zip destfile="${project.build.directory}/h2scripts.jar">
                                     <mappedresources>
-                                        <zipfileset dir="${basedir}/config">
+                                        <zipfileset dir="${basedir}/src/main/resources">
                                             <include name="alfresco/ibatis/org.hibernate.dialect.PostgreSQLDialect/*" />
                                             <include name="alfresco/dbscripts/create/org.hibernate.dialect.PostgreSQLDialect/*" /> 
                                         </zipfileset>
                                         <regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2"/>
                                     </mappedresources>
-                                    <mappedresources>
-                                        <zipfileset dir="${basedir}/../../enterpriseprojects/repository/config" erroronmissingdir="false">
-                                            <include name="alfresco/ibatis/org.hibernate.dialect.PostgreSQLDialect/*" />
-                                            <include name="alfresco/dbscripts/create/org.hibernate.dialect.PostgreSQLDialect/*" /> 
-                                        </zipfileset>
-                                        <regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2"/>
-                                    </mappedresources>
+                                    <!--<mappedresources>-->
+                                        <!--<zipfileset dir="${basedir}/../../enterpriseprojects/repository/config" erroronmissingdir="false">-->
+                                            <!--<include name="alfresco/ibatis/org.hibernate.dialect.PostgreSQLDialect/*" />-->
+                                            <!--<include name="alfresco/dbscripts/create/org.hibernate.dialect.PostgreSQLDialect/*" /> -->
+                                        <!--</zipfileset>-->
+                                        <!--<regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2"/>-->
+                                    <!--</mappedresources>-->
                                 </zip>
                             </target>
                         </configuration>
@@ -1165,6 +1231,15 @@
 
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <configuration>
+                        <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
+                        <workingDirectory>${project.build.directory}</workingDirectory>
+                        <systemPropertyVariables>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>

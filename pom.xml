@@ -2,22 +2,54 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-remote-api</artifactId>
     <name>Alfresco Remote API</name>
+    <version>6.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
     <parent>
-        <artifactId>alfresco-parent</artifactId>
         <groupId>org.alfresco</groupId>
-        <version>5.3-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>8</version>
     </parent>
+
+    <scm>
+        <connection>scm:git:git@github.com:Alfresco/alfresco-remote-api.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-remote-api.git</developerConnection>
+        <url>https://github.com/Alfresco/alfresco-remote-api</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>alfresco-internal</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>alfresco-internal-snapshots</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <properties>
+        <dependency.alfresco-repository.version>6.0</dependency.alfresco-repository.version>
+        <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
+
+        <dependency.webscripts.version>6.13</dependency.webscripts.version>
+        <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
+        <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
+        <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
+        <dependency.mysql.version>5.1.40</dependency.mysql.version>
+    </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-repository.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -52,6 +84,7 @@
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
+            <version>${dependency.webscripts.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
@@ -97,11 +130,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>4.12</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -113,29 +148,33 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-repository.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
+            <version>${dependency.webscripts.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+            <version>${dependency.mysql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>${dependency.postgresql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>1.4.192</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -158,38 +197,38 @@
         </dependency>
     </dependencies>
    <profiles>
-      <profile>
-            <id>integration-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-               <plugins>
-                  <plugin>
-                     <artifactId>maven-surefire-plugin</artifactId>
-                     <executions>
-                        <execution>
-                           <id>integration-tests</id>
-                           <goals>
-                              <goal>test</goal>
-                           </goals>
-                           <configuration>
-                              <forkMode>always</forkMode>
-                              <systemPropertyVariables>
-                                 <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
-                              </systemPropertyVariables>
-                              <includes combine.self="override">
-                                 <include>**/org/alfresco/RemoteApi*TestSuite.java</include>
-                                 <include>**/org/alfresco/repo/webdav/PutMethodTest.java</include>
-                                 <include>**/org/alfresco/repo/webdav/WebDAVonContentUpdateTest.java</include>
-                              </includes>
-                           </configuration>
-                        </execution>
-                     </executions>
-                  </plugin>
-                </plugins>
-            </build>
-        </profile>
+      <!--<profile>-->
+            <!--<id>integration-tests</id>-->
+            <!--<activation>-->
+                <!--<activeByDefault>false</activeByDefault>-->
+            <!--</activation>-->
+            <!--<build>-->
+               <!--<plugins>-->
+                  <!--<plugin>-->
+                     <!--<artifactId>maven-surefire-plugin</artifactId>-->
+                     <!--<executions>-->
+                        <!--<execution>-->
+                           <!--<id>integration-tests</id>-->
+                           <!--<goals>-->
+                              <!--<goal>test</goal>-->
+                           <!--</goals>-->
+                           <!--<configuration>-->
+                              <!--<forkMode>always</forkMode>-->
+                              <!--<systemPropertyVariables>-->
+                                 <!--<alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>-->
+                              <!--</systemPropertyVariables>-->
+                              <!--<includes combine.self="override">-->
+                                 <!--<include>**/org/alfresco/RemoteApi*TestSuite.java</include>-->
+                                 <!--<include>**/org/alfresco/repo/webdav/PutMethodTest.java</include>-->
+                                 <!--<include>**/org/alfresco/repo/webdav/WebDAVonContentUpdateTest.java</include>-->
+                              <!--</includes>-->
+                           <!--</configuration>-->
+                        <!--</execution>-->
+                     <!--</executions>-->
+                  <!--</plugin>-->
+                <!--</plugins>-->
+            <!--</build>-->
+        <!--</profile>-->
         
          <!-- Profiles to extract the alfresco-pdf-renderer -->
 		<profile>
@@ -203,7 +242,7 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${installer.alfresco-pdf-renderer.version}</version>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>win64</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -226,7 +265,7 @@
 										<echo message="Extracting alfresco-pdf-renderer (windows) for testing..." />
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 										<untar compression="gzip"
-											   src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${installer.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${installer.alfresco-pdf-renderer.version}-win64.tgz"
+											   src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz"
 											   dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 									</target>
 								</configuration>
@@ -250,7 +289,7 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${installer.alfresco-pdf-renderer.version}</version>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>linux</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -274,7 +313,7 @@
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
 											<arg value="xf" />
-											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${installer.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${installer.alfresco-pdf-renderer.version}-linux.tgz" />
+											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-linux.tgz" />
 										</exec>
 									</target>
 								</configuration>
@@ -298,7 +337,7 @@
 				<dependency>
 					<groupId>org.alfresco</groupId>
 					<artifactId>alfresco-pdf-renderer</artifactId>
-					<version>${installer.alfresco-pdf-renderer.version}</version>
+					<version>${dependency.alfresco-pdf-renderer.version}</version>
 					<classifier>osx</classifier>
 					<type>tgz</type>
 				</dependency>
@@ -322,7 +361,7 @@
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 										<exec failonerror="true" executable="tar" dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer">
 											<arg value="xf" />
-											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${installer.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${installer.alfresco-pdf-renderer.version}-osx.tgz" />
+											<arg value="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-osx.tgz" />
 										</exec>
 									</target>
 								</configuration>
@@ -338,6 +377,19 @@
    </profiles>
    <build>
         <plugins>
+            <!-- Create a jar of test classes -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>create-test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                <artifactId>maven-surefire-plugin</artifactId>
                <executions>
@@ -369,7 +421,7 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>source/generated</source>
+                                <source>src/main/generated</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -391,7 +443,7 @@
                 <configuration>
                     <target>
                         <copy todir="${project.build.outputDirectory}">
-                            <fileset dir="${basedir}/config"
+                            <fileset dir="${basedir}/src/main/resources"
                                 includes="alfresco/messages/**/*.properties,alfresco/templates/webscripts/**/*.properties" />
                             <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
                         </copy>

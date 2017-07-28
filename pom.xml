@@ -11,6 +11,24 @@
         <version>8</version>
     </parent>
 
+    <scm>
+        <connection>scm:git:git@github.com:Alfresco/alfresco-repository.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-repository.git</developerConnection>
+        <url>https://github.com/Alfresco/alfresco-repository</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>alfresco-internal</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>alfresco-internal-snapshots</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <repositoryTestIncludes>**/org/alfresco/Repository*TestSuite.java</repositoryTestIncludes>
 
@@ -1109,7 +1127,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <executions>

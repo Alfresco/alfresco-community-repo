@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-remote-api</artifactId>
     <name>Alfresco Remote API</name>
-    <version>6.0-SNAPSHOT</version>
+    <version>6.0</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -15,7 +15,7 @@
         <connection>scm:git:git@github.com:Alfresco/alfresco-remote-api.git</connection>
         <developerConnection>scm:git:git@github.com:Alfresco/alfresco-remote-api.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-remote-api</url>
-        <tag>HEAD</tag>
+        <tag>alfresco-remote-api-6.0</tag>
     </scm>
 
     <distributionManagement>
@@ -264,9 +264,7 @@
 									<target>
 										<echo message="Extracting alfresco-pdf-renderer (windows) for testing..." />
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
-										<untar compression="gzip"
-											   src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz"
-											   dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
+										<untar compression="gzip" src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz" dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 									</target>
 								</configuration>
 							</execution>
@@ -443,9 +441,8 @@
                 <configuration>
                     <target>
                         <copy todir="${project.build.outputDirectory}">
-                            <fileset dir="${basedir}/src/main/resources"
-                                includes="alfresco/messages/**/*.properties,alfresco/templates/webscripts/**/*.properties" />
-                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
+                            <fileset dir="${basedir}/src/main/resources" includes="alfresco/messages/**/*.properties,alfresco/templates/webscripts/**/*.properties" />
+                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties" />
                         </copy>
                     </target>
                 </configuration>

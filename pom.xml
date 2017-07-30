@@ -3,7 +3,7 @@
     <artifactId>alfresco-content-repository</artifactId>
     <name>Alfresco Repository WAR Community</name>
     <description>Alfresco Web Client</description>
-    <version>6.0-SNAPSHOT</version>
+    <version>6.0</version>
     <packaging>war</packaging>
 
     <parent>
@@ -16,7 +16,7 @@
         <connection>scm:git:git@github.com:Alfresco/alfresco-content-repositry.git</connection>
         <developerConnection>scm:git:git@github.com:Alfresco/alfresco-content-repository.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-content-repository</url>
-        <tag>HEAD</tag>
+        <tag>alfresco-content-repository-6.0</tag>
     </scm>
 
     <distributionManagement>
@@ -339,7 +339,7 @@
                         <dir.root>${dir.root}</dir.root>
                         <solr.host>localhost</solr.host>
                         <solr.secureComms>none</solr.secureComms>
-                        <solr.port.ssl></solr.port.ssl>
+                        <solr.port.ssl />
                     </systemProperties>
                     <delegate>false</delegate>
                     <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
@@ -350,7 +350,7 @@
                         <webapp>
                             <groupId>org.alfresco</groupId>
                             <artifactId>alfresco-server-root</artifactId>
-                            <version></version>
+                            <version />
                             <contextPath>/</contextPath>
                             <type>war</type>
                             <asWebapp>true</asWebapp>
@@ -460,7 +460,7 @@
                                 <webapp>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr4</artifactId>
-                                    <version></version>
+                                    <version />
                                     <contextPath>/solr4</contextPath>
                                     <type>war</type>
                                     <asWebapp>true</asWebapp>

@@ -3,7 +3,7 @@
     <artifactId>alfresco-content-repository</artifactId>
     <name>Alfresco Repository WAR Community</name>
     <description>Alfresco Web Client</description>
-    <version>6.0</version>
+    <version>6.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <parent>
@@ -16,7 +16,7 @@
         <connection>scm:git:git@github.com:Alfresco/alfresco-content-repositry.git</connection>
         <developerConnection>scm:git:git@github.com:Alfresco/alfresco-content-repository.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-content-repository</url>
-        <tag>alfresco-content-repository-6.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>

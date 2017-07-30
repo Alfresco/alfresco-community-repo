@@ -1,40 +1,80 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-parent</artifactId>
-        <version>5.3-SNAPSHOT</version>
-        <relativePath>../../pom.xml</relativePath>
-    </parent>
-    <artifactId>alfresco-platform</artifactId>
-    <packaging>war</packaging>
+    <artifactId>alfresco-content-repository</artifactId>
     <name>Alfresco Repository WAR Community</name>
     <description>Alfresco Web Client</description>
+    <version>6.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>8</version>
+    </parent>
+
+    <scm>
+        <connection>scm:git:git@github.com:Alfresco/alfresco-content-repositry.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-content-repository.git</developerConnection>
+        <url>https://github.com/Alfresco/alfresco-content-repository</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>alfresco-internal</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>alfresco-internal-snapshots</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 
     <properties>
+        <tomcat.default.alfresco.port>8080</tomcat.default.alfresco.port>
+        <tomcat.default.alfresco.ssl.port>8443</tomcat.default.alfresco.ssl.port>
         <maven.tomcat.path>/alfresco</maven.tomcat.path>
         <maven.tomcat.uriEncoding>UTF-8</maven.tomcat.uriEncoding>
         <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
         <maven.tomcat.httpsPort>${tomcat.default.alfresco.ssl.port}</maven.tomcat.httpsPort>
-        <runner.share.version>5.1.1</runner.share.version>
+        <runner.share.version>5.2.f</runner.share.version>
+        <!-- Developer's runtime environment configuration -->
+        <runtime.tomcat.conf.folder>${project.build.directory}/tomcat</runtime.tomcat.conf.folder>
+        <runtime.solr.folder>${project.build.directory}/solr4-instance</runtime.solr.folder>
+        <alfresco.properties.file>${runtime.tomcat.conf.folder}/shared/classes/alfresco-global.properties</alfresco.properties.file>
+        <!-- Define the location where alfresco will store its content files, i.e. *.bin) -->
+        <dir.root>${project.build.directory}/alf_data</dir.root>
+
+        <dependency.alfresco-repository.version>6.0</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>6.0</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>
+        <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
+        <dependency.api-explorer.version>5.2.1</dependency.api-explorer.version>
+
+        <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
+        <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
+        <dependency.mysql.version>5.1.40</dependency.mysql.version>
+
+
     </properties>
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-trashcan-cleaner</artifactId>
             <version>${dependency.alfresco-trashcan-cleaner.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-remote-api.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-repository.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
@@ -50,14 +90,17 @@
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
+            <version>2.7.2-alfresco</version>
         </dependency>
         <dependency>
             <groupId>commons-jxpath</groupId>
             <artifactId>commons-jxpath</artifactId>
+            <version>1.3</version>
         </dependency>
         <dependency>
             <groupId>commons-modeler</groupId>
             <artifactId>commons-modeler</artifactId>
+            <version>2.0.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>commons-logging</groupId>
@@ -68,6 +111,7 @@
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.james</groupId>
@@ -99,11 +143,13 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <version>3.0.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet.jsp</groupId>
             <artifactId>jsp-api</artifactId>
+            <version>2.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -130,20 +176,21 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${dependency.alfresco-core.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-repository.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.alfresco-remote-api.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -156,6 +203,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -167,16 +215,19 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
+            <version>${dependency.postgresql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+            <version>${dependency.mysql.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <version>1.4.192</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -197,9 +248,9 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-repository</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${dependency.alfresco-repository.version}</version>
                                 </artifactItem>
                             </artifactItems>
                             <includes>alfresco/version.properties</includes>
@@ -216,7 +267,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
+                                    <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-core</artifactId>
                                 </artifactItem>
                             </artifactItems>
@@ -227,26 +278,26 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <!-- ACE-2318 Bring alfresco-jmxrmi.* from repository -->
-                    <execution>
-                        <id>fetch-jmxrmi-properties</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <copy todir="${project.build.outputDirectory}/alfresco">
-                                    <fileset dir="${basedir}/../repository/config/alfresco" includes="alfresco-jmxrmi.*" />
-                                </copy>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<artifactId>maven-antrun-plugin</artifactId>-->
+                <!--<executions>-->
+                    <!--&lt;!&ndash; ACE-2318 Bring alfresco-jmxrmi.* from repository &ndash;&gt;-->
+                    <!--<execution>-->
+                        <!--<id>fetch-jmxrmi-properties</id>-->
+                        <!--<phase>generate-resources</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>run</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<target>-->
+                                <!--<copy todir="${project.build.outputDirectory}/alfresco">-->
+                                    <!--<fileset dir="${basedir}/../repository/config/alfresco" includes="alfresco-jmxrmi.*" />-->
+                                <!--</copy>-->
+                            <!--</target>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
 
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
@@ -299,7 +350,7 @@
                         <webapp>
                             <groupId>org.alfresco</groupId>
                             <artifactId>alfresco-server-root</artifactId>
-                            <version>${project.version}</version>
+                            <version></version>
                             <contextPath>/</contextPath>
                             <type>war</type>
                             <asWebapp>true</asWebapp>
@@ -409,7 +460,7 @@
                                 <webapp>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr4</artifactId>
-                                    <version>${project.version}</version>
+                                    <version></version>
                                     <contextPath>/solr4</contextPath>
                                     <type>war</type>
                                     <asWebapp>true</asWebapp>

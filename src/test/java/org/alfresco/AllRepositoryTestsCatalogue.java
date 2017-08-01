@@ -411,10 +411,17 @@ public class AllRepositoryTestsCatalogue
             // Ignore
         }
     }
-
     // [classpath:alfresco/application-context.xml] - part 3
     static void applicationContext_03(TestSuite suite)
     {
+        // was 14
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.calendar.CalendarServiceImplTest.class));
+        // // Can only be run once as "CalendarTestNewTestSite is already in use"
+        //
+        // was 15 (part)
+        suite.addTestSuite(ContentStoreCleanerTest.class);
+        suite.addTestSuite(RoutingContentServiceTest.class);
+
         // was 18
         suite.addTestSuite(org.alfresco.repo.copy.CopyServiceImplTest.class);
 
@@ -425,41 +432,14 @@ public class AllRepositoryTestsCatalogue
 
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.dictionary.ModelValidatorTest.class));
         suite.addTestSuite(org.alfresco.repo.dictionary.types.period.PeriodTest.class);
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.discussion.DiscussionServiceImplTest.class));
-
-        // was 22
-        suite.addTest(new JUnit4TestAdapter(NodeDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(ContentDataDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(EncodingDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(LockDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(MimetypeDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(LocaleDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(QNameDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(PropertyValueDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(AppliedPatchDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(AclCrudDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(UsageDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(SOLRDAOTest.class));
-        suite.addTest(new JUnit4TestAdapter(TenantAdminDAOTest.class));
-        // REOPO-1012 : run AuditDAOTest and PropertyValueCleanupTest near the end
-        // because their failure can cause other tests to fail on MS SQL
-        // AuditDAOTest fails if it runs after CannedQueryDAOTest so this order is a compromise
-        // CannedQueryDAOTest will fail on MS SQL if either AuditDAOTest or PropertyValueCleanupTest fail
-        suite.addTest(new JUnit4TestAdapter(PropertyValueCleanupTest.class));
-        suite.addTest(new JUnit4TestAdapter(AuditDAOTest.class));
 
         // was 23 (part)
         suite.addTestSuite(org.alfresco.repo.exporter.ExporterComponentTest.class);
         suite.addTestSuite(org.alfresco.repo.exporter.RepositoryExporterComponentTest.class);
 
-        // was 24 (part)
-        suite.addTestSuite(org.alfresco.repo.forms.FormServiceImplTest.class);
-
+     
         // was 28 (part)
         suite.addTestSuite(org.alfresco.repo.i18n.MessageServiceImplTest.class);
-        suite.addTestSuite(org.alfresco.repo.imap.ImapMessageTest.class);
-        suite.addTestSuite(org.alfresco.repo.imap.ImapServiceImplCacheTest.class);
-        suite.addTestSuite(org.alfresco.repo.imap.ImapServiceImplTest.class);
         suite.addTestSuite(org.alfresco.repo.importer.FileImporterTest.class);
         suite.addTestSuite(org.alfresco.repo.importer.ImporterComponentTest.class);
 
@@ -477,8 +457,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.lock.mem.LockableAspectInterceptorTest.class));
         suite.addTestSuite(org.alfresco.repo.management.JmxDumpUtilTest.class);
 
-        // was 31
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.model.ModelTestSuite.class));
     }
 
     // [classpath:alfresco/application-context.xml] - part 4

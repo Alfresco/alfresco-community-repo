@@ -329,18 +329,6 @@ public class AllRepositoryTestsCatalogue
     // [classpath:alfresco/application-context.xml] - part 1
     static void applicationContext_01(TestSuite suite)
     {
-        suite.addTestSuite(org.alfresco.email.server.EmailServiceImplTest.class);
-        suite.addTestSuite(org.alfresco.email.server.EmailServerTest.class);
-        suite.addTestSuite(org.alfresco.filesys.FTPServerTest.class);
-        suite.addTestSuite(org.alfresco.filesys.repo.CifsIntegrationTest.class);
-        suite.addTestSuite(org.alfresco.filesys.repo.ContentDiskDriverTest.class);
-
-        // was 04
-        suite.addTestSuite(org.alfresco.filesys.repo.LockKeeperImplTest.class);
-
-        // was 08
-        suite.addTestSuite(org.alfresco.opencmis.search.OpenCmisQueryTest.class);
-
         // was 09 (split)
         suite.addTestSuite(IsSubTypeEvaluatorTest.class);
         suite.addTestSuite(ComparePropertyValueEvaluatorTest.class);
@@ -354,7 +342,24 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(SpecialiseTypeActionExecuterTest.class);
         suite.addTestSuite(RemoveFeaturesActionExecuterTest.class);
         suite.addTestSuite(ActionTrackingServiceImplTest.class); // intermittent - pending ALF-9773 & ALF-9774
+        
+        
+        suite.addTestSuite(org.alfresco.email.server.EmailServiceImplTest.class);
+        suite.addTestSuite(org.alfresco.email.server.EmailServerTest.class);
+        //suite.addTestSuite(org.alfresco.filesys.FTPServerTest.class);
+        suite.addTestSuite(org.alfresco.filesys.repo.CifsIntegrationTest.class);
+        suite.addTestSuite(org.alfresco.filesys.repo.ContentDiskDriverTest.class);
 
+        // was 04
+        suite.addTestSuite(org.alfresco.filesys.repo.LockKeeperImplTest.class);
+
+        // was 08
+        suite.addTestSuite(org.alfresco.opencmis.search.OpenCmisQueryTest.class);
+        
+        // was 10
+        suite.addTestSuite(org.alfresco.repo.activities.ActivityServiceImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.admin.patch.PatchTest.class);
+        suite.addTestSuite(org.alfresco.repo.admin.registry.RegistryServiceImplTest.class);
     }
 
     // [classpath:alfresco/application-context.xml] - part 2

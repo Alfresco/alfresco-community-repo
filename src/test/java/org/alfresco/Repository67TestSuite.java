@@ -23,7 +23,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco;
 
 import junit.framework.Test;
@@ -37,7 +36,7 @@ public class Repository67TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Repository01TestSuite.tests67(suite);
+        AllRepositoryTestsCatalogue.applicationContext_globalIntegrationTestContext_dummy1Context_dummy2Context_67(suite);
         return suite;
     }
 }

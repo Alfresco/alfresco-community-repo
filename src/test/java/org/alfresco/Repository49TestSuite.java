@@ -29,7 +29,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
- * See {@link Repository01TestSuite}
  *
  * @author Alan Davis
  */
@@ -38,7 +37,7 @@ public class Repository49TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Repository01TestSuite.tests49(suite);
+        AllRepositoryTestsCatalogue.applicationContext_globalIntegrationTestContext_testTemporarySitesTestContext_49(suite);
         return suite;
     }
 }

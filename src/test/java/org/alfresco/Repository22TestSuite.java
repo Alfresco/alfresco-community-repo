@@ -29,7 +29,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
- * See {@link Repository01TestSuite}
  *
  * @author Alan Davis
  */
@@ -38,7 +37,7 @@ public class Repository22TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Repository01TestSuite.tests22(suite);
+        AllRepositoryTestsCatalogue.cachingstoreTestStdQuotaContext_22(suite);
         return suite;
     }
 }

@@ -29,7 +29,6 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
- * See {@link Repository01TestSuite}
  *
  * @author Alexey Bogdanov
  */
@@ -38,7 +37,7 @@ public class Repository65TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Repository01TestSuite.tests65(suite);
+        AllRepositoryTestsCatalogue.applicationContext_scriptExecTestContext_65(suite);
         return suite;
     }
 }

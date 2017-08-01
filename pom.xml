@@ -30,6 +30,10 @@
     </distributionManagement>
 
     <properties>
+        <index.subsystem.name>buildonly</index.subsystem.name>
+        <dir.root>${project.build.directory}/alf_data</dir.root>
+        <img.exe>convert</img.exe>
+
         <dependency.alfresco-repository.version>6.0</dependency.alfresco-repository.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
 
@@ -196,40 +200,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-   <profiles>
-      <!--<profile>-->
-            <!--<id>integration-tests</id>-->
-            <!--<activation>-->
-                <!--<activeByDefault>false</activeByDefault>-->
-            <!--</activation>-->
-            <!--<build>-->
-               <!--<plugins>-->
-                  <!--<plugin>-->
-                     <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                     <!--<executions>-->
-                        <!--<execution>-->
-                           <!--<id>integration-tests</id>-->
-                           <!--<goals>-->
-                              <!--<goal>test</goal>-->
-                           <!--</goals>-->
-                           <!--<configuration>-->
-                              <!--<forkMode>always</forkMode>-->
-                              <!--<systemPropertyVariables>-->
-                                 <!--<alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>-->
-                              <!--</systemPropertyVariables>-->
-                              <!--<includes combine.self="override">-->
-                                 <!--<include>**/org/alfresco/RemoteApi*TestSuite.java</include>-->
-                                 <!--<include>**/org/alfresco/repo/webdav/PutMethodTest.java</include>-->
-                                 <!--<include>**/org/alfresco/repo/webdav/WebDAVonContentUpdateTest.java</include>-->
-                              <!--</includes>-->
-                           <!--</configuration>-->
-                        <!--</execution>-->
-                     <!--</executions>-->
-                  <!--</plugin>-->
-                <!--</plugins>-->
-            <!--</build>-->
-        <!--</profile>-->
-        
+    <profiles>
          <!-- Profiles to extract the alfresco-pdf-renderer -->
 		<profile>
 			<id>win-alfresco-pdf-renderer-test</id>
@@ -372,8 +343,8 @@
 				<alfresco-pdf-renderer.exe>${project.build.directory}/test-binaries/alfresco-pdf-renderer/alfresco-pdf-renderer</alfresco-pdf-renderer.exe>
 			</properties>
 		</profile>
-   </profiles>
-   <build>
+    </profiles>
+    <build>
         <plugins>
             <!-- Create a jar of test classes -->
             <plugin>
@@ -389,21 +360,35 @@
             </plugin>
 
             <plugin>
-               <artifactId>maven-surefire-plugin</artifactId>
-               <executions>
-                  <execution>
-                     <id>default-test</id>
-                     <!-- There's also surefire configuration in the integration-tests profile -->
-                     <configuration>
-                        <systemPropertyVariables>
-                           <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
-                        </systemPropertyVariables>
-                        <includes>
-                           <include>**/org/alfresco/remoteapi/AllUnitTestsSuite.java</include>
-                        </includes>
-                     </configuration>
-                  </execution>
-               </executions>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <configuration>
+                            <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <systemPropertyVariables>
+                                <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
+
+                                <!-- Database related properties -->
+                                <db.url>${db.url}</db.url>
+                                <db.driver>${db.driver}</db.driver>
+                                <db.name>${db.name}</db.name>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <dir.root>${dir.root}</dir.root>
+                                <img.exe>${img.exe}</img.exe>
+                                <!-- BDE-91 -->
+                                <alfresco.rmi.services.retries>30</alfresco.rmi.services.retries>
+                                <alfresco.rmi.services.retryInterval>2000</alfresco.rmi.services.retryInterval>
+                                <!-- Enables Lucene in continuous integration -->
+                                <index.subsystem.name>${index.subsystem.name}</index.subsystem.name>
+                                <!-- FTR used in TransferWebScriptTest -->
+                                <transferservice.receiver.enabled>true</transferservice.receiver.enabled>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- We still use committed generated sources -->

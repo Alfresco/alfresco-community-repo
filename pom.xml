@@ -30,7 +30,9 @@
     </distributionManagement>
 
     <properties>
-        <repositoryTestIncludes>**/org/alfresco/Repository*TestSuite.java</repositoryTestIncludes>
+        <index.subsystem.name>buildonly</index.subsystem.name>
+        <dir.root>${project.build.directory}/alf_data</dir.root>
+        <img.exe>convert</img.exe>
 
         <dependency.alfresco-legacy-lucene.version>6.1</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
@@ -820,74 +822,6 @@
     </dependencies>
 
     <profiles>
-        <!-- Profiles to fetch specific Database resources in enterpriseprojects. Only for tests. -->
-        <profile>
-            <id>oracle</id>
-            <build>
-                <resources>
-                    <resource>
-                         <directory>${highest.basedir}/enterpriseprojects/repository/config</directory> 
-                         <includes>
-                             <include>alfresco/ibatis/*Oracle*/**</include>
-                             <include>alfresco/dbscripts/**/*Oracle*/**</include>
-                         </includes>
-                    </resource>
-                </resources>
-                <testResources>
-                    <testResource>
-                         <directory>${highest.basedir}/enterpriseprojects/repository/source/test-resources</directory> 
-                         <includes>
-                             <include>scriptexec/*Oracle*/**</include>
-                         </includes>
-                    </testResource>
-                </testResources>
-            </build>
-        </profile>
-        <profile>
-            <id>sqlserver</id>
-            <build>
-                <resources>
-                    <resource>
-                         <directory>${highest.basedir}/enterpriseprojects/repository/config</directory> 
-                         <includes>
-                             <include>alfresco/ibatis/*SQLServer*/**</include>
-                             <include>alfresco/dbscripts/**/*SQLServer*/**</include>
-                         </includes>
-                    </resource>
-                </resources>
-                <testResources>
-                    <testResource>
-                         <directory>${highest.basedir}/enterpriseprojects/repository/source/test-resources</directory> 
-                         <includes>
-                             <include>scriptexec/*SQLServer*/**</include>
-                         </includes>
-                    </testResource>
-                </testResources>
-            </build>
-        </profile>
-        <profile>
-            <id>db2</id>
-            <build>
-                <resources>
-                    <resource>
-                         <directory>${highest.basedir}/enterpriseprojects/repository/config</directory> 
-                         <includes>
-                             <include>alfresco/ibatis/*DB2*/**</include>
-                             <include>alfresco/dbscripts/**/*DB2*/**</include>
-                         </includes>
-                    </resource>
-                </resources>
-                <testResources>
-                    <testResource>
-                         <directory>${highest.basedir}/enterpriseprojects/repository/source/test-resources</directory> 
-                         <includes>
-                             <include>scriptexec/*DB2*/**</include>
-                         </includes>
-                    </testResource>
-                </testResources>
-            </build>
-        </profile>
-
 	        <!-- Profiles to extract the alfresco-pdf-renderer -->
 		<profile>
 			<id>win-alfresco-pdf-renderer-test</id>
@@ -1031,64 +965,6 @@
 			</properties>
 		</profile>
 
-        <!--<profile>-->
-            <!--<id>integration-tests</id>-->
-            <!--<activation>-->
-                <!--<activeByDefault>false</activeByDefault>-->
-            <!--</activation>-->
-            <!--<build>-->
-                <!--<plugins>-->
-                    <!--<plugin>-->
-                        <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                        <!--<executions>-->
-                           <!--<execution>-->
-                              <!--<id>integration-tests</id>-->
-                              <!--<goals>-->
-                                 <!--<goal>test</goal>-->
-                              <!--</goals>-->
-                              <!--<configuration>-->
-                                  <!--<systemPropertyVariables>-->
-                                    <!--<smart.folders.enabled>true</smart.folders.enabled>-->
-                                    <!--<alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>-->
-                                  <!--</systemPropertyVariables>-->
-                                  <!--<forkMode>always</forkMode>-->
-                                  <!--<includes combine.self="override">-->
-                                      <!--<include>${repositoryTestIncludes}</include>-->
-                                  <!--</includes>-->
-                              <!--</configuration>-->
-                           <!--</execution>-->
-                        <!--</executions>-->
-                    <!--</plugin>-->
-                <!--</plugins>-->
-            <!--</build>-->
-        <!--</profile>-->
-
-        <!-- Fail fast in case this very basic repository test does not pass -->
-        <!-- Only enabled in continuous integration, otherwise SUREFIRE-806 prevents using -Dtest=... -->
-        <!--<profile>-->
-            <!--<id>repo-fail-fast</id>-->
-            <!--<build>-->
-                <!--<plugins>-->
-                    <!--<plugin>-->
-                        <!--<artifactId>maven-surefire-plugin</artifactId>-->
-                        <!--<executions>-->
-                            <!--<execution>-->
-                                <!--<id>startup-test</id>-->
-                                <!--<goals>-->
-                                    <!--<goal>test</goal>-->
-                                <!--</goals>-->
-                                <!--<phase>process-test-classes</phase>-->
-                                <!--<configuration>-->
-                                    <!--<includes combine.self="override">-->
-                                        <!--<include>**/org/alfresco/RepositoryStartupTest.java</include>-->
-                                    <!--</includes>-->
-                                <!--</configuration>-->
-                            <!--</execution>-->
-                        <!--</executions>-->
-                    <!--</plugin>-->
-                <!--</plugins>-->
-            <!--</build>-->
-        <!--</profile>-->
     </profiles>
 
     <build>
@@ -1126,20 +1002,43 @@
                 </executions>
             </plugin>
 
-         <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>default-test</id>
-                  <!-- There's also surefire configuration in the integration-tests profile -->
-                  <configuration>
-                       <systemPropertyVariables>
-                           <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
-                       </systemPropertyVariables>
-                  </configuration>
-               </execution>
-             </executions>
-         </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <!-- There's also surefire configuration in the integration-tests profile -->
+                        <configuration>
+                            <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
+                            <workingDirectory>${project.build.directory}</workingDirectory>
+                            <systemPropertyVariables>
+                                <alfresco-pdf-renderer.exe>${alfresco-pdf-renderer.exe}</alfresco-pdf-renderer.exe>
+
+                                <!-- Database related properties -->
+                                <db.url>${db.url}</db.url>
+                                <db.driver>${db.driver}</db.driver>
+                                <db.name>${db.name}</db.name>
+                                <db.username>${db.username}</db.username>
+                                <db.password>${db.password}</db.password>
+                                <dir.root>${dir.root}</dir.root>
+                                <img.exe>${img.exe}</img.exe>
+                                <!-- BDE-91 -->
+                                <alfresco.rmi.services.retries>30</alfresco.rmi.services.retries>
+                                <alfresco.rmi.services.retryInterval>2000</alfresco.rmi.services.retryInterval>
+                                <!-- Enables Lucene in continuous integration -->
+                                <index.subsystem.name>${index.subsystem.name}</index.subsystem.name>
+                                <!-- FTR used in TransferWebScriptTest -->
+                                <transferservice.receiver.enabled>true</transferservice.receiver.enabled>
+                                <!-- Allow FTP server unit test to run unprivileged -->
+                                <ftp.port>50521</ftp.port>
+                                <!-- ACE-2704 turned off the ftp and transfer service receiver which must be enabled for integration test -->
+                                <ftp.enabled>true</ftp.enabled>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
          <plugin>
              <groupId>org.jibx</groupId>
              <artifactId>maven-jibx-plugin</artifactId>
@@ -1196,13 +1095,6 @@
                                         </zipfileset>
                                         <regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2" />
                                     </mappedresources>
-                                    <!--<mappedresources>-->
-                                        <!--<zipfileset dir="${basedir}/../../enterpriseprojects/repository/config" erroronmissingdir="false">-->
-                                            <!--<include name="alfresco/ibatis/org.hibernate.dialect.PostgreSQLDialect/*" />-->
-                                            <!--<include name="alfresco/dbscripts/create/org.hibernate.dialect.PostgreSQLDialect/*" /> -->
-                                        <!--</zipfileset>-->
-                                        <!--<regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2" />-->
-                                    <!--</mappedresources>-->
                                 </zip>
                             </target>
                         </configuration>
@@ -1259,15 +1151,6 @@
 
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <configuration>
-                        <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
-                        <workingDirectory>${project.build.directory}</workingDirectory>
-                        <systemPropertyVariables>
-                        </systemPropertyVariables>
-                    </configuration>
-                </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>

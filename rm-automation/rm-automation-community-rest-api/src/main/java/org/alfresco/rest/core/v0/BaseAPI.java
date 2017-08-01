@@ -81,6 +81,7 @@ public abstract class BaseAPI
     protected static final String ACTIONS_API = "{0}actionQueue";
     protected static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
     protected static final String RM_SITE_ID = "rm";
+    protected static final String SHARE_ACTION_API = "{0}internal/shared/share/workspace/SpacesStore/{1}";
 
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
@@ -426,6 +427,7 @@ public abstract class BaseAPI
                     if (responseBody != null  && responseBody.has(EXCEPTION_KEY))
                     {
                         LOGGER.error("Request failed: " + responseBody.getString(EXCEPTION_KEY));
+                        returnValues = responseBody;
                     }
                     break;
 

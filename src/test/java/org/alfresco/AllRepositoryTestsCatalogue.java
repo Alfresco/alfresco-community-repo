@@ -358,7 +358,7 @@ public class AllRepositoryTestsCatalogue
         
         // was 10
         suite.addTestSuite(org.alfresco.repo.activities.ActivityServiceImplTest.class);
-        suite.addTestSuite(org.alfresco.repo.admin.patch.PatchTest.class);
+        //suite.addTestSuite(org.alfresco.repo.admin.patch.PatchTest.class); //moved in the next part
         suite.addTestSuite(org.alfresco.repo.admin.registry.RegistryServiceImplTest.class);
     }
 
@@ -366,15 +366,8 @@ public class AllRepositoryTestsCatalogue
     static void applicationContext_02(TestSuite suite)
     {
 
-        // was 10
-        suite.addTestSuite(org.alfresco.repo.activities.ActivityServiceImplTest.class);
-        // the following test will lock up the DB if run after part 1 - in the same suite
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.activities.feed.FeedNotifierTest.class));
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.activities.feed.FeedNotifierJobTest.class));
-        suite.addTestSuite(org.alfresco.repo.admin.RepoAdminServiceImplTest.class);
-        suite.addTestSuite(org.alfresco.repo.admin.patch.PatchTest.class);
-        suite.addTestSuite(org.alfresco.repo.admin.registry.RegistryServiceImplTest.class);
-        suite.addTestSuite(org.alfresco.repo.attributes.AttributeServiceTest.class);
+        suite.addTestSuite(org.alfresco.repo.attributes.AttributeServiceTest.class); // there is a test that runs for 40s and one
+                                                                                     // 184s
 
         // was 11 (part)
         suite.addTestSuite(AuditableAspectTest.class);
@@ -384,28 +377,29 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(AuditMethodInterceptorTest.class);
         suite.addTest(new JUnit4TestAdapter(AccessAuditorTest.class));
 
+        // was 10
+        // the following test will lock up the DB if run after part 1 - in the same suite
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.activities.feed.FeedNotifierTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.activities.feed.FeedNotifierJobTest.class));
+        suite.addTestSuite(org.alfresco.repo.admin.RepoAdminServiceImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.admin.patch.PatchTest.class);
+
         // was 13
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.blog.BlogServiceImplTest.class));
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.bulkimport.impl.BulkImportTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.bulkimport.impl.StripingFilesystemTrackerTest.class));
 
         // was 14
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.calendar.CalendarServiceImplTest.class)); // Can only be run once as
-                                                                                                        // "CalendarTestNewTestSite
-                                                                                                        // is already in use"
         suite.addTestSuite(org.alfresco.repo.coci.CheckOutCheckInServiceImplTest.class);
         suite.addTestSuite(org.alfresco.repo.configuration.ConfigurableServiceImplTest.class);
 
         // was 15 (part)
-        suite.addTestSuite(ContentStoreCleanerTest.class);
+        suite.addTestSuite(GuessMimetypeTest.class);
         // suite.addTestSuite(CharsetFinderTest.class);
         suite.addTest(new JUnit4TestAdapter(FileContentStoreTest.class));
         suite.addTest(new JUnit4TestAdapter(NoRandomAccessFileContentStoreTest.class));
         suite.addTest(new JUnit4TestAdapter(ReadOnlyFileContentStoreTest.class));
         // suite.addTestSuite(MimetypeMapTest.class);
-        suite.addTestSuite(RoutingContentServiceTest.class);
         suite.addTest(new JUnit4TestAdapter(RoutingContentStoreTest.class));
-        suite.addTestSuite(GuessMimetypeTest.class);
+
         try
         {
             @SuppressWarnings("rawtypes")

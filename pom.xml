@@ -32,6 +32,7 @@
     <properties>
         <index.subsystem.name>buildonly</index.subsystem.name>
         <dir.root>${project.build.directory}/alf_data</dir.root>
+        <img.exe>convert</img.exe>
 
         <dependency.alfresco-repository.version>6.0</dependency.alfresco-repository.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
@@ -378,6 +379,7 @@
                                 <db.username>${db.username}</db.username>
                                 <db.password>${db.password}</db.password>
                                 <dir.root>${dir.root}</dir.root>
+                                <img.exe>${img.exe}</img.exe>
                                 <!-- BDE-91 -->
                                 <alfresco.rmi.services.retries>30</alfresco.rmi.services.retries>
                                 <alfresco.rmi.services.retryInterval>2000</alfresco.rmi.services.retryInterval>

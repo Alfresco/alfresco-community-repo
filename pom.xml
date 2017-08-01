@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-repository</artifactId>
     <name>Alfresco Repository</name>
-    <version>6.0-SNAPSHOT</version>
+    <version>6.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -856,9 +856,7 @@
 									<target>
 										<echo message="Extracting alfresco-pdf-renderer (windows) for testing..." />
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
-										<untar compression="gzip"
-											   src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz"
-											   dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
+										<untar compression="gzip" src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz" dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 									</target>
 								</configuration>
 							</execution>
@@ -1074,9 +1072,8 @@
                         <configuration>
                             <target>
                                 <copy todir="${project.build.outputDirectory}">
-                                    <fileset dir="${basedir}/src/main/resources"
-                                        includes="alfresco/messages/**/*.properties,alfresco/workflow/**/*.properties" />
-                                    <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
+                                    <fileset dir="${basedir}/src/main/resources" includes="alfresco/messages/**/*.properties,alfresco/workflow/**/*.properties" />
+                                    <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties" />
                                 </copy>
                             </target>
                         </configuration>
@@ -1096,7 +1093,7 @@
                                             <include name="alfresco/ibatis/org.hibernate.dialect.PostgreSQLDialect/*" />
                                             <include name="alfresco/dbscripts/create/org.hibernate.dialect.PostgreSQLDialect/*" /> 
                                         </zipfileset>
-                                        <regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2"/>
+                                        <regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2" />
                                     </mappedresources>
                                 </zip>
                             </target>

@@ -371,7 +371,6 @@ public class AllRepositoryTestsCatalogue
     // [classpath:alfresco/application-context.xml] - part 2
     static void applicationContext_02(TestSuite suite)
     {
-
         suite.addTestSuite(org.alfresco.repo.attributes.AttributeServiceTest.class); // there is a test that runs for 40s and one
                                                                                      // 184s
 
@@ -416,17 +415,9 @@ public class AllRepositoryTestsCatalogue
         {
             // Ignore
         }
-        
-        // was 43
-        suite.addTestSuite(org.alfresco.repo.rule.RuleLinkTest.class); // fails if with previous tests
-        suite.addTestSuite(org.alfresco.repo.rule.RuleServiceCoverageTest.class);
-        suite.addTestSuite(org.alfresco.repo.rule.RuleServiceImplTest.class);
 
-        // was 45
-        suite.addTestSuite(org.alfresco.repo.rule.RuleTypeImplTest.class);
-        suite.addTestSuite(org.alfresco.repo.rule.ruletrigger.RuleTriggerTest.class);
     }
-    
+
     // [classpath:alfresco/application-context.xml] - part 3
     static void applicationContext_03(TestSuite suite)
     {
@@ -453,7 +444,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.exporter.ExporterComponentTest.class);
         suite.addTestSuite(org.alfresco.repo.exporter.RepositoryExporterComponentTest.class);
 
-     
         // was 28 (part)
         suite.addTestSuite(org.alfresco.repo.i18n.MessageServiceImplTest.class);
         suite.addTestSuite(org.alfresco.repo.importer.FileImporterTest.class);
@@ -472,7 +462,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.lock.mem.LockStoreImplTxTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.lock.mem.LockableAspectInterceptorTest.class));
         suite.addTestSuite(org.alfresco.repo.management.JmxDumpUtilTest.class);
-
     }
 
     // [classpath:alfresco/application-context.xml] - part 4
@@ -498,7 +487,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTest(new JUnit4TestAdapter(PublishingQueueImplTest.class));
         suite.addTest(new JUnit4TestAdapter(PublishingPackageSerializerTest.class));
         suite.addTest(new JUnit4TestAdapter(PublishingIntegratedTest.class));
-
     }
 
     // [classpath:alfresco/application-context.xml] - part 5
@@ -515,7 +503,7 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.rendition.executer.XSLTFunctionsTest.class); // fails if with previous tests
         suite.addTestSuite(org.alfresco.repo.rendition.executer.XSLTRenderingEngineTest.class);
         suite.addTestSuite(org.alfresco.repo.replication.ReplicationServiceIntegrationTest.class);
-        
+
         suite.addTestSuite(org.alfresco.repo.template.XSLTProcessorTest.class);
 
         // was 46 (part)
@@ -526,7 +514,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(LuceneIndexBackupComponentTest.class);
         suite.addTestSuite(CMIS_FTSTest.class);
 
-    
         // was 53
         suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
 
@@ -543,15 +530,14 @@ public class AllRepositoryTestsCatalogue
         // was 08
         // does not seem to want to work in the same test suite as org.alfresco.repo.rule.* tests
         suite.addTestSuite(org.alfresco.opencmis.search.OpenCmisQueryTest.class);
-        
-        //was 57
+
+        // was 57
         suite.addTestSuite(org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinitionTest.class);
     }
 
     // [classpath:alfresco/application-context.xml] - part 6
     static void applicationContext_06(TestSuite suite)
     {
-
         // was 58
         suite.addTest(org.alfresco.repo.usage.UsageTestSuite.suite());
 
@@ -588,7 +574,6 @@ public class AllRepositoryTestsCatalogue
     // [classpath:alfresco/application-context.xml] - part 7
     static void applicationContext_07(TestSuite suite)
     {
-
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanSystemTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.auth.cifs.CifsAuthenticatorPassthruTest.class));
 
@@ -602,13 +587,11 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.node.archive.LargeArchiveAndRestoreTest.class);
         suite.addTestSuite(org.alfresco.repo.node.db.DbNodeServiceImplTest.class);
         suite.addTestSuite(org.alfresco.repo.node.db.DbNodeServiceImplPropagationTest.class);
-
     }
 
     // [classpath:alfresco/application-context.xml] - part 8
     static void applicationContext_08(TestSuite suite)
     {
-
         // was 36
         suite.addTestSuite(org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class);
         suite.addTestSuite(org.alfresco.repo.node.index.FullIndexRecoveryComponentTest.class);
@@ -618,7 +601,6 @@ public class AllRepositoryTestsCatalogue
     // [classpath:alfresco/application-context.xml] - part 9
     static void applicationContext_09(TestSuite suite)
     {
-
         // was 37
         suite.addTestSuite(org.alfresco.repo.node.index.MissingContentReindexComponentTest.class);
 
@@ -626,11 +608,26 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.node.integrity.IncompleteNodeTaggerTest.class);
         suite.addTestSuite(org.alfresco.repo.node.integrity.IntegrityTest.class);
         suite.addTestSuite(org.alfresco.repo.policy.PolicyComponentTransactionTest.class);
+
+        // was 24 (part)
+        suite.addTestSuite(org.alfresco.repo.forms.FormServiceImplTest.class);
+
+        // was 28 (part)
+        suite.addTestSuite(org.alfresco.repo.imap.ImapMessageTest.class);
+        suite.addTestSuite(org.alfresco.repo.imap.ImapServiceImplCacheTest.class);
+        suite.addTestSuite(org.alfresco.repo.imap.ImapServiceImplTest.class);
+
+        // was 13
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.bulkimport.impl.BulkImportTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.discussion.DiscussionServiceImplTest.class));
+
     }
 
     // [classpath:alfresco/application-context.xml] - part 10
     static void applicationContext_10(TestSuite suite)
     {
+        // was 22
+        suite.addTest(new JUnit4TestAdapter(NodeDAOTest.class));
 
         // was 47 (part)
         suite.addTestSuite(AuthenticationBootstrapTest.class);
@@ -654,94 +651,77 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(DefaultRemoteUserMapperTest.class);
         suite.addTestSuite(SubsystemChainingFtpAuthenticatorTest.class);
         suite.addTest(new JUnit4TestAdapter(LocalAuthenticationServiceTest.class));
+
+        // was 22
+        // suite.addTest(new JUnit4TestAdapter(NodeDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(ContentDataDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(EncodingDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(LockDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(MimetypeDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(LocaleDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(QNameDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(PropertyValueDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(AppliedPatchDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(AclCrudDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(UsageDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(SOLRDAOTest.class));
+        suite.addTest(new JUnit4TestAdapter(TenantAdminDAOTest.class));
+        // REOPO-1012 : run AuditDAOTest and PropertyValueCleanupTest near the end
+        // because their failure can cause other tests to fail on MS SQL
+        // AuditDAOTest fails if it runs after CannedQueryDAOTest so this order is a compromise
+        // CannedQueryDAOTest will fail on MS SQL if either AuditDAOTest or PropertyValueCleanupTest fail
+        suite.addTest(new JUnit4TestAdapter(PropertyValueCleanupTest.class));
+        suite.addTest(new JUnit4TestAdapter(AuditDAOTest.class));
+
+        // was 31
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.model.ModelTestSuite.class));
+
+        // was 57 (part)
+        suite.addTestSuite(org.alfresco.repo.tenant.MultiTNodeServiceInterceptorTest.class);
+
+        suite.addTestSuite(org.alfresco.repo.transfer.RepoTransferReceiverImplTest.class);
+
     }
 
     // [classpath:alfresco/application-context.xml] - part 11
     static void applicationContext_11(TestSuite suite)
     {
-        {
-            // was 50
-            suite.addTestSuite(org.alfresco.repo.solr.SOLRTrackingComponentTest.class);
 
-            // was 53
-            suite.addTestSuite(org.alfresco.repo.tagging.TaggingServiceImplTest.class);
+        // was 50
+        suite.addTestSuite(org.alfresco.repo.solr.SOLRTrackingComponentTest.class);
 
-            suite.addTestSuite(org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class);
-            suite.addTestSuite(org.alfresco.repo.transaction.RetryingTransactionHelperTest.class);
-            suite.addTestSuite(org.alfresco.repo.transaction.TransactionAwareSingletonTest.class);
-            suite.addTestSuite(org.alfresco.repo.transaction.TransactionServiceImplTest.class);
+        // was 53
+        suite.addTestSuite(org.alfresco.repo.tagging.TaggingServiceImplTest.class);
 
-            suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.oauth1.OAuth1CredentialsStoreServiceTest.class));
-            suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.oauth2.OAuth2CredentialsStoreServiceTest.class));
-            
-            // was 55
-            suite.addTestSuite(org.alfresco.repo.template.TemplateServiceImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class);
+        suite.addTestSuite(org.alfresco.repo.transaction.RetryingTransactionHelperTest.class);
+        suite.addTestSuite(org.alfresco.repo.transaction.TransactionAwareSingletonTest.class);
+        suite.addTestSuite(org.alfresco.repo.transaction.TransactionServiceImplTest.class);
 
-            // was 56 (part)
-            suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.tenant.MultiTServiceImplTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.oauth1.OAuth1CredentialsStoreServiceTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.oauth2.OAuth2CredentialsStoreServiceTest.class));
 
-            // was 46 (part)
-            suite.addTestSuite(SearcherComponentTest.class);
-            suite.addTestSuite(ADMLuceneCategoryTest.class);
-            suite.addTestSuite(ADMLuceneTest.class);
+        // was 55
+        suite.addTestSuite(org.alfresco.repo.template.TemplateServiceImplTest.class);
 
+        // was 56 (part)
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.tenant.MultiTServiceImplTest.class));
 
-            // was 13
-            suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.blog.BlogServiceImplTest.class));
-        }
+        // was 46 (part)
+        suite.addTestSuite(SearcherComponentTest.class);
+        suite.addTestSuite(ADMLuceneCategoryTest.class);
+        suite.addTestSuite(ADMLuceneTest.class);
 
-//        {
-//            //THIS IS MESSED UP 
-//            
-//            // was 40 (part)
-//            suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rendition.MultiUserRenditionTest.class));
-//            suite.addTestSuite(org.alfresco.repo.rendition.RenditionServiceIntegrationTest.class);
-//
-//            // was 28 (part)
-//            suite.addTestSuite(org.alfresco.repo.imap.ImapMessageTest.class);
-//            suite.addTestSuite(org.alfresco.repo.imap.ImapServiceImplCacheTest.class);
-//            suite.addTestSuite(org.alfresco.repo.imap.ImapServiceImplTest.class);
-//
-//            // was 13
-//            suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.bulkimport.impl.BulkImportTest.class));
-//            suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.discussion.DiscussionServiceImplTest.class));
-//        }
-        // -----
-        // was 22
-        // suite.addTest(new JUnit4TestAdapter(NodeDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(ContentDataDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(EncodingDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(LockDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(MimetypeDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(LocaleDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(QNameDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(PropertyValueDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(AppliedPatchDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(AclCrudDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(UsageDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(SOLRDAOTest.class));
-        // suite.addTest(new JUnit4TestAdapter(TenantAdminDAOTest.class));
-        // // REOPO-1012 : run AuditDAOTest and PropertyValueCleanupTest near the end
-        // // because their failure can cause other tests to fail on MS SQL
-        // // AuditDAOTest fails if it runs after CannedQueryDAOTest so this order is a compromise
-        // // CannedQueryDAOTest will fail on MS SQL if either AuditDAOTest or PropertyValueCleanupTest fail
-        // suite.addTest(new JUnit4TestAdapter(PropertyValueCleanupTest.class));
-        // suite.addTest(new JUnit4TestAdapter(AuditDAOTest.class));
+        // was 13
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.blog.BlogServiceImplTest.class));
+    }
 
-        // was 31
-        // suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.model.ModelTestSuite.class));
-
-        // was 24 (part)
-        // suite.addTestSuite(org.alfresco.repo.forms.FormServiceImplTest.class);
-
-        // was 39 (part)
-        // suite.addTest(new JUnit4TestAdapter(PublishEventActionTest.class));
-        // suite.addTest(new JUnit4TestAdapter(EnvironmentImplTest.class));
-
-        // was 57 (part)
-        // suite.addTestSuite(org.alfresco.repo.tenant.MultiTNodeServiceInterceptorTest.class);
-
-        // suite.addTestSuite(org.alfresco.repo.transfer.RepoTransferReceiverImplTest.class);
+    // [classpath:alfresco/application-context.xml] - part 12
+    static void applicationContext_12(TestSuite suite)
+    {
+        // was 40 (part)
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rendition.MultiUserRenditionTest.class));
+        suite.addTestSuite(org.alfresco.repo.rendition.RenditionServiceIntegrationTest.class);
     }
 
     // [classpath:alfresco/application-context.xml, classpath:test-cmisinteger_modell-context.xml]

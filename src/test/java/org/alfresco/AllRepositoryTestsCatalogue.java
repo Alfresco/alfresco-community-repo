@@ -339,26 +339,32 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(ContentMetadataExtracterTest.class);
         suite.addTestSuite(ContentMetadataExtracterTagMappingTest.class);
         suite.addTestSuite(ContentMetadataEmbedderTest.class);
+
+        // was 43
+        suite.addTestSuite(org.alfresco.repo.rule.RuleLinkTest.class); // fails if with previous tests
+        suite.addTestSuite(org.alfresco.repo.rule.RuleServiceCoverageTest.class);
+        suite.addTestSuite(org.alfresco.repo.rule.RuleServiceImplTest.class);
+
+        // was 45
+        suite.addTestSuite(org.alfresco.repo.rule.RuleTypeImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.rule.ruletrigger.RuleTriggerTest.class);
+
+        // was 09
         suite.addTestSuite(SpecialiseTypeActionExecuterTest.class);
         suite.addTestSuite(RemoveFeaturesActionExecuterTest.class);
         suite.addTestSuite(ActionTrackingServiceImplTest.class); // intermittent - pending ALF-9773 & ALF-9774
-        
-        
+
         suite.addTestSuite(org.alfresco.email.server.EmailServiceImplTest.class);
         suite.addTestSuite(org.alfresco.email.server.EmailServerTest.class);
-        //suite.addTestSuite(org.alfresco.filesys.FTPServerTest.class);
+        // suite.addTestSuite(org.alfresco.filesys.FTPServerTest.class);
         suite.addTestSuite(org.alfresco.filesys.repo.CifsIntegrationTest.class);
         suite.addTestSuite(org.alfresco.filesys.repo.ContentDiskDriverTest.class);
 
         // was 04
         suite.addTestSuite(org.alfresco.filesys.repo.LockKeeperImplTest.class);
 
-        // was 08
-        suite.addTestSuite(org.alfresco.opencmis.search.OpenCmisQueryTest.class);
-        
         // was 10
         suite.addTestSuite(org.alfresco.repo.activities.ActivityServiceImplTest.class);
-        //suite.addTestSuite(org.alfresco.repo.admin.patch.PatchTest.class); //moved in the next part
         suite.addTestSuite(org.alfresco.repo.admin.registry.RegistryServiceImplTest.class);
     }
 
@@ -509,7 +515,7 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.rendition.executer.XSLTFunctionsTest.class); // fails if with previous tests
         suite.addTestSuite(org.alfresco.repo.rendition.executer.XSLTRenderingEngineTest.class);
         suite.addTestSuite(org.alfresco.repo.replication.ReplicationServiceIntegrationTest.class);
-
+        
         suite.addTestSuite(org.alfresco.repo.template.XSLTProcessorTest.class);
 
         // was 46 (part)
@@ -520,6 +526,7 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(LuceneIndexBackupComponentTest.class);
         suite.addTestSuite(CMIS_FTSTest.class);
 
+    
         // was 53
         suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
 
@@ -533,6 +540,11 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.transfer.TransferVersionCheckerImplTest.class);
         suite.addTestSuite(org.alfresco.repo.transfer.manifest.ManifestIntegrationTest.class);
         suite.addTestSuite(org.alfresco.repo.transfer.script.ScriptTransferServiceTest.class);
+        // was 08
+        // does not seem to want to work in the same test suite as org.alfresco.repo.rule.* tests
+        suite.addTestSuite(org.alfresco.opencmis.search.OpenCmisQueryTest.class);
+        
+        //was 57
         suite.addTestSuite(org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinitionTest.class);
     }
 

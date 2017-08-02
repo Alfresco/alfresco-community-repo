@@ -410,7 +410,17 @@ public class AllRepositoryTestsCatalogue
         {
             // Ignore
         }
+        
+        // was 43
+        suite.addTestSuite(org.alfresco.repo.rule.RuleLinkTest.class); // fails if with previous tests
+        suite.addTestSuite(org.alfresco.repo.rule.RuleServiceCoverageTest.class);
+        suite.addTestSuite(org.alfresco.repo.rule.RuleServiceImplTest.class);
+
+        // was 45
+        suite.addTestSuite(org.alfresco.repo.rule.RuleTypeImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.rule.ruletrigger.RuleTriggerTest.class);
     }
+    
     // [classpath:alfresco/application-context.xml] - part 3
     static void applicationContext_03(TestSuite suite)
     {
@@ -499,15 +509,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.rendition.executer.XSLTFunctionsTest.class); // fails if with previous tests
         suite.addTestSuite(org.alfresco.repo.rendition.executer.XSLTRenderingEngineTest.class);
         suite.addTestSuite(org.alfresco.repo.replication.ReplicationServiceIntegrationTest.class);
-
-        // was 43
-        suite.addTestSuite(org.alfresco.repo.rule.RuleLinkTest.class); // fails if with previous tests
-        suite.addTestSuite(org.alfresco.repo.rule.RuleServiceCoverageTest.class);
-        suite.addTestSuite(org.alfresco.repo.rule.RuleServiceImplTest.class);
-
-        // was 45
-        suite.addTestSuite(org.alfresco.repo.rule.RuleTypeImplTest.class);
-        suite.addTestSuite(org.alfresco.repo.rule.ruletrigger.RuleTriggerTest.class);
 
         suite.addTestSuite(org.alfresco.repo.template.XSLTProcessorTest.class);
 

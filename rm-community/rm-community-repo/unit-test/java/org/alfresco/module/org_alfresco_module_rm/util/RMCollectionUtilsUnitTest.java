@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.Difference;
 import org.junit.Test;
@@ -121,5 +122,22 @@ public class RMCollectionUtilsUnitTest
         List<String> l = RMCollectionUtils.<String, ArrayList<String>>asSerializableList("one", "two", "three");
 
         assertEquals(s, l);
+    }
+
+    @Test public void toImmutableSet_nullInput()
+    {
+        Set<String> output = RMCollectionUtils.toImmutableSet(null);
+        assertNull("toImmutableSet should pass through with null.", output);
+    }
+
+    @Test public void toImmutableSet_nullElement()
+    {
+        Set<String> input = newHashSet("One", null, "Three");
+
+        // Call the method under test.
+        Set<String> output = RMCollectionUtils.toImmutableSet(input);
+
+        assertEquals("Unexpected handling of null input element", output, newHashSet("One", "Three"));
+        assertEquals("Input should not have been changed.", input, newHashSet("One", null, "Three"));
     }
 }

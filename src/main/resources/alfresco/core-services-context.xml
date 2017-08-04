@@ -855,12 +855,15 @@
     </bean>
 
     <bean id="serverDescriptorDAO" class="org.alfresco.repo.descriptor.ServerDescriptorDAOImpl">
-       <property name="repositoryName">
-           <value>${repository.name}</value>
-       </property>
-       <property name="resource">
-           <value>classpath:alfresco/version.properties</value>
-       </property>
+        <property name="repositoryName">
+            <value>${repository.name}</value>
+        </property>
+        <property name="resource">
+            <list>
+                <value>classpath:alfresco/version.properties</value>
+                <value>classpath:alfresco/repository.properties</value>
+            </list>
+        </property>
     </bean>
 
     <bean id="currentRepoDescriptorDAO" class="org.alfresco.repo.descriptor.RepositoryDescriptorDAOImpl">

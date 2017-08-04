@@ -62,22 +62,25 @@ public class ServerDescriptorDAOImpl implements DescriptorDAO
     /**
      * Sets the server descriptor from a resource file.
      * 
-     * @param descriptorResource
-     *            resource containing server descriptor meta-data
+     * @param locations
+     *            resources containing server descriptor meta-data
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
-    public void setResource(final Resource descriptorResource) throws IOException
+    public void setResource(final Resource[] locations) throws IOException
     {
         this.serverProperties = new Properties();
-        InputStream is = descriptorResource.getInputStream();
-        try
+        for (int i=0; i< locations.length; i++)
         {
-            this.serverProperties.load(is);
-        }
-        finally
-        {
-            if (is != null) try { is.close(); } catch (IOException e) {}
+            InputStream is = locations[i].getInputStream();
+            try
+            {
+                this.serverProperties.load(is);
+            }
+            finally
+            {
+                if (is != null) try { is.close(); } catch (IOException e) {}
+            }
         }
     }
 

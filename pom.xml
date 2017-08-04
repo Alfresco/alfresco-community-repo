@@ -32,6 +32,12 @@
 
 
     <properties>
+        <build-number>0</build-number>
+        <build-key>BUILD-KEY</build-key>
+        <build-name>Build-Name</build-name>
+        <scm-path>local/development/workspace</scm-path>
+        <scm-revision>${buildNumber}</scm-revision>
+
         <licenseName>community</licenseName>
         
         <tomcat.default.alfresco.port>8080</tomcat.default.alfresco.port>
@@ -48,7 +54,7 @@
         <!-- Define the location where alfresco will store its content files, i.e. *.bin) -->
         <dir.root>${project.build.directory}/alf_data</dir.root>
 
-        <dependency.alfresco-repository.version>6.0</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>6.1-SNAPSHOT</dependency.alfresco-repository.version>
         <dependency.alfresco-remote-api.version>6.0</dependency.alfresco-remote-api.version>
         <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
@@ -236,29 +242,43 @@
 
     <build>
         <finalName>alfresco</finalName>
+        <resources>
+            <!-- Allow replacing variables inside version.properties -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>alfresco/version.properties</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>alfresco/version.properties</include>
+                </includes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
+            <!-- Creates a scm revision and stores in ${buildNumber} variable -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <shortRevisionLength>8</shortRevisionLength>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
-                    <!-- Extract version.properties, for convenience -->
-                    <execution>
-                        <id>fetch-version-properties</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-repository</artifactId>
-                                    <version>${dependency.alfresco-repository.version}</version>
-                                </artifactItem>
-                            </artifactItems>
-                            <includes>alfresco/version.properties</includes>
-                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                        </configuration>
-                    </execution>
                     <!-- CLOUD-1967 Put core log4j config in WEB-INF/classes, so that it's first in classloader -->
                     <execution>
                         <id>fetch-log4j-config</id>

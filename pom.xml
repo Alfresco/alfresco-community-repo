@@ -30,6 +30,8 @@
     </distributionManagement>
 
     <properties>
+        <licenseName>community</licenseName>
+
         <index.subsystem.name>buildonly</index.subsystem.name>
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
@@ -969,22 +971,13 @@
 
     <build>
         <resources>
-            <!-- Allow replacing variables inside version.properties -->
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <exclude>alfresco/version.properties</exclude>
                     <!-- ACE-2318 Exclude alfresco-jmxrmi.* from repository JAR -->
                     <exclude>alfresco/alfresco-jmxrmi.access</exclude>
                     <exclude>alfresco/alfresco-jmxrmi.password</exclude>
                 </excludes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>alfresco/version.properties</include>
-                </includes>
-                <filtering>true</filtering>
             </resource>
         </resources>
 
@@ -1147,10 +1140,51 @@
                     <target>1.8</target>
                 </configuration>
            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                    <organizationName>Alfresco Software Limited</organizationName>
+                    <failOnMissingHeader>true</failOnMissingHeader>
+                    <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                    <licenseResolver>classpath://alfresco</licenseResolver>
+                    <licenseName>${licenseName}</licenseName>
+                    <roots>
+                        <root>src</root>
+                    </roots>
+                    <includes>
+                        <include>**/*.java</include>
+                        <include>**/*.jsp</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-licenses</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>check-file-header</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.alfresco</groupId>
+                        <artifactId>alfresco-license-headers</artifactId>
+                        <version>1.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
 
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>1.13</version>
+                </plugin>
                 <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>

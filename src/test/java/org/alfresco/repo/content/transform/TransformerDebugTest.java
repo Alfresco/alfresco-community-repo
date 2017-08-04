@@ -32,6 +32,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -43,7 +46,7 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * Test class for TransformerDebug.
- * 
+ *
  * @author Alan Davis
  */
 public class TransformerDebugTest
@@ -52,7 +55,7 @@ public class TransformerDebugTest
     private NodeService nodeService;
 
     @Mock
-    private MimetypeService mimetypeService; 
+    private MimetypeService mimetypeService;
 
     @Mock
     private ContentTransformerRegistry transformerRegistry;
@@ -62,30 +65,30 @@ public class TransformerDebugTest
 
     @Mock
     private TransformationOptions options;
-    
+
     @Mock
     private AbstractContentTransformerLimits transformer1;
-    
+
     @Mock
     private AbstractContentTransformerLimits transformer2;
-    
+
     @Mock
     private AbstractContentTransformerLimits transformer3;
-    
+
     @Mock
     private AbstractContentTransformerLimits transformer4;
-    
+
     private TransformerDebug transformerDebug;
-    
+
     private TransformerLog log;
 
     private TransformerDebugLog debug;
-    
+
     @Before
     public void setUp() throws Exception
     {
         MockitoAnnotations.initMocks(this);
-        
+
         log = new TransformerLog();
         debug = new TransformerDebugLog();
 
@@ -95,7 +98,7 @@ public class TransformerDebugTest
         mockMimetypes(mimetypeService,
                 "application/pdf", "pdf",
                 "text/plain",      "txt");
-        
+
         when(transformer1.getName()).thenReturn("transformer1");
         when(transformer2.getName()).thenReturn("transformer2");
         when(transformer3.getName()).thenReturn("transformer3");
@@ -108,6 +111,25 @@ public class TransformerDebugTest
 
         debug.setTransformerDebug(transformerDebug);
         debug.setTransformerConfig(transformerConfig);
+    }
+
+    // Replaces any transformer reference numbers N.N.N with "0" before checking
+    private String[] unnumbered(String actual[])
+    {
+        for (int i = actual.length-1; i >= 0; i--)
+        {
+            StringJoiner sj = new StringJoiner("\n");
+            String[] bits = actual[i].split("\n");
+            for (String bit: bits)
+            {
+                Pattern p = Pattern.compile("^[0-9.]*");
+                Matcher m = p.matcher(bit);
+                bit = m.replaceFirst("0");
+                sj.add(bit);
+            }
+            actual[i] = sj.toString();
+        }
+        return actual;
     }
 
     // Replaces any times with " NN ms" before checking
@@ -124,20 +146,20 @@ public class TransformerDebugTest
     public void alf18373Test()
     {
         long sourceSize = 1024*1024*3/2;
-        
+
         transformerDebug.pushAvailable("sourceUrl", "application/pdf", "text/plain", options);
-        
+
         transformerDebug.unavailableTransformer(transformer1, "application/pdf", "text/plain", 50);
         transformerDebug.unavailableTransformer(transformer2, "application/pdf", "text/plain", 0);
         transformerDebug.unavailableTransformer(transformer3, "application/pdf", "text/plain", 50);
         transformerDebug.unavailableTransformer(transformer4, "application/pdf", "text/plain", 50);
-        
+
         List<ContentTransformer> transformers = Arrays.asList(new ContentTransformer[] {});
-        
+
         transformerDebug.availableTransformers(transformers, sourceSize, options, "ContentService.transform(...)");
 
         transformerDebug.popAvailable();
-        
+
         //   "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
         //   "0             --d) [---] transformer3<<Component>> > 50 KB\n"+
         assertDebugEntriesEquals(new String[] {
@@ -146,8 +168,8 @@ public class TransformerDebugTest
         "0             --a) [---] transformer1<<Component>> > 50 KB\n"+
         "0             --b) [---] transformer3<<Component>> > 50 KB\n"+
         "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
-        "0             Finished in NN ms Transformer NOT called\n"}, untimed(debug.getEntries(10)));
+        "0             Finished in NN ms Transformer NOT called"}, unnumbered(untimed(debug.getEntries(10))));
         assertLogEntriesEquals(new String[] {
-        "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, untimed(log.getEntries(10)));
+        "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, unnumbered(untimed(log.getEntries(10))));
     }
 }

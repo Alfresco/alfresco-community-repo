@@ -971,22 +971,13 @@
 
     <build>
         <resources>
-            <!-- Allow replacing variables inside version.properties -->
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
-                    <exclude>alfresco/version.properties</exclude>
                     <!-- ACE-2318 Exclude alfresco-jmxrmi.* from repository JAR -->
                     <exclude>alfresco/alfresco-jmxrmi.access</exclude>
                     <exclude>alfresco/alfresco-jmxrmi.password</exclude>
                 </excludes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>alfresco/version.properties</include>
-                </includes>
-                <filtering>true</filtering>
             </resource>
         </resources>
 

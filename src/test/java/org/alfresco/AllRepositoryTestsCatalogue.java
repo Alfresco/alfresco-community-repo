@@ -303,39 +303,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.lucene.analysis.PathTokenFilterTest.class));
     }
 
-    /**
-     * 
-     * various tests that do use context files but do not fit into other main context files patterns
-     */
-    static void miscContext_999(TestSuite suite)
-    {
-        // context files: [classpath:alfresco/node-locator-context.xml, classpath:test-nodeLocatorServiceImpl-context.xml]
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.nodelocator.NodeLocatorServiceImplTest.class));
-
-    }
-
-    // [classpath*:alfresco/ibatis/ibatis-test-context.xml, classpath:alfresco/application-context.xml,
-    // classpath:alfresco/test/global-integration-test-context.xml]
-    static void ibatisTestContext_applicationContext_globalIntegrationTestContext_33(TestSuite suite)
-    {
-        // alfresco/ibatis/ibatis-test-context.xml seems to introduce this bean : cannedQueryDAOForTesting
-        // that is used only in testing
-        // should be safe for merge in application-context.xml
-        // was 22 (part)
-        // [classpath*:alfresco/ibatis/ibatis-test-context.xml, classpath:alfresco/application-context.xml,
-        // classpath:alfresco/test/global-integration-test-context.xml]
-        suite.addTest(new JUnit4TestAdapter(CannedQueryDAOTest.class));
-
-        // pass second try
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.node.NodeServiceTest.class));
-    }
-
-    // [classpath:alfresco/application-context.xml, classpath:alfresco/minimal-context.xml]
-    static void applicationContext_minimalContext_01(TestSuite suite)
-    {
-        suite.addTestSuite(org.alfresco.RepositoryStartStopTest.class);
-    }
-
     // [classpath:alfresco/application-context.xml] - part 1
     static void applicationContext_01(TestSuite suite)
     {
@@ -886,7 +853,7 @@ public class AllRepositoryTestsCatalogue
             suite.addTest(new JUnit4TestAdapter(org.alfresco.util.test.junitrules.TemporarySitesTest.class));
         }
     }
-
+//TODO
     // [classpath:alfresco/application-context.xml, classpath:cache-test/cache-test-context.xml]
     static void applicationContext_cacheTestContext_14(TestSuite suite)
     {
@@ -938,76 +905,94 @@ public class AllRepositoryTestsCatalogue
         // virtualization-test-context.xml two beans defined that only seem to be used in tests
         suite.addTest(org.alfresco.repo.virtual.VirtualizationIntegrationTestSuite.suite());
     }
-
+// TODO until here
     // ------------------------------------application context until here -------------------
-
-    // [classpath:cachingstore/test-context.xml]
-    static void cachingstoreTestContext_18(TestSuite suite)
+    
+    /**
+     * 
+     * various tests that do use context files but do not fit into other main context files patterns
+     */
+    static void miscContext_999(TestSuite suite)
     {
-        // this is fast and passes
-        // was 17 (part)
-        suite.addTest(new JUnit4TestAdapter(FullTest.class));
-    }
+        // context files: [classpath:alfresco/node-locator-context.xml, classpath:test-nodeLocatorServiceImpl-context.xml]
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.nodelocator.NodeLocatorServiceImplTest.class));
 
-    // [classpath:cachingstore/test-cleaner-context.xml]
-    static void cachingstoreTestCleanerContext_21(TestSuite suite)
-    {
-        // this is fast as well
-        // was 17 (part)
-        suite.addTest(new JUnit4TestAdapter(CachedContentCleanupJobTest.class));
-    }
+        // alfresco/ibatis/ibatis-test-context.xml seems to introduce this bean : cannedQueryDAOForTesting
+        // that is used only in testing
+        // should be safe for merge in application-context.xml
+        // was 22 (part)
+        // [classpath*:alfresco/ibatis/ibatis-test-context.xml, classpath:alfresco/application-context.xml,
+        // classpath:alfresco/test/global-integration-test-context.xml]
+        suite.addTest(new JUnit4TestAdapter(CannedQueryDAOTest.class));
 
-    // [classpath:cachingstore/test-std-quota-context.xml]
-    static void cachingstoreTestStdQuotaContext_22(TestSuite suite)
-    {
-        // pass
-        // was 17 (part)
-        suite.addTest(new JUnit4TestAdapter(StandardQuotaStrategyTest.class));
-    }
+        // pass second try - only passes on a dirty DB. failes to pass on a clean DB
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.node.NodeServiceTest.class));
+        {
+            // [classpath:alfresco/application-context.xml, classpath:alfresco/minimal-context.xml]
+            {
+                suite.addTestSuite(org.alfresco.RepositoryStartStopTest.class);
+            }
 
-    // [classpath:cachingstore/test-slow-context.xml]
-    static void cachingstoreTestSlowContext_23(TestSuite suite)
-    {
-        // pass
-        // was 17 (part)
-        suite.addTest(new JUnit4TestAdapter(SlowContentStoreTest.class));
-        suite.addTest(new JUnit4TestAdapter(ConcurrentCachingStoreTest.class));
-    }
+            // [classpath:cachingstore/test-context.xml]
+            {
+                // this is fast and passes
+                // was 17 (part)
+                suite.addTest(new JUnit4TestAdapter(FullTest.class));
+            }
 
-    // [classpath:org/alfresco/repo/jscript/test-context.xml]
-    static void jscriptTestContext_29(TestSuite suite)
-    {
-        // pass
-        // was 29 (part)
-        suite.addTestSuite(org.alfresco.repo.jscript.ScriptBehaviourTest.class);
-    }
+            // [classpath:cachingstore/test-cleaner-context.xml]
+            {
+                // this is fast as well
+                // was 17 (part)
+                suite.addTest(new JUnit4TestAdapter(CachedContentCleanupJobTest.class));
+            }
 
-    // [module/module-component-test-beans.xml]
-    static void moduleComponentTestBeansContext_32(TestSuite suite)
-    {
-        // pass
-        // was 32 (part)
-        suite.addTestSuite(org.alfresco.repo.module.ComponentsTest.class);
-    }
+            // [classpath:cachingstore/test-std-quota-context.xml]
+            {
+                // pass
+                // was 17 (part)
+                suite.addTest(new JUnit4TestAdapter(StandardQuotaStrategyTest.class));
+            }
 
-    // TODO can we remove this? Was it EOLed?
-    // [classpath:test/alfresco/test-web-publishing-context.xml]
-    static void testWebPublishingContext_39(TestSuite suite)
-    {
-        // pass- very fast 2s
-        suite.addTest(new JUnit4TestAdapter(ChannelServiceImplTest.class));
-        suite.addTest(new JUnit4TestAdapter(PublishingEventHelperTest.class));
-    }
+            // [classpath:cachingstore/test-slow-context.xml]
+            {
+                // pass
+                // was 17 (part)
+                suite.addTest(new JUnit4TestAdapter(SlowContentStoreTest.class));
+                suite.addTest(new JUnit4TestAdapter(ConcurrentCachingStoreTest.class));
+            }
 
-    // [alfresco/scheduler-core-context.xml, org/alfresco/util/test-scheduled-jobs-context.xml]
-    static void schedulerCoreContext_testScheduledJobsContext_66(TestSuite suite)
-    {
-        // pass - 25s - this is not a candidate for a special merge- but maybe can run in the misc context test suite
-        // was 63 (part)
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanTest.class));
-    }
+            // [classpath:org/alfresco/repo/jscript/test-context.xml]
+            {
+                // pass
+                // was 29 (part)
+                suite.addTestSuite(org.alfresco.repo.jscript.ScriptBehaviourTest.class);
+            }
+        }
+        {
+            // [module/module-component-test-beans.xml]
+            {
+                // pass
+                // was 32 (part)
+                suite.addTestSuite(org.alfresco.repo.module.ComponentsTest.class);
+            }
 
-    // fail-------------------------------------------------------------------------
+            // TODO can we remove this? Was it EOLed?
+            // [classpath:test/alfresco/test-web-publishing-context.xml]
+            {
+                // pass- very fast 2s
+                suite.addTest(new JUnit4TestAdapter(ChannelServiceImplTest.class));
+                suite.addTest(new JUnit4TestAdapter(PublishingEventHelperTest.class));
+            }
+
+            // [alfresco/scheduler-core-context.xml, org/alfresco/util/test-scheduled-jobs-context.xml]
+            {
+                // pass - 25s - this is not a candidate for a special merge- but maybe can run in the misc context test suite
+                // was 63 (part)
+                suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanTest.class));
+            }
+        }
+    }
 
     // [classpath:alfresco/minimal-context.xml]
     static void minimalContext_16(TestSuite suite)
@@ -1026,17 +1011,16 @@ public class AllRepositoryTestsCatalogue
         // fails- 68s
         // test-thumbnail-context.xml - should be fine to merge - only defines some extra test beans
         suite.addTestSuite(org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class);
-    }
 
-    // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
-    // classpath:alfresco/test/global-integration-test-context.xml]
-    static void testRenditionsContext_applicationContext_globalIntegrationTestContext_41(TestSuite suite)
-    {
-        // safe to merge if it passes
-        // test-renditions-context.xml introduced a mock bean: mockRenderingEngine- used in testing
-        // global-integration-test-context.xml safe
-        // this does NOT passes locally - loads the context and connects to the db - slow
-        // was 40 (part)
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rendition.RenditionServicePermissionsTest.class));
+        // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
+        // classpath:alfresco/test/global-integration-test-context.xml]
+        {
+            // safe to merge if it passes
+            // test-renditions-context.xml introduced a mock bean: mockRenderingEngine- used in testing
+            // global-integration-test-context.xml safe
+            // this does NOT passes locally - loads the context and connects to the db - slow
+            // was 40 (part)
+            suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rendition.RenditionServicePermissionsTest.class));
+        }
     }
 }

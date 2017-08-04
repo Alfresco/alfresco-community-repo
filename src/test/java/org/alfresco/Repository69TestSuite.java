@@ -37,7 +37,7 @@ public class Repository69TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_testQnameTypeEditorContext_69(suite);
+        //AllRepositoryTestsCatalogue.applicationContext_testQnameTypeEditorContext_69(suite);
         return suite;
     }
 }

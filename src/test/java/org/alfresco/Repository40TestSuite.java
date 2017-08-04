@@ -37,7 +37,7 @@ public class Repository40TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_globalIntegrationTestContext_testRatingServiceIntegrationTestContext_40(suite);
+        //AllRepositoryTestsCatalogue.applicationContext_globalIntegrationTestContext_testRatingServiceIntegrationTestContext_40(suite);
         return suite;
     }
 }

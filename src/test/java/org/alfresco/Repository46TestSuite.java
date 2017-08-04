@@ -37,7 +37,7 @@ public class Repository46TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.dataModel6_16TestsContext_46(suite);
+        //AllRepositoryTestsCatalogue.dataModel6_16TestsContext_46(suite);
         return suite;
     }
 }

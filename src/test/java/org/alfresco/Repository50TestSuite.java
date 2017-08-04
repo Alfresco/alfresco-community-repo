@@ -37,7 +37,7 @@ public class Repository50TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_siteCustomContext_50(suite);
+        //AllRepositoryTestsCatalogue.applicationContext_siteCustomContext_50(suite);
         return suite;
     }
 }

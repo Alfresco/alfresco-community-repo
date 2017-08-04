@@ -37,7 +37,7 @@ public class Repository06TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_cmisIntegerModel1Context_06(suite);
+       // AllRepositoryTestsCatalogue.applicationContext_cmisIntegerModel1Context_06(suite);
         return suite;
     }
 }

@@ -37,7 +37,7 @@ public class Repository24TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_mnt7383Context_24(suite);
+        //AllRepositoryTestsCatalogue.applicationContext_mnt7383Context_24(suite);
         return suite;
     }
 }

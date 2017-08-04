@@ -37,7 +37,7 @@ public class Repository61TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.oneTestCloseContext_61(suite);
+        //AllRepositoryTestsCatalogue.oneTestCloseContext_61(suite);
         return suite;
     }
 }

@@ -37,7 +37,7 @@ public class Repository63TestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_testKerberosCntext_63(suite);
+        //AllRepositoryTestsCatalogue.applicationContext_testKerberosCntext_63(suite);
         return suite;
     }
 }

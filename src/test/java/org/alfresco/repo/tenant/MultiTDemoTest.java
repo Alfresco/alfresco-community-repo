@@ -182,8 +182,7 @@ public class MultiTDemoTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
-        ctx = new ClassPathXmlApplicationContext(
-                new String[] { ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:tenant/mt-*context.xml" });
+        ctx = ApplicationContextHelper.getApplicationContext(new String[] { ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:tenant/mt-*context.xml" });
 
         nodeService = (NodeService) ctx.getBean("NodeService");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");

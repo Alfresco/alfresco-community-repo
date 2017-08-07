@@ -118,8 +118,8 @@ public class TransformerDebugTest
     {
         for (int i = actual.length-1; i >= 0; i--)
         {
-            StringJoiner sj = new StringJoiner("\n");
-            String[] bits = actual[i].split("\n");
+            StringJoiner sj = new StringJoiner(System.lineSeparator());
+            String[] bits = actual[i].split(System.lineSeparator());
             for (String bit: bits)
             {
                 Pattern p = Pattern.compile("^[0-9.]*");
@@ -168,7 +168,7 @@ public class TransformerDebugTest
         "0             --a) [---] transformer1<<Component>> > 50 KB\n"+
         "0             --b) [---] transformer3<<Component>> > 50 KB\n"+
         "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
-        "0             Finished in NN ms Transformer NOT called"}, unnumbered(untimed(debug.getEntries(10))));
+        "0             Finished in NN ms Transformer NOT called\n"}, unnumbered(untimed(debug.getEntries(10))));
         assertLogEntriesEquals(new String[] {
         "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, unnumbered(untimed(log.getEntries(10))));
     }

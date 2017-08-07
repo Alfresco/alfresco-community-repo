@@ -99,7 +99,7 @@ public class OpenCmisLocalTest extends TestCase
     public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml",
     	"classpath:opencmis/opencmistest-context.xml"
     																};
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+    private static ApplicationContext ctx;
     private static final String BEAN_NAME_AUTHENTICATION_COMPONENT = "authenticationComponent";
     private static final String MIME_PLAIN_TEXT = "text/plain";
     private TempStoreOutputStreamFactory streamFactory;
@@ -113,11 +113,12 @@ public class OpenCmisLocalTest extends TestCase
      */
     public static class TestCmisServiceFactory extends AbstractServiceFactory
     {
-        private static AlfrescoCmisServiceFactory serviceFactory = (AlfrescoCmisServiceFactory) ctx.getBean("CMISServiceFactory");
+        private static AlfrescoCmisServiceFactory serviceFactory;
         @Override
         public void init(Map<String, String> parameters)
         {
-        	serviceFactory.init(parameters);
+            serviceFactory = (AlfrescoCmisServiceFactory) ctx.getBean("CMISServiceFactory");
+            serviceFactory.init(parameters);
         }
 
         @Override
@@ -154,6 +155,7 @@ public class OpenCmisLocalTest extends TestCase
     
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
         File tempDir = new File(TempFileProvider.getTempDir(), GUID.generate());
         this.streamFactory = TempStoreOutputStreamFactory.newInstance(tempDir, 1024, 1024, false);
         this.eventPublisher = (EventPublisherForTestingOnly) ctx.getBean("eventPublisher");

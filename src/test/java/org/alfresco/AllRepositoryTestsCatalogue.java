@@ -341,7 +341,9 @@ public class AllRepositoryTestsCatalogue
         suite.addTest(new JUnit4TestAdapter(RepositoryStartupTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanSystemTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.auth.cifs.CifsAuthenticatorPassthruTest.class));
+        // the following fails locally - on windows
         suite.addTestSuite(org.alfresco.repo.content.transform.DifferrentMimeTypeTest.class);
+
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.attributes.PropTablesCleanupJobIntegrationTest.class));
         suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.ServiceRegistryTest.class));

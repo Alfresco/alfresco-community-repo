@@ -39,7 +39,6 @@ public class AppContextExtra03TestSuite extends TestSuite
     {
         TestSuite suite = new TestSuite();
 
-        AllRepositoryTestsCatalogue.applicationContext_cacheTestContext(suite);
         AllRepositoryTestsCatalogue.applicationContext_mtAllContext(suite);
 
         return suite;

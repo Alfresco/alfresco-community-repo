@@ -38,8 +38,8 @@ public class AppContextExtra02TestSuite extends TestSuite
         AllRepositoryTestsCatalogue.applicationContext_virtualizationTestContext(suite);
         AllRepositoryTestsCatalogue.applicationContext_testSubscriptionsContext(suite);
         AllRepositoryTestsCatalogue.applicationContext_openCmisContext(suite);
-        // TODO Uncomment the following 2 lines after REPO-2790 is implemented
-        // AllRepositoryTestsCatalogue.applicationContext_cacheTestContext(suite);
+        AllRepositoryTestsCatalogue.applicationContext_cacheTestContext(suite);
+        // TODO Uncomment the following line after REPO-2790 is implemented
         // AllRepositoryTestsCatalogue.applicationContext_mtAllContext(suite);
 
         return suite;

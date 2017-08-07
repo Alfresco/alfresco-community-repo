@@ -851,7 +851,7 @@ public class AllRepositoryTestsCatalogue
     }
 
     // [classpath:alfresco/application-context.xml, classpath:tenant/mt-*context.xml]
-    static void applicationContext_mtAllContext_56(TestSuite suite)
+    static void applicationContext_mtAllContext(TestSuite suite)
     {
         // pass - slow 182s -
         // not sure what to say about the context files mt-*-context.xml
@@ -873,7 +873,7 @@ public class AllRepositoryTestsCatalogue
     }
 
     // [classpath:alfresco/application-context.xml, classpath:opencmis/opencmistest-context.xml]
-    static void applicationContext_openCmisContext_07(TestSuite suite)
+    static void applicationContext_openCmisContext(TestSuite suite)
     {
         // this does not want to play nice with the ones above
         // pass - 8 s - fast - no DB -
@@ -885,7 +885,7 @@ public class AllRepositoryTestsCatalogue
 
     // TODO can we remove this? Was it EOLed?
     // [classpath:alfresco/application-context.xml, classpath:test/alfresco/test-subscriptions-context.xml]
-    static void applicationContext_testSubscriptionsContext_52(TestSuite suite)
+    static void applicationContext_testSubscriptionsContext(TestSuite suite)
     {
         // pass - fast 3s - no DB
         // test-subscriptions-context.xml overrides extension.dictionaryBootstrap - with custom models
@@ -908,7 +908,7 @@ public class AllRepositoryTestsCatalogue
      * 
      * various tests that do use context files but do not fit into other main context files patterns
      */
-    static void miscContext_999(TestSuite suite)
+    static void miscContext(TestSuite suite)
     {
         // context files: [classpath:alfresco/node-locator-context.xml, classpath:test-nodeLocatorServiceImpl-context.xml]
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.nodelocator.NodeLocatorServiceImplTest.class));
@@ -991,7 +991,7 @@ public class AllRepositoryTestsCatalogue
     }
 
     // [classpath:alfresco/minimal-context.xml]
-    static void minimalContext_16(TestSuite suite)
+    static void minimalContext(TestSuite suite)
     {
         // This has a few failures - not sure what I can do about that. 513 tests in total ~ 100s
         // was 16 (part)
@@ -1002,7 +1002,7 @@ public class AllRepositoryTestsCatalogue
     }
 
     // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
-    static void applicationContext_testThumnailContext_57(TestSuite suite)
+    static void applicationContext_testThumnailContext(TestSuite suite)
     {
         // fails- 68s
         // test-thumbnail-context.xml - should be fine to merge - only defines some extra test beans

@@ -33,7 +33,7 @@ public class MinContextTestSuite extends TestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.minimalContext_16(suite);
+        AllRepositoryTestsCatalogue.minimalContext(suite);
         return suite;
     }
 }

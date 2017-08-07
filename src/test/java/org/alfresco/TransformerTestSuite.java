@@ -33,7 +33,7 @@ public class TransformerTestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_testThumnailContext_57(suite);
+        AllRepositoryTestsCatalogue.applicationContext_testThumnailContext(suite);
         return suite;
     }
 }

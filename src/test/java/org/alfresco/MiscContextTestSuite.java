@@ -33,7 +33,7 @@ public class MiscContextTestSuite
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.miscContext_999(suite);
+        AllRepositoryTestsCatalogue.miscContext(suite);
         return suite;
     }
 }

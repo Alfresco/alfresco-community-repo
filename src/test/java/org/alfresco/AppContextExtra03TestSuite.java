@@ -28,19 +28,19 @@ package org.alfresco;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class AppContextExtra02TestSuite extends TestSuite
+/**
+ * Temporary class. Please read the comments on {@link AppContextExtra02TestSuite}
+ * 
+ * Tests were split just because the limitation on the bamboo agents DB config see REPO-2790
+ */
+public class AppContextExtra03TestSuite extends TestSuite
 {
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
 
-        // any other order may lead to failing tests
-        AllRepositoryTestsCatalogue.virtualizationTestContext_applicationContext(suite);
-        AllRepositoryTestsCatalogue.applicationContext_testSubscriptionsContext(suite);
-        AllRepositoryTestsCatalogue.applicationContext_openCmisContext(suite);
-        // TODO Uncomment the following 2 lines after REPO-2790 is implemented
-        // AllRepositoryTestsCatalogue.applicationContext_cacheTestContext(suite);
-        // AllRepositoryTestsCatalogue.applicationContext_mtAllContext(suite);
+        AllRepositoryTestsCatalogue.applicationContext_cacheTestContext(suite);
+        AllRepositoryTestsCatalogue.applicationContext_mtAllContext(suite);
 
         return suite;
     }

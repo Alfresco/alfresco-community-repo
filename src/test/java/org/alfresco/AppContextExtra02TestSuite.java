@@ -35,7 +35,7 @@ public class AppContextExtra02TestSuite extends TestSuite
         TestSuite suite = new TestSuite();
 
         // any other order may lead to failing tests
-        AllRepositoryTestsCatalogue.virtualizationTestContext_applicationContext(suite);
+        AllRepositoryTestsCatalogue.applicationContext_virtualizationTestContext(suite);
         AllRepositoryTestsCatalogue.applicationContext_testSubscriptionsContext(suite);
         AllRepositoryTestsCatalogue.applicationContext_openCmisContext(suite);
         // TODO Uncomment the following 2 lines after REPO-2790 is implemented

@@ -34,7 +34,7 @@ public class AppContextExtra01TestSuite extends TestSuite
     {
         TestSuite suite = new TestSuite();
         AllRepositoryTestsCatalogue.applicationContext_globalIntegrationTestContext(suite);
-        AllRepositoryTestsCatalogue.applicationContext_Combinations1(suite);
+        AllRepositoryTestsCatalogue.applicationContext_extra(suite);
         return suite;
     }
 }

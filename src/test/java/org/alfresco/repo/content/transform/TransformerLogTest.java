@@ -60,15 +60,19 @@ public class TransformerLogTest
         log.setTransformerConfig(transformerConfig);
     }
 
-    static void assertLogEntriesEquals(String[] expected, String[] actual)
+    static String[] stripDateStamp(String[] actual)
     {
-        // Strip the date prefix
         int beginIndex = (TransformerLogger.DATE_FORMAT.format(new Date())+' ').length();
-        for (int i=actual.length-1; i >= 0; i--)
+        for (int i = actual.length-1; i >= 0; i--)
         {
             actual[i] = actual[i].substring(beginIndex);
         }
-        assertArrayEquals(expected, actual);
+        return actual;
+    }
+
+    static void assertLogEntriesEquals(String[] expected, String[] actual)
+    {
+        assertArrayEquals(expected, stripDateStamp(actual));
     }
 
     @Test

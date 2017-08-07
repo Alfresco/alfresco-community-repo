@@ -142,6 +142,15 @@ public class TransformerDebugTest
         return actual;
     }
 
+    private String[] stripCR(String[] actual)
+    {
+        for (int i = actual.length-1; i >= 0; i--)
+        {
+            actual[i] = actual[i].replaceAll(" \r", "");
+        }
+        return actual;
+    }
+
     @Test
     public void alf18373Test()
     {
@@ -168,8 +177,8 @@ public class TransformerDebugTest
         "0             --a) [---] transformer1<<Component>> > 50 KB\n"+
         "0             --b) [---] transformer3<<Component>> > 50 KB\n"+
         "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
-        "0             Finished in NN ms Transformer NOT called"}, unnumbered(untimed(debug.getEntries(10))));
+        "0             Finished in NN ms Transformer NOT called"}, unnumbered(untimed(stripCR(debug.getEntries(10)))));
         assertLogEntriesEquals(new String[] {
-        "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, unnumbered(untimed(log.getEntries(10))));
+        "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, unnumbered(untimed(stripCR(log.getEntries(10)))));
     }
 }

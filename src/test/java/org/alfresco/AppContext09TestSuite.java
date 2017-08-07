@@ -28,7 +28,7 @@ package org.alfresco;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Repository009TestSuite_ApplicationContext
+public class AppContext09TestSuite
 {
     public static Test suite()
     {

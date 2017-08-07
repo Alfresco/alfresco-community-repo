@@ -548,6 +548,7 @@ public class AllRepositoryTestsCatalogue
     // [classpath:alfresco/application-context.xml] - part 7
     static void applicationContext_07(TestSuite suite)
     {
+        suite.addTest(new JUnit4TestAdapter(RepositoryStartupTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanSystemTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.auth.cifs.CifsAuthenticatorPassthruTest.class));
 
@@ -863,9 +864,9 @@ public class AllRepositoryTestsCatalogue
     }
 
     // [classpath:alfresco/application-context.xml, classpath:cache-test/cache-test-context.xml]
-    static void applicationContext_cacheTestContext_14(TestSuite suite)
+    static void applicationContext_cacheTestContext(TestSuite suite)
     {
-        // this does not want to work in the applicationContext_globalIntegrationTestContext_01 test - unless it is the first test
+        // this does not want to work in the applicationContext_globalIntegrationTestContext test - unless it is the first test
         // pass - fast 6s -
         // cache-test-context.xml should be safe to merge - it defines some beans that seem to be used only in tests
         suite.addTestSuite(org.alfresco.repo.cache.CacheTest.class);
@@ -894,7 +895,7 @@ public class AllRepositoryTestsCatalogue
     }
 
     // [classpath:**/virtualization-test-context.xml, classpath:alfresco/application-context.xml]
-    static void virtualizationTestContext_applicationContext_70(TestSuite suite)
+    static void virtualizationTestContext_applicationContext(TestSuite suite)
     {
 
         // pass - 16s - safe for merge
@@ -902,8 +903,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTest(org.alfresco.repo.virtual.VirtualizationIntegrationTestSuite.suite());
 
     }
-    // TODO until here
-    // ------------------------------------application context until here -------------------
 
     /**
      * 

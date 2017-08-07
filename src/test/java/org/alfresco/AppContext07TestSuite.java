@@ -28,12 +28,12 @@ package org.alfresco;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-public class Repository001TestSuite_ApplicationContext extends TestSuite
+public class AppContext07TestSuite extends TestSuite
 {
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_01(suite);
+        AllRepositoryTestsCatalogue.applicationContext_07(suite);
         return suite;
     }
 }

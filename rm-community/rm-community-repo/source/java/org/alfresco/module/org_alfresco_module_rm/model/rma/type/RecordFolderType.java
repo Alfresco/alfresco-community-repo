@@ -268,6 +268,11 @@ public class RecordFolderType extends    AbstractDisposableItem
     {
         final NodeRef child = childAssocRef.getChildRef();
 
+        if(!nodeService.exists(child))
+        {
+            return;
+        }
+
         // only records can be added in a record folder or hidden folders(is the case of e-mail attachments)
         if (instanceOf(child, ContentModel.TYPE_FOLDER) && !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
         {

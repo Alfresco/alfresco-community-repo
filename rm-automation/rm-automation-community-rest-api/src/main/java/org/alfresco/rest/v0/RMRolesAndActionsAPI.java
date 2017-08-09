@@ -155,7 +155,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public boolean moveTo(String user, String password, String contentPath, String destinationPath)
     {
-        String contentNodeRef = NODE_REF_WORKSPACE_SPACES_STORE + getItemNodeRef(user, password, contentPath);
+        String contentNodeRef = getNodeRefSpacesStore() + getItemNodeRef(user, password, contentPath);
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         String url = MessageFormat.format(client.getAlfrescoUrl() + "alfresco/s/slingshot/doclib/" + MOVE_ACTIONS_API, destinationPath);
         HttpPost request = new HttpPost(url);
@@ -224,7 +224,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
      */
     public boolean executeAction(String user, String password, String contentName, RM_ACTIONS action, ZonedDateTime date)
     {
-        String recNodeRef = NODE_REF_WORKSPACE_SPACES_STORE + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
         try
         {
             JSONObject requestParams = new JSONObject();
@@ -293,7 +293,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
     public boolean createHold(String user, String password, String holdName, String reason, String description)
     {
         // if the hold already exists don't try to create it again
-        String holdsContainerPath = FILE_PLAN_PATH + "/Holds";
+        String holdsContainerPath = getFilePlanPath() + "/Holds";
 
         CmisObject hold = getObjectByPath(user, password, holdsContainerPath + "/" + holdName);
         if (hold != null)
@@ -306,7 +306,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
         try
         {
             JSONObject requestParams = new JSONObject();
-            requestParams.put("alf_destination", NODE_REF_WORKSPACE_SPACES_STORE + parentNodeRef);
+            requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
             requestParams.put("prop_cm_name", holdName);
             requestParams.put("prop_cm_description", description);
             requestParams.put("prop_rma_holdReason", reason);

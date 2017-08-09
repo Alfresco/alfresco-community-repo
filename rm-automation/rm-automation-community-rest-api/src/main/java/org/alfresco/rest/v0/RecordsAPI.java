@@ -55,11 +55,8 @@ public class RecordsAPI extends BaseAPI
 
     private static final String CREATE_NON_ELECTRONIC_RECORD_API = "{0}type/rma:nonElectronicDocument/formprocessor";
 
-
-
     @Autowired
     private ContentService contentService;
-
 
     /**
      * Declare documents as records
@@ -72,7 +69,7 @@ public class RecordsAPI extends BaseAPI
      */
     public boolean declareDocumentAsRecord(String user, String password, String siteID, String documentName)
     {
-        String docNodeRef = NODE_REF_WORKSPACE_SPACES_STORE + contentService.getNodeRef(user, password, siteID, documentName);
+        String docNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, siteID, documentName);
 
         try
         {
@@ -99,7 +96,7 @@ public class RecordsAPI extends BaseAPI
      */
     public boolean completeRecord(String user, String password, String recordName)
     {
-        String recNodeRef = NODE_REF_WORKSPACE_SPACES_STORE + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
 
         try
         {
@@ -128,7 +125,7 @@ public class RecordsAPI extends BaseAPI
      */
     public boolean declareDocumentVersionAsRecord(String user, String password, String siteID, String documentName)
     {
-        String docNodeRef = NODE_REF_WORKSPACE_SPACES_STORE + contentService.getNodeRef(user, password, siteID, documentName);
+        String docNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, siteID, documentName);
 
         try
         {
@@ -171,7 +168,7 @@ public class RecordsAPI extends BaseAPI
             recordPath = recordPath + "/" + folderName;
         }
         // if the record already exists don't try to create it again
-        CmisObject record = getObjectByPath(username, password, FILE_PLAN_PATH + recordPath + "/" + recordName);
+        CmisObject record = getObjectByPath(username, password, getFilePlanPath() + recordPath + "/" + recordName);
 
         if (record != null)
         {
@@ -193,7 +190,7 @@ public class RecordsAPI extends BaseAPI
         try
         {
             JSONObject requestParams = new JSONObject();
-            requestParams.put("alf_destination", NODE_REF_WORKSPACE_SPACES_STORE + parentNodeRef);
+            requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
             requestParams.put("prop_cm_name", recordName);
             requestParams.put("prop_cm_title", recordTitle);
             requestParams.put("prop_cm_description", description);

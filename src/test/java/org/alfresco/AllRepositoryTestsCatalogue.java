@@ -186,6 +186,8 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(ActionTrackingServiceImplTest.class);
         suite.addTestSuite(org.alfresco.email.server.EmailServiceImplTest.class);
         suite.addTestSuite(org.alfresco.email.server.EmailServerTest.class);
+        // FTPServerTest fails when run from Eclipse
+        suite.addTestSuite(org.alfresco.filesys.FTPServerTest.class);
         suite.addTestSuite(org.alfresco.filesys.repo.CifsIntegrationTest.class);
         suite.addTestSuite(org.alfresco.filesys.repo.ContentDiskDriverTest.class);
         suite.addTestSuite(org.alfresco.filesys.repo.LockKeeperImplTest.class);

@@ -255,7 +255,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.importer.ImporterComponentTest.class);
         suite.addTestSuite(org.alfresco.repo.jscript.PeopleTest.class);
         suite.addTestSuite(org.alfresco.repo.jscript.RhinoScriptTest.class);
-        suite.addTestSuite(org.alfresco.repo.jscript.ScriptBehaviourTest.class);
         // needs a clean DB to run
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.links.LinksServiceImplTest.class));
 
@@ -347,7 +346,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(org.alfresco.repo.content.transform.DifferrentMimeTypeTest.class);
 
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.attributes.PropTablesCleanupJobIntegrationTest.class));
-        suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.ServiceRegistryTest.class));
         suite.addTestSuite(org.alfresco.repo.node.archive.LargeArchiveAndRestoreTest.class);
         suite.addTestSuite(org.alfresco.repo.node.db.DbNodeServiceImplTest.class);

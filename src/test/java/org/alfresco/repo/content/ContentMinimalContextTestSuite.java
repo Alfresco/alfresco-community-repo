@@ -25,11 +25,18 @@
  */
 package org.alfresco.repo.content;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-
-import org.alfresco.repo.content.metadata.*;
+import org.alfresco.repo.content.metadata.ConcurrencyPdfBoxMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.DWGMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.MP3MetadataExtracterTest;
+import org.alfresco.repo.content.metadata.MailMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.OfficeMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.PoiMetadataExtracterTest;
+import org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest;
+import org.alfresco.repo.content.metadata.TikaAutoMetadataExtracterTest;
 import org.alfresco.repo.content.transform.AbstractContentTransformerLimitsTest;
 import org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest;
 import org.alfresco.repo.content.transform.ArchiveContentTransformerTest;
@@ -50,13 +57,13 @@ import org.alfresco.repo.content.transform.StringExtractingContentTransformerTes
 import org.alfresco.repo.content.transform.TextMiningContentTransformerTest;
 import org.alfresco.repo.content.transform.TextToPdfContentTransformerTest;
 import org.alfresco.repo.content.transform.TikaAutoContentTransformerTest;
-import org.alfresco.repo.content.transform.TransformerConfigTestSuite;
 import org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest;
-import org.alfresco.service.cmr.repository.TemporalSourceOptionsTest;
-import org.alfresco.service.cmr.repository.TransformationOptionLimitsTest;
-import org.alfresco.service.cmr.repository.TransformationOptionPairTest;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.JUnit4TestAdapter;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
  * Metadata Extractor and Transform test suite
@@ -92,14 +99,6 @@ public class ContentMinimalContextTestSuite extends TestSuite
 
        // Limits
        suite.addTest(new JUnit4TestAdapter(AbstractContentTransformerLimitsTest.class));
-       suite.addTest(new JUnit4TestAdapter(TransformationOptionLimitsTest.class));
-       suite.addTest(new JUnit4TestAdapter(TransformationOptionPairTest.class));
-
-       // Transformer Config
-       suite.addTest(new JUnit4TestAdapter(TransformerConfigTestSuite.class));
-
-       // Source options
-       suite.addTest(new JUnit4TestAdapter(TemporalSourceOptionsTest.class));
 
        // Transform tests
        suite.addTestSuite(BinaryPassThroughContentTransformerTest.class);
@@ -124,7 +123,6 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTestSuite(ArchiveContentTransformerTest.class);
 
        // Metadata tests
-       suite.addTest(new JUnit4TestAdapter(MetadataExtracterLimitsTest.class));
        suite.addTestSuite( DWGMetadataExtracterTest.class );
        suite.addTestSuite( HtmlMetadataExtracterTest.class );
        suite.addTestSuite( MailMetadataExtracterTest.class );

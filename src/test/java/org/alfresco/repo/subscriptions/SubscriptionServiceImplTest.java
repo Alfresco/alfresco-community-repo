@@ -69,7 +69,7 @@ public class SubscriptionServiceImplTest extends TestCase
 
     private UserTransaction txn;
 
-    protected ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONTEXTS);
+    protected ApplicationContext ctx;
     protected TransactionService transactionService;
     protected SubscriptionService subscriptionService;
     protected PersonService personService;
@@ -79,6 +79,7 @@ public class SubscriptionServiceImplTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext(CONTEXTS);
         // Get the required services
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         subscriptionService = (SubscriptionService) ctx.getBean("SubscriptionService");

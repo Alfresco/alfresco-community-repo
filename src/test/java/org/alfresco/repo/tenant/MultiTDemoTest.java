@@ -107,9 +107,7 @@ public class MultiTDemoTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(MultiTDemoTest.class);
     
-    private static ApplicationContext ctx = new ClassPathXmlApplicationContext(
-            new String[] {ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:tenant/mt-*context.xml"}
-            );
+    private ApplicationContext ctx; 
     
     private NodeService nodeService;
     private NodeArchiveService nodeArchiveService;
@@ -184,7 +182,8 @@ public class MultiTDemoTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
-        
+        ctx = ApplicationContextHelper.getApplicationContext(new String[] { ApplicationContextHelper.CONFIG_LOCATIONS[0], "classpath:tenant/mt-*context.xml" });
+
         nodeService = (NodeService) ctx.getBean("NodeService");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         namespaceService = (NamespaceService) ctx.getBean("NamespaceService");

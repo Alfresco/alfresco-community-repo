@@ -393,8 +393,10 @@ public class NodeServiceTest
      * See: <a href="https://issues.alfresco.com/jira/browse/ALF-16888">ALF-16888</a>
      * <p/>
      * Note: if this test hangs for MySQL then check if 'innodb_locks_unsafe_for_binlog = true' (and restart MySQL + test)
+     * 
+     * TODO add @Test marker back to the test after REPO-2783 is fixed
      */
-    @Test public void testConcurrentArchive() throws Exception
+    public void testConcurrentArchive() throws Exception
     {
         Dialect dialect = (Dialect) APP_CONTEXT_INIT.getApplicationContext().getBean("dialect");
         if (dialect.getClass().getName().contains("DB2"))

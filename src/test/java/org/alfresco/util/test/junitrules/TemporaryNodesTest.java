@@ -72,6 +72,8 @@ import org.junit.rules.RuleChain;
 @Category(OwnJVMTestsCategory.class)
 public class TemporaryNodesTest
 {
+    private static final String SITE_SHORT_NAME = "siteShortName"+TemporaryNodesTest.class.getSimpleName();
+
     // Rule to initialise the default Alfresco spring configuration
     public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
     
@@ -300,7 +302,7 @@ public class TemporaryNodesTest
         {
             public SiteInfo execute() throws Throwable
             {
-                return SITE_SERVICE.createSite("sitePreset", "siteShortName", "site title", "site description", SiteVisibility.PUBLIC);
+                return SITE_SERVICE.createSite("sitePreset", SITE_SHORT_NAME, "site title", "site description", SiteVisibility.PUBLIC);
             }
         });
         final NodeRef siteNodeRef = createdSite.getNodeRef();

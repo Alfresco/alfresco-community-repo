@@ -36,6 +36,7 @@ public enum ShardMethodEnum
     ACL_ID,
     DB_ID,
     DB_ID_RANGE,
+    EXPLICIT_ID,
     DATE,
     UNKOWN,
     PROPERTY;
@@ -68,6 +69,9 @@ public enum ShardMethodEnum
                 break;
             case "PROPERTY":
                 shardMethodEnum = PROPERTY;
+                break;
+            case "EXPLICIT_ID":
+                shardMethodEnum = EXPLICIT_ID;
                 break;
             default:
                 shardMethodEnum = UNKOWN;

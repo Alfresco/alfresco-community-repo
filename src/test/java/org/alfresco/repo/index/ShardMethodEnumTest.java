@@ -60,6 +60,13 @@ public class ShardMethodEnumTest
     {
         Assert.assertEquals(ShardMethodEnum.DB_ID, ShardMethodEnum.getShardMethod("DB_ID"));
     }
+
+    @Test
+    public void testTypeEXPLICITID()
+    {
+        Assert.assertEquals(ShardMethodEnum.EXPLICIT_ID, ShardMethodEnum.getShardMethod("EXPLICIT_ID"));
+    }
+
     @Test
     public void testTypeDateTimeStamp()
     {

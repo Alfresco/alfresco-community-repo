@@ -59,7 +59,7 @@ public class RecordFoldersAPI extends BaseAPI
      */
     public boolean closeRecordFolder(String user, String password, String recordFolder)
     {
-        String recNodeRef = NODE_REF_WORKSPACE_SPACES_STORE + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
 
         try
         {

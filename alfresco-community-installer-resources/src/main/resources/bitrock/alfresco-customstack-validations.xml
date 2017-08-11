@@ -1,0 +1,265 @@
+<component>
+    <name>alfrescovalidations</name>
+    <description>//Validations</description>
+    <detailedDescription></detailedDescription>
+    <selected>1</selected>
+    <show>0</show>
+    <functionDefinitionList>
+        <actionDefinition name="alfrescoComponentsValidations">
+            <actionList>
+                <throwError>
+                    <text>Select at least one of the Solr components.</text>
+                    <ruleList>
+                        <ruleGroup ruleEvaluationLogic="and">
+                            <ruleList>
+                                <compareText logic="equals" text="${alfresco_edition}" value="community"/>
+                                <componentTest name="alfrescosolr4" logic="exists"/>
+                                <componentTest name="alfrescosolr" logic="exists"/>
+                                <componentTest name="alfrescosolr4" logic="not_selected"/>
+                                <componentTest name="alfrescosolr" logic="not_selected"/>
+                            </ruleList>
+                        </ruleGroup>
+                    </ruleList>
+                </throwError>
+                <alfrescoAutodetectJava javaRequiredOrAbort="1" javaRequiredJdk="1" alfrescoInstallerBitness="${alfresco_installer_bitness}">
+                    <ruleList>
+                        <isFalse value="${component(javaalfresco).selected}" />
+                    </ruleList>
+                </alfrescoAutodetectJava>
+            </actionList>
+        </actionDefinition>
+        <actionDefinition name="alfrescoSystemValidations">
+            <actionList>
+                <setInstallerVariable name="reportValue" value=""/>
+                <setInstallerVariable name="msgArchitectureWarning" value="${tr('64bit architecture recommended')}&#xA;"/>
+                <setInstallerVariable name="msgWindows32" value="${tr('32-bit Microsoft Windows® is supported for evaluation use only.')}&#xA;"/>
+                <setInstallerVariable name="msgMacOSX" value="${tr('Mac OS X® is supported for evaluation use only.')}&#xA;"/>
+                <setInstallerVariable name="msgCpuSpeed" value="${tr('CPU clock speed is too slow')}&#xA;"/>
+                <setInstallerVariable name="msgCpuCores" value="${tr('Not enough CPUs (cores) available')}&#xA;"/>
+                <setInstallerVariable name="msgRam" value="${tr('Not enough system RAM available')}&#xA;"/>
+                <setInstallerVariable name="msgFileDescriptors" value="${tr('Insufficent file descriptors')}&#xA;"/>
+                <setInstallerVariable name="msgCifsUdp" value="${tr('CIFS UDP ports in use')}&#xA;"/>
+                <setInstallerVariable name="msgCifsTcp" value="${tr('CIFS TCP ports in use')}&#xA;"/>
+                <setInstallerVariable name="msgSmtpTcp" value="${tr('SMTP TCP port in use')}&#xA;"/>
+                <setInstallerVariable name="msgImapTcp" value="${tr('IMAP TCP port in use.')}&#xA;"/>
+                <throwError>
+                    <text>This installer is for Windows 64 bit. Download the Windows 32 bit version.</text>
+                    <ruleList>
+                        <compareText text="${project.installerFilename}" logic="contains" value="win-x64"/>
+                        <platformTest type="windows"/>
+                        <platformTest type="windows-x64" negate="1"/>
+                    </ruleList>
+                </throwError>
+                <actionGroup>
+                    <actionList>
+                        <setInstallerVariable name="reportValue" value="${reportValue}${msgWindows32}&#xA;">
+                            <ruleList>
+                                <platformTest type="windows-x86"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="reportValue" value="${reportValue}${msgMacOSX}&#xA;">
+                            <ruleList>
+                                <platformTest type="osx"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                    </actionList>
+                    <ruleList>
+                        <compareText text="${alfresco_edition}" value="enterprise"/>
+                    </ruleList>
+                </actionGroup>
+                <setInstallerVariable name="reportValue" value="${reportValue}${msgArchitectureWarning}: 32bit&#xA;">
+                    <ruleList>
+                        <compareText text="${project.installerFilename}" logic="does_not_contain" value="win-x64"/>
+                        <platformTest type="windows-x64"/>
+                    </ruleList>
+                </setInstallerVariable>
+                <!-- Server Hardware -->
+                <!-- CPU Speed validation -->
+                <foreach variables="cpu_convertion">
+                    <values>machine_cpu_speed recommended_cpu_speed</values>
+                    <actionList>
+                        <mathExpression text="double(${${cpu_convertion}})/1000" variable="${cpu_convertion}GHz"/>
+                        <setInstallerVariableFromRegEx name="${cpu_convertion}GHz" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${cpu_convertion}GHz}&#xA;"/>
+                    </actionList>
+                </foreach>
+                <setInstallerVariable name="reportValue" value="${reportValue}${msgCpuSpeed} (${recommended_cpu_speedGHz} GHz+): ${machine_cpu_speedGHz} GHz&#xA;">
+                    <ruleList>
+                        <compareValues>
+                            <logic>less</logic>
+                            <value1>${machine_cpu_speed}</value1>
+                            <value2>${recommended_cpu_speed}</value2>
+                        </compareValues>
+                    </ruleList>
+                </setInstallerVariable>
+                <!-- CPU Cores validation -->
+                <setInstallerVariable name="reportValue" value="${reportValue}${msgCpuCores} (${minimum_core_count}+): ${machine_cpu_count}&#xA;">
+                    <ruleList>
+                        <compareValues>
+                            <logic>less</logic>
+                            <value1>${machine_cpu_count}</value1>
+                            <value2>${minimum_core_count}</value2>
+                        </compareValues>
+                    </ruleList>
+                </setInstallerVariable>
+                <!-- RAM validation -->
+                <foreach variables="memory_convertion">
+                    <values>machine_total_memory minimum_ram recommended_ram</values>
+                    <actionList>
+                        <mathExpression text="double(${${memory_convertion}})/1024" variable="${memory_convertion}GB"/>
+                        <setInstallerVariableFromRegEx name="${memory_convertion}GB" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${memory_convertion}GB}"/>
+                    </actionList>
+                </foreach>
+                <throwError>
+                    <text>${machine_total_memoryGB} GB of RAM is not enough to run Alfresco Content Services for test or production purposes. Alfresco Content Services might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM.</text>
+                    <ruleList>
+                        <compareValues>
+                            <logic>less</logic>
+                            <value1>${machine_total_memory}</value1>
+                            <value2>${minimum_ram}</value2>
+                        </compareValues>
+                    </ruleList>
+                </throwError>
+                <setInstallerVariable name="reportValue" value="${reportValue}${msgRam} (${recommended_ramGB}GB+): ${machine_total_memoryGB}GB&#xA;">
+                    <ruleList>
+                        <compareValues>
+                            <logic>less</logic>
+                            <value1>${machine_total_memory}</value1>
+                            <value2>${recommended_ram}</value2>
+                        </compareValues>
+                        <compareValues>
+                            <logic>greater_or_equal</logic>
+                            <value1>${machine_total_memory}</value1>
+                            <value2>${minimum_ram}</value2>
+                        </compareValues>
+                    </ruleList>
+                </setInstallerVariable>
+                <!-- File Descriptors validation-->
+                <setInstallerVariable name="reportValue" value="${reportValue}${msgFileDescriptors} (${minimum_file_descriptors}+)&#xA;">
+                    <ruleList>
+                        <resourceLimitTest type="open_files" logic="less" value="${minimum_file_descriptors}"/>
+                        <platformTest type="windows" negate="1"/>
+                    </ruleList>
+                </setInstallerVariable>
+
+                <!-- Network validation -->
+                <actionGroup>
+                    <actionList>
+                        <!-- Validate CIFS ports -->
+                        <setInstallerVariable name="cifsUdpPortList" value=""/>
+                        <foreach variables="cifs_udp_port_to_check">
+                            <values>${netbd_port} ${netbd_port_1}</values>
+                            <actionList>
+                                <setInstallerVariable name="cifsUdpPortList" value="${cifsUdpPortList} ${cifs_udp_port_to_check}&#xA;">
+                                    <ruleList>
+                                        <portTest port="${cifs_udp_port_to_check}" condition="cannot_bind"/>
+                                        <platformTest  type="windows" negate="1"/>
+                                    </ruleList>
+                                </setInstallerVariable>
+                            </actionList>
+                        </foreach>
+                        <setInstallerVariable name="reportValue" value="${reportValue}${msgCifsUdp}: ${cifsUdpPortList}&#xA;">
+                            <ruleList>
+                                <compareText text="${cifsUdpPortList}" logic="does_not_equal" value=""/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="cifsTcpPortList" value=""/>
+                        <foreach variables="cifs_tcp_port_to_check">
+                            <values>${netbd_port} ${netbd_port_2} ${smb_port}</values>
+                            <actionList>
+                                <setInstallerVariable name="cifsTcpPortList" value="${cifsTcpPortList} ${cifs_tcp_port_to_check}&#xA;">
+                                    <ruleList>
+                                        <portTest port="${cifs_tcp_port_to_check}" condition="cannot_bind"/>
+                                        <platformTest  type="windows" negate="1"/>
+                                    </ruleList>
+                                </setInstallerVariable>
+                            </actionList>
+                        </foreach>
+                        <setInstallerVariable name="reportValue" value="${reportValue}${msgCifsTcp}: ${cifsTcpPortList}&#xA;">
+                            <ruleList>
+                                <compareText text="${cifsTcpPortList}" logic="does_not_equal" value=""/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="reportValue" value="${reportValue}${msgSmtpTcp}: ${smtp_port}&#xA;">
+                            <ruleList>
+                                <portTest port="${smtp_port}" condition="cannot_bind"/>
+                            </ruleList>               
+                        </setInstallerVariable>
+                        <setInstallerVariable name="reportValue" value="${reportValue}${msgImapTcp}: ${smtp_port}&#xA;">
+                            <ruleList>
+                                <portTest port="${imap_port}" condition="cannot_bind"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                    </actionList>
+                    <ruleList>
+                        <isTrue value="${installer_is_root_install}"/>
+                    </ruleList>
+                </actionGroup>
+                <setInstallerVariable name="component(alfrescovalidations).parameter(alfresco_report).value" value="${reportValue}&#xA;">
+                    <ruleList>
+                        <compareText text="${reportValue}" value="" logic="does_not_equal"/>
+                    </ruleList>
+                </setInstallerVariable>
+                <setInstallerVariable name="component(alfrescovalidations).parameter(alfresco_report).ask" value="0">
+                    <ruleList>
+                        <compareText text="${reportValue}" value="" logic="equals"/>
+                    </ruleList>
+                </setInstallerVariable>
+            </actionList>
+        </actionDefinition>
+    </functionDefinitionList>
+    <componentSelectionValidationActionList>
+        <alfrescoComponentsValidations/>
+    </componentSelectionValidationActionList>
+    <desktopShortcutList/>
+    <parameterList>
+        <stringParameter name="recommended_cpu_speed" value="2000" ask="0"/>
+        <stringParameter name="minimum_core_count" value="2" ask="0"/>
+        <stringParameter name="recommended_ram" value="4096" ask="0"/>
+        <stringParameter name="minimum_ram" value="2048" ask="0"/>
+        <stringParameter name="minimum_file_descriptors" value="4096" ask="0"/>
+        <parameterGroup>
+            <name>netbd_ports</name>
+            <title>CIFS protocol ports configuration</title>
+            <explanation>Enter CIFS ports configuration.</explanation>
+            <ask>0</ask>
+            <parameterList>
+                <stringParameter name="netbd_port" default="137" ask="0">
+                    <title>CIFS server port</title>
+                </stringParameter>
+                <stringParameter name="netbd_port_1" default="138" ask="0">
+                    <title>CIFS server port 1</title>
+                </stringParameter>
+                <stringParameter name="netbd_port_2" default="139" ask="0">
+                    <title>CIFS server port 2</title>
+                </stringParameter>
+                <stringParameter name="smb_port" value="445" ask="0">
+                    <title>SMB Port</title>
+                </stringParameter>
+            </parameterList>
+        </parameterGroup>
+        <stringParameter name="smtp_port" value="25" ask="0">
+            <description>SMTP Port</description>
+        </stringParameter>
+        <stringParameter name="imap_port" value="143" ask="0">
+            <description>IMAP Port</description>
+        </stringParameter>
+        <infoParameter>
+            <name>alfresco_report</name>
+            <title>Warning</title>
+            <explanation>This environment is not configured optimally for Alfresco Content Services - review this list before continuing.
+
+While these issues won’t prevent Alfresco Content Services from functioning, some product features might not be available, or the system might not perform optimally.</explanation>
+            <value></value>
+            <insertBefore>readytoinstall</insertBefore>
+        </infoParameter>
+    </parameterList>
+    <readyToInstallActionList/>
+    <preInstallationActionList>
+        <alfrescoSystemValidations/>
+        <alfrescoComponentsValidations>
+            <ruleList>
+                <compareText text="${installer_ui}" logic="equals" value="unattended"/>
+            </ruleList>
+        </alfrescoComponentsValidations>
+    </preInstallationActionList>
+</component>

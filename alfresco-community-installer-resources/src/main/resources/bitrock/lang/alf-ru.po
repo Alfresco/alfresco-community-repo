@@ -1,0 +1,683 @@
+msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco Content Services for test or production purposes. Alfresco Content Services might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
+msgstr "${machine_total_memoryGB} ГБ оперативной памяти недостаточно для запуска Alfresco Content Services для целей тестирования и эксплуатации. Некоторый функционал Alfresco Content Services может работать неправильно. Обновите сервер, чтобы обеспечить не менее ${minimum_ramGB} ГБ оперативной памяти; при этом оптимальным объемом оперативной памяти является ${recommended_ramGB} ГБ."
+
+msgid "${product_fullname} LibreOffice Service"
+msgstr "Служба ${product_fullname} LibreOffice"
+
+msgid "${product_fullname} Service"
+msgstr "Служба ${product_fullname}"
+
+msgid "${product_shortname} Manager Tool"
+msgstr "Средство управления ${product_shortname}"
+
+msgid "32-bit Microsoft Windows® is supported for evaluation use only."
+msgstr "32-разрядная ОС Microsoft Windows® поддерживается только для целей тестирования."
+
+msgid "64-bit architecture recommended"
+msgstr "Рекомендуется использовать 64-разрядную архитектуру"
+
+msgid "Admin Password"
+msgstr "Пароль администратора"
+
+msgid "Admin Password:"
+msgstr "Пароль администратора:"
+
+msgid "Advanced - Configure server ports and service properties."
+msgstr "Дополнительно — настроить порты сервера и свойства службы."
+
+msgid "Alfresco Content Services"
+msgstr "Alfresco Content Services"
+
+msgid "Alfresco Community Edition"
+msgstr "Версия Alfresco Community Edition"
+
+msgid "Alfresco Content Services Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
+msgstr "Система Alfresco Content Services Enterprise Content Management (ECM) с функциями документооборота, управления совместной работой и управления изображениями."
+
+msgid "FTP Port"
+msgstr "Порт FTP"
+
+msgid "Alfresco Module Packages"
+msgstr "Пакеты модулей Alfresco (AMP)"
+
+msgid "RMI Port"
+msgstr "Порт RMI"
+
+msgid "Alfresco Share"
+msgstr "Alfresco Share"
+
+msgid "Shortcuts"
+msgstr "Ярлыки"
+
+msgid "Validations"
+msgstr "Проверки"
+
+msgid "Alfresco Website"
+msgstr "Веб-сайт Alfresco"
+
+msgid "Data Directory"
+msgstr "Каталог данных"
+
+msgid "Choose optional components to install."
+msgstr "Выберите дополнительные компоненты для установки."
+
+msgid "Auto - Configure servers to start automatically"
+msgstr "Авто - настроить Alfresco для автоматического запуска при включении сервера"
+
+msgid "CIFS TCP ports in use"
+msgstr "Используемые порты CIFS TCP"
+
+msgid "CIFS UDP ports in use"
+msgstr "Используемые порты CIFS UDP"
+
+msgid "CIFS protocol ports configuration"
+msgstr "Настройка портов по протоколу CIFS"
+
+msgid "CIFS server port"
+msgstr "Порт сервера CIFS"
+
+msgid "CIFS server port 1"
+msgstr "Порт сервера CIFS 1"
+
+msgid "CIFS server port 2"
+msgstr "Порт сервера CIFS 2"
+
+msgid "Configuration Files"
+msgstr "Файлы конфигурации"
+
+msgid "Creating user and database"
+msgstr "Создание пользователя и базы данных"
+
+msgid "Database Configuration"
+msgstr "Конфигурация базы данных"
+
+msgid "Database Installation"
+msgstr "Установка базы данных"
+
+msgid "Database Server Parameters"
+msgstr "Параметры сервера базы данных"
+
+msgid "Database Server Port:"
+msgstr "Порт сервера базы данных:"
+
+msgid "Database Name"
+msgstr "Имя базы данных"
+
+msgid "Database Name:"
+msgstr "Имя базы данных:"
+
+msgid "Deploying Alfresco Content Services... This can take up to five minutes."
+msgstr "Развертывание Alfresco Content Services... Это может занять несколько минут."
+
+msgid "Do you want to install PostgreSQL as a Windows service?"
+msgstr "Установить PostgreSQL как службу Windows?"
+
+msgid "Easy - Install using the default configuration."
+msgstr "Простая установка — с использованием конфигурации по умолчанию."
+
+msgid "Extension Files"
+msgstr "Файлы расширения"
+
+msgid "Google Docs Integration"
+msgstr "Интеграция с Документами Google"
+
+msgid "I want to use an existing PostgreSQL database."
+msgstr "Я хочу использовать существующую базу данных PostgreSQL."
+
+msgid "I want to use an existing Tomcat instance."
+msgstr "Я хочу использовать существующий сервер Tomcat."
+
+msgid "I want to use the bundled PostgreSQL database."
+msgstr "Я хочу использовать базу данных PostgreSQL из состава установочного пакета Alfresco."
+
+msgid "I want to use the bundled Tomcat instance."
+msgstr "Я хочу использовать сервер Tomcat из состава установочного пакета Alfresco."
+
+msgid "IMAP TCP port in use."
+msgstr "Используемый порт IMAP TCP."
+
+msgid "IMAP Port"
+msgstr "Порт IMAP"
+
+msgid "IP / Hostname"
+msgstr "IP / имя хоста"
+
+msgid "Include Alfresco Web Quick Start."
+msgstr "Включить Alfresco Web Quick Start."
+
+msgid "Include Google Docs Integration Features."
+msgstr "Включить возможность интеграции с Документами Google"
+
+msgid "Initializing database"
+msgstr "Инициализация базы данных"
+
+msgid "Install ${product_fullname} as a service?"
+msgstr "Установить ${product_fullname} как службу?"
+
+msgid "Install ${product_fullname} as service"
+msgstr "Установить ${product_fullname} как службу"
+
+msgid "Install PostgreSQL as a service?"
+msgstr "Установить PostgreSQL как службу?"
+
+msgid "Install as a service"
+msgstr "Установить как службу"
+
+msgid "Installation Folder"
+msgstr "Каталог для установки"
+
+msgid "Installation Type"
+msgstr "Тип установки"
+
+msgid "Installation directory path is too long. The maximum number of characters allowed is ${base_installdir_max_characters}."
+msgstr "Слишком длинный путь к каталогу установки. Максимально допустимое число символов — ${base_installdir_max_characters}."
+
+msgid "Installation folder"
+msgstr "Директория для установки"
+
+msgid "Installation folder cannot contain spaces."
+msgstr "В имени каталога для установки не может быть пробелов."
+
+msgid "Installing Alfresco Module Packages (AMPs)"
+msgstr "Установка пакетов модулей Alfresco (AMP)"
+
+msgid "Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}"
+msgstr "Установка LibreOffice в качестве службы Windows с именем ${LibreOfficeUniqueServiceName}"
+
+msgid "Installing PostgreSQL as a Windows service with name ${postgres_unique_service_name}"
+msgstr "Установка PostgreSQL в качестве службы Windows с именем ${postgres_unique_service_name}"
+
+msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
+msgstr "Установка Tomcat в качестве службы Windows с именем ${tomcat_unique_service_name}"
+
+msgid "Not enough file descriptors available"
+msgstr "Недостаточно дескрипторов файлов"
+
+msgid "CPU clock speed is too slow"
+msgstr "Тактовая частота процессора слишком низкая"
+
+msgid "Not enough CPUs (cores) available"
+msgstr "Недостаточно процессоров (ядер)"
+
+msgid "Not enough system RAM available"
+msgstr "Недостаточно системной оперативной памяти"
+
+msgid "You do not have the right permissions to bind to the port or the port is already taken by another application. Select another port."
+msgstr "Недостаточно прав для привязки порта, или данный порт уже занят другим приложением. Выберите другой порт."
+
+msgid "JDBC Driver:"
+msgstr "Драйвер JDBC:"
+
+msgid "JDBC URL:"
+msgstr "URL-адрес JDBC:"
+
+msgid "JDK configuration"
+msgstr "Конфигурация JDK"
+
+msgid "JDK Installation Directory:"
+msgstr "Каталог установки JDK:"
+
+msgid "Java"
+msgstr "Java"
+
+msgid "Java Component required to run ${product_fullname}."
+msgstr "Для работы ${product_fullname} требуется компонент Java."
+
+msgid "Java Home path contains spaces. Alfresco Content Services might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgstr "Домашний путь Java содержит пробелы. Alfresco Content Services может функционировать неправильно, поскольку при наличии пробелов в пути установки виртуальная машина Java будет работать с ошибками. Переустановите виртуальную машину Java по пути, который не содержит пробелы."
+
+msgid "This module requires Java, and no Java instance can be found."
+msgstr "Этот модуль требует установки Java, но ни один экземпляр Java не найден."
+
+msgid "Launch ${product_fullname}"
+msgstr "Запустить ${product_fullname}"
+
+msgid "LibreOffice"
+msgstr "LibreOffice"
+
+msgid "LibreOffice Server Port"
+msgstr "Порт сервера LibreOffice"
+
+msgid "LibreOffice Server Port:"
+msgstr "Порт сервера LibreOffice:"
+
+msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
+msgstr "LibreOffice.org - многоплатформенный пакет офисного программного обеспечения с открытым кодом для обработки текстов, электронных таблиц, презентаций, графики и баз данных, требуемых для преобразования документов."
+
+msgid "Location of bin and lib tomcat folders"
+msgstr "Местоположение каталогов bin и lib сервера Tomcat"
+
+msgid "Mac OS X® is supported for evaluation use only."
+msgstr "Mac OS X® поддерживается только для оценивания."
+
+msgid "Manager Tool"
+msgstr "Средство управления"
+
+msgid "Manual - Configure servers to start services manually"
+msgstr "Вручную - настройте серверы на ручной запуск служб"
+
+msgid "New Component"
+msgstr "Создать компонент"
+
+msgid "New Folder"
+msgstr "Новая папка"
+
+msgid "Not a PostgreSQL version 9.4.4 installation. PostgreSQL 9.4.4 is recommended."
+msgstr "Версия установленного PostgreSQL не 9.4.4. Рекомендуется установить PostgreSQL 9.4.4."
+
+msgid "Password"
+msgstr "Пароль"
+
+msgid "Password must not contain leading or trailing spaces."
+msgstr "Пароль не должен содержать пробелов ни в начале, ни в конце."
+
+msgid "Password:"
+msgstr "Пароль:"
+
+msgid "Choose a folder to install ${product_fullname}."
+msgstr "Выберите папку для установки ${product_fullname}."
+
+msgid "Choose a port number for Alfresco Content Services to use to execute remote commands."
+msgstr "Выберите для Alfresco Content Services номер порта, чтобы использовать для выполнения удаленных команд."
+
+msgid "Choose a port number for the integrated FTP server."
+msgstr "Выберите номер порта для интегрированного FTP-сервера."
+
+msgid "Enter a valid IP address or hostname."
+msgstr "Введите действительные IP-адрес или имя сервера."
+
+msgid "Enter the IP address or hostname for your database."
+msgstr "Введите IP-адрес или имя сервера для своей базы данных."
+
+msgid "Enter your Tomcat configuration parameters."
+msgstr "Введите параметры конфигурации Tomcat."
+
+msgid "Enter the port of your database."
+msgstr "Введите порт своей базы данных."
+
+msgid "Enter the port that the LibreOffice Server will listen to."
+msgstr "Введите порт, который по умолчанию будет прослушиваться сервером LibreOffice."
+
+msgid "Enter your database 'postgres' user password."
+msgstr "Введите пароль пользователя базы данных 'postgres'."
+
+msgid "Specify a password for the Alfresco Content Services administrator account."
+msgstr "Укажите пароль для учетной записи администратора Alfresco Content Services."
+
+msgid "Select a different installation directory. The installation directory cannot contain symbolic links."
+msgstr "Укажите другой каталог для установки. Установочный каталог не должен содержать символьные ссылки."
+
+msgid "Select services startup type."
+msgstr "Выберите тип запуска служб."
+
+msgid "Select a Tomcat configuration"
+msgstr "Выберите конфигурацию Tomcat"
+
+msgid "Select a database configuration."
+msgstr "Выберите конфигурацию базы данных."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation."
+msgstr "Выберите этот модуль, чтобы разрешить приложениям, которые могут обращаться к серверу SharePoint, обращаться к вашей установке Alfresco Content Services."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Выберите этот модуль, чтобы разрешить приложениям, которые могут обращаться к серверу SharePoint, обращаться к вашей установке Alfresco Content Services&#xa;(патентованный модуль, лицензированный по лицензии Alfresco Component)."
+
+msgid "Specify the directory where Tomcat is located."
+msgstr "Укажите каталог, в котором находится Tomcat."
+
+msgid "Specify the directory where the psql, pg_restore, and vacuumdb binaries are located."
+msgstr "Укажите каталог, в котором находятся двоичные файлы psql, pg_restore и vacuumdb."
+
+msgid "Enter CIFS ports configuration."
+msgstr "Укажите настройку портов CIFS."
+
+msgid "Port:"
+msgstr "Порт:"
+
+msgid "PostgreSQL"
+msgstr "PostgreSQL"
+
+msgid "PostgreSQL Binary Directory"
+msgstr "Каталог двоичных данных PostgreSQL"
+
+msgid "PostgreSQL is a powerful, open source, object-relational database system."
+msgstr "PostgreSQL — мощная система объектно-реляционных баз данных с открытым исходным кодом."
+
+msgid "PostgreSQL postgres user password"
+msgstr "Пароль пользователя PostgreSQL postgres"
+
+msgid "Program Files"
+msgstr "Программные файлы"
+
+msgid "README"
+msgstr "README"
+
+msgid "README File"
+msgstr "Файл README"
+
+msgid "README Folder Component"
+msgstr "Компонент папки README"
+
+msgid "Re-enter password"
+msgstr "Введите пароль повторно"
+
+msgid "Repeat Password:"
+msgstr "Повторите пароль:"
+
+msgid "SMB Port"
+msgstr "Порт SMB"
+
+msgid "SMTP TCP port in use"
+msgstr "Используемый порт SMTP TCP"
+
+msgid "SMTP Port"
+msgstr "Порт SMTP"
+
+msgid "Select a folder:"
+msgstr "Выберите папку:"
+
+msgid "Service Startup Configuration"
+msgstr "Конфигурация запуска служб"
+
+msgid "Service script name"
+msgstr "Имя сценария службы"
+
+msgid "Specify the name of the database."
+msgstr "Укажите имя базы данных."
+
+msgid "Specify the password for the database user."
+msgstr "Укажите пароль для пользователя базы данных."
+
+msgid "Set the database user."
+msgstr "Задайте пользователя базы данных."
+
+msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
+msgstr "Программа установки попытается установить новые базы данных и перезапишет любые копии. Продолжить?"
+
+msgid "Shortcuts Images"
+msgstr "Изображения ярлыков"
+
+msgid "Show next steps"
+msgstr "Показать следующие шаги"
+
+msgid "Solr1"
+msgstr "Solr1"
+
+msgid "Solr4"
+msgstr "Solr4"
+
+msgid "Some or all of the libraries needed to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext libcups libGLU libcairo2 libgl1-mesa-glx\nYou are strongly advised to stop this installation and install the libraries.\nFor more information, see the LibreOffice documentation at http://docs.alfresco.com\n\nDo you want to continue with the installation?"
+msgstr "Некоторые или все библиотеки, необходимые для поддержки LibreOffice, отсутствуют в системе: fontconfig libSM libICE libXrender libXext libcups libGLU libcairo2 libgl1-mesa-glx\nМы настоятельно рекомендуем вам прервать данную установку и установить эти библиотеки.\nДля получения более подробной информации обратитесь к документации LibreOffice на сайте http://docs.alfresco.com\n\nПродолжить установку?"
+
+msgid "We support PostgreSQL as service only."
+msgstr "PostgreSQL поддерживается только как служба."
+
+msgid "You need to be an administrator."
+msgstr "Требуются права администратора."
+
+msgid "Start ${product_fullname} service"
+msgstr "Запустить службу ${product_fullname}"
+
+msgid "Starting LibreOffice..."
+msgstr "Запуск LibreOffice..."
+
+msgid "Starting servers..."
+msgstr "Запуск серверов..."
+
+msgid "Stop ${product_fullname} service"
+msgstr "Остановить службу ${product_fullname}"
+
+msgid "Stopping PostgreSQL..."
+msgstr "Останавливается PostgreSQL..."
+
+msgid "Stopping Services"
+msgstr "Остановка служб"
+
+msgid "Stopping servers"
+msgstr "Остановка серверов"
+
+msgid "Stopping services"
+msgstr "Остановка служб"
+
+msgid "The ${product_shortname} service script file exists. Use a different name for the service script."
+msgstr "Файл сценария службы ${product_shortname} существует. Используйте другое имя для данного сценария службы."
+
+msgid "The data directory increases in size over time. Choose where you want to store it."
+msgstr "С течением времени каталог данных увеличивается в размере. Выберите место его хранения."
+
+msgid "The current installation directory cannot be accessed by non-root users. Select a different installation directory or change the permissions to 755 for this folder."
+msgstr "Текущий каталог для установки недоступен для пользователей, не относящихся к категории root. Выберите другой каталог для установки или измените полномочия для данной папки на 755."
+
+msgid "The directory you selected is not a valid JDK directory. Choose another directory."
+msgstr "Выбранный каталог не является допустимым каталогом JDK. Выберите другой каталог."
+
+msgid "The directory you selected is not a valid Tomcat directory. Choose another directory."
+msgstr "Выбранный каталог не является допустимым каталогом Tomcat. Выберите другой каталог."
+
+msgid "The installation directory must be a path containing letters, numbers, and '/', '.', ‘-‘, and '_' characters only."
+msgstr "В имени пути к каталогу установки должны содержаться только буквы, цифры, а также символы '/', '.', ‘-‘, '_'."
+
+msgid "The installation has not completed because the current umask is set to permissions of ${base_umask}. Modify your umask setting to at least 0022 before relaunching the installer. After the installation has completed, reset the umask permissions to your original values."
+msgstr "Установка не завершена, потому что для текущей пользовательской маски создания (umask) указаны полномочия ${base_umask}. Перед перезапуском программы установки установите для umask значение не менее 0022. По завершении установки можно сбросить полномочия umask до значения по умолчанию."
+
+msgid "The installer could not access the current free space on ${installdir}. Check that there is enough free space to install ${product_fullname}"
+msgstr "Программе установки не удалось получить доступ к имеющемуся свободному пространству в ${installdir}. Убедитесь, что свободного пространства достаточно для установки ${product_fullname}"
+
+msgid "The password must be longer than 3 characters."
+msgstr "Длина пароля должна быть больше 3 символов."
+
+msgid "The path ${postgres_binary_directory} does not contain a pg_restore executable."
+msgstr "В каталоге ${postgres_binary_directory} нет исполняемого файла pg_restore."
+
+msgid "The path ${postgres_binary_directory} does not contain a pg_vacuumdb executable."
+msgstr "В каталоге ${postgres_binary_directory} нет исполняемого файла pg_vacuumdb."
+
+msgid "The path ${postgres_binary_directory} is not valid. Check if the directory contains the required binaries."
+msgstr "Путь ${postgres_binary_directory} является недопустимым. Проверьте, содержит ли данный каталог требуемые двоичные данные."
+
+msgid "The selected folder is not empty. Specify a different folder."
+msgstr "Выбранная папка не пуста. Укажите другую папку."
+
+msgid "The service script file exists. Insert a different name for the service script."
+msgstr "Данный файл сценария службы существует. Введите другое имя для данного сценария службы."
+
+msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco Content Services. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
+msgstr "Вы выбрали 32-разрядную версию Java, в то время как устанавливается 64-разрядная версия Alfresco Content Services. Перед продолжением необходимо установить 64-разрядную версию Java либо вернуться назад и выбрать компонент Java."
+
+msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
+msgstr "Недостаточно свободного пространства в ${installdir}. Необходимо не менее ${base_needed_space} МБ для установки ${product_fullname}"
+
+msgid "This environment is not configured optimally for Alfresco Content Services - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco Content Services from functioning, some product features might not be available, or the system might not perform optimally."
+msgstr "Эта среда не настраивается для Alfresco Content Services оптимальным образом — внимательно ознакомьтесь со списком, прежде чем продолжить.\n\nХотя указанные проблемы не препятствуют работе Alfresco Content Services, некоторые функции продукта могут быть недоступными, или система может работать неоптимально."
+
+msgid "This installer is for Windows 64 bit.  Download the Windows 32 bit version."
+msgstr "Данная программа установки предназначена для 64-разрядной ОС Windows. Загрузите версию для 32-разрядной ОС Windows."
+
+msgid "This release was packaged to run on J2SE ${java_min_version} or later. Install a compatible Java version and try again."
+msgstr "Этот выпуск был помещен в пакет для выполнения в среде J2SE версии ${java_min_version} или более новой версии. Установите совместимую версию Java и повторите попытку."
+
+msgid "This release was packaged to run on J2SE ${java_min_version}. Install a compatible Java version and try again."
+msgstr "Этот выпуск был помещен в пакет для выполнения в среде J2SE версии ${java_min_version}. Установите совместимую версию Java и повторите попытку."
+
+msgid "Tomcat AJP Port:"
+msgstr "AJP-порт Tomcat:"
+
+msgid "Tomcat Directory"
+msgstr "Каталог Tomcat"
+
+msgid "Tomcat JMX Port:"
+msgstr "Порт Tomcat JMX:"
+
+msgid "Tomcat Port Configuration"
+msgstr "Конфигурация портов Tomcat"
+
+msgid "Tomcat SSL Port:"
+msgstr "Порт Tomcat SSL:"
+
+msgid "Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Select another Tomcat Shutdown Port."
+msgstr "Номера порта сервера Tomcat и порта отключения Tomcat не могут совпадать. Выберите другой порт отключения Tomcat."
+
+msgid "Tomcat Server Port:"
+msgstr "Порт сервера Tomcat:"
+
+msgid "Tomcat Shutdown Port:"
+msgstr "Порт отключения Tomcat:"
+
+msgid "Tomcat Directory:"
+msgstr "Каталог Tomcat:"
+
+msgid "Tomcat Installation:"
+msgstr "Установка Tomcat:"
+
+msgid "Couldn’t bind to the given port number. Select another FTP Port."
+msgstr "Не удается выполнить привязку к заданному номеру порта. Выберите другой FTP-порт."
+
+msgid "Couldn’t bind to the given port number. Select another RMI Port."
+msgstr "Не удается выполнить привязку к заданному номеру порта. Выберите другой RMI-порт."
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat AJP Port."
+msgstr "Не удается выполнить привязку к заданному номеру порта. Выберите другой AJP-порт Tomcat."
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat JMX Port."
+msgstr "Не удается выполнить привязку к заданному номеру порта. Выберите другой JMX-порт Tomcat."
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat SSL Port."
+msgstr "Не удается выполнить привязку к заданному номеру порта. Выберите другой SSL-порт Tomcat."
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat Server Port."
+msgstr "Не удается выполнить привязку к заданному номеру порта. Выберите другой порт сервера Tomcat."
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat Shutdown Port."
+msgstr "Не удается выполнить привязку к заданному номеру порта. Выберите другой порт отключения Tomcat."
+
+msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
+msgstr "В полях настройки порта можно использовать только цифры. Другие символы недопустимы."
+
+msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
+msgstr "Не удается выполнить привязку к данному порту сервера. Убедитесь, что ${serverName} не запущен."
+
+msgid "Couldn’t connect to database. Check your configuration."
+msgstr "Не удается подключиться к базе данных. Проверьте конфигурацию."
+
+msgid "Couldn’t find a server running at this port number. Select another port."
+msgstr "Не удается найти сервер, использующий порт с заданным номером. Выберите другой порт."
+
+msgid "Couldn’t find a server running at port ${postgres_port}. Start your database server."
+msgstr "Не удается найти сервер, использующий порт ${postgres_port}. Запустите свой сервер базы данных."
+
+msgid "Couldn’t get free disk space."
+msgstr "Не удалось получить свободное место на диске."
+
+msgid "Uninstall ${product_fullname}"
+msgstr "Удалить ${product_fullname}"
+
+msgid "Uninstall ${product_fullname} service"
+msgstr "Удалить службу ${product_fullname}"
+
+msgid "Uninstalling service"
+msgstr "Удаление службы"
+
+msgid "Uninstalling services"
+msgstr "Удаление служб"
+
+msgid "Use to configure the destination of the content in commands folder"
+msgstr "Используйте, чтобы настроить назначение контента в папке команд"
+
+msgid "User"
+msgstr "Пользователь"
+
+msgid "Username '${username}' is reserved. Use a different user name."
+msgstr "Имя пользователя '${username}' уже зарезервировано. Выберите другое имя пользователя."
+
+msgid "Username:"
+msgstr "Имя пользователя:"
+
+msgid "Verify:"
+msgstr "Подтвердите:"
+
+msgid "Waiting for PostgreSQL to start"
+msgstr "Ожидается запуск PostgreSQL"
+
+msgid "Waiting for Postmaster"
+msgstr "Ожидается Postmaster"
+
+msgid "War files"
+msgstr "Файлы War"
+
+msgid "Warning"
+msgstr "Осторожно!"
+
+msgid "Unable to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
+msgstr "Не удалось найти подходящую установку JDK в вашей системе. Для ${product_fullname} требуется JDK ${java_min_version} или более новая версия."
+
+msgid "Web Quick Start"
+msgstr "Web Quick Start"
+
+msgid "Web Server"
+msgstr "Веб-сервер"
+
+msgid "Web Server Domain:"
+msgstr "Домен веб-сервера:"
+
+msgid "You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Download and install Ruby Stack ${rubyVersion} version from bitnami.com"
+msgstr "Вы пытаетесь установить приложение на базе Ruby ${rubyVersion} в неподдерживающийся стек Bitnami. Загрузите и установите стек Ruby версии ${rubyVersion} с сайта bitnami.com"
+
+msgid "If you register ${product_fullname} as a service it will automatically start ${product_fullname} on machine startup."
+msgstr "Если зарегистрировать ${product_fullname} как службу, он будет автоматически запускаться вместе с компьютером."
+
+msgid "You have chosen Tomcat as the existing installation. Restart Tomcat to use any newly installed applications."
+msgstr "Вы выбрали использование существующего сервера Tomcat. Перезагрузите Tomcat, чтобы использовать любые недавно установленные приложения."
+
+msgid "Select at least one of the Solr components."
+msgstr "Выберите как минимум один из компонентов Solr."
+
+msgid "Use ASCII characters only when setting the password in the installer. If you want to use non-ASCII characters, you can do this by resetting the password after installation."
+msgstr "При вводе пароля в программу установки используйте только символы ASCII. Если необходимо использовать символы, отличные от ASCII, это можно сделать путем сброса пароля после установки."
+
+msgid "Connect Alfresco Share to the repository"
+msgstr "Подключение Alfresco Share к репозиторию"
+
+msgid "Enter the location of your Alfresco Content Services repository."
+msgstr "Введите местоположение репозитория Alfresco Content Services."
+
+msgid "Repository location: "
+msgstr "Местоположение репозитория: "
+
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco Content Services versions."
+msgstr "Solr — Используйте Solr 1.4 только при обновлении со старых версий Alfresco Content Services."
+
+msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
+msgstr "Solr — это корпоративная поисковая платформа с открытым исходным кодом, использующая для индексации и поиска движок Apache Lucene. Solr 4 представляет повышенную масштабируемость, производительность и гибкость по сравнению с Solr 1."
+
+msgid "Unable to bind to the given port number."
+msgstr "Не удается выполнить привязку к заданному номеру порта."
+
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
+msgstr "Не удается выполнить привязку к заданному номеру порта. Этот порт уже используется процессом ${process_binding_port}. Выберите другой порт сервера ${serverName}."
+
+msgid "Remote Solr configuration"
+msgstr "Удаленная настройка Solr"
+
+msgid "Enter the Solr host and port to connect to Alfresco Content Services:"
+msgstr "Введите порт и узел Solr для подключения к Alfresco Content Services:"
+
+msgid "Solr host:"
+msgstr "Узел Solr:"
+
+msgid "Solr SSL port:"
+msgstr "SSL-порт Solr"
+
+msgid "Sharded Solr installation"
+msgstr "Установка Solr с сегментированной базой данных"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "Вы используете установку Solr с сегментированной базой данных?"
+
+msgid "Yes"
+msgstr "Да"
+
+msgid "No"
+msgstr "Нет"
+
+msgid "Read the following License Agreement. You must accept the terms of this agreement before continuing with the installation."
+msgstr "Прочитайте лицензионное соглашение. Вы должны принять его условия прежде, чем перейти к установке."

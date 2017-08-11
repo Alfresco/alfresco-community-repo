@@ -1,0 +1,67 @@
+  ------
+  Alfresco ${alfrescoEdition} ${alfresco.version} platform descriptor
+  ------
+  Gabriele Columbro
+  ------
+  Nov 2012
+  ------
+
+  The Alfresco Platform Distribution POM ${alfrescoEdition} ${project.version} 
+  provides a unified descriptor and dependency management for the Maven artifacts delivered with Alfresco ${alfrescoEdition} ${project.version}.
+  
+  By using this project as a <<<dependency>>> with <<<scope="import">>> in your project, you can centralize the {{{http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Management}dependency management}}
+  on Alfresco artifacts and <<omit the version>> whenever you use Alfresco artifacts in your project.
+  
+  For a list of the artifacts included in the Alfresco ${alfrescoEdition} ${project.version} distribution 
+  check the {{{./dependency-management.html}Dependency Management}} report.  
+  
+Usage
+  
+  You can reference the Alfresco ${alfrescoEdition} ${project.version} Platform Distribution POM in your POM adding the following snippet:
+  
++---+
+
+<project>
+   ...
+   <dependencyManagement>
+     <dependencies>
+          <!-- This will import the dependencyManagement for all artifacts in the selected Alfresco plaftorm
+               NOTE: You still need to define dependencies in your POM, 
+               but you can omit version as it's enforced by this dependencyManagement.
+           -->
+          <dependency>
+              <groupId>${project.groupId}</groupId>
+              <artifactId>alfresco-platform-distribution</artifactId>
+              <version>${project.version}</version>
+              <type>pom</type>
+              <scope>import</scope>
+          </dependency>
+     </dependencies>
+  </dependencyManagement>    
+  ...
+</project>
++---+
+
+   You might also need to add a reference to the {{{https://artifacts.alfresco.com} Alfresco Artifacts Repository}} to be able to 
+   download the POM and the referenced artifacts.
+   
+   For <<Alfresco Community>> you can use the snippet:
+   
++---+
+
+<project>
+   ...
+    <repository>
+        <id>alfresco-maven-repo</id>
+        <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+    </repository> 
+  ...
+</project>
+
++---+
+   
+   For Alfresco Enterprise please check {{{https://artifacts.alfresco.com} Alfresco Artifacts Repository}} for instructions.  
+  
+* Examples / archetypes
+
+  Examples of usage of this POM can be found in the {{{https://artifacts.alfresco.com/nexus/content/repositories/alfresco-docs/alfresco-lifecycle-aggregator/latest/index.html} Maven Alfresco SDK\x99}}. 

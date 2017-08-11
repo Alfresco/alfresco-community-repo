@@ -1,0 +1,47 @@
+<project>
+    <skin>
+        <groupId>org.apache.maven.skins</groupId>
+        <artifactId>maven-fluido-skin</artifactId>
+        <version>1.3.0</version>
+    </skin>
+    <custom>
+        <fluidoSkin>
+          <topBarIcon>
+            <name>Alfresco Software</name>
+            <alt>Alfresco Software</alt>
+            <src>http://people.apache.org/~gabriele/Alfresco-logo-transparent-thin.png</src>
+            <href>http://www.alfresco.com</href>
+          </topBarIcon>
+          <topBarEnabled>true</topBarEnabled>
+          <navBarStyle>navbar-inverse</navBarStyle>
+          <sideBarEnabled>false</sideBarEnabled>
+          <facebookLike />
+          <googlePlusOne />
+          <googleSearch>
+            <sitesearch/>
+          </googleSearch>
+           <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
+        </fluidoSkin>
+    </custom>
+    
+    <poweredBy>
+        <logo name="Maven" href="http://maven.apache.org" img="http://maven.apache.org/images/logos/maven-feather.png" />
+    </poweredBy>
+    
+    <publishDate position="navigation-bottom" format="MM-dd-yy" />
+  
+    <body>
+
+        <menu name="Alfresco Platform Distribution">
+            <item name="Introduction" href="index.html"/>
+            <item name="Maven Dependency Import" href="http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#Dependency_Management"/>
+        </menu>
+        
+        <menu name="Maven Alfresco SDK">
+            <item name="Home" href="https://artifacts.alfresco.com/nexus/content/repositories/alfresco-docs/alfresco-lifecycle-aggregator/latest/index.html" />            
+        </menu>
+
+        <menu ref="reports" />
+      
+    </body>
+</project>

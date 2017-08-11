@@ -1,0 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Context crossContext="true">
+  <Loader className="org.apache.catalina.loader.VirtualWebappLoader" virtualClasspath="${catalina.base}/../modules/platform/*.jar" /> 
+</Context>

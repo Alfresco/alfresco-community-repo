@@ -1,0 +1,109 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>warinstallation</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <fileSets>
+        <!-- Local resources: README, etc. -->
+        <fileSet>
+            <directory>target/classes</directory>
+            <outputDirectory></outputDirectory>
+        </fileSet>
+        <!-- Licenses -->
+        <fileSet>
+            <directory>${highest.basedir}/installer/bitrock/licenses</directory>
+            <outputDirectory>licenses</outputDirectory>
+        </fileSet>
+        <!-- keystore -->
+        <fileSet>
+            <directory>target/dependency/alfresco/keystore</directory>
+            <outputDirectory>alf_data/keystore</outputDirectory>
+        </fileSet>
+        <!-- Win32NetBIOS*.dll, Win32Utils*.dll -->
+        <fileSet>
+            <directory>target/dependency</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>*.dll</include>
+            </includes>
+        </fileSet>
+        <!-- Empty endorsed folder -->
+        <fileSet>
+            <directory>src/assembly</directory>
+            <outputDirectory>web-server/endorsed</outputDirectory>
+            <excludes>
+                <exclude>*</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+
+    <dependencySets>
+        <!-- AMPS -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>amps</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+            <includes>
+                <include>*:*:amp</include>
+            </includes>
+        </dependencySet>
+
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>bin</outputDirectory>
+            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco-mmt</include>
+            </includes>
+        </dependencySet>
+
+        <!-- Webapps -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/webapps</outputDirectory>
+            <outputFileNameMapping>alfresco.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco*:war</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/lib</outputDirectory>
+            <includes>
+                <include>org.postgresql:*</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/shared/classes</outputDirectory>
+            <includes>
+                <include>org.alfresco:*:jar</include>
+            </includes>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <includes>
+                    <include>alfresco/extension/**</include>
+                    <include>alfresco-global.properties.sample</include>
+                </includes>
+            </unpackOptions>
+        </dependencySet>
+
+        <!-- Alfresco Pdf Renderer -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>alfresco-pdf-renderer</outputDirectory>
+            <includes>
+                <include>org.alfresco:alfresco-pdf-renderer</include>
+            </includes>
+        </dependencySet>
+
+    </dependencySets>
+
+</assembly>

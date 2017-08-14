@@ -1,16 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-enterprise-packaging</artifactId>
-        <version>5.3-SNAPSHOT</version>
-    </parent>
     <artifactId>alfresco-content-services-installer-resources</artifactId>
     <packaging>jar</packaging>
     <name>Alfresco Content Services Installer Resources + Platform Installers</name>
 
- <properties>
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-enterprise-packaging</artifactId>
+        <version>5.3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
@@ -27,6 +29,16 @@
            alfrescosolr_component_enabled=0 
            alfrescowcmqs_component_enabled=0 
         </bitrock.arguments>
+
+        <dependency.tomcat.version>7.0.78</dependency.tomcat.version>
+        <installer.common.version>5.2-20170616</installer.common.version>
+        <installer.tomcat.version>${dependency.tomcat.version}-alfresco-distribution-20170616</installer.tomcat.version>
+        <installer.postgresql.version>9.4.12</installer.postgresql.version>
+        <installer.java.version>1.8.0_131</installer.java.version>
+        <installer.libreoffice.version>5.2.1-alfresco</installer.libreoffice.version>
+        <installer.imagemagick.version>7.0.5</installer.imagemagick.version>
+        <installer.installbuilder.version>15.10.1</installer.installbuilder.version>
+        <installer.manager.version>1.0</installer.manager.version>
     </properties>
 
     <dependencies>
@@ -126,14 +138,14 @@
 		<dependency>
 			<groupId>org.alfresco</groupId>
 			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.alfresco-pdf-renderer.version}</version>
+			<version>${dependency.alfresco-pdf-renderer.version}</version>
 			<classifier>linux</classifier>
 			<type>tgz</type>
 		</dependency>
 		<dependency>
 			<groupId>org.alfresco</groupId>
 			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.alfresco-pdf-renderer.version}</version>
+			<version>${dependency.alfresco-pdf-renderer.version}</version>
 			<classifier>win64</classifier>
 			<type>tgz</type>
 		</dependency>
@@ -193,7 +205,7 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-installer-resources</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${dependency.alfresco-installer-resources}</version>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                     <excludes>bitrock/bitrock/alfresco/shared/alfresco-global.properties</excludes>
                                 </artifactItem>
@@ -207,7 +219,7 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr4-distribution</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${dependency.alfresco-solr4.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${project.version}/solr4</outputDirectory>
                                     <excludes>solr4.war</excludes>
@@ -215,7 +227,7 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr4-distribution</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${dependency.alfresco-solr4.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${project.version}/web-server/webapps</outputDirectory>
                                     <includes>solr4.war</includes>

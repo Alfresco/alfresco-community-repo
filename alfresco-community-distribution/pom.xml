@@ -1,135 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--  
-    | This Alfresco Platform distribution POM defines the main Maven accessible artifacts
-    | of a specific Alfresco version / edition (Community / Enterprise) 
-    | By importing this POM you can have Alfresco version and artifacts scope pre-defined
-    | (using Maven dependencyManagement) and only take care of declaring groupId:artifactId 
-    | in your client POMs. 
-    --> 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>alfresco-platform-distribution</artifactId>
-  <name>Alfresco Community Platform Distribution descriptor</name>
-  <description>This POM describes the Alfresco artifacts usable in the Maven SDK, in terms of artifacts groupId, artifactId, version</description>
-  <packaging>pom</packaging>
-  
-  <parent>
-    <artifactId>alfresco-parent</artifactId>
-    <groupId>org.alfresco</groupId>
-    <version>5.3-SNAPSHOT</version>
-    <relativePath>../../../pom.xml</relativePath>
-  </parent>
-  
-  <url>https://artifacts.alfresco.com/nexus/content/repositories/alfresco-docs/alfresco-platform-distribution/latest</url>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>alfresco-platform-distribution</artifactId>
+    <name>Alfresco Community Platform Distribution descriptor</name>
+    <description>This POM describes the Alfresco artifacts usable in the Maven SDK, in terms of artifacts groupId, artifactId, version</description>
+    <packaging>pom</packaging>
 
-  <properties>
-    <!-- Alfresco version/edition selection -->
-    <alfresco.groupId>${project.groupId}</alfresco.groupId>
-    <alfresco.version>${project.version}</alfresco.version>
-    <!-- Filtered in site so no dots allowed in property name -->
-    <alfrescoEdition>Community</alfrescoEdition>
-  </properties>
-  
-  <!--  
-      | Defines Alfresco platform delivered artifacts dependencyManagement 
-      | (only commonly used artifacts are mentioned here.
-      | NOTE: You still need to add them to your child POM as <dependency>  in order to 
-      | have them in the classpath. You can omit version and scope to use the 
-      | standard SDK ones.
-      --> 
-  <dependencyManagement>
-    <dependencies>
-      <!-- == Repository JARs / WAR == -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-platform</artifactId>
-        <version>${project.version}</version>
-        <type>war</type>
-      </dependency>
-      <!-- Core -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-core</artifactId>
-        <version>${dependency.alfresco-core.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- Data model -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-data-model</artifactId>
-        <version>${dependency.alfresco-data-model.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- JLAN Embed -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-jlan-embed</artifactId>
-        <version>${dependency.alfresco-jlan.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- MBeans -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-mbeans</artifactId>
-        <version>${project.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- Remote API (JAR) -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-remote-api</artifactId>
-        <version>${project.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- Remote API (JAR) -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-repository</artifactId>
-        <version>${project.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <!-- == Solr JARs/WAR -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-solr</artifactId>
-        <version>${project.version}</version>
-        <type>war</type>
-      </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-solr</artifactId>
-        <version>${project.version}</version>
-        <classifier>classes</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-solr4</artifactId>
-        <version>${project.version}</version>
-        <type>war</type>
-      </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-solr4</artifactId>
-        <version>${project.version}</version>
-        <classifier>classes</classifier>
-        <scope>provided</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-content-repository-parent</artifactId>
+        <version>5.3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-  <repositories>
-    <repository>
-        <id>alfresco-maven-repo</id>
-        <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
-    </repository>
-    <repository>
-        <id>alfresco-maven-repo-snapshots</id>
-        <url>https://artifacts.alfresco.com/nexus/content/groups/public-snapshots</url>
-        <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>daily</updatePolicy>
-        </snapshots>
-    </repository>
-  </repositories>
+    <properties>
+        <!-- Filtered in site so no dots allowed in property name -->
+        <alfrescoEdition>Community</alfrescoEdition>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- == Repository JARs / WAR == -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-content-repository</artifactId>
+                <version>${project.version}</version>
+                <type>war</type>
+            </dependency>
+            <!-- Core -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-core</artifactId>
+                <version>${dependency.alfresco-core.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- Data model -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-data-model</artifactId>
+                <version>${dependency.alfresco-data-model.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- JLAN Embed -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-jlan-embed</artifactId>
+                <version>${dependency.alfresco-jlan.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- MBeans -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-mbeans</artifactId>
+                <version>${dependency.alfresco-mbeans.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- Remote API (JAR) -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-remote-api</artifactId>
+                <version>${dependency.alfresco-remote-api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- Remote API (JAR) -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-repository</artifactId>
+                <version>${dependency.alfresco-repository.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <!-- == Solr JARs/WAR -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-solr</artifactId>
+                <version>${dependency.alfresco-solr.version}</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-solr</artifactId>
+                <version>${dependency.alfresco-solr.version}</version>
+                <classifier>classes</classifier>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-solr4</artifactId>
+                <version>${dependency.alfresco-solr4.version}</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-solr4</artifactId>
+                <version>${dependency.alfresco-solr4.version}</version>
+                <classifier>classes</classifier>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

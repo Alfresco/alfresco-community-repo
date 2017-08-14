@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>alfresco-content-repository-parent</artifactId>
+    <name>Alfresco Repository Community</name>
+    <version>5.3-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-super-pom</artifactId>
+        <version>8</version>
+    </parent>
+
+    <modules>
+        <module>alfresco-community-distribution</module>
+        <module>alfresco-community-installer-resources</module>
+        <module>alfresco-content-repository</module>
+        <module>alfresco-platform-community-distributionzip</module>
+    </modules>
+
+    <scm>
+        <connection>scm:git:git@github.com:Alfresco/alfresco-content-repositry.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-content-repository.git</developerConnection>
+        <url>https://github.com/Alfresco/alfresco-content-repository</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>alfresco-internal</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>alfresco-internal-snapshots</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+
+    <properties>
+        <dependency.alfresco-repository.version>6.1</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>6.0</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>
+        <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>6.16</dependency.alfresco-data-model.version>
+        <dependency.alfresco-mmt.version>${project.version}</dependency.alfresco-mmt.version>
+        <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
+        <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>
+        <dependency.alfresco-server-root.version>6.0</dependency.alfresco-server-root.version>
+
+        <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
+        <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
+        <dependency.mysql.version>5.1.40</dependency.mysql.version>
+    </properties>
+
+</project>

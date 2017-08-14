@@ -3,33 +3,14 @@
     <artifactId>alfresco-content-repository</artifactId>
     <name>Alfresco Repository WAR Community</name>
     <description>Alfresco Web Client</description>
-    <version>5.3-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-super-pom</artifactId>
-        <version>8</version>
+        <artifactId>alfresco-content-repository-parent</artifactId>
+        <version>5.3-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-
-    <scm>
-        <connection>scm:git:git@github.com:Alfresco/alfresco-content-repositry.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-content-repository.git</developerConnection>
-        <url>https://github.com/Alfresco/alfresco-content-repository</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <repository>
-            <id>alfresco-internal</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
-        </repository>
-        <snapshotRepository>
-            <id>alfresco-internal-snapshots</id>
-            <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 
     <properties>
         <build-number>0</build-number>
@@ -39,32 +20,12 @@
         <scm-revision>${buildNumber}</scm-revision>
 
         <licenseName>community</licenseName>
-        
-        <tomcat.default.alfresco.port>8080</tomcat.default.alfresco.port>
-        <tomcat.default.alfresco.ssl.port>8443</tomcat.default.alfresco.ssl.port>
-        <maven.tomcat.path>/alfresco</maven.tomcat.path>
-        <maven.tomcat.uriEncoding>UTF-8</maven.tomcat.uriEncoding>
-        <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
-        <maven.tomcat.httpsPort>${tomcat.default.alfresco.ssl.port}</maven.tomcat.httpsPort>
-        <runner.share.version>5.2.f</runner.share.version>
-        <!-- Developer's runtime environment configuration -->
-        <runtime.tomcat.conf.folder>${project.build.directory}/tomcat</runtime.tomcat.conf.folder>
-        <runtime.solr.folder>${project.build.directory}/solr4-instance</runtime.solr.folder>
-        <alfresco.properties.file>${runtime.tomcat.conf.folder}/shared/classes/alfresco-global.properties</alfresco.properties.file>
-        <!-- Define the location where alfresco will store its content files, i.e. *.bin) -->
-        <dir.root>${project.build.directory}/alf_data</dir.root>
 
-        <dependency.alfresco-repository.version>6.1</dependency.alfresco-repository.version>
-        <dependency.alfresco-remote-api.version>6.0</dependency.alfresco-remote-api.version>
-        <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>
-        <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
-        <dependency.api-explorer.version>5.2.1</dependency.api-explorer.version>
+        <dir.root>${project.build.directory}/alf_data</dir.root>
 
         <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
         <dependency.mysql.version>5.1.40</dependency.mysql.version>
-
-
     </properties>
 
     <dependencies>
@@ -300,27 +261,6 @@
                 </executions>
             </plugin>
 
-            <!--<plugin>-->
-                <!--<artifactId>maven-antrun-plugin</artifactId>-->
-                <!--<executions>-->
-                    <!--&lt;!&ndash; ACE-2318 Bring alfresco-jmxrmi.* from repository &ndash;&gt;-->
-                    <!--<execution>-->
-                        <!--<id>fetch-jmxrmi-properties</id>-->
-                        <!--<phase>generate-resources</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>run</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<target>-->
-                                <!--<copy todir="${project.build.outputDirectory}/alfresco">-->
-                                    <!--<fileset dir="${basedir}/../repository/config/alfresco" includes="alfresco-jmxrmi.*" />-->
-                                <!--</copy>-->
-                            <!--</target>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
@@ -335,62 +275,6 @@
                 </executions>
             </plugin>
 
-            <!--
-                Configure the Tomcat plugin. Keeping the configuration separate from the 'run' profile,
-                allows explicit running of tomcat, e.g: mvn tomcat7:run-war-only
-            -->
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat7-maven-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${dependency.postgresql.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>${dependency.mysql.version}</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <systemProperties>
-                        <index.subsystem.name>solr6</index.subsystem.name>
-                        <solr.port>8983</solr.port>
-                        <dir.root>${dir.root}</dir.root>
-                        <solr.host>localhost</solr.host>
-                        <solr.secureComms>none</solr.secureComms>
-                        <solr.port.ssl></solr.port.ssl>
-                    </systemProperties>
-                    <delegate>false</delegate>
-                    <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
-                    <contextFile>${runtime.tomcat.conf.folder}/alfresco-context.xml</contextFile>
-                    <tomcatUsers>${runtime.tomcat.conf.folder}/tomcat-users.xml</tomcatUsers>
-                    <webapps>
-                        <!-- Run ROOT.war -->
-                        <webapp>
-                            <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-server-root</artifactId>
-                            <version></version>
-                            <contextPath>/</contextPath>
-                            <type>war</type>
-                            <asWebapp>true</asWebapp>
-                            <!-- Workaround for https://issues.apache.org/jira/browse/MTOMCAT-269 -->
-                            <!-- tomcat7-maven-plugin does not pick up the context.xml file from META-INF -->
-                            <contextFile>${project.build.directory}/tomcat/webapps/alfresco-server-root/META-INF/context.xml</contextFile>
-                        </webapp>
-                        <webapp>
-                            <groupId>org.alfresco</groupId>
-                            <artifactId>api-explorer</artifactId>
-                            <version>${dependency.api-explorer.version}</version>
-                            <contextPath>/api-explorer</contextPath>
-                            <type>war</type>
-                            <asWebapp>true</asWebapp>
-                        </webapp>
-                    </webapps>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
@@ -455,88 +339,5 @@
                 </dependency>
             </dependencies>
        </profile>
-        <profile>
-            <id>withShare</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.alfresco</groupId>
-                    <artifactId>alfresco-share-services</artifactId>
-                    <version>${runner.share.version}</version>
-                    <type>amp</type>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <overlays>
-                                <overlay>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-share-services</artifactId>
-                                    <type>amp</type>
-                                </overlay>
-                            </overlays>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.tomcat.maven</groupId>
-                        <artifactId>tomcat7-maven-plugin</artifactId>
-                        <configuration>
-                            <webapps combine.children="append">
-                                <webapp>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>share</artifactId>
-                                    <contextPath>/share</contextPath>
-                                    <version>${runner.share.version}</version>
-                                    <type>war</type>
-                                    <asWebapp>true</asWebapp>
-                                </webapp>
-                            </webapps>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>solr4</id>
-            <activation>
-                <property>
-                    <name>withAss</name>
-                    <value>!true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.tomcat.maven</groupId>
-                        <artifactId>tomcat7-maven-plugin</artifactId>
-                        <configuration>
-                            <systemProperties>
-                                <index.subsystem.name>solr4</index.subsystem.name>
-                                <solr.port>8080</solr.port>
-                                <solr.backup.alfresco.numberToKeep>0</solr.backup.alfresco.numberToKeep>
-                                <solr.backup.archive.numberToKeep>0</solr.backup.archive.numberToKeep>
-                                <solr.solr.home>${runtime.solr.folder}</solr.solr.home>
-                                <solr.solr.model.dir>${runtime.solr.folder}/alfrescoModels</solr.solr.model.dir>
-                                <solr.solr.content.dir>${runtime.solr.folder}/content</solr.solr.content.dir>
-                            </systemProperties>
-                            <webapps combine.children="append">
-                                <!-- Run solr4 alongside the repo -->
-                                <webapp>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr4</artifactId>
-                                    <version></version>
-                                    <contextPath>/solr4</contextPath>
-                                    <type>war</type>
-                                    <asWebapp>true</asWebapp>
-                                    <contextFile>${runtime.tomcat.conf.folder}/solr-context.xml</contextFile>
-                                </webapp>
-                            </webapps>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 </project>

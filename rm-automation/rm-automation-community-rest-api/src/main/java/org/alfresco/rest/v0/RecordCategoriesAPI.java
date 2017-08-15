@@ -60,7 +60,7 @@ public class RecordCategoriesAPI extends BaseAPI
      */
     public boolean createRetentionSchedule(String user, String password, String categoryName)
     {
-        String catNodeRef = NODE_REF_WORKSPACE_SPACES_STORE + getItemNodeRef(user, password, "/" + categoryName);
+        String catNodeRef = getNodeRefSpacesStore() + getItemNodeRef(user, password, "/" + categoryName);
 
         try
         {

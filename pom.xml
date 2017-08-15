@@ -339,51 +339,63 @@
                 <version>1.8</version>
                 <configuration>
 
-                <verbose>${license.verbose}</verbose>
-                <addSvnKeyWords>false</addSvnKeyWords>
-                <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                   <verbose>${license.verbose}</verbose>
+                   <addSvnKeyWords>false</addSvnKeyWords>
+                   <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
 
-                <!-- header configuration -->
-                <organizationName>Alfresco Software Limited</organizationName>
-                <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
-                <canUpdateCopyright>true</canUpdateCopyright>
-                <canUpdateDescription>true</canUpdateDescription>
+                   <!-- header configuration -->
+                   <organizationName>Alfresco Software Limited</organizationName>
+                   <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                   <canUpdateCopyright>true</canUpdateCopyright>
+                   <canUpdateDescription>true</canUpdateDescription>
 
-                <!-- licence configuration -->
-                <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+                   <!-- licence configuration -->
+                   <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
 
-                <!-- dry run options -->
-                <dryRun>${license.update.dryrun}</dryRun>
-                <failOnMissingHeader>true</failOnMissingHeader>
-                <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                   <!-- dry run options -->
+                   <dryRun>${license.update.dryrun}</dryRun>
+                   <failOnMissingHeader>true</failOnMissingHeader>
+                   <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
 
-                <!-- default root -->
-                <roots>
-                    <root>src</root>
-                </roots>
+                   <!-- default root -->
+                   <roots>
+                       <root>src</root>
+                   </roots>
 
-                <!-- exculsions -->
-                <excludes>
-                    <exclude>**/package-info.java</exclude>
-                    <exclude>**/*.properties</exclude>
-                    <exclude>**/*.css</exclude>
-                    <exclude>**/*.xml</exclude>
-                    <exclude>**/*.json</exclude>
-                    <exclude>**/*.txt</exclude>
-                    <exclude>**/*.html</exclude>
-                </excludes>
+                   <!-- exculsions -->
+                   <excludes>
+                       <exclude>**/package-info.java</exclude>
+                       <exclude>**/*.properties</exclude>
+                       <exclude>**/*.css</exclude>
+                       <exclude>**/*.xml</exclude>
+                       <exclude>**/*.json</exclude>
+                       <exclude>**/*.txt</exclude>
+                       <exclude>**/*.html</exclude>
+                   </excludes>
 
                 </configuration>
-                    <executions>
-                        <execution>
-                            <id>first</id>
-                            <goals>
-                                <goal>update-file-header</goal>
-                            </goals>
-                            <phase>process-sources</phase>
-                        </execution>
-                    </executions>
-                </plugin>
+                <executions>
+                   <execution>
+                      <id>first</id>
+                      <goals>
+                         <goal>update-file-header</goal>
+                      </goals>
+                      <phase>process-sources</phase>
+                   </execution>
+                </executions>
+            </plugin>
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-resources-plugin</artifactId>
+               <version>${maven.resources.version}</version>
+               <dependencies>
+                  <dependency>
+                     <groupId>org.apache.maven.shared</groupId>
+                     <artifactId>maven-filtering</artifactId>
+                     <version>3.1.1</version>
+                  </dependency>
+               </dependencies>
+            </plugin>
          </plugins>
       </pluginManagement>
    </build>

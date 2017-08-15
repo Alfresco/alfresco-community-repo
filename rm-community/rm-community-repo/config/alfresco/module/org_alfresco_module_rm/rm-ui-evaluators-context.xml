@@ -35,9 +35,10 @@
       <property name="nodeService" ref="NodeService"/>
       <property name="namespaceService" ref="NamespaceService"/>
       <property name="capabilityService" ref="CapabilityService"/>
-      <property name="filePlanService" ref="FilePlanService" />
+      <property name="filePlanService" ref="filePlanService" /> 
       <property name="dispositionService" ref="DispositionService" />
       <property name="recordFolderService" ref="RecordFolderService" />
+      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
    </bean>
 
    <bean id="jsonConversionComponent.baseIndicator"

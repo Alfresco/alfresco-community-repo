@@ -12,10 +12,9 @@
     </parent>
 
     <modules>
-        <module>alfresco-community-distribution</module>
-        <module>alfresco-community-installer-resources</module>
-        <module>alfresco-content-repository</module>
-        <module>alfresco-platform-community-distributionzip</module>
+        <module>sdk</module>
+        <module>war</module>
+        <module>zip</module>
     </modules>
 
     <scm>

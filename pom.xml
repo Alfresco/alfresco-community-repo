@@ -60,10 +60,15 @@
 
     <modules>
         <module>distribution</module>
+        <module>enterprise-distribution</module>
         <module>public-javadoc</module>
+        <module>installer</module>
         <module>installer-resources</module>
         <module>enterprise-installer</module>
         <module>enterprise-installer-resources</module>
+        <module>enterprise-war-for-ear</module>
+        <module>ear</module>
+        <module>share-po-run</module>
     </modules>
 
     <profiles>

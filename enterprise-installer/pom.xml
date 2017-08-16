@@ -72,7 +72,7 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-content-services-installer-resources</artifactId>
-                                    <version>${alfresco.platform.version}</version>
+                                    <version>${project.version}</version>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>

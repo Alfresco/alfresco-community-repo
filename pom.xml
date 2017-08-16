@@ -62,6 +62,8 @@
         <module>distribution</module>
         <module>public-javadoc</module>
         <module>installer-resources</module>
+        <module>enterprise-installer</module>
+        <module>enterprise-installer-resources</module>
     </modules>
 
     <profiles>

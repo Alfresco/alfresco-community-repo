@@ -1,0 +1,36 @@
+<component>
+    <name>javawriteproperties</name>
+    <description>//Java Write Properties</description>
+    <canBeEdited>0</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <readyToInstallActionList>
+        <actionGroup>
+            <actionList>
+                <iniFileGet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Java</section>
+                    <key>java_home_directory</key>
+                    <variable>java_home_directory</variable>
+                </iniFileGet>
+                <throwError>
+                    <text>This module requires Java, and no Java instance can be found.</text>
+                    <ruleList>
+                        <compareText text="${java_home_directory}" logic="equals" value=""/>
+                    </ruleList>
+                </throwError>
+            </actionList>
+            <ruleList>
+                <fileExists path="${installdir}/properties.ini"/>
+            </ruleList>
+        </actionGroup>
+    </readyToInstallActionList>
+    <postInstallationActionList>
+        <iniFileSet>
+            <file>${installdir}/properties.ini</file>
+            <section>Java</section>
+            <key>java_home_directory</key>
+            <value>${java_home_directory}</value>
+        </iniFileSet>
+    </postInstallationActionList>
+</component>

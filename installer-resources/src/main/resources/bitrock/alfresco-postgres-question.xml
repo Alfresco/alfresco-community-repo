@@ -1,0 +1,108 @@
+<component>
+    <name>alfrescopostgresquestion</name>
+    <description>//Alfresco PostgreSQL Question</description>
+    <selected>1</selected>
+    <show>0</show>
+    <shouldPackRuleList>
+        <isTrue value="${postgres_component_enabled}"/>
+    </shouldPackRuleList>
+    <parameterList>
+        <parameterGroup>
+            <name>alfrescopostgresquestion_existing</name>
+            <title>Database Configuration</title>
+            <explanation/>
+            <parameterList>
+                <stringParameter>
+                    <name>jdbc_url</name>
+                    <description>JDBC URL:</description>
+                    <default>jdbc:postgresql://localhost/alfresco</default>
+                </stringParameter>
+                <stringParameter>
+                    <name>jdbc_driver</name>
+                    <description>JDBC Driver:</description>
+                    <default>org.postgresql.Driver</default>
+                </stringParameter>
+                <stringParameter>
+                    <name>jdbc_database</name>
+                    <description>Database name:</description>
+                    <default>alfresco</default>
+                </stringParameter>
+                <stringParameter>
+                    <name>jdbc_username</name>
+                    <description>Username:</description>
+                    <default/>
+                </stringParameter>
+                <passwordParameter>
+                    <name>jdbc_password</name>
+                    <description>Password:</description>
+                    <descriptionRetype>Verify:</descriptionRetype>
+                    <default/>
+                </passwordParameter>
+            </parameterList>
+            <validationActionList>
+                <alfrescoCheckJDBCDriver jdbcdriver="${jdbc_driver}"/>
+            </validationActionList>
+            <ruleList>
+                <isFalse value="${component(postgres).selected}"/>
+            </ruleList>
+        </parameterGroup>
+    </parameterList>
+    <preInstallationActionList>
+        <actionGroup>
+            <actionList>
+                <!--setInstallerVariable name="component(postgres).selected" value="0" /-->
+                <setInstallerVariable name="component(postgresservice).selected" value="0"/>
+                <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="0"/>
+            </actionList>
+            <ruleList>
+                <isFalse value="${component(postgres).selected}" />
+		<compareText text="${installer_ui}" logic="equals" value="unattended"/>
+            </ruleList>
+        </actionGroup>
+    </preInstallationActionList>
+    <readyToInstallActionList>
+        <actionGroup>
+            <actionList>
+                <!--setInstallerVariable name="component(postgres).selected" value="1" /-->
+                <setInstallerVariable name="component(postgresservice).selected" value="1"/>
+                <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="1"/>
+            </actionList>
+            <ruleList>
+                <isTrue value="${component(postgres).selected}"/>
+                <compareText logic="equals" text="${installer_ui}" value="unattended"/>
+            </ruleList>
+        </actionGroup>
+        <actionGroup>
+            <actionList>
+                <alfrescoCheckJDBCDriver jdbcdriver="${jdbc_driver}"/> <!--Only check jdbc if postgreSQL has not been selected-->
+                <!--setInstallerVariable name="component(postgres).selected" value="0" /-->
+                <setInstallerVariable name="component(postgresservice).selected" value="0"/>
+                <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="0"/>
+            </actionList>
+            <ruleList>
+                <isFalse value="${component(postgres).selected}"/>
+                <compareText logic="equals" text="${installer_ui}" value="unattended"/>
+            </ruleList>
+        </actionGroup>
+        <setInstallerVariable name="postgres_root_password" value="${alfresco_admin_password}"/>
+        <setInstallerVariable name="database_password" value="${postgres_root_password}"/>
+    </readyToInstallActionList>
+    <postInstallationActionList>
+        <actionGroup>
+            <actionList>
+                <substitute>
+                    <files>${application_server_directory}/scripts/serviceinstall.bat</files>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>sc start</pattern>
+                            <value>rem sc start</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+            </actionList>
+            <ruleList>
+                <isFalse value="${component(postgres).selected}"/>
+            </ruleList>
+        </actionGroup>
+    </postInstallationActionList>
+</component>

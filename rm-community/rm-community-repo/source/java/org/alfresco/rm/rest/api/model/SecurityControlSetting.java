@@ -25,37 +25,38 @@
  * #L%
  */
 
-package org.alfresco.rm.rest.api.properties;
+package org.alfresco.rm.rest.api.model;
 
 /**
- * POJO representing a property key/value in the alfresco-global.properties file
+ * POJO representing a setting/property key/value in the alfresco-global.properties file
  *
  * @author Tuna Aksoy
+ * @author Ramona Popa
  * @since 2.6
  */
-public class Property
+public class SecurityControlSetting
 {
     /**
-     * Property key
+     * Setting key
      */
     private String key = null;
 
     /**
-     * Property value
+     * Setting value
      */
     private Object value = null;
 
     /**
      * Empty constructor needed for the REST API
      */
-    public Property()
+    public SecurityControlSetting()
     {
     }
 
     /**
      * Constructor
      */
-    public Property(String key, Object value)
+    public SecurityControlSetting(String key, Object value)
     {
         this.key = key;
         this.value = value;
@@ -72,7 +73,7 @@ public class Property
     }
 
     /**
-     * Sets the property key
+     * Sets the setting key
      *
      * @param key The property key to set
      */
@@ -82,7 +83,7 @@ public class Property
     }
 
     /**
-     * Get the property value
+     * Get the setting value
      *
      * @return The property value
      */
@@ -92,9 +93,9 @@ public class Property
     }
 
     /**
-     * Sets the property value
+     * Sets the setting value
      *
-     * @param value The property value
+     * @param value The setting value
      */
     public void setValue(Object value)
     {
@@ -116,13 +117,13 @@ public class Property
             return false;
         }
 
-        Property property = (Property) o;
+        SecurityControlSetting setting = (SecurityControlSetting) o;
 
-        if (!key.equals(property.key))
+        if (!key.equals(setting.key))
         {
             return false;
         }
-        return value.equals(property.value);
+        return value.equals(setting.value);
     }
 
     /**
@@ -135,13 +136,12 @@ public class Property
         result = 31 * result + value.hashCode();
         return result;
     }
-
     /**
      * toString implementation for the property
      */
     @Override
     public String toString()
     {
-        return "Property{" + "key='" + key + '\'' + ", value=" + value + '}';
+        return "Setting{" + "key='" + key + '\'' + ", value=" + value + '}';
     }
 }

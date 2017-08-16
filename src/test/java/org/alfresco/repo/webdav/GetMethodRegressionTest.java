@@ -90,7 +90,7 @@ public class GetMethodRegressionTest extends TestCase
     private static final String TEXT_DOCUMENT_CONTENT_PATTERN = "Text content for '%s' document";
 
 
-    private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext applicationContext;
 
     private WebDAVHelper davHelper;
 
@@ -117,6 +117,7 @@ public class GetMethodRegressionTest extends TestCase
     @Before
     public void setUp() throws Exception
     {
+        applicationContext = ApplicationContextHelper.getApplicationContext();
         ServiceRegistry registry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
         davHelper = (WebDAVHelper) applicationContext.getBean(WebDAVHelper.BEAN_NAME);
         auditRegistry = (AuditModelRegistryImpl) applicationContext.getBean(AUDIT_REGISTRY_BEAN_NAME);

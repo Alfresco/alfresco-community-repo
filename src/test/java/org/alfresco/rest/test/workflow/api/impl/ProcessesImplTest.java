@@ -92,7 +92,7 @@ public class ProcessesImplTest extends TestCase implements RecognizedParamsExtra
     private static final String QUERY_WORKFLOWDESCRIPTION_MATCHES = "(variables/bpm_workflowDescription MATCHES ('%s'))";
 
 
-    private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+    private ApplicationContext applicationContext;
 
     private WorkflowService workflowService;
 
@@ -107,6 +107,8 @@ public class ProcessesImplTest extends TestCase implements RecognizedParamsExtra
     @Before
     public void setUp() throws Exception
     {
+        applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+
         processes = (Processes) applicationContext.getBean(PROCESSES_BEAN_NAME);
 
         ServiceRegistry registry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);

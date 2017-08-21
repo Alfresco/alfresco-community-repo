@@ -16,7 +16,7 @@
         <!-- WAR files -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-content-repository</artifactId>
+            <artifactId>content-services-community</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
@@ -37,7 +37,7 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-content-repository</artifactId>
+            <artifactId>content-services-community</artifactId>
             <version>${project.version}</version>
             <classifier>classes</classifier>
         </dependency>

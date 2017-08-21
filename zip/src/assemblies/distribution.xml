@@ -67,7 +67,7 @@
             <outputDirectory>web-server/webapps</outputDirectory>
             <outputFileNameMapping>alfresco.war</outputFileNameMapping>
             <includes>
-                <include>org.alfresco:alfresco*:war</include>
+                <include>org.alfresco:content-services-community*:war</include>
             </includes>
         </dependencySet>
         <dependencySet>

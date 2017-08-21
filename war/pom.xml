@@ -1,8 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>alfresco-content-repository</artifactId>
-    <name>Alfresco Repository WAR Community</name>
-    <description>Alfresco Web Client</description>
+    <artifactId>content-services-community</artifactId>
+    <name>Alfresco Content Services Community WAR</name>
     <packaging>war</packaging>
 
     <parent>

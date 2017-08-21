@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -49,6 +50,7 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.AttributeElement;
 import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter.Converter;
 import org.alfresco.service.namespace.NamespaceService;
@@ -56,9 +58,12 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.surf.exception.PlatformRuntimeException;
 import org.springframework.extensions.webscripts.json.JSONUtils;
 
 /**
@@ -203,7 +208,7 @@ import org.springframework.extensions.webscripts.json.JSONUtils;
     }
     
     @SuppressWarnings("rawtypes")
-    private class SOLRTypeConverter
+    static class SOLRTypeConverter
     {
         private NamespaceService namespaceService;
         TypeConverter INSTANCE = new TypeConverter();
@@ -474,6 +479,22 @@ import org.springframework.extensions.webscripts.json.JSONUtils;
                 public String convert(Boolean source)
                 {
                     return source.toString();
+                }
+            });
+            
+            INSTANCE.addConverter(Date.class, String.class, new TypeConverter.Converter<Date, String>()
+            {
+                public String convert(Date source)
+                {
+                	try
+                	{
+                		DateTime dt = new DateTime(source, DateTimeZone.UTC);
+                		return dt.toString();
+                	}
+                    catch (PlatformRuntimeException e)
+                    {
+                        throw new TypeConversionException("Failed to convert date " + source + " to string", e);
+                    }
                 }
             });
         }

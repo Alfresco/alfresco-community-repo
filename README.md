@@ -1,9 +1,8 @@
-### Alfresco Community Distribution
+### Alfresco Content Services Community Distribution
 This project is producing packaging for [Alfresco Content Services Repository](https://community.alfresco.com/docs/DOC-6385-project-overview-repository).
 The artifacts created are:
 * A _war_ file 
 * A distribution zip archive containing the _war_ file and configuration required for deployment to a Web Server.
-* SDK dependencies pom file, used by [Alfresco SDK](https://github.com/Alfresco/alfresco-sdk).
 
 ### Building
 The project can be built by running Maven command:

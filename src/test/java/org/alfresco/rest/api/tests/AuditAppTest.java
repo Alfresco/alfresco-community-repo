@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -44,10 +45,7 @@ import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
-import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.AuditApps;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
@@ -55,9 +53,9 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.data.AuditApp;
 import org.alfresco.rest.api.tests.client.data.AuditEntry;
+import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.audit.AuditService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -68,7 +66,7 @@ import org.junit.Test;
 import org.springframework.util.ResourceUtils;
 
 /**
- * @author anechifor, aforascu, eknizat
+ * @author anechifor, aforascu, eknizat, janv
  */
 public class AuditAppTest extends AbstractSingleNetworkSiteTest 
 {
@@ -533,19 +531,13 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         ListResponse<AuditEntry> resp = auditAppsProxy.getAuditAppEntries(auditApp.getId(),
                 createParams(paging, otherParams), HttpServletResponse.SC_OK);
         String id = resp.getList().get(0).getId().toString();
-        
+
         //Positive tests
-        //200 - without parameters
+        //200
         AuditEntry entryResp = auditAppsProxy.getAuditEntry(auditApp.getId(), id, null, HttpServletResponse.SC_OK);
         validateAuditEntryFields(entryResp, auditApp);
-        assertNull(entryResp.getValues());
-
-        //200 - with parameters
-        otherParams.put("include", "values");
-        entryResp = auditAppsProxy.getAuditEntry(auditApp.getId(), id, otherParams, HttpServletResponse.SC_OK);
-        validateAuditEntryFields(entryResp, auditApp);
         assertNotNull(entryResp.getValues());
-        
+
         // Negative tests
         // 400
         auditAppsProxy.getAuditEntry(auditApp.getId(), id+"invalidIdText", null, HttpServletResponse.SC_BAD_REQUEST);
@@ -706,38 +698,49 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         otherParams.put("orderBy",
                 sortColumn + (asc != null ? " " + (asc ? SortColumn.ASCENDING : SortColumn.DESCENDING) : ""));
     }
-    
-    private NodeRef createFolderNode()
+
+    private String createFolderInPrivateSite(String siteTitle, String folderName) throws Exception
     {
-        NodeRef nodeRef = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                TestSite site = networkOne.createSite(SiteVisibility.PRIVATE);
-                NodeRef nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc", "Test Content");
-                return nodeRef;
-            }
-        }, user1, networkOne.getId());
-        return nodeRef;
+        String siteId = createSite(siteTitle, SiteVisibility.PRIVATE).getId();
+        String siteDocLibNodeId = getSiteContainerNodeId(siteId, "documentLibrary");
+        return createFolder(siteDocLibNodeId, folderName).getId();
+    }
+    
+    private void renameNode(String nodeId, String newName) throws Exception
+    {
+        Node nUpdate = new Node();
+        nUpdate.setName(newName);
+        put(URL_NODES, nodeId, toJsonAsStringNonNull(nUpdate), null, 200);
     }
 
     @Test
-    public void testAuditEntriesByNodeRefId() throws Exception
+    public void testAuditEntriesByNodeId() throws Exception
     {
-        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
         final AuditApps auditAppsProxy = publicApiClient.auditApps();
-        NodeRef nodeRef = createFolderNode();
 
-        testGetAuditEntriesByNodeRefId(auditAppsProxy, nodeRef);
-        testAuditEntriesSortingByNodeRefId(auditAppsProxy, nodeRef);
-        testAuditEntriesWhereDateByNodeRefId(auditAppsProxy, nodeRef);
-        testAuditEntriesWithIncludeByNodeRefId(auditAppsProxy, nodeRef);
-        testAuditEntriesSkipCountByNodeRefId(auditAppsProxy, nodeRef);
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+        String adminNodeId = createFolderInPrivateSite("testSiteAdmin" + RUNID, "testFolderAdmin" + RUNID);
+
+        // requires admin
+        AuditApp alfAccessAuditApp = auditAppsProxy.getAuditApp(AUDIT_APP_ID);
+
+        setRequestContext(user1);
+        String nodeId = createFolderInPrivateSite("testSiteUser" + RUNID, "testFolderUser1" + RUNID);
+        renameNode(nodeId, "testFolderUser1" + RUNID + "b");
+
+        testGetAuditEntriesByNodeId(auditAppsProxy, nodeId, alfAccessAuditApp);
+        testAuditEntriesSortingByNodeId(auditAppsProxy, nodeId);
+        testAuditEntriesWhereDateByNodeId(auditAppsProxy, nodeId);
+        testAuditEntriesWithIncludeByNodeId(auditAppsProxy, nodeId, alfAccessAuditApp);
+        testAuditEntriesSkipCountByNodeId(auditAppsProxy, nodeId);
+
+        testAuditEntriesWhereUserByNodeId(auditAppsProxy, adminNodeId, alfAccessAuditApp);
     }
 
-    private void testAuditEntriesSkipCountByNodeRefId(AuditApps auditAppsProxy, NodeRef nodeRef) throws Exception
+    private void testAuditEntriesSkipCountByNodeId(AuditApps auditAppsProxy, String nodeId) throws Exception
     {
+        setRequestContext(user1);
+
         int skipCount = 0;
         int maxItems = 4;
         final Paging paging = getPaging(skipCount, maxItems);
@@ -745,55 +748,54 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
 
         Map<String, String> otherParams = new HashMap<>();
         params = createParams(paging, otherParams);
-        ListResponse<AuditEntry> resp = getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params, HttpServletResponse.SC_OK);
+        ListResponse<AuditEntry> resp = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
 
         // Paging and list groups with skip count.
         skipCount = 2;
         maxItems = 2;
         final Paging pagingSkip = getPaging(skipCount, maxItems);
         params = createParams(pagingSkip, otherParams);
-        ListResponse<AuditEntry> sublistResponse = getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params,
-                HttpServletResponse.SC_OK);
+        ListResponse<AuditEntry> sublistResponse = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
 
         List<AuditEntry> expectedSublist = sublist(resp.getList(), skipCount, maxItems);
         checkList(expectedSublist, sublistResponse.getPaging(), sublistResponse);
-
     }
 
-    private void testAuditEntriesWithIncludeByNodeRefId(AuditApps auditAppsProxy, NodeRef nodeRef) throws Exception
+    private void testAuditEntriesWithIncludeByNodeId(AuditApps auditAppsProxy, String nodeId, AuditApp alfAccessAuditApp) throws Exception
     {
+        setRequestContext(user1);
+
         Paging paging = getPaging(0, 10);
         Map<String, String> otherParams = new HashMap<>();
         Map<String, String> params = createParams(paging, otherParams);
 
-        ListResponse<AuditEntry> auditEntriesWithoutValues = getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params,
-                HttpServletResponse.SC_OK);
+        ListResponse<AuditEntry> auditEntriesWithoutValues = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
         assertNotNull(auditEntriesWithoutValues);
-
-        AuditApp auditApp = auditAppsProxy.getAuditApp("alfresco-access");
+        
         for (AuditEntry ae : auditEntriesWithoutValues.getList())
         {
-            validateAuditEntryFields(ae, auditApp);
+            validateAuditEntryFields(ae, alfAccessAuditApp);
             assertNull(ae.getValues());
         }
 
         otherParams.put("include", org.alfresco.rest.api.Audit.PARAM_INCLUDE_VALUES);
         params = createParams(paging, otherParams);
         // list auditEntries with values
-        ListResponse<AuditEntry> auditEntriesWithValues = getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params,
-                HttpServletResponse.SC_OK);
+        ListResponse<AuditEntry> auditEntriesWithValues = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
         assertNotNull(auditEntriesWithValues);
 
         for (AuditEntry ae : auditEntriesWithValues.getList())
         {
-            validateAuditEntryFields(ae, auditApp);
+            validateAuditEntryFields(ae, alfAccessAuditApp);
             assertNotNull(ae.getValues());
             assertTrue("audit values not empty", ae.getValues().keySet().size() > 0);
         }
     }
 
-    private void testAuditEntriesWhereDateByNodeRefId(AuditApps auditAppsProxy, NodeRef nodeRef) throws Exception
+    private void testAuditEntriesWhereDateByNodeId(AuditApps auditAppsProxy, String nodeId) throws Exception
     {
+        setRequestContext(user1);
+
         // paging
         Paging paging = getPaging(0, 10);
         final Map<String, String> otherParams = new HashMap<>();
@@ -807,43 +809,71 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         otherParams.put("where", "(" + org.alfresco.rest.api.Audit.CREATED_AT + " between (" + "\'2016-06-02T12:13:51.593+01:00\'" + ", "
                 + "\'2017-06-04T10:05:16.536+01:00\'" + "))");
         params = createParams(paging, otherParams);
-        getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params, HttpServletResponse.SC_OK);
+        auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
 
         otherParams.put("where", "(" + org.alfresco.rest.api.Audit.CREATED_AT + " between (" + "\'2016-06-02T11:13:51.593+0000\'" + ", "
                 + "\'2017-06-04T09:05:16.536+0000\'" + "))");
         params = createParams(paging, otherParams);
-        getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params, HttpServletResponse.SC_OK);
+        auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
 
         otherParams.put("where", "(" + org.alfresco.rest.api.Audit.CREATED_AT + " between (" + "\'2016-06-02T11:13:51.593Z\'" + ", "
                 + "\'2017-06-04T09:05:16.536Z\'" + "))");
         params = createParams(paging, otherParams);
-        getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params, HttpServletResponse.SC_OK);
+        auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
 
         otherParams.put("where", "(" + org.alfresco.rest.api.Audit.CREATED_AT + " between (" + "\'2017-06-04T10:05:16.536+01:00\'" + ", "
                 + "\'2016-06-02T12:13:51.593+01:00\'" + "))");
         params = createParams(paging, otherParams);
-        getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params, HttpServletResponse.SC_BAD_REQUEST);
+        auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_BAD_REQUEST);
     }
 
-    private void testGetAuditEntriesByNodeRefId(AuditApps auditAppsProxy, NodeRef nodeRef) throws Exception
+    private void testAuditEntriesWhereUserByNodeId(AuditApps auditAppsProxy, String nodeId, AuditApp alfAccessAuditApp) throws Exception
     {
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
-        ListResponse<AuditEntry> auditEntries = getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), null,
-                HttpServletResponse.SC_OK);
+        Paging paging = getPaging(0, 10);
+        final Map<String, String> otherParams = new HashMap<>();
+        Map<String, String> params;
+        int countEntries;
 
-        AuditApp auditApp = auditAppsProxy.getAuditApp("alfresco-access");
+        // Get audit entries for node using 'CREATED_BY_USER' param with admin
+        otherParams.put("where", "(" + org.alfresco.rest.api.Audit.CREATED_BY_USER + "=" + "'" + networkAdmin + "'" + ")");
+        params = createParams(paging, otherParams);
+        ListResponse<AuditEntry> auditEntries = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
+        countEntries = auditEntries.getList().size();
+
+        // Get audit entries for node using 'admin' user and '-me-' alias
+        otherParams.put("where", "(" + org.alfresco.rest.api.Audit.CREATED_BY_USER + "=" + "'" + "-me-" + "'" + ")");
+        params = createParams(paging, otherParams);
+        auditEntries = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
+
+        // Check the audit entries list from the second GET call
+        assertTrue("The number of entries should be the same in both GET calls", countEntries == auditEntries.getList().size());
+        assertNotNull(auditEntries);
         for (AuditEntry ae : auditEntries.getList())
         {
-            validateAuditEntryFields(ae,auditApp);
+            validateAuditEntryFields(ae, alfAccessAuditApp);
+        }
+    }
+
+    private void testGetAuditEntriesByNodeId(AuditApps auditAppsProxy, String nodeId, AuditApp alfAccessAuditApp) throws Exception
+    {
+        setRequestContext(user1);
+
+        ListResponse<AuditEntry> auditEntries = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, null, HttpServletResponse.SC_OK);
+        
+        for (AuditEntry ae : auditEntries.getList())
+        {
+            validateAuditEntryFields(ae, alfAccessAuditApp);
         }
 
         // Negative tests
         // 401
         setRequestContext(networkOne.getId(), networkAdmin, "wrongPassword");
-        auditAppsProxy.getAuditAppEntries(nodeRef.getId(), null, HttpServletResponse.SC_UNAUTHORIZED);
+        auditAppsProxy.getAuditAppEntries(nodeId, null, HttpServletResponse.SC_UNAUTHORIZED);
         // 403
         setRequestContext(networkOne.getId(), user1, null);
-        auditAppsProxy.getAuditAppEntries(nodeRef.getId(), null, HttpServletResponse.SC_FORBIDDEN);
+        auditAppsProxy.getAuditAppEntries(nodeId, null, HttpServletResponse.SC_FORBIDDEN);
         // 404
         setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
         auditAppsProxy.getAuditAppEntries("randomId", null, HttpServletResponse.SC_NOT_FOUND);
@@ -855,36 +885,22 @@ public class AuditAppTest extends AbstractSingleNetworkSiteTest
         enableSystemAudit();
     }
 
-    private void testAuditEntriesSortingByNodeRefId(AuditApps auditAppsProxy, NodeRef nodeRef) throws Exception
+    private void testAuditEntriesSortingByNodeId(AuditApps auditAppsProxy, String nodeId) throws Exception
     {
+        setRequestContext(user1);
+
         // paging
         Paging paging = getPaging(0, 10);
         Map<String, String> otherParams = new HashMap<>();
+
         // Default order.
         addOrderBy(otherParams, org.alfresco.rest.api.Audit.CREATED_AT, null);
         Map<String, String> params = createParams(paging, otherParams);
 
-        ListResponse<AuditEntry> auditEntries = getNodeRefAuditEntries(auditAppsProxy, user1, networkOne.getId(), nodeRef.getId(), params,
-                HttpServletResponse.SC_OK);
+        ListResponse<AuditEntry> auditEntries = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, HttpServletResponse.SC_OK);
 
         assertNotNull(auditEntries);
-        assertTrue("audit entry size more that 2", auditEntries.getList().size() > 1);
+        assertTrue("audit entry size less than 2", auditEntries.getList().size() > 1);
         assertTrue("auditEntries order not valid", auditEntries.getList().get(0).getCreatedAt().before(auditEntries.getList().get(1).getCreatedAt()));
-
     }
-
-    private ListResponse<AuditEntry> getNodeRefAuditEntries(AuditApps auditAppsProxy, final String uid, final String tenantDomain, String nodeId,
-            Map<String, String> params, int expectedStatus)
-    {
-        return TenantUtil.runAsUserTenant(new TenantRunAsWork<ListResponse<AuditEntry>>()
-        {
-            @Override
-            public ListResponse<AuditEntry> doWork() throws Exception
-            {
-                ListResponse<AuditEntry> auditEntry = auditAppsProxy.getAuditAppEntriesByNodeRefId(nodeId, params, expectedStatus);
-                return auditEntry;
-            }
-        }, uid, tenantDomain);
-    }
-
 }

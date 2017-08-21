@@ -36,19 +36,17 @@ import com.sun.star.auth.InvalidArgumentException;
 /**
  * Handles audit (applications & entries)
  *
- * @author janv
+ * @author janv, anechifor, eknizat
  */
 public interface Audit
 {
-    String PARAM_ID = "id";
-    String PARAM_AUDIT_APP_ID = "auditApplicationId";
     String VALUES_VALUE = "valuesValue";
     String VALUES_KEY = "valuesKey";
     String CREATED_BY_USER = "createdByUser";
     String CREATED_AT = "createdAt";
     String ID = "id";
     String PARAM_INCLUDE_VALUES = "values";
-    
+
     /**
      * Gets a single audit application by id
      * 
@@ -77,13 +75,14 @@ public interface Audit
     AuditApp update(String auditAppId, AuditApp auditApp, Parameters parameters);
 
     /**
-     * Gets a single audit entry by id
+     * Get a single audit entry by id
      *
+     * @param auditAppId
      * @param auditEntryId
      * @param parameters
      * @return an audit entry
      */
-    // AuditEntry getAuditEntry(long auditEntryId, Parameters parameters);
+    AuditEntry getAuditEntry(String auditAppId, long auditEntryId, Parameters parameters);
 
     /**
      * Lists audit entries
@@ -97,11 +96,27 @@ public interface Audit
      CollectionWithPagingInfo<AuditEntry> listAuditEntries(String auditAppId, Parameters parameters);
 
     /**
-     * Deletes a set of audit entries
+     * Delete a single audit entry by id
+     *
+     * @param auditAppId
+     * @param auditEntryId
+     * @param parameters
+     */
+    void deleteAuditEntry(String auditAppId, long auditEntryId, Parameters parameters);
+
+    /**
+     * Delete set of audit entities
+     *
+     * @param auditAppId
+     * @param parameters - required - delete is based on "where" query
+     */
+    void deleteAuditEntries(String auditAppId, Parameters parameters);
+
+    /**
      * 
-     * @param set
-     *            of auditEntryIds
+     * @param nodeId
+     * @param parameters
      * @return
      */
-    // void deleteAuditEntries(List<Long> auditEntryIds);
+    CollectionWithPagingInfo<AuditEntry> listAuditEntriesByNodeId(String nodeId, Parameters parameters);
 }

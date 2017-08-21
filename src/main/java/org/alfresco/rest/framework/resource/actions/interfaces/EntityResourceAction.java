@@ -31,8 +31,6 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Status;
 
 /**
  * Permissible actions for an Entity Resource
@@ -136,5 +134,31 @@ public interface EntityResourceAction
     public static interface DeleteWithResponse extends ResourceAction
     {
         public void delete (String id,  Parameters parameters, WithResponse withResponse);
+    }
+
+    /**
+     * HTTP DELETE - Delete entities
+     */
+    public static interface DeleteSet extends ResourceAction
+    {
+        /**
+         * Deletes entities from the collection
+         *
+         * @param params implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
+         */
+        public void deleteSet(Parameters params);
+    }
+
+    /**
+     * HTTP DELETE - Delete entities
+     */
+    public static interface DeleteSetWithResponse extends ResourceAction
+    {
+        /**
+         * Deletes entities from the collection
+         *
+         * @param params implementation may choose to restrict the set to be be deleted based on params (ie. not necessarily "all")
+         */
+        public void deleteSet(Parameters params, WithResponse withResponse);
     }
 }

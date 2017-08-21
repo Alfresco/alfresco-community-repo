@@ -28,6 +28,7 @@ package org.alfresco.rest.api.audit;
 import org.alfresco.rest.api.Audit;
 import org.alfresco.rest.api.model.AuditEntry;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -35,12 +36,15 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
-
-
+/**
+ * Audit Entries (within the context of an Audit Application)
+ * 
+ * @author anechifor, janv
+ */
 @RelationshipResource(name = "audit-entries", entityResource = AuditApplicationsEntityResource.class, title = "Audit Application Entries")
-public class AuditApplicationsAuditEntriesRelation implements RelationshipResourceAction.Read<AuditEntry>, InitializingBean
+public class AuditApplicationsAuditEntriesRelation implements RelationshipResourceAction.Read<AuditEntry>,
+        RelationshipResourceAction.ReadById<AuditEntry>, RelationshipResourceAction.Delete, RelationshipResourceAction.DeleteSet, InitializingBean
 {
-
     private Audit audit;
 
     public void setAudit(Audit audit)
@@ -54,9 +58,6 @@ public class AuditApplicationsAuditEntriesRelation implements RelationshipResour
         ParameterCheck.mandatory("audit", this.audit);
     }
 
-    /**
-     * If auditAppId does not exist, EntityNotFoundException (status 404).
-     */
     @WebApiDescription(title = "Returns audit entries for audit app id")
     @Override
     public CollectionWithPagingInfo<AuditEntry> readAll(String auditAppId, Parameters parameters)
@@ -64,4 +65,24 @@ public class AuditApplicationsAuditEntriesRelation implements RelationshipResour
         return audit.listAuditEntries(auditAppId, parameters);
     }
 
+    @Override
+    @WebApiDescription(title = "Return audit entry id for audit app id")
+    public AuditEntry readById(String auditAppId, String auditEntryId, Parameters parameters) throws RelationshipResourceNotFoundException
+    {
+        return audit.getAuditEntry(auditAppId, new Long(auditEntryId), parameters);
+    }
+
+    @Override
+    @WebApiDescription(title = "Delete audit entry id for audit app id")
+    public void delete(String auditAppId, String auditEntryId, Parameters parameters) throws RelationshipResourceNotFoundException
+    {
+        audit.deleteAuditEntry(auditAppId, new Long(auditEntryId), parameters);
+    }
+
+    @Override
+    @WebApiDescription(title = "Delete collection/set of audit entries for audit app id - based on params")
+    public void deleteSet(String auditAppId, Parameters parameters) throws RelationshipResourceNotFoundException
+    {
+        audit.deleteAuditEntries(auditAppId, parameters);
+    }
 }

@@ -419,6 +419,11 @@
 
     <bean id="auditApi" class="org.alfresco.rest.api.impl.AuditImpl">
         <property name="auditService" ref="AuditService" />
+        <property name="personService" ref="PersonService" />
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="nodes" ref="nodes"/>
+        <property name="nodeService" ref="NodeService" />
+        <property name="people" ref="People" />
     </bean>
 
     <bean id="AuditApi" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -886,6 +891,10 @@
     
     <bean class="org.alfresco.rest.api.nodes.NodeChildrenRelation">
         <property name="nodes" ref="Nodes" />
+    </bean>
+    
+     <bean class="org.alfresco.rest.api.nodes.NodeAuditEntriesRelation">
+        <property name="audit" ref="AuditApi" />
     </bean>
     
     <bean id="baseNodeRelation" class="org.alfresco.rest.api.nodes.AbstractNodeRelation" abstract="true">

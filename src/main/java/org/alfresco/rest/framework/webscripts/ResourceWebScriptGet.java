@@ -147,6 +147,28 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         CollectionWithPagingInfo<?> resources = getter.readAll(params, withResponse);
                         return resources;
                     }
+                    else if (EntityResourceAction.DeleteSetWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.DeleteSetWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.DeleteSetWithResponse relationDeleter = (EntityResourceAction.DeleteSetWithResponse) resource.getResource();
+                        relationDeleter.deleteSet(params, withResponse);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
+                    }
+                    else if (EntityResourceAction.DeleteSet.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.Delete.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.DeleteSet relationDeleter = (EntityResourceAction.DeleteSet) resource.getResource();
+                        relationDeleter.deleteSet(params);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
+                    }
                     else
                     {
                         throw new UnsupportedResourceOperationException();
@@ -210,7 +232,6 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                 } 
                 else 
                 {
-
                     if (RelationshipResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceAction.Read.class))

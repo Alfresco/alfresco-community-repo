@@ -66,7 +66,7 @@ public class AuditEntry extends org.alfresco.rest.api.model.AuditEntry implement
         AssertUtil.assertEquals("id", getId(), other.getId());
         AssertUtil.assertEquals("auditApplicationId", getAuditApplicationId(), other.getAuditApplicationId());
         AssertUtil.assertEquals("values", getValues(), other.getValues());
-        AssertUtil.assertEquals("createdByUser", getCreatedByUser(), other.getCreatedByUser());
+        AssertUtil.assertEquals("createdByUser", getCreatedByUser().getId(), other.getCreatedByUser().getId());
         AssertUtil.assertEquals("createdAt", getCreatedAt(), other.getCreatedAt());
     }
 
@@ -95,13 +95,13 @@ public class AuditEntry extends org.alfresco.rest.api.model.AuditEntry implement
         Long id = (Long) jsonObject.get("id");
         String auditApplicationId = (String) jsonObject.get("auditApplicationId");
         Map<String, Serializable> values = (Map<String, Serializable>) jsonObject.get("values");
-        UserInfo createdByUser = null;
+        org.alfresco.rest.api.model.UserInfo createdByUser = null;
         JSONObject createdByUserJson = (JSONObject) jsonObject.get("createdByUser");
         if (createdByUserJson != null)
         {
             String userId = (String) createdByUserJson.get("id");
             String displayName = (String) createdByUserJson.get("displayName");
-            createdByUser = new UserInfo(userId, displayName);
+            createdByUser = new  org.alfresco.rest.api.model.UserInfo(userId,displayName,displayName);   
         }
         Date createdAt = ISO8601DateFormat.parse((String) jsonObject.get("createdAt"));
 

@@ -310,7 +310,9 @@ public class InspectorTests
        
        aMethod = ResourceInspector.findMethod(EntityResourceAction.Delete.class, SheepEntityResourceWithDeletedMethods.class);
        assertTrue("Delete method has been marketed as deleted.",ResourceInspector.isDeleted(aMethod));
-
+       
+       aMethod = ResourceInspector.findMethod(EntityResourceAction.DeleteSet.class, SheepEntityResourceWithDeletedMethods.class);
+       assertTrue("Delete method has been marketed as deleted.",ResourceInspector.isDeleted(aMethod));
     }
     
     @Test

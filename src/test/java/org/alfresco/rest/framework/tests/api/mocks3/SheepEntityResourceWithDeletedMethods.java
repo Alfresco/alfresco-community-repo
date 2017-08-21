@@ -33,8 +33,8 @@ import org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource;
 /**
  * This no longer does all the actions.
  * 
- * The original SheepEntityResource had 4 actions: update, readById, readAll, delete
- * update and delete methods are marked as deleted
+ * The original SheepEntityResource has actions: update, readById, readAll, delete, deleteSet
+ * update, delete and deleteSet methods are marked as deleted
  * readAll is untouched - (only present in SheepEntityResource);
  * readById is overridden.
  *
@@ -42,8 +42,7 @@ import org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource;
  */
 public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource 
 {
-
-    /*
+    /**
      * @see org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource#update(java.lang.String, org.alfresco.rest.framework.tests.api.mocks.Sheep)
      */
     @Override
@@ -53,7 +52,7 @@ public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource
         return null; //No implementation because its deleted
     }
 
-    /*
+    /**
      * @see org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource#readById(java.lang.String)
      */
     @Override
@@ -62,7 +61,7 @@ public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource
         return new Sheep("v3_"+id);
     }
 
-    /*
+    /**
      * @see org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource#delete(java.lang.String)
      */
     @Override
@@ -72,4 +71,13 @@ public class SheepEntityResourceWithDeletedMethods extends SheepEntityResource
         //No implementation because its deleted
     }
 
+    /**
+     * @see org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource#deleteSet(java.lang.String)
+     */
+    @Override
+    @WebApiDeleted
+    public void deleteSet(Parameters parameters)
+    {
+        //No implementation because its deleted
+    }
 }

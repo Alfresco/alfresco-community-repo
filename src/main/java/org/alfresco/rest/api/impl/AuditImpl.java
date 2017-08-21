@@ -39,14 +39,19 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Audit;
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.AuditApp;
 import org.alfresco.rest.api.model.AuditEntry;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -58,18 +63,24 @@ import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.audit.AuditService.AuditApplication;
 import org.alfresco.service.cmr.audit.AuditService.AuditQueryCallback;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Handles audit (applications & entries)
  *
- * @author janv
+ * @author janv, anechifor, eknizat
  */
 public class AuditImpl implements Audit
 {
 
     private final static String DISABLED = "Audit is disabled system-wide";
+    private final static String DEFAULT_USER = "-me-";
 
     // list of equals filter's auditEntry (via where clause)
     private final static Set<String> LIST_AUDIT_ENTRY_EQUALS_QUERY_PROPERTIES = new HashSet<>(
@@ -87,9 +98,44 @@ public class AuditImpl implements Audit
 
     private AuditService auditService;
 
+    private PersonService personService;
+
+    private NodeService nodeService;
+
+    private NamespaceService namespaceService;
+
+    private Nodes nodes;
+
+    private People people;
+
+    public void setPeople(People people)
+    {
+        this.people = people;
+    }
+
+    public void setNodes(Nodes nodes)
+    {
+        this.nodes = nodes;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
     public void setAuditService(AuditService auditService)
     {
         this.auditService = auditService;
+    }
+
+    public void setPersonService(PersonService personService)
+    {
+        this.personService = personService;
     }
 
     private void checkEnabled()
@@ -196,14 +242,14 @@ public class AuditImpl implements Audit
         }
 
         // Parse where clause properties.
-        List<AuditEntry> entriesAudit = new ArrayList<AuditEntry>();
+        List<AuditEntry> entriesAudit = new ArrayList<>();
         Query q = parameters.getQuery();
         // paging
         Paging paging = parameters.getPaging();
         int skipCount = paging.getSkipCount();
         int maxItems = paging.getMaxItems();
         int limit = skipCount + maxItems + 1; // to detect hasMoreItems
-        
+
         if (q != null)
         {
             // filtering via "where" clause
@@ -216,23 +262,22 @@ public class AuditImpl implements Audit
         entriesAudit.removeAll(Collections.singleton(null));
         int totalItems = entriesAudit.size();
 
-        if(skipCount >= totalItems)
+        if (skipCount >= totalItems)
         {
-                List<AuditEntry> empty = Collections.emptyList();
-                return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+            List<AuditEntry> empty = Collections.emptyList();
+            return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
         }
         else
         {
-                int end = Math.min(limit - 1, totalItems);
-                boolean hasMoreItems = totalItems > end;
+            int end = Math.min(limit - 1, totalItems);
+            boolean hasMoreItems = totalItems > end;
 
-                entriesAudit = entriesAudit.subList(skipCount, end);
-                return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
+            entriesAudit = entriesAudit.subList(skipCount, end);
+            return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
         }
     }
 
     /**
-     * 
      * @param parameters
      * @return
      * @throws InvalidArgumentException
@@ -263,18 +308,14 @@ public class AuditImpl implements Audit
     }
 
     /**
-     * 
      * @author anechifor
-     *
      */
-    private static class AuditEntryQueryWalker extends MapBasedQueryWalker
+    private class AuditEntryQueryWalker extends MapBasedQueryWalker
     {
-        private String fromTime;
-
-        private String toTime;
+        private Long fromTime;
+        private Long toTime;
 
         private Long fromId;
-
         private Long toId;
 
         public AuditEntryQueryWalker()
@@ -285,7 +326,7 @@ public class AuditImpl implements Audit
         @Override
         public void and()
         {
-            // allow AND, e.g. isRoot=true AND zones in ('BLAH')
+            // allow AND, e.g. createdByUser='jbloggs' AND createdAt BETWEEN ('...','...)
         }
 
         @Override
@@ -293,8 +334,8 @@ public class AuditImpl implements Audit
         {
             if (propertyName.equals(CREATED_AT))
             {
-                fromTime = firstValue;
-                toTime = secondValue;
+                fromTime = getTime(firstValue);
+                toTime = getTime(secondValue) + 1;
             }
 
             if (propertyName.equals(ID))
@@ -304,19 +345,26 @@ public class AuditImpl implements Audit
             }
         }
 
-        public String getFromTime()
+        public Long getFromTime()
         {
             return fromTime;
         }
 
-        public String getToTime()
+        public Long getToTime()
         {
             return toTime;
         }
 
         public String getCreatedByUser()
         {
-            return getProperty(CREATED_BY_USER, WhereClauseParser.EQUALS, String.class);
+            String propertyValue = getProperty(CREATED_BY_USER, WhereClauseParser.EQUALS, String.class);
+
+            // Check if '-me-' alias is used and replace it with userId
+            if ((propertyValue != null) && propertyValue.equalsIgnoreCase(DEFAULT_USER))
+            {
+                propertyValue = AuditImpl.this.people.validatePerson(propertyValue);
+            }
+            return propertyValue;
         }
 
         public String getValuesKey()
@@ -338,11 +386,9 @@ public class AuditImpl implements Audit
         {
             return toId;
         }
-
     }
 
     /**
-     * 
      * @param auditAppId
      * @param propertyWalker
      * @param includeParams
@@ -350,8 +396,8 @@ public class AuditImpl implements Audit
      * @param forward
      * @return
      */
-    public List<AuditEntry> getQueryResultAuditEntries(AuditService.AuditApplication auditApplication, AuditEntryQueryWalker propertyWalker, List<String> includeParam,
-            int maxItem, Boolean forward)
+    public List<AuditEntry> getQueryResultAuditEntries(AuditService.AuditApplication auditApplication, AuditEntryQueryWalker propertyWalker,
+            List<String> includeParam, int maxItem, Boolean forward)
     {
         final List<AuditEntry> results = new ArrayList<>();
 
@@ -360,38 +406,42 @@ public class AuditImpl implements Audit
 
         // Execute the query
         AuditQueryParameters params = new AuditQueryParameters();
+
         // used to orderBY by field createdAt
         params.setForward(forward);
+
         params.setApplicationName(auditApplicationName);
         params.setUser(propertyWalker.getCreatedByUser());
-        if (propertyWalker.getFromTime() != null)
-        {
-            params.setFromTime(ISO8601DateFormat.parse(propertyWalker.getFromTime().replace(" ", "+")).getTime());
-        }
 
-        if (propertyWalker.getToTime() != null)
-        {
-            params.setToTime(ISO8601DateFormat.parse(propertyWalker.getToTime().replace(" ", "+")).getTime());
-        }
-        params.setFromId(propertyWalker.getFromId());
-        params.setToId(propertyWalker.getToId());
-  
+        Long fromId = propertyWalker.getFromId();
+        Long toId = propertyWalker.getToId();
+
+        validateWhereBetween(auditAppId, fromId, toId);
+
+        Long fromTime = propertyWalker.getFromTime();
+        Long toTime = propertyWalker.getToTime();
+
+        validateWhereBetween(auditAppId, fromTime, toTime);
+
+        params.setFromTime(fromTime);
+        params.setToTime(toTime);
+
+        params.setFromId(fromId);
+        params.setToId(toId);
+
         if (propertyWalker.getValuesKey() != null && propertyWalker.getValuesValue() != null)
         {
             params.addSearchKey(propertyWalker.getValuesKey(), propertyWalker.getValuesValue());
         }
 
+        final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
+
         // create the callback for auditQuery method
         final AuditQueryCallback callback = new AuditQueryCallback()
         {
-
             public boolean valuesRequired()
             {
-                if (includeParam != null && includeParam.contains(PARAM_INCLUDE_VALUES))
-                {
-                    return true;
-                }
-                return false;
+                return ((includeParam != null) && (includeParam.contains(PARAM_INCLUDE_VALUES)));
             }
 
             public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
@@ -399,10 +449,10 @@ public class AuditImpl implements Audit
                 throw new AlfrescoRuntimeException("Failed to retrieve audit data.", error);
             }
 
-            public boolean handleAuditEntry(Long entryId, String applicationName, String user, long time, Map<String, Serializable> values)
+            public boolean handleAuditEntry(Long entryId, String applicationName, String userName, long time, Map<String, Serializable> values)
             {
-
-                AuditEntry auditEntry = new AuditEntry(entryId, auditAppId, new UserInfo(null, user, null), new Date(time), values);
+                UserInfo userInfo = Node.lookupUserInfo(userName, mapUserInfo, personService);
+                AuditEntry auditEntry = new AuditEntry(entryId, auditAppId, userInfo, new Date(time), values);
                 results.add(auditEntry);
                 return true;
             }
@@ -432,4 +482,384 @@ public class AuditImpl implements Audit
         return new AuditApp(auditApplication.getKey().substring(1), auditApplication.getName(), auditApp.getIsEnabled());
     }
 
+    @Override
+    public AuditEntry getAuditEntry(String auditAppId, long auditEntryId, Parameters parameters)
+    {
+        checkEnabled();
+
+        AuditService.AuditApplication auditApplication = findAuditAppByIdOr404(auditAppId);
+
+        // Execute the query
+        AuditQueryParameters params = new AuditQueryParameters();
+        params.setApplicationName(auditApplication.getName());
+        params.setFromId(auditEntryId);
+        params.setToId(auditEntryId + 1);
+        
+        List<String> includeParam = new ArrayList<>();
+        if (parameters != null)
+        {
+            includeParam.addAll(parameters.getInclude());
+        }
+
+        // Add values for single get
+        includeParam.add(PARAM_INCLUDE_VALUES);
+
+        final List<AuditEntry> results = new ArrayList<>();
+
+        // create the callback for auditQuery method
+        final AuditQueryCallback callback = new AuditQueryCallback()
+        {
+            public boolean valuesRequired()
+            {
+                return ((includeParam != null) && (includeParam.contains(PARAM_INCLUDE_VALUES)));
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException("Failed to retrieve audit data.", error);
+            }
+
+            public boolean handleAuditEntry(Long entryId, String applicationName, String userName, long time, Map<String, Serializable> values)
+            {
+                UserInfo userInfo = Node.lookupUserInfo(userName, new HashMap<>(0), personService);
+                AuditEntry auditEntry = new AuditEntry(entryId, auditAppId, userInfo, new Date(time), values);
+                results.add(auditEntry);
+                return true;
+            }
+        };
+
+        auditService.auditQuery(callback, params, 1);
+
+        if (results.size() != 1)
+        {
+            throw new EntityNotFoundException("" + auditEntryId);
+        }
+        return results.get(0);
+    }
+
+    @Override
+    public void deleteAuditEntry(String auditAppId, long auditEntryId, Parameters parameters)
+    {
+        checkEnabled();
+
+        AuditService.AuditApplication auditApplication = findAuditAppByIdOr404(auditAppId);
+
+        int deleted = auditService.clearAuditByIdRange(auditApplication.getName(), auditEntryId, auditEntryId + 1);
+        if (deleted != 1)
+        {
+            throw new EntityNotFoundException("" + auditEntryId);
+        }
+    }
+
+    @Override
+    public void deleteAuditEntries(String auditAppId, Parameters parameters)
+    {
+        checkEnabled();
+
+        AuditService.AuditApplication auditApplication = findAuditAppByIdOr404(auditAppId);
+
+        Query q = parameters.getQuery();
+        if ((q == null) || (q.getTree() == null))
+        {
+            throw new InvalidArgumentException("where clause is required to delete audit entries (" + auditAppId + ")");
+        }
+
+        // delete via "where" clause
+        DeleteAuditEntriesQueryWalker walker = new DeleteAuditEntriesQueryWalker();
+        QueryHelper.walk(q, walker);
+
+        Long fromId = walker.getFromId();
+        Long toId = walker.getToId();
+
+        validateWhereBetween(auditAppId, fromId, toId);
+
+        Long fromTime = walker.getFromTime();
+        Long toTime = walker.getToTime();
+
+        validateWhereBetween(auditAppId, fromTime, toTime);
+
+        if ((fromId != null) && (fromTime != null))
+        {
+            throw new InvalidArgumentException("where clause is invalid - cannot specify both createdAt & id (" + auditAppId + ")");
+        }
+
+        if (fromId != null)
+        {
+            auditService.clearAuditByIdRange(auditApplication.getName(), fromId, toId); // ignore
+                                                                                        // response
+        }
+        else if (fromTime != null)
+        {
+            auditService.clearAudit(auditApplication.getName(), fromTime, toTime); // ignore
+                                                                                   // response
+        }
+
+        // return success (even if nothing is deleted)
+    }
+
+    private static class DeleteAuditEntriesQueryWalker extends MapBasedQueryWalker
+    {
+        private Long fromTime;
+        private Long toTime;
+
+        private Long fromId;
+        private Long toId;
+
+        public DeleteAuditEntriesQueryWalker()
+        {
+            super(null, null);
+        }
+
+        @Override
+        public void between(String propertyName, String firstValue, String secondValue, boolean negated)
+        {
+            if (propertyName.equals(CREATED_AT))
+            {
+                fromTime = getTime(firstValue);
+                toTime = getTime(secondValue) + 1;
+            }
+
+            if (propertyName.equals(ID))
+            {
+                fromId = new Long(firstValue);
+                toId = new Long(secondValue) + 1;
+            }
+        }
+
+        public Long getFromTime()
+        {
+            return fromTime;
+        }
+
+        public Long getToTime()
+        {
+            return toTime;
+        }
+
+        public Long getFromId()
+        {
+            return fromId;
+        }
+
+        public Long getToId()
+        {
+            return toId;
+        }
+    }
+
+    private static long getTime(String iso8601String)
+    {
+        return ISO8601DateFormat.parse(iso8601String.replace(" ", "+")).getTime();
+    }
+
+    private void validateWhereBetween(String auditAppId, Long from, Long to)
+    {
+        if ((from != null) || (to != null))
+        {
+            if ((from == null) || (to == null))
+            {
+                // belts-and-braces
+                throw new InvalidArgumentException("where BETWEEN is invalid - must contain range (" + auditAppId + ")");
+            }
+
+            if (from >= to)
+            {
+                throw new InvalidArgumentException("where BETWEEN is invalid - range start greater than end (" + auditAppId + ")");
+            }
+        }
+    }
+
+    @Override
+    public CollectionWithPagingInfo<AuditEntry> listAuditEntriesByNodeId(String nodeId, Parameters parameters)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                checkEnabled();
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        // note: node read permission is checked later - see nodeService.getPath
+        NodeRef nodeRef = nodes.validateNode(nodeId);
+        List<AuditEntry> entriesAudit = new ArrayList<>();
+
+        // adding orderBy property
+        Pair<String, Boolean> sortProp = getAuditEntrySortProp(parameters);
+        Boolean forward = true;
+        if ((sortProp != null) && (sortProp.getFirst().equals(CREATED_AT)))
+        {
+            forward = sortProp.getSecond();
+        }
+
+        // paging
+        Paging paging = parameters.getPaging();
+        int skipCount = paging.getSkipCount();
+        int maxItems = paging.getMaxItems();
+        int limit = skipCount + maxItems + 1; // to detect hasMoreItems
+
+        Query q = parameters.getQuery();
+
+        if (q != null)
+        {
+            // filtering via "where" clause
+            AuditEntriesByNodeIdQueryWalker propertyWalker = new AuditEntriesByNodeIdQueryWalker();
+            QueryHelper.walk(q, propertyWalker);
+            entriesAudit = getQueryResultAuditEntriesByNodeRef(nodeRef, propertyWalker, parameters.getInclude(), forward, limit);
+        }
+
+        // clear null elements
+        entriesAudit.removeAll(Collections.singleton(null));
+        int totalItems = entriesAudit.size();
+
+        if (skipCount >= totalItems)
+        {
+            List<AuditEntry> empty = Collections.emptyList();
+            return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+        }
+        else
+        {
+            int end = Math.min(limit - 1, totalItems);
+            boolean hasMoreItems = totalItems > end;
+
+            entriesAudit = entriesAudit.subList(skipCount, end);
+            return CollectionWithPagingInfo.asPaged(paging, entriesAudit, hasMoreItems, totalItems);
+        }
+    }
+
+    private List<AuditEntry> getQueryResultAuditEntriesByNodeRef(NodeRef nodeRef, AuditEntriesByNodeIdQueryWalker propertyWalker,
+            List<String> includeParam, boolean forward, int limit)
+    {
+        final List<AuditEntry> results = new ArrayList<>();
+
+        String auditAppId = "alfresco-access";
+        String auditApplicationName = AuthenticationUtil.runAs(new RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                return findAuditAppByIdOr404(auditAppId).getName();
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        // create the callback for auditQuery method
+        final AuditQueryCallback callback = new AuditQueryCallback()
+        {
+            public boolean valuesRequired()
+            {
+                return ((includeParam != null) && (includeParam.contains(PARAM_INCLUDE_VALUES)));
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException("Failed to retrieve audit data.", error);
+            }
+
+            public boolean handleAuditEntry(Long entryId, String applicationName, String userName, long time, Map<String, Serializable> values)
+            {
+                UserInfo userInfo = Node.lookupUserInfo(userName, new HashMap<>(0), personService);
+                AuditEntry auditEntry = new AuditEntry(entryId, auditAppId, userInfo, new Date(time), values);
+                results.add(auditEntry);
+                return true;
+            }
+        };
+
+        // resolve the path of the node - note: this will also check read permission for current user
+        final String nodePath = ISO9075.decode(nodeService.getPath(nodeRef).toPrefixString(namespaceService));
+        Long fromTime = propertyWalker.getFromTime();
+        Long toTime = propertyWalker.getToTime();
+        validateWhereBetween(nodeRef.getId(), fromTime, toTime);
+
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // QueryParameters
+                AuditQueryParameters pathParams = new AuditQueryParameters();
+                // used to orderBY by field createdAt
+                pathParams.setForward(forward);
+                pathParams.setUser(propertyWalker.getCreatedByUser());
+                pathParams.setFromTime(fromTime);
+                pathParams.setToTime(toTime);
+                pathParams.setApplicationName(auditApplicationName);
+                pathParams.addSearchKey("/"+auditAppId+"/transaction/path", nodePath);
+                auditService.auditQuery(callback, pathParams, limit);
+
+                AuditQueryParameters copyFromPathParams = new AuditQueryParameters();
+                // used to orderBY by field createdAt
+                copyFromPathParams.setForward(forward);
+                copyFromPathParams.setUser(propertyWalker.getCreatedByUser());
+                copyFromPathParams.setFromTime(fromTime);
+                copyFromPathParams.setToTime(toTime);
+                copyFromPathParams.setApplicationName(auditApplicationName);
+                copyFromPathParams.addSearchKey("/"+auditAppId+"/transaction/copy/from/path", nodePath);
+                auditService.auditQuery(callback, copyFromPathParams, limit);
+
+                AuditQueryParameters moveFromPathParams = new AuditQueryParameters();
+                // used to orderBY by field createdAt
+                moveFromPathParams.setForward(forward);
+                moveFromPathParams.setUser(propertyWalker.getCreatedByUser());
+                moveFromPathParams.setFromTime(fromTime);
+                moveFromPathParams.setToTime(toTime);
+                moveFromPathParams.setApplicationName(auditApplicationName);
+                moveFromPathParams.addSearchKey("/"+auditAppId+"/transaction/move/from/path", nodePath);
+                auditService.auditQuery(callback, moveFromPathParams, limit);
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        return results;
+    }
+
+    private class AuditEntriesByNodeIdQueryWalker extends MapBasedQueryWalker
+    {
+        private Long fromTime;
+        private Long toTime;
+
+        public AuditEntriesByNodeIdQueryWalker()
+        {
+            super(new HashSet<>(Arrays.asList(new String[] { CREATED_BY_USER })), null);
+        }
+
+        @Override
+        public void and()
+        {
+            // allow AND, e.g. createdByUser='jbloggs' AND createdAt BETWEEN ('...','...)
+        }
+
+        @Override
+        public void between(String propertyName, String firstValue, String secondValue, boolean negated)
+        {
+            if (propertyName.equals(CREATED_AT))
+            {
+                fromTime = getTime(firstValue);
+                toTime = getTime(secondValue) + 1;
+            }
+
+        }
+
+        public String getCreatedByUser()
+        {
+            String propertyValue = getProperty(CREATED_BY_USER, WhereClauseParser.EQUALS, String.class);
+
+            // Check if '-me-' alias is used and replace it with userId
+            if ((propertyValue != null) && propertyValue.equalsIgnoreCase(DEFAULT_USER))
+            {
+                propertyValue = AuditImpl.this.people.validatePerson(propertyValue);
+            }
+            return propertyValue;
+        }
+
+        public Long getFromTime()
+        {
+            return fromTime;
+        }
+
+        public Long getToTime()
+        {
+            return toTime;
+        }
+
+    }
 }

@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>content-services-community-distribution</artifactId>
     <packaging>jar</packaging>
-    <name>Alfresco Platform Distribution (WAR Installation)</name>
+    <name>Alfresco Content Services Community WAR Installation</name>
 
     <parent>
         <groupId>org.alfresco</groupId>

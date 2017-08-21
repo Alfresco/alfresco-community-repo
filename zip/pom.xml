@@ -66,7 +66,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}-${project.version}</finalName>
+        <finalName>alfresco-content-services-distribution-${project.version}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>

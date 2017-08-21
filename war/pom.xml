@@ -20,30 +20,20 @@
         <scm-revision>${buildNumber}</scm-revision>
 
         <licenseName>community</licenseName>
-
-        <dir.root>${project.build.directory}/alf_data</dir.root>
-
-        <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
-        <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
-        <dependency.mysql.version>5.1.40</dependency.mysql.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-trashcan-cleaner</artifactId>
-            <version>${dependency.alfresco-trashcan-cleaner.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${dependency.alfresco-remote-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-repository.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
@@ -59,7 +49,6 @@
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
-            <version>2.7.2-alfresco</version>
         </dependency>
         <dependency>
             <groupId>commons-jxpath</groupId>
@@ -128,11 +117,10 @@
             <scope>provided</scope>
         </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>org.alfresco.services</groupId>
             <artifactId>alfresco-messaging-repo</artifactId>
-            <version>1.2.8</version>
-        </dependency> 
+        </dependency>
 
         <!-- CORS Filter Libraries -->
         <dependency>
@@ -145,21 +133,18 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>${dependency.alfresco-core.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-repository.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${dependency.alfresco-remote-api.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -191,12 +176,6 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${dependency.mysql.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.192</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

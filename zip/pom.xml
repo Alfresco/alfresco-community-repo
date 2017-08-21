@@ -24,19 +24,16 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-mmt</artifactId>
-            <version>${dependency.alfresco-mmt.version}</version>
         </dependency>
 
         <!-- JAR files, to extract alfresco/extension -->
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-repository.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-data-model</artifactId>
-            <version>${dependency.alfresco-data-model.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -56,14 +53,12 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-pdf-renderer</artifactId>
-            <version>${dependency.alfresco-pdf-renderer.version}</version>
             <classifier>linux</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-pdf-renderer</artifactId>
-            <version>${dependency.alfresco-pdf-renderer.version}</version>
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
@@ -88,7 +83,6 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-repository</artifactId>
-                                    <version>${dependency.alfresco-repository.version}</version>
                                     <includes>alfresco/keystore/**</includes>
                                 </artifactItem>
                             </artifactItems>
@@ -107,7 +101,6 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-jlan-embed</artifactId>
-                                    <version>${dependency.alfresco-jlan.version}</version>
                                     <classifier>windll</classifier>
                                     <includes>*.dll</includes>
                                 </artifactItem>
@@ -127,7 +120,6 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-server-root</artifactId>
-                                    <version>${dependency.alfresco-server-root.version}</version>
                                     <type>war</type>
                                     <outputDirectory>${project.build.outputDirectory}/web-server/webapps</outputDirectory>
                                     <destFileName>ROOT.war</destFileName>

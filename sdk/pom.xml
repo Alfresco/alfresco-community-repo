@@ -8,7 +8,7 @@
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>alfresco-content-repository-parent</artifactId>
+        <artifactId>acs-community-packaging</artifactId>
         <version>5.3-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>

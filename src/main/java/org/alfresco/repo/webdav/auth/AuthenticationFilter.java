@@ -106,6 +106,7 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
      * @exception ServletException
      * @exception IOException
      */
+    @Override
     public void doFilter(ServletContext context, ServletRequest req, ServletResponse resp, FilterChain chain)
             throws IOException, ServletException
     {
@@ -177,7 +178,10 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                         else
                         {
                             authenticationService.authenticate(username, password.toCharArray());
-                            authenticationListener.userAuthenticated(new BasicAuthCredentials(username, password));
+                            if(authenticationListener != null)
+                            {
+                                authenticationListener.userAuthenticated(new BasicAuthCredentials(username, password));
+                            }
                         }
                         
                         user = createUserEnvironment(httpReq.getSession(), authenticationService.getCurrentUserName(), authenticationService.getCurrentTicket(), false);
@@ -225,7 +229,10 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                     // Validate the ticket
 
                     authenticationService.validate(ticket);
-                    authenticationListener.userAuthenticated(new TicketCredentials(ticket));
+                    if(authenticationListener != null)
+                    {
+                        authenticationListener.userAuthenticated(new TicketCredentials(ticket));
+                    }
 
                     // Need to create the User instance if not already available
 
@@ -251,7 +258,10 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
         }
         else
         {
-            authenticationListener.userAuthenticated(new TicketCredentials(user.getTicket()));
+            if(authenticationListener != null)
+            {
+                authenticationListener.userAuthenticated(new TicketCredentials(user.getTicket()));
+            }
         }
 
         // Chain other filters
@@ -270,6 +280,7 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseAuthenticationFilter#getLogger()
      */
+    @Override
     protected Log getLogger()
     {
         return logger;

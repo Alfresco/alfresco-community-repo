@@ -17,9 +17,9 @@
     </modules>
 
     <scm>
-        <connection>scm:git:git@github.com:Alfresco/alfresco-content-repositry.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-content-repository.git</developerConnection>
-        <url>https://github.com/Alfresco/alfresco-content-repository</url>
+        <connection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</developerConnection>
+        <url>https://github.com/Alfresco/acs-community-packaging</url>
         <tag>HEAD</tag>
     </scm>
 

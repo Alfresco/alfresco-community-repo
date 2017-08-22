@@ -57,7 +57,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class RepoUsageComponentTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private  ApplicationContext ctx;
     
     private static final Log logger = LogFactory.getLog(RepoUsageComponentTest.class);
 
@@ -70,6 +70,7 @@ public class RepoUsageComponentTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         if (AlfrescoTransactionSupport.isActualTransactionActive())
         {
             fail("Test started with transaction in progress");

@@ -66,7 +66,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class MissingContentReindexComponentTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private AuthenticationComponent authenticationComponent;
     private SearchService searchService;
@@ -81,6 +81,7 @@ public class MissingContentReindexComponentTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();

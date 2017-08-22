@@ -75,7 +75,7 @@ public class PeopleTest extends TestCase
     private static final UserInfo USER_7 = new UserInfo("user7", "sara jones", "doe");
     private static final UserInfo USER_8 = new UserInfo("user8", "sara", "doe");
 
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
 
     private TransactionService transactionService;
     private UserTransaction txn;
@@ -88,6 +88,7 @@ public class PeopleTest extends TestCase
      */
     protected void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         people = (People) ctx.getBean("peopleScript");
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         transactionService = serviceRegistry.getTransactionService();

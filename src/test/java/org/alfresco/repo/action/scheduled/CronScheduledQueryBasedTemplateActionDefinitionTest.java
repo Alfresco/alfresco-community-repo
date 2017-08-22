@@ -136,7 +136,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     
     private static final String TEST_FOLDER_NAME = String.format(ROOT_TEST_FOLDER_NAME_TEMPLATE, System.currentTimeMillis());
 
-    private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext applicationContext;
     private ServiceRegistry registry;
 
     private UserTransaction transaction;
@@ -157,6 +157,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     @Override
     public void setUp() throws Exception
     {
+        applicationContext = ApplicationContextHelper.getApplicationContext();
         this.registry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
         initializeScheduler();

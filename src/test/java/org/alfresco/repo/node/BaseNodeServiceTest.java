@@ -52,6 +52,8 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy;
 import org.alfresco.repo.node.encryption.MetadataEncryptor;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
+import org.alfresco.repo.policy.BehaviourDefinition;
+import org.alfresco.repo.policy.ClassBehaviourBinding;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -3361,60 +3363,55 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         setComplete();
         endTransaction();
     }
-        
-    public static boolean behaviourExecuted = false;
-    
+
+    static boolean behaviourExecuted = false;
+
     public void testAR1303() throws Exception
     {
+        PolicyComponent policyComponent = (PolicyComponent) this.applicationContext.getBean("policyComponent");
+        JavaBehaviour behaviour = new JavaBehaviour(this, "onUpdateProperties");
+        BehaviourDefinition<ClassBehaviourBinding> bindClassBehaviour = null;
+
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-        props.put(ContentModel.PROP_NAME, "test.txt");
-        
-        NodeRef nodeRef = this.nodeService.createNode(
-                this.rootNodeRef, 
-                ContentModel.ASSOC_CHILDREN, 
-                ContentModel.ASSOC_CHILDREN, 
-                ContentModel.TYPE_CONTENT, 
-                props).getChildRef();
-        
+        props.put(ContentModel.PROP_NAME, "test_testAR1303.txt");
+
+        NodeRef nodeRef = this.nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN,
+                ContentModel.TYPE_CONTENT, props).getChildRef();
+
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, null);
-        
+
         nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "my description");
         nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "my title");
-        
-        JavaBehaviour behaviour = new JavaBehaviour(this, "onUpdateProperties");        
-        PolicyComponent policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
-        policyComponent.bindClassBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), 
-                ContentModel.ASPECT_TITLED, 
-                behaviour);        
-        
-        behaviourExecuted = false;
-        
-        // Update the title property and check that the behaviour has been fired
-        nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "changed title");
-        assertTrue("The onUpdateProperties behaviour has not been fired.", behaviourExecuted);
+        try
+        {
+            bindClassBehaviour = policyComponent.bindClassBehaviour(
+                    QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"), ContentModel.ASPECT_TITLED,
+                    behaviour);
+
+            behaviourExecuted = false;
+
+            // Update the title property and check that the behaviour has been fired
+            nodeService.setProperty(nodeRef, ContentModel.PROP_TITLE, "changed title");
+            assertTrue("The onUpdateProperties behaviour has not been fired.", behaviourExecuted);
+        }
+        finally
+        {
+            if (bindClassBehaviour != null)
+            {
+                policyComponent.removeClassDefinition(bindClassBehaviour);
+            }
+        }
     }
-    
-    public void onUpdateProperties(
-            NodeRef nodeRef,
-            Map<QName, Serializable> before,
-            Map<QName, Serializable> after)
+
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        behaviourExecuted = true;       
-        assertFalse(String.valueOf(before.get(ContentModel.PROP_TITLE)).equals(String.valueOf(after.get(ContentModel.PROP_TITLE))));
-        
-        System.out.print("Before values: ");
-        for (Map.Entry<QName, Serializable> entry : before.entrySet()) 
-        {
-            System.out.println(entry.getKey().toString() + " : " + entry.getValue().toString());
-        }
-        System.out.print("\nAfter values: ");
-        for (Map.Entry<QName, Serializable> entry : after.entrySet()) 
-        {
-            System.out.println(entry.getKey().toString() + " : " + entry.getValue().toString());
-        }
+        behaviourExecuted = true;
+        assertFalse(
+                "Should not be equal:\nbefore: " + before.get(ContentModel.PROP_TITLE) + "\nafter: "
+                        + after.get(ContentModel.PROP_TITLE),
+                String.valueOf(before.get(ContentModel.PROP_TITLE)).equals(String.valueOf(after.get(ContentModel.PROP_TITLE))));
     }
-    
+
     /**
      * Checks that unconvertable property values cannot be persisted.
      */

@@ -61,7 +61,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class ALF947Test extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private NodeService nodeService;
     private LuceneIndexerAndSearcher indexerAndSearcher;
@@ -81,6 +81,7 @@ public class ALF947Test extends TestCase
 
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         this.nodeService = (NodeService) ctx.getBean("dbNodeService");
         ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
         this.indexerAndSearcher = (LuceneIndexerAndSearcher) luceneSubSystem.getApplicationContext().getBean("search.admLuceneIndexerAndSearcherFactory");

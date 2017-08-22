@@ -72,7 +72,7 @@ public class PerformanceNodeServiceTest extends TestCase
     private int testStringPropertyCount = 10;
     private int testContentPropertyCount = 10;
     
-    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext applicationContext;
     
     protected DictionaryService dictionaryService;
     protected NodeService nodeService;
@@ -88,6 +88,7 @@ public class PerformanceNodeServiceTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        applicationContext = ApplicationContextHelper.getApplicationContext();
         DictionaryDAO dictionaryDao = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
         
         // load the system model

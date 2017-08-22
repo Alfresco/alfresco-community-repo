@@ -63,7 +63,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class FileImporterTest extends TestCase
 {
-    static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    ApplicationContext ctx;
     private NodeService nodeService;
     private SearchService searchService;
     private DictionaryService dictionaryService;
@@ -90,6 +90,7 @@ public class FileImporterTest extends TestCase
 
     public void setUp()
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
         nodeService = serviceRegistry.getNodeService();

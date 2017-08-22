@@ -54,7 +54,6 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -62,7 +61,7 @@ import org.springframework.context.ApplicationContext;
 
 public class CifsAuthenticatorPassthruTest
 {
-    private static ApplicationContext ctx = null;
+    private ApplicationContext ctx = null;
 
     private PersonService personService;
     private TransactionService transactionService;
@@ -73,17 +72,14 @@ public class CifsAuthenticatorPassthruTest
     private String userExistingLocal = "user1." + GUID.generate();
     private String userMissingLocal = "user2." + GUID.generate();
 
-    @BeforeClass
-    public static void init()
-    {
-       ApplicationContextHelper.setUseLazyLoading(false);
-       ApplicationContextHelper.setNoAutoStart(true);
-       ctx = ApplicationContextHelper.getApplicationContext();
-    }
 
     @Before
     public void before() throws Exception
     {
+        ApplicationContextHelper.setUseLazyLoading(false);
+        //ApplicationContextHelper.setNoAutoStart(true);
+        ctx = ApplicationContextHelper.getApplicationContext();
+
         this.personService = (PersonService) ctx.getBean("personService");
         this.transactionService = (TransactionService) ctx.getBean("transactionService");
         this.nodeService = (NodeService) ctx.getBean("nodeService");

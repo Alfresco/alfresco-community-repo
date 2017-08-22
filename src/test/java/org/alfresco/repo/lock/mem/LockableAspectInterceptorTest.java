@@ -60,15 +60,13 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 public class LockableAspectInterceptorTest
 {
-    private static ApplicationContext appCtx;
+    private ApplicationContext appCtx;
     private TransactionService transactionService;
     private NodeService nodeService;
     private NodeService rawNodeService;
@@ -80,22 +78,11 @@ public class LockableAspectInterceptorTest
     private LockService lockService;
     private FileFolderService fileFolderService;
     private ActionService actionService;
-    
-    @BeforeClass
-    public static void setUpClass() throws Exception
-    {
-        appCtx = ApplicationContextHelper.getApplicationContext();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception
-    {
-        ApplicationContextHelper.closeApplicationContext();
-    }
 
     @Before
     public void setUp()
     {
+        appCtx = ApplicationContextHelper.getApplicationContext();
         // The user that will create locks, this should be different from the user that queries them (ALF-19465)
         lockOwner = "jbloggs";
         // The 'current' user.

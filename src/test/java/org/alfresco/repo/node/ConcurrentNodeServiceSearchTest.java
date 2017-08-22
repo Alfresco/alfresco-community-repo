@@ -69,7 +69,7 @@ public class ConcurrentNodeServiceSearchTest extends TestCase
 
     public static final QName PROP_QNAME_TEST_MIMETYPE = QName.createQName(NAMESPACE, "mimetype");
 
-    static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    ApplicationContext ctx;
 
     private NodeService nodeService;
 
@@ -88,6 +88,7 @@ public class ConcurrentNodeServiceSearchTest extends TestCase
 
     protected void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         // load the system model
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();

@@ -63,7 +63,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class RhinoScriptTest extends TestCase
 {
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private ContentService contentService;
     private NodeService nodeService;
@@ -78,7 +78,7 @@ public class RhinoScriptTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
-        
+        ctx = ApplicationContextHelper.getApplicationContext();
         transactionService = (TransactionService)ctx.getBean("transactionComponent");
         contentService = (ContentService)ctx.getBean("contentService");
         nodeService = (NodeService)ctx.getBean("nodeService");

@@ -60,7 +60,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class LargeArchiveAndRestoreTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private static Log logger = LogFactory.getLog(LargeArchiveAndRestoreTest.class);
     
@@ -75,6 +75,7 @@ public class LargeArchiveAndRestoreTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         nodeService = serviceRegistry.getNodeService();
         fileFolderService = serviceRegistry.getFileFolderService();

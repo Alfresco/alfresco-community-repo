@@ -73,7 +73,7 @@ public class ConcurrentNodeServiceTest extends TestCase
 
     private static Log logger = LogFactory.getLog(ConcurrentNodeServiceTest.class);
 
-    static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    ApplicationContext ctx;
 
     private NodeService nodeService;
     private NodeDAO nodeDAO;
@@ -88,6 +88,7 @@ public class ConcurrentNodeServiceTest extends TestCase
 
     protected void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         // load the system model
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();

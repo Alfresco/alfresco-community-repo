@@ -91,7 +91,7 @@ public class ArchiveAndRestoreTest extends TestCase
     private static final QName QNAME_BB = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "bb");
     private static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName("http://www.alfresco.org/test/nodearchive", "content");
 
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private NodeArchiveService nodeArchiveService;
     private NodeService nodeService;
@@ -127,6 +127,8 @@ public class ArchiveAndRestoreTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
+        
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         nodeService = serviceRegistry.getNodeService();

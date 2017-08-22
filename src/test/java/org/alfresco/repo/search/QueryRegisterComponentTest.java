@@ -38,7 +38,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class QueryRegisterComponentTest extends TestCase
 {
-    static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    ApplicationContext ctx;
 
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
@@ -55,7 +55,7 @@ public class QueryRegisterComponentTest extends TestCase
     
     public void setUp()
     {
-      
+        ctx = ApplicationContextHelper.getApplicationContext();
         dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         namespaceService = (NamespaceService) ctx.getBean("namespaceService");
        

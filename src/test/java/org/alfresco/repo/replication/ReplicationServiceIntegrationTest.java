@@ -100,8 +100,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class ReplicationServiceIntegrationTest extends TestCase
 {
-   private static ConfigurableApplicationContext ctx = 
-      (ConfigurableApplicationContext)ApplicationContextHelper.getApplicationContext();
+   private ConfigurableApplicationContext ctx;
    private static final Log log = LogFactory.getLog(ReplicationServiceIntegrationTest.class);
    
    
@@ -151,7 +150,7 @@ public class ReplicationServiceIntegrationTest extends TestCase
         {
             fail("Dangling transaction detected, left by a previous test.");
         }
-        
+        ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
         replicationActionExecutor = (ReplicationActionExecutor) ctx.getBean("replicationActionExecutor");
         replicationService = (ReplicationService) ctx.getBean("replicationService");
         replicationParams = (ReplicationParams) ctx.getBean("replicationParams");

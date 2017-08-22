@@ -68,7 +68,7 @@ import junit.framework.TestCase;
 public class DocumentLinkServiceImplTest extends TestCase
 {
 
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     private static final String TEST_USER = DocumentLinkServiceImplTest.class.getSimpleName() + "_testuser";
     
     private UserTransaction txn;
@@ -102,6 +102,7 @@ public class DocumentLinkServiceImplTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         // Set up the services
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         transactionService = serviceRegistry.getTransactionService();

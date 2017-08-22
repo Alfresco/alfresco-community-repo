@@ -28,31 +28,15 @@ package org.alfresco.repo.virtual.config;
 
 import java.io.Serializable;
 
-import javax.transaction.UserTransaction;
-
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.VirtualizationTest;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 
-public class NodeRefPathExpressionTest extends TestCase implements VirtualizationTest
+public class NodeRefPathExpressionTest extends VirtualizationIntegrationTest implements VirtualizationTest
 {
     private static final String NODE_REF_PATH_EXPRESSION_FACTORY_ID = "config.NodeRefPathExpressionFactory";
-
-    protected static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
-
-    private UserTransaction txn;
-
-    private ServiceRegistry serviceRegistry;
-
-    private NodeService nodeService;
 
     private NodeRefPathExpressionFactory nodeRefPathExpressionFactory;
 
@@ -60,25 +44,7 @@ public class NodeRefPathExpressionTest extends TestCase implements Virtualizatio
     protected void setUp() throws Exception
     {
         super.setUp();
-
-        serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
-
-        nodeService = (NodeService) ctx.getBean("nodeService");
-
         nodeRefPathExpressionFactory = (NodeRefPathExpressionFactory) ctx.getBean(NODE_REF_PATH_EXPRESSION_FACTORY_ID);
-
-        TransactionService transactionService = serviceRegistry.getTransactionService();
-
-        // start the transaction
-        txn = transactionService.getUserTransaction();
-        txn.begin();
-    }
-
-    @Override
-    protected void tearDown() throws Exception
-    {
-        txn.rollback();
-        super.tearDown();
     }
 
     protected void assertResolvablePath(String path, String toName)

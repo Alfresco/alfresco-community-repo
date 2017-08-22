@@ -74,7 +74,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class RoutingContentServiceTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private static final String SOME_CONTENT = "ABC";
         
@@ -96,6 +96,7 @@ public class RoutingContentServiceTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         nodeService = (NodeService) ctx.getBean("NodeService");
         contentService = (ContentService) ctx.getBean(ServiceRegistry.CONTENT_SERVICE.getLocalName());

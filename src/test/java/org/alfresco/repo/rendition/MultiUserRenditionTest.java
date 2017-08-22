@@ -60,7 +60,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -72,27 +71,44 @@ import org.springframework.context.ApplicationContext;
  */
 public class MultiUserRenditionTest
 {
-    private static ApplicationContext appContext;
+    private ApplicationContext appContext;
 
     private static String ADMIN_USER;
     private static final String NON_ADMIN_USER = "nonAdmin";
     
-    private static MutableAuthenticationService authenticationService;
-    private static ContentService contentService;
-    private static NodeService nodeService;
-    private static PermissionService permissionService;
-    private static PersonService personService;
-    private static RenditionService renditionService;
-    private static Repository repositoryHelper;
-    private static RetryingTransactionHelper txnHelper;
-    private static TransactionService transactionService;
-    private static OwnableService ownableService;
+    private MutableAuthenticationService authenticationService;
+    private ContentService contentService;
+    private NodeService nodeService;
+    private PermissionService permissionService;
+    private PersonService personService;
+    private RenditionService renditionService;
+    private Repository repositoryHelper;
+    private RetryingTransactionHelper txnHelper;
+    private TransactionService transactionService;
+    private OwnableService ownableService;
     
     private List<NodeRef> nodesToBeTidiedUp = new ArrayList<NodeRef>();
     private NodeRef testFolder;
 
-    @BeforeClass
-    public static void initContextAndCreateUser()
+    @Before public void createTestFolder()
+    {
+        initContextAndCreateUser();
+        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+        final NodeRef companyHome = repositoryHelper.getCompanyHome();
+        
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, this.getClass() + "_testFolder");
+        testFolder = nodeService.createNode(companyHome, 
+                                                ContentModel.ASSOC_CONTAINS, 
+                                                ContentModel.ASSOC_CONTAINS, 
+                                                ContentModel.TYPE_FOLDER,
+                                                props).getChildRef();
+        // Let anyone (meaning non-admin) do anything (meaning create new content)
+        permissionService.setPermission(testFolder, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
+        this.nodesToBeTidiedUp.add(testFolder);
+    }
+    
+    public  void initContextAndCreateUser()
     {
         appContext = ApplicationContextHelper.getApplicationContext();
 
@@ -114,7 +130,7 @@ public class MultiUserRenditionTest
 
     }
 
-    public static void createUser(String userName)
+    public  void createUser(String userName)
     {
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
 
@@ -134,23 +150,6 @@ public class MultiUserRenditionTest
             
             personService.createPerson(ppOne);
         }
-    }
-
-    @Before public void createTestFolder()
-    {
-        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
-        final NodeRef companyHome = repositoryHelper.getCompanyHome();
-        
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
-        props.put(ContentModel.PROP_NAME, this.getClass() + "_testFolder");
-        testFolder = nodeService.createNode(companyHome, 
-                                                ContentModel.ASSOC_CONTAINS, 
-                                                ContentModel.ASSOC_CONTAINS, 
-                                                ContentModel.TYPE_FOLDER,
-                                                props).getChildRef();
-        // Let anyone (meaning non-admin) do anything (meaning create new content)
-        permissionService.setPermission(testFolder, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
-        this.nodesToBeTidiedUp.add(testFolder);
     }
 
     /**

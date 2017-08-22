@@ -104,7 +104,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 @Category(OwnJVMTestsCategory.class)
 public class CopyServiceImplTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     /*
      * Services used by the tests
@@ -183,6 +183,7 @@ public class CopyServiceImplTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         if (AlfrescoTransactionSupport.isActualTransactionActive())
         {
             fail("Test started with transaction in progress");

@@ -68,7 +68,7 @@ import org.springframework.context.ApplicationContext;
  */
 public abstract class BaseCMISTest extends TestCase
 {
-    protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    protected ApplicationContext ctx;
 
     protected CMISMapping cmisMapping;
     
@@ -96,9 +96,9 @@ public abstract class BaseCMISTest extends TestCase
     
     protected CMISQueryService cmisQueryService;
 
-    private MutableAuthenticationService authenticationService;
+    protected MutableAuthenticationService authenticationService;
 
-    private MutableAuthenticationDao authenticationDAO;
+    protected MutableAuthenticationDao authenticationDAO;
 
     protected SearchService searchService;
 
@@ -122,6 +122,7 @@ public abstract class BaseCMISTest extends TestCase
 
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         
         cmisDictionaryService = (CMISDictionaryService) ctx.getBean("OpenCMISDictionaryService");
@@ -192,7 +193,6 @@ public abstract class BaseCMISTest extends TestCase
         {
             testTX.rollback();
         }
-        AuthenticationUtil.clearCurrentSecurityContext();
         super.tearDown();
     }
 }

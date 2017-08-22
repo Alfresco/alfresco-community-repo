@@ -36,13 +36,14 @@ import org.springframework.context.ApplicationContext;
 
 public class ServiceRegistryTest
 {
-    protected static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    protected ApplicationContext ctx;
 
     protected ServiceRegistry serviceRegistry;
 
     @Before
     public void before() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
     }
 

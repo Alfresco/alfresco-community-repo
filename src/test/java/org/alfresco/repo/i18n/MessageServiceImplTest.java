@@ -72,7 +72,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 @Category(OwnJVMTestsCategory.class)
 public class MessageServiceImplTest extends TestCase implements MessageDeployer
 {
-    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext applicationContext;
     
     private static final String BASE_BUNDLE_NAME = "testMessages";
     private static final String BASE_RESOURCE_CLASSPATH = "org/alfresco/repo/i18n/";
@@ -112,6 +112,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
     @Override
     protected void setUp() throws Exception
     {
+        applicationContext = ApplicationContextHelper.getApplicationContext();
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
             fail("Detected a leaked transaction from a previous test.");

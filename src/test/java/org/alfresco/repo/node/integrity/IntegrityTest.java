@@ -104,13 +104,7 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_PROP_ENCRYPTED_A = QName.createQName(NAMESPACE, "prop-encrypted-a");
     public static final QName TEST_PROP_ENCRYPTED_B = QName.createQName(NAMESPACE, "prop-encrypted-b");
     public static final QName TEST_PROP_ENCRYPTED_C = QName.createQName(NAMESPACE, "prop-encrypted-c");
-    
-    public static ApplicationContext ctx;
-    static
-    {
-        ctx = ApplicationContextHelper.getApplicationContext();
-    }
-    
+
     private IntegrityChecker integrityChecker;
     private ServiceRegistry serviceRegistry;
     private NodeService nodeService;
@@ -121,6 +115,7 @@ public class IntegrityTest extends TestCase
     
     public void setUp() throws Exception
     {
+        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         // load the test model

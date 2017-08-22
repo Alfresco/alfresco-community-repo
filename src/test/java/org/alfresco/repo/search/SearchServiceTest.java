@@ -52,7 +52,7 @@ import org.springframework.context.ApplicationContext;
 public class SearchServiceTest extends TestCase
 {
 
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
 
     private AuthenticationComponent authenticationComponent;
 
@@ -97,6 +97,7 @@ public class SearchServiceTest extends TestCase
 
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");

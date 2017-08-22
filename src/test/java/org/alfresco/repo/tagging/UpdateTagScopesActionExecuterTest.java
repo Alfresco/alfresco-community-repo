@@ -84,7 +84,7 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
     private static final String TEST_DOCUMENT_NAME_PATTERN = "InFolder-%d-TestDocument-%d.txt";
 
 
-    private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext applicationContext;
 
     private NodeService nodeService;
 
@@ -110,6 +110,7 @@ public class UpdateTagScopesActionExecuterTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        applicationContext = ApplicationContextHelper.getApplicationContext();
         final ServiceRegistry registry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
         nodeService = registry.getNodeService();

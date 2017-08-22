@@ -43,18 +43,13 @@ import org.springframework.context.ApplicationContext;
  */
 public class PropTablesCleanupJobIntegrationTest
 {
-    private static ApplicationContext ctx;
+    private ApplicationContext ctx;
     private CronTriggerBean jobTrigger;
-    
-    @BeforeClass
-    public static void setUpClass()
-    {
-        ctx = ApplicationContextHelper.getApplicationContext();
-    }
     
     @Before
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         jobTrigger = ctx.getBean("propTablesCleanupTrigger", CronTriggerBean.class);
     }
     

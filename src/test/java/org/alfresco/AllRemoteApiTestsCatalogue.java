@@ -218,6 +218,7 @@ public class AllRemoteApiTestsCatalogue
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.web.scripts.solr.StatsGetTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.web.scripts.solr.SOLRSerializerTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.web.util.PagingCursorTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.web.util.paging.PagingTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.GetMethodTest.class));

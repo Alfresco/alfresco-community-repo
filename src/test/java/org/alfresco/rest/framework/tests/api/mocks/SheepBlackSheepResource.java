@@ -46,7 +46,7 @@ import org.springframework.extensions.webscripts.Status;
 @RelationshipResource(name = "blacksheep",entityResource=SheepEntityResource.class, title = "BlackSheep")
 public class SheepBlackSheepResource implements RelationshipResourceAction.Read<Sheep>,
             RelationshipResourceAction.Update<Sheep>, RelationshipResourceAction.Delete,
-            RelationshipResourceAction.Create<Sheep>
+            RelationshipResourceAction.Create<Sheep>, RelationshipResourceAction.DeleteSet
 {
 
 
@@ -63,13 +63,19 @@ public class SheepBlackSheepResource implements RelationshipResourceAction.Read<
     }
 
     @Override
+    @WebApiDescription(title = "Deletes only black Sheep", successStatus = Status.STATUS_CONFLICT)
+    public void deleteSet(String entityResourceId, Parameters parameters)
+    {
+    }
+
+    @Override
     public Sheep update(String entityResourceId, Sheep entity, Parameters parameters)
     {
         return entity;
     }
 
     @Override
-    @WebApiParam(name="entity", title="A single shepp", description="A single sheep, multiples are not supported.", 
+    @WebApiParam(name="entity", title="A single sheep", description="A single sheep, multiples are not supported.", 
     kind=ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
     public List<Sheep> create(String entityResourceId, List<Sheep> entity, Parameters parameters)
     {

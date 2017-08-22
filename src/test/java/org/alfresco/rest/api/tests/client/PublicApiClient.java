@@ -2510,6 +2510,51 @@ public class PublicApiClient
             return null;
         }
 
-    }
+        public AuditEntry getAuditEntry(String applicationId, String entryId, Map<String, String> param, int expectedStatus)
+                throws PublicApiException, ParseException
+        {
+            HttpResponse response = getSingle("audit-applications", applicationId, "audit-entries",entryId,
+                    param, "Failed to get Audit Application " + applicationId, expectedStatus);
 
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("entry");
+                if (jsonList != null)
+                {
+                    return AuditEntry.parseAuditEntry(jsonList);
+                }
+            }
+            return null;
+        }
+
+        public void deleteAuditEntry(String applicationId, String entryId, Map<String, String> param, int expectedStatus)
+                throws PublicApiException
+        {
+            remove("audit-applications", applicationId, "audit-entries", entryId, param,"Failed to delete entry " + entryId, expectedStatus);
+        }
+
+        public void deleteAuditEntries(String applicationId, Map<String, String> param, int expectedStatus)
+                throws PublicApiException
+        {
+            remove("audit-applications", applicationId, "audit-entries", null, param,"Failed to delete entries for audit application " + applicationId, expectedStatus);
+        }
+        
+        public ListResponse<AuditEntry> getAuditAppEntriesByNodeRefId(String nodeId, Map<String, String> params, int expectedStatus)
+                throws PublicApiException, ParseException
+        {
+            HttpResponse response = getAll("nodes", nodeId, "audit-entries", null, params, "Failed to get audit entries for " + nodeId,
+                    expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return AuditEntry.parseAuditEntries(response.getJsonResponse());
+                }
+            }
+            return null;
+        }
+
+    }
 }

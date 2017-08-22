@@ -90,6 +90,8 @@ public class ResourceInspector
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.ReadById.class);
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.Update.class);
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.Delete.class);
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.DeleteSet.class);
+        
         ALL_ENTITY_RESOURCE_INTERFACES.add(BinaryResourceAction.Read.class);
 
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.CreateWithResponse.class);
@@ -97,6 +99,8 @@ public class ResourceInspector
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.ReadByIdWithResponse.class);
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.UpdateWithResponse.class);
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.DeleteWithResponse.class);
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.DeleteSetWithResponse.class);
+        
         ALL_ENTITY_RESOURCE_INTERFACES.add(BinaryResourceAction.ReadWithResponse.class);
 
         ALL_ENTITY_RESOURCE_INTERFACES.add(MultiPartResourceAction.Create.class);
@@ -106,12 +110,14 @@ public class ResourceInspector
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadById.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Update.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Delete.class);
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.DeleteSet.class);
 
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.CreateWithResponse.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadWithResponse.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadByIdWithResponse.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.UpdateWithResponse.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.DeleteWithResponse.class);
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.DeleteSetWithResponse.class);
 
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(MultiPartRelationshipResourceAction.Create.class);
 
@@ -144,12 +150,14 @@ public class ResourceInspector
         findOperation(EntityResourceAction.ReadById.class, HttpMethod.GET, helper);
         findOperation(EntityResourceAction.Update.class,   HttpMethod.PUT, helper);  
         findOperation(EntityResourceAction.Delete.class,   HttpMethod.DELETE, helper);
+        findOperation(EntityResourceAction.DeleteSet.class,   HttpMethod.DELETE, helper);
 
         findOperation(EntityResourceAction.CreateWithResponse.class,   HttpMethod.POST, helper);
         findOperation(EntityResourceAction.ReadWithResponse.class,     HttpMethod.GET, helper);
         findOperation(EntityResourceAction.ReadByIdWithResponse.class, HttpMethod.GET, helper);
         findOperation(EntityResourceAction.UpdateWithResponse.class,   HttpMethod.PUT, helper);
         findOperation(EntityResourceAction.DeleteWithResponse.class,   HttpMethod.DELETE, helper);
+        findOperation(EntityResourceAction.DeleteSetWithResponse.class,   HttpMethod.DELETE, helper);
 
         findOperation(MultiPartResourceAction.Create.class,   HttpMethod.POST, helper);
 
@@ -251,12 +259,14 @@ public class ResourceInspector
         findOperation(RelationshipResourceAction.ReadById.class, HttpMethod.GET, helper);
         findOperation(RelationshipResourceAction.Update.class,   HttpMethod.PUT, helper);  
         findOperation(RelationshipResourceAction.Delete.class,   HttpMethod.DELETE, helper);
+        findOperation(RelationshipResourceAction.DeleteSet.class,   HttpMethod.DELETE, helper);
 
         findOperation(RelationshipResourceAction.CreateWithResponse.class,   HttpMethod.POST, helper);
         findOperation(RelationshipResourceAction.ReadWithResponse.class,     HttpMethod.GET, helper);
         findOperation(RelationshipResourceAction.ReadByIdWithResponse.class, HttpMethod.GET, helper);
         findOperation(RelationshipResourceAction.UpdateWithResponse.class,   HttpMethod.PUT, helper);
         findOperation(RelationshipResourceAction.DeleteWithResponse.class,   HttpMethod.DELETE, helper);
+        findOperation(RelationshipResourceAction.DeleteSetWithResponse.class,   HttpMethod.DELETE, helper);
 
         findOperation(MultiPartRelationshipResourceAction.Create.class, HttpMethod.POST, helper);
 

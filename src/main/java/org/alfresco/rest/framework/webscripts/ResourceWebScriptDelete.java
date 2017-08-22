@@ -37,7 +37,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.parameters.Params;
-import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -69,25 +68,11 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
         switch (resourceMeta.getType())
         {
             case ENTITY:
-                 if (StringUtils.isBlank(entityId))
-                 {
-                   throw new UnsupportedResourceOperationException("DELETE is executed against the instance URL");              
-                 } 
-                 else
-                 {
-                   return Params.valueOf(params, entityId, relationshipId, req);
-
-                 }
+                 // note: entityId can be null - when deleting a set/collection
+                 return Params.valueOf(params, entityId, relationshipId, req);
             case RELATIONSHIP:
-
-                if (StringUtils.isBlank(relationshipId))
-                {
-                  throw new UnsupportedResourceOperationException("DELETE is executed against the instance URL");                 
-                } 
-                else
-                {
-                  return Params.valueOf(params, entityId, relationshipId, req);
-                }   
+                // note: relationshipId can be null - when deleting a related set/collection
+                return Params.valueOf(params, entityId, relationshipId, req);
             case PROPERTY:
                 final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
                 final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
@@ -121,47 +106,107 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
         switch (resource.getMetaData().getType())
         {
             case ENTITY:
-                if (EntityResourceAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                if (StringUtils.isNotBlank(params.getEntityId()))
                 {
-                    if (resource.getMetaData().isDeleted(EntityResourceAction.DeleteWithResponse.class))
+                    if (EntityResourceAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.DeleteWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.DeleteWithResponse entityDeleter = (EntityResourceAction.DeleteWithResponse) resource.getResource();
+                        entityDeleter.delete(params.getEntityId(), params, withResponse);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
                     }
-                    EntityResourceAction.DeleteWithResponse entityDeleter = (EntityResourceAction.DeleteWithResponse) resource.getResource();
-                    entityDeleter.delete(params.getEntityId(), params, withResponse);
+                    if (EntityResourceAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.Delete.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.Delete entityDeleter = (EntityResourceAction.Delete) resource.getResource();
+                        entityDeleter.delete(params.getEntityId(), params);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
+                    }
                 }
                 else
                 {
-                    if (resource.getMetaData().isDeleted(EntityResourceAction.Delete.class))
+                    if (EntityResourceAction.DeleteSetWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.DeleteSetWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.DeleteSetWithResponse entityDeleter = (EntityResourceAction.DeleteSetWithResponse) resource.getResource();
+                        entityDeleter.deleteSet(params, withResponse);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
                     }
-                    EntityResourceAction.Delete entityDeleter = (EntityResourceAction.Delete) resource.getResource();
-                    entityDeleter.delete(params.getEntityId(), params);
+                    if (EntityResourceAction.DeleteSet.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.DeleteSet.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.DeleteSet entityDeleter = (EntityResourceAction.DeleteSet) resource.getResource();
+                        entityDeleter.deleteSet(params);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
+                    }
                 }
-                //Don't pass anything to the callback - its just successful
-                return null;
             case RELATIONSHIP:
-                if (RelationshipResourceAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                if (StringUtils.isNotBlank(params.getRelationshipId()))
                 {
-                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.DeleteWithResponse.class))
+                    if (RelationshipResourceAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.DeleteWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.DeleteWithResponse relationDeleter = (RelationshipResourceAction.DeleteWithResponse) resource.getResource();
+                        relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params, withResponse);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
+                    } 
+                    if (RelationshipResourceAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.Delete.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.Delete relationDeleter = (RelationshipResourceAction.Delete) resource.getResource();
+                        relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
                     }
-                    RelationshipResourceAction.DeleteWithResponse relationDeleter = (RelationshipResourceAction.DeleteWithResponse) resource.getResource();
-                    relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params, withResponse);
                 }
                 else
                 {
-                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.Delete.class))
+                    if (RelationshipResourceAction.DeleteSetWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.DeleteSetWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.DeleteSetWithResponse relationDeleter = (RelationshipResourceAction.DeleteSetWithResponse) resource.getResource();
+                        relationDeleter.deleteSet(params.getEntityId(), params, withResponse);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
                     }
-                    RelationshipResourceAction.Delete relationDeleter = (RelationshipResourceAction.Delete) resource.getResource();
-                    relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params);
+                    if (RelationshipResourceAction.DeleteSet.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.Delete.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.DeleteSet relationDeleter = (RelationshipResourceAction.DeleteSet) resource.getResource();
+                        relationDeleter.deleteSet(params.getEntityId(), params);
+                        //Don't pass anything to the callback - its just successful
+                        return null;
+                    }
                 }
-                //Don't pass anything to the callback - its just successful
-                return null;
             case PROPERTY:
                 if (BinaryResourceAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                 {

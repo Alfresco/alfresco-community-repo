@@ -23,29 +23,32 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-package org.alfresco.rest.api.audit;
+package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.Audit;
-import org.alfresco.rest.api.model.AuditApp;
+import org.alfresco.rest.api.model.AuditEntry;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.resource.EntityResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * An implementation of an Entity Resource for handling audit applications
+ * Node AuditEntries
+ * 
+ * -list audit-entries
+ * 
+ * @author anechifor
  *
- * @author janv, anechifor, eknizat
  */
-@EntityResource(name = "audit-applications", title = "Audit Applications")
-public class AuditApplicationsEntityResource implements EntityResourceAction.ReadById<AuditApp>, EntityResourceAction.Read<AuditApp>,
-        EntityResourceAction.Update<AuditApp>, InitializingBean
+@RelationshipResource(name = "audit-entries", entityResource = NodesEntityResource.class, title = "Audit Entries")
+public class NodeAuditEntriesRelation implements RelationshipResourceAction.Read<AuditEntry>, InitializingBean
 {
+
     private Audit audit;
 
     public void setAudit(Audit audit)
@@ -54,29 +57,17 @@ public class AuditApplicationsEntityResource implements EntityResourceAction.Rea
     }
 
     @Override
-    public void afterPropertiesSet()
+    public void afterPropertiesSet() throws Exception
     {
         ParameterCheck.mandatory("audit", this.audit);
+
     }
 
+    @WebApiDescription(title = "Returns audit entries for node id")
     @Override
-    @WebApiDescription(title = "Returns audit application for audit app id")
-    public AuditApp readById(String auditAppId, Parameters parameters) throws EntityNotFoundException
+    public CollectionWithPagingInfo<AuditEntry> readAll(String nodeId, Parameters parameters)
     {
-        return audit.getAuditApp(auditAppId, parameters);
+        return audit.listAuditEntriesByNodeId(nodeId, parameters);
     }
 
-    @Override
-    @WebApiDescription(title = "Update audit", description = "Update audit")
-    public AuditApp update(String auditAppId, AuditApp auditApp, Parameters parameters)
-    {
-        return audit.update(auditAppId, auditApp, parameters);
-    }
-
-    @Override
-    @WebApiDescription(title = "Get List of audit applications", description = "Get List of Audit Applications")
-    public CollectionWithPagingInfo<AuditApp> readAll(Parameters parameters)
-    {
-        return audit.getAuditApps(parameters.getPaging());
-    }
 }

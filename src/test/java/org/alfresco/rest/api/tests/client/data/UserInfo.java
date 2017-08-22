@@ -35,7 +35,7 @@ import org.json.simple.JSONObject;
  *
  * @author janv
  */
-public class UserInfo extends org.alfresco.rest.api.model.UserInfo implements ExpectedComparison
+public class UserInfo implements ExpectedComparison
 {
     private static final long serialVersionUID = 1L;
 

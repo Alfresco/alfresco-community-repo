@@ -36,12 +36,18 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.springframework.extensions.webscripts.Status;
 
 @EntityResource(name=SheepEntityResource.ENTITY_KEY,title="Sheep")
-public class SheepEntityResource implements EntityResourceAction.Read<Sheep>,EntityResourceAction.ReadById<Sheep>, EntityResourceAction.Update<Sheep>, EntityResourceAction.Delete
+public class SheepEntityResource implements EntityResourceAction.Read<Sheep>,EntityResourceAction.ReadById<Sheep>, 
+        EntityResourceAction.Update<Sheep>, EntityResourceAction.Delete, EntityResourceAction.DeleteSet
 {
     public static final String ENTITY_KEY = "sheep";
 
     @Override
     public void delete(String id, Parameters parameters)
+    {
+    }
+
+    @Override
+    public void deleteSet(Parameters parameters)
     {
     }
 
@@ -68,5 +74,4 @@ public class SheepEntityResource implements EntityResourceAction.Read<Sheep>,Ent
     {
         return CollectionWithPagingInfo.asPagedCollection(new Sheep("paged"));
     }
-
 }

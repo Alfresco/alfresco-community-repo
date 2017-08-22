@@ -393,26 +393,21 @@ public class ParamsExtractorTests
         when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
         
         Params params = null;
-        try
-        {
-            params = extractor.extractParams(mockEntity(), request);
-            fail("Should not get here. DELETE is executed against the instance URL");
-        }
-        catch (UnsupportedResourceOperationException uoe)
-        {
-            assertNotNull(uoe);  //Must throw this exception
-        }
+        params = extractor.extractParams(mockEntity(), request);
+        assertNotNull(params);
+        assertNull(params.getEntityId());
+        assertNull(params.getRelationshipId());
+        assertNotNull(params.getFilter());
+        assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
         
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
-        try
-        {
-            params = extractor.extractParams(mockRelationship(), request);
-            fail("Should not get here. DELETE is executed against the instance URL");
-        }
-        catch (UnsupportedResourceOperationException uoe)
-        {
-            assertNotNull(uoe);  //Must throw this exception
-        }
+        params = extractor.extractParams(mockRelationship(), request);
+        assertNotNull(params);
+        assertEquals("1234", params.getEntityId());
+        assertNull(params.getRelationshipId());
+        assertNotNull(params.getFilter());
+        assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
+        
         templateVars.put(ResourceLocator.RELATIONSHIP_ID, "45678");
         params = extractor.extractParams(mockRelationship(), request);
         assertNotNull(params);
@@ -420,7 +415,7 @@ public class ParamsExtractorTests
         assertEquals("45678", params.getRelationshipId());
         assertNotNull(params.getFilter());
         assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
-         
+        
         testExtractAddressedParams(templateVars, request, extractor);
     }
     

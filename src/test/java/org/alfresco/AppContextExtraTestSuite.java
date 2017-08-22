@@ -1,8 +1,8 @@
 /*
  * #%L
- * Alfresco Remote API
+ * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,23 +23,32 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-/**
- * See {@link RemoteApi01TestSuite}
- *
- * @author Jamal Kaabi-Mofrad
- */
-public class RemoteApi08TestSuite extends TestSuite
+public class AppContextExtraTestSuite extends TestSuite
 {
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        RemoteApi01TestSuite.tests8(suite);
+
+        AllRemoteApiTestsCatalogue.unitTestsNoContext(suite);
+        // add applicationContext_02_part2 as it is compatible with the rest of the tests in this test suite
+        // and because it balances the load of the build jobs
+        AllRemoteApiTestsCatalogue.applicationContext_02_part2(suite);
+        
+        AllRemoteApiTestsCatalogue.applicationContext_06(suite);
+        AllRemoteApiTestsCatalogue.applicationContext_07(suite);
+        AllRemoteApiTestsCatalogue.applicationContext_03(suite);
+        AllRemoteApiTestsCatalogue.applicationContext_04(suite);
+        AllRemoteApiTestsCatalogue.applicationContext_05(suite);
+
+        AllRemoteApiTestsCatalogue.testRestContext(suite);
+        
+
+
         return suite;
     }
 }

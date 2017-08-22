@@ -515,7 +515,16 @@ public class OpenCmisQueryTest extends BaseCMISTest
     protected void tearDown() throws Exception
     {
         super.tearDown();
+
+        cmisConnector.destroy(); // clean cached NodeRefs
+
+        if (authenticationDAO.userExists("cmis"))
+        {
+            authenticationService.deleteAuthentication("cmis");
+        }
         this.luceneFTS.resume();
+
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
 
 

@@ -116,7 +116,7 @@ public class ImapMessageTest extends TestCase
     private Store store = null;
     private IMAPFolder folder = null;
 
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
     private NodeService nodeService;
@@ -141,6 +141,7 @@ public class ImapMessageTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         logger.debug("In SetUp");
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         transactionService = serviceRegistry.getTransactionService();

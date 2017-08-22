@@ -68,7 +68,7 @@ public class ImapServiceImplCacheTest extends TestCase
 
     private static final String TEST_IMAP_FOLDER_NAME = "aaa";
 
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     private NodeService nodeService;
     private MutableAuthenticationService authenticationService;
     private SearchService searchService;
@@ -84,6 +84,7 @@ public class ImapServiceImplCacheTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         nodeService = serviceRegistry.getNodeService();
         authenticationService = serviceRegistry.getAuthenticationService();

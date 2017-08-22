@@ -75,7 +75,7 @@ public class UserUsageTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(UserUsageTest.class);
     
-    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext applicationContext;
     
     protected NodeService nodeService;
     protected FileFolderService fileFolderService;
@@ -104,6 +104,7 @@ public class UserUsageTest extends TestCase
 
     protected void setUp() throws Exception
     {
+        applicationContext = ApplicationContextHelper.getApplicationContext();
         if (AlfrescoTransactionSupport.isActualTransactionActive())
         {
             fail("Test started with transaction in progress");

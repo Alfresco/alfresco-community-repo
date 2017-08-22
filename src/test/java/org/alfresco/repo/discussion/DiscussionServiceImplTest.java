@@ -43,6 +43,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.discussion.DiscussionService;
@@ -81,7 +82,7 @@ public class DiscussionServiceImplTest
     private static final String TEST_SITE_PREFIX = "DiscussionsSiteTest";
     private static final long ONE_DAY_MS = 24*60*60*1000;
 
-    private static final ApplicationContext testContext = ApplicationContextHelper.getApplicationContext();
+    private static ApplicationContext testContext;
     
     // injected services
     private static MutableAuthenticationService AUTHENTICATION_SERVICE;
@@ -116,6 +117,7 @@ public class DiscussionServiceImplTest
 
     @BeforeClass public static void initTestsContext() throws Exception
     {
+        testContext = ApplicationContextHelper.getApplicationContext();
         AUTHENTICATION_SERVICE = (MutableAuthenticationService)testContext.getBean("authenticationService");
         BEHAVIOUR_FILTER       = (BehaviourFilter)testContext.getBean("policyBehaviourFilter");
         DISCUSSION_SERVICE     = (DiscussionService)testContext.getBean("DiscussionService");
@@ -132,10 +134,12 @@ public class DiscussionServiceImplTest
         
         // Do the setup as admin
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+        TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
         createUser(TEST_USER);
         
         // We need to create the test site as the test user so that they can contribute content to it in tests below.
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+        TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
         createTestSites();
     }
     
@@ -248,7 +252,7 @@ public class DiscussionServiceImplTest
        for (TopicInfo topic : new TopicInfo[] {siteTopic, nodeTopic})
        {
           AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
-          
+          TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
           // There are no posts to start with
           PagingResults<PostInfo> posts =
              DISCUSSION_SERVICE.listPosts(topic, new PagingRequest(10));
@@ -400,7 +404,7 @@ public class DiscussionServiceImplTest
        
        // Run as the test user instead
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
-       
+       TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
        
        // Create two topics
        siteTopic = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "Site Title");
@@ -579,6 +583,7 @@ public class DiscussionServiceImplTest
        // Create several, some as Admin and some as the Test User
        TopicInfo siteT1 = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "ST1");
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+       TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
        TopicInfo siteT2 = DISCUSSION_SERVICE.createTopic(DISCUSSION_SITE.getShortName(), "ST2");
        TopicInfo nodeT1 = DISCUSSION_SERVICE.createTopic(FORUM_NODE, "NT1");
        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
@@ -1478,6 +1483,7 @@ public class DiscussionServiceImplTest
        
        // Now become the test user
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+       TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
 
        
        // Add Topics to the two sites and the test node
@@ -1839,6 +1845,7 @@ public class DiscussionServiceImplTest
          
          // Create the alternate site as admin
          AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+         TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
          ALTERNATE_DISCUSSION_SITE = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<SiteInfo>()
             {
                @Override
@@ -1855,6 +1862,7 @@ public class DiscussionServiceImplTest
                }
          });
          AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
+         TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
     }
     
     
@@ -1880,6 +1888,7 @@ public class DiscussionServiceImplTest
     @Before public void setAdminUser()
     {
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+        TenantContextHolder.setTenantDomain(TENANT_DOMAIN);
     }
     
     @After public void deleteTestNodes() throws Exception
@@ -1892,6 +1901,10 @@ public class DiscussionServiceImplTest
         performDeletionOfNodes(CLASS_TEST_NODES_TO_TIDY);
         deleteUser(TEST_USER);
         deleteTenant();
+        
+        TenantContextHolder.setTenantDomain("");
+        AuthenticationUtil.setMtEnabled(false);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }
 
     private static void deleteTenant()

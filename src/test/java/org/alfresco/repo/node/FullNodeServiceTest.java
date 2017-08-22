@@ -57,9 +57,29 @@ import org.springframework.extensions.surf.util.I18NUtil;
 @Category(OwnJVMTestsCategory.class)
 public class FullNodeServiceTest extends BaseNodeServiceTest
 {
+    private Locale contentLocaleToRestore;
+    private Locale localeToRestore;
+
     protected NodeService getNodeService()
     {
         return (NodeService) applicationContext.getBean("NodeService");
+    }
+
+
+    @Override
+    protected void onSetUp() throws Exception
+    {
+        super.onSetUp();
+        contentLocaleToRestore = I18NUtil.getContentLocale();
+        localeToRestore = I18NUtil.getLocale();
+    }
+
+    @Override
+    protected void onTearDown() throws Exception
+    {
+        super.onTearDown();
+        I18NUtil.setContentLocale(contentLocaleToRestore);
+        I18NUtil.setLocale(localeToRestore);
     }
 
     @Override
@@ -181,6 +201,9 @@ public class FullNodeServiceTest extends BaseNodeServiceTest
     public void testMLTextCollectionUpdatedForCorrectLanguage()
     {
         Locale.setDefault(Locale.UK);
+        I18NUtil.setContentLocale(Locale.UK);
+        I18NUtil.setLocale(Locale.UK);
+        
         MLPropertyInterceptor.setMLAware(true);
         
         ArrayList<Serializable> values = new ArrayList<Serializable>();

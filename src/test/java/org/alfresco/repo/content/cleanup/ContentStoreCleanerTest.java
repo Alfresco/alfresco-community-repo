@@ -74,7 +74,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class ContentStoreCleanerTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private ContentService contentService;
     private NodeService nodeService;
@@ -90,6 +90,7 @@ public class ContentStoreCleanerTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         AuthenticationUtil.setRunAsUserSystem();
         
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");

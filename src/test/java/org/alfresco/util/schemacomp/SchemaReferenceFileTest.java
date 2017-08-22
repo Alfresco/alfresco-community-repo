@@ -67,15 +67,6 @@ public class SchemaReferenceFileTest
         ctx = (ClassPathXmlApplicationContext) ApplicationContextHelper.getApplicationContext();    
         schemaBootstrap = (SchemaBootstrap) ctx.getBean("schemaBootstrap");
     }
-    
-    @After
-    public void tearDown()
-    {
-        if(ctx != null)
-        {
-            ctx.close();
-        }
-    }
 
     @Test
     public void checkReferenceFile()

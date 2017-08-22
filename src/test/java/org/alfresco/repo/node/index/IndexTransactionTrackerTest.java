@@ -63,7 +63,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class IndexTransactionTrackerTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private AuthenticationComponent authenticationComponent;
     private SearchService searchService;
@@ -79,6 +79,7 @@ public class IndexTransactionTrackerTest extends TestCase
     
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         searchService = (SearchService) ctx.getBean("searchService");
         nodeService = (NodeService) ctx.getBean("nodeService");

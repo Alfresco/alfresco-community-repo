@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -28,17 +28,16 @@ package org.alfresco;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-/**
- * See {@link Repository01TestSuite}
- *
- * @author Alan Davis
- */
-public class Repository24TestSuite extends TestSuite
+public class MiscContextTestSuite
 {
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Repository01TestSuite.tests24(suite);
+        AllRepositoryTestsCatalogue.minimalContext(suite);
+        AllRepositoryTestsCatalogue.miscContext(suite);
+        // the following tests can be extracted in a separate test suite 
+        // if/when we decide to move the transformations in a separate component
+        AllRepositoryTestsCatalogue.applicationContext_testThumnailContext(suite);
         return suite;
     }
 }

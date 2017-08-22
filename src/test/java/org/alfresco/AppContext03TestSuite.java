@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,23 +23,17 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
-/**
- * See {@link Repository01TestSuite}
- *
- * @author Jamal Kaabi-Mofrad
- */
-public class Repository68TestSuite extends TestSuite
+public class AppContext03TestSuite extends TestSuite
 {
     public static Test suite()
     {
         TestSuite suite = new TestSuite();
-        Repository01TestSuite.tests68(suite);
+        AllRepositoryTestsCatalogue.applicationContext_03(suite);
         return suite;
     }
 }

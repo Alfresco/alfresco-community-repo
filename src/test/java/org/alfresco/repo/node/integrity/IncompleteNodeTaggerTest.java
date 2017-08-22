@@ -52,10 +52,12 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Checks that tagging of <i>incomplete</i> nodes is done properly.
@@ -80,7 +82,8 @@ public class IncompleteNodeTaggerTest extends TestCase
     
     public void setUp() throws Exception
     {
-        DictionaryDAO dictionaryDao = (DictionaryDAO) IntegrityTest.ctx.getBean("dictionaryDAO");
+        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+        DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
         // load the test model
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/node/integrity/IntegrityTest_model.xml");
@@ -88,13 +91,13 @@ public class IncompleteNodeTaggerTest extends TestCase
         M2Model model = M2Model.createModel(modelStream);
         dictionaryDao.putModel(model);
 
-        tagger = (IncompleteNodeTagger) IntegrityTest.ctx.getBean("incompleteNodeTagger");
+        tagger = (IncompleteNodeTagger) ctx.getBean("incompleteNodeTagger");
 
-        serviceRegistry = (ServiceRegistry) IntegrityTest.ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         nodeService = serviceRegistry.getNodeService();
         authenticationService = serviceRegistry.getAuthenticationService();
         permissionService = serviceRegistry.getPermissionService();
-        this.authenticationComponent = (AuthenticationComponent)IntegrityTest.ctx.getBean("authenticationComponent");
+        this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         

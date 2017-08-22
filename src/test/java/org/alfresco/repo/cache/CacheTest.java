@@ -56,10 +56,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class CacheTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(
-            new String[] {
-                    "classpath:cache-test/cache-test-context.xml",
-                    ApplicationContextHelper.CONFIG_LOCATIONS[0]});
+    private  ApplicationContext ctx;
     
     private ServiceRegistry serviceRegistry;
     private SimpleCache<String, Object> objectCache;
@@ -73,6 +70,8 @@ public class CacheTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext(
+                new String[] { "classpath:cache-test/cache-test-context.xml", ApplicationContextHelper.CONFIG_LOCATIONS[0] });
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
         {
             fail("A transaction is still running");

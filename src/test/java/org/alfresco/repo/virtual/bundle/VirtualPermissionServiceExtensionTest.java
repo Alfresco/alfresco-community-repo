@@ -84,12 +84,12 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         super.setUp();
         // we set our own virtual user permissions in order to be context xml
         // independent
-        smartStore = VirtualPermissionServiceExtensionTest.ctx.getBean("smartStore",
+        smartStore = ctx.getBean("smartStore",
                                                                        VirtualStoreImpl.class);
 
-        permissionService = VirtualPermissionServiceExtensionTest.ctx.getBean("permissionServiceImpl",
+        permissionService = ctx.getBean("permissionServiceImpl",
                                                                               PermissionServiceSPI.class);
-        siteService = VirtualPermissionServiceExtensionTest.ctx.getBean("siteService",
+        siteService = ctx.getBean("siteService",
                                                                         SiteService.class);
 
         user1 = "user1";

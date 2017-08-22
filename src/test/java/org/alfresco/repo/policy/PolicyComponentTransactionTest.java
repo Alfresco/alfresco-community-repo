@@ -73,7 +73,7 @@ public class PolicyComponentTransactionTest extends TestCase
     private static QName B_TYPE = QName.createQName(TEST_NAMESPACE, "b_type");
     private static QName C_TYPE = QName.createQName(TEST_NAMESPACE, "c_type");
 
-    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext applicationContext;
     private static ClassPolicyDelegate<SideEffectTestPolicy> sideEffectDelegate = null;
     private PolicyComponent policyComponent;
     private BehaviourFilter behaviourFilter;
@@ -91,6 +91,7 @@ public class PolicyComponentTransactionTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        applicationContext = ApplicationContextHelper.getApplicationContext();
         // initialise policy test model
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();

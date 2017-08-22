@@ -120,7 +120,7 @@ public class ImapServiceImplTest extends TestCase
     private static final String MAILBOX_NAME_B = "mailbox_b";
     private static final String MAILBOX_PATTERN = "mailbox*";
 
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     private TransactionService transactionService;
     private NodeService nodeService;
     private ImporterService importerService;
@@ -144,6 +144,7 @@ public class ImapServiceImplTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         transactionService = serviceRegistry.getTransactionService();
         nodeService = serviceRegistry.getNodeService();

@@ -41,8 +41,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
@@ -74,7 +72,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -95,6 +92,8 @@ import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import junit.framework.TestCase;
+
 /**
  * GetChildren canned query - simple unit tests
  * 
@@ -106,7 +105,7 @@ public class GetChildrenCannedQueryTest extends TestCase
 {
     private Log logger = LogFactory.getLog(getClass());
     
-    private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private Repository repositoryHelper;
     private NodeService nodeService;
@@ -156,6 +155,7 @@ public class GetChildrenCannedQueryTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
         
         nodeService = (NodeService)ctx.getBean("NodeService");

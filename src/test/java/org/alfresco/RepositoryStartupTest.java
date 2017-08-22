@@ -48,13 +48,14 @@ import junit.framework.TestCase;
  */
 public class RepositoryStartupTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx; 
     
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
 
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         AuthenticationUtil.setRunAsUserSystem();

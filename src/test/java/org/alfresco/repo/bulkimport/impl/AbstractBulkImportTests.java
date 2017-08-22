@@ -76,7 +76,7 @@ import static org.junit.Assert.fail;
  */
 public class AbstractBulkImportTests
 {
-    protected static ApplicationContext ctx = null;
+    protected static ApplicationContext ctx;
 
     protected FileFolderService fileFolderService;
     protected NodeService nodeService;
@@ -153,12 +153,6 @@ public class AbstractBulkImportTests
         {
             txn.commit();
         }
-    }
-    
-    @AfterClass
-    public static void afterTests()
-    {
-        stopContext();
     }
 
     protected List<FileInfo> getFolders(NodeRef parent, String pattern)

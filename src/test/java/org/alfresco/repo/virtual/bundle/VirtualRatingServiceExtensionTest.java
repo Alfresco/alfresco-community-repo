@@ -35,7 +35,6 @@ import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.junit.Test;
 
 public class VirtualRatingServiceExtensionTest extends VirtualizationIntegrationTest
@@ -59,7 +58,7 @@ public class VirtualRatingServiceExtensionTest extends VirtualizationIntegration
     {
         super.setUp();
 
-        ratingService = VirtualPermissionServiceExtensionTest.ctx.getBean("ratingService",
+        ratingService = ctx.getBean("ratingService",
                                                                           RatingService.class);
 
         user1 = "user1";

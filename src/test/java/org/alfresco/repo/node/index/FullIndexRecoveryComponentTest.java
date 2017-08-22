@@ -55,7 +55,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class FullIndexRecoveryComponentTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private FullIndexRecoveryComponent indexRecoverer;
     private NodeService nodeService;
@@ -67,6 +67,7 @@ public class FullIndexRecoveryComponentTest extends TestCase
     
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
         indexRecoverer = (FullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.indexRecoveryComponent");
         nodeService = (NodeService) ctx.getBean("nodeService");

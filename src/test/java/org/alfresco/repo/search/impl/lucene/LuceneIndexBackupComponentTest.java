@@ -48,7 +48,7 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class LuceneIndexBackupComponentTest extends TestCase
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
     
     private LuceneIndexBackupComponent backupComponent;
     private File tempTargetDir;
@@ -58,6 +58,7 @@ public class LuceneIndexBackupComponentTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         TransactionService transactionService = (TransactionService) ctx.getBean("transactionComponent");
         NodeService nodeService = (NodeService) ctx.getBean("NodeService");
         

@@ -1,4 +1,4 @@
-<model name="test:getchildrentest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="testChildren:getchildrentest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
    <description>Alfresco Content Model</description>
    <author>Alfresco</author>
@@ -12,7 +12,7 @@
    </imports>
    
    <namespaces>
-      <namespace uri="http://www.alfresco.org/test/getchildrentest/1.0" prefix="test"/>
+      <namespace uri="http://www.alfresco.org/test/getchildrentest/1.0" prefix="testChildren"/>
    </namespaces>
 
    <data-types>
@@ -23,12 +23,12 @@
 
    <types>
 
-      <type name="test:folder">
+      <type name="testChildren:folder">
          <title>Test Folder</title>
          <parent>cm:folder</parent>
          <archive>true</archive>
          <associations>
-            <child-association name="test:contains1">
+            <child-association name="testChildren:contains1">
                <source>
                   <mandatory>false</mandatory>
                   <many>true</many>

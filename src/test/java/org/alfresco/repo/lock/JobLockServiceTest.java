@@ -61,7 +61,7 @@ public class JobLockServiceTest extends TestCase
     
     private static final Log logger = LogFactory.getLog(JobLockServiceTest.class);
     
-    private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
 
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
@@ -80,6 +80,7 @@ public class JobLockServiceTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         transactionService = serviceRegistry.getTransactionService();
         txnHelper = transactionService.getRetryingTransactionHelper();

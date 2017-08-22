@@ -69,9 +69,7 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
 
     private static final String PROP_FILE_NAME = "originalFile";
 
-    private static final String PROP_WORKING_COPY_NAME = CheckOutCheckInServiceImpl
-                .createWorkingCopyName(PROP_FILE_NAME,
-                                       I18NUtil.getMessage("coci_service.working_copy_label"));
+    private String PROP_WORKING_COPY_NAME;
 
     private CheckOutCheckInService checkOutCheckInService;
 
@@ -87,9 +85,13 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
     protected void setUp() throws Exception
     {
         super.setUp();
-        checkOutCheckInService = VirtualCheckOutCheckInServiceExtensionTest.ctx.getBean("checkOutCheckInService",
+        PROP_WORKING_COPY_NAME = CheckOutCheckInServiceImpl
+                .createWorkingCopyName(PROP_FILE_NAME,
+                                       I18NUtil.getMessage("coci_service.working_copy_label"));
+        
+        checkOutCheckInService = ctx.getBean("checkOutCheckInService",
                                                                                         CheckOutCheckInService.class);
-        versionService = VirtualCheckOutCheckInServiceExtensionTest.ctx.getBean("versionService",
+        versionService = ctx.getBean("versionService",
                                                                                 VersionService.class);
 
         node = nodeService.getChildByName(virtualFolder1NodeRef,

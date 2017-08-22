@@ -70,7 +70,6 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
@@ -93,7 +92,8 @@ public class ExporterComponentTest extends BaseSpringTest
     private AuthenticationComponent authenticationComponent;
     private PermissionServiceSPI permissionService;
     private MutableAuthenticationService authenticationService;
-
+    private Locale contentLocaleToRestore;
+    private Locale localeToRestore;
     
     @Override
     protected void onSetUpInTransaction() throws Exception
@@ -118,7 +118,23 @@ public class ExporterComponentTest extends BaseSpringTest
         authenticationComponent.clearCurrentSecurityContext();
         super.onTearDownInTransaction();
     }
-    
+
+    @Override
+    protected void onSetUp() throws Exception
+    {
+        super.onSetUp();
+        contentLocaleToRestore = I18NUtil.getContentLocale();
+        localeToRestore = I18NUtil.getLocale();
+    }
+
+    @Override
+    protected void onTearDown() throws Exception
+    {
+        super.onTearDown();
+        I18NUtil.setContentLocale(contentLocaleToRestore);
+        I18NUtil.setLocale(localeToRestore);
+    }
+
     public void testExport()
         throws Exception
     {

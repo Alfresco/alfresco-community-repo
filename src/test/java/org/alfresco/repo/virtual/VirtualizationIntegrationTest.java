@@ -136,7 +136,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
 
     protected static final String FORM_DATA_PROP_ALF_DEF = "alf_destination";
 
-    protected static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+    protected ApplicationContext ctx;
 
     protected FileFolderService fileAndFolderService;
 
@@ -180,6 +180,8 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
     @Override
     protected void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+        
         virtualizationConfigTestBootstrap = ctx.getBean(VIRTUALIZATION_CONFIG_TEST_BOOTSTRAP_BEAN_ID,
                                                         VirtualizationConfigTestBootstrap.class);
 

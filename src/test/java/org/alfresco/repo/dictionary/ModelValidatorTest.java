@@ -63,7 +63,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class ModelValidatorTest
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext ctx;
 
     private String testNamespace;
     private String modelName;
@@ -89,6 +89,7 @@ public class ModelValidatorTest
     @Before
     public void setUp() throws Exception
     {
+        ctx = ApplicationContextHelper.getApplicationContext();
         this.modelValidator = (ModelValidator)ctx.getBean("modelValidator");
         this.dictionaryDAO = (DictionaryDAO)ctx.getBean("dictionaryDAO");
         this.qnameDAO = (QNameDAO)ctx.getBean("qnameDAO");

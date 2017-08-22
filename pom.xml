@@ -36,8 +36,8 @@
 
 
     <properties>
-        <dependency.alfresco-repository.version>6.1</dependency.alfresco-repository.version>
-        <dependency.alfresco-remote-api.version>6.0</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-repository.version>6.2</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>6.1</dependency.alfresco-remote-api.version>
         <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
         <dependency.alfresco-data-model.version>6.17</dependency.alfresco-data-model.version>

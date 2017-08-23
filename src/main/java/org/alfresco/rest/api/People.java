@@ -25,14 +25,17 @@
  */
 package org.alfresco.rest.api;
 
+import java.io.InputStream;
+import java.util.List;
+
 import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.framework.resource.content.BasicContentInfo;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-
-import java.util.List;
 
 public interface People
 {
@@ -102,4 +105,28 @@ public interface People
      * @param passwordReset the password reset details
      */
     void resetPassword(String personId, PasswordReset passwordReset);
+
+    /**
+     *
+     * @param personId
+     * @param parameters
+     * @return
+     */
+    BinaryResource downloadAvatarContent(String personId, Parameters parameters);
+
+    /**
+     *
+     * @param personId
+     * @param contentInfo
+     * @param stream
+     * @param parameters
+     * @return
+     */
+    Person uploadAvatarContent(String personId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters);
+
+    /**
+     *
+     * @param personId
+     */
+    void deleteAvatarContent(String personId);
 }

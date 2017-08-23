@@ -71,6 +71,16 @@ public interface Renditions
     void createRendition(String nodeId, Rendition rendition, Parameters parameters);
 
     /**
+     * Creates a rendition for the given node - either async r sync
+     * 
+     * @param nodeId
+     * @param rendition
+     * @param executeAsync
+     * @param parameters
+     */
+    void createRendition(String nodeId, Rendition rendition, boolean executeAsync, Parameters parameters);
+
+    /**
      * Downloads rendition.
      *
      * @param nodeId      the source node id

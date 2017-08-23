@@ -667,6 +667,7 @@
     <bean id="people" class="org.alfresco.rest.api.impl.PeopleImpl">
         <property name="nodes" ref="Nodes" />
         <property name="sites" ref="sites" />
+        <property name="renditions" ref="Renditions" />
         <property name="siteService" ref="SiteService" />
         <property name="nodeService" ref="NodeService" />
         <property name="personService" ref="PersonService" />

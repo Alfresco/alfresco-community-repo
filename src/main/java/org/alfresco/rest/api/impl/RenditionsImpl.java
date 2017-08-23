@@ -261,6 +261,12 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     @Override
     public void createRendition(String nodeId, Rendition rendition, Parameters parameters)
     {
+        createRendition(nodeId, rendition, true, parameters);
+    }
+
+    @Override
+    public void createRendition(String nodeId, Rendition rendition, boolean executeAsync, Parameters parameters)
+    {
         // If thumbnail generation has been configured off, then don't bother.
         if (!thumbnailService.getThumbnailsEnabled())
         {
@@ -292,8 +298,9 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
 
         Action action = ThumbnailHelper.createCreateThumbnailAction(thumbnailDefinition, serviceRegistry);
-        // Queue async creation of thumbnail
-        actionService.executeAction(action, sourceNodeRef, true, true);
+
+        // Create thumbnail - or else queue for async creation
+        actionService.executeAction(action, sourceNodeRef, true, executeAsync);
     }
 
     @Override
@@ -324,7 +331,15 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             {
                 throw new NotFoundException("Thumbnail was not found for [" + renditionId + ']');
             }
-            String sourceNodeMimeType = getMimeType(sourceNodeRef);
+            String sourceNodeMimeType = null;
+            try
+            {
+                sourceNodeMimeType = (sourceNodeRef != null ? getMimeType(sourceNodeRef) : null);
+            }
+            catch (InvalidArgumentException e)
+            {
+                // No content for node, e.g. ASSOC_AVATAR rather than ASSOC_PREFERENCE_IMAGE
+            }
             // resource based on the content's mimeType and rendition id
             String phPath = scriptThumbnailService.getMimeAwarePlaceHolderResourcePath(renditionId, sourceNodeMimeType);
             if (phPath == null)
@@ -388,6 +403,11 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
     protected NodeRef getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)
     {
+        if (nodeRef == null)
+        {
+            return null;
+        }
+
         if (StringUtils.isEmpty(renditionId))
         {
             throw new InvalidArgumentException("renditionId can't be null or empty.");

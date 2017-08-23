@@ -27,6 +27,7 @@ package org.alfresco.rest.api.tests.client;
 
 import static org.junit.Assert.assertNotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -47,7 +48,6 @@ import org.alfresco.rest.api.tests.client.data.AuditEntry;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.api.tests.TestPeople;
 import org.alfresco.rest.api.tests.TestSites;
-import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.data.Activities;
@@ -546,13 +546,18 @@ public class PublicApiClient
         return response;
     }
 
-    public HttpResponse get(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId, Map<String, String> params) throws IOException
+    public HttpResponse get(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId, Map<String, String> params, Map<String, String> headers) throws IOException
     {
-        HttpResponse response = client.get(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
+        HttpResponse response = client.get(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params, headers);
 
         logger.debug(response.toString());
 
         return response;
+    }
+
+    public HttpResponse get(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId, Map<String, String> params) throws IOException
+    {
+        return get(scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params, null);
     }
 
     public HttpResponse getWithPassword(String scope, String password, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId, Map<String, String> params) throws IOException
@@ -723,6 +728,21 @@ public class PublicApiClient
                 return response;
             }
             catch(IOException e)
+            {
+                throw new PublicApiException(e);
+            }
+        }
+
+        public HttpResponse getSingle(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String, String> params,
+                                      Map<String, String> headers, String errorMessage, int expectedStatus) throws PublicApiException
+        {
+            try
+            {
+                HttpResponse response = get("public", entityCollectionName, entityId, relationCollectionName, relationId, params, headers);
+                checkStatus(errorMessage, expectedStatus, response);
+                return response;
+            }
+            catch (IOException e)
             {
                 throw new PublicApiException(e);
             }
@@ -1304,6 +1324,59 @@ public class PublicApiClient
         public void remove(String personId, Activity activity) throws PublicApiException
         {
             remove("people", personId, "activities", String.valueOf(activity.getId()), "Failed to remove activity");
+        }
+
+        public HttpResponse getAvatar(String personId, boolean placeholder, int expectedStatus) throws PublicApiException
+        {
+            return getAvatar(personId, null, placeholder, null, expectedStatus);
+        }
+
+        public HttpResponse getAvatar(String personId, String ifModifiedSince, int expectedStatus) throws PublicApiException
+        {
+            return getAvatar(personId, null, false, ifModifiedSince, expectedStatus);
+        }
+
+        public HttpResponse getAvatar(String personId, Boolean attachment, boolean placeholder, String ifModifiedSince, int expectedStatus) throws PublicApiException
+        {
+            // Binary response expected
+            Map<String, String> params = new HashMap<>();
+            params.put("placeholder", Boolean.toString(placeholder));
+            // Optional attachment parameter
+            if (attachment != null)
+            {
+                params.put("attachment", attachment.toString());
+            }
+
+            Map<String, String> headers = new HashMap<>();
+            if (ifModifiedSince != null)
+            {
+                headers.put("If-Modified-Since", ifModifiedSince);
+            }
+
+            HttpResponse response = getSingle("people", personId, "avatar", null, params, headers, "Failed to get avatar", expectedStatus);
+            checkStatus("Unexpected response", expectedStatus, response);
+
+            return response;
+        }
+
+        public HttpResponse updateAvatar(String personId, File avatar, int expectedStatus) throws PublicApiException
+        {
+            try
+            {
+                Map<String, String> params = new HashMap<>();
+                BinaryPayload payload = new BinaryPayload(avatar);
+                HttpResponse response = client.putBinary(getRequestContext(), "public", 1, "people", personId, "avatar", null, payload, params);
+                checkStatus("Unexpected status", expectedStatus, response);
+                return response;
+            }
+            catch(IOException e)
+            {
+                throw new PublicApiException(e);
+            }
+        }
+
+        public void deleteAvatarImage(String personId, int expectedStatus) throws PublicApiException{
+            remove("people", personId, "avatar", null, null, "Failed to remove avatar image", expectedStatus);
         }
     }
 

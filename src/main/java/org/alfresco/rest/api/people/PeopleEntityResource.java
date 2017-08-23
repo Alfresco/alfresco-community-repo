@@ -25,19 +25,30 @@
  */
 package org.alfresco.rest.api.people;
 
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.Client;
 import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiNoAuth;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.content.BasicContentInfo;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
@@ -46,10 +57,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * An implementation of an Entity Resource for a Person
  * 
@@ -57,12 +64,15 @@ import java.util.List;
  * @author Gethin James
  */
 @EntityResource(name="people", title = "People")
-public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>, EntityResourceAction.Update<Person>,EntityResourceAction.Read<Person>, InitializingBean
+public class PeopleEntityResource implements EntityResourceAction.ReadById<Person>, EntityResourceAction.Create<Person>,
+        EntityResourceAction.Update<Person>,EntityResourceAction.Read<Person>,
+
+        BinaryResourceAction.Read, BinaryResourceAction.Update<Person>, BinaryResourceAction.Delete, InitializingBean
 {
     private static Log logger = LogFactory.getLog(PeopleEntityResource.class);
     
     private People people;
-    
+
     public void setPeople(People people)
     {
         this.people = people;
@@ -169,4 +179,54 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     {
         people.resetPassword(personId, passwordReset);
     }
+
+    /**
+     * Download avatar image content
+     *
+     * @param personId
+     * @param parameters {@link Parameters}
+     * @return
+     * @throws EntityNotFoundException
+     */
+    @Override
+    @WebApiDescription(title = "Download avatar", description = "Download avatar")
+    @BinaryProperties({"avatar"})
+    public BinaryResource readProperty(String personId, Parameters parameters) throws EntityNotFoundException
+    {
+        return people.downloadAvatarContent(personId, parameters);
+    }
+
+    /**
+     * Upload avatar image content
+     *
+     * @param personId
+     * @param contentInfo Basic information about the content stream
+     * @param stream An inputstream
+     * @param parameters
+     * @return
+     */
+    @Override
+    @WebApiDescription(title = "Upload avatar", description = "Upload avatar")
+    @BinaryProperties({"avatar"})
+    public Person updateProperty(String personId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
+    {
+        return people.uploadAvatarContent(personId, contentInfo, stream, parameters);
+    }
+
+    /**
+     * Delete avatar image content
+     *
+     * @param personId
+     * @param parameters
+     * @return
+     */
+    @Override
+    @WebApiDescription(title = "Delete avatar image", description = "Delete avatar image")
+    @BinaryProperties({ "avatar" })
+    public void deleteProperty(String personId, Parameters parameters)
+    {
+        people.deleteAvatarContent(personId);
+    }
+
+
 }

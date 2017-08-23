@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -312,17 +313,34 @@ public class PublicApiHttpClient
     public HttpResponse get(final RequestContext rq, String scope, final String entityCollectionName, final Object entityId,
                 final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
     {
-        return get(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
+        return get(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params, null);
+    }
+
+    public HttpResponse get(final RequestContext rq, String scope, final String entityCollectionName, final Object entityId,
+                            final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params, Map<String, String> headers) throws IOException
+    {
+        return get(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params, headers);
     }
 
     public HttpResponse get(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
+                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params, Map<String, String> headers) throws IOException
     {
+        if (headers == null)
+        {
+            headers = Collections.emptyMap();
+        }
+
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
                     relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         GetMethod req = new GetMethod(url);
+
+        for (Entry<String, String> header : headers.entrySet())
+        {
+            req.addRequestHeader(header.getKey(), header.getValue());
+        }
+
         return submitRequest(req, rq);
     }
 

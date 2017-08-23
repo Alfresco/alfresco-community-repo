@@ -26,12 +26,15 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ContentLimitProvider;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl;
+import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.Client;
 import org.alfresco.rest.api.model.LoginTicket;
 import org.alfresco.rest.api.model.LoginTicketResponse;
 import org.alfresco.rest.api.model.PasswordReset;
+import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.Pair;
@@ -42,21 +45,32 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
 import org.alfresco.rest.api.tests.client.data.Person;
-import org.alfresco.util.email.EmailUtil;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.preference.PreferenceService;
+import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.email.EmailUtil;
 import org.apache.commons.httpclient.HttpStatus;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.io.ClassPathResource;
 
+import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,8 +83,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.mail.internet.MimeMessage;
+import java.util.stream.Collectors;
 
 import static org.alfresco.repo.security.authentication.ResetPasswordServiceImplTest.getWorkflowIdAndKeyFromUrl;
 import static org.junit.Assert.assertEquals;
@@ -1918,6 +1931,360 @@ public class TestPeople extends AbstractBaseApiTest
     private String getResetPasswordUrl(String userId)
     {
         return URL_PEOPLE + '/' + userId + "/reset-password";
+    }
+
+
+    @Test
+    public void retrieveAvatar() throws Exception
+    {
+        final String person1 = account1PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
+        AuthenticationUtil.setFullyAuthenticatedUser(person1);
+        NodeRef person1Ref = personService.getPerson(person1, false);
+
+        // No avatar, but valid person
+        {
+            deleteAvatarDirect(person1Ref);
+            assertNotNull(people.getPerson(person1)); // Pre-condition of test case
+            people.getAvatar(person1, false, 404);
+        }
+
+        // No avatar, but person exists and placeholder requested
+        {
+            assertNotNull(people.getPerson(person1)); // Pre-condition of test case
+            people.getAvatar(person1, true, 200);
+        }
+
+        // Non-existent person
+        {
+            String nonPerson = "i-do-not-exist";
+            people.getPerson(nonPerson, 404); // Pre-condition of test case
+            people.getAvatar(nonPerson, false, 404);
+        }
+
+        // Placeholder requested, but non-existent person
+        {
+            String nonPerson = "i-do-not-exist";
+            people.getPerson(nonPerson, 404); // Pre-condition of test case
+            people.getAvatar(nonPerson, true, 404);
+        }
+
+        // Avatar exists
+        {
+            // Create avatar - direct (i.e. not using the API, so that tests for get avatar can be separated from upload)
+            // There's no significance to the image being used here, it was the most suitable I could find.
+            ClassPathResource thumbRes = new ClassPathResource("test.jpg");
+            deleteAvatarDirect(person1Ref);
+            createAvatarDirect(person1Ref, thumbRes.getFile());
+
+            // Get avatar - API call
+            people.getAvatar(person1, false, 200);
+        }
+
+        // -me- alias
+        {
+            people.getAvatar("-me-", false, 200);
+        }
+
+        // If-Modified-Since behaviour
+        {
+            HttpResponse response = people.getAvatar(person1, false, 200);
+            Map<String, String> responseHeaders = response.getHeaders();
+
+            // Test 304 response
+            String lastModified = responseHeaders.get(LAST_MODIFIED_HEADER);
+            assertNotNull(lastModified);
+
+            // Has it been modified since the time it was last modified - no!
+            people.getAvatar(person1, lastModified, 304);
+
+            // Create an updated avatar
+            waitMillis(2000); // ensure time has passed between updates
+            ClassPathResource thumbRes = new ClassPathResource("publicapi/upload/quick.jpg");
+            deleteAvatarDirect(person1Ref);
+            createAvatarDirect(person1Ref, thumbRes.getFile());
+
+            people.getAvatar(person1, lastModified, 200);
+        }
+
+        // Attachment param
+        {
+            // No attachment parameter (default true)
+            Boolean attachmentParam = null;
+            HttpResponse response = people.getAvatar(person1, attachmentParam, false, null, 200);
+            Map<String, String> responseHeaders = response.getHeaders();
+            String contentDisposition = responseHeaders.get("Content-Disposition");
+            assertNotNull(contentDisposition);
+            assertTrue(contentDisposition.startsWith("attachment;"));
+
+            // attachment=true
+            attachmentParam = true;
+            response = people.getAvatar(person1, attachmentParam, false, null, 200);
+            responseHeaders = response.getHeaders();
+            contentDisposition = responseHeaders.get("Content-Disposition");
+            assertNotNull(contentDisposition);
+            assertTrue(contentDisposition.startsWith("attachment;"));
+
+            // attachment=false
+            attachmentParam = false;
+            response = people.getAvatar(person1, attachmentParam, false, null, 200);
+            responseHeaders = response.getHeaders();
+            contentDisposition = responseHeaders.get("Content-Disposition");
+            assertNull(contentDisposition);
+        }
+    }
+
+    private void waitMillis(int requiredDelay)
+    {
+        long startTime = System.currentTimeMillis();
+        long currTime = startTime;
+        while (currTime < (startTime + requiredDelay))
+        {
+            try
+            {
+                Thread.sleep(requiredDelay);
+            }
+            catch (InterruptedException e)
+            {
+                System.out.println(":>>> " + e.getMessage());
+            }
+            finally
+            {
+                currTime = System.currentTimeMillis();
+                System.out.println(":>>> waited "+(currTime-startTime) + "ms");
+            }
+        }
+    }
+
+    private void deleteAvatarDirect(NodeRef personRef)
+    {
+
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(personRef).
+                stream().
+                filter(x -> x.getTypeQName().equals(ContentModel.ASSOC_PREFERENCE_IMAGE)).
+                collect(Collectors.toList());
+        if (assocs.size() > 0)
+        {
+            nodeService.deleteNode(assocs.get(0).getChildRef());
+        }
+
+        // remove old association if it exists
+        List<AssociationRef> refs = nodeService.getTargetAssocs(personRef, ContentModel.ASSOC_AVATAR);
+        if (refs.size() == 1)
+        {
+            NodeRef existingRef = refs.get(0).getTargetRef();
+            nodeService.removeAssociation(
+                    personRef, existingRef, ContentModel.ASSOC_AVATAR);
+        }
+
+        if (assocs.size() > 1 || refs.size() > 1)
+        {
+            fail(String.format("Pref images: %d, Avatar assocs: %d", assocs.size(), refs.size()));
+        }
+    }
+
+    private NodeRef createAvatarDirect(NodeRef personRef, File avatarFile)
+    {
+        // create new avatar node
+        nodeService.addAspect(personRef, ContentModel.ASPECT_PREFERENCES, null);
+        ChildAssociationRef assoc = nodeService.createNode(
+                personRef,
+                ContentModel.ASSOC_PREFERENCE_IMAGE,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "origAvatar"),
+                ContentModel.TYPE_CONTENT);
+        final NodeRef avatarRef = assoc.getChildRef();
+
+        // JSF client compatibility?
+        nodeService.createAssociation(personRef, avatarRef, ContentModel.ASSOC_AVATAR);
+
+        // upload the avatar content
+        ContentService contentService = applicationContext.getBean("ContentService", ContentService.class);
+        ContentWriter writer = contentService.getWriter(avatarRef, ContentModel.PROP_CONTENT, true);
+        writer.guessMimetype(avatarFile.getName());
+        writer.putContent(avatarFile);
+
+        Rendition avatarR = new Rendition();
+        avatarR.setId("avatar");
+        Renditions renditions = applicationContext.getBean("Renditions", Renditions.class);
+        renditions.createRendition(avatarRef.getId(), avatarR, false, null);
+
+        return avatarRef;
+    }
+
+    @Test
+    public void updateAvatar() throws PublicApiException, IOException
+    {
+        final String person1 = account1PersonIt.next();
+        final String person2 = account1PersonIt.next();
+
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), person2));
+
+        AuthenticationUtil.setFullyAuthenticatedUser(person2);
+
+        // Update allowed when no existing avatar
+        {
+            // Pre-condition: no avatar exists
+            NodeRef personRef = personService.getPerson(person2, false);
+            deleteAvatarDirect(personRef);
+            people.getAvatar(person2, false, 404);
+
+            // TODO: What do we expect the 200 response body to be? Currently it's the person JSON - doesn't seem right.
+            ClassPathResource avatar = new ClassPathResource("publicapi/upload/quick.jpg");
+            HttpResponse response = people.updateAvatar(person2, avatar.getFile(), 200);
+
+            // TODO: ideally, this should be a "direct" retrieval to isolate update from get
+            people.getAvatar(person2, false, 200);
+        }
+
+        // Update existing avatar
+        {
+            // Pre-condition: avatar exists
+            people.getAvatar(person2, false, 200);
+
+            ClassPathResource avatar = new ClassPathResource("test.jpg");
+            HttpResponse response = people.updateAvatar(person2, avatar.getFile(), 200);
+            people.getAvatar(person2, false, 200);
+
+            // -me- alias
+            people.updateAvatar(person2, avatar.getFile(), 200);
+            people.getAvatar("-me-", false, 200);
+        }
+
+        // 400: invalid user ID
+        {
+            ClassPathResource avatar = new ClassPathResource("publicapi/upload/quick.jpg");
+            people.updateAvatar("joe@@bloggs.example.com", avatar.getFile(), 404);
+        }
+
+        // 401: authentication failure
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "Wr0ngP4ssw0rd!"));
+            ClassPathResource avatar = new ClassPathResource("publicapi/upload/quick.jpg");
+            people.updateAvatar(account1Admin, avatar.getFile(), 401);
+        }
+
+        // 403: permission denied
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
+            ClassPathResource avatar = new ClassPathResource("publicapi/upload/quick.jpg");
+            people.updateAvatar(person2, avatar.getFile(), 403);
+
+            // Person can update themself
+            people.updateAvatar(person1, avatar.getFile(), 200);
+
+            // Admin can update someone else
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+            people.updateAvatar(person1, avatar.getFile(), 200);
+        }
+
+        // 404: non-existent person
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
+            // Pre-condition: non-existent person
+            String nonPerson = "joebloggs@"+account1.getId();
+            people.getPerson(nonPerson, 404);
+
+            ClassPathResource avatar = new ClassPathResource("publicapi/upload/quick.jpg");
+            people.updateAvatar(nonPerson, avatar.getFile(), 404);
+        }
+
+        // 413: content exceeds individual file size limit
+        {
+            // Test content size limit
+            final ContentLimitProvider.SimpleFixedLimitProvider limitProvider = applicationContext.
+                    getBean("defaultContentLimitProvider", ContentLimitProvider.SimpleFixedLimitProvider.class);
+            final long defaultSizeLimit = limitProvider.getSizeLimit();
+            limitProvider.setSizeLimitString("20000"); //20 KB
+
+            try
+            {
+                ClassPathResource avatar = new ClassPathResource("publicapi/upload/quick.jpg"); // ~26K
+                people.updateAvatar(person1, avatar.getFile(), 413);
+            }
+            finally
+            {
+                limitProvider.setSizeLimitString(Long.toString(defaultSizeLimit));
+            }
+        }
+
+        // 501: thumbnails disabled
+        {
+            ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
+            // Disable thumbnail generation
+            thumbnailService.setThumbnailsEnabled(false);
+            try
+            {
+                ClassPathResource avatar = new ClassPathResource("publicapi/upload/quick.jpg");
+                people.updateAvatar(person1, avatar.getFile(), 501);
+            }
+            finally
+            {
+                thumbnailService.setThumbnailsEnabled(true);
+            }
+        }
+    }
+
+
+    @Test
+    public void removeAvatar() throws IOException, PublicApiException{
+        
+        final String person1 = account1PersonIt.next();
+        final String person2 = account1PersonIt.next();
+
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
+        
+        // Avatar exists
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+
+            // Create avatar - direct (i.e. not using the API, so that tests for get avatar can be separated from upload)
+            // There's no significance to the image being used here, it was the most suitable I could find.
+            ClassPathResource thumbRes = new ClassPathResource("publicapi/upload/quick.jpg");
+            NodeRef personRef = personService.getPerson(person1, false);
+            deleteAvatarDirect(personRef);
+            createAvatarDirect(personRef, thumbRes.getFile());
+
+            // Get avatar - API call
+            people.getAvatar(person1, false, 200);
+            
+            //remove avatar avatar exists
+            people.deleteAvatarImage(person1,204);
+            
+        }
+        
+       
+        // Non-existent person
+        {
+            String nonPerson = "i-do-not-exist";
+            people.getPerson(nonPerson, 404); // Pre-condition of test case
+            people.deleteAvatarImage(nonPerson, 404);
+        }
+        
+        //Authentication failed 401
+        {
+            setRequestContext(account1.getId(), networkAdmin, "wrongPassword");
+            people.deleteAvatarImage(person1,HttpServletResponse.SC_UNAUTHORIZED);
+        }
+        
+        //No permission
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
+            
+            AuthenticationUtil.setFullyAuthenticatedUser("admin@"+account1.getId());
+
+            // Create avatar - direct (i.e. not using the API, so that tests for get avatar can be separated from upload)
+            // There's no significance to the image being used here, it was the most suitable I could find.
+            ClassPathResource thumbRes = new ClassPathResource("test.jpg");
+            NodeRef personRef = personService.getPerson(person1, false);
+            deleteAvatarDirect(personRef);
+            createAvatarDirect(personRef, thumbRes.getFile());
+            
+            people.deleteAvatarImage(person2, 403);
+
+        }
+        
+
+        
     }
 
     @Override

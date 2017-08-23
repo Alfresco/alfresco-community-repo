@@ -6,9 +6,9 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.3-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-content-services-installer</artifactId>
+    <artifactId>alfresco-content-services-full-installer</artifactId>
     <packaging>pom</packaging>
-    <name>Alfresco Enterprise Full Installers</name>
+    <name>Alfresco Content Services Full Installers</name>
 
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
@@ -29,8 +29,8 @@
         </bitrock.arguments>
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
-        <alfresco.package.name>alfresco-content-services</alfresco.package.name>
-        <alfresco.distribution.name>alfresco-content-services-distribution</alfresco.distribution.name>
+        <alfresco.package.name>alfresco-content-services-full</alfresco.package.name>
+        <alfresco.distribution.name>alfresco-content-services-full-distribution</alfresco.distribution.name>
 
         <!-- 
         Override alfresco.installer.name for the Enterprise installer that is still using 
@@ -43,9 +43,19 @@
         <!-- Import the dependencies from the Community installer -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-community-installer</artifactId>
+            <artifactId>alfresco-installer-resources</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-installer-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-content-services-installer-resources</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -71,22 +81,28 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-installer-resources</artifactId>
+                                    <version>${project.version}</version>
+                                    <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-content-services-installer-resources</artifactId>
                                     <version>${project.version}</version>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-content-services-distribution</artifactId>
+                                    <artifactId>alfresco-content-services-full-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}</outputDirectory>
                                 </artifactItem>
                                 <!-- Solr1 Distribution -->
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr1-distribution</artifactId>
-                                    <version>${alfresco.platform.version}</version>
+                                    <version>${alfresco.solr.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}/alf_data/solr</outputDirectory>
                                 </artifactItem>

@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>alfresco-enterprise-war-for-ear</artifactId>
-    <name>Alfresco Enterprise WAR for inclusion in EAR</name>
+    <artifactId>alfresco-content-services-war-for-ear</artifactId>
+    <name>Alfresco Content Services WAR for inclusion in EAR</name>
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-full-installation</artifactId>
@@ -12,7 +12,7 @@
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-platform-enterprise</artifactId>
+            <artifactId>content-services</artifactId>
             <version>${alfresco.platform.version}</version>
             <type>war</type>
         </dependency>
@@ -54,7 +54,7 @@
                     <overlays>
                         <overlay>
                             <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-platform-enterprise</artifactId>
+                            <artifactId>content-services</artifactId>
                             <type>war</type>
                         </overlay>
                         <overlay>

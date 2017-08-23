@@ -6,9 +6,9 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.3-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-content-services-distribution</artifactId>
+    <artifactId>alfresco-content-services-full-distribution</artifactId>
     <packaging>jar</packaging>
-    <name>Alfresco Full Distribution (Enterprise Edition)</name>
+    <name>Alfresco Content Services Full Distribution</name>
 
     <!-- To replace in share-config-custom.xml -->
     <properties>
@@ -16,10 +16,9 @@
     </properties>
 
     <dependencies>
-        <!-- Platform Distribution -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-content-services-platform-distributionzip</artifactId>
+            <artifactId>alfresco-content-services-distribution</artifactId>
             <version>${alfresco.platform.version}</version>
             <type>zip</type>
             <exclusions>
@@ -34,7 +33,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solr4-distribution</artifactId>
-            <version>${alfresco.platform.version}</version>
+            <version>${alfresco.solr4.version}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -81,14 +80,14 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-content-services-platform-distributionzip</artifactId>
+                                    <artifactId>alfresco-content-services-distribution</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <type>zip</type>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr4-distribution</artifactId>
-                                    <version>${alfresco.platform.version}</version>
+                                    <version>${alfresco.solr4.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/dependency/solr4</outputDirectory>
                                 </artifactItem>

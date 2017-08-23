@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>alfresco-content-services-ear-distribution</artifactId>
-    <name>Alfresco EAR Distribution</name>
+    <artifactId>alfresco-content-services-full-ear-distribution</artifactId>
+    <name>Alfresco Content Services Full EAR Distribution</name>
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-full-installation</artifactId>
@@ -26,7 +26,7 @@
         <!-- WARs to include in the EAR -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-enterprise-war-for-ear</artifactId>
+            <artifactId>alfresco-content-services-war-for-ear</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
@@ -53,8 +53,8 @@
         <!-- Distribution zip -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-content-services-platform-distributionzip</artifactId>
-            <version>${alfresco.platform.version}</version>
+            <artifactId>alfresco-content-services-full-distribution</artifactId>
+            <version>${project.version}</version>
             <type>zip</type>
             <scope>provided</scope>
             <exclusions>
@@ -196,7 +196,7 @@
                     <modules>
                         <webModule>
                             <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-enterprise-war-for-ear</artifactId>
+                            <artifactId>alfresco-content-services-war-for-ear</artifactId>
                             <bundleFileName>alfresco.war</bundleFileName>
                         </webModule>
                         <webModule>
@@ -228,9 +228,9 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeArtifactIds>alfresco-content-services-platform-distributionzip</includeArtifactIds>
+                            <includeArtifactIds>alfresco-content-services-full-distribution</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
-                            <excludes>alfresco-content-services-platform-distributionzip-${alfresco.platform.version}/solr4/,alfresco-content-services-platform-distributionzip-${alfresco.platform.version}/web-server/webapps/,alfresco-content-services-platform-distributionzip-${alfresco.platform.version}/modules/</excludes>
+                            <excludes>alfresco-content-services-full-distribution-${alfresco.platform.version}/solr4/,alfresco-content-services-full-distribution-${alfresco.platform.version}/web-server/webapps/,alfresco-content-services-full-distribution-${alfresco.platform.version}/modules/</excludes>
                         </configuration>
                     </execution>
 
@@ -262,7 +262,7 @@
                                     <version>1.0.1</version>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${project.build.directory}/dependency/alfresco-content-services-platform-distributionzip-${alfresco.platform.version}/web-server/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/dependency/alfresco-content-services-full-distribution-${alfresco.platform.version}/web-server/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

@@ -39,6 +39,7 @@ public class AppContextExtraTestSuite extends TestSuite
         // and because it balances the load of the build jobs
         AllRemoteApiTestsCatalogue.applicationContext_02_part2(suite);
         
+        // the order is important
         AllRemoteApiTestsCatalogue.applicationContext_06(suite);
         AllRemoteApiTestsCatalogue.applicationContext_07(suite);
         AllRemoteApiTestsCatalogue.applicationContext_03(suite);
@@ -46,8 +47,6 @@ public class AppContextExtraTestSuite extends TestSuite
         AllRemoteApiTestsCatalogue.applicationContext_05(suite);
 
         AllRemoteApiTestsCatalogue.testRestContext(suite);
-        
-
 
         return suite;
     }

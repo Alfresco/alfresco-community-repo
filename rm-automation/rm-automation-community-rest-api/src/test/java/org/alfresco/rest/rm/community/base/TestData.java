@@ -192,4 +192,7 @@ public interface TestData
 
                 };
     }
+
+
+    public static final String ALFRESCO_ADMINISTRATORS = "ALFRESCO_ADMINISTRATORS";
 }

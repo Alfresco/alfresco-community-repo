@@ -512,14 +512,17 @@ public class WorkflowRestImpl
                 throw new PermissionDeniedException("Process is running in another tenant");
             }
         }
-        
-        ActivitiScriptNode initiator = (ActivitiScriptNode) variableMap.get(WorkflowConstants.PROP_INITIATOR);
-        if (initiator != null && AuthenticationUtil.getRunAsUser().equals(initiator.getNodeRef().getId()))
+
+        //MNT-17918 - required for initiator variable already updated as NodeRef type
+        Object initiator = variableMap.get(WorkflowConstants.PROP_INITIATOR);
+        String nodeId = ((initiator instanceof ActivitiScriptNode) ? ((ActivitiScriptNode) initiator).getNodeRef().getId() : ((NodeRef) initiator).getId());
+
+        if (initiator != null && AuthenticationUtil.getRunAsUser().equals(nodeId))
         {
             // user is allowed
             return variableInstances;
         }
-        
+
         String username = AuthenticationUtil.getRunAsUser();
         if (authorityService.isAdminAuthority(username)) 
         {

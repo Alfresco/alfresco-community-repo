@@ -958,7 +958,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             if (nodeService.exists(initiator))
             {
 
-                actualValue = getNodeConverter().convertNode((NodeRef) initiator);
+                actualValue = getNodeConverter().convertNode(initiator);
 
                 // Also update the initiator home reference, if one exists
                 NodeRef initiatorHome = (NodeRef) nodeService.getProperty(initiator, ContentModel.PROP_HOMEFOLDER);

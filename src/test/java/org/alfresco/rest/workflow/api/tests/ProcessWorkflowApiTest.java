@@ -2057,6 +2057,78 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         }
     }
     
+    // MNT-17918
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testUpdateInitiatorAndGetProcessVariables() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+
+        String tenantAdmin = AuthenticationUtil.getAdminUserName() + "@" + requestContext.getNetworkId();
+        RequestContext adminContext = new RequestContext(requestContext.getNetworkId(), tenantAdmin);
+
+        ProcessInfo processRest = startAdhocProcess(requestContext, null);
+
+        try
+        {
+            assertNotNull(processRest);
+            String processId = processRest.getId();
+
+            // Update initiator variable to "admin"
+            JSONObject variableJson = new JSONObject();
+            variableJson.put("name", "initiator");
+            variableJson.put("type", "d:noderef");
+
+            NodeRef personRef = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    String assignee = adminContext.getRunAsUser();
+                    NodeRef personRef = getPersonNodeRef(assignee).getNodeRef();
+                    variableJson.put("value", personRef.toString());
+                    return personRef;
+                }
+            }, adminContext.getRunAsUser(), adminContext.getNetworkId());
+
+            JSONObject resultEntry = publicApiClient.processesClient().updateVariable(processId, "initiator", variableJson);
+            assertNotNull(resultEntry);
+            final JSONObject updateInitiatorResult = (JSONObject) resultEntry.get("entry");
+
+            assertEquals("initiator", updateInitiatorResult.get("name"));
+            assertEquals("d:noderef", updateInitiatorResult.get("type"));
+            assertNotNull("Variable value should be returned", updateInitiatorResult.get("value"));
+            assertEquals(personRef.getId(), updateInitiatorResult.get("value"));
+
+            // Get process variables after updating "initiator"
+            publicApiClient.setRequestContext(adminContext);
+            resultEntry = publicApiClient.processesClient().getProcessvariables(processId);
+            assertNotNull(resultEntry);
+            validateVariableField(resultEntry, "initiator", adminContext.getRunAsUser());
+        }
+        finally
+        {
+            cleanupProcessInstance(processRest.getId());
+        }
+    }
+
+    protected void validateVariableField(JSONObject processvariables, String name, String value)
+    {
+        JSONObject entry = null;
+        JSONArray entries = (JSONArray) processvariables.get("entries");
+        assertNotNull(entries);
+
+        int i = 0;
+        do
+        {
+            entry = (JSONObject) ((JSONObject) entries.get(i)).get("entry");
+            i++;
+        } while (!entry.containsValue(name) && i < entries.size());
+
+        // Test variable value
+        assertEquals(value, entry.get("value"));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void testUpdateProcessVariableWithWrongType() throws Exception

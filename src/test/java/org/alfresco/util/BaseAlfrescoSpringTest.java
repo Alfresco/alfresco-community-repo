@@ -133,6 +133,7 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
         createUser(userName, userName, "PWD");
     }
 
+    @SuppressWarnings("deprecation")
     protected void createUser(String userName, String nameSuffix, String password)
     {
         if (this.authenticationService.authenticationExists(userName) == false)
@@ -150,4 +151,17 @@ public abstract class BaseAlfrescoSpringTest extends BaseSpringTest
             personService.createPerson(ppOne);
         }
     }
+
+    /**
+     * We assume: Admin user is already authenticated and userName already exists.
+     * 
+     * @param userName
+     */
+    @SuppressWarnings("deprecation")
+    protected void deleteUser(String userName)
+    {
+        PersonService personService = (PersonService) applicationContext.getBean("personService");
+        personService.deletePerson(userName);
+    }
+
 }

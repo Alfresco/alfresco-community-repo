@@ -63,6 +63,8 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
@@ -134,6 +136,7 @@ public class QuickShareServiceIntegrationTest
     private static QuickShareLinkExpiryActionPersister quickShareLinkExpiryActionPersister;
     private static RetryingTransactionHelper transactionHelper;
     private static Properties globalProperties;
+    private static SiteService siteService;
     
     private static AlfrescoPerson user1 = new AlfrescoPerson(testContext, "UserOne");
     private static AlfrescoPerson user2 = new AlfrescoPerson(testContext, "UserTwo");
@@ -173,6 +176,7 @@ public class QuickShareServiceIntegrationTest
         quickShareLinkExpiryActionPersister = ctx.getBean("quickShareLinkExpiryActionPersister", QuickShareLinkExpiryActionPersister.class);
         transactionHelper = ctx.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
         globalProperties = ctx.getBean("global-properties", Properties.class);
+        siteService = (SiteService) ctx.getBean("SiteService");
     }
     
     @Before public void createTestData()
@@ -849,6 +853,52 @@ public class QuickShareServiceIntegrationTest
         }
     }
 
+    // Test SharedLink deletion by admin user based on REPO-2819 - test does not relay on whether a sharedLink
+    // exists or not.
+    @Test
+    public void testCanDeleteSharedLinkWithAdminUserForPrivateNodes() throws Exception
+    {
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        try
+        {
+            // Create a private site
+            AuthenticationUtil.setFullyAuthenticatedUser(user1.getUsername());
+            String randomUUID = UUIDGenerator.getInstance().generateRandomBasedUUID().toString();
+            String siteName = "testSite" + randomUUID;
+            siteService.createSite("site-dashboard", siteName, "Title for " + siteName,
+                    "Description for " + siteName, SiteVisibility.PRIVATE);
+
+            // Create a node on the private site and user home
+            String nodeName = "testNode" + randomUUID;
+            NodeRef nodeRefOnPrivateSite = testNodes.createNode(siteService.getSite(siteName).getNodeRef(), nodeName,
+                    ContentModel.TYPE_CONTENT, user1.getUsername());
+            NodeRef nodeRefOnUserHome = testNodes.createNode(userHome, nodeName + "userHome",
+                    ContentModel.TYPE_CONTENT, user1.getUsername());
+
+            // Verify if the admin user "canDeleteSharedLink" on the nodes
+            AuthenticationUtil.setFullyAuthenticatedUser("admin");
+            boolean canDeleteSharedLink = userCanDeleteSharedLink(nodeRefOnPrivateSite,user1.getUsername());
+            assertEquals(true, canDeleteSharedLink);
+            canDeleteSharedLink = userCanDeleteSharedLink(nodeRefOnUserHome, user1.getUsername());
+            assertEquals(true, canDeleteSharedLink);
+
+            // Clean up
+            nodeService.deleteNode(nodeRefOnUserHome);
+            siteService.deleteSite(siteName);
+        }
+        finally
+        {
+            if (currentUser != null)
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
+            }
+            else 
+                {
+                AuthenticationUtil.clearCurrentSecurityContext();
+                }
+        }
+    }
+
     private QuickShareLinkExpiryAction getExpiryActionAndAttachSchedule(String sharedId)
     {
 
@@ -911,6 +961,13 @@ public class QuickShareServiceIntegrationTest
                 return null;
             });
             return null;
+        });
+    }
+
+    private boolean userCanDeleteSharedLink(NodeRef nodeRef, String sharedByUserId)
+    {
+        return transactionHelper.doInTransaction(() -> {
+        return quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId);
         });
     }
 }

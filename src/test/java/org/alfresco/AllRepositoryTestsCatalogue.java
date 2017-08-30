@@ -592,6 +592,7 @@ public class AllRepositoryTestsCatalogue
     // no context - true JUNIT tests
     static void unitTestsNoContext(TestSuite suite)
     {
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.site.SiteMembershipTest.class));
         suite.addTestSuite(org.alfresco.encryption.EncryptorTest.class);
         suite.addTestSuite(org.alfresco.encryption.KeyStoreKeyProviderTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.config.ServerConfigurationBeanTest.class));

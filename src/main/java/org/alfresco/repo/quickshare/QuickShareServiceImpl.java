@@ -986,7 +986,8 @@ public class QuickShareServiceImpl implements QuickShareService,
         {
             // node belongs to a site - current user must be a manager or collaborator or someone who shared the link
             String role = siteService.getMembersRole(siteName, currentUser);
-            if (isSharedByCurrentUser || (role != null && (role.equals(SiteModel.SITE_MANAGER) || role.equals(SiteModel.SITE_COLLABORATOR))))
+            if (isSharedByCurrentUser || (role != null && (role.equals(SiteModel.SITE_MANAGER) || role.equals(SiteModel.SITE_COLLABORATOR)))
+                    || (authorityService.isAdminAuthority(currentUser)))
             {
                 canDeleteSharedLink = true;
             }

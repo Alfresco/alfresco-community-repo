@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -110,7 +110,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private static Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
 
     private static final String ACCESS_AUDIT_CAPABILITY = "AccessAudit";
-    
+
     private static final String KEY_RM_AUDIT_NODE_RECORDS = "RMAUditNodeRecords";
 
     protected static final String RM_AUDIT_EVENT_LOGIN_SUCCESS = "Login.Success";
@@ -284,7 +284,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -292,9 +292,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         this.capabilityService = capabilityService;
     }
-    
-    
-    
+
 
     /**
      * @param ignoredAuditProperties
@@ -514,38 +512,85 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
         else
         {
-            Set<RMAuditNode> auditDetails = TransactionalResourceHelper.getSet(KEY_RM_AUDIT_NODE_RECORDS);
-            AlfrescoTransactionSupport.bindListener(txnListener);
-
             // RM-936: Eliminate multiple audit maps from being generated when events with the same name are required to be fired multiple times in the same transaction.
             // Check if auditDetails already contains an auditedNode with the same combination of nodeRef and eventName.
-            boolean auditNodeAlreadyExists = false;
-            for (RMAuditNode existingRMAuditNode : auditDetails)
+            RMAuditNode existingEventNode = findExistingEventNode(nodeRef, eventName);
+            if (existingEventNode != null)
             {
-                if (existingRMAuditNode.getNodeRef().equals(nodeRef) && existingRMAuditNode.getEventName().equals(eventName))
-                {
-                    // If there exists such an auditNode, update its 'after' properties with the latest set of properties and leave its 'before' properties unchanged so that it
-                    // retains the original set of properties. The first 'before' and last 'after' will be diff'ed when comes to building the auditMap later when the transaction
-                    // commits.
-                    existingRMAuditNode.setNodePropertiesAfter(after);
-                    auditNodeAlreadyExists = true;
-                    break;
-                }
+                // If there exists such an auditNode, update its 'after' properties with the latest set of properties and leave its 'before' properties unchanged so that it
+                // retains the original set of properties. The first 'before' and last 'after' will be diff'ed when comes to building the auditMap later when the transaction
+                // commits.
+                existingEventNode.setNodePropertiesAfter(after);
             }
-
-            if (!auditNodeAlreadyExists)
+            else
             {
-                // Create a new auditNode if it doesn't already exist
-                RMAuditNode auditedNode = new RMAuditNode();
-                auditedNode.setNodeRef(nodeRef);
-                auditedNode.setEventName(eventName);
-                auditedNode.setNodePropertiesBefore(before);
-                auditedNode.setNodePropertiesAfter(after);
-                auditedNode.setRemoveIfNoPropertyChanged(removeIfNoPropertyChanged);
-
-                auditDetails.add(auditedNode);
+                createAuditEventInTransaction(nodeRef, eventName, before, after, removeIfNoPropertyChanged);
             }
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void auditOrUpdateEvent(NodeRef nodeRef, String eventName, Map<QName, Serializable> before,
+                Map<QName, Serializable> after, boolean removeIfNoPropertyChanged)
+    {
+        RMAuditNode existingEventNode = findExistingEventNode(nodeRef, eventName);
+        if (existingEventNode != null)
+        {
+            // Update the existing event to include all the new properties.
+            existingEventNode.getNodePropertiesBefore().putAll(before);
+            existingEventNode.getNodePropertiesAfter().putAll(after);
+        }
+        else
+        {
+            createAuditEventInTransaction(nodeRef, eventName, before, after, removeIfNoPropertyChanged);
+        }
+    }
+
+    /**
+     * Create a new audit event for this transaction.
+     *
+     * @param nodeRef The node the audit message is about.
+     * @param eventName The event.
+     * @param before The before property map to use.
+     * @param after The after property map to use.
+     * @param removeIfNoPropertyChanged Whether to remove the event if no properties have changed.
+     */
+    private void createAuditEventInTransaction(NodeRef nodeRef, String eventName, Map<QName, Serializable> before,
+                Map<QName, Serializable> after, boolean removeIfNoPropertyChanged)
+    {
+        // Create a new auditNode.
+        RMAuditNode auditedNode = new RMAuditNode();
+        auditedNode.setNodeRef(nodeRef);
+        auditedNode.setEventName(eventName);
+        auditedNode.setNodePropertiesBefore(before);
+        auditedNode.setNodePropertiesAfter(after);
+        auditedNode.setRemoveIfNoPropertyChanged(removeIfNoPropertyChanged);
+
+        // Add it to the transaction.
+        Set<RMAuditNode> auditDetails = TransactionalResourceHelper.getSet(KEY_RM_AUDIT_NODE_RECORDS);
+        auditDetails.add(auditedNode);
+    }
+
+    /**
+     * Find an audit node if it already exists for the transaction.
+     *
+     * @param nodeRef The node the event is against.
+     * @param eventName The name of the event.
+     * @return The pre-existing event node, or null if none exists.
+     */
+    private RMAuditNode findExistingEventNode(NodeRef nodeRef, String eventName)
+    {
+        AlfrescoTransactionSupport.bindListener(txnListener);
+        Set<RMAuditNode> auditDetails = TransactionalResourceHelper.getSet(KEY_RM_AUDIT_NODE_RECORDS);
+        for (RMAuditNode existingRMAuditNode : auditDetails)
+        {
+            if (existingRMAuditNode.getNodeRef().equals(nodeRef) && existingRMAuditNode.getEventName().equals(eventName))
+            {
+                return existingRMAuditNode;
+            }
+        }
+        return null;
     }
 
     /**
@@ -728,12 +773,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         ParameterCheck.mandatory("params", params);
 
-        Writer fileWriter = null;
-        try
+        File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
+            format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
+
+        try (FileOutputStream fileOutputStream = new FileOutputStream(auditTrailFile);
+            Writer fileWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream,"UTF8"));)
         {
-            File auditTrailFile = TempFileProvider.createTempFile(AUDIT_TRAIL_FILE_PREFIX,
-                format == ReportFormat.HTML ? AUDIT_TRAIL_HTML_FILE_SUFFIX : AUDIT_TRAIL_JSON_FILE_SUFFIX);
-            fileWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(auditTrailFile),"UTF8"));
             // Get the results, dumping to file
             getAuditTrailImpl(params, null, fileWriter, format);
             // Done
@@ -742,14 +787,6 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         catch (IOException e)
         {
             throw new AlfrescoRuntimeException(MSG_TRAIL_FILE_FAIL, e);
-        }
-        finally
-        {
-            // close the writer
-            if (fileWriter != null)
-            {
-                try { fileWriter.close(); } catch (IOException closeEx) {}
-            }
         }
     }
 
@@ -929,7 +966,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     // Skip it
                     return true;
                 }
-                
+
                 if(nodeRef != null && nodeService.exists(nodeRef) &&
                     !AccessStatus.ALLOWED.equals(
                         capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -117,6 +117,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_ORIGIONAL_NAME = QName.createQName(RM_URI, "origionalName");
 
     // Common record details
+    QName ASPECT_COMMON_RECORD_DETAILS = QName.createQName(RM_URI, "commonRecordDetails");
     QName PROP_LOCATION = QName.createQName(RM_URI, "location");
 
     // Fileable aspect
@@ -135,7 +136,6 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Vital record aspect
     QName ASPECT_VITAL_RECORD = QName.createQName(RM_URI, "vitalRecord");
     QName PROP_REVIEW_AS_OF = QName.createQName(RM_URI, "reviewAsOf");
-    QName PROP_NOTIFICATION_ISSUED = QName.createQName(RM_URI, "notificationIssued");
 
     // Cut off aspect
     QName ASPECT_CUT_OFF = QName.createQName(RM_URI, "cutOff");
@@ -160,6 +160,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_DISPOSITION_ACTION_ID = QName.createQName(RM_URI, "dispositionActionId");
     QName PROP_DISPOSITION_ACTION = QName.createQName(RM_URI, "dispositionAction");
     QName PROP_DISPOSITION_AS_OF = QName.createQName(RM_URI, "dispositionAsOf");
+    /** A flag indicating that the "disposition as of" date has been manually set and shouldn't be changed. */
+    QName PROP_MANUALLY_SET_AS_OF = QName.createQName(RM_URI, "manuallySetAsOf");
     QName PROP_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "dispositionEventsEligible");
     QName PROP_DISPOSITION_ACTION_STARTED_AT = QName.createQName(RM_URI, "dispositionActionStartedAt");
     QName PROP_DISPOSITION_ACTION_STARTED_BY = QName.createQName(RM_URI, "dispositionActionStartedBy");
@@ -253,9 +255,10 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_LOADED_DATA_SET_IDS = QName.createQName(RM_URI, "loadedDataSetIds");
 
     // Extended security aspect
-    QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
-    QName PROP_READERS = QName.createQName(RM_URI, "readers");
-    QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
+    // @deprecated as of 2.5, because of performance issues
+    @Deprecated QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
+    @Deprecated QName PROP_READERS = QName.createQName(RM_URI, "readers");
+    @Deprecated QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
 
     // Originating details of a record
     QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName(RM_URI, "recordOriginatingDetails");

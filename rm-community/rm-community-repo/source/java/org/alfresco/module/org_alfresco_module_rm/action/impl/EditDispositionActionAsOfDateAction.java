@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,6 +47,9 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
     private static final String MSG_VALID_DATE_DISP_ASOF = "rm.action.valid-date-disp-asof";
     private static final String MSG_DISP_ASOF_LIFECYCLE_APPLIED = "rm.action.disp-asof-lifecycle-applied";
 
+    /** Action name */
+    public static final String NAME = "editDispositionActionAsOfDate";
+    
     /** Action parameters */
     public static final String PARAM_AS_OF_DATE = "asOfDate";
 
@@ -71,6 +74,7 @@ public class EditDispositionActionAsOfDateAction extends RMActionExecuterAbstrac
             if (da != null)
             {
                 getNodeService().setProperty(da.getNodeRef(), PROP_DISPOSITION_AS_OF, asOfDate);
+                getNodeService().setProperty(da.getNodeRef(), PROP_MANUALLY_SET_AS_OF, true);
             }
         }
         else

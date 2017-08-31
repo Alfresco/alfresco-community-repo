@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
-import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
+import static org.alfresco.util.WebScriptUtils.getRequestContentAsJSONObject;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 
 import java.util.HashMap;
@@ -95,7 +95,7 @@ public class RecordedVersionConfigPost extends AbstractRmWebScript
      */
     private String getRecordableVersionPolicy(WebScriptRequest req)
     {
-        JSONObject requestContent = getRequestContentAsJsonObject(req);
+        JSONObject requestContent = getRequestContentAsJSONObject(req);
         return getStringValueFromJSONObject(requestContent, RECORDED_VERSION);
     }
 }

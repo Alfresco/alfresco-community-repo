@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -133,6 +133,7 @@ public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
                 }, getAdminUserName());
 
                 // FIXME: This step should be executed in "when()".
+                // See RM-3931
                 transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
             }
 
@@ -142,7 +143,7 @@ public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
             @Override
             public void when()
             {
-                // FIXME: If the transfer step is executed here the test fails?!?
+                // FIXME: If the transfer step is executed here the test fails?!? See RM-3931
                 //transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
             }
 

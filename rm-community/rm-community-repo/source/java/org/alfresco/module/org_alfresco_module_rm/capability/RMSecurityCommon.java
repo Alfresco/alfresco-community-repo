@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -149,8 +149,11 @@ public class RMSecurityCommon implements ApplicationContextAware
     protected int getTransactionCache(String prefix, NodeRef nodeRef)
     {
         int result = NOSET_VALUE;
-        String user = AuthenticationUtil.getRunAsUser();
-        Integer value = (Integer)AlfrescoTransactionSupport.getResource(prefix + nodeRef.toString() + user);
+        StringBuffer key = new StringBuffer(prefix)
+                .append(nodeRef)
+                .append(AuthenticationUtil.getRunAsUser());
+        
+        Integer value = (Integer)AlfrescoTransactionSupport.getResource(key);
         if (value != null)
         {
             result = value.intValue();

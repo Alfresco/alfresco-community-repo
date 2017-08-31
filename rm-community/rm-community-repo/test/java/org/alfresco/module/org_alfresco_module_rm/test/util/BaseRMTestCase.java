@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -106,6 +106,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         return new String[]
         {
             "classpath:alfresco/application-context.xml",
+            "classpath:alfresco/web-scripts-application-context.xml",
             "classpath:test-context.xml"
         };
     }
@@ -271,6 +272,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     /** collaboration site users */
     protected String dmConsumer;
     protected NodeRef dmConsumerNodeRef;
+    protected String dmContributor;
+    protected NodeRef dmContributorNodeRef;
     protected String dmCollaborator;
     protected NodeRef dmCollaboratorNodeRef;
 
@@ -421,11 +424,12 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             @Override
             public Object execute() throws Throwable
             {
-                // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-
                 // Do the tear down
-                tearDownImpl();
+                AuthenticationUtil.runAsSystem(() ->
+                {
+                    tearDownImpl();
+                    return null;
+                });
 
                 return null;
             }
@@ -600,16 +604,21 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
     protected void setupTestUsers(final NodeRef filePlan)
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        AuthenticationUtil.runAs(() ->
         {
-            @Override
-            public Object execute() throws Throwable
+            retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                setupTestUsersImpl(filePlan);
-                return null;
-            }
-        });
+                @Override
+                public Object execute() throws Throwable
+                {
+                    setupTestUsersImpl(filePlan);
+                    return null;
+                }
+            });
+
+            return null;
+        },
+        AuthenticationUtil.getAdminUserName());
     }
 
     /**
@@ -672,6 +681,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         }
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
+        properties.put(ContentModel.PROP_FIRSTNAME, userName);
         return personService.createPerson(properties);
     }
 
@@ -690,13 +700,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             @Override
             public Object execute() throws Throwable
             {
-                // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                return AuthenticationUtil.runAsSystem(() ->
+                {
+                    // Do setup
+                    setupMultiHierarchyTestDataImpl();
 
-                // Do setup
-                setupMultiHierarchyTestDataImpl();
-
-                return null;
+                    return null;
+                });
             }
         });
     }
@@ -772,6 +782,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         dmConsumer = GUID.generate();
         dmConsumerNodeRef = createPerson(dmConsumer);
         siteService.setMembership(collabSiteId, dmConsumer, SiteModel.SITE_CONSUMER);
+
+        dmContributor = GUID.generate();
+        dmContributorNodeRef = createPerson(dmContributor);
+        siteService.setMembership(collabSiteId, dmContributor, SiteModel.SITE_CONTRIBUTOR);
 
         dmCollaborator = GUID.generate();
         dmCollaboratorNodeRef = createPerson(dmCollaborator);

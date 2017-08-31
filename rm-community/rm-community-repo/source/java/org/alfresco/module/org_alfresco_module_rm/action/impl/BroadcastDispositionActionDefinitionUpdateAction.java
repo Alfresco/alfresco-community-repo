@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -26,6 +26,8 @@
  */
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
+
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -194,7 +196,8 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         {
             // the change does effect the nextAction for this node
             // so go ahead and determine what needs updating
-            if (changedProps.contains(PROP_DISPOSITION_PERIOD))
+            if ((changedProps.contains(PROP_DISPOSITION_PERIOD) || changedProps.contains(PROP_DISPOSITION_PERIOD_PROPERTY))
+                    && isNotTrue((Boolean) getNodeService().getProperty(nextAction.getNodeRef(), PROP_MANUALLY_SET_AS_OF)))
             {
                 persistPeriodChanges(dispositionActionDef, nextAction);
             }
@@ -246,17 +249,11 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
      * @param dispositionActionDef The disposition action definition node
      * @param nextAction The next disposition action
      */
-    private void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
+    protected void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
     {
-        Date newAsOfDate = null;
-        Period dispositionPeriod = (Period) getNodeService().getProperty(dispositionActionDef, PROP_DISPOSITION_PERIOD);
-
-        if (dispositionPeriod != null)
-        {
-            // calculate the new as of date as we have been provided a new period
-            Date now = new Date();
-            newAsOfDate = dispositionPeriod.getNextDate(now);
-        }
+        NodeRef dispositionedNode = getNodeService().getPrimaryParent(nextAction.getNodeRef()).getParentRef();
+        DispositionActionDefinition definition = nextAction.getDispositionActionDefinition();
+        Date newAsOfDate = getDispositionService().calculateAsOfDate(dispositionedNode, definition, false);
 
         if (logger.isDebugEnabled())
         {

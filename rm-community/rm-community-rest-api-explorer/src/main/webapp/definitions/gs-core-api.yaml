@@ -1,0 +1,3757 @@
+swagger: '2.0'
+info:
+  description: |
+    **GS Core API**
+
+    Provides access to the core features of Alfresco Governance Services.
+  version: '1'
+  title: Alfresco Governance Services REST API
+basePath: /alfresco/api/-default-/public/gs/versions/1
+securityDefinitions:
+  basicAuth:
+    type: basic
+    description: HTTP Basic Authentication
+security:
+  - basicAuth: []
+consumes:
+  - application/json
+produces:
+  - application/json
+tags:
+  - name: file-plans
+    description: Retrieve and manage file plans
+  - name: record-categories
+    description: Retrieve and manage record categories
+  - name: record-folders
+    description: Retrieve and manage record folders
+  - name: gs-sites
+    description: Retrieve and manage the Records Management site
+  - name: records
+    description: Perform record specific operations
+  - name: files
+    description: Perform operations on non-record files
+  - name: transfer-containers
+    description: Retrieve and manage transfer containers
+  - name: transfers
+    description: Retrieve and manage transfers
+  - name: unfiled-containers
+    description: Retrieve and manage unfiled records containers
+  - name: unfiled-record-folders
+    description: Retrieve and manage unfiled record folders
+paths:
+  ## GS sites
+  '/gs-sites':
+    post:
+      tags:
+        - gs-sites
+      summary: Create the Records Management (RM) site
+      description: |
+
+        Creates the RM site with the given details.
+
+        **Note:** The default site id is rm and the default site name is Records Management. The id of a site cannot be updated once the site has been created.
+
+        For example, to create an RM site named "Records Management" with "Records Management Description" as description, the following body could be used:
+        ```JSON
+        {
+          "title": "Records Management",
+          "description": "Records Management Description"
+        }
+        ```
+
+        The creator will be added as a member with Site Manager role.
+
+        When you create the RM site, the **filePlan** structure is also created including special containers, such as containers for transfers, holds and, unfiled records.
+
+      operationId: createRMSite
+      produces:
+        - application/json
+      parameters:
+        - name: skipAddToFavorites
+          in: query
+          description: Flag to indicate whether the RM site should not be added to the user's site favorites.
+          type: boolean
+          default: false
+        - in: body
+          name: siteBodyCreate
+          description: The site details
+          required: true
+          schema:
+            $ref: '#/definitions/RMSiteBodyCreate'
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RMSiteEntry'
+        '400':
+          description: |
+            Invalid parameter: **title**, or **description** exceed the maximum length;
+            or **siteBodyCreate** invalid
+        '401':
+          description: Authentication failed
+        '409':
+          description: Site with the given identifier already exists
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/gs-sites/rm':
+    get:
+      tags:
+        - gs-sites
+      summary: Get the Records Management (RM) site
+      description: |
+ 
+        Gets information for RM site.
+
+      operationId: getRMSite
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RMSiteEntry'
+        '400':
+          description: |
+            Invalid parameter: GET request is only  supported for the RM site
+        '401':
+          description: Authentication failed
+        '404':
+          description: |
+            RM site does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - gs-sites
+      summary: Delete the Records Management (RM) site
+      description: |
+
+        Deletes the RM site.
+      operationId: deleteRMSite
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: DELETE request is only supported for the RM site
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete the site that is visible to them.
+        '404':
+          description: |
+            RM site does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - gs-sites
+      summary: Update the Records Management (RM) site
+      description: |
+
+        Update the details for the RM site. Site Manager or other (site) admin can update title or description.
+
+        **Note**: the id, site visibility, or compliance of the RM site cannot be updated once the site has been created.
+
+      operationId: updateRMSite
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: siteBodyUpdate
+          description: The RM site information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/RMSiteBodyUpdate'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RMSiteEntry'
+        '400':
+          description: |
+            Invalid parameter: PUT request is supported only for the RM site, or **siteBodyUpdate** invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update the RM site that is visible to them.
+        '404':
+          description: |
+            RM site does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  ## File plans
+  '/file-plans/{filePlanId}':
+    get:
+      tags:
+        - file-plans
+      summary: Get a file plan
+      description: |
+        Gets information for file plan **filePlanId**
+
+        Mandatory fields and the file plan's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getFilePlan
+      parameters:
+        - $ref: '#/parameters/filePlanIdWithAliasParam'
+        - $ref: '#/parameters/filePlanEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/FilePlanEntry'
+        '400':
+          description: |
+            Invalid parameter: **filePlanId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **filePlanId**
+        '404':
+          description: "**filePlanId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - file-plans
+      summary : Update a file plan
+      description: |
+        Updates file plan **filePlanId**.
+        You can only set or update description and title properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "cm:description": "New Description",
+               "cm:title":"New Title"
+            }
+        }
+        ```
+
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateFilePlan
+      parameters:
+        - $ref: '#/parameters/filePlanIdWithAliasParam'
+        - $ref: '#/parameters/filePlanEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: filePlanBodyUpdate
+          description: The file plan information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/FilePlanBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/FilePlanEntry'
+        '400':
+          description: |
+            Invalid parameter: The update request is invalid or **filePlanId** is not a valid format or **filePlanBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: If current user does not have permission to update **filePlanId**
+        '404':
+          description: "**filePlanId** does not exist"
+        '409':
+          description: Updated name clashes with an existing fileplan
+        '422':
+          description: Model integrity exception, including file name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/file-plans/{filePlanId}/categories':
+    get:
+      tags:
+        - file-plans
+      summary: List file plans's children
+      description: |
+        Returns a list of record categories.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+
+      operationId: getFilePlanCategories
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/filePlanIdWithAliasParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/filePlanCategoriesEntryIncludeParam'
+        - $ref: '#/parameters/filePlanIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordCategoryPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **filePlanId**
+        '404':
+          description: "**filePlanId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - file-plans
+      summary: Create record categories for a file plan
+      description: |
+        Creates a record category as a primary child of **filePlanId**.
+
+        You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
+        the API method tries to create
+        a unique name using an integer suffix.
+
+        This API method also supports record category creation using application/json.
+
+        You must specify at least a **name**.
+
+        You can create a category like this:
+        ```JSON
+        {
+          "name":"My Record Category"
+        }
+        ```
+        You can set properties when creating a record category:
+        ```JSON
+        {
+          "name":"My Record Category",
+          "properties":
+          {
+            "rma:vitalRecordIndicator":"true",
+            "rma:reviewPeriod":"month|1"
+          }
+        }
+        ```
+
+        Any missing aspects are applied automatically. You can set aspects explicitly, if needed, using an **aspectNames** field.
+
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: createFilePlanCategories
+      parameters:
+        - $ref: '#/parameters/filePlanIdWithAliasParam'
+        - $ref: '#/parameters/autoRenameParam'
+        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyCreate
+          description: The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/RootCategoryBodyCreate'
+      consumes:
+        - application/json
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordCategoryEntry'
+        '400':
+          description: |
+            Invalid parameter: **filePlanId** is not a valid format or **filePlanId** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to add children to **filePlanId**
+        '404':
+          description: "**filePlanId** does not exist"
+        '409':
+          description: New name clashes with an existing node in the current parent container
+        '422':
+          description: Model integrity exception, including node name with invalid characters
+  ## Unfiled records containers
+  '/unfiled-containers/{unfiledContainerId}':
+    get:
+      tags:
+        - unfiled-containers
+      summary: Get the unfiled records container
+      description: |
+        Gets information for unfiled records container **unfiledContainerId**
+
+        Mandatory fields and the unfiled records container's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getUnfiledContainer
+      parameters:
+        - $ref: '#/parameters/unfiledContainerIdParam'
+        - $ref: '#/parameters/unfiledContainerEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UnfiledContainerEntry'
+        '400':
+          description: |
+            Invalid parameter: **unfiledContainerId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **unfiledContainerId**
+        '404':
+          description: "**unfiledContainerId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - unfiled-containers
+      summary : Update an unfiled record container
+      description: |
+        Updates unfiled record container **unfiledContainerId**. For example, you can rename an unfiled record container:
+        ```JSON
+        {
+          "name":"My new name"
+        }
+        ```
+        You can also set or update description and title properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "cm:description": "New Description",
+               "cm:title":"New Title"
+            }
+        }
+        ```
+
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateUnfiledContainer
+      parameters:
+        - $ref: '#/parameters/unfiledContainerIdParam'
+        - $ref: '#/parameters/unfiledContainerEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: unfiledContainerBodyUpdate
+          description: The unfiled record container information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/UnfiledRecordContainerBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UnfiledContainerEntry'
+        '400':
+          description: |
+            Invalid parameter: The update request is invalid or **unfiledContainerId** is not a valid format or **unfiledContainerBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **unfiledContainerId**
+        '404':
+          description: "**unfiledContainerId** does not exist"
+        '409':
+          description: Updated name clashes with an existing root category of special container in the current fileplan
+        '422':
+          description: Model integrity exception, including file name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/unfiled-containers/{unfiledContainerId}/children':
+    get:
+      tags:
+        - unfiled-containers
+      summary: List unfiled record container's children
+      description: |
+        Returns a list of records or unfiled record folders.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: listUnfiledContainerChildren
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/unfiledContainerIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/unfiledRecordFolderAndContainerWhereParam'
+        - $ref: '#/parameters/unfiledContainerChildEntryIncludeParam'
+        - $ref: '#/parameters/unfiledContainerIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UnfiledContainerAssociationPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **unfiledContainerId**
+        '404':
+          description: "**unfiledContainerId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - unfiled-containers
+      summary: Create a record or an unfiled record folder
+      description: |
+        Creates a record or an unfiled record folder as a primary child of **unfiledContainerId**.
+
+        You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
+        the API method tries to create a unique name using an integer suffix.
+
+        This endpoint supports both JSON and multipart/form-data (file upload).
+
+        **Using multipart/form-data**
+
+        Use the **filedata** field to represent the content to upload, for example, the following curl command will
+        create a node with the contents of test.txt in the test user's home folder.
+
+        ```curl -utest:test -X POST host:port/alfresco/api/-default-/public/gs/versions/1/unfiled-containers/{unfiledContainerId}/children -F filedata=@test.txt```
+
+        This API method also supports record and unfiled record folder creation using application/json.
+
+        You must specify at least a **name** and **nodeType**.
+
+        You can create a non-electronic record like this:
+        ```JSON
+        {
+          "name":"My Non-electronic Record",
+          "nodeType":"rma:nonElectronicDocument",
+          "properties":
+            {
+              "cm:description":"My Non-electronic Record Description",
+              "cm:title":"My Non-electronic Record Title",
+              "rma:box":"My Non-electronic Record Box",
+              "rma:file":"My Non-electronic Record File",
+              "rma:numberOfCopies":1,
+              "rma:physicalSize":30,
+              "rma:shelf":"My Non-electronic Record Shelf",
+              "rma:storageLocation":"My Non-electronic Record Location"
+            }
+        }
+        ```
+
+        You can create an empty electronic record:
+        ```JSON
+        {
+          "name":"My Electronic Record",
+          "nodeType":"cm:content"
+        }
+        ```
+
+        You can create an unfiled record folder like this:
+        ```JSON
+        {
+          "name": "My Unfiled Record Folder",
+          "nodeType": "rma:unfiledRecordFolder",
+          "properties":
+          {
+            "cm:title": "My Unfiled Record Folder Title"
+          }
+        }
+        ```
+
+        Any missing aspects are applied automatically. You can set aspects explicitly, if needed, using an **aspectNames** field.
+
+        **Note:** You can create more than one child by
+        specifying a list of nodes in the JSON body. For example, the following JSON
+        body creates a record and an unfiled record folder inside the specified **unfiledContainerId**:
+        ```JSON
+        [
+          {
+            "name":"My Record",
+            "nodeType":"cm:content"
+          },
+          {
+            "name":"My Unfiled Record Folder",
+            "nodeType":"rma:unfiledRecordFolder"
+          }
+        ]
+        ```
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: createUnfiledContainerChildren
+      parameters:
+        - $ref: '#/parameters/unfiledContainerIdParam'
+        - $ref: '#/parameters/autoRenameParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyCreate
+          description: The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/RMNodeBodyCreate'
+      consumes:
+        - application/json
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UnfiledContainerAssociationPaging'
+        '400':
+          description: |
+            Invalid parameter: **unfiledContainerId** is not a valid format or **unfiledContainerId** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to add children to **unfiledContainerId**
+        '404':
+          description: "**unfiledContainerId** does not exist"
+        '409':
+          description: New name clashes with an existing node in the current parent container
+        '422':
+          description: Model integrity exception, including node name with invalid characters
+ ## Unfiled record folders
+  '/unfiled-record-folders/{unfiledRecordFolderId}':
+    get:
+      tags:
+        - unfiled-record-folders
+      summary: Get the unfiled record folder
+      description: |
+        Gets information for unfiled record folder id **unfiledRecordFolderId**
+
+        Mandatory fields and the unfiled record folder's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getUnfiledRecordFolder
+      parameters:
+        - $ref: '#/parameters/unfiledRecordFolderIdParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderRelativePathParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UnfiledRecordFolderEntry'
+        '400':
+          description: |
+            Invalid parameter: **unfiledRecordFolderId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **unfiledRecordFolderId**
+        '404':
+          description: "**unfiledRecordFolderId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - unfiled-record-folders
+      summary : Update an unfiled record folder
+      description: |
+        Updates unfiled record folder **unfiledRecordFolderId**. For example, you can rename a record folder:
+        ```JSON
+        {
+          "name":"My new name"
+        }
+        ```
+        You can also set or update one or more properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "cm:title":"New title",
+               "cm:description":"New description"
+            }
+        }
+        ```
+        **Note:** if you want to add or remove aspects, then you must use **GET /unfiled-record-folders/{unfiledRecordFolderId}** first to get the complete set of *aspectNames*.
+
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateUnfiledRecordFolder
+      parameters:
+        - $ref: '#/parameters/unfiledRecordFolderIdParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: unfiledRecordFolderBodyUpdate
+          description: The record folder information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/UnfiledRecordFolderBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UnfiledRecordFolderEntry'
+        '400':
+          description: |
+            Invalid parameter: The update request is invalid or **unfiledRecordFolderId** is not a valid format or **unfiledRecordFolderBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **unfiledRecordFolderId**
+        '404':
+          description: "**unfiledRecordFolderId** does not exist"
+        '409':
+          description: Updated name clashes with an existing unfiled record folder in the current parent category
+        '422':
+          description: Model integrity exception, including file name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - unfiled-record-folders
+      summary : Delete an unfiled record folder. Deleted file plan components cannot be recovered, they are deleted permanently.
+      description: |
+        Deletes the unfiled record folder **unfiledRecordFolderId**.
+      operationId: deleteUnfiledRecordFolder
+      parameters:
+        - $ref: '#/parameters/unfiledRecordFolderIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **unfiledRecordFolderId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **unfiledRecordFolderId**
+        '404':
+          description: "**unfiledRecordFolderId** does not exist"
+        '409':
+          description: "**unfiledRecordFolderId** is locked and cannot be deleted"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/unfiled-record-folders/{unfiledRecordFolderId}/children':
+    get:
+      tags:
+        - unfiled-record-folders
+      summary: List unfiled record folder's children
+      description: |
+        Returns a list of records or unfiled record folders.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: listUnfiledRecordFolderChildren
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/unfiledRecordFolderIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/unfiledRecordFolderAndContainerWhereParam'
+        - $ref: '#/parameters/unfiledRecordFolderChildEntryIncludeParam'
+        - $ref: '#/parameters/unfiledRecordFolderRelativePathParam'
+        - $ref: '#/parameters/unfiledRecordFolderIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UnfiledRecordFolderAssociationPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **unfiledRecordFolderId**
+        '404':
+          description: "**unfiledRecordFolderId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - unfiled-record-folders
+      summary: Create a record or an unfiled record folder
+      description: |
+        Create a record or an unfiled record folder as a primary child of **unfiledRecordFolderId**.
+
+        You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
+        the API method tries to create a unique name using an integer suffix.
+
+        This endpoint supports both JSON and multipart/form-data (file upload).
+
+        **Using multipart/form-data**
+
+        Use the **filedata** field to represent the content to upload, for example, the following curl command will
+        create a node with the contents of test.txt in the test user's home folder.
+
+        ```curl -utest:test -X POST host:port/alfresco/api/-default-/public/gs/versions/1/unfiled-record-folders/{unfiledRecordFolderId}/children -F filedata=@test.txt```
+
+        This API method also supports record and unfiled record folder creation using application/json.
+
+        You must specify at least a **name** and **nodeType**.
+
+        You can create a non-electronic record like this:
+        ```JSON
+        {
+          "name":"My Non-electronic Record",
+          "nodeType":"rma:nonElectronicDocument",
+          "properties":
+            {
+              "cm:description":"My Non-electronic Record Description",
+              "cm:title":"My Non-electronic Record Title",
+              "rma:box":"My Non-electronic Record Box",
+              "rma:file":"My Non-electronic Record File",
+              "rma:numberOfCopies":1,
+              "rma:physicalSize":30,
+              "rma:shelf":"My Non-electronic Record Shelf",
+              "rma:storageLocation":"My Non-electronic Record Location"
+            }
+        }
+        ```
+
+        You can create an empty electronic record like this:
+        ```JSON
+        {
+          "name":"My Electronic Record",
+          "nodeType":"cm:content"
+        }
+        ```
+
+        You can create an unfiled record folder like this:
+        ```JSON
+        {
+          "name": "My Unfiled Record Folder",
+          "nodeType": "rma:unfiledRecordFolder",
+          "properties":
+          {
+            "cm:title": "My Unfiled Record Folder Title"
+          }
+        }
+        ```
+
+        Any missing aspects are applied automatically. You can set aspects explicitly, if needed, using an **aspectNames** field.
+
+        **Note:** You can create more than one child by
+        specifying a list of nodes in the JSON body. For example, the following JSON
+        body creates a record and an unfiled record folder inside the specified **unfiledRecordFolderId**:
+        ```JSON
+        [
+          {
+            "name":"My Record",
+            "nodeType":"cm:content"
+          },
+          {
+            "name":"My Unfiled Record Folder",
+            "nodeType":"rma:unfiledRecordFolder"
+          }
+        ]
+        ```
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: createUnfiledRecordFolderChildren
+      parameters:
+        - $ref: '#/parameters/unfiledRecordFolderIdParam'
+        - $ref: '#/parameters/autoRenameParam'
+        - $ref: '#/parameters/unfiledRecordFolderEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyCreate
+          description: The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/RMNodeBodyCreateWithRelativePath'
+      consumes:
+        - application/json
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/UnfiledRecordFolderAssociationPaging'
+        '400':
+          description: |
+            Invalid parameter: **unfiledRecordFolderId** is not a valid format or **unfiledRecordFolderId** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to add children to **unfiledRecordFolderId**
+        '404':
+          description: "**unfiledRecordFolderId** does not exist"
+        '409':
+          description: New name clashes with an existing node in the current parent container
+        '422':
+          description: Model integrity exception, including node name with invalid characters
+  ## Record categories
+  '/record-categories/{recordCategoryId}':
+    get:
+      tags:
+        - record-categories
+      summary: Get a record category
+      description: |
+        Gets information for record category **recordCategoryId**
+
+        Mandatory fields and the record category's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getRecordCategory
+      parameters:
+        - $ref: '#/parameters/recordCategoryIdParam'
+        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
+        - $ref: '#/parameters/recordCategoryRelativePathParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordCategoryEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordCategoryId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **recordCategoryId**
+        '404':
+          description: "**recordCategoryId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - record-categories
+      summary : Update a record category
+      description: |
+        Updates record category **recordCategoryId**. For example, you can rename a record category:
+        ```JSON
+        {
+          "name":"My new name"
+        }
+        ```
+        You can also set or update one or more properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "rma:vitalRecordIndicator": true,
+               "rma:reviewPeriod":"month|6"
+            }
+        }
+        ```
+        **Note:** If you want to add or remove aspects, then you must use **GET /record-categories/{recordCategoryId}** first to get the complete set of *aspectNames*.
+
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateRecordCategory
+      parameters:
+        - $ref: '#/parameters/recordCategoryIdParam'
+        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: recordCategoryBodyUpdate
+          description: The record category information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/FilePlanComponentBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordCategoryEntry'
+        '400':
+          description: |
+            Invalid parameter: The update request is invalid or **recordCategoryId** is not a valid format or **recordCategoryBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **recordCategoryId**
+        '404':
+          description: "**recordCategoryId** does not exist"
+        '409':
+          description: Updated name clashes with an existing record category in the current parent category
+        '422':
+          description: Model integrity exception, including file name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - record-categories
+      summary : Delete a record category
+      description: |
+        Deletes record category **recordCategoryId**.
+      operationId: deleteRecordCategory
+      parameters:
+        - $ref: '#/parameters/recordCategoryIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **recordCategoryId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **recordCategoryId**
+        '404':
+          description: "**recordCategoryId** does not exist"
+        '409':
+          description: "**recordCategoryId** is locked and cannot be deleted"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/record-categories/{recordCategoryId}/children':
+    get:
+      tags:
+        - record-categories
+      summary: List record category's children
+      description: |
+        Returns a list of record categories and/or record folders.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+
+        The list of child nodes includes primary children and secondary children, if there are any.
+      operationId: listRecordCategoryChildren
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/recordCategoryIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/recordCategoryWhereParam'
+        - $ref: '#/parameters/recordCategoryChildEntryIncludeParam'
+        - $ref: '#/parameters/recordCategoryRelativePathParam'
+        - $ref: '#/parameters/recordCategoryIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordCategoryChildPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **recordCategoryId**
+        '404':
+          description: "**recordCategoryId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - record-categories
+      summary: Create a record category or a record folder
+      description: |
+        Create a record category or a record folder as a primary child of **recordCategoryId**.
+
+        You can set the **autoRename** boolean field to automatically resolve name clashes. If there is a name clash, then
+        the API method tries to create
+        a unique name using an integer suffix.
+
+        This API method also supports record category or record folder creation using application/json.
+
+        You must specify at least a **name** and **nodeType**.
+
+        You can create a category like this:
+        ```JSON
+        {
+          "name":"My Record Category",
+          "nodeType":"rma:recordCategory"
+        }
+        ```
+
+        You can create a record folder like this:
+        ```JSON
+        {
+          "name":"My Record Folder",
+          "nodeType":"rma:recordFolder"
+        }
+        ```
+
+        You can create a record folder inside a container hierarchy (applies to record categories as well):
+        ```JSON
+        {
+          "name":"My Fileplan Component",
+          "nodeType":"rma:recordFolder",
+          "relativePath":"X/Y/Z"
+        }
+        ```
+        The **relativePath** specifies the container structure to create relative to the node (record category or record folder). Containers in the
+        **relativePath** that do not exist are created before the node is created. The container type is decided considering
+        the type of the parent container and the type of the node to be created.
+
+        You can set properties when creating a record category (applies to record folders as well):
+        ```JSON
+        {
+          "name":"My Record Category",
+          "nodeType":"rma:recordCategory",
+          "properties":
+          {
+            "rma:vitalRecordIndicator":"true",
+            "rma:reviewPeriod":"month|1"
+          }
+        }
+        ```
+
+        Any missing aspects are applied automatically. You can set aspects explicitly, if needed, using an **aspectNames** field.
+
+        **Note:** You can create more than one child by
+        specifying a list of nodes in the JSON body. For example, the following JSON
+        body creates a record category and a record folder inside the specified **categoryId**:
+        ```JSON
+        [
+          {
+            "name":"My Record Category",
+            "nodeType":"rma:recordCategory"
+          },
+          {
+            "name":"My Record Folder",
+            "nodeType":"rma:recordFolder"
+          }
+        ]
+        ```
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: createRecordCategoryChild
+      parameters:
+        - $ref: '#/parameters/recordCategoryIdParam'
+        - $ref: '#/parameters/autoRenameParam'
+        - $ref: '#/parameters/recordCategoryEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyCreate
+          description: |
+            The node information to create.
+          required: true
+          schema:
+            $ref: '#/definitions/RMNodeBodyCreateWithRelativePath'
+      consumes:
+        - application/json
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordCategoryChildEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordCategoryId** is not a valid format or **nodeBodyCreate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to add children to **recordCategoryId**
+        '404':
+          description: "**recordCategoryId** does not exist"
+        '409':
+          description: Name clashes with an existing node in the current parent container
+        '422':
+          description: Model integrity exception, including node name with invalid characters
+  ## Record folders
+  '/record-folders/{recordFolderId}':
+    get:
+      tags:
+        - record-folders
+      summary: Get a record folder
+      description: |
+        Gets information for record folder **recordFolderId**
+
+        Mandatory fields and the record folder's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getRecordFolder
+      parameters:
+        - $ref: '#/parameters/recordFolderIdParam'
+        - $ref: '#/parameters/recordFolderEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordFolderEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordFolderId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **recordFolderId**
+        '404':
+          description: "**recordFolderId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - record-folders
+      summary : Update a record folder
+      description: |
+        Updates record folder **recordFolderId**. For example, you can rename a record folder:
+        ```JSON
+        {
+          "name":"My new name"
+        }
+        ```
+        You can also set or update one or more properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "rma:vitalRecordIndicator": true,
+               "rma:reviewPeriod":"month|6"
+            }
+        }
+        ```
+        **Note:** if you want to add or remove aspects, then you must use **GET /record-folders/{recordFolderId}** first to get the complete set of *aspectNames*.
+
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateRecordFolder
+      parameters:
+        - $ref: '#/parameters/recordFolderIdParam'
+        - $ref: '#/parameters/recordFolderEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: recordFolderBodyUpdate
+          description: The record folder information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/FilePlanComponentBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordFolderEntry'
+        '400':
+          description: |
+            Invalid parameter: The update request is invalid or **recordFolderId** is not a valid format or **recordFolderBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **recordFolderId**
+        '404':
+          description: "**recordFolderId** does not exist"
+        '409':
+          description: Updated name clashes with an existing record folder in the current parent category
+        '422':
+          description: Model integrity exception, including file name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - record-folders
+      summary : Delete a record folder
+      description: |
+        Deletes record folder **recordFolderId**. Deleted file plan components cannot be recovered, they are deleted permanently.
+      operationId: deleteRecordFolder
+      parameters:
+        - $ref: '#/parameters/recordFolderIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **recordFolderId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **recordFolderId**
+        '404':
+          description: "**recordFolderId** does not exist"
+        '409':
+          description: "**recordFolderId** is locked and cannot be deleted"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/record-folders/{recordFolderId}/records':
+    get:
+      tags:
+        - record-folders
+      summary: List records
+      description: |
+        Gets a list of records.
+
+        Minimal information for each record is returned by default.
+
+        The list of records includes primary children and secondary children, if there are any.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: listRecordFolderChildren
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/recordFolderIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/recordFolderWhereParam'
+        - $ref: '#/parameters/recordFolderChildEntryIncludeParam'
+        - $ref: '#/parameters/recordFolderIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordFolderAssociationPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **recordFolderId**
+        '404':
+          description: "**recordFolderId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      tags:
+        - record-folders
+      summary: Create a record
+      description: |
+        Create a record as a primary child of **recordFolderId**.
+
+        This endpoint supports both JSON and multipart/form-data (file upload).
+
+        **Using multipart/form-data**
+
+        Use the **filedata** field to represent the content to upload, for example, the following curl command will
+        create a node with the contents of test.txt in the test user's home folder.
+
+        ```curl -utest:test -X POST host:port/alfresco/api/-default-/public/gs/versions/1/record-folders/{recordFolderId}/records -F filedata=@test.txt```
+
+        This API method also supports record creation using application/json.
+
+        You must specify at least a **name** and **nodeType**.
+
+
+        You can create a non-electronic record like this:
+        ```JSON
+        {
+          "name":"My Non-electronic Record",
+          "nodeType":"rma:nonElectronicDocument",
+          "properties":
+            {
+              "cm:description":"My Non-electronic Record Description",
+              "cm:title":"My Non-electronic Record Title",
+              "rma:box":"My Non-electronic Record Box",
+              "rma:file":"My Non-electronic Record File",
+              "rma:numberOfCopies":1,
+              "rma:physicalSize":30,
+              "rma:shelf":"My Non-electronic Record Shelf",
+              "rma:storageLocation":"My Non-electronic Record Location"
+            }
+        }
+        ```
+
+        You can create an empty electronic record:
+        ```JSON
+        {
+          "name":"My Electronic Record",
+          "nodeType":"cm:content"
+        }
+        ```
+
+        Any missing aspects are applied automatically. You can set aspects explicitly, if needed, using an **aspectNames** field.
+
+        **Note:** You can create more than one child by
+        specifying a list of nodes in the JSON body. For example, the following JSON
+        body creates a record category and a record folder inside the specified **categoryId**:
+        ```JSON
+        [
+          {
+            "name":"Record 1",
+            "nodeType":"cm:content"
+          },
+          {
+            "name":"Record 2",
+            "nodeType":"cm:content"
+          }
+        ]
+        ```
+        If you specify a list as input, then a paginated list rather than an entry is returned in the response body. For example:
+
+        ```JSON
+        {
+          "list": {
+            "pagination": {
+              "count": 2,
+              "hasMoreItems": false,
+              "totalItems": 2,
+              "skipCount": 0,
+              "maxItems": 100
+            },
+            "entries": [
+              {
+                "entry": {
+                  ...
+                }
+              },
+              {
+                "entry": {
+                  ...
+                }
+              }
+            ]
+          }
+        }
+        ```
+      operationId: createRecordFolderChild
+      parameters:
+        - $ref: '#/parameters/recordFolderIdParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: recordBodyCreate
+          description: |
+            The record information to create.
+
+            This field is ignored for multipart/form-data content uploads.
+          required: true
+          schema:
+            $ref: '#/definitions/RMNodeBodyCreate'
+      consumes:
+        - application/json
+        - multipart/form-data
+      produces:
+        - application/json
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordFolderId** is not a valid format or **recordBodyCreate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to add children to **recordFolderId**
+        '404':
+          description: "**recordFolderId** does not exist"
+        '422':
+          description: Model integrity exception, including node name with invalid characters
+  ## Records
+  '/records/{recordId}':
+    get:
+      tags:
+        - records
+      summary: Get a record
+      description: |
+        Gets information for record **recordId**
+
+        Mandatory fields and the record's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getRecord
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **recordId**
+        '404':
+          description: "**recordId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - records
+      summary : Update record
+      description: |
+        Updates the record **recordId**. For example, you can rename a record:
+        ```JSON
+        {
+          "name":"My new name"
+        }
+        ```
+        You can also set or update one or more properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "cm:title":"New title",
+               "cm:description":"New description"
+            }
+        }
+        ```
+        **Note:** if you want to add or remove aspects, then you must use **GET /records/{recordId}** first to get the complete set of *aspectNames*.
+
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateRecord
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: recordBodyUpdate
+          description: The record information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/FilePlanComponentBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordEntry'
+        '400':
+          description: |
+            Invalid parameter: the update request is invalid or **recordId** is not a valid format or **recordBodyUpdate** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **recordId**
+        '404':
+          description: "**recordId** does not exist"
+        '409':
+          description: Updated name clashes with an existing node in the current parent folder
+        '422':
+          description: Model integrity exception, including file name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      tags:
+        - records
+      summary : Delete a record
+      description: |
+        Deletes the record **recordId**. Deleted file plan components cannot be recovered, they are deleted permanently.
+      operationId: deleteRecord
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+      produces:
+        - application/json
+      responses:
+        '204':
+          description: Successful response
+        '400':
+          description: |
+            Invalid parameter: **recordId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to delete **recordId**
+        '404':
+          description: "**recordId** does not exist"
+        '409':
+          description: "**recordId** is locked and cannot be deleted"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/records/{recordId}/content':
+    get:
+      tags:
+        - records
+      summary: Get record content
+      description: |
+
+        Gets the content of the record with identifier **recordId**.
+      operationId: getRecordContent
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - $ref: '#/parameters/attachmentParam'
+        - $ref: '#/parameters/ifModifiedSinceHeader'
+      responses:
+        '200':
+          description: Successful response
+        '304':
+          description: Content has not been modified since the date provided in the If-Modified-Since header
+        '400':
+          description: |
+            Invalid parameter: **recordId** is not a valid format, or is not a record
+        '401':
+          description: Authentication failed
+        '404':
+          description: |
+            **recordId** does not exist
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/records/{recordId}/file':
+    post:
+      tags:
+        - records
+      summary: File a record
+      description: |
+        Files the record **recordId** in the target record folder.
+
+        You need to specify the target record folder by providing its id **targetParentId**
+
+        If the record is already filed, a link to the target record folder is created.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: fileRecord
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyFile
+          description: The target record folder id
+          required: true
+          schema:
+            $ref: '#/definitions/RequestBodyFile'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordIdParam** or **targetParentId** is not a valid format,
+            **recordIdParam** is not a record, **targetParentId** is not a record container or **nodeBodyFile** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to create children of **nodeId**
+        '404':
+          description: |
+            **recordIdParam** or **targetParentId** does not exist
+        '422':
+          description: |
+            Model integrity exception: the action breaks system's integrity restrictions
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/records/{recordId}/complete':
+    post:
+      tags:
+        - records
+      summary: Complete a record
+      description: |
+        Completes the record **recordId**.
+      operationId: completeRecord
+      parameters:
+        - $ref: '#/parameters/recordIdParam'
+        - $ref: '#/parameters/recordEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordEntry'
+        '400':
+          description: |
+            Invalid parameter: **recordIdParam** is not a valid format or
+            **recordIdParam** is not a record
+        '401':
+          description: Authentication failed
+        '403':
+          description: >-
+            Current user does not have permission to complete record
+            **recordIdParam**
+        '404':
+          description: |
+            **recordIdParam** does not exist
+        '422':
+          description: |
+            Model integrity exception: the action breaks system's integrity restrictions
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  ## Files
+  '/files/{fileId}/declare':
+    post:
+      tags:
+        - files
+      summary: Declare as record
+      description: Declares the file **fileId** in the unfiled records container. The original file is moved to the Records Management site and a secondary parent association is created in the file's original site. 
+      operationId: declareRecord
+      parameters:
+        - name: fileId
+          in: path
+          description: The identifier of a non-record file.
+          required: true
+          type: string
+        - name: hideRecord
+          in: query
+          description: Flag to indicate whether the record should be hidden from the current parent folder.
+          type: boolean
+          default: false
+        - $ref: '#/parameters/recordEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/RecordEntry'
+        '400':
+          description: |
+            Invalid parameter: **fileId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to declare a record
+        '404':
+          description: |
+            **fileId** does not exist
+        '422':
+          description: |
+            Model integrity exception: the action breaks system's integrity restrictions
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  ## Transfer Containers
+  '/transfer-containers/{transferContainerId}':
+    get:
+      tags:
+        - transfer-containers
+      summary: Get a transfer container
+      description: |
+        Gets information for transfer container **transferContainerId**
+
+        Mandatory fields and the transfer container's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getTransferContainer
+      parameters:
+        - $ref: '#/parameters/transferContainerIdWithAliasParam'
+        - $ref: '#/parameters/transferContainerEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/TransferContainerEntry'
+        '400':
+          description: |
+            Invalid parameter: **transferContainerId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **transferContainerId**
+        '404':
+          description: "**transferContainerId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    put:
+      tags:
+        - transfer-containers
+      summary : Update transfer container
+      description: |
+        Updates the transfer container **transferContainerId**. For example, you can rename transfer container:
+        ```JSON
+        {
+          "name":"My new name"
+        }
+        ```
+        You can also set or update description and title properties:
+        ```JSON
+        {
+          "properties":
+            {
+               "cm:description": "New Description",
+               "cm:title":"New Title"
+            }
+        }
+        ```
+        **Note:** Currently there is no optimistic locking for updates, so they are applied in "last one wins" order.
+      operationId: updateTransferContainer
+      parameters:
+        - $ref: '#/parameters/transferContainerIdWithAliasParam'
+        - $ref: '#/parameters/transferContainerEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+        - in: body
+          name: nodeBodyUpdate
+          description: The node information to update.
+          required: true
+          schema:
+            $ref: '#/definitions/TransferContainerBodyUpdate'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/TransferContainerEntry'
+        '400':
+          description: |
+            Invalid parameter: the update request is invalid or **transferContainerId** is not a valid format or **nodeBody** is invalid
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to update **transferContainerId**
+        '404':
+          description: "**transferContainerId** does not exist"
+        '409':
+          description: Updated name clashes with an existing node in the current parent folder
+        '422':
+          description: Model integrity exception, including transfer container name with invalid characters
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/transfer-containers/{transferContainerId}/transfers':
+    get:
+      tags:
+        - transfer-containers
+      summary: List transfer container's children
+      description: |
+        Returns a list of transfers.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: listTransfers
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/transferContainerIdWithAliasParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/transferContainerChildEntryIncludeParam'
+        - $ref: '#/parameters/transferContainerIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/TransferContainerAssociationPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **transferContainerId**
+        '404':
+          description: "**transferContainerId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  ## Transfers
+  '/transfers/{transferId}':
+    get:
+      tags:
+        - transfers
+      summary: Get a transfer
+      description: |
+        Gets information for transfer **transferId**
+
+        Mandatory fields and the transfer's aspects and properties are returned by default.
+        
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: getTransfer
+      parameters:
+        - $ref: '#/parameters/transferIdParam'
+        - $ref: '#/parameters/transferEntryIncludeParam'
+        - $ref: '#/parameters/fieldsParam'
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/TransferEntry'
+        '400':
+          description: |
+            Invalid parameter: **transferId** is not a valid format
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **transferId**
+        '404':
+          description: "**transferId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+  '/transfers/{transferId}/children':
+    get:
+      tags:
+        - transfers
+      summary: List transfer's children
+      description: |
+        Gets a list of transfer's children.
+
+        Minimal information for each child is returned by default.
+
+        You can use the **include** parameter (include=allowableOperations) to return additional information.
+      operationId: listTransfersChildren
+      produces:
+        - application/json
+      parameters:
+        - $ref: '#/parameters/transferIdParam'
+        - $ref: '#/parameters/skipCountParam'
+        - $ref: '#/parameters/maxItemsParam'
+        - $ref: '#/parameters/transferChildEntryIncludeParam'
+        - $ref: '#/parameters/transferIncludeSourceParam'
+        - $ref: '#/parameters/fieldsParam'
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/TransferAssociationPaging'
+        '401':
+          description: Authentication failed
+        '403':
+          description: Current user does not have permission to read **transferId**
+        '404':
+          description: "**transferId** does not exist"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+parameters:
+  ## File plans
+  filePlanEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the file plan. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  filePlanCategoriesEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the record category. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * hasRetentionSchedule
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  filePlanIdWithAliasParam:
+    name: filePlanId
+    in: path
+    description: The identifier of a file plan. You can also use the -filePlan- alias.
+    required: true
+    type: string
+  filePlanIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **filePlanId**
+    required: false
+    type: boolean
+  ## Unfiled records containers
+  unfiledContainerIdParam:
+    name: unfiledContainerId
+    in: path
+    description:
+      The identifier of an unfiled records container. You can use the **-unfiled-** alias.
+    required: true
+    type: string
+  unfiledContainerEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the unfiled records container's children. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  unfiledContainerChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the unfiled records container's children. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * association 
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  unfiledContainerIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – the specified parent **unfiledContainerId**
+    required: false
+    type: boolean
+## Unfiled record folders
+  unfiledRecordFolderIdParam:
+    name: unfiledRecordFolderId
+    in: path
+    description:
+      The identifier of an unfiled record folder.
+    required: true
+    type: string
+  unfiledRecordFolderEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the unfiled records container's children. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  unfiledRecordFolderChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the unfiled records container's children. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * association
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  unfiledRecordFolderRelativePathParam:
+    name: relativePath
+    in: query
+    description: |
+      Return information on children in the unfiled records container resolved by this path. The path is relative to **unfiledRecordFolderId**.
+    required: false
+    type: string
+  unfiledRecordFolderIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – either the specified parent **unfiledRecordFolderId**, or as resolved by **relativePath**.
+    required: false
+    type: boolean
+  unfiledRecordFolderAndContainerWhereParam:
+    name: where
+    in: query
+    description: |
+      Optionally filter the list. Here are some examples:
+
+      *   ```where=(isRecord=true)```
+
+      *   ```where=(isUnfiledRecordFolder=false)```
+
+      *   ```where=(nodeType='cm:content INCLUDESUBTYPES')```
+
+    required: false
+    type: string
+  ## Record categories
+  recordCategoryIdParam:
+    name: recordCategoryId
+    in: path
+    description:
+      The identifier of a record category.
+    required: true
+    type: string
+  recordCategoryEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the record category. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * hasRetentionSchedule
+      * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  recordCategoryRelativePathParam:
+    name: relativePath
+    in: query
+    description: |
+      Return information on children in the record category resolved by this path. The path is relative to **recordCategoryId**.
+    required: false
+    type: string
+  recordCategoryIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with folder information on the parent node – either the specified parent **recordCategoryId**, or as resolved by **relativePath**.
+    required: false
+    type: boolean
+  recordCategoryChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the record category child. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * hasRetentionSchedule
+      * isClosed
+      * isRecordCategory
+      * isRecordFolder
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  recordCategoryWhereParam:
+    name: where
+    in: query
+    description: |
+      Optionally filter the list. Here are some examples:
+
+      *   ```where=(nodeType='rma:recordFolder')```
+
+      *   ```where=(nodeType='rma:recordCategory')```
+
+      *   ```where=(isRecordFolder=true AND isClosed=false)```
+
+    required: false
+    type: string
+  ## Record folders
+  recordFolderIdParam:
+    name: recordFolderId
+    in: path
+    description:
+      The identifier of a record folder.
+    required: true
+    type: string
+  recordFolderEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the record folders. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * isClosed
+      * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  recordFolderIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with record information on the parent folder – the specified parent **recordFolderId**
+    required: false
+    type: boolean
+  recordFolderChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the records. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * association
+      * content
+      * isCompleted
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  recordFolderWhereParam:
+    name: where
+    in: query
+    description: |
+      Optionally filter the list. Here are some examples:
+
+      *   ```where=(nodeType='my:specialNodeType')```
+
+      *   ```where=(nodeType='my:specialNodeType INCLUDESUBTYPES')```
+
+      *   ```where=(isPrimary=true)```
+
+    required: false
+    type: string
+  ## Transfer Containers
+  transferContainerIdWithAliasParam:
+    name: transferContainerId
+    in: path
+    description: The identifier of a transfer container. You can also use the -transfers- alias.
+    required: true
+    type: string
+  transferContainerEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the transfer container. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  transferContainerChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the transfer folders. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * properties
+      * transferPDFIndicator
+      * transferLocation
+      * transferAccessionIndicator
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  transferContainerIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with folder information on the specified parent **transferContainerId**.
+    required: false
+    type: boolean
+  ## Transfers
+  transferEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the transfer folder. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * transferPDFIndicator
+      * transferLocation
+      * transferAccessionIndicator
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  transferIdParam:
+    name: transferId
+    in: path
+    description: The identifier of a transfer.
+    required: true
+    type: string
+  transferIncludeSourceParam:
+    name: includeSource
+    in: query
+    description: Also include **source** (in addition to **entries**) with folder information on the specified parent **transferId**.
+    required: false
+    type: boolean
+  transferChildEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the transfer's child. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * aspectNames
+      * isClosed
+      * isRecord
+      * isRecordFolder
+      * path
+      * properties
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  ## Record
+  recordIdParam:
+    name: recordId
+    in: path
+    description: The identifier of a record.
+    required: true
+    type: string
+  recordEntryIncludeParam:
+    name: include
+    in: query
+    description: |
+      Returns additional information about the record. Any optional field from the response model can be requested. For example:
+      * allowableOperations
+      * content
+      * isCompleted
+      * path
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  ## Core definition
+  fieldsParam:
+    name: fields
+    in: query
+    description: |
+      A list of field names.
+
+      You can use this parameter to restrict the fields
+      returned within a response if, for example, you want to save on overall bandwidth.
+
+      The list applies to a returned individual
+      entity or entries within a collection.
+
+      If the API method also supports the **include**
+      parameter, then the fields specified in the **include**
+      parameter are returned in addition to those specified in the **fields** parameter.
+    required: false
+    type: array
+    items:
+      type: string
+    collectionFormat: csv
+  ## Core definition
+  skipCountParam:
+    name: skipCount
+    in: query
+    description: The number of entities that exist in the collection before those included in this list.
+    required: false
+    type: integer
+    minimum: 0
+  ## Core definition
+  maxItemsParam:
+    name: maxItems
+    in: query
+    description: The maximum number of items to return in the list.
+    required: false
+    type: integer
+    minimum: 1
+  # Core definition
+  attachmentParam:
+    name: attachment
+    in: query
+    description: |
+       **true** enables a web browser to download the file as an attachment.
+       **false** means a web browser may preview the file in a new tab or window, but not
+       download the file.
+
+       You can only set this parameter to **false** if the content type of the file is in the supported list;
+       for example, certain image files and PDF files.
+
+       If the content type is not supported for preview, then a value of **false**  is ignored, and
+       the attachment will be returned in the response.
+    required: false
+    default: true
+    type: boolean
+  # Core definition
+  ifModifiedSinceHeader:
+    name: If-Modified-Since
+    in: header
+    description: |
+      Only returns the content if it has been modified since the date provided.
+      Use the date format defined by HTTP. For example, `Wed, 09 Mar 2016 16:56:34 GMT`.
+    required: false
+    type: string
+    format: date-time
+  # Core definition
+  autoRenameParam:
+    name: autoRename
+    in: query
+    description: |
+      If true, then  a name clash will cause an attempt to auto rename by finding a unique name using an integer suffix.
+    required: false
+    type: boolean
+definitions:
+  FilePlanComponentBodyUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+  ## File plans
+  FilePlan:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  FilePlanEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/FilePlan'
+  FilePlanBodyUpdate:
+    type: object
+    properties:
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+  RootCategoryBodyCreate:
+    type: object
+    required:
+      - name
+      - nodeType
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+  ## Unfiled records containers
+  UnfiledContainer:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  UnfiledContainerEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/UnfiledContainer'
+  UnfiledContainerChild:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  UnfiledContainerAssociationPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/UnfiledContainerChildAssociationEntry'
+          source:
+            $ref: '#/definitions/UnfiledContainer'
+  UnfiledContainerChildAssociationEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/UnfiledContainerChildAssociation'
+  UnfiledContainerChildAssociation:
+    allOf:
+      - $ref: '#/definitions/UnfiledContainerChild'
+      - type: object
+        properties:
+          association:
+            $ref: '#/definitions/ChildAssociationInfo'
+  UnfiledRecordContainerBodyUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+  ## Unfiled record folder
+  UnfiledRecordFolder:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  UnfiledRecordFolderEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/UnfiledRecordFolder'
+  UnfiledRecordFolderChild:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - isUnfiledRecordFolder
+    - isRecord
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isUnfiledRecordFolder:
+        type: boolean
+      isRecord:
+        type: boolean
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  UnfiledRecordFolderAssociationPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/UnfiledRecordFolderChildAssociationEntry'
+          source:
+            $ref: '#/definitions/UnfiledRecordFolder'
+  UnfiledRecordFolderChildAssociationEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/UnfiledRecordFolderChildAssociation'
+  UnfiledRecordFolderChildAssociation:
+    allOf:
+      - $ref: '#/definitions/UnfiledRecordFolderChild'
+      - type: object
+        properties:
+          association:
+            $ref: '#/definitions/ChildAssociationInfo'
+  UnfiledRecordFolderBodyUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+  ## Record categories
+  RecordCategory:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      hasRetentionSchedule:
+        type: boolean
+        default: false
+        description: Indicates if the record category has a retention schedule defined
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  RecordCategoryChild:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      hasRetentionSchedule:
+        type: boolean
+        default: false
+        description: Indicates if the record category has a retention schedule defined
+      isClosed:
+        type: boolean
+        default: false
+        description: Indicates if the record folder is closed
+      isRecordCategory:
+        type: boolean
+      isRecordFolder:
+        type: boolean
+        default: false
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  RecordCategoryEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RecordCategory'
+  RecordCategoryChildEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RecordCategoryChild'
+  RecordCategoryPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/RecordCategoryEntry'
+          source:
+            $ref: '#/definitions/FilePlan'
+  RecordCategoryChildPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/RecordCategoryChildEntry'
+          source:
+            $ref: '#/definitions/RecordCategory'
+  ## Record folder
+  RecordFolder:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isClosed:
+        type: boolean
+        default: false
+        description: Indicates if the record folder is closed
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  RecordFolderEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RecordFolder'
+  RecordFolderAssociationPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/RecordFolderChildAssociationEntry'
+          source:
+            $ref: '#/definitions/RecordFolder'
+  RecordFolderChildAssociationEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RecordFolderChildAssociation'
+  RecordFolderChildAssociation:
+    allOf:
+      - $ref: '#/definitions/Record'
+      - type: object
+        properties:
+          association:
+            $ref: '#/definitions/ChildAssociationInfo'
+  ## Record
+  Record:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isCompleted:
+        type: boolean
+        default: false
+        description: Present only for record nodes. Indicates if the record is completed
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      content:
+        $ref: '#/definitions/ContentInfo'
+      path:
+        $ref: '#/definitions/PathInfo'
+  RecordEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/Record'
+  ## Transfer Containers
+  TransferContainer:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+  TransferContainerEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/TransferContainer'
+  TransferContainerChild:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      transferPDFIndicator:
+        type: boolean
+        default: false
+        description: Present only for transfer nodes.
+      transferLocation:
+        type: string
+        description: Present only for transfer nodes.
+      transferAccessionIndicator:
+        type: boolean
+        default: false
+        description: Present only for transfer nodes.
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+  TransferContainerAssociationPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/TransferContainerChildAssociationEntry'
+          source:
+            $ref: '#/definitions/TransferContainer'
+  TransferContainerChildAssociationEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/TransferContainerChildAssociation'
+  TransferContainerChildAssociation:
+    allOf:
+      - $ref: '#/definitions/TransferContainerChild'
+      - type: object
+        properties:
+          association:
+            $ref: '#/definitions/ChildAssociationInfo'
+  TransferContainerBodyUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+  ## Transfers
+  Transfer:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      transferPDFIndicator:
+        type: boolean
+        default: false
+        description: Present only for transfer nodes.
+      transferLocation:
+        type: string
+        description: Present only for transfer nodes.
+      transferAccessionIndicator:
+        type: boolean
+        default: false
+        description: Present only for transfer nodes.
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+  TransferEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/Transfer'
+  TransferChild:
+    type: object
+    required:
+    - id
+    - name
+    - nodeType
+    - createdAt
+    - createdByUser
+    - modifiedAt
+    - modifiedByUser
+    - parentId
+    properties:
+      id:
+        type: string
+      parentId:
+        type: string
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      isRecordFolder:
+        type: boolean
+        default: false
+      isRecord:
+        type: boolean
+        default: false
+      isClosed:
+        type: boolean
+        default: false
+        description: Indicates if the record folder is closed
+      modifiedAt:
+        type: string
+        format: date-time
+      modifiedByUser:
+        $ref: '#/definitions/UserInfo'
+      createdAt:
+        type: string
+        format: date-time
+      createdByUser:
+        $ref: '#/definitions/UserInfo'
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+      allowableOperations:
+        type: array
+        items:
+          type: string
+      path:
+        $ref: '#/definitions/PathInfo'
+  TransferAssociationPaging:
+    type: object
+    properties:
+      list:
+        type: object
+        properties:
+          pagination:
+            $ref: '#/definitions/Pagination'
+          entries:
+            type: array
+            items:
+              $ref: '#/definitions/TransferChildAssociationEntry'
+          source:
+            $ref: '#/definitions/Transfer'
+  TransferChildAssociationEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/TransferChildAssociation'
+  TransferChildAssociation:
+    allOf:
+      - $ref: '#/definitions/TransferChild'
+      - type: object
+        properties:
+          association:
+            $ref: '#/definitions/ChildAssociationInfo'
+  ##
+  RequestBodyFile:
+    type: object
+    required:
+      - targetParentId
+    properties:
+      targetParentId:
+        type: string
+  ## Core definition
+  ChildAssociationInfo:
+    type: object
+    required:
+      - assocType
+      - isPrimary
+    properties:
+      assocType:
+        type: string
+      isPrimary:
+        type: boolean
+  ## Core definition
+  Pagination:
+    type: object
+    required:
+      - count
+      - hasMoreItems
+      - skipCount
+      - maxItems
+    properties:
+      count:
+        type: integer
+        format: int64
+        description: |
+          The number of objects in the entries array.
+      hasMoreItems:
+        type: boolean
+        description: |
+          A boolean value which is **true** if there are more entities in the collection
+          beyond those in this response. A true value means a request with a larger value
+          for the **skipCount** or the **maxItems** parameter will return more entities.
+      totalItems:
+        type: integer
+        format: int64
+        description: |
+          An integer describing the total number of entities in the collection.
+          The API might not be able to determine this value,
+          in which case this property will not be present.
+      skipCount:
+        type: integer
+        format: int64
+        description: |
+          An integer describing how many entities exist in the collection before
+          those included in this list.
+      maxItems:
+        type: integer
+        format: int64
+        description: |
+          The value of the **maxItems** parameter used to generate this list,
+          or if there was no **maxItems** parameter the default value is 100
+  ## Core definition
+  Error:
+    type: object
+    required:
+      - error
+    properties:
+      error:
+        type: object
+        required:
+          - statusCode
+          - briefSummary
+          - stackTrace
+          - descriptionURL
+        properties:
+          errorKey:
+            type: string
+          statusCode:
+            type: integer
+            format: int32
+          briefSummary:
+            type: string
+          stackTrace:
+            type: string
+          descriptionURL:
+            type: string
+          logId:
+            type: string
+  ## Core definition
+  UserInfo:
+    type: object
+    required:
+      - displayName
+      - id
+    properties:
+      displayName:
+        type: string
+      id:
+        type: string
+  ## Core definition
+  ContentInfo:
+    type: object
+    required:
+      - mimeType
+      - mimeTypeName
+      - sizeInBytes
+      - encoding
+    properties:
+      mimeType:
+        type: string
+      mimeTypeName:
+        type: string
+      sizeInBytes:
+        type: integer
+      encoding:
+        type: string
+  ## Core definition
+  PathElement:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+  ## Core definition
+  PathInfo:
+    type: object
+    properties:
+      elements:
+        type: array
+        items:
+          $ref: '#/definitions/PathElement'
+      name:
+        type: string
+      isCompleted:
+        type: boolean
+  RMNodeBodyCreate:
+    type: object
+    required:
+      - name
+      - nodeType
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+  RMNodeBodyCreateWithRelativePath:
+    type: object
+    required:
+      - name
+      - nodeType
+    properties:
+      name:
+        type: string
+        pattern: "^(?!(.*[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]+.*)|(.*[\\.]?.*[\\.]+$)|(.*[ ]+$))"
+        description: |
+          The name must not contain spaces or the following special characters: * " < > \ / ? : and |.
+          The character . must not be used at the end of the name.
+      nodeType:
+        type: string
+      aspectNames:
+        type: array
+        items:
+          type: string
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+      relativePath:
+        type: string
+  RMSiteBodyCreate:
+    type: object
+    required:
+      - title
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+      compliance:
+        type: string
+        default: STANDARD
+        enum:
+          - STANDARD
+          - DOD5015
+  RMSiteBodyUpdate:
+    type: object
+    properties:
+      title:
+        type: string
+      description:
+        type: string
+  RMSiteEntry:
+    type: object
+    required:
+      - entry
+    properties:
+      entry:
+        $ref: '#/definitions/RMSite'
+  RMSite:
+    type: object
+    required:
+      - id
+      - guid
+      - title
+      - visibility
+      - compliance
+    properties:
+      id:
+        type: string
+      guid:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      visibility:
+        type: string
+        enum:
+          - PRIVATE
+          - MODERATED
+          - PUBLIC
+      compliance:
+        type: string
+        enum:
+          - STANDARD
+          - DOD5015
+      role:
+        type: string
+        enum:
+          - SiteConsumer
+          - SiteCollaborator
+          - SiteContributor
+          - SiteManager

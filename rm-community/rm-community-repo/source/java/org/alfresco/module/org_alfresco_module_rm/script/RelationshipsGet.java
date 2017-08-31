@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -181,8 +181,8 @@ public class RelationshipsGet extends AbstractRmWebScript
 
                 String nodeDetails = getJsonConversionComponent().toJSON(node, true);
                 JSONObject jsonObject = WebScriptUtils.createJSONObject(nodeDetails);
-                WebScriptUtils.putValuetoJSONObject(jsonObject, RELATIONSHIP_LABEL, label);
-                WebScriptUtils.putValuetoJSONObject(jsonObject, RELATIONSHIP_UNIQUE_NAME, relationshipDefinition.getUniqueName());
+                WebScriptUtils.putValueToJSONObject(jsonObject, RELATIONSHIP_LABEL, label);
+                WebScriptUtils.putValueToJSONObject(jsonObject, RELATIONSHIP_UNIQUE_NAME, relationshipDefinition.getUniqueName());
 
                 result.add(jsonObject.toString());
             }

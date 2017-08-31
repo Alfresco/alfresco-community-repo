@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.disposition;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -242,4 +243,43 @@ public interface DispositionService
      * @param nodeRef   node reference
      */
     void refreshDispositionAction(NodeRef nodeRef);
+    
+    /**
+     * Gets date of the disposition action for the given 
+     * disposition schedule with the given action name
+     * 
+     * @param record
+     * @param dispositionSchedule nodeRef
+     * @param dispositionActionName
+     * @return date
+     */
+    Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName);
+
+    /**
+     * Compute the "disposition as of" date (if necessary) for a disposition action and a node.
+     *
+     * @param nodeRef The node which the schedule applies to.
+     * @param dispositionActionDefinition The definition of the disposition action.
+     * @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
+     * @return The new "disposition as of" date.
+     */
+    Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition,
+                boolean allowContextFromAsOf);
+    
+    /**
+     * Gets the origin disposition schedule for the record, not the calculated one
+     * in case of multiple dispositions applied to record
+     * 
+     * @param nodeRef record 
+     * @return the initial disposition
+     */
+    DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef);
+    
+    /**
+     * Updates disposition action step when linking or unlinking 
+     * the given record to/from a record folder
+     * 
+     * @param record
+     */
+    void recalculateNextDispositionStep(NodeRef record);
 }

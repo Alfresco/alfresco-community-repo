@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -40,6 +39,7 @@ import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -129,7 +129,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                     String oldIdValue = (String)before.get(PROP_IDENTIFIER);
                     if (oldIdValue != null && !oldIdValue.equals(newIdValue))
                     {
-                        throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_SET_ID, nodeRef.toString()));
+                        throw new IntegrityException(I18NUtil.getMessage(MSG_SET_ID, nodeRef.toString()), null);
                     }
 
                     // update uniqueness
@@ -230,7 +230,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
             // Do a blanket removal in case this is a contextual nodes
             attributeService.removeAttributes(CONTEXT_VALUE, nodeRef);
         }
-        else
+        else if(!beforeId.equals(afterId))
         {
             // This is a full update
             attributeService.updateOrCreateAttribute(
@@ -238,4 +238,5 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                     CONTEXT_VALUE, contextNodeRef, afterId);
         }
     }
+
 }

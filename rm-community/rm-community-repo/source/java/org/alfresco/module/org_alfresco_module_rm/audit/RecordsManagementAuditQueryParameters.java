@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -42,7 +42,7 @@ import org.alfresco.service.namespace.QName;
 @AlfrescoPublicApi
 public final class RecordsManagementAuditQueryParameters
 {
-    private int maxEntries = -1;
+    private int maxEntries = Integer.MAX_VALUE;
     private String user;
     private NodeRef nodeRef;
     private Date dateFrom;

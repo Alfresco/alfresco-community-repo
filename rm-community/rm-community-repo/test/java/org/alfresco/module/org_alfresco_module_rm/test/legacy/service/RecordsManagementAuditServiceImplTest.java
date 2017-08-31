@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -171,9 +171,9 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         // "audit.start", "audit.view" and "Update RM Object";
         entries = getAuditTrail(3, ADMIN_USER);
 
-        assertEquals(entries.get(0).getEvent(), "audit.start");
+        assertEquals(entries.get(2).getEvent(), "audit.start");
         assertEquals(entries.get(1).getEvent(), "audit.view");
-        assertEquals(entries.get(2).getEvent(), "Update RM Object");
+        assertEquals(entries.get(0).getEvent(), "Update RM Object");
 
         // New "audit.view" event was generated - will be visible on next getAuditTrail().
 
@@ -185,14 +185,14 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
                 nodeService.deleteNode(record);
                 List<RecordsManagementAuditEntry> entries = getAuditTrail(5, ADMIN_USER);
 
-                assertEquals(entries.get(0).getEvent(), "audit.start");
-                assertEquals(entries.get(1).getEvent(), "audit.view");
-                assertEquals(entries.get(2).getEvent(), "Update RM Object");
+                assertEquals(entries.get(4).getEvent(), "audit.start");
                 assertEquals(entries.get(3).getEvent(), "audit.view");
+                assertEquals(entries.get(2).getEvent(), "Update RM Object");
+                assertEquals(entries.get(1).getEvent(), "audit.view");
 
                 // Show the audit contains a reference to the deleted item:
-                assertEquals(entries.get(4).getEvent(), "Delete RM Object");
-                assertEquals(entries.get(4).getNodeRef(), record);
+                assertEquals(entries.get(0).getEvent(), "Delete RM Object");
+                assertEquals(entries.get(0).getNodeRef(), record);
 
                 return null;
             }
@@ -212,7 +212,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
         // show the audit has been updated
         List<RecordsManagementAuditEntry> entries = getAuditTrail(3, ADMIN_USER);
-        final RecordsManagementAuditEntry entry = entries.get(2);
+        final RecordsManagementAuditEntry entry = entries.get(0);
         assertNotNull(entry);
 
         // investigate the contents of the audit entry

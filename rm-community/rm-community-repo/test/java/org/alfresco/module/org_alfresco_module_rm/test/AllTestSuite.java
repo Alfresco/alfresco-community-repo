@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -51,6 +51,8 @@ import org.junit.runner.RunWith;
     "!.*RM2072Test",
     "!.*RM2190Test",
     "!.*RM981SystemTest",
+    "!.*RM3993Test",
+    "!.*RM4163Test",
     "!.*RecordsManagementEventServiceImplTest",
     "!.*RmRestApiTest",
     "!.*NotificationServiceHelperSystemTest",

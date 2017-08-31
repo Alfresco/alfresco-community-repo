@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,9 +40,7 @@ import org.junit.runner.RunWith;
 @RunWith(ClasspathSuite.class)
 @ClassnameFilters({
     // Execute all test classes ending with "UnitTest"
-    ".*UnitTest",
-    // Put the test classes you want to exclude here
-    "!.*FilePlanPermissionServiceImplUnitTest"
+    ".*UnitTest"
 })
 public class AllUnitTestSuite
 {

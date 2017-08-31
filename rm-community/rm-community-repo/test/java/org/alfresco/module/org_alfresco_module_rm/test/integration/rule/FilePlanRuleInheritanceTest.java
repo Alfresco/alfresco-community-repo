@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -76,6 +76,7 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             private NodeRef filePlan = null;
+            private Rule rule = null;
             private List<Rule> rules = null;
             
             public void given()
@@ -83,24 +84,24 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
                 filePlan = createFilePlan();
                 
                 // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);                
-                Rule rule = new Rule();
+                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
+                rule = new Rule();
                 rule.setRuleType("inbound");
                 rule.setAction(completeRecordAction);
                 rule.applyToChildren(true);
-                
+            }
+
+            public void when()
+            {
                 // save rule on file plan root parent folder
                 ruleService.saveRule(folder, rule);
             }
-            
-            public void when()
+
+            public void then()
             {
                 // get rules, including those inherited
                 rules = ruleService.getRules(filePlan, true);
-            }   
-            
-            public void then()
-            {
+
                 // rules aren't inhreited from file plan root parent folder
                 assertEquals(0, rules.size());
             }
@@ -121,31 +122,32 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
         {
             private NodeRef filePlan = null;
             private List<Rule> rules = null;
-            
+            private Rule rule = null;
+
             public void given()
             {
                 filePlan = createFilePlan();
                 
                 // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);                
-                Rule rule = new Rule();
+                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
+                rule = new Rule();
                 rule.setRuleType("inbound");
                 rule.setAction(completeRecordAction);
                 rule.applyToChildren(true);
-                
+            }
+
+            public void when()
+            {
                 // save rule on file plan root
                 ruleService.saveRule(filePlan, rule);
             }
-            
-            public void when()
+
+            public void then()
             {
                 // get rules, including those inherited
                 NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
                 rules = ruleService.getRules(unfiledRecordContainer, true);
-            }   
-            
-            public void then()
-            {
+
                 // rules aren't inhreited from file plan root
                 assertEquals(0, rules.size());
             }
@@ -164,31 +166,32 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
         {
             private NodeRef filePlan = null;
             private List<Rule> rules = null;
-            
+            private Rule rule = null;
+
             public void given()
             {
                 filePlan = createFilePlan();
                 
                 // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);                
-                Rule rule = new Rule();
+                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
+                rule = new Rule();
                 rule.setRuleType("inbound");
                 rule.setAction(completeRecordAction);
                 rule.applyToChildren(true);
-                
+            }
+
+            public void when()
+            {
                 // save rule on file plan root
                 ruleService.saveRule(filePlan, rule);
             }
-            
-            public void when()
+
+            public void then()
             {
                 // get rules, including those inherited
                 NodeRef container = filePlanService.getHoldContainer(filePlan);
                 rules = ruleService.getRules(container, true);
-            }   
-            
-            public void then()
-            {
+
                 // rules aren't inhreited from file plan root
                 assertEquals(0, rules.size());
             }
@@ -207,31 +210,32 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
         {
             private NodeRef filePlan = null;
             private List<Rule> rules = null;
-            
+            private Rule rule = null;
+
             public void given()
             {
                 filePlan = createFilePlan();
                 
                 // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);                
-                Rule rule = new Rule();
+                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
+                rule = new Rule();
                 rule.setRuleType("inbound");
                 rule.setAction(completeRecordAction);
                 rule.applyToChildren(true);
-                
+            }
+
+            public void when()
+            {
                 // save rule on file plan root
                 ruleService.saveRule(filePlan, rule);
             }
-            
-            public void when()
+
+            public void then()
             {
                 // get rules, including those inherited
                 NodeRef container = filePlanService.getTransferContainer(filePlan);
                 rules = ruleService.getRules(container, true);
-            }   
-            
-            public void then()
-            {
+
                 // rules aren't inhreited from file plan root
                 assertEquals(0, rules.size());
             }
@@ -251,31 +255,32 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
             private NodeRef filePlan = null;
             private NodeRef recordCategory = null;
             private List<Rule> rules = null;
-            
+            private Rule rule = null;
+
             public void given()
             {
                 filePlan = createFilePlan();
                 recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 
                 // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);                
-                Rule rule = new Rule();
+                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
+                rule = new Rule();
                 rule.setRuleType("inbound");
                 rule.setAction(completeRecordAction);
                 rule.applyToChildren(true);
-                
+            }
+
+            public void when()
+            {
                 // save rule on file plan root
                 ruleService.saveRule(filePlan, rule);
             }
-            
-            public void when()
+
+            public void then()
             {
                 // get rules, including those inherited
                 rules = ruleService.getRules(recordCategory, true);
-            }   
-            
-            public void then()
-            {
+
                 // rules aren't inhreited from file plan root
                 assertEquals(1, rules.size());
             }

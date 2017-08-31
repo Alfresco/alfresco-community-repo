@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,7 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.appendIdentifierToName;
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -57,9 +61,9 @@ import org.alfresco.service.namespace.QName;
 public class RecordsManagementContainerType extends    BaseBehaviourBean
                                             implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-	/** behaviour name */
-	private static final String BEHAVIOUR_NAME = "onCreateContainerType";
-	
+    /** behaviour name */
+    private static final String BEHAVIOUR_NAME = "onCreateContainerType";
+
     /** identifier service */
     protected IdentifierService identifierService;
 
@@ -68,6 +72,9 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
 
     /** record folder service */
     protected RecordFolderService recordFolderService;
+
+    /** I18N */
+    private static final String MSG_CANNOT_CAST_TO_RM_TYPE = "rm.action.cast-to-rm-type";
 
     /**
      * @param identifierService identifier service
@@ -92,25 +99,63 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     {
         this.recordFolderService = recordFolderService;
     }
-    
+
     /**
      * Disable the behaviours for this transaction
-     * 
+     *
      * @since 2.3
      */
     public void disable()
     {
-    	getBehaviour(BEHAVIOUR_NAME).disable();
+        getBehaviour(BEHAVIOUR_NAME).disable();
     }
-    
+
     /**
      * Enable behaviours for this transaction
-     * 
+     *
      * @since 2.3
      */
     public void enable()
     {
-    	getBehaviour(BEHAVIOUR_NAME).enable();    
+        getBehaviour(BEHAVIOUR_NAME).enable();
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.model.BaseTypeBehaviour#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     */
+    @Behaviour
+    (
+       kind = BehaviourKind.ASSOCIATION,
+       policy = "alf:onCreateChildAssociation",
+       notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onCreateChildAssoiationFirstEvent(final ChildAssociationRef childAssocRef, final boolean bNew)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                QName parentType = nodeService.getType(childAssocRef.getParentRef());
+                boolean isContentSubType = dictionaryService.isSubClass(nodeService.getType(childAssocRef.getChildRef()), ContentModel.TYPE_CONTENT);
+                boolean parentIsUnfiledRecordContainer = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
+                boolean parentIsUnfiledRecordFolder = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
+
+                NodeRef child = childAssocRef.getChildRef();
+                if((parentIsUnfiledRecordContainer || parentIsUnfiledRecordFolder) && isContentSubType && !recordService.isRecord(child))
+                {
+                    if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
+                    {
+                        nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
+                    }
+                    if (!nodeService.hasAspect(child, ASPECT_RECORD))
+                    {
+                        recordService.makeRecord(child);
+                    }
+                }
+                return null;
+            }
+        });
     }
 
     /**
@@ -133,7 +178,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                 final NodeRef child = childAssocRef.getChildRef();
                 if (nodeService.exists(child))
                 {
-                    QName childType = nodeService.getType(child);
+                    QName childType = convertNodeToFileplanComponent(childAssocRef);
 
                     // We only care about "folder" or sub-types that are not hidden.
                     // Some modules use hidden files to store information (see RM-3283)
@@ -147,48 +192,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                         }
                         else
                         {
-                            // We need to automatically cast the created folder to RM type if it is a plain folder
-                            // This occurs if the RM folder has been created via IMap, WebDav, etc
-                            if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
-                            {
-                                // check the type of the parent to determine what 'kind' of artifact to create
-                                NodeRef parent = childAssocRef.getParentRef();
-                                QName parentType = nodeService.getType(parent);
-
-                                if (dictionaryService.isSubClass(parentType, TYPE_FILE_PLAN))
-                                {
-                                    // create a rma:recordCategoty since we are in the root of the file plan
-                                    nodeService.setType(child, TYPE_RECORD_CATEGORY);
-                                }
-                                else
-                                {
-                                    // create a rma:recordFolder and initialise record folder
-                                    nodeService.setType(child, TYPE_RECORD_FOLDER);
-                                    recordFolderService.setupRecordFolder(child);
-                                }
-                            }
-
                             // Catch all to generate the rm id (assuming it doesn't already have one!)
                             setIdenifierProperty(child);
-                        }
-                    }
-                    else
-                    {
-                        NodeRef parentRef = childAssocRef.getParentRef();
-                        QName parentType = nodeService.getType(parentRef);
-                        boolean isContentSubType = dictionaryService.isSubClass(childType, ContentModel.TYPE_CONTENT);
-                        boolean isUnfiledRecordContainer = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-                        boolean isUnfiledRecordFolder = parentType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
-                        if (isContentSubType && (isUnfiledRecordContainer || isUnfiledRecordFolder))
-                        {
-                            if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
-                            {
-                                nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
-                            }
-                            if (!nodeService.hasAspect(child, ASPECT_RECORD))
-                            {
-                                recordService.makeRecord(child);
-                            }
                         }
                     }
                 }
@@ -219,5 +224,40 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                 return null;
             }
         });
+    }
+
+    /**
+     * Converted the child node to a fileplan component
+     * The conversion is needed here to be able to generate the identifier
+     * If there is no conversion rule for the created type nothing happens and the current type is returned
+     *
+     * @param childAssocRef reference to the new association
+     * @return the new type of the child node
+     */
+    protected QName convertNodeToFileplanComponent(final ChildAssociationRef childAssocRef)
+    {
+        NodeRef child = childAssocRef.getChildRef();
+        QName childType = nodeService.getType(child);
+        QName parentType = nodeService.getType(childAssocRef.getParentRef());
+
+        if(childType.equals(ContentModel.TYPE_FOLDER))
+        {
+            if(parentType.equals(TYPE_FILE_PLAN))
+            {
+                nodeService.setType(child, TYPE_RECORD_CATEGORY);
+                return TYPE_RECORD_CATEGORY;
+            }
+            if(parentType.equals(TYPE_RECORD_CATEGORY))
+            {
+                nodeService.setType(child, TYPE_RECORD_FOLDER);
+                return TYPE_RECORD_FOLDER;
+            }
+            if(parentType.equals(TYPE_UNFILED_RECORD_CONTAINER) || parentType.equals(TYPE_UNFILED_RECORD_FOLDER))
+            {
+                nodeService.setType(child, TYPE_UNFILED_RECORD_FOLDER);
+                return TYPE_UNFILED_RECORD_FOLDER;
+            }
+        }
+        return childType;
     }
 }

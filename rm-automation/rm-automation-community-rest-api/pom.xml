@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-rm-automation-community-rest-api</artifactId>
+   <name>Alfresco Records Management Automation Community REST API</name>
+
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-rm-automation</artifactId>
+      <version>2.6-SNAPSHOT</version>
+   </parent>
+
+   <properties>
+      <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
+      <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
+      <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
+      <tas.restapi.version>5.2.0-7</tas.restapi.version>
+      <fluent.json.version>2.0.0</fluent.json.version>
+   </properties>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <configuration>
+               <licenseName>alfresco_community</licenseName>
+               <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+               <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>test-jar</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>restapi-test</artifactId>
+         <version>${tas.restapi.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.tas</groupId>
+         <artifactId>restapi-test</artifactId>
+         <version>${tas.restapi.version}</version>
+         <type>test-jar</type>
+      </dependency>
+      <dependency>
+         <groupId>org.projectlombok</groupId>
+         <artifactId>lombok</artifactId>
+         <version>1.16.10</version>
+         <scope>provided</scope>
+      </dependency>
+      <!-- FIXME: Remove this dependency once RMUserAPI.java has been refactored -->
+      <dependency>
+         <groupId>org.jglue.fluent-json</groupId>
+         <artifactId>fluent-json</artifactId>
+         <version>${fluent.json.version}</version>
+      </dependency>
+   </dependencies>
+</project>

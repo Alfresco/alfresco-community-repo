@@ -106,11 +106,11 @@
    </bean>
 
    <bean id="isRecordFiled" parent="rmCapabilityConditionEvaluator">
-   	  <property name="capabilityCondition" ref="capabilityCondition.recordFiled"/>
+        <property name="capabilityCondition" ref="capabilityCondition.recordFiled"/>
    </bean>
 
    <bean id="isRecordFolderClosed" parent="rmCapabilityConditionEvaluator">
-   	  <property name="capabilityCondition" ref="capabilityCondition.closed"/>
+        <property name="capabilityCondition" ref="capabilityCondition.closed"/>
    </bean>
 
    <bean id="isVital" parent="rmCapabilityConditionEvaluator">
@@ -140,6 +140,7 @@
       <property name="modelSecurityService" ref="modelSecurityService" />
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="holdService" ref="HoldService" />
+      <property name="identifierService" ref="recordsManagementIdentifierService"/>
    </bean>
 
    <bean id="rmProxyAction"
@@ -261,6 +262,7 @@
       <property name="capabilityService" ref="CapabilityService" />
       <property name="recordableVersionService" ref="RecordableVersionService" />
       <property name="contentDestructionComponent" ref="contentDestructionComponent"/>
+      <property name="inplaceRecordService" ref="InplaceRecordService"/>
       <property name="ghostingEnabled">
          <value>${rm.ghosting.enabled}</value>
       </property>
@@ -271,7 +273,7 @@
 
    <bean id="retain_proxy" parent="rmProxyAction" >
       <property name="target">
-       	<ref bean="retain"/>
+         <ref bean="retain"/>
       </property>
       <property name="interceptorNames">
          <list>
@@ -386,7 +388,7 @@
 
    <bean id="declareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction" parent="rmAction">
       <property name="publicAction" value="true"/>
-      <property name="checkMandatoryPropertiesEnabled" value="${rm.completerecord.mandatorypropertiescheck.enabled}"/>
+      <property name="recordService" ref="RecordService" />
    </bean>
 
    <!-- undeclare record -->
@@ -762,7 +764,6 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
-      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Copy To -->
@@ -791,7 +792,6 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
-      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Move To -->
@@ -820,7 +820,6 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
-      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Link Record -->
@@ -849,7 +848,6 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
-      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Unlink Record -->

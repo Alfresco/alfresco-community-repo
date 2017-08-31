@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm</artifactId>
-      <version>2.5-SNAPSHOT</version>
+      <version>2.6-SNAPSHOT</version>
    </parent>
 
    <licenses>
@@ -18,11 +18,32 @@
    </licenses>
 
    <modules>
+      <module>rm-community-rest-api-explorer</module>
       <module>rm-community-repo</module>
       <module>rm-community-share</module>
    </modules>
 
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-parent</artifactId>
+            <version>${alfresco.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+         <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-share-parent</artifactId>
+            <version>${share.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
    <properties>
-      <alfresco.version>5.1.e</alfresco.version>
+      <alfresco.version>5.2.f</alfresco.version>
+      <share.version>5.2.e</share.version>
    </properties>
 </project>

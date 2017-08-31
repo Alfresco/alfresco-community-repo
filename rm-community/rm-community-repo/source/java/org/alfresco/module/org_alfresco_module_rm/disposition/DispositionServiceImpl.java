@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
@@ -47,6 +50,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.dictionary.types.period.Immediately;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -62,8 +66,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Disposition service implementation.
@@ -77,16 +81,27 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                                                RecordsManagementPolicies.OnFileRecord
 {
     /** Logger */
-    private static Log logger = LogFactory.getLog(DispositionServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DispositionServiceImpl.class);
+
+    /** Transaction mode for setting next action */
+    public enum WriteMode
+    {
+        /** Do not update any data. */
+        READ_ONLY,
+        /** Only set the "disposition as of" date. */
+        DATE_ONLY,
+        /**
+         * Set the "disposition as of" date and the name of the next action. This only happens during the creation of a
+         * disposition schedule impl node under a record or folder.
+         */
+        DATE_AND_NAME
+    };
 
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
 
     /** Records management service registry */
     private RecordsManagementServiceRegistry serviceRegistry;
-
-    /** Disposition selection strategy */
-    private DispositionSelectionStrategy dispositionSelectionStrategy;
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -178,16 +193,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * Set the dispositionSelectionStrategy bean.
-     *
-     * @param dispositionSelectionStrategy
-     */
-    public void setDispositionSelectionStrategy(DispositionSelectionStrategy dispositionSelectionStrategy)
-    {
-        this.dispositionSelectionStrategy = dispositionSelectionStrategy;
-    }
-
-    /**
      * Behavior to initialize the disposition schedule of a newly filed record.
      *
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFileRecord#onFileRecord(org.alfresco.service.cmr.repository.NodeRef)
@@ -226,7 +231,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 DispositionActionDefinition nextDispositionActionDefinition = dispositionActionDefinitions.get(0);
 
                 // initialise the details of the next disposition action
-                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition);
+                initialiseDispositionAction(nodeRef, nextDispositionActionDefinition, true);
             }
         }
     }
@@ -276,30 +281,75 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public DispositionSchedule getDispositionSchedule(NodeRef nodeRef)
+    public DispositionSchedule getDispositionSchedule(final NodeRef nodeRef)
     {
-        DispositionSchedule di = null;
-        NodeRef diNodeRef = null;
+        DispositionSchedule ds = null;
+        NodeRef dsNodeRef = null;
         if (isRecord(nodeRef))
         {
-            // Get the record folders for the record
-            List<NodeRef> recordFolders = recordFolderService.getRecordFolders(nodeRef);
-            // At this point, we may have disposition instruction objects from 1..n folders.
-            diNodeRef = dispositionSelectionStrategy.selectDispositionScheduleFrom(recordFolders);
+            // calculate disposition schedule without taking into account the user
+            DispositionSchedule originDispositionSchedule = AuthenticationUtil.runAsSystem(new RunAsWork<DispositionSchedule>()
+            {
+                @Override
+                public DispositionSchedule doWork()
+                {
+                    return getOriginDispositionSchedule(nodeRef);
+                }
+            });
+            // if the initial disposition schedule of the record is folder based
+            if (originDispositionSchedule == null || 
+                    isNotTrue(originDispositionSchedule.isRecordLevelDisposition()))
+            {
+                return null;
+            }
+            
+            final NextActionFromDisposition dsNextAction = getDispositionActionByNameForRecord(nodeRef);
+
+            if (dsNextAction != null)
+            {
+                final NodeRef action = dsNextAction.getNextActionNodeRef();
+                if (isNotTrue((Boolean)nodeService.getProperty(action, PROP_MANUALLY_SET_AS_OF)))
+                {
+                    if (!dsNextAction.getWriteMode().equals(WriteMode.READ_ONLY))
+                    {
+                        final String dispositionActionName = dsNextAction.getNextActionName();
+                        final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+
+                        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork()
+                            {
+                                nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                                if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
+                                {
+                                    nodeService.setProperty(action, PROP_DISPOSITION_ACTION_NAME, dispositionActionName);
+                                }
+                                return null;
+                            }
+                        });
+                    }
+                }
+                
+                dsNodeRef = dsNextAction.getDispositionNodeRef();
+            }
         }
         else
         {
             // Get the disposition instructions for the node reference provided
-            diNodeRef = getDispositionScheduleImpl(nodeRef);
+            dsNodeRef = getDispositionScheduleImpl(nodeRef);
         }
 
-        if (diNodeRef != null)
+        if (dsNodeRef != null)
         {
-            di = new DispositionScheduleImpl(serviceRegistry, nodeService, diNodeRef);
+            ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dsNodeRef);
         }
 
-        return di;
+        return ds;
     }
+
+
+
 
     /**
      * This method returns a NodeRef
@@ -321,6 +371,28 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             }
         }
         return result;
+    }
+    
+    public DispositionSchedule getOriginDispositionSchedule(NodeRef nodeRef)
+    {
+        NodeRef parent = this.nodeService.getPrimaryParent(nodeRef).getParentRef();
+        if (parent != null)
+        {
+            if (filePlanService.isRecordCategory(parent)) 
+            {
+                NodeRef result = getAssociatedDispositionScheduleImpl(parent);
+                if (result == null)
+                {
+                    return null;
+                }
+                return new DispositionScheduleImpl(serviceRegistry, nodeService, result);
+            }
+            else
+            {
+                return getOriginDispositionSchedule(parent);
+            }
+        } 
+        return null;
     }
 
     /**
@@ -361,7 +433,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Make sure we are dealing with an RM node
         if (!filePlanService.isFilePlanComponent(nodeRef))
         {
-            throw new AlfrescoRuntimeException("Can not find the associated disposition schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
+            throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
         }
 
         if (this.nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
@@ -396,11 +468,11 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 {
                     // TODO in the future we should be able to support disposition schedule reuse, but for now just warn that
                     //      only the first disposition schedule will be considered
-                    if (logger.isWarnEnabled())
+                    if (LOGGER.isWarnEnabled())
                     {
-                        logger.warn("Disposition schedule has more than one associated records management container.  " +
-                        		    "This is not currently supported so only the first container will be considered. " +
-                        		    "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
+                        LOGGER.warn("Retention schedule has more than one associated records management container.  " +
+                                "This is not currently supported so only the first container will be considered. " +
+                                "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
                     }
                 }
 
@@ -492,7 +564,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Check exists
         if (!nodeService.exists(nodeRef))
         {
-            throw new AlfrescoRuntimeException("Unable to create disposition schedule, because node does not exist. (nodeRef=" + nodeRef.toString() + ")");
+            throw new AlfrescoRuntimeException("Unable to create retention schedule, because node does not exist. (nodeRef=" + nodeRef.toString() + ")");
         }
 
         // Check is sub-type of rm:recordCategory
@@ -500,7 +572,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (!TYPE_RECORD_CATEGORY.equals(nodeRefType) &&
             !dictionaryService.isSubClass(nodeRefType, TYPE_RECORD_CATEGORY))
         {
-            throw new AlfrescoRuntimeException("Unable to create disposition schedule on a node that is not a records management container.");
+            throw new AlfrescoRuntimeException("Unable to create retention schedule on a node that is not a records management container.");
         }
 
         behaviourFilter.disableBehaviour(nodeRef, ASPECT_SCHEDULED);
@@ -522,7 +594,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             		List<NodeRef> items = getDisposableItemsImpl(currentDispositionSchdule.isRecordLevelDisposition(), nodeRef);
             		if (items.size() != 0)
             		{
-            			throw new AlfrescoRuntimeException("Can not create a disposition schedule if there are disposable items already under the control of an other disposition schedule");
+            			throw new AlfrescoRuntimeException("Can not create a retention schedule if there are disposable items already under the control of an other retention schedule");
             		}
             	}
 
@@ -537,7 +609,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             else
             {
                 // Error since the node already has a disposition schedule set
-                throw new AlfrescoRuntimeException("Unable to create disposition schedule on node that already has a disposition schedule.");
+                throw new AlfrescoRuntimeException("Unable to create retention schedule on node that already has a retention schedule.");
             }
         }
         finally
@@ -627,42 +699,22 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      * Initialises the details of the next disposition action based on the details of a disposition
      * action definition.
      *
-     *  @param  nodeRef node reference
-     *  @param  dispositionActionDefinition disposition action definition
+     *  @param nodeRef node reference
+     *  @param dispositionActionDefinition disposition action definition
+     *  @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
      */
-    private void initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition)
+    private DispositionAction initialiseDispositionAction(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition, boolean allowContextFromAsOf)
     {
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION, 1, true);
+        if (childAssocs != null && childAssocs.size() > 0)
+        {
+            return new DispositionActionImpl(serviceRegistry, childAssocs.get(0).getChildRef());
+        }
+
         // Create the properties
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
 
-        // Calculate the asOf date
-        Date asOfDate = null;
-        Period period = dispositionActionDefinition.getPeriod();
-        if (period != null)
-        {
-            Date contextDate = null;
-
-            // Get the period properties value
-            QName periodProperty = dispositionActionDefinition.getPeriodProperty();
-            if (periodProperty != null)
-            {
-                // doesn't matter if the period property isn't set ... the asOfDate will get updated later
-                // when the value of the period property is set
-                contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);
-            }
-            else
-            {
-                // for now use 'NOW' as the default context date
-                // TODO set the default period property ... cut off date or last disposition date depending on context
-                contextDate = new Date();
-            }
-
-            // Calculate the as of date
-            if (contextDate != null)
-            {
-                asOfDate = period.getNextDate(contextDate);
-            }
-        }
+        Date asOfDate = calculateAsOfDate(nodeRef, dispositionActionDefinition, allowContextFromAsOf);
 
         // Set the property values
         props.put(PROP_DISPOSITION_ACTION_ID, dispositionActionDefinition.getId());
@@ -688,6 +740,58 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             // For every event create an entry on the action
             da.addEventCompletionDetails(event);
         }
+        return da;
+    }
+
+    /**
+     * Compute the "disposition as of" date (if necessary) for a disposition action and a node.
+     *
+     * @param nodeRef The node which the schedule applies to.
+     * @param dispositionActionDefinition The definition of the disposition action.
+     * @param allowContextFromAsOf true if the context date is allowed to be obtained from the disposition "as of" property.
+     * @return The new "disposition as of" date.
+     */
+    @Override
+    public Date calculateAsOfDate(NodeRef nodeRef, DispositionActionDefinition dispositionActionDefinition,
+                boolean allowContextFromAsOf)
+    {
+        // Calculate the asOf date
+        Date asOfDate = null;
+        Period period = dispositionActionDefinition.getPeriod();
+        if (period != null)
+        {
+            Date contextDate = null;
+
+            // Get the period properties value
+            QName periodProperty = dispositionActionDefinition.getPeriodProperty();
+            if (periodProperty != null && (allowContextFromAsOf
+                        || !RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty)))
+            {
+                // doesn't matter if the period property isn't set ... the asOfDate will get updated later
+                // when the value of the period property is set
+                contextDate = (Date)this.nodeService.getProperty(nodeRef, periodProperty);
+            }
+            else
+            {
+                if (period.getPeriodType().equals(Immediately.PERIOD_TYPE))
+                {
+                    contextDate = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED);
+                }
+                else
+                {
+                    // for now use 'NOW' as the default context date
+                    // TODO set the default period property ... cut off date or last disposition date depending on context
+                    contextDate = new Date();
+                }
+            }
+
+            // Calculate the as of date
+            if (contextDate != null)
+            {
+                asOfDate = period.getNextDate(contextDate);
+            }
+        }
+        return asOfDate;
     }
 
     /**
@@ -890,6 +994,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         String currentADId = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION_ID);
                         currentDispositionActionDefinition = di.getDispositionActionDefinition(currentADId);
 
+                        // When the record has multiple disposition schedules the current disposition action may not be found by id
+                        // In this case it will be searched by name
+                        if(currentDispositionActionDefinition == null)
+                        {
+                            String currentADName = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION);
+                            currentDispositionActionDefinition = di.getDispositionActionDefinitionByName(currentADName);
+                        }
+
                         // Get the next disposition action
                         int index = currentDispositionActionDefinition.getIndex();
                         index++;
@@ -907,63 +1019,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             nodeService.addAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE, null);
                         }
 
-                        // Create the properties
-                        Map<QName, Serializable> props = new HashMap<QName, Serializable>(10);
-
-                        // Calculate the asOf date
-                        Date asOfDate = null;
-                        Period period = nextDispositionActionDefinition.getPeriod();
-                        if (period != null)
-                        {
-                            Date contextDate = null;
-
-                            // Get the period properties value
-                            QName periodProperty = nextDispositionActionDefinition.getPeriodProperty();
-                            if (periodProperty != null &&
-                                !RecordsManagementModel.PROP_DISPOSITION_AS_OF.equals(periodProperty))
-                            {
-                                // doesn't matter if the period property isn't set ... the asOfDate will get updated later
-                                // when the value of the period property is set
-                                contextDate = (Date) nodeService.getProperty(nodeRef, periodProperty);
-                            }
-                            else
-                            {
-                                // for now use 'NOW' as the default context date
-                                // TODO set the default period property ... cut off date or last disposition date depending on context
-                                contextDate = new Date();
-                            }
-
-                            // Calculate the as of date
-                            if (contextDate != null)
-                            {
-                                asOfDate = period.getNextDate(contextDate);
-                            }
-                        }
-
-                        // Set the property values
-                        props.put(PROP_DISPOSITION_ACTION_ID, nextDispositionActionDefinition.getId());
-                        props.put(PROP_DISPOSITION_ACTION, nextDispositionActionDefinition.getName());
-                        if (asOfDate != null)
-                        {
-                            props.put(PROP_DISPOSITION_AS_OF, asOfDate);
-                        }
-
-                        // Create a new disposition action object
-                        NodeRef dispositionActionNodeRef = nodeService.createNode(
-                                nodeRef,
-                                ASSOC_NEXT_DISPOSITION_ACTION,
-                                ASSOC_NEXT_DISPOSITION_ACTION,
-                                TYPE_DISPOSITION_ACTION,
-                                props).getChildRef();
-                        DispositionAction da = new DispositionActionImpl(serviceRegistry, dispositionActionNodeRef);
-
-                        // Create the events
-                        List<RecordsManagementEvent> events = nextDispositionActionDefinition.getEvents();
-                        for (RecordsManagementEvent event : events)
-                        {
-                            // For every event create an entry on the action
-                            da.addEventCompletionDetails(event);
-                        }
+                        initialiseDispositionAction(nodeRef, nextDispositionActionDefinition, false);
                     }
                 }
 
@@ -1018,7 +1074,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                             recordFolderService.closeRecordFolder(nodeRef);
                             return null;
                         }
-                    });                    
+                    });
                 }
             }
             else
@@ -1029,6 +1085,50 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         else
         {
             throw new AlfrescoRuntimeException("Unable to peform cutoff, because node is not a disposible item. (nodeRef=" + nodeRef.toString() + ")");
+        }
+    }
+
+    public Date getDispositionActionDate(NodeRef record, NodeRef dispositionSchedule, String dispositionActionName)
+    {
+        DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, dispositionSchedule);
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(dispositionSchedule);
+        if (assocs != null && assocs.size() > 0)
+        {
+            for (ChildAssociationRef assoc : assocs)
+            {
+                if (assoc != null && assoc.getQName().getLocalName().contains(dispositionActionName))
+                {
+                    DispositionActionDefinition actionDefinition = ds.getDispositionActionDefinition(assoc.getChildRef().getId());
+                    return calculateAsOfDate(record, actionDefinition, true);
+                }
+            }
+        }
+        return null;
+    }
+    
+    public void recalculateNextDispositionStep(NodeRef record)
+    {
+        List<NodeRef> recordFolders = recordFolderService.getRecordFolders(record);
+        
+        DispositionAction nextDispositionAction = getNextDispositionAction(record);
+        
+        if (nextDispositionAction != null)
+        {
+            NextActionFromDisposition dsNextAction = getNextDispositionAction(record, recordFolders, nextDispositionAction);
+            if (dsNextAction != null)
+            {
+                final NodeRef action = dsNextAction.getNextActionNodeRef();
+                final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork()
+                    {
+                        nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                        return null;
+                    }
+                });
+            }
         }
     }
 
@@ -1078,5 +1178,170 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 return null;
             }
         });
+    }
+
+
+
+   /**
+    * Calculate next disposition action for a record
+    *
+    * @param record
+    * @return next disposition action (name, date) and the disposition associated
+    */
+
+    protected NextActionFromDisposition getDispositionActionByNameForRecord(NodeRef record)
+    {
+        List<NodeRef> recordFolders = recordFolderService.getRecordFolders(record);
+        DispositionAction nextDispositionAction = getNextDispositionAction(record);
+
+        if (nextDispositionAction == null)
+        {
+            DispositionAction lastCompletedDispositionAction = getLastCompletedDispostionAction(record);
+            if (lastCompletedDispositionAction != null)
+            {
+                // all disposition actions upon the given record were completed
+                return null;
+            }
+
+            return getFirstDispositionAction(record, recordFolders);
+        }
+        else
+        {
+            return getNextDispositionAction(record, recordFolders, nextDispositionAction);
+        }
+    }
+
+    /**
+     * Calculate next disposition action when the record already has one
+     * @param recordFolders
+     * @param nextDispositionAction
+     * @return next disposition action and the associated disposition schedule
+     */
+    private NextActionFromDisposition getNextDispositionAction(NodeRef record, List<NodeRef> recordFolders, DispositionAction nextDispositionAction)
+    {
+        String recordNextDispositionActionName = nextDispositionAction.getName();
+        Date recordNextDispositionActionDate = nextDispositionAction.getAsOfDate();
+        // We're looking for the latest date, so initially start with a very early one.
+        Date nextDispositionActionDate = new Date(Long.MIN_VALUE);
+        NodeRef dispositionNodeRef = null;
+
+        // Find the latest "disposition as of" date from all the schedules this record is subject to.
+        for (NodeRef folder : recordFolders)
+        {
+            NodeRef dsNodeRef = getDispositionScheduleImpl(folder);
+            if (dsNodeRef != null)
+            {
+                Date dispActionDate = getDispositionActionDate(record, dsNodeRef, recordNextDispositionActionName);
+                if (dispActionDate == null || (nextDispositionActionDate != null
+                                && nextDispositionActionDate.before(dispActionDate)))
+                {
+                    nextDispositionActionDate = dispActionDate;
+                    dispositionNodeRef = dsNodeRef;
+                    if (dispActionDate == null)
+                    {
+                        // Treat null as the latest date possible (so stop searching further).
+                        break;
+                    }
+                }
+            }
+        }
+        if (dispositionNodeRef == null)
+        {
+           return null;
+        }
+        WriteMode mode = determineWriteMode(recordNextDispositionActionDate, nextDispositionActionDate);
+
+        return new NextActionFromDisposition(dispositionNodeRef, nextDispositionAction.getNodeRef(),
+                recordNextDispositionActionName, nextDispositionActionDate, mode);
+    }
+
+    /**
+     * Determine what should be updated for an existing disposition schedule impl. We only update the date if the
+     * existing date is earlier than the calculated one.
+     *
+     * @param recordNextDispositionActionDate The next action date found on the record node (or folder node).
+     * @param nextDispositionActionDate The next action date calculated from the current disposition schedule(s)
+     *            affecting the node.
+     * @return READ_ONLY if nothing should be updated, or DATE_ONLY if the date needs updating.
+     */
+    private WriteMode determineWriteMode(Date recordNextDispositionActionDate, Date nextDispositionActionDate)
+    {
+        // Treat null dates as being the latest possible date.
+        Date maxDate = new Date(Long.MAX_VALUE);
+        Date recordDate = (recordNextDispositionActionDate != null ? recordNextDispositionActionDate : maxDate);
+        Date calculatedDate = (nextDispositionActionDate != null ? nextDispositionActionDate : maxDate);
+
+        // We only need to update the date if the current one is too early.
+        if (recordDate.before(calculatedDate))
+        {
+            return WriteMode.DATE_ONLY;
+        }
+        else
+        {
+            return WriteMode.READ_ONLY;
+        }
+    }
+
+    /**
+     * Calculate first disposition action when the record doesn't have one
+     * @param recordFolders
+     * @return next disposition action and the associated disposition schedule
+     */
+    private NextActionFromDisposition getFirstDispositionAction(NodeRef record, List<NodeRef> recordFolders)
+    {
+        NodeRef newAction = null;
+        String newDispositionActionName = null;
+        // We're looking for the latest date, so start with a very early one.
+        Date newDispositionActionDateAsOf = new Date(Long.MIN_VALUE);
+        NodeRef dispositionNodeRef = null;
+        for (NodeRef folder : recordFolders)
+        {
+            NodeRef folderDS = getDispositionScheduleImpl(folder);
+            if (folderDS != null)
+            {
+                DispositionSchedule ds = new DispositionScheduleImpl(serviceRegistry, nodeService, folderDS);
+                List<DispositionActionDefinition> dispositionActionDefinitions = ds.getDispositionActionDefinitions();
+
+                if (dispositionActionDefinitions != null && dispositionActionDefinitions.size() > 0)
+                {
+                    DispositionActionDefinition firstDispositionActionDef = dispositionActionDefinitions.get(0);
+                    dispositionNodeRef = folderDS;
+
+                    if (newAction == null)
+                    {
+                        NodeRef recordOrFolder = record;
+                        if (!ds.isRecordLevelDisposition()) 
+                        {
+                            recordOrFolder = folder;
+                        }
+                        DispositionAction firstDispositionAction = initialiseDispositionAction(recordOrFolder, firstDispositionActionDef, true);
+                        newAction = firstDispositionAction.getNodeRef();
+                        newDispositionActionName = (String)nodeService.getProperty(newAction, PROP_DISPOSITION_ACTION_NAME);
+                        newDispositionActionDateAsOf = firstDispositionAction.getAsOfDate();
+                    }
+                    else if (firstDispositionActionDef.getPeriod() != null)
+                    {
+                        Date firstActionDate = calculateAsOfDate(record, firstDispositionActionDef, true);
+                        if (firstActionDate == null || (newDispositionActionDateAsOf != null
+                                        && newDispositionActionDateAsOf.before(firstActionDate)))
+                        {
+                            newDispositionActionName = firstDispositionActionDef.getName();
+                            newDispositionActionDateAsOf = firstActionDate;
+                            if (firstActionDate == null)
+                            {
+                                // Treat null as the latest date possible, so there's no point searching further.
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (newDispositionActionName == null || dispositionNodeRef == null || newAction == null)
+        {
+            return null;
+        }
+        return new NextActionFromDisposition(dispositionNodeRef, newAction,
+                newDispositionActionName, newDispositionActionDateAsOf, WriteMode.DATE_AND_NAME);
     }
 }

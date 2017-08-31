@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,23 +33,31 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:record behaviour bean
@@ -63,9 +71,12 @@ import org.alfresco.service.namespace.QName;
 )
 public class RecordAspect extends    AbstractDisposableItem
                           implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                                     NodeServicePolicies.BeforeAddAspectPolicy,
                                      RecordsManagementPolicies.OnCreateReference,
                                      RecordsManagementPolicies.OnRemoveReference,
-                                     NodeServicePolicies.OnMoveNodePolicy
+                                     NodeServicePolicies.OnMoveNodePolicy,
+                                     CopyServicePolicies.OnCopyCompletePolicy,
+                                     ContentServicePolicies.OnContentPropertyUpdatePolicy
 {
     /** Well-known location of the scripts folder. */
     // TODO make configurable
@@ -79,7 +90,13 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /** record service */
     protected RecordService recordService;
-    
+
+    /** quickShare service */
+    private QuickShareService quickShareService;
+
+    /** I18N */
+    private static final String MSG_CANNOT_UPDATE_RECORD_CONTENT = "rm.service.update-record-content";
+
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -102,6 +119,15 @@ public class RecordAspect extends    AbstractDisposableItem
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
+    }
+
+    /**
+     *
+     * @param quickShareService
+     */
+    public void setQuickShareService(QuickShareService quickShareService)
+    {
+        this.quickShareService = quickShareService;
     }
 
     /**
@@ -132,11 +158,11 @@ public class RecordAspect extends    AbstractDisposableItem
 
                     // manage any extended readers
                     NodeRef parent = childAssocRef.getParentRef();
-                    Set<String> readers = extendedSecurityService.getExtendedReaders(parent);
-                    Set<String> writers = extendedSecurityService.getExtendedWriters(parent);
+                    Set<String> readers = extendedSecurityService.getReaders(parent);
+                    Set<String> writers = extendedSecurityService.getWriters(parent);
                     if (readers != null && readers.size() != 0)
                     {
-                        extendedSecurityService.addExtendedSecurity(thumbnail, readers, writers, false);
+                        extendedSecurityService.set(thumbnail, readers, writers);
                     }
                 }
 
@@ -154,13 +180,22 @@ public class RecordAspect extends    AbstractDisposableItem
        kind = BehaviourKind.CLASS,
        notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
+    public void onCreateReference(final NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
         if (reference.equals(CUSTOM_REF_VERSIONS))
         {
-            // Apply the versioned aspect to the from node
-            nodeService.addAspect(fromNodeRef, ASPECT_VERSIONED_RECORD, null);
+            // run as system, to apply the versioned aspect to the from node
+            // as we can't be sure if the user has add aspect rights
+            authenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    nodeService.addAspect(fromNodeRef, ASPECT_VERSIONED_RECORD, null);
+                    return null;
+                }
+            });
         }
 
         // Execute script if for the reference event
@@ -295,5 +330,75 @@ public class RecordAspect extends    AbstractDisposableItem
 
             scriptService.executeScript(scriptNodeRef, null, objectModel);
         }
+    }
+
+    /**
+     * On copy complete behaviour for record aspect.
+     *
+     * @param classRef
+     * @param sourceNodeRef
+     * @param targetNodeRef
+     * @param copyToNewNode
+     * @param copyMap
+     */
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS
+    )
+    public void onCopyComplete(QName classRef,
+                               NodeRef sourceNodeRef,
+                               NodeRef targetNodeRef,
+                               boolean copyToNewNode,
+                               Map<NodeRef, NodeRef> copyMap)
+    {
+        // given the node exists and is a record
+        if (nodeService.exists(targetNodeRef) &&
+            nodeService.hasAspect(targetNodeRef, ASPECT_RECORD))
+        {
+            // then remove any extended security from the newly copied record
+            extendedSecurityService.remove(targetNodeRef);
+        }
+    }
+
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS,
+       notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onContentPropertyUpdate(NodeRef nodeRef, QName propertyQName, ContentData beforeValue, ContentData afterValue)
+    {
+        // Allow creation of content but not update
+        if (beforeValue != null)
+        {
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_UPDATE_RECORD_CONTENT), null);
+        }
+    }
+
+    /**
+     * Behaviour to remove the shared link before declare a record
+     *
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
+     *      org.alfresco.service.namespace.QName)
+     */
+    @Override
+    @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
+    public void beforeAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                String sharedId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+                if (sharedId != null)
+                {
+                    quickShareService.unshareContent(sharedId);
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 }

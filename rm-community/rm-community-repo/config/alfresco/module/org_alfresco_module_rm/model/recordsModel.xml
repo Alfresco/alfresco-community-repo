@@ -292,10 +292,16 @@
                <type>d:int</type>
                <mandatory>false</mandatory>
                <index enabled="true">
-		          <atomic>true</atomic>
-		          <stored>false</stored>
-		          <tokenised>false</tokenised>
-		       </index>
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+               <constraints>
+                  <constraint type="MINMAX">
+                     <parameter name="minValue"><value>0</value></parameter>
+                     <parameter name="maxValue"><value>2147483647</value></parameter> <!--MAX_INT -->
+                  </constraint>
+               </constraints>
             </property>
 
             <property name="rma:numberOfCopies">
@@ -304,10 +310,16 @@
                <mandatory>false</mandatory>
                <default>1</default>
                <index enabled="true">
-		          <atomic>true</atomic>
-		          <stored>false</stored>
-		          <tokenised>false</tokenised>
-		       </index>
+                  <atomic>true</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+               <constraints>
+                  <constraint type="MINMAX">
+                     <parameter name="minValue"><value>0</value></parameter>
+                     <parameter name="maxValue"><value>2147483647</value></parameter> <!--MAX_INT -->
+                  </constraint>
+               </constraints>
             </property>
 
             <property name="rma:storageLocation">
@@ -388,6 +400,11 @@
                <title>Disposition Action Date</title>
                <type>d:date</type>
                <mandatory>false</mandatory>
+            </property>
+            <property name="rma:manuallySetAsOf">
+               <title>Manually Set Disposition Date Flag</title>
+               <type>d:boolean</type>
+               <default>false</default>
             </property>
             <property name="rma:dispositionEventsEligible">
                <title>Disposition Events Eligible</title>
@@ -860,13 +877,6 @@
                <title>Next Review Date</title>
                <type>d:date</type>
                <mandatory>false</mandatory>
-            </property>
-            <property name="rma:notificationIssued">
-               <title>Indicates whether a notification that this record is due for review has been issued</title>
-               <type>d:boolean</type>
-      		   <protected>true</protected>
-               <mandatory>false</mandatory>
-               <default>false</default>
             </property>
          </properties>
          <mandatory-aspects>

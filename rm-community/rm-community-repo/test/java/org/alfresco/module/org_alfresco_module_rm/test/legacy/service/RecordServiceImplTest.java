@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,15 +33,22 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRecordDeclaration;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRecordRejection;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRecordDeclaration;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRecordRejection;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
+import org.alfresco.repo.policy.BehaviourDefinition;
+import org.alfresco.repo.policy.ClassBehaviourBinding;
+import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -57,7 +64,10 @@ import org.alfresco.util.GUID;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RecordServiceImplTest extends BaseRMTestCase
+public class RecordServiceImplTest extends BaseRMTestCase implements BeforeRecordDeclaration,
+                                                                     OnRecordDeclaration,
+                                                                     BeforeRecordRejection,
+                                                                     OnRecordRejection
 {
     /**
      * This is a user test
@@ -181,22 +191,13 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
     public void testExtendedWriters() throws Exception
     {
-        final ExtendedReaderDynamicAuthority readerDy = (ExtendedReaderDynamicAuthority)applicationContext.getBean("extendedReaderDynamicAuthority");
-        final ExtendedWriterDynamicAuthority writerDy = (ExtendedWriterDynamicAuthority)applicationContext.getBean("extendedWriterDynamicAuthority");
-
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
             {
-                assertNull(extendedSecurityService.getExtendedReaders(recordOne));
-                assertNull(extendedSecurityService.getExtendedWriters(recordOne));
-
-                assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
-                assertFalse(writerDy.hasAuthority(recordOne, dmCollaborator));
-
-                assertFalse(readerDy.hasAuthority(filePlan, dmCollaborator));
-                assertFalse(writerDy.hasAuthority(filePlan, dmCollaborator));
+                assertTrue(extendedSecurityService.getReaders(recordOne).isEmpty());
+                assertTrue(extendedSecurityService.getWriters(recordOne).isEmpty());
 
                 return null;
             }
@@ -209,15 +210,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
             {
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-
-                assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
-                assertFalse(writerDy.hasAuthority(recordOne, dmCollaborator));
-
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA));
-
-                assertFalse(readerDy.hasAuthority(filePlan, dmCollaborator));
-                assertFalse(writerDy.hasAuthority(filePlan, dmCollaborator));
 
                 return null;
             }
@@ -230,10 +224,10 @@ public class RecordServiceImplTest extends BaseRMTestCase
             {
                 Set<String> writers = new HashSet<String>(1);
                 writers.add(dmCollaborator);
-                extendedSecurityService.addExtendedSecurity(recordOne, null, writers);
+                extendedSecurityService.set(recordOne, null, writers);
 
-                assertNull(extendedSecurityService.getExtendedReaders(recordOne));
-                assertFalse(extendedSecurityService.getExtendedWriters(recordOne).isEmpty());
+                assertTrue(extendedSecurityService.getReaders(recordOne).isEmpty());
+                assertFalse(extendedSecurityService.getWriters(recordOne).isEmpty());
 
                 return null;
             }
@@ -247,9 +241,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
 
-                assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
-                assertTrue(writerDy.hasAuthority(recordOne, dmCollaborator));
-
+                // ALLOWED, becuase users have been added to the in-place roles
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA));
 
@@ -311,7 +303,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
             public void test(Void result)
             {
-                checkPermissions(READ_RECORDS, AccessStatus.DENIED, // file plan
+                checkPermissions(READ_RECORDS, 
+                        AccessStatus.DENIED, // file plan
                         AccessStatus.DENIED, // unfiled container
                         AccessStatus.DENIED, // record category
                         AccessStatus.DENIED, // record folder
@@ -320,7 +313,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
 
-                checkPermissions(FILING, AccessStatus.DENIED, // file plan
+                checkPermissions(FILING, 
+                        AccessStatus.DENIED, // file plan
                         AccessStatus.DENIED, // unfiled container
                         AccessStatus.DENIED, // record category
                         AccessStatus.DENIED, // record folder
@@ -540,6 +534,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
     public void testFileDirectlyFromCollab() throws Exception
     {
+        
         doTestInTransaction(new Test<NodeRef>()
         {
             @Override
@@ -787,5 +782,120 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 nodeService.setProperty(nodeRef, property, GUID.generate());
             }
         }, user);
+    }
+
+    /**
+     * RM-4611 - integration test for policies for record declaration
+     * @see RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef,
+     *      org.alfresco.service.cmr.repository.NodeRef)
+     */
+    private boolean beforeRecordDeclaration = false;
+    private boolean onRecordDeclaration = false;
+
+    public void testPolicyNotificationForRecordDeclaration() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+
+            @Override
+            public Void run()
+            {
+                assertFalse(recordService.isRecord(dmDocument));
+
+                BehaviourDefinition<ClassBehaviourBinding> beforeRecordDeclarationBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.BEFORE_RECORD_DECLARATION, ContentModel.TYPE_CONTENT,
+                        new JavaBehaviour(RecordServiceImplTest.this, "beforeRecordDeclaration", NotificationFrequency.EVERY_EVENT));
+                BehaviourDefinition<ClassBehaviourBinding> onRecordDeclarationBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.ON_RECORD_DECLARATION, ASPECT_RECORD,
+                        new JavaBehaviour(RecordServiceImplTest.this, "onRecordDeclaration", NotificationFrequency.EVERY_EVENT));
+
+                assertFalse(beforeRecordDeclaration);
+                assertFalse(onRecordDeclaration);
+
+                recordService.createRecord(filePlan, dmDocument);
+
+                assertTrue(beforeRecordDeclaration);
+                assertTrue(onRecordDeclaration);
+
+                assertTrue(recordService.isRecord(dmDocument));
+
+                policyComponent.removeClassDefinition(beforeRecordDeclarationBehaviour);
+                policyComponent.removeClassDefinition(onRecordDeclarationBehaviour);
+
+                return null;
+            }
+        }, dmCollaborator);
+    }
+
+    @Override
+    public void beforeRecordDeclaration(NodeRef nodeRef)
+    {
+        assertEquals(nodeRef, dmDocument);
+        beforeRecordDeclaration = true;
+    }
+
+    @Override
+    public void onRecordDeclaration(NodeRef nodeRef)
+    {
+        assertEquals(nodeRef, dmDocument);
+        onRecordDeclaration = true;
+    }
+
+    /**
+     * RM-5180 - integration test for policies for record rejection
+     * @see RecordService#rejectRecord(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    private boolean beforeRecordRejection = false;
+    private boolean onRecordRejection = false;
+
+    @Override
+    public void beforeRecordRejection(NodeRef nodeRef)
+    {
+        assertEquals(nodeRef, dmDocument);
+        beforeRecordRejection = true;
+    }
+
+    @Override
+    public void onRecordRejection(NodeRef nodeRef)
+    {
+        assertEquals(nodeRef, dmDocument);
+        onRecordRejection = true;
+    }
+
+    public void testPolicyNotificationForRecordRejection() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+
+            @Override
+            public Void run()
+            {
+                assertFalse(recordService.isRecord(dmDocument));
+
+                BehaviourDefinition<ClassBehaviourBinding> beforeRecordRejectionBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.BEFORE_RECORD_REJECTION, ContentModel.TYPE_CONTENT,
+                        new JavaBehaviour(RecordServiceImplTest.this, "beforeRecordRejection", NotificationFrequency.EVERY_EVENT));
+                BehaviourDefinition<ClassBehaviourBinding> onRecordRejectionBehaviour = policyComponent.bindClassBehaviour(
+                        RecordsManagementPolicies.ON_RECORD_REJECTION, ContentModel.TYPE_CONTENT,
+                        new JavaBehaviour(RecordServiceImplTest.this, "onRecordRejection", NotificationFrequency.EVERY_EVENT));
+
+                recordService.createRecord(filePlan, dmDocument);
+
+                assertFalse(beforeRecordRejection);
+                assertFalse(onRecordRejection);
+                assertTrue(recordService.isRecord(dmDocument));
+
+                recordService.rejectRecord(dmDocument, "test reasons");
+
+                assertTrue(beforeRecordRejection);
+                assertTrue(onRecordRejection);
+                assertFalse(recordService.isRecord(dmDocument));
+
+                policyComponent.removeClassDefinition(beforeRecordRejectionBehaviour);
+                policyComponent.removeClassDefinition(onRecordRejectionBehaviour);
+
+                return null;
+            }
+        }, dmCollaborator);
     }
 }

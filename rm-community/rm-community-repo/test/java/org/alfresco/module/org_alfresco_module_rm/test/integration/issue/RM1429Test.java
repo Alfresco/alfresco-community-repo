@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -44,14 +44,14 @@ public class RM1429Test extends DeleteHoldTest
 {
     public void testDeleteHoldWithoutPermissionsOnChildren()
     {
-        // Create the test hold
-        final NodeRef hold = createAndCheckHold();
-
-        doTestInTransaction(new Test<Void>()
+        final NodeRef hold = doTestInTransaction(new Test<NodeRef>()
         {
            @Override
-           public Void run()
+           public NodeRef run()
            {
+               // Create the test hold
+               NodeRef hold = createAndCheckHold();
+               
                // Add the user to the RM Manager role
                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
 
@@ -64,7 +64,7 @@ public class RM1429Test extends DeleteHoldTest
                // Add record folder to the hold
                holdService.addToHold(hold, rmFolder);
 
-               return null;
+               return hold;
            }
         });
 

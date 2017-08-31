@@ -78,6 +78,7 @@
    <bean id="recordsManagementPermissionPostProcessor" class="org.alfresco.module.org_alfresco_module_rm.permission.RecordsManagementPermissionPostProcessor" parent="parentPermissionPostProcessor">
       <property name="nodeService" ref="nodeService"/>
       <property name="permissionService" ref="permissionService"/>
+      <property name="permissionModel" ref="permissionsModelDAO"/>
    </bean>
 
    <!-- Import RM model -->
@@ -103,7 +104,7 @@
    <!-- Import the RM service's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-service-context.xml"/>
 
-    <!--  Import DOD 5015 -->
+   <!--  Import DOD 5015 -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/dod5015/dod5015-context.xml"/>
 
    <!-- Import the RM identifier service's -->
@@ -195,7 +196,6 @@
       <!-- init caveatConfig behaviours  -->
       <property name="caveatConfigService" ref="caveatConfigService"/>
       <property name="customEmailMappingService" ref="customEmailMappingService"/>
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
       <property name="suggesterBootstrap" ref="nodeParameterSuggesterBootstrap"/>
    </bean>
 
@@ -258,5 +258,8 @@
 
    <!-- Import the Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/content-context.xml"/>
+
+   <!-- Import the RM public api -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-public-rest-context.xml"/>
 
 </beans>

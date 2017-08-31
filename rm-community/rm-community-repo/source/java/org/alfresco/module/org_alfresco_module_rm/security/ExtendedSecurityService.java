@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 /**
  * Extended security service.
@@ -39,13 +40,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public interface ExtendedSecurityService
+public interface ExtendedSecurityService extends DeprecatedExtendedSecurityService
 {
+    /** IPR group prefix */
+    static final String IPR_GROUP_PREFIX = "IPR";
+    
 	/**
 	 * Indicates whether a node has extended security.
 	 *
 	 * @param nodeRef      node reference
-	 * @return boolean     true if the node has extedned security, false otherwise
+	 * @return boolean     true if the node has extended security, false otherwise
 	 */
     boolean hasExtendedSecurity(NodeRef nodeRef);
 
@@ -55,7 +59,7 @@ public interface ExtendedSecurityService
      * @param nodeRef   node reference
      * @return {@link Set}<{@link String}>  set of extended readers
      */
-    Set<String> getExtendedReaders(NodeRef nodeRef);
+    Set<String> getReaders(NodeRef nodeRef);
 
     /**
      * Get the set of authorities that are extended writers for the given node.
@@ -63,66 +67,39 @@ public interface ExtendedSecurityService
      * @param nodeRef   node reference
      * @return {@link Set}<{@link String}>  set of extended writers
      */
-    Set<String> getExtendedWriters(NodeRef nodeRef);
-
+    Set<String> getWriters(NodeRef nodeRef);
+    
     /**
-     * Add extended security for the specified authorities to a node.
-     *
-     * @param nodeRef   node reference
-     * @param readers   set of authorities to add extended read permissions
-     * @param writers   set of authorities to add extended write permissions
+     * Helper to allow caller to provide authority sets as a pair where the
+     * first is the readers and the second is the writers.
+     * 
+     * @see #set(NodeRef, Set, Set)
+     * 
+     * @param nodeRef               node reference
+     * @param readersAndWriters     pair where first is the set of readers and the
+     *                              second is the set of writers
      */
-    void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers);
-
+    void set(NodeRef nodeRef, Pair<Set<String>, Set<String>> readersAndWriters);
+    
     /**
-     * Add extended security for the specified authorities to a node.
+     * Set extended security for a node, where the readers will be granted ReadRecord
+     * permission and ViewRecord capability to the node and where the writers will be 
+     * granted Filling permission and Filling capability to the node.
      * <p>
-     * If specified, the read and write extended permissions are applied to all parents up to the file plan as
-     * extended read.  This ensures parental read, but not parental write.
-     *
+     * Note it is vaild to provide 'null' values for readers and/or writers.
+     * 
      * @param nodeRef   node reference
-     * @param readers   set of authorities to add extended read permissions
-     * @param writers   set of authorities to add extended write permissions
-     * @param applyToParents true if extended security applied to parents (read only) false otherwise.
+     * @param readers   set of readers
+     * @param writers   set of writers
+     * 
+     * @since 2.5
      */
-    void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents);
-
+    void set(NodeRef nodeRef, Set<String> readers, Set<String> writers);
+    
     /**
-     * Remove the extended security for the specified authorities from a node.
-     *
-     * @param nodeRef   node reference
-     * @param readers   set of authorities to remove as extended readers
-     * @param writers   set of authorities to remove as extended writers
-     */
-    void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers);
-
-    /**
-     * Remove the extended security for the specified authorities from a node.
-     * <p>
-     * If specified, extended security will also be removed from the parent hierarchy.(read only).  Note that
-     * extended security is records as a reference count, so security will only be utterly removed from the parent
-     * hierarchy if all references to the authority are removed.
-     *
-     * @param nodeRef           node reference
-     * @param readers           set of authorities to remove as extended readers
-     * @param writers           set of authorities to remove as extedned writers
-     * @param applyToParents    true if removal of extended security is applied to parent hierarchy (read only), false
-     *                          otherwise
-     */
-    void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents);
-
-    /**
-     * Remove all extended readers and writers from the given node reference.
-     *
+     * Removes all extended security from a node.
+     * 
      * @param nodeRef   node reference
      */
-    void removeAllExtendedSecurity(NodeRef nodeRef);
-
-    /**
-     * Remove all extended readers and writers from the given node reference.
-     *
-     * @param nodeRef           node reference
-     * @param applyToParents    if true then apply removal to parent hierarchy (read only) false otherwise.
-     */
-    void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents);
+    void remove(NodeRef nodeRef);
 }

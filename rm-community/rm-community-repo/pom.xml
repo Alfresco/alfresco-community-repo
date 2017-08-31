@@ -3,12 +3,13 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-community-repo</artifactId>
    <name>Alfresco Records Management Community Repo</name>
+   <description>Alfresco Record Management Community Repository Extension</description>
    <packaging>amp</packaging>
 
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm-community</artifactId>
-      <version>2.5-SNAPSHOT</version>
+      <version>2.6-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -18,12 +19,13 @@
       <alfresco.db.username>alfresco</alfresco.db.username>
       <alfresco.db.password>alfresco</alfresco.db.password>
       <alfresco.db.host>localhost</alfresco.db.host>
-      <alfresco.repo.artifactId>alfresco</alfresco.repo.artifactId>
+      <alfresco.repo.artifactId>alfresco-platform</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
+      <api.explorer.version>1.4</api.explorer.version>
    </properties>
 
    <build>
@@ -82,10 +84,10 @@
                   </goals>
                   <configuration>
                      <target>
-                        <copy todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
+                        <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
                            <fileset dir="${project.build.outputDirectory}/alfresco" />
-                        </copy>
-                        <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
+                        </move>
+                        <copy file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
                      </target>
                   </configuration>
                </execution>
@@ -109,7 +111,7 @@
                </execution>
             </executions>
          </plugin>
-        <plugin>
+         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
@@ -129,10 +131,13 @@
                      <goal>verify</goal>
                   </goals>
                   <configuration>
-                      <skipTests>${skip.integrationtests}</skipTests>
-                      <includes>
-                         <include>**/AllTestSuite.class</include>
-                      </includes>
+                     <skipTests>${skip.integrationtests}</skipTests>
+                     <includes>
+                        <include>**/AllTestSuite.class</include>
+                     </includes>
+                     <additionalClasspathElements>
+                        <additionalClasspathElement>${project.build.directory}/${project.build.finalName}/config</additionalClasspathElement>
+                     </additionalClasspathElements>
                   </configuration>
                </execution>
             </executions>
@@ -141,6 +146,24 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
+               <execution>
+                  <id>fetch-share-services-amp</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>copy</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.alfresco</groupId>
+                           <artifactId>alfresco-share-services</artifactId>
+                           <version>${share.version}</version>
+                           <type>amp</type>
+                        </artifactItem>
+                     </artifactItems>
+                     <outputDirectory>${project.build.directory}</outputDirectory>
+                  </configuration>
+               </execution>
                <execution>
                   <id>unpack-alfresco</id>
                   <phase>prepare-package</phase>
@@ -172,18 +195,8 @@
                   </goals>
                   <configuration>
                      <attachClasses>true</attachClasses>
+                     <attachConfig>true</attachConfig>
                      <includeDependencies>true</includeDependencies>
-                  </configuration>
-               </execution>
-               <execution>
-                  <id>install-rm-amp</id>
-                  <goals>
-                     <goal>install</goal>
-                  </goals>
-                  <phase>package</phase>
-                  <configuration>
-                     <backup>true</backup>
-                     <ampLocation>${project.build.directory}/${alfresco.rm.artifactId}-${alfresco.rm.version}.amp</ampLocation>
                   </configuration>
                </execution>
                <execution>
@@ -192,6 +205,18 @@
                   <goals>
                      <goal>install</goal>
                   </goals>
+               </execution>
+               <execution>
+                  <id>install-share-services-amp</id>
+                  <goals>
+                     <goal>install</goal>
+                  </goals>
+                  <phase>prepare-package</phase>
+                  <configuration>
+                     <backup>true</backup>
+                     <ampLocation>${project.build.directory}/alfresco-share-services-${share.version}.amp</ampLocation>
+                     <warLocation>${app.amp.client.war.folder}</warLocation>
+                  </configuration>
                </execution>
             </executions>
          </plugin>
@@ -211,24 +236,21 @@
                </excludes>
             </configuration>
          </plugin>
-
-            <!-- License header generation -->
-            <plugin>
-               <groupId>org.codehaus.mojo</groupId>
-               <artifactId>license-maven-plugin</artifactId>
-               <configuration>
-                  <licenseName>alfresco_community</licenseName>
-                  <roots>
-                     <root>source/java</root>
-                     <root>unit-test/java</root>
-                     <root>source/compatibility</root>
-                     <root>config</root>
-                     <root>test/java</root>
-                     <root>test/resources</root>
-                  </roots>
-               </configuration>
-            </plugin>
-
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <configuration>
+               <licenseName>alfresco_community</licenseName>
+               <roots>
+                  <root>source/java</root>
+                  <root>unit-test/java</root>
+                  <root>source/compatibility</root>
+                  <root>config</root>
+                  <root>test/java</root>
+                  <root>test/resources</root>
+               </roots>
+            </configuration>
+         </plugin>
       </plugins>
       <pluginManagement>
          <plugins>
@@ -252,19 +274,17 @@
                            </action>
                         </pluginExecution>
                         <pluginExecution>
-                        	<pluginExecutionFilter>
-                        		<groupId>org.codehaus.mojo</groupId>
-                        		<artifactId>
-                        			license-maven-plugin
-                        		</artifactId>
-                        		<versionRange>[1.8,)</versionRange>
-                        		<goals>
-                        			<goal>update-file-header</goal>
-                        		</goals>
-                        	</pluginExecutionFilter>
-                        	<action>
-                        		<ignore />
-                        	</action>
+                           <pluginExecutionFilter>
+                              <groupId>org.codehaus.mojo</groupId>
+                              <artifactId>license-maven-plugin</artifactId>
+                              <versionRange>[1.8,)</versionRange>
+                              <goals>
+                                 <goal>update-file-header</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
                         </pluginExecution>
                      </pluginExecutions>
                   </lifecycleMappingMetadata>
@@ -278,6 +298,13 @@
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
+         <version>${alfresco.version}</version>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>javax.servlet</groupId>
+          <artifactId>javax.servlet-api</artifactId>
+          <scope>provided</scope>
       </dependency>
       <dependency>
          <groupId>io.takari.junit</groupId>
@@ -291,7 +318,7 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.springframework.extensions.surf</groupId>
+         <groupId>org.alfresco.surf</groupId>
          <artifactId>spring-webscripts</artifactId>
          <classifier>tests</classifier>
          <scope>test</scope>
@@ -306,8 +333,8 @@
          <artifactId>spring-test</artifactId>
          <version>2.5</version>
          <scope>test</scope>
-       </dependency>
-       <dependency>
+      </dependency>
+      <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-repository</artifactId>
          <version>${alfresco.version}</version>
@@ -348,6 +375,7 @@
       <dependency>
           <groupId>org.reflections</groupId>
           <artifactId>reflections</artifactId>
+          <version>0.9.10</version>
           <scope>test</scope>
       </dependency>
    </dependencies>
@@ -536,6 +564,22 @@
                                  <asWebapp>true</asWebapp>
                                  <contextPath>/solr4</contextPath>
                                  <contextFile>${alfresco.solr.home}/context.xml</contextFile>
+                              </webapp>
+                              <webapp>
+                                 <groupId>org.alfresco</groupId>
+                                 <artifactId>api-explorer</artifactId>
+                                 <version>${api.explorer.version}</version>
+                                 <contextPath>/api-explorer</contextPath>
+                                 <type>war</type>
+                                 <asWebapp>true</asWebapp>
+                              </webapp>
+                              <webapp>
+                                 <groupId>org.alfresco</groupId>
+                                 <artifactId>alfresco-rm-community-rest-api-explorer</artifactId>
+                                 <version>${project.version}</version>
+                                 <contextPath>/gs-api-explorer</contextPath>
+                                 <type>war</type>
+                                 <asWebapp>true</asWebapp>
                               </webapp>
                            </webapps>
                         </configuration>

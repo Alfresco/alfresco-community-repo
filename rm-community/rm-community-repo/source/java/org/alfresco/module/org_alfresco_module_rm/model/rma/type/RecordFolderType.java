@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,10 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordUtils.generateRecordIdentifier;
+
 import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -39,6 +44,7 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -49,6 +55,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.ArrayUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordFolder behaviour bean
@@ -73,6 +80,14 @@ public class RecordFolderType extends    AbstractDisposableItem
     /** vital record service */
     protected VitalRecordService vitalRecordService;
 
+    /** identifier service */
+    protected IdentifierService identifierService;
+
+    /** I18N */
+    private static final String MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD = "rm.action.create.record.folder.child-error-message";
+
+    private static final String MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER = "rm.service.add-children-to-closed-record-folder";
+
     /**
      * @param recordService record service
      */
@@ -95,6 +110,11 @@ public class RecordFolderType extends    AbstractDisposableItem
     public void setVitalRecordService(VitalRecordService vitalRecordService)
     {
         this.vitalRecordService = vitalRecordService;
+    }
+
+    public void setIdentifierService(IdentifierService identifierService)
+    {
+        this.identifierService = identifierService;
     }
 
     /**
@@ -211,19 +231,29 @@ public class RecordFolderType extends    AbstractDisposableItem
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_RECORD_FOLDER))
+
+        if (nodeService.exists(nodeRef))
         {
+            boolean notFolderOrRmFolderSubType = !instanceOf(nodeRef, ContentModel.TYPE_FOLDER) ||
+                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_RECORDS_MANAGEMENT_CONTAINER) ||
+                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_RECORD_FOLDER) ||
+                                              instanceOf(nodeRef, RecordsManagementModel.TYPE_TRANSFER);
+
+            if (!instanceOf(nodeRef, ContentModel.TYPE_CONTENT) && notFolderOrRmFolderSubType)
+            {
+                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(nodeRef)), null);
+            }
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
             Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
-            if (isClosed != null && Boolean.TRUE.equals(isClosed))
+            if (isClosed != null && isClosed)
             {
-                throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
+                throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER), null);
             }
         }
     }
 
-    /**
+    /**   
      * On transaction commit
      *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
@@ -236,7 +266,18 @@ public class RecordFolderType extends    AbstractDisposableItem
     )
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
-        final NodeRef recordFolder = childAssocRef.getChildRef();
+        final NodeRef child = childAssocRef.getChildRef();
+
+        if(!nodeService.exists(child))
+        {
+            return;
+        }
+
+        // only records can be added in a record folder or hidden folders(is the case of e-mail attachments)
+        if (instanceOf(child, ContentModel.TYPE_FOLDER) && !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
+        {
+            throw new IntegrityException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD, nodeService.getType(child)), null);
+        }
 
         behaviourFilter.disableBehaviour();
         try
@@ -247,7 +288,7 @@ public class RecordFolderType extends    AbstractDisposableItem
                 public Void doWork()
                 {
                     // setup vital record definition
-                    vitalRecordService.setupVitalRecordDefinition(recordFolder);
+                    vitalRecordService.setupVitalRecordDefinition(child);
 
                     return null;
                 }

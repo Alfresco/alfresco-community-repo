@@ -94,7 +94,6 @@
             <entry key="capabilityCondition.filling" value="true"/>
             <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.closed" value="false"/>
          </map>
       </property>
    </bean>
@@ -122,6 +121,11 @@
       <property name="name" value="MoveRecordFolder"/>
       <property name="private" value="true"/>
       <property name="undetermined" value="true"/>
+	  <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property>
       <property name="capabilities">
          <list>
             <ref bean="rmDeleteRecordFolderCapability"/>
@@ -129,8 +133,7 @@
       </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.cutoff" value="false"/>
-            <entry key="capabilityCondition.closed" value="false"/>
+            <entry key="capabilityCondition.movableRecordFolder" value="true"/>
          </map>
       </property>
       <property name="targetCapability" ref="rmCreateRecordFolderCapability"/>

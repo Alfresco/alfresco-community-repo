@@ -4,7 +4,7 @@
 <beans>
 
    <!--  test model -->
-   <bean id="org_alfresco_module_rm_rmTestdictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+   <bean id="org_alfresco_module_rm_rmTestdictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="org_alfresco_module_rm_dictionaryBootstrap">
       <property name="models">
          <list>
             <value>test-model.xml</value>
@@ -245,5 +245,5 @@
    <!-- Test content cleanser -->
    
    <bean id="contentCleanser.test" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestContentCleanser"/>
-   
+       
 </beans>

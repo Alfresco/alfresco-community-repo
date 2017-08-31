@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component>
+  <guid>page.component-1-1.site~${siteId}~dashboard</guid>
+  <scope>page</scope>
+  <region-id>component-1-1</region-id>
+  <source-id>site/${siteId}/dashboard</source-id>
+  <url>/components/dashlets/colleagues</url>
+  <properties>
+    <height>504</height>
+  </properties>
+</component>

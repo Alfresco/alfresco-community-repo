@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -129,7 +129,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
     )
     public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
     {
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()
@@ -141,7 +141,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
 
                 return null;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        });
     }
 
     /**

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -666,7 +666,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 checkDisposableItemChanged(mhRecordFolder42);
                 checkDisposableItemChanged(record43);
                 checkDisposableItemUnchanged(mhRecordFolder44);
-                checkDisposableItemUnchanged(record45);;
+                checkDisposableItemUnchanged(record45);
             }
         });
 

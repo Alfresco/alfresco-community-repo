@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -104,7 +104,7 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
 
             if (logger.isDebugEnabled())
             {
-                logger.debug("Selected disposition schedule: " + dispSchedule);
+                logger.debug("Selected retention schedule: " + dispSchedule);
             }
 
             NodeRef result = null;

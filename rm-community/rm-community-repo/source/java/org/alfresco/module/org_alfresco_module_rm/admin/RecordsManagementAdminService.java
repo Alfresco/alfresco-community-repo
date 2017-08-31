@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -55,11 +55,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 // Not @AlfrescoPublicApi at the moment as it requires MatchLogic which is not public API.
 public interface RecordsManagementAdminService
 {
-    /**
-     * Initialise the custom model
-     */
-    void initialiseCustomModel();
-
     /**
      * Get a list of all registered customisable types and aspects.
      *

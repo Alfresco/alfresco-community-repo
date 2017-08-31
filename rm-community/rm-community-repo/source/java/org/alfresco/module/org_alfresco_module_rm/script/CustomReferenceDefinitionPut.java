@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
+import static org.alfresco.util.WebScriptUtils.getRequestContentAsJSONObject;
 import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
 
 import java.util.HashMap;
@@ -58,7 +58,7 @@ public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         String uniqueName = getRequestParameterValue(req, REF_ID);
-        JSONObject requestContent = getRequestContentAsJsonObject(req);
+        JSONObject requestContent = getRequestContentAsJSONObject(req);
         RelationshipDisplayName displayName = createDisplayName(requestContent);
         getRelationshipService().updateRelationshipDefinition(uniqueName, displayName);
 

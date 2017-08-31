@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -36,6 +36,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Various common helper methods for Collections. This class is probably only appropriate for use with relatively
@@ -200,5 +202,28 @@ public final class RMCollectionUtils
             if (to.containsKey(key)) { return Difference.ADDED; }
             else                     { return Difference.UNCHANGED; }
         }
+    }
+
+    /**
+     * Convert a collection to an immutable set. Any instances of null in the original collection will be removed.
+     *
+     * @param collection The original collection.
+     * @param <T> The type of the object in the collection.
+     * @return The immutable set.
+     */
+    public static <T> ImmutableSet<T> toImmutableSet(Collection<T> collection)
+    {
+        if (collection == null)
+        {
+            return null;
+        }
+        // Guava immutable collections can't contain null.
+        if (collection.contains(null))
+        {
+            // Make sure we're not changing the original collection (which might not be editable anyway).
+            collection = new HashSet<>(collection);
+            collection.remove(null);
+        }
+        return ImmutableSet.copyOf(collection);
     }
 }

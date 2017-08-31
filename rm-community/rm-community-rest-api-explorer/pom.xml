@@ -1,0 +1,77 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>alfresco-rm-community-rest-api-explorer</artifactId>
+  <name>Alfresco Records Management Community REST API Explorer</name>
+  <packaging>war</packaging>
+
+   <parent>
+      <groupId>org.alfresco</groupId>
+      <artifactId>alfresco-rm-community</artifactId>
+      <version>2.6-SNAPSHOT</version>
+   </parent>
+
+   <properties>
+      <alfresco.api.explorer.version>5.2.0.1</alfresco.api.explorer.version>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
+      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+      <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+   </properties>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+               <failOnMissingWebXml>false</failOnMissingWebXml>
+               <overlays>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>api-explorer</artifactId>
+                     <excludes>
+                        <exclude>definitions/*</exclude>
+                     </excludes>
+                  </overlay>
+               </overlays>
+            </configuration>
+         </plugin>
+      </plugins>
+   </build>
+
+   <profiles>
+      <profile>
+         <id>start-api-explorer</id>
+         <build>
+            <plugins>
+               <plugin>
+                  <groupId>org.apache.tomcat.maven</groupId>
+                  <artifactId>tomcat7-maven-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>run-war</id>
+                        <goals>
+                           <goal>run-war</goal>
+                        </goals>
+                        <phase>verify</phase>
+                     </execution>
+                  </executions>
+                  <configuration>
+                     <path>/api-explorer</path>
+                     <port>8085</port>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.alfresco</groupId>
+         <artifactId>api-explorer</artifactId>
+         <version>${alfresco.api.explorer.version}</version>
+         <type>war</type>
+      </dependency>
+   </dependencies>
+</project>

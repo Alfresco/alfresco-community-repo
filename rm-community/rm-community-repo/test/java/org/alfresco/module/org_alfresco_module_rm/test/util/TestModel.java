@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -40,4 +40,5 @@ public interface TestModel
     
     public static final QName ASPECT_RECORD_METADATA = QName.createQName(TEST_URI, "recordMetaData");
     public static final QName PROPERTY_RECORD_METADATA = QName.createQName(TEST_URI, "recordMetaDataProperty");
+    public static final QName NOT_RM_FOLDER_TYPE = QName.createQName(TEST_URI, "notRmFolderType");
 }

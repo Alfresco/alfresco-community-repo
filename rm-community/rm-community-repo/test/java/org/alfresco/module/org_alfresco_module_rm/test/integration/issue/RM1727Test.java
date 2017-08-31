@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -80,8 +80,17 @@ public class RM1727Test extends BaseRMTestCase
 
     public void testRM1727()
     {
-        //set read and file permissions for folder
-        filePlanPermissionService.setPermission(folder, myUser, RMPermissionModel.FILING);
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                //set read and file permissions for folder
+                filePlanPermissionService.setPermission(folder, myUser, RMPermissionModel.FILING);
+                return null;
+            }
+        });
+
         doTestInTransaction(new Test<Void>()
         {
             @Override

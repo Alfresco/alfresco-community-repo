@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+     <bean id="rm.quickShareLinks" parent="quickShareLinks">
+        <property name="nodes" ref="nodes"/>
+    </bean>
+
+    <bean id="rm.QuickShareLinks" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.QuickShareLinks</value>
+        </property>
+        <property name="target">
+            <ref bean="rm.quickShareLinks" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="nodesModelFactory" class="org.alfresco.rm.rest.api.impl.ApiNodesModelFactory">
+        <property name="nodes" ref="nodes" />
+        <property name="nodeService" ref="NodeService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="apiUtils" ref="apiUtils" />
+        <property name="personService" ref="PersonService"/>
+        <property name="dispositionService" ref="DispositionService"/>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+
+    <bean id="searchTypesFactory" class="org.alfresco.rm.rest.api.impl.SearchTypesFactory">
+        <property name="dictionaryService" ref="DictionaryService" />
+        <property name="nodes" ref="nodes" />
+    </bean>
+
+    <bean id="apiUtils" class="org.alfresco.rm.rest.api.impl.FilePlanComponentsApiUtils">
+        <property name="nodes" ref="nodes" />
+        <property name="nodeService" ref="NodeService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="filePlanService" ref="FilePlanService"/>
+        <property name="contentService" ref="ContentService"/>
+        <property name="mimetypeService" ref="MimetypeService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+        <property name="capabilityService" ref="CapabilityService"/>
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="recordService" ref="RecordService"/>
+        <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+        <property name="activityPoster" ref="activitiesPoster"/>
+        <property name="sites" ref="rm.sites"/>
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.fileplans.FilePlanEntityResource">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.fileplans.FilePlanChildrenRelation">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="searchTypesFactory" ref="searchTypesFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.unfiledcontainers.UnfiledContainerEntityResource">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.unfiledcontainers.UnfiledContainerChildrenRelation">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="searchTypesFactory" ref="searchTypesFactory" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.unfiledrecordfolders.UnfiledRecordFolderEntityResource">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.unfiledrecordfolders.UnfiledRecordFolderChildrenRelation">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="searchTypesFactory" ref="searchTypesFactory" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.recordcategories.RecordCategoriesEntityResource">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.recordcategories.RecordCategoryChildrenRelation">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="searchTypesFactory" ref="searchTypesFactory" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderEntityResource">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.recordfolders.RecordFolderChildrenRelation">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="searchTypesFactory" ref="searchTypesFactory" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.records.RecordsEntityResource">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="recordService" ref="RecordService"/>
+       <property name="nodeService" ref="NodeService"/>
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.files.FilesEntityResource">
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="filePlanService" ref="FilePlanService"/>
+       <property name="recordService" ref="RecordService"/>
+       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.transfercontainers.TransferContainerEntityResource">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+       <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.transfercontainers.TransferContainerChildrenRelation">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="searchTypesFactory" ref="searchTypesFactory" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.transfers.TransferEntityResource">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+    </bean>
+
+    <bean class="org.alfresco.rm.rest.api.transfers.TransferChildrenRelation">
+       <property name="apiUtils" ref="apiUtils" />
+       <property name="searchTypesFactory" ref="searchTypesFactory" />
+       <property name="fileFolderService" ref="FileFolderService" />
+       <property name="nodesModelFactory" ref="nodesModelFactory" />
+    </bean>
+
+   <!-- extended sites bean definition -->
+   <bean id="rm.sites" class="org.alfresco.rm.rest.api.impl.RMSitesImpl" parent="sites">
+        <property name="siteSurfConfig" ref="rm.siteSurfConfig" />
+   </bean>
+
+    <bean id="rm.siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">
+        <property name="configPath" value="alfresco/module/org_alfresco_module_rm/bootstrap/site"/>
+    </bean>
+
+   <bean id="rm.Sites" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+          <value>org.alfresco.rm.rest.api.RMSites</value>
+       </property>
+       <property name="target">
+          <ref bean="rm.sites" />
+       </property>
+       <property name="interceptorNames">
+          <list>
+             <idref bean="legacyExceptionInterceptor" />
+          </list>
+       </property>
+    </bean>
+
+   <bean class="org.alfresco.rm.rest.api.sites.RMSiteEntityResource">
+       <property name="sites" ref="rm.Sites" />
+   </bean>
+
+   <!-- Map RM exceptions to HTML status codes -->
+   <bean id="rm.simpleMappingExceptionResolver" abstract="true" parent="simpleMappingExceptionResolver">
+       <property name="exceptionMappings">
+            <map merge="true">
+                <entry key="org.alfresco.service.cmr.attributes.DuplicateAttributeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+                <entry key="org.alfresco.module.org_alfresco_module_rm.record.RecordCreationException" value="422" />
+                <entry key="org.alfresco.service.cmr.model.FileExistsException" value="409" />
+            </map>
+        </property>
+   </bean>
+   <bean class="org.alfresco.util.BeanExtender">
+      <property name="beanName" value="simpleMappingExceptionResolver"/>
+      <property name="extendingBeanName" value="rm.simpleMappingExceptionResolver"/>
+    </bean>
+</beans>

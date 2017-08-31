@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -156,7 +156,7 @@ public class RecordsManagementActionServiceImplTest extends BaseRMTestCase
         // get some specific actions and check the label
         RecordsManagementAction cutoff = this.rmActionService.getDispositionAction("cutoff");
         assertNotNull(cutoff);
-        assertEquals("Cut off", cutoff.getLabel());
+        assertEquals("Cut Off", cutoff.getLabel());
 
         RecordsManagementAction freeze = this.rmActionService.getRecordsManagementAction("freeze");
         assertNotNull(freeze);

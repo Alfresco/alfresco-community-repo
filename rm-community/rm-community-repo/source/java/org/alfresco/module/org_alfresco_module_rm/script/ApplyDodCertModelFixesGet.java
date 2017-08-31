@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -51,8 +51,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -81,7 +81,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
     private static final String RMC_CUSTOM_RECORD_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordProperties";
 
     /** Logger */
-    private static Log logger = LogFactory.getLog(ApplyDodCertModelFixesGet.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApplyDodCertModelFixesGet.class);
 
     private ContentService contentService;
     private NamespaceService namespaceService;
@@ -99,12 +99,15 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
     @Override
     public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        if (logger.isInfoEnabled())
-        {
-            logger.info("Applying webscript-based patches to RM custom model in the repo.");
-        }
+        LOGGER.info("Applying webscript-based patches to RM custom model in the repo.");
 
         M2Model customModel = readCustomContentModel();
+        if (customModel == null)
+        {
+            final String msg = "Custom content model could not be read";
+            LOGGER.error(msg);
+            throw new AlfrescoRuntimeException(msg);
+        }
 
         String customAspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(namespaceService);
         M2Aspect customAssocsAspect = customModel.getAspect(customAspectName);
@@ -112,19 +115,12 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         if (customAssocsAspect == null)
         {
             final String msg = "Unknown aspect: " + customAspectName;
-            if (logger.isErrorEnabled())
-            {
-                logger.error(msg);
-            }
+            LOGGER.error(msg);
             throw new AlfrescoRuntimeException(msg);
         }
 
-
         // MOB-1573. All custom references should have many-many multiplicity.
-        if (logger.isInfoEnabled())
-        {
-            logger.info("MOB-1573. All custom references should have many-many multiplicity.");
-        }
+        LOGGER.info("MOB-1573. All custom references should have many-many multiplicity.");
 
         for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations())
         {
@@ -134,10 +130,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
         }
 
         //MOB-1621. Custom fields should be created as untokenized by default.
-        if (logger.isInfoEnabled())
-        {
-            logger.info("MOB-1621. Custom fields should be created as untokenized by default.");
-        }
+        LOGGER.info("MOB-1621. Custom fields should be created as untokenized by default.");
 
         List<String> allCustomPropertiesAspects = new ArrayList<String>(4);
         allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_SERIES_PROPERTIES);
@@ -160,10 +153,7 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
 
         writeCustomContentModel(customModel);
 
-        if (logger.isInfoEnabled())
-        {
-            logger.info("Completed application of webscript-based patches to RM custom model in the repo.");
-        }
+        LOGGER.info("Completed application of webscript-based patches to RM custom model in the repo.");
 
         Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
     	model.put("success", true);

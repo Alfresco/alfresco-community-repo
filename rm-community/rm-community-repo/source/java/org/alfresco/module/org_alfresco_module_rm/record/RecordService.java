@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -165,7 +165,7 @@ public interface RecordService
     * Note that the node reference of the record will be the same as the original
     * document.
     *
-    * @param filePlan  The filePlan in which the record should be placed
+    * @param filePlan  The filePlan in which the record should be placed. filePlan can be <code>null</code> in this case the default RM site will be used.
     * @param nodeRef   The node from which the record will be created
     * @param isLinked  indicates if the newly created record is linked to it's original location or not.
     */
@@ -201,7 +201,7 @@ public interface RecordService
    /**
     * Indicates whether the record is filed or not
     *
-    * @param nodeRef    record
+    * @param record    nodeRef of record
     * @return boolean   true if filed, false otherwise
     */
    boolean isFiled(NodeRef record);
@@ -209,7 +209,7 @@ public interface RecordService
    /**
     * 'File' a new document that arrived in the file plan structure.
     *
-    * @param nodeRef    record
+    * @param record    noderef of record
     */
    void file(NodeRef record);
 
@@ -278,4 +278,11 @@ public interface RecordService
     * @since 2.3
     */
    void unlink(NodeRef record, NodeRef recordFolder);
+
+    /**
+     * Completes a record
+     *
+     * @param nodeRef Record node reference
+     */
+    void complete(NodeRef nodeRef);
 }

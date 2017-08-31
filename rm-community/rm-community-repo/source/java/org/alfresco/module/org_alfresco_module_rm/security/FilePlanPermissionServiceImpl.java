@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.security;
 
+import static java.util.Collections.singletonMap;
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority.EXTENDED_READER;
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority.EXTENDED_WRITER;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
@@ -36,10 +37,15 @@ import static org.alfresco.service.cmr.security.OwnableService.NO_OWNER;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -50,6 +56,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -75,6 +82,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                                                       RMPermissionModel,
                                                       NodeServicePolicies.OnMoveNodePolicy
 {
+    /** An audit key for the set permission event. */
+    private static final String AUDIT_SET_PERMISSION = "set-permission";
+
+    /** An namespace to use when constructing QNames to use for auditing changes to permissions. */
+    private static final String AUDIT_NAMESPACE = "audit://permissions/";
+
     /** Permission service */
     private PermissionService permissionService;
 
@@ -92,6 +105,9 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     /** File plan service */
     private FilePlanService filePlanService;
+
+    /** The RM audit service. */
+    private RecordsManagementAuditService recordsManagementAuditService;
 
     /** Logger */
     private static final Log LOGGER = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
@@ -113,6 +129,16 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 NodeServicePolicies.OnMoveNodePolicy.QNAME,
                 TYPE_RECORD_CATEGORY,
                 new JavaBehaviour(this, "onMoveNode", TRANSACTION_COMMIT));
+
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                recordsManagementAuditService.registerAuditEvent(new AuditEvent(AUDIT_SET_PERMISSION, "rm.audit.set-permission"));
+                return null;
+            }
+        });
     }
 
     /**
@@ -230,6 +256,16 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
+     * Set the RM audit service.
+     *
+     * @param recordsManagementAuditService The RM audit service.
+     */
+    public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
+    {
+        this.recordsManagementAuditService = recordsManagementAuditService;
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService#setupRecordCategoryPermissions(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -342,6 +378,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         final boolean hasUserPermission = authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
         {
+            @Override
             public Boolean doWork()
             {
                 return getPermissionService().hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED;
@@ -352,6 +389,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
             {
+                @Override
                 public Void doWork()
                 {
                     getPermissionService().setPermission(nodeRef, user, RMPermissionModel.FILING, true);
@@ -367,6 +405,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      * @param parent        parent node reference
      * @param nodeRef       child node reference
      */
+    @Override
     public void setupPermissions(final NodeRef parent, final NodeRef nodeRef)
     {
         mandatory("parent", parent);
@@ -376,6 +415,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
             {
+                @Override
                 public Object doWork()
                 {
                     // set inheritance
@@ -383,13 +423,29 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     boolean inheritanceAllowed = isInheritanceAllowed(nodeRef, isParentNodeFilePlan);
                     getPermissionService().setInheritParentPermissions(nodeRef, inheritanceAllowed);
 
-                    // clear all existing permissions
+                    Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
+                    Set<AccessPermission> origionalPerms= getPermissionService().getAllSetPermissions(nodeRef);
+
+                    for (AccessPermission perm : origionalPerms)
+                    {
+                        if (perm.getAuthority().startsWith(PermissionService.GROUP_PREFIX + ExtendedSecurityService.IPR_GROUP_PREFIX))
+                        {
+                            // then we can assume this is a permission we want to preserve
+                            keepPerms.add(perm);
+                        }
+                    }
+
+                    // clear all existing permissions and start again
                     getPermissionService().clearPermission(nodeRef, null);
+
+                    // re-add keep'er permissions
+                    for (AccessPermission keeper : keepPerms)
+                    {
+                        setPermission(nodeRef, keeper.getAuthority(), keeper.getPermission());
+                    }
 
                     if (!inheritanceAllowed)
                     {
-                        getPermissionService().setPermission(nodeRef, EXTENDED_READER, READ_RECORDS, true);
-                        getPermissionService().setPermission(nodeRef, EXTENDED_WRITER, FILING, true);
                         String adminRole = getAdminRole(nodeRef);
                         getPermissionService().setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
                     }
@@ -435,9 +491,20 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         return authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
     }
 
+    /**
+     * Indicates whether the default behaviour is to inherit permissions or not.
+     * 
+     * @param nodeRef               node reference
+     * @param isParentNodeFilePlan  true if parent node is a file plan, false otherwise
+     * @return boolean              true if inheritance true, false otherwise
+     */
     private boolean isInheritanceAllowed(NodeRef nodeRef, Boolean isParentNodeFilePlan)
     {
-        return !(isFilePlan(nodeRef) || isTransfer(nodeRef) || isHold(nodeRef) || isUnfiledRecordsContainer(nodeRef) || (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
+        return !(isFilePlan(nodeRef) || 
+                 isTransfer(nodeRef) || 
+                 isHold(nodeRef) || 
+                 isUnfiledRecordsContainer(nodeRef) || 
+                 (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
     }
 
     /**
@@ -455,6 +522,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
+            @Override
             public Object doWork()
             {
                 if (nodeService.exists(record) && nodeService.hasAspect(record, aspectTypeQName))
@@ -481,6 +549,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
         {
+            @Override
             public Void doWork()
             {
                 NodeRef record = sourceAssocRef.getChildRef();
@@ -494,19 +563,13 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     for (AccessPermission recordPermission : origionalRecordPerms)
                     {
                         String permission = recordPermission.getPermission();
-                        String authority = recordPermission.getAuthority();
                         if ((RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
-                                recordPermission.isSetDirectly() &&
-                                !ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) &&
-                                !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority))
+                             recordPermission.isSetDirectly())
                         {
                             // then we can assume this is a permission we want to preserve
                             keepPerms.add(recordPermission);
                         }
                     }
-
-                    // clear all existing permissions and start again
-                    permissionService.deletePermissions(record);
 
                     // re-setup the records permissions
                     setupPermissions(destinationAssocRef.getParentRef(), record);
@@ -528,6 +591,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setPermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, boolean)
      */
+    @Override
     public void setPermission(final NodeRef nodeRef, final String authority, final String permission)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
@@ -536,12 +600,18 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
+            @Override
             public Void doWork()
             {
                 if (canPerformPermissionAction(nodeRef))
                 {
+                    QName auditProperty = constructAuditEventName(authority, permission);
+                    Map<QName, Serializable> oldPermission = getCurrentPermissionForAuthority(nodeRef, authority, permission, auditProperty);
                     // Set the permission on the node
                     getPermissionService().setPermission(nodeRef, authority, permission, true);
+                    // Add an entry in the audit log.
+                    recordsManagementAuditService.auditOrUpdateEvent(nodeRef, AUDIT_SET_PERMISSION, oldPermission,
+                                new HashMap<>(singletonMap(auditProperty, (Serializable) true)), true);
                 }
                 else
                 {
@@ -557,8 +627,30 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
+     * Get the current permission on a node for an authority.
+     *
+     * @param nodeRef The node.
+     * @param authority The authority.
+     * @param auditProperty The QName used as the key in the returned map.
+     * @return A map from the audit property to true or false depending on whether the user currently has permission.
+     */
+    private Map<QName, Serializable> getCurrentPermissionForAuthority(NodeRef nodeRef, String authority, String permission, QName auditProperty)
+    {
+        Set<AccessPermission> allSetPermissions = getPermissionService().getAllSetPermissions(nodeRef);
+        for (AccessPermission setPermission : allSetPermissions)
+        {
+            if (setPermission.getAuthority().equals(authority) && setPermission.getPermission().equals(permission))
+            {
+                return new HashMap<>(singletonMap(auditProperty, (Serializable) true));
+            }
+        }
+        return new HashMap<>(singletonMap(auditProperty, (Serializable) false));
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#deletePermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
      */
+    @Override
     public void deletePermission(final NodeRef nodeRef, final String authority, final String permission)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
@@ -567,12 +659,18 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
+            @Override
             public Void doWork()
             {
                 if (canPerformPermissionAction(nodeRef))
                 {
+                    QName auditProperty = constructAuditEventName(authority, permission);
+                    Map<QName, Serializable> oldPermission = getCurrentPermissionForAuthority(nodeRef, authority, permission, auditProperty);
                     // Delete permission on this node
                     getPermissionService().deletePermission(nodeRef, authority, permission);
+                    // Add an entry in the audit log.
+                    recordsManagementAuditService.auditOrUpdateEvent(nodeRef, AUDIT_SET_PERMISSION, oldPermission,
+                                new HashMap<>(singletonMap(auditProperty, (Serializable) false)), true);
                 }
                 else
                 {
@@ -587,9 +685,22 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         });
     }
 
+    /**
+     * Construct a QName so that the authority and permission are visible in the log.
+     *
+     * @param authority The authority whose permission is being changed.
+     * @param permission The name of the permission being changed.
+     * @return A QName such that the local name will make sense to the end user.
+     */
+    private QName constructAuditEventName(String authority, String permission)
+    {
+        QName auditProperty = QName.createQName(AUDIT_NAMESPACE, permission + " " + authority);
+        return auditProperty;
+    }
+
     private boolean canPerformPermissionAction(NodeRef nodeRef)
     {
-        return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef) || isTransfer(nodeRef);
+        return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef) || isTransfer(nodeRef) || isHold(nodeRef);
     }
 
     /**

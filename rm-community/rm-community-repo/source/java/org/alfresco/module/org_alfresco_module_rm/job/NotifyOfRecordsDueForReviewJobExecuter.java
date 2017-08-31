@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -91,12 +91,10 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                 // Query is for all records that are due for review and for which
                 // notification has not been sent.
                 StringBuilder queryBuffer = new StringBuilder();
-                queryBuffer.append("+ASPECT:\"rma:vitalRecord\" ");
-                queryBuffer.append("+(@rma\\:reviewAsOf:[MIN TO NOW] ) ");
-                queryBuffer.append("+( ");
-                queryBuffer.append("@rma\\:notificationIssued:false ");
-                queryBuffer.append("OR ISNULL:\"rma:notificationIssued\" ");
-                queryBuffer.append(") ");
+                queryBuffer.append("ASPECT:\"rma:vitalRecord\" ");
+                queryBuffer.append("AND @rma\\:reviewAsOf:[MIN TO NOW] ");
+                // exclude destroyed electronic records and destroyed nonElectronic records with kept metadata
+                queryBuffer.append("AND -ASPECT:\"rma:ghosted\" ");
                 String query = queryBuffer.toString();
 
                 ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, query);
@@ -124,27 +122,12 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                         }
                     };
 
-                    RetryingTransactionCallback<Boolean> txUpdateNodesCallback = new RetryingTransactionCallback<Boolean>()
-                    {
-                        // Set the notification issued property.
-                        public Boolean execute()
-                        {
-                            for (NodeRef node : resultNodes)
-                            {
-                                nodeService.setProperty(node, RecordsManagementModel.PROP_NOTIFICATION_ISSUED, "true");
-                            }
-                            return Boolean.TRUE;
-                        }
-                    };
-
                     /**
                      * Now do the work, one action in each transaction
                      */
                     // don't retry the send email
                     retryingTransactionHelper.setMaxRetries(0);
                     retryingTransactionHelper.doInTransaction(txCallbackSendEmail);
-                    retryingTransactionHelper.setMaxRetries(10);
-                    retryingTransactionHelper.doInTransaction(txUpdateNodesCallback);
                 }
                 return null;
             }

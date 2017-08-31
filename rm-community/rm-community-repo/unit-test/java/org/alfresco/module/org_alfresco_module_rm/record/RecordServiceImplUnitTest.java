@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -274,7 +274,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         DispositionSchedule recordDispositionSchedule = mock(DispositionSchedule.class);
         when(recordDispositionSchedule.isRecordLevelDisposition())
             .thenReturn(true);
-        when(mockedDispositionService.getDispositionSchedule(record))
+        when(mockedDispositionService.getOriginDispositionSchedule(record))
             .thenReturn(recordDispositionSchedule);
         
         DispositionSchedule recordFolderDispositionSchedule = mock(DispositionSchedule.class);
@@ -285,7 +285,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         
         // expect exception
         exception.expect(RecordLinkRuntimeException.class);
-        exception.expectMessage("incompatible disposition schedule");
         
         // link
         recordService.link(record, recordFolder);

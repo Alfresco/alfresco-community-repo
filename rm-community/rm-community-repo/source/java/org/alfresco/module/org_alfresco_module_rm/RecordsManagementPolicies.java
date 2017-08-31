@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -49,6 +49,10 @@ public interface RecordsManagementPolicies
     QName ON_CREATE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateReference");
     QName BEFORE_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveReference");
     QName ON_REMOVE_REFERENCE = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveReference");
+    QName BEFORE_RECORD_DECLARATION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordDeclaration");
+    QName ON_RECORD_DECLARATION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordDeclaration");
+    QName BEFORE_RECORD_REJECTION = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRecordRejection");
+    QName ON_RECORD_REJECTION = QName.createQName(NamespaceService.ALFRESCO_URI, "onRecordRejection");
 
     /** Before records management action execution */
     interface BeforeRMActionExecution extends ClassPolicy
@@ -125,5 +129,41 @@ public interface RecordsManagementPolicies
          * @param nodeRef   node reference
          */
         void onFileRecord(NodeRef nodeRef);
+    }
+
+    /**
+     * Before record declaration
+     * @since 2.5
+     */
+    interface BeforeRecordDeclaration extends ClassPolicy
+    {
+        void beforeRecordDeclaration(NodeRef nodeRef);
+    }
+
+    /**
+     * On record declaration
+     * @since 2.5
+     */
+    interface OnRecordDeclaration extends ClassPolicy
+    {
+        void onRecordDeclaration(NodeRef nodeRef);
+    }
+
+    /**
+     * Before record rejection
+     * @since 2.5
+     */
+    interface BeforeRecordRejection extends ClassPolicy
+    {
+        void beforeRecordRejection(NodeRef nodeRef);
+    }
+
+    /**
+     * On record rejection
+     * @since 2.5
+     */
+    interface OnRecordRejection extends ClassPolicy
+    {
+        void onRecordRejection(NodeRef nodeRef);
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -113,7 +113,8 @@ public class RejectActionTest extends BaseRMTestCase
                 assertTrue(nodeService.getParentAssocs(dmDocument).size() == 1);
 
                 // The extended reader information should be removed
-                assertNull(extendedSecurityService.getExtendedReaders(dmDocument));
+                assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
+                assertTrue(extendedSecurityService.getReaders(dmDocument).isEmpty());
 
                 return null;
             }

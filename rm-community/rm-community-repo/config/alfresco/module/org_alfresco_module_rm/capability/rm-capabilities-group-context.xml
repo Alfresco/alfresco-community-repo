@@ -25,6 +25,8 @@
             <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmDeleteHoldCapability"/>
             <ref bean="rmUnlinkFromRecordFolderCapability"/>
+            <ref bean="rmDeleteTransferContainerCapability"/>
+            <ref bean="rmDeleteHoldContainerCapability"/>
          </list>
       </property>
    </bean>
@@ -44,6 +46,7 @@
             <ref bean="rmEditRecordMetadataCapability"/>
             <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmEditHoldCapability"/>
+            <ref bean="rmEditTransferCapability"/>
          </list>
       </property>
    </bean>
@@ -58,10 +61,10 @@
             <ref bean="rmCreateModifyDestroyFileplanMetadataCapability"/>
             <ref bean="rmEditDeclaredRecordMetadataCapability"/>
             <ref bean="rmEditNonRecordMetadataCapability"/>
-            <ref bean="rmCreateModifyRecordsInCuttoffFoldersCapability"/>
             <ref bean="rmEditRecordMetadataCapability"/>
             <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmEditHoldCapability"/>
+            <ref bean="rmEditTransferCapability"/>
          </list>
       </property>
    </bean>

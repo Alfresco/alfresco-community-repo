@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -74,12 +74,13 @@ public class FileToActionTest extends BaseRMTestCase
 
     public void testFileToNodeRef()
     {
-        initRecord();
-
-        doTestInTransaction(new Test<Void>()
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            public Void run()
+            @Override
+            public void given() throws Exception
             {
+                initRecord();
+
                 NodeRef unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
@@ -87,14 +88,22 @@ public class FileToActionTest extends BaseRMTestCase
                 Capability capability = capabilityService.getCapability("FileUnfiledRecords");
                 assertNotNull(capability);
                 assertEquals(AccessStatus.ALLOWED, capability.hasPermission(dmDocument));
+            }
 
+            @Override
+            public void when() throws Exception
+            {
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
                 params.put(FileToAction.PARAM_DESTINATION_RECORD_FOLDER, rmFolder);
 
                 // execute file-to action
                 rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+            }
 
+            @Override
+            public void then() throws Exception
+            {
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(recordService.isFiled(dmDocument));
@@ -102,10 +111,8 @@ public class FileToActionTest extends BaseRMTestCase
                 // is the record folder the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(rmFolder, parent);
-
-                return null;
             }
-        }, ADMIN_USER);
+        });
     }
 
     private void initRecord()
@@ -119,34 +126,42 @@ public class FileToActionTest extends BaseRMTestCase
                 // create record from document
                 recordService.createRecord(filePlan, dmDocument);
 
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(recordService.isFiled(dmDocument));
-
-                AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
-                {
-					public Void doWork() throws Exception 
-					{					
-						// is the unfiled container the primary parent of the filed record
-						NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-						assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
-						
-						// TODO Auto-generated method stub
-						return null;
-					}});
-
                 return null;
             }
+
+            @Override
+            public void test(Void result) throws Exception 
+            {
+                AuthenticationUtil.runAs(() ->
+                {
+                    // check things have gone according to plan
+                    assertTrue(recordService.isRecord(dmDocument));
+                    assertFalse(recordService.isFiled(dmDocument));
+
+                    // is the unfiled container the primary parent of the filed
+                    // record
+                    NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
+                    assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+
+                    return null;
+                }, AuthenticationUtil.getAdminUserName());
+            }
+            
         }, dmCollaborator);
     }
 
     public void testFileToPath()
     {
-        initRecord();
-
-        doTestInTransaction(new Test<Void>()
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            public Void run()
+            @Override
+            public void given() throws Exception
+            {
+                initRecord();
+            }
+
+            @Override
+            public void when() throws Exception
             {
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
@@ -154,7 +169,11 @@ public class FileToActionTest extends BaseRMTestCase
 
                 // execute file-to action
                 rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+            }
 
+            @Override
+            public void then() throws Exception
+            {
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(recordService.isFiled(dmDocument));
@@ -162,19 +181,22 @@ public class FileToActionTest extends BaseRMTestCase
                 // is the record folder the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(rmFolder, parent);
-
-                return null;
             }
-        }, ADMIN_USER);
+        });
     }
 
     public void testFileToPath2()
     {
-        initRecord();
-
-        doTestInTransaction(new Test<Void>()
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            public Void run()
+            @Override
+            public void given() throws Exception
+            {
+                initRecord();
+            }
+
+            @Override
+            public void when() throws Exception
             {
                 // set parameters
                 Map<String, Serializable> params = new HashMap<String, Serializable>(1);
@@ -182,7 +204,11 @@ public class FileToActionTest extends BaseRMTestCase
 
                 // execute file-to action
                 rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+            }
 
+            @Override
+            public void then() throws Exception
+            {
                 // check things have gone according to plan
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(recordService.isFiled(dmDocument));
@@ -190,10 +216,8 @@ public class FileToActionTest extends BaseRMTestCase
                 // is the record folder the primary parent of the filed record
                 NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
                 assertEquals(rmFolder, parent);
-
-                return null;
             }
-        }, ADMIN_USER);
+        });
     }
 
     public void testCreate() throws Exception
@@ -245,8 +269,15 @@ public class FileToActionTest extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        // execute file-to action
-        rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+        doTestInTransaction(new Test<Void>()
+        {
+            public Void run() throws Exception
+            {
+                // execute file-to action
+                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                return null;
+            }
+        });
 
         doTestInTransaction(new Test<Void>()
         {

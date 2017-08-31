@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -126,7 +126,7 @@ public final class WebScriptUtils
      * @param req The webscript request
      * @return The request content as JSON object
      */
-    public static JSONObject getRequestContentAsJsonObject(WebScriptRequest req)
+    public static JSONObject getRequestContentAsJSONObject(WebScriptRequest req)
     {
         mandatory("req", req);
 
@@ -172,7 +172,7 @@ public final class WebScriptUtils
      * @param jsonObject The json object
      * @param paramName The parameter name to check for
      */
-    public static void checkMandatoryJsonParam(JSONObject jsonObject, String paramName)
+    public static void checkMandatoryJSONParam(JSONObject jsonObject, String paramName)
     {
         mandatory("jsonObject", jsonObject);
         mandatoryString("paramName", paramName);
@@ -189,14 +189,14 @@ public final class WebScriptUtils
      * @param jsonObject The json object.
      * @param paramNames The parameter names to check for
      */
-    public static void checkMandatoryJsonParams(JSONObject jsonObject, List<String> paramNames)
+    public static void checkMandatoryJSONParams(JSONObject jsonObject, List<String> paramNames)
     {
         mandatory("jsonObject", jsonObject);
         mandatory("paramNames", paramNames);
 
         for (String name : paramNames)
         {
-            checkMandatoryJsonParam(jsonObject, name);
+            checkMandatoryJSONParam(jsonObject, name);
         }
     }
 
@@ -231,7 +231,7 @@ public final class WebScriptUtils
 
         if (checkKey)
         {
-            checkMandatoryJsonParam(jsonObject, key);
+            checkMandatoryJSONParam(jsonObject, key);
         }
 
         String value = null;
@@ -262,7 +262,7 @@ public final class WebScriptUtils
      * @param key The key
      * @param value The value
      */
-    public static void putValuetoJSONObject(JSONObject jsonObject, String key, Object value)
+    public static void putValueToJSONObject(JSONObject jsonObject, String key, Object value)
     {
         mandatory("jsonObject", jsonObject);
         mandatoryString("key", key);
@@ -328,6 +328,30 @@ public final class WebScriptUtils
     }
 
     /**
+     * Creates a json array from the given {@link String}
+     *
+     * @param json The json array as {@link String}
+     * @return The json array created from the given {@link String}
+     */
+    public static JSONArray createJSONArray(String json)
+    {
+        mandatory("json", json);
+
+        JSONArray jsonArray;
+
+        try
+        {
+            jsonArray = new JSONArray(json);
+        }
+        catch (JSONException error)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Cannot create a json array from the given string '" + json + "'.", error);
+        }
+
+        return jsonArray;
+    }
+
+    /**
      * Gets the {@link JSONArray} value of a given key from a json object
      *
      * @param jsonObject The json object
@@ -375,5 +399,31 @@ public final class WebScriptUtils
     {
         final int status = e.getStatus();
         return status >= lowerLimitInclusive && status < upperLimitExclusive;
+    }
+
+    /**
+     * Gets the {@link JSONObject} value of a given key from a json object
+     *
+     * @param jsonObject The json object
+     * @param key The key
+     * @return The {@link JSONObject} value of the given key from the json object
+     */
+    public static JSONObject getValueFromJSONObject(JSONObject jsonObject, String key)
+    {
+        mandatory("jsonObject", jsonObject);
+        mandatoryString("key", key);
+
+        JSONObject value = null;
+
+        try
+        {
+            value = jsonObject.getJSONObject(key);
+        }
+        catch (JSONException error)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not get value for the key '" + key + "'.", error);
+        }
+
+        return value;
     }
 }

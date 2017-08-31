@@ -28,6 +28,9 @@
       <type name="rmt:customType">  
          <parent>cm:content</parent>                                                
       </type> 
+      <type name="rmt:notRmFolderType">  
+         <parent>cm:folder</parent>                                                
+      </type>
     
    </types>
    

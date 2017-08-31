@@ -587,6 +587,21 @@
       </property>
    </bean>
 
+   <!-- Remove Dynamic Authorities GET webscript -->
+   <bean id="webscript.org.alfresco.repository.roles.rm-dynamicauthorities.get"
+         class="org.alfresco.repo.web.scripts.roles.DynamicAuthoritiesGet"
+           parent="webscript">
+      <property name="patchDAO" ref="patchDAO"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="extendedSecurityService" ref="extendedSecurityService"/>
+      <property name="transactionService" ref="transactionService"/>
+      <property name="contentStreamer" ref="webscript.content.streamer" />
+      <property name="fileFolderService" ref="FileFolderService"/>
+   </bean>
+
    <!-- REST impl for GET Holds -->
    <bean id="webscript.org.alfresco.rma.holds.get"
          class="org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGet"

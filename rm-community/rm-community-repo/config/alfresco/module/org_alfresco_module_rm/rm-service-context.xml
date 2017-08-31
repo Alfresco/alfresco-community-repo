@@ -1,7 +1,18 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:util="http://www.springframework.org/schema/util"
+   xsi:schemaLocation="
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context-3.0.xsd
+      http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/aop
+      http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+      http://www.springframework.org/schema/util
+      http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
    <!--  Helper beans -->
 
@@ -32,18 +43,13 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="authenticationUtil" ref="rm.authenticationUtil"/>
-        <property name='transactionalResourceHelper' ref="rm.transactionalResourceHelper" />
+        <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
+        <property name="renditionService" ref="RenditionService" />
      </bean>
 
     <!-- Records Management Service Registry -->
 
     <bean id="RecordsManagementServiceRegistry" class="org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistryImpl" />
-
-    <!-- Disposition selection strategy -->
-    <bean id="org_alfresco_module_rm_dispositionSelectionStrategy"
-          class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSelectionStrategy" >
-        <property name="dispositionService" ref="dispositionService"/>
-    </bean>
 
     <!--  Vital Record Service -->
 
@@ -96,9 +102,6 @@
         <property name="recordFolderService" ref="RecordFolderService"/>
         <property name="recordService" ref="RecordService"/>
         <property name="freezeService" ref="FreezeService"/>
-        <property name="dispositionSelectionStrategy">
-           <ref local="org_alfresco_module_rm_dispositionSelectionStrategy" />
-        </property>
     </bean>
 
     <bean id="DispositionService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -139,6 +142,7 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.registerDispositionProperty=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionProperties=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getDispositionSchedule=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getOriginDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedDispositionSchedule=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getAssociatedRecordsManagementContainer=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.hasDisposableItems=RM_ALLOW
@@ -150,10 +154,12 @@
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.updateDispositionActionDefinition=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isNextDispositionActionEligible=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getNextDispositionAction=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.recalculateNextDispositionStep=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getCompletedDispositionActions=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.getLastCompletedDispostionAction=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.isDisposableItemCutoff=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.cutoffDisposableItem=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.calculateAsOfDate=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService.*=RM_DENY
                 ]]>
             </value>
@@ -168,6 +174,8 @@
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="nodeService" ref="nodeService"/>
         <property name="freezeService" ref="FreezeService"/>
+        <property name="transferContainerType" ref="rma.transferContainer"/>
+        <property name="transferType" ref="rma.transfer"/>
     </bean>
 
     <bean id="RmTransferService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -380,10 +388,10 @@
 
     <!--  File Plan Service -->
 
-	<bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+   <bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
 
-	<bean id="filePlanService"
-	      parent="baseService"
+   <bean id="filePlanService"
+         parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
         <property name="rootContainerCache" ref="rootContainerCache" />
     </bean>
@@ -454,6 +462,7 @@
         <property name="authorityService" ref="AuthorityService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -574,6 +583,9 @@
         <property name="nodeService" ref="nodeService"/>
         <property name="filePlanService" ref="filePlanService" />
         <property name="filePlanRoleService" ref="filePlanRoleService" />
+        <property name="authorityService" ref="authorityService"/>
+        <property name="permissionService" ref="permissionService"/>
+        <property name="transactionService" ref="transactionService"/>
     </bean>
 
     <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -775,6 +787,7 @@
 
    <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl" parent="recordsManagementAdminBase">
       <property name="relationshipService" ref="RelationshipService" />
+      <property name="transactionService" ref="transactionService"/>
       <property name="customisableTypes">
          <list>
             <value>rma:recordCategory</value>
@@ -817,7 +830,6 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.initialiseCustomModel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomisable=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.isCustomisable=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.makeCustomisable=RM_ALLOW
@@ -969,6 +981,7 @@
                 <![CDATA[
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.registerAuditEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.auditEvent=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.auditOrUpdateEvent=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.clearAuditLog=RM_CAP.0.rma:filePlanComponent.DeleteAudit
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrail=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.getAuditTrailFile=RM_ALLOW
@@ -1061,11 +1074,28 @@
         <property name="renditionService" ref="RenditionService" />
         <property name="dispositionService" ref="DispositionService"/>
         <property name="recordableVersionService" ref="RecordableVersionService"/>
+        <property name="alwaysEditURIs" ref="recordService_alwaysEditURIs" />
+        <property name="incompleteNodeTagger" ref="incompleteNodeTagger" />
+        <property name="freezeService" ref="FreezeService" />
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="checkMandatoryPropertiesEnabled" value="${rm.completerecord.mandatorypropertiescheck.enabled}"/>
     </bean>
 
+   <!-- Defines a list of namespace URIs for properties, which should be always editable -->
+   <util:list id="recordService_alwaysEditURIs" value-type="java.lang.String">
+      <value>http://www.alfresco.org/model/security/1.0</value>
+      <value>http://www.alfresco.org/model/system/1.0</value>
+      <value>http://www.alfresco.org/model/workflow/1.0</value>
+      <value>http://www.alfresco.org/model/application/1.0</value>
+      <value>http://www.alfresco.org/model/datalist/1.0</value>
+      <value>http://www.alfresco.org/model/dictionary/1.0</value>
+      <value>http://www.alfresco.org/model/bpm/1.0</value>
+      <value>http://www.alfresco.org/model/rendition/1.0</value>
+   </util:list>
+
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
-    	<property name="recordService" ref="recordService"/>
-    	<property name="namespaceService" ref="namespaceService"/>
+      <property name="recordService" ref="recordService"/>
+      <property name="namespaceService" ref="namespaceService"/>
     </bean>
 
     <bean id="RecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1125,6 +1155,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.makeRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.link=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.unlink=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.complete=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>
@@ -1526,20 +1557,20 @@
       <property name="objectDefinitionSource">
          <value>
             <![CDATA[
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.isHold=RM_ALLOW
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHolds=RM.Read.0,AFTER_RM.FilterNode
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHold=RM.Read.0,AFTER_RM.FilterNode
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.heldBy=RM.Read.0,AFTER_RM.FilterNode
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHeld=RM.Read.0,AFTER_RM.FilterNode
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.createHold=RM_CAP.0.rma:filePlanComponent.CreateHold
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHoldReason=RM.Read.0
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.setHoldReason=RM_CAP.0.rma:filePlanComponent.EditHold
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.deleteHold=RM_CAP.0.rma:filePlanComponent.DeleteHold
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHold=RM_CAP.0.rma:filePlanComponent.AddToHold
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHolds=RM_ALLOW
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHold=RM_CAP.0.rma:filePlanComponent.RemoveFromHold
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHolds=RM_ALLOW
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromAllHolds=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.isHold=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHolds=RM.Read.0,AFTER_RM.FilterNode
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHold=RM.Read.0,AFTER_RM.FilterNode
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.heldBy=RM.Read.0,AFTER_RM.FilterNode
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHeld=RM.Read.0,AFTER_RM.FilterNode
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.createHold=RM_CAP.0.rma:filePlanComponent.CreateHold
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHoldReason=RM.Read.0
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.setHoldReason=RM_CAP.0.rma:filePlanComponent.EditHold
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.deleteHold=RM_CAP.0.rma:filePlanComponent.DeleteHold
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHold=RM_CAP.0.rma:filePlanComponent.AddToHold
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHolds=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHold=RM_CAP.0.rma:filePlanComponent.RemoveFromHold
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHolds=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromAllHolds=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.hold.HoldService.*=RM_DENY
             ]]>
          </value>

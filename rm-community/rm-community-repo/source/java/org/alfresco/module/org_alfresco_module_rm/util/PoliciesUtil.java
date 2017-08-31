@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -59,7 +59,7 @@ public final class PoliciesUtil
      */
     public static Set<QName> getTypeAndAspectQNames(final NodeService nodeService, final NodeRef nodeRef)
     {
-        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<QName>>()
+        return AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Set<QName>>()
         {
             public Set<QName> doWork()
             {
@@ -81,6 +81,6 @@ public final class PoliciesUtil
                 // done
                 return qnames;
             }
-        }, AuthenticationUtil.getAdminUserName());
+        });
     }
 }

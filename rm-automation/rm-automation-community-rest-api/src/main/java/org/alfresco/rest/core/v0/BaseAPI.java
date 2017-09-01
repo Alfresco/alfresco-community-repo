@@ -83,12 +83,12 @@ public abstract class BaseAPI
 
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
-	@Autowired
+    @Autowired
     private ContentService contentService;
 
     private static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
     private static final String FILE_PLAN_PATH = "Sites/rm/documentLibrary";
-    
+
     /**
      * Helper method to extract list of properties values from result.
      *
@@ -404,11 +404,19 @@ public abstract class BaseAPI
 
             try
             {
-                responseBody = new JSONObject(EntityUtils.toString(response.getEntity()));
+                String bodyString = EntityUtils.toString(response.getEntity());
+                try
+                {
+                    responseBody = new JSONObject(bodyString);
+                }
+                catch (JSONException error)
+                {
+                    LOGGER.error("Converting message body to JSON failed. Body: {}", responseBody, error);
+                }
             }
-            catch (ParseException | IOException | JSONException error)
+            catch (ParseException | IOException error)
             {
-                LOGGER.error("Parsing message body failed", error);
+                LOGGER.error("Parsing message body failed.", error);
             }
 
             switch (response.getStatusLine().getStatusCode())
@@ -616,7 +624,7 @@ public abstract class BaseAPI
         return getObjectByPath(username, password, itemPath) == null;
     }
 
- 	/**
+    /**
      * Retrieve the node ref spaces store value
      *
      * @return node ref spaces store

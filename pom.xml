@@ -202,6 +202,21 @@
                 <artifactId>spring-orm</artifactId>
                 <version>${dependency.spring.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
             <!-- Make sure JUnit is not packaged -->
             <dependency>
                 <groupId>junit</groupId>

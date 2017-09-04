@@ -986,7 +986,8 @@ public class QuickShareServiceImpl implements QuickShareService,
         {
             // node belongs to a site - current user must be a manager or collaborator or someone who shared the link
             String role = siteService.getMembersRole(siteName, currentUser);
-            if (isSharedByCurrentUser || (role != null && (role.equals(SiteModel.SITE_MANAGER) || role.equals(SiteModel.SITE_COLLABORATOR))))
+            if (isSharedByCurrentUser || (role != null && (role.equals(SiteModel.SITE_MANAGER) || role.equals(SiteModel.SITE_COLLABORATOR)))
+                    || (authorityService.isAdminAuthority(currentUser)))
             {
                 canDeleteSharedLink = true;
             }
@@ -1009,17 +1010,24 @@ public class QuickShareServiceImpl implements QuickShareService,
     private String getSiteName(NodeRef nodeRef)
     {
         NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+
         while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
         {
             // check that we can read parent name
-            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+            if (permissionService.hasReadPermission(parent) == AccessStatus.ALLOWED)
+            {
+                String parentName = (String) nodeService.getProperty(parent,ContentModel.PROP_NAME);
+            }
+            else
+            {
+                return null;
+            }
 
             if (nodeService.getPrimaryParent(nodeRef) != null)
             {
                 parent = nodeService.getPrimaryParent(parent).getParentRef();
             }
         }
-
         if (parent == null)
         {
             return null;

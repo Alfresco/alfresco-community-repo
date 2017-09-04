@@ -146,6 +146,13 @@
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-server-root</artifactId>
                 <version>${dependency.alfresco-server-root.version}</version>
+	    </dependency>
+            <!-- Make sure JUnit is not packaged -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>

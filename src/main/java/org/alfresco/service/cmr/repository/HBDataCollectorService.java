@@ -33,7 +33,11 @@ public interface HBDataCollectorService
     
     void collectAndSendData();
     
-    boolean isHBEnabled();
+    boolean isHbEnabled();
+
+    void setHbEnabled(boolean enabled);
+
+    boolean getDefaultHbState();
     
     
 }

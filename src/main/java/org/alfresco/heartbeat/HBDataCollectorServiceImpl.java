@@ -41,7 +41,15 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
 
     private List<HBBaseDataCollector> collectors = new LinkedList<>();
     private HBDataSenderService hbDataSenderService;
-    private boolean enabled;
+    private boolean enabled = false;
+    /** The default enable state */
+    private final boolean defaultHbState;
+
+    public HBDataCollectorServiceImpl (boolean defaultHeartBeatState)
+    {
+        this.defaultHbState = defaultHeartBeatState;
+        this.enabled = defaultHeartBeatState;
+    }
 
     public void setHbDataSenderService(HBDataSenderService hbDataSenderService)
     {
@@ -72,9 +80,21 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
     }
 
     @Override
-    public boolean isHBEnabled()
+    public boolean getDefaultHbState()
+    {
+        return defaultHbState;
+    }
+
+    @Override
+    public boolean isHbEnabled()
     {
         return enabled;
+    }
+
+    @Override
+    public void setHbEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
     }
 
 }

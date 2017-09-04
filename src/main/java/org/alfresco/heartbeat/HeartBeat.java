@@ -55,11 +55,6 @@ import org.springframework.context.ApplicationContext;
 public class HeartBeat implements LicenseChangeHandler
 {
 
-    private static final String LAMBDA_INGEST_URL = "https://0s910f9ijc.execute-api.eu-west-1.amazonaws.com/Stage/ingest";
-
-    /** The default enable state */
-    private static final boolean DEFAULT_HEARTBEAT_ENABLED = true;
-
     /** The logger. */
     private static final Log logger = LogFactory.getLog(HeartBeat.class);
 
@@ -67,15 +62,9 @@ public class HeartBeat implements LicenseChangeHandler
 
     private Scheduler scheduler;
 
-    /** URL to post heartbeat to. */
-    private String heartBeatUrl;
-
     private boolean testMode = true;
 
     private final String JOB_NAME = "heartbeat";
-
-    /** Is the heartbeat enabled */
-    private boolean enabled = DEFAULT_HEARTBEAT_ENABLED;
 
     private HBDataCollectorService dataCollectorService;
 
@@ -141,34 +130,34 @@ public class HeartBeat implements LicenseChangeHandler
         }
     }
 
-    private synchronized void setHeartBeatUrl(String heartBeatUrl)
-    {
-        this.heartBeatUrl = heartBeatUrl;
-    }
-
-    // Determine the URL to send the heartbeat to from the license if not set
-    private synchronized String getHeartBeatUrl()
-    {
-        if (heartBeatUrl == null)
-        {
-            // GC: Ignore the standard heartbeat URL and always use the AWS/Lambda URL
-//            LicenseDescriptor licenseDescriptor = licenseService.getLicense();
-//            String url = (licenseDescriptor == null) ? null : licenseDescriptor.getHeartBeatUrl();
-//            setHeartBeatUrl(url == null ? HeartBeat.DEFAULT_URL : url);
-            setHeartBeatUrl(LAMBDA_INGEST_URL);
-        }
-
-        logger.debug("Returning heartBeatUrl: " + heartBeatUrl);
-
-        return heartBeatUrl;
-    }
+//    private synchronized void setHeartBeatUrl(String heartBeatUrl)
+//    {
+//        this.heartBeatUrl = heartBeatUrl;
+//    }
+//
+//    // Determine the URL to send the heartbeat to from the license if not set
+//    private synchronized String getHeartBeatUrl()
+//    {
+//        if (heartBeatUrl == null)
+//        {
+//            // GC: Ignore the standard heartbeat URL and always use the AWS/Lambda URL
+////            LicenseDescriptor licenseDescriptor = licenseService.getLicense();
+////            String url = (licenseDescriptor == null) ? null : licenseDescriptor.getHeartBeatUrl();
+////            setHeartBeatUrl(url == null ? HeartBeat.DEFAULT_URL : url);
+//            setHeartBeatUrl(LAMBDA_INGEST_URL);
+//        }
+//
+//        logger.debug("Returning heartBeatUrl: " + heartBeatUrl);
+//
+//        return heartBeatUrl;
+//    }
 
     /**
      * @return          <tt>true</tt> if the heartbeat is currently enabled
      */
     public synchronized boolean isEnabled()
     {
-        return enabled;
+        return dataCollectorService.isHbEnabled();
     }
 
 
@@ -193,13 +182,13 @@ public class HeartBeat implements LicenseChangeHandler
     {
         logger.debug("Update license called");
 
-        setHeartBeatUrl(licenseDescriptor.getHeartBeatUrl());
+        //setHeartBeatUrl(licenseDescriptor.getHeartBeatUrl());
         boolean newEnabled = !licenseDescriptor.isHeartBeatDisabled();
 
-        if (newEnabled != enabled)
+        if (newEnabled != dataCollectorService.isHbEnabled())
         {
             logger.debug("State change of heartbeat");
-            this.enabled = newEnabled;
+            dataCollectorService.setHbEnabled(newEnabled);
             try
             {
                 scheduleJob();
@@ -217,12 +206,12 @@ public class HeartBeat implements LicenseChangeHandler
     @Override
     public synchronized void onLicenseFail()
     {
-        boolean newEnabled = DEFAULT_HEARTBEAT_ENABLED;
+        boolean newEnabled = dataCollectorService.getDefaultHbState();
 
-        if (newEnabled != enabled)
+        if (newEnabled != dataCollectorService.isHbEnabled())
         {
             logger.debug("State change of heartbeat");
-            this.enabled = newEnabled;
+            dataCollectorService.setHbEnabled(newEnabled);
             try
             {
                 scheduleJob();
@@ -241,7 +230,7 @@ public class HeartBeat implements LicenseChangeHandler
     private synchronized void scheduleJob() throws SchedulerException
     {
         // Schedule the heart beat to run regularly
-        if(enabled)
+        if(dataCollectorService.isHbEnabled())
         {
             logger.debug("heartbeat job scheduled");
             final JobDetail jobDetail = new JobDetail(JOB_NAME, Scheduler.DEFAULT_GROUP, HeartBeatJob.class);

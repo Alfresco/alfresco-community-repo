@@ -72,6 +72,13 @@
 
     <build>
         <finalName>${project.artifactId}-${project.version}</finalName>
+        <!-- Filtering is required to make maven substitute variables in resources -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>

@@ -49,8 +49,9 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * This class communicates some very basic repository statistics to Alfresco on a regular basis.
+ * The class is responsible for scheduling the HeartBeat job and reacting to licence change events.
  * 
- * @author dward
+ * @author dward, eknizat
  */
 public class HeartBeat implements LicenseChangeHandler
 {
@@ -68,8 +69,6 @@ public class HeartBeat implements LicenseChangeHandler
 
     private HBDataCollectorService dataCollectorService;
 
-
-
     /**
      * Initialises the heart beat service. Note that dependencies are intentionally 'pulled' rather than injected
      * because we don't want these to be reconfigured.
@@ -79,7 +78,7 @@ public class HeartBeat implements LicenseChangeHandler
      */
     public HeartBeat(final ApplicationContext context)
     {
-        this(context, true);
+        this(context, false);
     }
 
     /**
@@ -96,8 +95,6 @@ public class HeartBeat implements LicenseChangeHandler
     {
         logger.debug("Initialising HeartBeat");
 
-
-        // I think these should be wired by spring instead for proper ioc..
         this.dataCollectorService = (HBDataCollectorService) context.getBean("hbDataCollectorService");
         this.scheduler = (Scheduler) context.getBean("schedulerFactory");
 
@@ -130,26 +127,11 @@ public class HeartBeat implements LicenseChangeHandler
         }
     }
 
-
     /**
-     * @return          <tt>true</tt> if the heartbeat is currently enabled
-     */
-    public synchronized boolean isEnabled()
-    {
-        return dataCollectorService.isHbEnabled();
-    }
-
-
-
-    /**
-     * Sends encrypted data over HTTP.
+     *  Delegates data collection and sending to HBDataCollectorService.
      *
-     * @throws IOException
-     *             Signals that an I/O exception has occurred.
-     * @throws GeneralSecurityException
-     *             an encryption related exception
      */
-    public void collectAndSendData() throws IOException, GeneralSecurityException
+    public void collectAndSendData()
     {
         this.dataCollectorService.collectAndSendData();
     }
@@ -258,6 +240,4 @@ public class HeartBeat implements LicenseChangeHandler
             }
         }
     }
-
-
 }

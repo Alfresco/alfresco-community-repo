@@ -27,7 +27,6 @@ package org.alfresco.heartbeat;
 
 import java.util.LinkedList;
 import java.util.List;
-
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
@@ -39,12 +38,23 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
     /** The logger. */
     private static final Log logger = LogFactory.getLog(HBDataCollectorServiceImpl.class);
 
+    /** List of collectors registered with this service */
     private List<HBBaseDataCollector> collectors = new LinkedList<>();
+
+    /** The service responsible for sending the collected data */
     private HBDataSenderService hbDataSenderService;
+
+    /** Current enabled state */
     private boolean enabled = false;
+
     /** The default enable state */
     private final boolean defaultHbState;
 
+    /**
+     *
+     * @param defaultHeartBeatState the default enabled state of heartbeat
+     *
+     */
     public HBDataCollectorServiceImpl (boolean defaultHeartBeatState)
     {
         this.defaultHbState = defaultHeartBeatState;
@@ -56,12 +66,22 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
         this.hbDataSenderService = hbDataSenderService;
     }
 
+    /**
+     *
+     * Register data collector with this service.
+     * The registered collectors will be called to provide heartbeat data.
+     *
+     * @param collector collector to register
+     */
     @Override
     public void registerCollector(HBBaseDataCollector collector)
     {
         this.collectors.add(collector);
     }
 
+    /**
+     *  Collects and sends data for all registered collectors using the provided sender service.
+     */
     @Override
     public void collectAndSendData()
     {
@@ -74,7 +94,8 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
             }
             catch (Exception e)
             {
-                // log exception;
+                // Log exception
+                logger.error(e);
             }
         }
     }

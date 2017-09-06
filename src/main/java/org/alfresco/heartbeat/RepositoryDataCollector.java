@@ -36,7 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.dictionary.CustomModelsInfo;
@@ -47,11 +46,9 @@ import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.descriptor.Descriptor;
-import org.alfresco.service.license.LicenseException;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.Base64;
 
 public class RepositoryDataCollector extends HBBaseDataCollector
 {

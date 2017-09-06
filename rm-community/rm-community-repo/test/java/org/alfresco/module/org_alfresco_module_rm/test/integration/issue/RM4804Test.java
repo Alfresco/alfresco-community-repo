@@ -46,6 +46,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.GUID;
 
+import javax.xml.soap.Node;
+
 /**
  * Integration test for RM-4804
  *
@@ -56,6 +58,10 @@ import org.springframework.extensions.webscripts.GUID;
  */
 public class RM4804Test extends BaseRMTestCase
 {
+    //Fields required across transactions
+    NodeRef record;
+    NodeRef transferFolder;
+
     /**
      * Given a category with disposition schedule applied on folder with Cut Of and Transfer, a record folder and a file PDF document
      * to folder, complete the record
@@ -67,14 +73,10 @@ public class RM4804Test extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            NodeRef recordCategory;
-            NodeRef recordFolder;
-            NodeRef record;
-
             public void given()
             {
                 // category is created
-                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
 
                 // create a disposition schedule for category, applied on folder
                 Map<QName, Serializable> dsProps = new HashMap<QName, Serializable>(3);
@@ -82,7 +84,8 @@ public class RM4804Test extends BaseRMTestCase
                 dsProps.put(PROP_DISPOSITION_INSTRUCTIONS, GUID.generate());
                 dsProps.put(PROP_RECORD_LEVEL_DISPOSITION, false);
 
-                DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(recordCategory, dsProps);
+                DispositionSchedule dispositionSchedule = dispositionService.createDispositionSchedule(recordCategory,
+                    dsProps);
 
                 // cutoff immediately
                 Map<QName, Serializable> dispositionActionCutOff = new HashMap<QName, Serializable>(3);
@@ -102,8 +105,7 @@ public class RM4804Test extends BaseRMTestCase
                 dispositionService.addDispositionActionDefinition(dispositionSchedule, dispositionActionTransfer);
 
                 // add folder under category
-                recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
-
+                NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
                 // add record of type PDF under folder
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_TITLE, GUID.generate());
@@ -112,14 +114,15 @@ public class RM4804Test extends BaseRMTestCase
 
                 // complete the record
                 utils.completeRecord(record);
+                // cut off and transfer record
+                rmActionService.executeRecordsManagementAction(recordFolder, CutOffAction.NAME, null);
+                transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordFolder,
+                    TransferAction.NAME)
+                    .getValue();
             }
 
             public void when()
             {
-                // cut off and transfer record
-                rmActionService.executeRecordsManagementAction(recordFolder, CutOffAction.NAME, null);
-                NodeRef transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordFolder, TransferAction.NAME)
-                        .getValue();
                 rmActionService.executeRecordsManagementAction(transferFolder, TransferCompleteAction.NAME);
             }
 

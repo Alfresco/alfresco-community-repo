@@ -77,17 +77,23 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
      * Checks that we correctly handle text in different encodings,
      *  no matter if the encoding is specified on the Content Property
      *  or in a meta tag within the HTML itself. (ALF-10466)
+     *  
+     *  On Windows, org.htmlparser.beans.StringBean.carriageReturn() appends a new system dependent new line
+     *  so we must be careful when checking the returned text
      */
     public void testEncodingHandling() throws Exception
     {
+        final String NEWLINE = System.getProperty ("line.separator");
         final String TITLE = "Testing!";
         final String TEXT_P1 = "This is some text in English";
         final String TEXT_P2 = "This is more text in English";
         final String TEXT_P3 = "C'est en Fran\u00e7ais et Espa\u00f1ol";
-        String partA = "<html><head><title>"+TITLE+"</title>";
-        String partB = "</head>\n<body><p>"+TEXT_P1+"</p>\n" +
-        		       "<p>"+TEXT_P2+"</p>\n" + "<p>"+TEXT_P3+"</p>\n";
+        String partA = "<html><head><title>" + TITLE + "</title></head>" + NEWLINE;
+        String partB = "<body><p>" + TEXT_P1 + "</p>" + NEWLINE + 
+                             "<p>" + TEXT_P2 + "</p>" + NEWLINE + 
+                             "<p>" + TEXT_P3 + "</p>" + NEWLINE;
         String partC = "</body></html>";
+        final String expected = TITLE + NEWLINE + TEXT_P1 + NEWLINE + TEXT_P2 + NEWLINE + TEXT_P3 + NEWLINE;
         
         ContentWriter content;
         ContentWriter dest;
@@ -108,10 +114,8 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
             dest.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             
             transformer.transform(content.getReader(), dest);
-            assertEquals(
-                    TITLE + "\n" + TEXT_P1 + "\n" + TEXT_P2 + "\n" + TEXT_P3 + "\n", 
-                    dest.getReader().getContentString()
-            );
+           
+            assertEquals(expected, dest.getReader().getContentString());
             tmpS.delete();
             tmpD.delete();
         
@@ -128,10 +132,7 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
             dest.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             
             transformer.transform(content.getReader(), dest);
-            assertEquals(
-                    TITLE + "\n" + TEXT_P1 + "\n" + TEXT_P2 + "\n" + TEXT_P3 + "\n", 
-                    dest.getReader().getContentString()
-            );
+            assertEquals(expected, dest.getReader().getContentString());
             tmpS.delete();
             tmpD.delete();
             
@@ -148,10 +149,7 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
             dest.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             
             transformer.transform(content.getReader(), dest);
-            assertEquals(
-                    TITLE + "\n" + TEXT_P1 + "\n" + TEXT_P2 + "\n" + TEXT_P3 + "\n", 
-                    dest.getReader().getContentString()
-            );
+            assertEquals(expected, dest.getReader().getContentString());
             tmpS.delete();
             tmpD.delete();
             
@@ -178,10 +176,7 @@ public class HtmlParserContentTransformerTest extends AbstractContentTransformer
             dest.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             
             transformer.transform(content.getReader(), dest);
-            assertEquals(
-                    TITLE + "\n" + TEXT_P1 + "\n" + TEXT_P2 + "\n" + TEXT_P3 + "\n", 
-                    dest.getReader().getContentString()
-            );
+            assertEquals(expected, dest.getReader().getContentString());
             tmpS.delete();
             tmpD.delete();
             

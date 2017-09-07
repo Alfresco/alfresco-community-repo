@@ -44,10 +44,10 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.social.alfresco.api.entities.Site.Visibility.PUBLIC;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.site.RMSite;
@@ -97,7 +97,7 @@ public class RMSiteTests extends BaseRMRestTest
         assertEquals(rmSiteResponse.getTitle(), RM_TITLE);
         assertEquals(rmSiteResponse.getDescription(), RM_DESCRIPTION);
         assertEquals(rmSiteResponse.getCompliance(), STANDARD);
-        assertEquals(rmSiteResponse.getVisibility(), PUBLIC);
+        assertEquals(rmSiteResponse.getVisibility(), Visibility.PUBLIC);
         assertEquals(rmSiteResponse.getRole(), SiteManager.toString());
     }
 
@@ -178,7 +178,7 @@ public class RMSiteTests extends BaseRMRestTest
             assertEquals(rmSiteModel.getId(), RM_ID);
             assertEquals(rmSiteModel.getDescription(), RM_DESCRIPTION);
             assertEquals(rmSiteModel.getCompliance(), STANDARD);
-            assertEquals(rmSiteModel.getVisibility(), PUBLIC);
+            assertEquals(rmSiteModel.getVisibility(), Visibility.PUBLIC);
         }
     }
 
@@ -217,7 +217,7 @@ public class RMSiteTests extends BaseRMRestTest
         assertEquals(rmSiteModel.getTitle(), RM_TITLE);
         assertEquals(rmSiteModel.getDescription(), RM_DESCRIPTION);
         assertEquals(rmSiteModel.getCompliance(), DOD5015);
-        assertEquals(rmSiteModel.getVisibility(), PUBLIC);
+        assertEquals(rmSiteModel.getVisibility(), Visibility.PUBLIC);
         assertEquals(rmSiteModel.getRole(), SiteManager.toString());
     }
 
@@ -259,7 +259,7 @@ public class RMSiteTests extends BaseRMRestTest
         assertEquals(rmSiteModel.getTitle(), NEW_TITLE);
         assertEquals(rmSiteModel.getDescription(), NEW_DESCRIPTION);
         assertNotNull(rmSiteModel.getCompliance());
-        assertEquals(rmSiteModel.getVisibility(), PUBLIC);
+        assertEquals(rmSiteModel.getVisibility(), Visibility.PUBLIC);
     }
 
     /**

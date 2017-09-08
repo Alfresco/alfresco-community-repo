@@ -39,7 +39,7 @@ if exist @@BITROCK_INSTALLDIR@@\jboss\scripts\servicerun.bat (start /MIN /WAIT c
 if exist @@BITROCK_INSTALLDIR@@\wildfly\scripts\servicerun.bat (start /MIN /WAIT cmd /C @@BITROCK_INSTALLDIR@@\wildfly\scripts\servicerun.bat STOP)
 if exist @@BITROCK_INSTALLDIR@@\resin\scripts\servicerun.bat (start /MIN /WAIT cmd /C @@BITROCK_INSTALLDIR@@\resin\scripts\servicerun.bat STOP)
 if exist @@BITROCK_INSTALLDIR@@\activemq\scripts\servicerun.bat (start /MIN /WAIT cmd /C @@BITROCK_INSTALLDIR@@\activemq\scripts\servicerun.bat STOP)
-if exist @@BITROCK_INSTALLDIR@@\tomcat\scripts\servicerun.bat (start /MIN /WAIT cmd /C /WAIT @@BITROCK_INSTALLDIR@@\tomcat\scripts\servicerun.bat STOP)
+if exist @@BITROCK_INSTALLDIR@@\tomcat\scripts\servicerun.bat (start /MIN /WAIT cmd /C @@BITROCK_INSTALLDIR@@\tomcat\scripts\servicerun.bat STOP)
 if exist @@BITROCK_INSTALLDIR@@\openoffice\scripts\servicerun.bat (start /MIN /WAIT cmd /C @@BITROCK_INSTALLDIR@@\openoffice\scripts\servicerun.bat STOP)
 if exist @@BITROCK_INSTALLDIR@@\apache2\scripts\servicerun.bat (start /MIN /WAIT cmd /C @@BITROCK_INSTALLDIR@@\apache2\scripts\servicerun.bat STOP)
 if exist @@BITROCK_INSTALLDIR@@\logstash-forwarder\scripts\servicerun.bat (start /MIN /WAIT cmd /C @@BITROCK_INSTALLDIR@@\logstash-forwarder\scripts\servicerun.bat STOP)

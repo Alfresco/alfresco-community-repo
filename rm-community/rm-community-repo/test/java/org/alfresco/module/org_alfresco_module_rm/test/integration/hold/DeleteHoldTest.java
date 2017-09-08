@@ -91,53 +91,68 @@ public class DeleteHoldTest extends BaseRMTestCase
 
     public void testDeleteHoldBehaviourForRecordFolder()
     {
+        NodeRef hold1 = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                // create test holds
+                return createAndCheckHold();
+            }
+        });
+        //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
         doTestInTransaction(new Test<Void>()
         {
-           @Override
-           public Void run() throws Exception
-           {
-               // create test holds
-               NodeRef hold1 = createAndCheckHold();
+            @Override
+            public Void run() throws Exception
+            {
+                // add the record folder to hold1
+                holdService.addToHold(hold1, rmFolder);
 
-               // add the record folder to hold1
-               holdService.addToHold(hold1, rmFolder);
+                // assert that the folder and records are frozen
+                assertTrue(freezeService.isFrozen(rmFolder));
+                assertTrue(freezeService.isFrozen(recordOne));
+                assertTrue(freezeService.isFrozen(recordDeclaredOne));
 
-               // assert that the folder and records are frozen
-               assertTrue(freezeService.isFrozen(rmFolder));
-               assertTrue(freezeService.isFrozen(recordOne));
-               assertTrue(freezeService.isFrozen(recordDeclaredOne));
+                // check the contents of the hold
+                List<NodeRef> frozenNodes = holdService.getHeld(hold1);
+                assertNotNull(frozenNodes);
+                assertEquals(1, frozenNodes.size());
+                assertEquals(rmFolder, frozenNodes.get(0));
 
-               // check the contents of the hold
-               List<NodeRef> frozenNodes = holdService.getHeld(hold1);
-               assertNotNull(frozenNodes);
-               assertEquals(1, frozenNodes.size());
-               assertEquals(rmFolder, frozenNodes.get(0));
+                // delete the hold
+                holdService.deleteHold(hold1);
 
-               // delete the hold
-               holdService.deleteHold(hold1);
+                // assert that the folder and records no longer frozen
+                assertFalse(freezeService.isFrozen(rmFolder));
+                assertFalse(freezeService.isFrozen(recordOne));
+                assertFalse(freezeService.isFrozen(recordDeclaredOne));
 
-               // assert that the folder and records no longer frozen
-               assertFalse(freezeService.isFrozen(rmFolder));
-               assertFalse(freezeService.isFrozen(recordOne));
-               assertFalse(freezeService.isFrozen(recordDeclaredOne));
+                // confirm the hold has been deleted
+                assertNull(holdService.getHold(filePlan, "hold one"));
 
-               // confirm the hold has been deleted
-               assertNull(holdService.getHold(filePlan, "hold one"));
-
-               return null;
-           }
+                return null;
+            }
         });
     }
 
     public void testDeleteHoldBehaviourForMultipleHolds()
     {
+        List<NodeRef> holds = doTestInTransaction(new Test<List<NodeRef>>()
+        {
+            @Override
+            public List<NodeRef> run() throws Exception
+            {
+                // create test holds
+                return createAndCheckHolds();
+            }
+        });
+        //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
         doTestInTransaction(new Test<Void>()
         {
            @Override
            public Void run() throws Exception
            {
-               // create test holds
-               List<NodeRef> holds = createAndCheckHolds();
                NodeRef hold1 = holds.get(0);
                NodeRef hold2 = holds.get(1);
 

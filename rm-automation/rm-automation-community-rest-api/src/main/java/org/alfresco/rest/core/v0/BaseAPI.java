@@ -404,15 +404,11 @@ public abstract class BaseAPI
 
             try
             {
-                String bodyString = EntityUtils.toString(response.getEntity());
-                try
-                {
-                    responseBody = new JSONObject(bodyString);
-                }
-                catch (JSONException error)
-                {
-                    LOGGER.error("Converting message body to JSON failed. Body: {}", responseBody, error);
-                }
+                responseBody = new JSONObject(EntityUtils.toString(response.getEntity()));
+            }
+            catch (JSONException error)
+            {
+                LOGGER.error("Converting message body to JSON failed. Body: {}", responseBody, error);
             }
             catch (ParseException | IOException error)
             {

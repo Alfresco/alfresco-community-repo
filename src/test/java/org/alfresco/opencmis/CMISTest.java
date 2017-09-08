@@ -3669,6 +3669,64 @@ public class CMISTest
         }
     }
     
+    @Test
+    public void testCreateDocWithVersioningStateNone() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        try
+        {
+            // get repository id
+            final String repositoryId = withCmisService(new CmisServiceCallback<String>()
+            {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    final String repositoryId = repo.getId();
+                    return repositoryId;
+                }
+            }, CmisVersion.CMIS_1_1);
+
+            final NodeRef documentNodeRef = withCmisService(new CmisServiceCallback<NodeRef>()
+            {
+                @Override
+                public NodeRef execute(CmisService cmisService)
+                {
+                    final PropertiesImpl properties = new PropertiesImpl();
+                    String objectTypeId = "cmis:document";
+                    properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, objectTypeId));
+                    String fileName = "textFile" + GUID.generate();
+                    properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
+                    final ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
+
+                    String nodeId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.NONE, null, null);
+                    return new NodeRef(nodeId.substring(0, nodeId.indexOf(';')));
+                }
+            }, CmisVersion.CMIS_1_1);
+
+            // check versioning properties
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
+            {
+                @Override
+                public List<Void> execute() throws Throwable
+                {
+                    assertTrue(nodeService.exists(documentNodeRef));
+                    assertFalse(nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+                    return null;
+                }
+            });
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
     /**
      * MNT-14951: Test that the list of parents can be retrieved for a folder.
      */

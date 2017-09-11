@@ -86,13 +86,13 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
     }
 
     @Override
-    public boolean isHbEnabled()
+    public synchronized boolean isHbEnabled()
     {
         return enabled;
     }
 
     @Override
-    public void setHbEnabled(boolean enabled)
+    public synchronized void setHbEnabled(boolean enabled)
     {
         this.enabled = enabled;
     }

@@ -130,27 +130,6 @@ public class HeartBeat implements LicenseChangeHandler
         }
     }
 
-//    private synchronized void setHeartBeatUrl(String heartBeatUrl)
-//    {
-//        this.heartBeatUrl = heartBeatUrl;
-//    }
-//
-//    // Determine the URL to send the heartbeat to from the license if not set
-//    private synchronized String getHeartBeatUrl()
-//    {
-//        if (heartBeatUrl == null)
-//        {
-//            // GC: Ignore the standard heartbeat URL and always use the AWS/Lambda URL
-////            LicenseDescriptor licenseDescriptor = licenseService.getLicense();
-////            String url = (licenseDescriptor == null) ? null : licenseDescriptor.getHeartBeatUrl();
-////            setHeartBeatUrl(url == null ? HeartBeat.DEFAULT_URL : url);
-//            setHeartBeatUrl(LAMBDA_INGEST_URL);
-//        }
-//
-//        logger.debug("Returning heartBeatUrl: " + heartBeatUrl);
-//
-//        return heartBeatUrl;
-//    }
 
     /**
      * @return          <tt>true</tt> if the heartbeat is currently enabled
@@ -182,7 +161,6 @@ public class HeartBeat implements LicenseChangeHandler
     {
         logger.debug("Update license called");
 
-        //setHeartBeatUrl(licenseDescriptor.getHeartBeatUrl());
         boolean newEnabled = !licenseDescriptor.isHeartBeatDisabled();
 
         if (newEnabled != dataCollectorService.isHbEnabled())

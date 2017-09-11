@@ -18,8 +18,8 @@
         <property name="hbDataCollectorService" ref="hbDataCollectorService"/>
     </bean>
 
-    <!-- HeartBeat community data collector -->
-    <bean id="hbCommunityDataCollector" class="org.alfresco.heartbeat.CommunityHBDataCollector" parent="hbBaseDataCollector" init-method="register">
+    <!-- HeartBeat repository data collector -->
+    <bean id="repositoryDataCollector" class="org.alfresco.heartbeat.RepositoryDataCollector" parent="hbBaseDataCollector" init-method="register">
         <property name="currentRepoDescriptorDAO" ref="currentRepoDescriptorDAO"/>
         <property name="serverDescriptorDAO" ref="serverDescriptorDAO"/>
         <property name="authorityService" ref="authorityService"/>

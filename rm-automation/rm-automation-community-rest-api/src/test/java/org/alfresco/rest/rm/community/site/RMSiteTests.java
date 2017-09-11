@@ -47,6 +47,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 
+import org.alfresco.dataprep.SiteService.Visibility;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.TestData;
 import org.alfresco.rest.rm.community.model.site.RMSite;
@@ -54,7 +55,6 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.UserModel;
 import org.alfresco.utility.report.Bug;
-import org.springframework.social.alfresco.api.entities.Site.Visibility;
 import org.testng.annotations.Test;
 
 /**

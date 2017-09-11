@@ -29,7 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.heartbeat.datasender.HBDataSenderServiceBuilder;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.apache.commons.logging.Log;
@@ -119,7 +118,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
     {
         this.enabled = enabled;
         
-        this.hbDataSenderService = HBDataSenderServiceBuilder.builder().enable(enabled).update(hbDataSenderService);
+        this.hbDataSenderService.enable(enabled);
     }
 
 }

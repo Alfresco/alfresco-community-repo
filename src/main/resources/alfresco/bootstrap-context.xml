@@ -269,7 +269,7 @@
       </property>
       
    </bean>
-    
+
     <!-- Descriptor Service -->
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
        <property name="serverDescriptorDAO">
@@ -286,6 +286,19 @@
        </property>
        <property name="repoUsageComponent" ref="repoUsageComponent"/>
     </bean>
+
+
+
+    <!-- HeartBeat data collector service -->
+    <bean id="hbDataCollectorService" class="org.alfresco.heartbeat.HBDataCollectorServiceImpl">
+    </bean>
+
+    <!-- HeartBeat community data collector -->
+    <bean id="hbCommunityDataCollector" class="org.alfresco.heartbeat.CommunityHBDataCollector" depends-on="hbDataCollectorService">
+        <constructor-arg ref = "hbDataCollectorService"/>
+    </bean>
+
+
 
     <!-- Bootstrap MT (multi-tenancy) if applicable -->
     <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >

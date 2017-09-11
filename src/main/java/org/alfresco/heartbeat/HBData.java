@@ -138,6 +138,12 @@ public class HBData
         this.data = data;
     }
 
+    @Override
+    public String toString()
+    {
+        return "HBData(" + systemId + " " + collectorId + " " + collectorVersion + " " + timestamp +")";
+    }
+
     public static void main(String[] args) throws JSONException
     {
         Map<String, Object> data = new TreeMap<String, Object>();

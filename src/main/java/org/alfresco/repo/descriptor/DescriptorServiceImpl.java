@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.heartbeat.HBBaseDataCollector;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -37,6 +38,7 @@ import org.alfresco.repo.usage.RepoUsageComponent;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
+import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
@@ -303,9 +305,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             ((ConfigurableApplicationContext) applicationContext).getBeanFactory().registerSingleton(
                     "licenseService", licenseService);
         }
-        
+
         // Load heart-beat special service (even if disabled at the moment)
-        heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
+        //heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
+        heartBeat = constructSpecialService("org.alfresco.heartbeat.HeartBeat");
         
         // Now listen for future license changes
         licenseService.registerOnLicenseChange(this);

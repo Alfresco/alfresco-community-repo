@@ -32,8 +32,12 @@ import org.alfresco.service.cmr.repository.HBDataCollectorService;
 public abstract class HBBaseDataCollector
 {
     private HBDataCollectorService hbDataCollectorService;
-    
-    
+
+    public HBBaseDataCollector( HBDataCollectorService dataCollectorService ) {
+        this.hbDataCollectorService = dataCollectorService;
+        this.register();  // I'v moved the registering here assuming every collector will do the same?
+    }
+
     public void register()
     {
         hbDataCollectorService.registerCollector(this);

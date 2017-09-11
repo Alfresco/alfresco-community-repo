@@ -3,9 +3,14 @@
 
 <beans>
 
-    <bean id="hbDataSenderService" class="org.alfresco.heartbeat.datasender.internal.HBDataSenderServiceImpl">
-        <constructor-arg value="${heartbeat.target.url}" />
-    </bean>
+    <!-- HeartBeat data sender service -->
+	<bean id="hbDataSenderFactory" class="org.alfresco.heartbeat.HBDataSenderServiceFactory">
+		<property name="target" value="${heartbeat.target.url}"></property>
+		<property name="heartbeatEnabled" value="${heartbeat.enabled}"></property>
+	</bean>
+
+	<bean id="hbDataSenderService" factory-bean="hbDataSenderFactory" factory-method="createInstance">
+	</bean>
 
     <!-- HeartBeat data collector service -->
     <bean id="hbDataCollectorService" class="org.alfresco.heartbeat.HBDataCollectorServiceImpl">

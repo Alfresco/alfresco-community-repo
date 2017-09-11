@@ -25,8 +25,6 @@
  */
 package org.alfresco.heartbeat;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.Date;
 
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
@@ -56,7 +54,7 @@ import org.springframework.context.ApplicationContext;
 public class HeartBeat implements LicenseChangeHandler
 {
 
-    /** The logger. */
+    /** The logger */
     private static final Log logger = LogFactory.getLog(HeartBeat.class);
 
     private LicenseService licenseService;
@@ -91,14 +89,17 @@ public class HeartBeat implements LicenseChangeHandler
      *            are we running in test mode? If so we send data to local port 9999 rather than an alfresco server. We
      *            also use a special test encryption certificate and ping on a more frequent basis.
      */
-    public HeartBeat(final ApplicationContext context, final Boolean testModel)
+    public HeartBeat(final ApplicationContext context, final Boolean testMode)
     {
-        logger.debug("Initialising HeartBeat");
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Initialising HeartBeat");
+        }
 
         this.dataCollectorService = (HBDataCollectorService) context.getBean("hbDataCollectorService");
         this.scheduler = (Scheduler) context.getBean("schedulerFactory");
 
-        this.testMode = testModel;
+        this.testMode = testMode;
 
         try
         {
@@ -141,13 +142,19 @@ public class HeartBeat implements LicenseChangeHandler
      */
     public synchronized void onLicenseChange(LicenseDescriptor licenseDescriptor)
     {
-        logger.debug("Update license called");
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Update license called");
+        }
 
         boolean newEnabled = !licenseDescriptor.isHeartBeatDisabled();
 
         if (newEnabled != dataCollectorService.isHbEnabled())
         {
-            logger.debug("State change of heartbeat");
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("State change of heartbeat");
+            }
             dataCollectorService.setHbEnabled(newEnabled);
             try
             {
@@ -170,7 +177,10 @@ public class HeartBeat implements LicenseChangeHandler
 
         if (newEnabled != dataCollectorService.isHbEnabled())
         {
-            logger.debug("State change of heartbeat");
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("State change of heartbeat");
+            }
             dataCollectorService.setHbEnabled(newEnabled);
             try
             {
@@ -190,13 +200,17 @@ public class HeartBeat implements LicenseChangeHandler
     private synchronized void scheduleJob() throws SchedulerException
     {
         // Schedule the heart beat to run regularly
+        final String triggerName = JOB_NAME + "Trigger";
         if(dataCollectorService.isHbEnabled())
         {
-            logger.debug("heartbeat job scheduled");
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("heartbeat job scheduled");
+            }
             final JobDetail jobDetail = new JobDetail(JOB_NAME, Scheduler.DEFAULT_GROUP, HeartBeatJob.class);
             jobDetail.getJobDataMap().put("heartBeat", this);
+            
             // Ensure the job wasn't already scheduled in an earlier retry of this transaction
-            final String triggerName = JOB_NAME + "Trigger";
             scheduler.unscheduleJob(triggerName, Scheduler.DEFAULT_GROUP);
             final Trigger trigger = new SimpleTrigger(triggerName, Scheduler.DEFAULT_GROUP, new Date(), null,
                     //SimpleTrigger.REPEAT_INDEFINITELY, testMode ? 1000 : 4 * 60 * 60 * 1000);
@@ -205,8 +219,10 @@ public class HeartBeat implements LicenseChangeHandler
         }
         else
         {
-            logger.debug("heartbeat job unscheduled");
-            final String triggerName = JOB_NAME + "Trigger";
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("heartbeat job unscheduled");
+            }
             scheduler.unscheduleJob(triggerName, Scheduler.DEFAULT_GROUP);
         }
     }

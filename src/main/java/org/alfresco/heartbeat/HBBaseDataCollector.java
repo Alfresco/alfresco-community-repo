@@ -33,17 +33,12 @@ public abstract class HBBaseDataCollector
 {
     private HBDataCollectorService hbDataCollectorService;
 
-    public HBBaseDataCollector( HBDataCollectorService dataCollectorService ) {
-        this.hbDataCollectorService = dataCollectorService;
-        this.register();  // I'v moved the registering here assuming every collector will do the same?
-    }
-
     public void register()
     {
         hbDataCollectorService.registerCollector(this);
     }
     
-    public void setHBDataCollectorService(HBDataCollectorService hbDataCollectorService)
+    public void setHbDataCollectorService(HBDataCollectorService hbDataCollectorService)
     {
         this.hbDataCollectorService = hbDataCollectorService;
     }

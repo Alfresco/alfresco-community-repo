@@ -29,7 +29,6 @@
 #
 #img.coders=${img.root}/modules/coders
 #img.config=${img.root}/config
-#img.gslib=${img.root}/lib
 
 #
 # Property to control whether schema updates are performed automatically.

@@ -28,21 +28,25 @@ package org.alfresco.heartbeat;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 
 public class HBDataCollectorServiceImpl implements HBDataCollectorService
 {
-
     /** The logger. */
     private static final Log logger = LogFactory.getLog(HBDataCollectorServiceImpl.class);
 
     private List<HBBaseDataCollector> collectors = new LinkedList<>();
-//    private HBDataSenderService dataSender;
+    private HBDataSenderService hbDataSenderService;
     private boolean enabled;
 
+    public void setHbDataSenderService(HBDataSenderService hbDataSenderService)
+    {
+        this.hbDataSenderService = hbDataSenderService;
+    }
 
     @Override
     public void registerCollector(HBBaseDataCollector collector)
@@ -55,17 +59,15 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
     {
         for (HBBaseDataCollector collector : collectors)
         {
-
             List<HBData> data = collector.collectData();
-
-//            try
-//            {
-//                dataSender.sendData(data);
-//            }
-//            catch (Exception e)
-//            {
-//                // log exception;
-//            }
+            try
+            {
+                hbDataSenderService.sendData(data);
+            }
+            catch (Exception e)
+            {
+                // log exception;
+            }
         }
     }
 

@@ -25,51 +25,27 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.repo.dictionary.CustomModelsInfo;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.usage.RepoUsageComponent;
-import org.alfresco.service.cmr.admin.RepoUsage;
-import org.alfresco.service.cmr.dictionary.CustomModelService;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.util.Date;
+
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.license.LicenseDescriptor;
-import org.alfresco.service.license.LicenseException;
 import org.alfresco.service.license.LicenseService;
 import org.alfresco.service.license.LicenseService.LicenseChangeHandler;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.traitextender.SpringExtensionBundle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.quartz.*;
+import org.quartz.Job;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.extensions.surf.util.Base64;
-
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.URL;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.cert.Certificate;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.*;
 
 /**
  * This class communicates some very basic repository statistics to Alfresco on a regular basis.
@@ -205,13 +181,13 @@ public class HeartBeat implements LicenseChangeHandler
      * @throws GeneralSecurityException
      *             an encryption related exception
      */
-    public void sendData() throws IOException, GeneralSecurityException
+    public void collectAndSendData() throws IOException, GeneralSecurityException
     {
         this.dataCollectorService.collectAndSendData();
     }
 
     /**
-     * Listens for license changes.  If a license is change or removed, the heartbeat job is resheduled.
+     * Listens for license changes.  If a license is change or removed, the heartbeat job is rescheduled.
      */
     public synchronized void onLicenseChange(LicenseDescriptor licenseDescriptor)
     {
@@ -297,7 +273,7 @@ public class HeartBeat implements LicenseChangeHandler
             final HeartBeat heartBeat = (HeartBeat) dataMap.get("heartBeat");
             try
             {
-                heartBeat.sendData();
+                heartBeat.collectAndSendData();
             }
             catch (final Exception e)
             {

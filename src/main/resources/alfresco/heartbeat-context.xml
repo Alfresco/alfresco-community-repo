@@ -3,8 +3,12 @@
 
 <beans>
 
+    <bean id="hbDataSenderService" class="org.alfresco.heartbeat.datasender.internal.HBDataSenderServiceImpl">
+    </bean>
+
     <!-- HeartBeat data collector service -->
     <bean id="hbDataCollectorService" class="org.alfresco.heartbeat.HBDataCollectorServiceImpl">
+        <property name="hbDataSenderService" ref="hbDataSenderService" />
     </bean>
 
     <!-- HeartBeat abstract data collector -->

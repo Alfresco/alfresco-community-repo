@@ -25,13 +25,25 @@
  */
 package org.alfresco.heartbeat;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.security.GeneralSecurityException;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.dictionary.CustomModelsInfo;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.usage.RepoUsageComponent;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
-import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.descriptor.Descriptor;
@@ -39,18 +51,10 @@ import org.alfresco.service.license.LicenseException;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.Base64;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-public class CommunityHBDataCollector extends HBBaseDataCollector {
+public class CommunityHBDataCollector extends HBBaseDataCollector 
+{
 
     /** The logger. */
     private static final Log logger = LogFactory.getLog(CommunityHBDataCollector.class);
@@ -78,35 +82,39 @@ public class CommunityHBDataCollector extends HBBaseDataCollector {
     /** Provides information about custom models */
     private CustomModelService customModelService;
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO) {
+    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO) 
+    {
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO) {
+    public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO) 
+    {
         this.serverDescriptorDAO = serverDescriptorDAO;
     }
 
-    public void setAuthorityService(AuthorityService authorityService) {
+    public void setAuthorityService(AuthorityService authorityService) 
+    {
         this.authorityService = authorityService;
     }
 
-    public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent) {
+    public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent) 
+    {
         this.repoUsageComponent = repoUsageComponent;
     }
 
-    public void setTransactionService(TransactionService transactionService) {
+    public void setTransactionService(TransactionService transactionService) 
+    {
         this.transactionService = transactionService;
     }
 
-    public void setCustomModelService(CustomModelService customModelService) {
+    public void setCustomModelService(CustomModelService customModelService) 
+    {
         this.customModelService = customModelService;
     }
 
     @Override
     public List<HBData> collectData()
     {
-
-        String timeStamp = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ss.sss'Z'").format(new Date());
         List<HBData> collectedData = new LinkedList<>();
 
         RetryingTransactionHelper.RetryingTransactionCallback<Void> initCallback = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
@@ -120,7 +128,6 @@ public class CommunityHBDataCollector extends HBBaseDataCollector {
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(initCallback, true);
 
-
         // collect repository info data
         logger.debug("Preparing repository info data...");
         Map<String, Object> infoValues = new HashMap<String, Object>();
@@ -133,7 +140,7 @@ public class CommunityHBDataCollector extends HBBaseDataCollector {
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 "acs.repository.info",
                 "1.0",
-                timeStamp,
+                new Date(),
                 infoValues);
         collectedData.add(infoData);
 
@@ -148,7 +155,7 @@ public class CommunityHBDataCollector extends HBBaseDataCollector {
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 "acs.repository.usage.system",
                 "1.0",
-                timeStamp,
+                new Date(),
                 systemUsageValues);
         collectedData.add(systemUsageData);
 
@@ -171,7 +178,7 @@ public class CommunityHBDataCollector extends HBBaseDataCollector {
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 "acs.repository.usage.model",
                 "1.0",
-                timeStamp,
+                new Date(),
                 modelUsageValues);
         collectedData.add(modelUsageData);
 
@@ -209,13 +216,12 @@ public class CommunityHBDataCollector extends HBBaseDataCollector {
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 "acs.repository.license",
                 "1.0",
-                timeStamp,
+                new Date(),
                 licenseValues);
         collectedData.add(licenseData);
 
         return collectedData;
     }
-
 
     /**
      * Initializes static parameters on first invocation. Avoid doing it on construction due to bootstrap dependencies

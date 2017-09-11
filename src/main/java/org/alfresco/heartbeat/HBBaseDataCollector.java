@@ -27,6 +27,7 @@ package org.alfresco.heartbeat;
 
 import java.util.List;
 
+import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 
 public abstract class HBBaseDataCollector

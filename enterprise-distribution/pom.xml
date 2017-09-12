@@ -19,7 +19,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-content-services-distribution</artifactId>
-            <version>${dependency.acs-packaging.version}</version>
+            <version>${alfresco.platform.version}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>
@@ -81,7 +81,7 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-content-services-distribution</artifactId>
-                                    <version>${dependency.acs-packaging.version}</version>
+                                    <version>${alfresco.platform.version}</version>
                                     <type>zip</type>
                                 </artifactItem>
                                 <artifactItem>

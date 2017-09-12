@@ -15,7 +15,7 @@
             <dependency>
                 <groupId>org.alfresco</groupId>
                 <artifactId>alfresco-parent</artifactId>
-                <version>${dependency.acs-packaging.version}</version>
+                <version>${alfresco.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-server-root</artifactId>
-            <version>${dependency.acs-packaging.version}</version>
+            <version>${alfresco.platform.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
@@ -230,7 +230,7 @@
                         <configuration>
                             <includeArtifactIds>alfresco-content-services-full-distribution</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
-                            <excludes>alfresco-content-services-full-distribution-${dependency.acs-packaging.version}/solr4/,alfresco-content-services-full-distribution-${dependency.acs-packaging.version}/web-server/webapps/,alfresco-content-services-full-distribution-${dependency.acs-packaging.version}/modules/</excludes>
+                            <excludes>alfresco-content-services-full-distribution-${alfresco.platform.version}/solr4/,alfresco-content-services-full-distribution-${alfresco.platform.version}/web-server/webapps/,alfresco-content-services-full-distribution-${alfresco.platform.version}/modules/</excludes>
                         </configuration>
                     </execution>
 
@@ -262,7 +262,7 @@
                                     <version>1.0.1</version>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${project.build.directory}/dependency/alfresco-content-services-full-distribution-${dependency.acs-packaging.version}/web-server/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/dependency/alfresco-content-services-full-distribution-${alfresco.platform.version}/web-server/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

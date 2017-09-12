@@ -276,7 +276,7 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-spp</artifactId>
-                                    <version>${dependency.acs-packaging.version}</version>
+                                    <version>${alfresco.platform.version}</version>
                                     <type>amp</type>
                                     <destFileName>alfresco-spp.amp</destFileName>
                                 </artifactItem>

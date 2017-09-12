@@ -45,9 +45,6 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
     /** The service responsible for sending the collected data */
     private HBDataSenderService hbDataSenderService;
 
-    /** Current enabled state */
-    private boolean enabled = false;
-
     /** The default enable state */
     private final boolean defaultHbState;
 
@@ -59,7 +56,6 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
     public HBDataCollectorServiceImpl (boolean defaultHeartBeatState)
     {
         this.defaultHbState = defaultHeartBeatState;
-        this.enabled = defaultHeartBeatState;
     }
 
     public void setHbDataSenderService(HBDataSenderService hbDataSenderService)
@@ -102,22 +98,14 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService
     }
 
     @Override
-    public boolean getDefaultHbState()
+    public boolean isEnabledByDefault()
     {
         return defaultHbState;
     }
 
     @Override
-    public synchronized boolean isHbEnabled()
+    public synchronized void enabled(boolean enabled)
     {
-        return enabled;
-    }
-
-    @Override
-    public synchronized void setHbEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-        
         this.hbDataSenderService.enable(enabled);
     }
 

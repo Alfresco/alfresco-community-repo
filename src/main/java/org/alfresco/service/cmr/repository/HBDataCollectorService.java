@@ -32,12 +32,10 @@ public interface HBDataCollectorService
     void registerCollector(HBBaseDataCollector collector);
     
     void collectAndSendData();
-    
-    boolean isHbEnabled();
 
-    void setHbEnabled(boolean enabled);
+    void enabled(boolean enabled);
 
-    boolean getDefaultHbState();
+    boolean isEnabledByDefault();
     
     
 }

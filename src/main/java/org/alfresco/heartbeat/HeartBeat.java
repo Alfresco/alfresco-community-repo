@@ -67,6 +67,9 @@ public class HeartBeat implements LicenseChangeHandler
 
     private HBDataCollectorService dataCollectorService;
 
+    /** Current enabled state */
+    private boolean enabled = false;
+
     /**
      * Initialises the heart beat service. Note that dependencies are intentionally 'pulled' rather than injected
      * because we don't want these to be reconfigured.
@@ -101,6 +104,8 @@ public class HeartBeat implements LicenseChangeHandler
 
         this.testMode = testMode;
 
+        this.enabled = dataCollectorService.isEnabledByDefault();
+
         try
         {
             LicenseService licenseService = null;
@@ -128,6 +133,12 @@ public class HeartBeat implements LicenseChangeHandler
         }
     }
 
+
+    public synchronized  boolean isEnabled()
+    {
+        return this.enabled;
+    }
+
     /**
      *  Delegates data collection and sending to HBDataCollectorService.
      *
@@ -149,13 +160,14 @@ public class HeartBeat implements LicenseChangeHandler
 
         boolean newEnabled = !licenseDescriptor.isHeartBeatDisabled();
 
-        if (newEnabled != dataCollectorService.isHbEnabled())
+        if (newEnabled != this.enabled)
         {
             if (logger.isDebugEnabled())
             {
                 logger.debug("State change of heartbeat");
             }
-            dataCollectorService.setHbEnabled(newEnabled);
+            this.enabled = newEnabled;
+            dataCollectorService.enabled(newEnabled);
             try
             {
                 scheduleJob();
@@ -173,15 +185,16 @@ public class HeartBeat implements LicenseChangeHandler
     @Override
     public synchronized void onLicenseFail()
     {
-        boolean newEnabled = dataCollectorService.getDefaultHbState();
+        boolean newEnabled = dataCollectorService.isEnabledByDefault();
 
-        if (newEnabled != dataCollectorService.isHbEnabled())
+        if (newEnabled != this.enabled)
         {
             if (logger.isDebugEnabled())
             {
                 logger.debug("State change of heartbeat");
             }
-            dataCollectorService.setHbEnabled(newEnabled);
+            this.enabled = newEnabled;
+            dataCollectorService.enabled(newEnabled);
             try
             {
                 scheduleJob();
@@ -201,7 +214,7 @@ public class HeartBeat implements LicenseChangeHandler
     {
         // Schedule the heart beat to run regularly
         final String triggerName = JOB_NAME + "Trigger";
-        if(dataCollectorService.isHbEnabled())
+        if(this.enabled)
         {
             if (logger.isDebugEnabled())
             {

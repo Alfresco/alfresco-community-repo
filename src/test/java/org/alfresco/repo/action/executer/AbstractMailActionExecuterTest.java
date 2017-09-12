@@ -792,17 +792,18 @@ public abstract class AbstractMailActionExecuterTest
             AUTHORITY_SERVICE.addAuthority(groupName, USER1);
             AUTHORITY_SERVICE.addAuthority(groupName, USER2);
 
-            // Prepare email to be sent to group. Add also a template
+            // Create mail
             final Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
             mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
             mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, groupName);
             mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
             mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "Testing");
-            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
-            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/testSentTo.txt.ftl");
 
-            // Send email
-            MimeMessage message = TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<MimeMessage>()
+            RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+
+            // Send mail
+            MimeMessage message = txHelper.doInTransaction(new RetryingTransactionCallback<MimeMessage>()
             {
                 @Override
                 public MimeMessage execute() throws Throwable
@@ -810,13 +811,12 @@ public abstract class AbstractMailActionExecuterTest
                     ACTION_EXECUTER.executeImpl(mailAction, null);
                     return ACTION_EXECUTER.retrieveLastTestMessage();
                 }
-            });
+            }, true);
 
-            // Check that both users are displayed in TO field
-            Address[] addresses = message.getRecipients(Message.RecipientType.TO);
-            Assert.assertEquals("Expected both users to be in TO field", 2, addresses.length);
-            Assert.assertEquals(USER1 + "@email.com", addresses[0].toString());
-            Assert.assertEquals(USER2 + "@email.com", addresses[1].toString());
+            // Check that both users are displayed in message body
+            String recipients = USER1 + "@email.com" + "," + USER2 + "@email.com";
+            Assert.assertNotNull(message);
+            Assert.assertEquals("This email was sent to " + recipients, (String) message.getContent());
         }
         finally
         {

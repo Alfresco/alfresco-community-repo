@@ -615,10 +615,12 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 
                 // set recipient
                 String to = (String)ruleAction.getParameterValue(PARAM_TO);
+                String toRecipients = null;
                 if (to != null && to.length() != 0)
                 {
                     messageRef[0].setTo(to);
-                    
+                    toRecipients = to;
+
                     // Note: there is no validation on the username to check that it actually is an email address.
                     // TODO Fix this.
 
@@ -778,6 +780,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         if(recipients.size() > 0)
                         {
                             messageRef[0].setTo(recipients.toArray(new String[recipients.size()]));
+                            toRecipients = String.join(",", recipients);
                         }
                         else
                         {
@@ -925,7 +928,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     }
                     
                     // build the email template model
-                    Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef, suppliedModel, fromPerson);
+                    Map<String, Object> model = createEmailTemplateModel(actionedUponNodeRef, suppliedModel, fromPerson, toRecipients);
 
                     // Determine the locale to use to send the email.
                     Locale locale = recipient.getSecond();
@@ -1500,15 +1503,20 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     * 
     * @return Model map for email templates
     */
-   private Map<String, Object> createEmailTemplateModel(NodeRef ref, Map<String, Object> suppliedModel, NodeRef fromPerson)
+   private Map<String, Object> createEmailTemplateModel(NodeRef ref, Map<String, Object> suppliedModel, NodeRef fromPerson, String toRecipents)
    {
       Map<String, Object> model = new HashMap<String, Object>(8, 1.0f);
       
       if (fromPerson != null)
       {
           model.put("person", new TemplateNode(fromPerson, serviceRegistry, null));
-      }      
-      
+      }
+
+      if (toRecipents != null)
+      {
+          model.put("to", toRecipents);
+      }
+
       if (ref != null)
       {
           model.put("document", new TemplateNode(ref, serviceRegistry, null));

@@ -42,30 +42,12 @@ import java.util.Arrays;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class HeartBeatTest
 {
-
-    /**
-     *  1. Constructor
-     *      - Check that licenseService.registerOnLicenseChange
-     *
-     *  2. Job scheduling
-     *      - enabled
-     *      - disabled
-     *      - unschedule job
-     *      - schedule already scheduled job (maybe not actually needed)
-     *
-     *  3. On licence chane
-     *
-     *  4. On licence fail
-     *
-     *  4. Test HB Job inner class
-     */
 
 
     private static final String[] CONFIG_LOCATIONS = new String[] {"alfresco/scheduler-core-context.xml", "org/alfresco/util/test-scheduled-jobs-context.xml"};
@@ -76,7 +58,8 @@ public class HeartBeatTest
     HBDataCollectorService mockDataCollectorService;
 
     @Before
-    public void setUp(){
+    public void setUp()
+    {
 
         // New context with scheduler
         context = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);

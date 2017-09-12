@@ -42,13 +42,15 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 /**
  * @author eknizat
  */
-public class HBDataCollectorServiceImplTest {
+public class HBDataCollectorServiceImplTest
+{
 
     private HBDataCollectorServiceImpl dataCollectorService;
     private HBDataSenderService mockDataSenderService;
 
     @Before
-    public void setUp(){
+    public void setUp()
+    {
         mockDataSenderService = mock(HBDataSenderService.class);
         dataCollectorService = new HBDataCollectorServiceImpl(true);
         dataCollectorService.setHbDataSenderService(mockDataSenderService);

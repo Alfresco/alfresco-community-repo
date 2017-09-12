@@ -69,6 +69,7 @@ import org.alfresco.repo.workflow.WorkflowPropertyHandlerRegistry;
 import org.alfresco.repo.workflow.WorkflowQNameConverter;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiNodeConverter;
+import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.repo.workflow.activiti.ActivitiUtil;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -949,6 +950,31 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             // fix for different ISO 8601 Date format classes in Alfresco (org.alfresco.util and Spring Surf)
             actualValue = ISO8601DateFormat.parse((String) variable.getValue());
         }
+        else if (variable.getName().equals(WorkflowConstants.PROP_INITIATOR))
+        {
+            // update the initiator if exists
+            NodeRef initiator = getNodeRef((String) variable.getValue());
+
+            if (nodeService.exists(initiator))
+            {
+
+                actualValue = getNodeConverter().convertNode(initiator);
+
+                // Also update the initiator home reference, if one exists
+                NodeRef initiatorHome = (NodeRef) nodeService.getProperty(initiator, ContentModel.PROP_HOMEFOLDER);
+                if (initiatorHome != null)
+                {
+                    Variable initiatorHomeVar = new Variable();
+                    initiatorHomeVar.setName(WorkflowConstants.PROP_INITIATOR_HOME);
+                    initiatorHomeVar.setValue(initiatorHome);
+                    updateVariableInProcess(processId, processDefinitionId, initiatorHomeVar);
+                }
+            }
+            else
+            {
+                throw new InvalidArgumentException("Variable value should be a valid person NodeRef.");
+            }
+        }
         else
         {
             if (context.getAssociationDefinition(variable.getName()) != null)
@@ -961,10 +987,20 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                 actualValue = DefaultTypeConverter.INSTANCE.convert(dataTypeDefinition, variable.getValue());
             }
         }
-        variable.setValue(actualValue);
-        
+
         activitiProcessEngine.getRuntimeService().setVariable(processId, variable.getName(), actualValue);
-        
+
+        // Set variable value before returning
+        // Variable value needs to be of type NodeRef
+        if (actualValue instanceof ActivitiScriptNode)
+        {
+            variable.setValue(((ActivitiScriptNode) actualValue).getNodeRef());
+        }
+        else
+        {
+            variable.setValue(actualValue);
+        }
+
         // Set actual used type before returning
         variable.setType(dataTypeDefinition.getName().toPrefixString(namespaceService));
         return variable;

@@ -37,18 +37,25 @@ import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetP
 import org.alfresco.repo.security.authentication.ResetPasswordServiceImpl.ResetPasswordWorkflowInvalidUserException;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
+import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.Sites;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PasswordReset;
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.resource.content.BasicContentInfo;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -65,6 +72,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -97,9 +105,9 @@ public class PeopleImpl implements People
             PermissionService.GROUP_PREFIX,
             PermissionService.ROLE_PREFIX
     };
+
     protected Nodes nodes;
 	protected Sites sites;
-
 	protected SiteService siteService;
 	protected NodeService nodeService;
     protected PersonService personService;
@@ -109,6 +117,7 @@ public class PeopleImpl implements People
     protected ContentService contentService;
     protected ThumbnailService thumbnailService;
     protected ResetPasswordService resetPasswordService;
+    protected Renditions renditions;
 
     private final static Map<String, QName> sort_params_to_qnames;
     static
@@ -174,6 +183,12 @@ public class PeopleImpl implements People
     {
         this.resetPasswordService = resetPasswordService;
     }
+
+    public void setRenditions(Renditions renditions)
+    {
+        this.renditions = renditions;
+    }
+
 
     /**
      * Validate, perform -me- substitution and canonicalize the person ID.
@@ -257,52 +272,133 @@ public class PeopleImpl implements People
 
     public boolean hasAvatar(NodeRef personNodeRef)
     {
-    	if(personNodeRef != null)
-    	{
-			List<AssociationRef> avatorAssocs = nodeService.getTargetAssocs(personNodeRef, ContentModel.ASSOC_AVATAR);
-			return(avatorAssocs.size() > 0);
-    	}
-    	else
-    	{
-    		return false;
-    	}
+    	return (getAvatarOriginal(personNodeRef) != null);
     }
 
     @Override
     public NodeRef getAvatar(String personId)
     {
     	NodeRef avatar = null;
-
     	personId = validatePerson(personId);
     	NodeRef personNode = personService.getPerson(personId);
     	if(personNode != null)
     	{
-			List<AssociationRef> avatorAssocs = nodeService.getTargetAssocs(personNode, ContentModel.ASSOC_AVATAR);
-			if(avatorAssocs.size() > 0)
-			{
-				AssociationRef ref = avatorAssocs.get(0);
-				NodeRef thumbnailNodeRef = thumbnailService.getThumbnailByName(ref.getTargetRef(), ContentModel.PROP_CONTENT, "avatar");
-				if(thumbnailNodeRef != null)
-				{
-					avatar = thumbnailNodeRef;
-				}
-				else
-				{
-		    		throw new EntityNotFoundException("avatar");
-				}
-			}
-			else
-			{
-	    		throw new EntityNotFoundException("avatar");
-			}
+            NodeRef avatarOrig = getAvatarOriginal(personNode);
+            avatar = thumbnailService.getThumbnailByName(avatarOrig, ContentModel.PROP_CONTENT, "avatar");
     	}
-    	else
+
+    	if (avatar == null)
     	{
     		throw new EntityNotFoundException(personId);
     	}
-    	
+
     	return avatar;
     }
+
+    private NodeRef getAvatarOriginal(NodeRef personNode)
+    {
+        NodeRef avatarOrigNodeRef = null;
+        List<ChildAssociationRef> avatarChildAssocs = nodeService.getChildAssocs(personNode, Collections.singleton(ContentModel.ASSOC_PREFERENCE_IMAGE));
+        if (avatarChildAssocs.size() > 0)
+        {
+            ChildAssociationRef ref = avatarChildAssocs.get(0);
+            avatarOrigNodeRef = ref.getChildRef();
+        }
+        else
+        {
+            // TODO do we still need this ? - backward compatible with JSF web-client avatar
+            List<AssociationRef> avatorAssocs = nodeService.getTargetAssocs(personNode, ContentModel.ASSOC_AVATAR);
+            if (avatorAssocs.size() > 0)
+            {
+                AssociationRef ref = avatorAssocs.get(0);
+                avatarOrigNodeRef = ref.getTargetRef();
+            }
+        }
+        return avatarOrigNodeRef;
+    }
+
+    @Override
+    public BinaryResource downloadAvatarContent(String personId, Parameters parameters)
+    {
+        personId = validatePerson(personId);
+        NodeRef personNode = personService.getPerson(personId);
+        NodeRef avatarNodeRef = getAvatarOriginal(personNode);
+
+        return renditions.getContent(avatarNodeRef, "avatar", parameters);
+    }
+
+    @Override
+    public Person uploadAvatarContent(String personId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
+    {
+        if (!thumbnailService.getThumbnailsEnabled())
+        {
+            throw new DisabledServiceException("Thumbnail generation has been disabled.");
+        }
+
+        personId = validatePerson(personId);
+        checkCurrentUserOrAdmin(personId);
+
+        NodeRef personNode = personService.getPerson(personId);
+        NodeRef avatarOrigNodeRef = getAvatarOriginal(personNode);
+
+        if (avatarOrigNodeRef != null)
+        {
+            deleteAvatar(avatarOrigNodeRef);
+        }
+
+        QName origAvatarQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "origAvatar");
+        nodeService.addAspect(personNode, ContentModel.ASPECT_PREFERENCES, null);
+        ChildAssociationRef assoc = nodeService.createNode(personNode, ContentModel.ASSOC_PREFERENCE_IMAGE, origAvatarQName,
+                ContentModel.TYPE_CONTENT);
+        NodeRef avatar = assoc.getChildRef();
+        String avatarOriginalNodeId = avatar.getId();
+
+        // TODO do we still need this ? - backward compatible with JSF web-client avatar
+        nodeService.createAssociation(personNode, avatar, ContentModel.ASSOC_AVATAR);
+
+        Node n = nodes.updateContent(avatarOriginalNodeId, contentInfo, stream, parameters);
+        String mimeType = n.getContent().getMimeType();
+
+        if (mimeType.indexOf("image/") != 0)
+        {
+            throw new InvalidArgumentException(
+                    "Uploaded content must be an image (content type determined to be '"+mimeType+"')");
+        }
+
+        // create thumbnail synchronously
+        Rendition avatarR = new Rendition();
+        avatarR.setId("avatar");
+        renditions.createRendition(avatarOriginalNodeId, avatarR, false, parameters);
+
+        List<String> include = Arrays.asList(
+                PARAM_INCLUDE_ASPECTNAMES,
+                PARAM_INCLUDE_PROPERTIES);
+
+        return getPersonWithProperties(personId, include);
+    }
+
+    @Override
+    public void deleteAvatarContent(String personId)
+    {
+        personId = validatePerson(personId);
+        checkCurrentUserOrAdmin(personId);
+
+        NodeRef personNode = personService.getPerson(personId);
+        NodeRef avatarOrigNodeRef = getAvatarOriginal(personNode);
+        if (avatarOrigNodeRef != null)
+        {
+            deleteAvatar(avatarOrigNodeRef);
+        }
+    }
+
+    private void deleteAvatar(NodeRef avatarOrigNodeRef)
+    {
+        // Set as temporary to permanently delete node (instead of archiving)
+        nodeService.addAspect(avatarOrigNodeRef, ContentModel.ASPECT_TEMPORARY, null);
+
+        nodeService.deleteNode(avatarOrigNodeRef);
+    }
+
 
     /**
      * Get a full representation of a person.
@@ -612,14 +708,8 @@ public class PeopleImpl implements People
         personId = validatePerson(personId);
         validateUpdatePersonData(person);
 
-        boolean isAdmin = isAdminAuthority();
-
-        String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (!isAdmin && !currentUserId.equalsIgnoreCase(personId))
-        {
-            // The user is not an admin user and is not attempting to update *their own* details.
-            throw new PermissionDeniedException();
-        }
+        // Check if user updating *their own* details or is an admin
+        boolean isAdmin = checkCurrentUserOrAdmin(personId);
 
         final String personIdToUpdate = validatePerson(personId);
         final Map<QName, Serializable> properties = person.toProperties();
@@ -673,6 +763,19 @@ public class PeopleImpl implements People
         });
 		
         return getPerson(personId);
+    }
+
+    private boolean checkCurrentUserOrAdmin(String personId)
+    {
+        boolean isAdmin = isAdminAuthority();
+
+        String currentUserId = AuthenticationUtil.getFullyAuthenticatedUser();
+        if (!isAdmin && !currentUserId.equalsIgnoreCase(personId))
+        {
+            throw new PermissionDeniedException();
+        }
+
+        return isAdmin;
     }
 
     private void validateUpdatePersonData(Person person)

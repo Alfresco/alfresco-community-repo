@@ -1,10 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>alfresco-content-repository</artifactId>
-    <name>Alfresco Repository WAR Community</name>
-    <description>Alfresco Web Client</description>
-    <version>6.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <artifactId>acs-community-packaging</artifactId>
+    <name>Alfresco Content Services Community Packaging</name>
+    <version>6.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
@@ -12,10 +11,15 @@
         <version>8</version>
     </parent>
 
+    <modules>
+        <module>war</module>
+        <module>zip</module>
+    </modules>
+
     <scm>
-        <connection>scm:git:git@github.com:Alfresco/alfresco-content-repositry.git</connection>
-        <developerConnection>scm:git:git@github.com:Alfresco/alfresco-content-repository.git</developerConnection>
-        <url>https://github.com/Alfresco/alfresco-content-repository</url>
+        <connection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/acs-community-packaging.git</developerConnection>
+        <url>https://github.com/Alfresco/acs-community-packaging</url>
         <tag>HEAD</tag>
     </scm>
 
@@ -32,445 +36,230 @@
 
 
     <properties>
-        <tomcat.default.alfresco.port>8080</tomcat.default.alfresco.port>
-        <tomcat.default.alfresco.ssl.port>8443</tomcat.default.alfresco.ssl.port>
-        <maven.tomcat.path>/alfresco</maven.tomcat.path>
-        <maven.tomcat.uriEncoding>UTF-8</maven.tomcat.uriEncoding>
-        <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
-        <maven.tomcat.httpsPort>${tomcat.default.alfresco.ssl.port}</maven.tomcat.httpsPort>
-        <runner.share.version>5.2.f</runner.share.version>
-        <!-- Developer's runtime environment configuration -->
-        <runtime.tomcat.conf.folder>${project.build.directory}/tomcat</runtime.tomcat.conf.folder>
-        <runtime.solr.folder>${project.build.directory}/solr4-instance</runtime.solr.folder>
-        <alfresco.properties.file>${runtime.tomcat.conf.folder}/shared/classes/alfresco-global.properties</alfresco.properties.file>
-        <!-- Define the location where alfresco will store its content files, i.e. *.bin) -->
-        <dir.root>${project.build.directory}/alf_data</dir.root>
-
-        <dependency.alfresco-repository.version>6.0</dependency.alfresco-repository.version>
-        <dependency.alfresco-remote-api.version>6.0</dependency.alfresco-remote-api.version>
+        <dependency.alfresco-repository.version>6.4</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>6.2</dependency.alfresco-remote-api.version>
         <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
-        <dependency.api-explorer.version>5.2.1</dependency.api-explorer.version>
+        <dependency.alfresco-data-model.version>6.18</dependency.alfresco-data-model.version>
+        <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
+        <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
+        <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>
+        <dependency.alfresco-server-root.version>6.0</dependency.alfresco-server-root.version>
+        <dependency.alfresco-messaging-repo.version>1.2.8</dependency.alfresco-messaging-repo.version>
+        <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
 
         <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
         <dependency.mysql.version>5.1.40</dependency.mysql.version>
-
-
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-trashcan-cleaner</artifactId>
-            <version>${dependency.alfresco-trashcan-cleaner.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-remote-api</artifactId>
-            <version>${dependency.alfresco-remote-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-repository.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>fop</artifactId>
-            <version>0.94</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>rhino</groupId>
-                    <artifactId>js</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>xalan</groupId>
-            <artifactId>xalan</artifactId>
-            <version>2.7.2-alfresco</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-jxpath</groupId>
-            <artifactId>commons-jxpath</artifactId>
-            <version>1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-modeler</groupId>
-            <artifactId>commons-modeler</artifactId>
-            <version>2.0.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.james</groupId>
-            <artifactId>apache-mime4j-dom</artifactId>
-            <version>0.7.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.avalon.framework</groupId>
-            <artifactId>avalon-framework-api</artifactId>
-            <version>4.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.avalon.framework</groupId>
-            <artifactId>avalon-framework-impl</artifactId>
-            <version>4.3.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.bcel</groupId>
-            <artifactId>bcel</artifactId>
-            <version>6.0-RC3</version>
-        </dependency>
-        <dependency>
-            <groupId>taglibs</groupId>
-            <artifactId>standard</artifactId>
-            <version>1.1.2</version>
-        </dependency>
-
-        <!-- 'provided' dependencies, not packaged in war -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>jsp-api</artifactId>
-            <version>2.1</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.portlet</groupId>
-            <artifactId>portlet-api</artifactId>
-            <version>2.0</version>
-            <scope>provided</scope>
-        </dependency>
-
-       <dependency>
-            <groupId>org.alfresco.services</groupId>
-            <artifactId>alfresco-messaging-repo</artifactId>
-            <version>1.2.8</version>
-        </dependency> 
-
-        <!-- CORS Filter Libraries -->
-        <dependency>
-            <groupId>com.thetransactioncompany</groupId>
-            <artifactId>cors-filter</artifactId>
-            <version>2.5</version>
-        </dependency>
-
-        <!-- Test dependencies -->
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-core</artifactId>
-            <version>${dependency.alfresco-core.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-repository</artifactId>
-            <version>${dependency.alfresco-repository.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-remote-api</artifactId>
-            <version>${dependency.alfresco-remote-api.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>${dependency.spring.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.10.19</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.shale</groupId>
-            <artifactId>shale-test</artifactId>
-            <version>1.0.5</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>${dependency.postgresql.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${dependency.mysql.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>1.4.192</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <finalName>alfresco</finalName>
-        <plugins>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <!-- Extract version.properties, for convenience -->
-                    <execution>
-                        <id>fetch-version-properties</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-repository</artifactId>
-                                    <version>${dependency.alfresco-repository.version}</version>
-                                </artifactItem>
-                            </artifactItems>
-                            <includes>alfresco/version.properties</includes>
-                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                        </configuration>
-                    </execution>
-                    <!-- CLOUD-1967 Put core log4j config in WEB-INF/classes, so that it's first in classloader -->
-                    <execution>
-                        <id>fetch-log4j-config</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-core</artifactId>
-                                </artifactItem>
-                            </artifactItems>
-                            <includes>log*.properties</includes>
-                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!--<plugin>-->
-                <!--<artifactId>maven-antrun-plugin</artifactId>-->
-                <!--<executions>-->
-                    <!--&lt;!&ndash; ACE-2318 Bring alfresco-jmxrmi.* from repository &ndash;&gt;-->
-                    <!--<execution>-->
-                        <!--<id>fetch-jmxrmi-properties</id>-->
-                        <!--<phase>generate-resources</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>run</goal>-->
-                        <!--</goals>-->
-                        <!--<configuration>-->
-                            <!--<target>-->
-                                <!--<copy todir="${project.build.outputDirectory}/alfresco">-->
-                                    <!--<fileset dir="${basedir}/../repository/config/alfresco" includes="alfresco-jmxrmi.*" />-->
-                                <!--</copy>-->
-                            <!--</target>-->
-                        <!--</configuration>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-
-            <plugin>
-                <artifactId>maven-war-plugin</artifactId>
-                <!-- This allows overlays to be prepared on the FS for minification and faster run -->
-                <executions>
-                    <execution>
-                        <id>pre-exploded-war</id>
-                        <goals>
-                            <goal>exploded</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!--
-                Configure the Tomcat plugin. Keeping the configuration separate from the 'run' profile,
-                allows explicit running of tomcat, e.g: mvn tomcat7:run-war-only
-            -->
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat7-maven-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${dependency.postgresql.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>${dependency.mysql.version}</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <systemProperties>
-                        <index.subsystem.name>solr6</index.subsystem.name>
-                        <solr.port>8983</solr.port>
-                        <dir.root>${dir.root}</dir.root>
-                        <solr.host>localhost</solr.host>
-                        <solr.secureComms>none</solr.secureComms>
-                        <solr.port.ssl />
-                    </systemProperties>
-                    <delegate>false</delegate>
-                    <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
-                    <contextFile>${runtime.tomcat.conf.folder}/alfresco-context.xml</contextFile>
-                    <tomcatUsers>${runtime.tomcat.conf.folder}/tomcat-users.xml</tomcatUsers>
-                    <webapps>
-                        <!-- Run ROOT.war -->
-                        <webapp>
-                            <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-server-root</artifactId>
-                            <version />
-                            <contextPath>/</contextPath>
-                            <type>war</type>
-                            <asWebapp>true</asWebapp>
-                            <!-- Workaround for https://issues.apache.org/jira/browse/MTOMCAT-269 -->
-                            <!-- tomcat7-maven-plugin does not pick up the context.xml file from META-INF -->
-                            <contextFile>${project.build.directory}/tomcat/webapps/alfresco-server-root/META-INF/context.xml</contextFile>
-                        </webapp>
-                        <webapp>
-                            <groupId>org.alfresco</groupId>
-                            <artifactId>api-explorer</artifactId>
-                            <version>${dependency.api-explorer.version}</version>
-                            <contextPath>/api-explorer</contextPath>
-                            <type>war</type>
-                            <asWebapp>true</asWebapp>
-                        </webapp>
-                    </webapps>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <!-- Tweaks required to make the build work in Eclipse -->
-        <profile>
-            <id>m2e</id>
-            <dependencies>
-                <dependency>
-                   <groupId>commons-logging</groupId>
-                   <artifactId>commons-logging</artifactId>
-                   <!-- This is needed for Maven tomcat run -->
-                   <scope>runtime</scope>
-                </dependency>
-                <dependency>
-                    <groupId>mysql</groupId>
-                    <artifactId>mysql-connector-java</artifactId>
-                </dependency>
-            </dependencies>
-       </profile>
-        <profile>
-            <id>withShare</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.alfresco</groupId>
-                    <artifactId>alfresco-share-services</artifactId>
-                    <version>${runner.share.version}</version>
-                    <type>amp</type>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <overlays>
-                                <overlay>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-share-services</artifactId>
-                                    <type>amp</type>
-                                </overlay>
-                            </overlays>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.tomcat.maven</groupId>
-                        <artifactId>tomcat7-maven-plugin</artifactId>
-                        <configuration>
-                            <webapps combine.children="append">
-                                <webapp>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>share</artifactId>
-                                    <contextPath>/share</contextPath>
-                                    <version>${runner.share.version}</version>
-                                    <type>war</type>
-                                    <asWebapp>true</asWebapp>
-                                </webapp>
-                            </webapps>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>solr4</id>
-            <activation>
-                <property>
-                    <name>withAss</name>
-                    <value>!true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.tomcat.maven</groupId>
-                        <artifactId>tomcat7-maven-plugin</artifactId>
-                        <configuration>
-                            <systemProperties>
-                                <index.subsystem.name>solr4</index.subsystem.name>
-                                <solr.port>8080</solr.port>
-                                <solr.backup.alfresco.numberToKeep>0</solr.backup.alfresco.numberToKeep>
-                                <solr.backup.archive.numberToKeep>0</solr.backup.archive.numberToKeep>
-                                <solr.solr.home>${runtime.solr.folder}</solr.solr.home>
-                                <solr.solr.model.dir>${runtime.solr.folder}/alfrescoModels</solr.solr.model.dir>
-                                <solr.solr.content.dir>${runtime.solr.folder}/content</solr.solr.content.dir>
-                            </systemProperties>
-                            <webapps combine.children="append">
-                                <!-- Run solr4 alongside the repo -->
-                                <webapp>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr4</artifactId>
-                                    <version />
-                                    <contextPath>/solr4</contextPath>
-                                    <type>war</type>
-                                    <asWebapp>true</asWebapp>
-                                    <contextFile>${runtime.tomcat.conf.folder}/solr-context.xml</contextFile>
-                                </webapp>
-                            </webapps>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-core</artifactId>
+                <version>${dependency.alfresco-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-core</artifactId>
+                <version>${dependency.alfresco-core.version}</version>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-data-model</artifactId>
+                <version>${dependency.alfresco-data-model.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-jlan-embed</artifactId>
+                <version>${dependency.alfresco-jlan.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-mbeans</artifactId>
+                <version>${dependency.alfresco-mbeans.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-remote-api</artifactId>
+                <version>${dependency.alfresco-remote-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-remote-api</artifactId>
+                <version>${dependency.alfresco-remote-api.version}</version>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-repository</artifactId>
+                <version>${dependency.alfresco-repository.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-repository</artifactId>
+                <version>${dependency.alfresco-repository.version}</version>
+                <classifier>tests</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-trashcan-cleaner</artifactId>
+                <version>${dependency.alfresco-trashcan-cleaner.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>xalan</groupId>
+                <artifactId>xalan</artifactId>
+                <version>2.7.2-alfresco</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.services</groupId>
+                <artifactId>alfresco-messaging-repo</artifactId>
+                <version>${dependency.alfresco-messaging-repo.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-mmt</artifactId>
+                <version>${dependency.alfresco-mmt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-pdf-renderer</artifactId>
+                <version>${dependency.alfresco-pdf-renderer.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-pdf-renderer</artifactId>
+                <version>${dependency.alfresco-pdf-renderer.version}</version>
+                <classifier>win64</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-pdf-renderer</artifactId>
+                <version>${dependency.alfresco-pdf-renderer.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-server-root</artifactId>
+                <version>${dependency.alfresco-server-root.version}</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.4.5</version>
+            </dependency>
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>2.9.4</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>3.1-HTTPCLIENT-1265</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient-cache</artifactId>
+                <version>4.5.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-expression</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jms</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-orm</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-tx</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${dependency.spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.8.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.8.3</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.8.3</version>
+            </dependency>
+            <!-- Make sure JUnit is not packaged -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

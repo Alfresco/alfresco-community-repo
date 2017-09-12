@@ -1,0 +1,4 @@
+Date Format 1.1
+(c) 2007 Steven Levithan <stevenlevithan.com>
+MIT license
+With code by Scott Trenda (Z and o flags, and enhanced brevity)

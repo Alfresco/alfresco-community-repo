@@ -139,7 +139,7 @@ public class DynamicNamespacePrefixResolver implements NamespaceService
        {
           uris.addAll(delegate.getURIs());
        }
-       uris.addAll(map.keySet());
+       uris.addAll(map.values());
        return uris;
     }
 }

@@ -36,9 +36,7 @@ import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import java.util.Arrays;
-
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -46,11 +44,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * @author eknizat
+ */
 public class HeartBeatTest
 {
 
-
-    private static final String[] CONFIG_LOCATIONS = new String[] {"alfresco/scheduler-core-context.xml", "org/alfresco/util/test-scheduled-jobs-context.xml"};
+    private static final String[] CONFIG_LOCATIONS = new String[] {
+            "classpath:alfresco/scheduler-core-context.xml",
+            "classpath:org/alfresco/heartbeat/test-heartbeat-context.xml"};
     private ApplicationContext context;
 
     LicenseService mockLicenseService;
@@ -60,7 +62,6 @@ public class HeartBeatTest
     @Before
     public void setUp()
     {
-
         // New context with scheduler
         context = new ClassPathXmlApplicationContext(CONFIG_LOCATIONS);
 
@@ -71,13 +72,11 @@ public class HeartBeatTest
         ((ConfigurableApplicationContext) context).getBeanFactory().registerSingleton("hbDataCollectorService",mockDataCollectorService);
 
         mockDataSenderService = mock(HBDataSenderService.class);
-
     }
 
     @Test
     public void testHBRegistersWithLicenceService()
     {
-
         HeartBeat heartbeat = new HeartBeat(context,false);
 
         // Check that HearBeat registers itself with the licence service
@@ -87,7 +86,6 @@ public class HeartBeatTest
     @Test
     public void testJobSchedulingWhenEnabled()
     {
-
         // Enable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(true);
 
@@ -97,21 +95,17 @@ public class HeartBeatTest
         assertTrue("Job was not scheduled but HB is enabled", isJobScheduled());
     }
 
-
     @Test
     public void testJobSchedulingWhenDisabled()
     {
-
         // Disable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(false);
 
         HeartBeat heartbeat = new HeartBeat(context,true);
 
-        // Check that the job is scheduled when heartbeat is disabled
+        // Check that the job is not scheduled when heartbeat is disabled
         assertFalse("Job was scheduled but HB is disabled", isJobScheduled());
-
     }
-
 
     /**
      * Heartbeat enabled by default but disabled in licence on onLicenseChange
@@ -119,7 +113,6 @@ public class HeartBeatTest
     @Test
     public void testOnLicenseChangeOverridesDefaultEnabled()
     {
-
         // Enable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(true);
 
@@ -137,7 +130,6 @@ public class HeartBeatTest
         // Check heartbeat is disabled and job unscheduled
         assertFalse(heartbeat.isEnabled());
         assertFalse("Job should be unscheduled.",isJobScheduled());
-
     }
 
     /**
@@ -165,11 +157,9 @@ public class HeartBeatTest
         assertTrue("Job should be scheduled.",isJobScheduled());
     }
 
-
     @Test
     public void testOnLicenceFailRevertsToEnabled()
     {
-
         // Enable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(true);
 
@@ -189,15 +179,11 @@ public class HeartBeatTest
         // Check heartbeat is disabled and job unscheduled
         assertTrue(heartbeat.isEnabled());
         assertTrue("Job should be unscheduled.",isJobScheduled());
-
-
     }
-
 
     @Test
     public void testOnLicenceFailRevertsToDisabled()
     {
-
         // Disable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(false);
 
@@ -217,22 +203,21 @@ public class HeartBeatTest
         // Check heartbeat is disabled and job unscheduled
         assertFalse(heartbeat.isEnabled());
         assertFalse("Job should be unscheduled.",isJobScheduled());
-
     }
-
 
     private boolean isJobScheduled()
     {
         Scheduler scheduler = (Scheduler) context.getBean("schedulerFactory");
         String[] jobs = {};
-        try {
+        try
+        {
             jobs = scheduler.getJobNames( Scheduler.DEFAULT_GROUP);
-        } catch (SchedulerException e) {
+        } catch (SchedulerException e)
+        {
             e.printStackTrace();
             fail("Exception before assertion.");
         }
 
         return Arrays.asList(jobs).contains("heartbeat");
     }
-
 }

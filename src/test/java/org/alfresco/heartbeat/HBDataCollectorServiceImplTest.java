@@ -77,13 +77,11 @@ public class HBDataCollectorServiceImplTest
 
         dataCollectorService.enabled(true);
         verify(mockDataSenderService).enable(true);
-
     }
 
     @Test
     public void testCollectAndSendData()
     {
-
         // Set up dummy collector 1
         HBData c1Data = new HBData("sys", "c1","1.0",null);
         HBBaseDataCollector c1 = new DummyCollector(c1Data);

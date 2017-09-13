@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <!-- HeartBeat repository data collector -->
+    <bean id="repositoryDataCollector" class="org.alfresco.heartbeat.RepositoryDataCollector" parent="hbBaseDataCollector" init-method="register">
+        <property name="currentRepoDescriptorDAO" ref="currentRepoDescriptorDAO"/>
+        <property name="serverDescriptorDAO" ref="serverDescriptorDAO"/>
+        <property name="authorityService" ref="authorityService"/>
+        <property name="repoUsageComponent" ref="repoUsageComponent"/>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="customModelService" ref="customModelService"/>
+    </bean>
+
+</beans>

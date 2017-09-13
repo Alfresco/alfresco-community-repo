@@ -1283,11 +1283,6 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisConstraintException("This document type does requires content!");
         }
 
-        if (docType.isVersionable() && (versioningState == VersioningState.NONE))
-        {
-            throw new CmisConstraintException("This document type is versionable!");
-        }
-
         if (!docType.isVersionable() && (versioningState != VersioningState.NONE))
         {
             throw new CmisConstraintException("This document type is not versionable!");

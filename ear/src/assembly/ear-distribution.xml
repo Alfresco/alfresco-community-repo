@@ -8,14 +8,14 @@
 
     <fileSets>
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-content-services-full-distribution-${alfresco.platform.version}</directory>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-full-distribution-${dependency.acs-packaging.version}</directory>
             <outputDirectory/>
             <excludes>
                 <exclude>web-server/shared/**</exclude>
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-content-services-full-distribution-${alfresco.platform.version}/web-server/shared/classes</directory>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-full-distribution-${dependency.acs-packaging.version}/web-server/shared/classes</directory>
             <outputDirectory>web-server/classpath</outputDirectory>
         </fileSet>
         <fileSet>

@@ -17,13 +17,13 @@
 
         <!-- Platform Community Distribution -->
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-content-services-community-distribution-${alfresco.platform.version}</directory>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-community-distribution-${dependency.acs-community-packaging.version}</directory>
             <outputDirectory/>
         </fileSet>
 
         <!-- Platform Enterprise Distribution -->
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-content-services-distribution-${alfresco.platform.version}</directory>
+            <directory>${project.build.directory}/dependency/alfresco-content-services-distribution-${dependency.acs-packaging.version}</directory>
             <outputDirectory/>
         </fileSet>
 

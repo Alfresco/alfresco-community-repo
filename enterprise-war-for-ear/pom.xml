@@ -13,7 +13,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>content-services</artifactId>
-            <version>${alfresco.platform.version}</version>
+            <version>${dependency.acs-packaging.version}</version>
             <type>war</type>
         </dependency>
         <dependency>

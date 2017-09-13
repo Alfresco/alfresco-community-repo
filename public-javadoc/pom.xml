@@ -18,7 +18,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
-            <version>${alfresco.platform.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>

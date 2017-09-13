@@ -12,8 +12,11 @@
     <name>Alfresco Full Installation</name>
 
     <properties>
-        <!-- Alfresco Platform version -->
-        <alfresco.platform.version>5.3-SNAPSHOT</alfresco.platform.version>
+        <!-- Community Packaging version -->
+        <dependency.acs-community-packaging.version>6.0.a-SNAPSHOT</dependency.acs-community-packaging.version>
+
+        <!-- Enterprise Packaging version -->
+        <dependency.acs-packaging.version>6.0.0-SNAPSHOT</dependency.acs-packaging.version>
 
         <!-- Alfresco Share version -->
         <alfresco.share.version>5.2.2-SNAPSHOT</alfresco.share.version>
@@ -73,6 +76,19 @@
         <module>ear</module>
         <module>share-po-run</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Import Enterprise packaging dependency management -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>acs-packaging</artifactId>
+                <version>${dependency.acs-packaging.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <profiles>
         <profile>

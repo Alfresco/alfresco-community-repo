@@ -28,7 +28,7 @@
         <alfresco.aos-module.version>1.1.7</alfresco.aos-module.version>
 
         <alfresco.solr.version>6.1</alfresco.solr.version>
-        <alfresco.solr4.version>6.4</alfresco.solr4.version>
+        <alfresco.solr4.version>6.5</alfresco.solr4.version>
 
         <!-- Versions of binaries packaged in the installer -->
         <installer.common.version>5.2-20170508</installer.common.version>

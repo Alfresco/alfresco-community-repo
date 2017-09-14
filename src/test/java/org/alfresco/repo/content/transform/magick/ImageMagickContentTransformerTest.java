@@ -120,12 +120,24 @@ public class ImageMagickContentTransformerTest extends AbstractContentTransforme
         }
     }
     
+    public void testGifToPng() throws Exception
+    {
+        ImageTransformationOptions options = new ImageTransformationOptions();
+        transform(MimetypeMap.MIMETYPE_IMAGE_GIF, MimetypeMap.MIMETYPE_IMAGE_PNG, options);
+    }
+        
+    public void testJpegToPng() throws Exception
+    {
+        ImageTransformationOptions options = new ImageTransformationOptions();
+        transform(MimetypeMap.MIMETYPE_IMAGE_JPEG, MimetypeMap.MIMETYPE_IMAGE_PNG, options);
+    }
+
     public void testPageSourceOptions() throws Exception
     {
         // Test empty source options
         ImageTransformationOptions options = new ImageTransformationOptions();
         this.transform(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_IMAGE_PNG, options);
-        
+
         // Test first page
         options = new ImageTransformationOptions();
         List<TransformationSourceOptions> sourceOptionsList = new ArrayList<TransformationSourceOptions>();

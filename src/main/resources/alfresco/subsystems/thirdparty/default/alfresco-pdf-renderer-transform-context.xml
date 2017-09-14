@@ -20,7 +20,7 @@
                   </entry>
                </map>
             </property>
-            <property name="processProperties" ref="#{systemProperties['os.name'].contains('Windows') ? 'processPropertiesWindows' : 'processPropertiesUnix'}" />
+            <property name="processProperties" ref="#{systemProperties['os.name'].contains('Windows') ? 'transformer.worker.subsys.alfresco-pdf-renderer.processPropertiesWindows' : 'transformer.worker.subsys.alfresco-pdf-renderer.processPropertiesUnix'}" />
             <property name="defaultProperties">
                <props>
                   <prop key="options"></prop>
@@ -47,7 +47,7 @@
       </property>
    </bean>
 
-   <bean id="processPropertiesWindows" class="org.springframework.beans.factory.config.MapFactoryBean">
+   <bean id="transformer.worker.subsys.alfresco-pdf-renderer.processPropertiesWindows" class="org.springframework.beans.factory.config.MapFactoryBean">
       <property name="sourceMap"> 
          <map>
             <entry key="ALFRESCO-PDF-RENDERER_HOME">
@@ -57,7 +57,7 @@
       </property>
    </bean>
 
-   <bean id="processPropertiesUnix" class="org.springframework.beans.factory.config.MapFactoryBean">
+   <bean id="transformer.worker.subsys.alfresco-pdf-renderer.processPropertiesUnix" class="org.springframework.beans.factory.config.MapFactoryBean">
       <property name="sourceMap">
          <map>
             <entry key="ALFRESCO-PDF-RENDERER_HOME">

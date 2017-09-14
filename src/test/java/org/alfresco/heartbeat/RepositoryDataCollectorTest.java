@@ -93,7 +93,6 @@ public class RepositoryDataCollectorTest
     {
         for(HBData data : this.collectedData)
         {
-            System.out.println(data.getCollectorId());
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
             assertNotNull(data.getSchemaVersion());

@@ -70,8 +70,6 @@ public class HeartBeatTest
         mockDataCollectorService = mock(HBDataCollectorService.class);
         ((ConfigurableApplicationContext) context).getBeanFactory().registerSingleton("licenseService",mockLicenseService);
         ((ConfigurableApplicationContext) context).getBeanFactory().registerSingleton("hbDataCollectorService",mockDataCollectorService);
-
-        mockDataSenderService = mock(HBDataSenderService.class);
     }
 
     @Test
@@ -84,7 +82,7 @@ public class HeartBeatTest
     }
 
     @Test
-    public void testJobSchedulingWhenEnabled()
+    public void testJobSchedulingWhenEnabled() throws Exception
     {
         // Enable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(true);
@@ -96,7 +94,7 @@ public class HeartBeatTest
     }
 
     @Test
-    public void testJobSchedulingWhenDisabled()
+    public void testJobSchedulingWhenDisabled() throws Exception
     {
         // Disable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(false);
@@ -111,7 +109,7 @@ public class HeartBeatTest
      * Heartbeat enabled by default but disabled in licence on onLicenseChange
      */
     @Test
-    public void testOnLicenseChangeOverridesDefaultEnabled()
+    public void testOnLicenseChangeOverridesDefaultEnabled() throws Exception
     {
         // Enable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(true);
@@ -136,7 +134,7 @@ public class HeartBeatTest
      * heartbeat disabled by default but enabled in licence
      */
     @Test
-    public void testOnLicenseChangeOverridesDefaultDisabled()
+    public void testOnLicenseChangeOverridesDefaultDisabled() throws Exception
     {
         // Disable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(false);
@@ -152,13 +150,13 @@ public class HeartBeatTest
 
         heartbeat.onLicenseChange(mockLicenseDescriptor);
 
-        // Check heartbeat is disabled and job unscheduled
+        // Check heartbeat is enabled and job unscheduled
         assertTrue(heartbeat.isEnabled());
         assertTrue("Job should be scheduled.",isJobScheduled());
     }
 
     @Test
-    public void testOnLicenceFailRevertsToEnabled()
+    public void testOnLicenceFailRevertsToEnabled() throws Exception
     {
         // Enable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(true);
@@ -176,13 +174,13 @@ public class HeartBeatTest
         // Revert back to default state
         heartbeat.onLicenseFail();
 
-        // Check heartbeat is disabled and job unscheduled
+        // Check heartbeat is enabled and job unscheduled
         assertTrue(heartbeat.isEnabled());
         assertTrue("Job should be unscheduled.",isJobScheduled());
     }
 
     @Test
-    public void testOnLicenceFailRevertsToDisabled()
+    public void testOnLicenceFailRevertsToDisabled() throws Exception
     {
         // Disable heartbeat in data collector service ( as if set in prop file)
         when(mockDataCollectorService.isEnabledByDefault()).thenReturn(false);
@@ -205,19 +203,10 @@ public class HeartBeatTest
         assertFalse("Job should be unscheduled.",isJobScheduled());
     }
 
-    private boolean isJobScheduled()
+    private boolean isJobScheduled() throws Exception
     {
         Scheduler scheduler = (Scheduler) context.getBean("schedulerFactory");
-        String[] jobs = {};
-        try
-        {
-            jobs = scheduler.getJobNames( Scheduler.DEFAULT_GROUP);
-        } catch (SchedulerException e)
-        {
-            e.printStackTrace();
-            fail("Exception before assertion.");
-        }
-
+        String[] jobs = scheduler.getJobNames( Scheduler.DEFAULT_GROUP);
         return Arrays.asList(jobs).contains("heartbeat");
     }
 }

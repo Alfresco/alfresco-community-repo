@@ -22,7 +22,7 @@
                   </entry>
                </map>
             </property>
-            <property name="processProperties" ref="#{systemProperties['os.name'].contains('Windows') ? 'processPropertiesWindows' : 'processPropertiesUnix'}" />
+            <property name="processProperties" ref="#{systemProperties['os.name'].contains('Windows') ? 'transformer.worker.ImageMagick.processPropertiesWindows' : 'transformer.worker.ImageMagick.processPropertiesUnix'}" />
             <property name="defaultProperties">
                <props>
                   <prop key="options"></prop>
@@ -50,7 +50,7 @@
       </property>
    </bean>
 
-   <bean id="processPropertiesWindows" class="org.springframework.beans.factory.config.MapFactoryBean">
+   <bean id="transformer.worker.ImageMagick.processPropertiesWindows" class="org.springframework.beans.factory.config.MapFactoryBean">
       <property name="sourceMap"> 
          <map>
             <entry key="MAGICK_HOME">
@@ -62,9 +62,6 @@
             <entry key="MAGICK_CONFIGURE_PATH">
                <value>${img.config}</value>
             </entry>
-            <entry key="GS_LIB">
-               <value>${img.gslib}</value>
-            </entry>
             <entry key="DYLD_FALLBACK_LIBRARY_PATH">
                <value>${img.dyn}</value>
             </entry>
@@ -75,7 +72,7 @@
       </property>
    </bean>
 
-   <bean id="processPropertiesUnix" class="org.springframework.beans.factory.config.MapFactoryBean">
+   <bean id="transformer.worker.ImageMagick.processPropertiesUnix" class="org.springframework.beans.factory.config.MapFactoryBean">
       <property name="sourceMap">
          <map>
             <entry key="MAGICK_HOME">

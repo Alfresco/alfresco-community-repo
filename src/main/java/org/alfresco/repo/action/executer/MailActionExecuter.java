@@ -1047,8 +1047,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         {
             // Send the message unless we are in "testMode"
             if (!testMode)
-            {
-                mailService.send(preparedMessage.getMimeMessage());
+            {	
+            	mailService.send(preparedMessage.getMimeMessage());
                 onSend();
             }
             else
@@ -1057,7 +1057,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 testSentCount++;
             }
         }
-        catch (MailException e)
+        catch (NullPointerException | MailException e)
         {
             onFail();
             String to = (String)ruleAction.getParameterValue(PARAM_TO);

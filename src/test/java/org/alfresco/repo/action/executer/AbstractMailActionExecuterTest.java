@@ -772,6 +772,60 @@ public abstract class AbstractMailActionExecuterTest
         }
     }
 
+    /**
+     * Test for MNT-17970
+     * @throws IOException
+     * @throws MessagingException
+     */
+    @Test
+    public void testGetToUsersWhenSendingToGroup() throws IOException, MessagingException
+    {
+        String groupName = null;
+        final String USER1 = "test_user1";
+        final String USER2 = "test_user2";
+        try
+        {
+            // Create users and add them to a group
+            createUser(USER1, null);
+            createUser(USER2, null);
+            groupName = AUTHORITY_SERVICE.createAuthority(AuthorityType.GROUP, "testgroup1");
+            AUTHORITY_SERVICE.addAuthority(groupName, USER1);
+            AUTHORITY_SERVICE.addAuthority(groupName, USER2);
 
+            // Create mail
+            final Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+            mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, groupName);
+            mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "Testing");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/testSentTo.txt.ftl");
 
+            RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+
+            // Send mail
+            MimeMessage message = txHelper.doInTransaction(new RetryingTransactionCallback<MimeMessage>()
+            {
+                @Override
+                public MimeMessage execute() throws Throwable
+                {
+                    ACTION_EXECUTER.executeImpl(mailAction, null);
+                    return ACTION_EXECUTER.retrieveLastTestMessage();
+                }
+            }, true);
+
+            // Check that both users are displayed in message body
+            String recipients = USER1 + "@email.com" + "," + USER2 + "@email.com";
+            Assert.assertNotNull(message);
+            Assert.assertEquals("This email was sent to " + recipients, (String) message.getContent());
+        }
+        finally
+        {
+            if (groupName != null)
+            {
+                AUTHORITY_SERVICE.deleteAuthority(groupName, true);
+            }
+            PERSON_SERVICE.deletePerson(USER1);
+            PERSON_SERVICE.deletePerson(USER2);
+        }
+    }
 }

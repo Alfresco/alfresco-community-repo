@@ -31,6 +31,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeIdAndAclId;
 import org.alfresco.repo.domain.permissions.Acl;
 import org.alfresco.repo.domain.permissions.AclDAO;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
@@ -99,62 +100,70 @@ public class SitesPermissionCleaner
     
     public void cleanSitePermissions(final NodeRef targetNode, SiteInfo containingSite)
     {
-        if (nodeDAO.exists(targetNode))
+        if (!nodeDAO.exists(targetNode))
         {
-            // We can calculate the containing site at the start of a recursive call & then reuse it on subsequent calls.
-            if (containingSite == null)
-            {
-                containingSite = siteServiceImpl.getSite(targetNode);
-            }
+            return;
+        }
+        // We can calculate the containing site at the start of a recursive call & then reuse it on subsequent calls.
+        if (containingSite == null)
+        {
+            containingSite = siteServiceImpl.getSite(targetNode);
+        }
 
-            // Short-circuit at this point if the node is not in a Site.
-            if (containingSite != null)
+        // Short-circuit at this point if the node is not in a Site.
+        if (containingSite == null)
+        {
+            return;
+        }
+        // For performance reasons we navigate down the containment hierarchy using the DAOs
+        // rather than the NodeService. Note: direct use of NodeDAO requires tenantService (ALF-12732).
+        final Long targetNodeID = nodeDAO.getNodePair(tenantService.getName(targetNode)).getFirst();
+        final Long targetNodeAclID = nodeDAO.getNodeAclId(targetNodeID);
+        Acl targetNodeAcl = aclDAO.getAcl(targetNodeAclID);
+
+        // Nodes that don't have defining ACLs do not need to be considered.
+        if (targetNodeAcl.getAclType() == ACLType.DEFINING)
+        {
+            AccessControlList targetNodeAccessControlList = aclDAO.getAccessControlList(targetNodeAclID);
+            List<AccessControlEntry> targetNodeAclEntries = targetNodeAccessControlList.getEntries();
+            for (AccessControlEntry entry : targetNodeAclEntries)
             {
-                // For performance reasons we navigate down the containment hierarchy using the DAOs
-                // rather than the NodeService. Note: direct use of NodeDAO requires tenantService (ALF-12732).
-                final Long targetNodeID = nodeDAO.getNodePair(tenantService.getName(targetNode)).getFirst();
-                final Long targetNodeAclID = nodeDAO.getNodeAclId(targetNodeID);
-                Acl targetNodeAcl = aclDAO.getAcl(targetNodeAclID);
-                
-                // Nodes that don't have defining ACLs do not need to be considered.
-                if (targetNodeAcl.getAclType() == ACLType.DEFINING)
+                String authority = entry.getAuthority();
+
+                String thisSiteGroupPrefix = siteServiceImpl.getSiteGroup(containingSite.getShortName(), true);
+
+                // If it's a group site permission for a site other than the current site
+                if (authority.startsWith(PermissionService.GROUP_PREFIX) &&
+                        // And it's not GROUP_EVERYONE
+                        !authority.startsWith(PermissionService.ALL_AUTHORITIES) && !authority.startsWith(thisSiteGroupPrefix) &&
+                        //  And if the current user has permissions to do it
+                        publicServiceAccessService.hasAccess("PermissionService", "clearPermission", targetNode, authority) == AccessStatus.ALLOWED)
                 {
-                    AccessControlList targetNodeAccessControlList = aclDAO.getAccessControlList(targetNodeAclID);
-                    List<AccessControlEntry> targetNodeAclEntries = targetNodeAccessControlList.getEntries();
-                    for (AccessControlEntry entry : targetNodeAclEntries)
-                    {
-                        String authority = entry.getAuthority();
-                        
-                        String thisSiteGroupPrefix = siteServiceImpl.getSiteGroup(containingSite.getShortName(), true);
-                        
-                        // If it's a group site permission for a site other than the current site
-                        if (authority.startsWith(PermissionService.GROUP_PREFIX) &&
-                                !authority.startsWith(PermissionService.ALL_AUTHORITIES) && // And it's not GROUP_EVERYONE
-                                !authority.startsWith(thisSiteGroupPrefix))
-                        {
-                            // And if the current user has permissions to do it
-                            if (publicServiceAccessService.hasAccess("PermissionService", "clearPermission", targetNode, authority) == AccessStatus.ALLOWED)
-                            {
-                                // Then remove it.
-                                permissionService.clearPermission(targetNode, authority);
-                            }
-                            if (publicServiceAccessService.hasAccess("PermissionService", "setInheritParentPermissions", targetNode, true) == AccessStatus.ALLOWED)
-                            {
-                                // And reenable permission inheritance.
-                                permissionService.setInheritParentPermissions(targetNode, true);
-                            }
-                        }
-                        
-                    }
+                    // Then remove it.
+                    permissionService.clearPermission(targetNode, authority);
                 }
-                
-                // Recurse
-                List<NodeIdAndAclId> childNodeIds = nodeDAO.getPrimaryChildrenAcls(targetNodeID);
-                for (NodeIdAndAclId nextChild : childNodeIds)
+
+                if (!permissionService.getInheritParentPermissions(targetNode))
                 {
-                    cleanSitePermissions(nodeDAO.getNodePair(nextChild.getId()).getSecond(), containingSite);
+                    // The site manager from the new site, where this node was moved to, has to have permission to this node
+                    String siteManagerAuthority = thisSiteGroupPrefix + "_" + SiteModel.SITE_MANAGER;
+                    AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+                    {
+                        public Void doWork() throws Exception
+                        {
+                            permissionService.setPermission(targetNode, siteManagerAuthority, SiteModel.SITE_MANAGER, true);
+                            return null;
+                        }
+                    }, AuthenticationUtil.getSystemUserName());
                 }
             }
+        }
+
+        // Recurse
+        List<NodeIdAndAclId> childNodeIds = nodeDAO.getPrimaryChildrenAcls(targetNodeID);
+        for (NodeIdAndAclId nextChild : childNodeIds)
+        {
+            cleanSitePermissions(nodeDAO.getNodePair(nextChild.getId()).getSecond(), containingSite);
         }
     }
 }

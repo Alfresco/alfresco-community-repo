@@ -184,7 +184,7 @@ public class SearchAPI extends BaseAPI
         }
         requestURL = MessageFormat.format(SEARCH_ENDPOINT, client.getAlfrescoUrl(),
                     URLEncodedUtils.format(nameValuePairs, Charset.forName("UTF-8")));
-        Thread.sleep(20000);
+        Thread.sleep(15000);
         return getItemNames(doGetRequest(username, password, requestURL));
     }
 

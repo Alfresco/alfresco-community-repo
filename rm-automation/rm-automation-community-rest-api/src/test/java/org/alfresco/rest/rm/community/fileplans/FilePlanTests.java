@@ -62,7 +62,7 @@ import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.base.TestData;
+import org.alfresco.rest.rm.community.base.DataProviderClass;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlanProperties;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
@@ -291,7 +291,7 @@ public class FilePlanTests extends BaseRMRestTest
     @Test
     (
         description = "Create root category",
-        dataProviderClass = TestData.class,
+        dataProviderClass = DataProviderClass.class,
         dataProvider = "categoryTypes"
     )
     public void createFilePlanChildren(String nodeType) throws Exception

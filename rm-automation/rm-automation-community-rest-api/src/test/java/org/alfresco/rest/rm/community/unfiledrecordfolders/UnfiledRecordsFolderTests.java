@@ -31,7 +31,8 @@ import static java.time.LocalDateTime.now;
 import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias
+        .UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
@@ -57,7 +58,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.base.TestData;
+import org.alfresco.rest.rm.community.base.DataProviderClass;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
@@ -190,7 +191,7 @@ public class UnfiledRecordsFolderTests extends BaseRMRestTest
     @Test
     (
         dataProvider = "invalidRootTypes",
-        dataProviderClass = TestData.class,
+        dataProviderClass = DataProviderClass.class,
         description = "Only unfiled records folders and records  can be created as children for unfiled container root"
     )
     public void createInvalidUnfiledChildren(String filePlanComponentType) throws Exception

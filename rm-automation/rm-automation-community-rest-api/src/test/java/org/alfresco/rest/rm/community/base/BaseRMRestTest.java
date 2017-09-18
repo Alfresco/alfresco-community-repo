@@ -33,15 +33,22 @@ import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_TITLE
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_COMPLETED_RECORD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_ADMIN;
+import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createUnfiledContainerChildModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -51,6 +58,7 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.List;
 
+import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
@@ -65,8 +73,12 @@ import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -91,6 +103,14 @@ public class BaseRMRestTest extends RestTest
     @Autowired
     @Getter (value = PROTECTED)
     private DataUser dataUser;
+
+    @Autowired
+    @Getter (value = PROTECTED)
+    private ContentService contentService;
+
+    @Autowired
+    @Getter (value = PROTECTED)
+    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     /**
      * Asserts the given status code
@@ -467,5 +487,73 @@ public class BaseRMRestTest extends RestTest
     public FilePlan getFilePlan(String componentId) throws Exception
     {
         return getFilePlanAsUser(getAdminUser(), componentId);
+    }
+
+    /**
+     * Recursively delete a folder
+     *
+     * @param siteModel
+     * @param folder
+     */
+    public void deleteFolder(SiteModel siteModel, FolderModel folder)
+    {
+        contentService.deleteTree(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),
+            siteModel.getId(),
+            folder.getName());
+    }
+
+    /**
+     * Create an electronic record
+     *
+     * @param parentId the id of the parent
+     * @param name the name of the record
+     * @return the created record
+     * @throws Exception
+     */
+    public Record createElectronicRecord(String parentId, String name) throws Exception
+    {
+        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI();
+        Record recordModel = Record.builder()
+                                   .name(name)
+                                   .nodeType(CONTENT_TYPE)
+                                   .build();
+        return recordFolderAPI.createRecord(recordModel, parentId, getFile(IMAGE_FILE));
+    }
+
+    /**
+     * Delete a record folder
+     *
+     * @param recordFolderId the id of the record folder to delete
+     */
+    public void deleteRecordFolder(String recordFolderId)
+    {
+        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI();
+        recordFolderAPI.deleteRecordFolder(recordFolderId);
+    }
+
+    /**
+     * Delete a record category
+     *
+     * @param recordCategoryId the id of the record category to delete
+     */
+    public void deleteRecordCategory(String recordCategoryId)
+    {
+        RecordCategoryAPI recordCategoryAPI = restAPIFactory.getRecordCategoryAPI();
+        recordCategoryAPI.deleteRecordCategory(recordCategoryId);
+    }
+
+    /**
+     * Assign filling permission on a record category and give the user RM_USER role
+     *
+     * @param user the user to assign the permission to
+     * @param categoryId the id of the category to assign permissions for
+     * @throws Exception
+     */
+    public void assignFillingPermissionsOnCategory(UserModel user, String categoryId) throws Exception
+    {
+        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, PERMISSION_FILING);
+        rmRolesAndActionsAPI.assignUserToRole(dataUser.getAdminUser().getUsername(),
+            dataUser.getAdminUser().getPassword(), user.getUsername(), ROLE_RM_USER);
     }
 }

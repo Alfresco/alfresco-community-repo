@@ -324,9 +324,7 @@ public abstract class BaseAPI
             client.getApiUrl(),
             urlTemplateParams);
         client.close();
-        LOGGER.debug("REQUEST ***** ", requestUrl);
-        System.out.println("REQUEST ***** " + requestUrl);
-        System.out.println("REQUEST PARAMS ***** " + requestParams);
+
         try
         {
             return doRequest(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);

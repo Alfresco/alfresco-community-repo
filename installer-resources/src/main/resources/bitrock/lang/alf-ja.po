@@ -1,0 +1,683 @@
+msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco Content Services for test or production purposes. Alfresco Content Services might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM."
+msgstr "${machine_total_memoryGB} GB の RAM では、テストまたは本番環境で Alfresco Content Services を実行するには不十分です。Alfresco Content Services が正しく動作しないことがあり、その場合は正常に機能しません。サーバーの RAM を最低 ${minimum_ramGB} GB にアップグレードしてください。推奨 RAM サイズは ${recommended_ramGB} GB です。"
+
+msgid "${product_fullname} LibreOffice Service"
+msgstr "${product_fullname} LibreOffice サービス"
+
+msgid "${product_fullname} Service"
+msgstr "${product_fullname} サービス"
+
+msgid "${product_shortname} Manager Tool"
+msgstr "${product_shortname} 管理者ツール"
+
+msgid "32-bit Microsoft Windows® is supported for evaluation use only."
+msgstr "32 ビットの Microsoft Windows® で使用できるのは評価版のみです。"
+
+msgid "64-bit architecture recommended"
+msgstr "64 ビットアーキテクチャを使用することをお勧めします"
+
+msgid "Admin Password"
+msgstr "管理者のパスワード"
+
+msgid "Admin Password:"
+msgstr "管理者のパスワード:"
+
+msgid "Advanced - Configure server ports and service properties."
+msgstr "詳細設定 - サーバーのポートとサービスのプロパティを設定できます。"
+
+msgid "Alfresco Content Services"
+msgstr "Alfresco Content Services"
+
+msgid "Alfresco Community Edition"
+msgstr "Alfresco Community エディション"
+
+msgid "Alfresco Content Services Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management."
+msgstr "Alfresco Content Services エンタープライズコンテンツ管理 (ECM) システムは、文書管理、コラボレーション管理、画像管理に特化したシステムです。"
+
+msgid "FTP Port"
+msgstr "FTP ポート"
+
+msgid "Alfresco Module Packages"
+msgstr "Alfresco モジュールパッケージ"
+
+msgid "RMI Port"
+msgstr "RMI ポート"
+
+msgid "Alfresco Share"
+msgstr "Alfresco Share"
+
+msgid "Shortcuts"
+msgstr "ショートカット"
+
+msgid "Validations"
+msgstr "検証"
+
+msgid "Alfresco Website"
+msgstr "Alfresco Web サイト"
+
+msgid "Data Directory"
+msgstr "データディレクトリ"
+
+msgid "Choose optional components to install."
+msgstr "追加でインストールするコンポーネントを選択してください。"
+
+msgid "Auto - Configure servers to start automatically"
+msgstr "自動 - サーバーが自動的に起動するように設定します。"
+
+msgid "CIFS TCP ports in use"
+msgstr "CIFS TCP ポートは使用中です"
+
+msgid "CIFS UDP ports in use"
+msgstr "CIFS UDP ポートは使用中です"
+
+msgid "CIFS protocol ports configuration"
+msgstr "CIFS プロトコルポートの設定"
+
+msgid "CIFS server port"
+msgstr "CIFS サーバーポート"
+
+msgid "CIFS server port 1"
+msgstr "CIFS サーバーポート 1"
+
+msgid "CIFS server port 2"
+msgstr "CIFS サーバーポート 2"
+
+msgid "Configuration Files"
+msgstr "設定ファイル"
+
+msgid "Creating user and database"
+msgstr "ユーザーとデータベースの作成"
+
+msgid "Database Configuration"
+msgstr "データベースの設定"
+
+msgid "Database Installation"
+msgstr "データベースのインストール"
+
+msgid "Database Server Parameters"
+msgstr "データベースサーバーのパラメータ"
+
+msgid "Database Server Port:"
+msgstr "データベースサーバーのポート:"
+
+msgid "Database Name"
+msgstr "データベース名"
+
+msgid "Database Name:"
+msgstr "データベース名"
+
+msgid "Deploying Alfresco Content Services... This can take up to five minutes."
+msgstr "Alfresco Content Services をデプロイしています... これには最大 5 分かかります。"
+
+msgid "Do you want to install PostgreSQL as a Windows service?"
+msgstr "PostgreSQL を Windows サービスとしてインストールしますか?"
+
+msgid "Easy - Install using the default configuration."
+msgstr "簡易 - デフォルトの設定を使ってインストールします。"
+
+msgid "Extension Files"
+msgstr "拡張ファイル"
+
+msgid "Google Docs Integration"
+msgstr "Google ドキュメントの統合"
+
+msgid "I want to use an existing PostgreSQL database."
+msgstr "既存の PostgreSQL データベースを使用する"
+
+msgid "I want to use an existing Tomcat instance."
+msgstr "既存の Tomcat インスタンスを使用する"
+
+msgid "I want to use the bundled PostgreSQL database."
+msgstr "バンドルされている PostgreSQL データベースを使用する"
+
+msgid "I want to use the bundled Tomcat instance."
+msgstr "バンドルされている Tomcat インスタンスを使用する"
+
+msgid "IMAP TCP port in use."
+msgstr "IMAP TCP ポートは使用中です。"
+
+msgid "IMAP Port"
+msgstr "IMAP ポート"
+
+msgid "IP / Hostname"
+msgstr "IP またはホスト名"
+
+msgid "Include Alfresco Web Quick Start."
+msgstr "Alfresco Web Quick Start が含まれています。"
+
+msgid "Include Google Docs Integration Features."
+msgstr "Google ドキュメントの統合機能が含まれてます。"
+
+msgid "Initializing database"
+msgstr "データベースを初期化しています"
+
+msgid "Install ${product_fullname} as a service?"
+msgstr "${product_fullname} をサービスとしてインストールしますか?"
+
+msgid "Install ${product_fullname} as service"
+msgstr "${product_fullname} をサービスとしてインストールする"
+
+msgid "Install PostgreSQL as a service?"
+msgstr "PostgreSQL をサービスとしてインストールしますか?"
+
+msgid "Install as a service"
+msgstr "サービスとしてインストールする"
+
+msgid "Installation Folder"
+msgstr "インストール先フォルダ"
+
+msgid "Installation Type"
+msgstr "インストールの種類"
+
+msgid "Installation directory path is too long. The maximum number of characters allowed is ${base_installdir_max_characters}."
+msgstr "インストールディレクトリのパスが長すぎます。パスの長さは ${base_installdir_max_characters} 文字以内でなければなりません。"
+
+msgid "Installation folder"
+msgstr "インストール先フォルダ"
+
+msgid "Installation folder cannot contain spaces."
+msgstr "インストール先フォルダのパスにスペースを含めることはできません。"
+
+msgid "Installing Alfresco Module Packages (AMPs)"
+msgstr "Alfresco モジュールパッケージ (AMP) をインストールしています"
+
+msgid "Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}"
+msgstr "LibreOffice を ${LibreOfficeUniqueServiceName} という名前の Windows サービスとしてインストールしています"
+
+msgid "Installing PostgreSQL as a Windows service with name ${postgres_unique_service_name}"
+msgstr "PostgreSQL を ${postgres_unique_service_name} という名前の Windows サービスとしてインストールしています"
+
+msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
+msgstr "Tomcat を ${tomcat_unique_service_name} という名前の Windows サービスとしてインストールしています"
+
+msgid "Not enough file descriptors available"
+msgstr "ファイル記述子が足りません"
+
+msgid "CPU clock speed is too slow"
+msgstr "CPU クロックの速度が遅すぎます"
+
+msgid "Not enough CPUs (cores) available"
+msgstr "CPU (コア) が不十分です"
+
+msgid "Not enough system RAM available"
+msgstr "システムの RAM が不十分です"
+
+msgid "You do not have the right permissions to bind to the port or the port is already taken by another application. Select another port."
+msgstr "ポートにバインドするための権限がないか、ポートが既に別のアプリケーションで使用されている可能性があります。別のポートを選択してください。"
+
+msgid "JDBC Driver:"
+msgstr "JDBC ドライバー:"
+
+msgid "JDBC URL:"
+msgstr "JDBC の URL:"
+
+msgid "JDK configuration"
+msgstr "JDK の設定"
+
+msgid "JDK Installation Directory:"
+msgstr "JDK のインストールディレクトリ"
+
+msgid "Java"
+msgstr "Java"
+
+msgid "Java Component required to run ${product_fullname}."
+msgstr "${product_fullname} を実行するには、Java コンポーネントが必要です。"
+
+msgid "Java Home path contains spaces. Alfresco Content Services might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgstr "Java Home のパスにスペースが含まれています。インストール先のパスにスペースが含まれていると JVM で問題が発生するため、Alfresco Content Services が正しく動作しない場合があります。スペースを含まないパスに JVM をインストールし直してください。"
+
+msgid "This module requires Java, and no Java instance can be found."
+msgstr "このモジュールには Java が必要ですが、Java のインスタンスが見つかりません。"
+
+msgid "Launch ${product_fullname}"
+msgstr "${product_fullname} を起動する"
+
+msgid "LibreOffice"
+msgstr "LibreOffice"
+
+msgid "LibreOffice Server Port"
+msgstr "LibreOffice サーバーのポート"
+
+msgid "LibreOffice Server Port:"
+msgstr "LibreOffice サーバーのポート:"
+
+msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
+msgstr "LibreOffice は、ワープロ、表計算、プレゼンテーション、グラフィックス、データベースなど、文書の加工に必要なオフィスソフトウェアがすべて揃ったオープンソースのマルチプラットフォームです。"
+
+msgid "Location of bin and lib tomcat folders"
+msgstr "bin フォルダ と lib tomcat フォルダの場所"
+
+msgid "Mac OS X® is supported for evaluation use only."
+msgstr "Mac OS X® で使用できるのは評価版のみです。"
+
+msgid "Manager Tool"
+msgstr "管理者ツール"
+
+msgid "Manual - Configure servers to start services manually"
+msgstr "手動 - サービスを手動で開始するようにサーバーを設定します。"
+
+msgid "New Component"
+msgstr "新しいコンポーネント"
+
+msgid "New Folder"
+msgstr "新しいフォルダ"
+
+msgid "Not a PostgreSQL version 9.4.4 installation. PostgreSQL 9.4.4 is recommended."
+msgstr "インストールされている PostgreSQL のバージョンは 9.4.4 ではありません。PostgreSQL 9.4.4 をインストールすることをお勧めします。"
+
+msgid "Password"
+msgstr "パスワード"
+
+msgid "Password must not contain leading or trailing spaces."
+msgstr "パスワードの先頭または末尾にスペースを入れることはできません。"
+
+msgid "Password:"
+msgstr "パスワード:"
+
+msgid "Choose a folder to install ${product_fullname}."
+msgstr "${product_fullname} をインストールするフォルダを選択してください。"
+
+msgid "Choose a port number for Alfresco Content Services to use to execute remote commands."
+msgstr "リモートコマンドの実行に使用する Alfresco Content Services 用ポート番号を選択してください。"
+
+msgid "Choose a port number for the integrated FTP server."
+msgstr "統合された FTP サーバーに使用するポート番号を選択してください。"
+
+msgid "Enter a valid IP address or hostname."
+msgstr "有効な IP アドレスまたはホスト名を入力してください。"
+
+msgid "Enter the IP address or hostname for your database."
+msgstr "データベースの IP アドレスまたはホスト名を入力してください。"
+
+msgid "Enter your Tomcat configuration parameters."
+msgstr "Tomcat の設定パラメータを入力してください。"
+
+msgid "Enter the port of your database."
+msgstr "データベースのポート番号を入力してください。"
+
+msgid "Enter the port that the LibreOffice Server will listen to."
+msgstr "LibreOffice サーバーがリッスンするポート番号を入力してください。"
+
+msgid "Enter your database 'postgres' user password."
+msgstr "'postgres' データベースユーザーのパスワードを入力してください。"
+
+msgid "Specify a password for the Alfresco Content Services administrator account."
+msgstr "Alfresco Content Services 管理者アカウントのパスワードを指定してください。"
+
+msgid "Select a different installation directory. The installation directory cannot contain symbolic links."
+msgstr "別のインストールディレクトリを選択してください。インストールディレクトリにシンボリックリンクを含めることはできません。"
+
+msgid "Select services startup type."
+msgstr "サービスのスタートアップの種類を選択してください。"
+
+msgid "Select a Tomcat configuration"
+msgstr "Tomcat の設定を選択してください。"
+
+msgid "Select a database configuration."
+msgstr "データベースの設定を選択してください。"
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation."
+msgstr "インストールされている Alfresco Content Services に SharePoint サーバー経由でアクセスすることをアプリケーションに許可する場合は、このモジュールを選択します。"
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco Content Services installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "インストールされている Alfresco Content Services に SharePoint サーバー経由でアクセスすることをアプリケーションに許可する場合は、&#xa;このモジュールを選択します (Alfresco コンポーネントライセンスの下でライセンスされた専用モジュール)。"
+
+msgid "Specify the directory where Tomcat is located."
+msgstr "Tomcat があるディレクトリを指定してください。"
+
+msgid "Specify the directory where the psql, pg_restore, and vacuumdb binaries are located."
+msgstr "psql、pg_restore、vacuumdb のバイナリがあるディレクトリを指定してください。"
+
+msgid "Enter CIFS ports configuration."
+msgstr "CIFS ポートの設定を入力してください。"
+
+msgid "Port:"
+msgstr "ポート:"
+
+msgid "PostgreSQL"
+msgstr "PostgreSQL"
+
+msgid "PostgreSQL Binary Directory"
+msgstr "PostgreSQL バイナリのディレクトリ"
+
+msgid "PostgreSQL is a powerful, open source, object-relational database system."
+msgstr "PostgreSQL は、パワフルなオープンソースのオブジェクト指向リレーショナルデータベースシステムです。"
+
+msgid "PostgreSQL postgres user password"
+msgstr "PostgreSQL postgres ユーザーのパスワード"
+
+msgid "Program Files"
+msgstr "プログラムファイル"
+
+msgid "README"
+msgstr "Readme"
+
+msgid "README File"
+msgstr "Readme ファイル"
+
+msgid "README Folder Component"
+msgstr "Readme フォルダコンポーネント"
+
+msgid "Re-enter password"
+msgstr "パスワードを再入力してください。"
+
+msgid "Repeat Password:"
+msgstr "パスワードの再入力:"
+
+msgid "SMB Port"
+msgstr "SMB ポート"
+
+msgid "SMTP TCP port in use"
+msgstr "使用中の SMTP TCP ポート"
+
+msgid "SMTP Port"
+msgstr "SMTP ポート"
+
+msgid "Select a folder:"
+msgstr "インストール先フォルダ:"
+
+msgid "Service Startup Configuration"
+msgstr "サービスのスタートアップ設定"
+
+msgid "Service script name"
+msgstr "サービスのスクリプト名"
+
+msgid "Specify the name of the database."
+msgstr "データベースの名前を指定してください。"
+
+msgid "Specify the password for the database user."
+msgstr "データベースユーザーのパスワードを指定してください。"
+
+msgid "Set the database user."
+msgstr "データベースユーザーを設定してください。"
+
+msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
+msgstr "新しいデータベースがインストールされ、同じ名前の既存のデータベースは上書きされます。操作を続けますか?"
+
+msgid "Shortcuts Images"
+msgstr "ショートカット画像"
+
+msgid "Show next steps"
+msgstr "次の手順を表示"
+
+msgid "Solr1"
+msgstr "Solr1"
+
+msgid "Solr4"
+msgstr "Solr4"
+
+msgid "Some or all of the libraries needed to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext libcups libGLU libcairo2 libgl1-mesa-glx\nYou are strongly advised to stop this installation and install the libraries.\nFor more information, see the LibreOffice documentation at http://docs.alfresco.com\n\nDo you want to continue with the installation?"
+msgstr "LibreOffice に必要な次のライブラリがシステムにありません: fontconfig libSM libICE libXrender libXext libcups libGLU libcairo2 libgl1-mesa-glx。\nインストールを中止して、これらのライブラリをインストールしてください。\n詳細については、LibreOffice のマニュアル (http://docs.alfresco.com) をご覧ください。\n\nこのままインストールを続けますか?"
+
+msgid "We support PostgreSQL as service only."
+msgstr "PostgreSQL を使用できるのはサービスとしてのみです。"
+
+msgid "You need to be an administrator."
+msgstr "管理者の権限が必要です。"
+
+msgid "Start ${product_fullname} service"
+msgstr "${product_fullname} サービスの開始"
+
+msgid "Starting LibreOffice..."
+msgstr "LibreOffice を開始しています..."
+
+msgid "Starting servers..."
+msgstr "サーバーを起動しています..."
+
+msgid "Stop ${product_fullname} service"
+msgstr "${product_fullname} サービスの停止"
+
+msgid "Stopping PostgreSQL..."
+msgstr "PostgreSQL を停止しています..."
+
+msgid "Stopping Services"
+msgstr "サービスの停止"
+
+msgid "Stopping servers"
+msgstr "サーバーを停止しています"
+
+msgid "Stopping services"
+msgstr "サービスを停止しています"
+
+msgid "The ${product_shortname} service script file exists. Use a different name for the service script."
+msgstr "${product_shortname} という名前のサービススクリプトファイルはすでに存在します。別の名前を指定してください。"
+
+msgid "The data directory increases in size over time. Choose where you want to store it."
+msgstr "データディレクトリは、使っていくうちに大きくなります。そのことを考慮して保存先を選択してください。"
+
+msgid "The current installation directory cannot be accessed by non-root users. Select a different installation directory or change the permissions to 755 for this folder."
+msgstr "現在のインストールディレクトリは、ルートユーザーしかアクセスできません。別のインストールディレクトリを選択するか、このフォルダのアクセス権を 755 に変更してください。"
+
+msgid "The directory you selected is not a valid JDK directory. Choose another directory."
+msgstr "選択したディレクトリは、有効な JDK ディレクトリではありません。別のディレクトリを選択してください。"
+
+msgid "The directory you selected is not a valid Tomcat directory. Choose another directory."
+msgstr "選択したディレクトリは、有効な Tomcat ディレクトリではありません。別のディレクトリを選択してください。"
+
+msgid "The installation directory must be a path containing letters, numbers, and '/', '.', ‘-‘, and '_' characters only."
+msgstr "インストールディレクトリのパスに使用できる文字は、日本語、英字、数字、スラッシュ（/）、ピリオド（.）、ハイフン（-）、アンダースコア（_）のみです。"
+
+msgid "The installation has not completed because the current umask is set to permissions of ${base_umask}. Modify your umask setting to at least 0022 before relaunching the installer. After the installation has completed, reset the umask permissions to your original values."
+msgstr "現在の umask に ${base_umask} の権限が設定されているため、インストールが完了しませんでした。インストーラを再起動する前に、umask の設定を 0022 以上に変更してください。インストールが完了したら、umask の権限を元の値に戻してください。"
+
+msgid "The installer could not access the current free space on ${installdir}. Check that there is enough free space to install ${product_fullname}"
+msgstr "インストーラが ${installdir} の現在の空き容量を確認できませんでした。${product_fullname} のインストールに十分な空き容量があることを確認してください。"
+
+msgid "The password must be longer than 3 characters."
+msgstr "パスワードは 4 文字以上でなければなりません。"
+
+msgid "The path ${postgres_binary_directory} does not contain a pg_restore executable."
+msgstr "${postgres_binary_directory} には、pg_restore の実行可能ファイルが含まれていません。"
+
+msgid "The path ${postgres_binary_directory} does not contain a pg_vacuumdb executable."
+msgstr "${postgres_binary_directory} には、pg_vacuumdb の実行可能ファイルが含まれていません。"
+
+msgid "The path ${postgres_binary_directory} is not valid. Check if the directory contains the required binaries."
+msgstr "${postgres_binary_directory} は無効なディレクトリです。ディレクトリに必要なバイナリが含まれていることを確認してください。"
+
+msgid "The selected folder is not empty. Specify a different folder."
+msgstr "選択したフォルダは空ではありません。別のフォルダを指定してください。"
+
+msgid "The service script file exists. Insert a different name for the service script."
+msgstr "このサービススクリプトファイルはすでに存在します。別の名前を指定してください。"
+
+msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco Content Services. Install a 64 bit version of Java before continuing, or go back and ensure the "Java" component is selected."
+msgstr "選択した Java は 32 ビット版ですが、インストールする Alfresco Content Services は 64 ビット版です。ここで 64 ビット版の Java をインストールするか、前の画面に戻って "Java" コンポーネントが選択されていることを確認してください。"
+
+msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
+msgstr "${installdir} に十分な空き容量がありません。${product_fullname} のインストールには、最低 ${base_needed_space} MB 必要です。"
+
+msgid "This environment is not configured optimally for Alfresco Content Services - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco Content Services from functioning, some product features might not be available, or the system might not perform optimally."
+msgstr "この環境は Alfresco Content Services を適切に実行するのに十分な構成ではありません。インストールする前に、以下の問題をチェックしてください。\n\nこれらの問題があっても Alfresco Content Services は機能しますが、一部の製品機能が使用できないか、システムが適切に動作しない場合があります。"
+
+msgid "This installer is for Windows 64 bit.  Download the Windows 32 bit version."
+msgstr "このインストーラは Windows 64 ビット版用です。Windows 32 ビット版用をダウンロードしてください。"
+
+msgid "This release was packaged to run on J2SE ${java_min_version} or later. Install a compatible Java version and try again."
+msgstr "このリリースは J2SE ${java_min_version} 以降で実行するようにパッケージ化されています。互換性のある Java バージョンをインストールしてから、操作をやり直してください。"
+
+msgid "This release was packaged to run on J2SE ${java_min_version}. Install a compatible Java version and try again."
+msgstr "このリリースは J2SE ${java_min_version} で実行するようにパッケージ化されています。互換性のある Java バージョンをインストールしてから、操作をやり直してください。"
+
+msgid "Tomcat AJP Port:"
+msgstr "Tomcat の AJP ポート:"
+
+msgid "Tomcat Directory"
+msgstr "Tomcat のディレクトリ"
+
+msgid "Tomcat JMX Port:"
+msgstr "Tomcat の JMX ポート:"
+
+msgid "Tomcat Port Configuration"
+msgstr "Tomcat のポート設定"
+
+msgid "Tomcat SSL Port:"
+msgstr "Tomcat の SSL ポート:"
+
+msgid "Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Select another Tomcat Shutdown Port."
+msgstr "Tomcat サーバー用ポートと Tomcat のシャットダウン用ポートを同じにすることはできません。Tomcat のシャットダウン用に別のポートを選択してください。"
+
+msgid "Tomcat Server Port:"
+msgstr "Tomcat サーバー用ポート:"
+
+msgid "Tomcat Shutdown Port:"
+msgstr "Tomcat のシャットダウン用ポート:"
+
+msgid "Tomcat Directory:"
+msgstr "Tomcat のディレクトリ:"
+
+msgid "Tomcat Installation:"
+msgstr "Tomcat のインストール場所:"
+
+msgid "Couldn’t bind to the given port number. Select another FTP Port."
+msgstr "指定したポート番号にバインドできません。別の FTP ポートを選択してください。"
+
+msgid "Couldn’t bind to the given port number. Select another RMI Port."
+msgstr "指定したポート番号にバインドできません。別の RMI ポートを選択してください。"
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat AJP Port."
+msgstr "指定したポート番号にバインドできません。別の Tomcat AJP ポートを選択してください"
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat JMX Port."
+msgstr "指定したポート番号にバインドできません。別の Tomcat JMX ポートを選択してください"
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat SSL Port."
+msgstr "指定したポート番号にバインドできません。別の Tomcat SSL ポートを選択してください"
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat Server Port."
+msgstr "指定したポート番号にバインドできません。別の Tomcat サーバー用ポートを選択してください"
+
+msgid "Couldn’t bind to the given port number. Select another Tomcat Shutdown Port."
+msgstr "指定したポート番号にバインドできません。Tomcat のシャットダウン用に別のポートを選択してください。"
+
+msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
+msgstr "ポートの設定フィールドでは数字だけを使用してください。 他の文字は使用できません。"
+
+msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
+msgstr "サーバー用ポートにバインドできませんでした。${serverName} が稼働していないことを確認してください。"
+
+msgid "Couldn’t connect to database. Check your configuration."
+msgstr "データベースに接続できませんでした。設定を確認してください。"
+
+msgid "Couldn’t find a server running at this port number. Select another port."
+msgstr "このポート番号で稼動しているサーバーが見つかりません。別のポートを選択してください。"
+
+msgid "Couldn’t find a server running at port ${postgres_port}. Start your database server."
+msgstr "ポート ${postgres_port} で稼動しているサーバーが見つかりません。データベースサーバーを起動してください。"
+
+msgid "Couldn’t get free disk space."
+msgstr "空きディスク容量を確認できませんでした。"
+
+msgid "Uninstall ${product_fullname}"
+msgstr "${product_fullname} のアンインストール"
+
+msgid "Uninstall ${product_fullname} service"
+msgstr "${product_fullname} サービスのアンインストール"
+
+msgid "Uninstalling service"
+msgstr "サービスのアンインストール"
+
+msgid "Uninstalling services"
+msgstr "サービスをアンインストールしています"
+
+msgid "Use to configure the destination of the content in commands folder"
+msgstr "コマンドフォルダ内にあるコンテンツの掲載先を設定するために使用します。"
+
+msgid "User"
+msgstr "ユーザー"
+
+msgid "Username '${username}' is reserved. Use a different user name."
+msgstr "ユーザー名「${username}」は、予約されています。別のユーザー名を使用してください。"
+
+msgid "Username:"
+msgstr "ユーザー名:"
+
+msgid "Verify:"
+msgstr "確認:"
+
+msgid "Waiting for PostgreSQL to start"
+msgstr "PostgreSQL の開始待ちです"
+
+msgid "Waiting for Postmaster"
+msgstr "Postmaster の待機中"
+
+msgid "War files"
+msgstr "WAR ファイル"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Unable to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
+msgstr "システムに適切な JDK がインストールされていません。${product_fullname} には JDK ${java_min_version} 以降が必要です。"
+
+msgid "Web Quick Start"
+msgstr "Web Quick Start"
+
+msgid "Web Server"
+msgstr "Web サーバー"
+
+msgid "Web Server Domain:"
+msgstr "Web サーバードメイン:"
+
+msgid "You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Download and install Ruby Stack ${rubyVersion} version from bitnami.com"
+msgstr "サポートされていない Bitnami スタックにある Ruby ${rubyVersion} ベースのアプリケーションをインストールしようとしています。bitnami.com にある Ruby スタック ${rubyVersion} 版をダウンロードしてインストールしてください。"
+
+msgid "If you register ${product_fullname} as a service it will automatically start ${product_fullname} on machine startup."
+msgstr "${product_fullname} をサービスとして登録すると、マシンの起動時に自動的に ${product_fullname} が開始されます。"
+
+msgid "You have chosen Tomcat as the existing installation. Restart Tomcat to use any newly installed applications."
+msgstr "Tomcat を既存のソフトウェアとして選択しました。新たにインストールしたアプリケーションを使用するには、Tomcat を再起動する必要があります。"
+
+msgid "Select at least one of the Solr components."
+msgstr "Solr コンポーネントを最低 1 つを選択してください。"
+
+msgid "Use ASCII characters only when setting the password in the installer. If you want to use non-ASCII characters, you can do this by resetting the password after installation."
+msgstr "インストーラでパスワードを設定するときは、ASCII 文字を使用してください。非 ASCII 文字を使いたい場合は、インストール後にパスワードをリセットする際にその文字で指定できます。"
+
+msgid "Connect Alfresco Share to the repository"
+msgstr "Alfresco Share をリポジトリに接続する"
+
+msgid "Enter the location of your Alfresco Content Services repository."
+msgstr "Alfresco Content Services 用のリポジトリの場所を入力してください。"
+
+msgid "Repository location: "
+msgstr "リポジトリの場所: "
+
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco Content Services versions."
+msgstr "Solr - 旧バージョンの Alfresco Content Services からアップグレードする場合のみ Solr 1.4 をインストールしてください。"
+
+msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
+msgstr "Solr は、Apache Lucene をインデックス化/検索エンジンとして使用する、オープンソースのエンタープライズ検索プラットフォームです。Solr 4 は Solr 1 に比べて、拡張性、パフォーマンス、柔軟性に優れています。"
+
+msgid "Unable to bind to the given port number."
+msgstr "指定した番号にバインドできません。"
+
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
+msgstr "指定した番号にバインドできません。このポートはすでに ${process_binding_port} プロセスで使用されています。別の ${serverName} サーバー用ポートを選択してください。"
+
+msgid "Remote Solr configuration"
+msgstr "リモート Solr の設定"
+
+msgid "Enter the Solr host and port to connect to Alfresco Content Services:"
+msgstr "Alfresco Content Services に接続する Solr ホストとポートを入力してください:"
+
+msgid "Solr host:"
+msgstr "Solr ホスト:"
+
+msgid "Solr SSL port:"
+msgstr "Solr の SSL ポート:"
+
+msgid "Sharded Solr installation"
+msgstr "シャード化された Solr インストール"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "シャード化された Solr インストールを使いますか?"
+
+msgid "Yes"
+msgstr "はい"
+
+msgid "No"
+msgstr "いいえ"
+
+msgid "Read the following License Agreement. You must accept the terms of this agreement before continuing with the installation."
+msgstr "以下のライセンス使用許諾契約をお読みください。 インストールするには、これらの規約に同意する必要があります。"

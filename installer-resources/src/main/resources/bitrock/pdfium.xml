@@ -1,0 +1,82 @@
+<component>
+    <name>pdfium</name>
+    <description>Pdfium</description>
+    <canBeEdited>0</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+
+    <parameterList>
+        <directoryParameter>
+            <ask>0</ask>
+            <name>pdfium_root_directory</name>
+            <cliOptionName>pdfiumt_root_directory</cliOptionName>
+        </directoryParameter>
+    </parameterList>
+    <readyToInstallActionList>   
+    
+        <setInstallerVariable name="pdfium_root_directory" value="${installdir}/common">
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="pdfium_root_directory" value="${installdir}">
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+
+        <setInstallerVariable name="PDFIUM_PATH" value="${pdfium_root_directory}">
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+
+        <setInstallerVariable name="PDFIUM_PATH_WIN" value="${pdfium_root_directory}"/>
+
+        <setInstallerVariable name="PATH" value="${PDFIUM_PATH}:${PATH}">
+            <ruleList>
+                <compareText text="${PATH}" value="${PDFIUM_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="PATH_WIN" value="${PDFIUM_PATH_WIN};${PATH_WIN}">
+            <ruleList>
+                <compareText text="${PATH_WIN}" value="${PDFIUM_PATH_WIN}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        
+         <setInstallerVariable name="PDFIUM_ENV_VAR">
+            <value>##### PDFIUM ENV #####
+PDFIUM_ENV_VAR="${pdfium_root_directory}"
+export PDFIUM_ENV_VAR
+
+</value>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="PDFIUM_ENV_VAR">
+            <value>rem ##### PDFIUM ENV #####
+set PDFIUM_ENV_VAR=${pdfium_root_directory}
+</value>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="ENV_VAR">
+            <value>${PDFIUM_ENV_VAR}${ENV_VAR}</value>
+        </setInstallerVariable>
+    </readyToInstallActionList>
+    
+    <folderList>
+        <folder>
+            <name>alfresco-pdf-renderer</name>
+            <destination>${pdfium_root_directory}</destination>
+            <distributionFileList>
+                <distributionDirectory allowWildcards="1" origin="${pdfium_distribution_folder}/*"/>
+            </distributionFileList>
+        </folder>
+    </folderList>
+    
+    <postInstallationActionList/>
+</component>
+

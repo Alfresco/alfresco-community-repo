@@ -4,22 +4,21 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-full-installation</artifactId>
-        <version>5.2-SNAPSHOT</version>
+        <version>6.0-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-community-installer</artifactId>
+    <artifactId>alfresco-content-services-community-full-installer</artifactId>
     <packaging>pom</packaging>
-    <name>Alfresco Community Full Installers</name>
+    <name>Alfresco Content Services Community Full Installers</name>
 
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
+        <alfresco.package.name>alfresco-content-services-community-full</alfresco.package.name>
         <bitrock.arguments>
            project.version=${installer.version.name} 
-           project.fullName='Alfresco Community' 
-           project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
-           project.osxSigningPkcs12Password=${p12Password} 
+           project.fullName='Alfresco Community'
            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
            project.windowsSigningPkcs12Password=${p12Password} 
            alfresco_edition=community 
@@ -29,6 +28,13 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-installer-resources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- These binaries are extracted using tar, to preserve symlinks -->
 
         <!-- Common -->
@@ -39,13 +45,6 @@
             <classifier>linux</classifier>
             <type>tgz</type>
         </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>installer-common</artifactId>
-            <version>${installer.common.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
 
         <!-- Tomcat -->
         <dependency>
@@ -53,13 +52,6 @@
             <artifactId>tomcat</artifactId>
             <version>${installer.tomcat.version}</version>
             <classifier>linux</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat</artifactId>
-            <version>${installer.tomcat.version}</version>
-            <classifier>osx</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
@@ -82,13 +74,6 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql-distribution</artifactId>
             <version>${installer.postgresql.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql-distribution</artifactId>
-            <version>${installer.postgresql.version}</version>
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
@@ -99,13 +84,6 @@
             <artifactId>jre</artifactId>
             <version>${installer.java.version}</version>
             <classifier>linux</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>com.oracle.java</groupId>
-            <artifactId>jre</artifactId>
-            <version>${installer.java.version}</version>
-            <classifier>osx</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
@@ -128,13 +106,6 @@
             <groupId>org.libreoffice</groupId>
             <artifactId>libreoffice-dist</artifactId>
             <version>${installer.libreoffice.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>        
-        <dependency>
-            <groupId>org.libreoffice</groupId>
-            <artifactId>libreoffice-dist</artifactId>
-            <version>${installer.libreoffice.version}</version>
             <classifier>windows</classifier>
             <type>tgz</type>
         </dependency>
@@ -145,13 +116,6 @@
 			<artifactId>alfresco-pdf-renderer</artifactId>
 			<version>${installer.alfresco-pdf-renderer.version}</version>
 			<classifier>linux</classifier>
-			<type>tgz</type>
-		</dependency>
-		<dependency>
-			<groupId>org.alfresco</groupId>
-			<artifactId>alfresco-pdf-renderer</artifactId>
-			<version>${installer.alfresco-pdf-renderer.version}</version>
-			<classifier>osx</classifier>
 			<type>tgz</type>
 		</dependency>
 		<dependency>
@@ -174,13 +138,6 @@
             <groupId>org.imagemagick</groupId>
             <artifactId>imagemagick-distribution</artifactId>
             <version>${installer.imagemagick.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.imagemagick</groupId>
-            <artifactId>imagemagick-distribution</artifactId>
-            <version>${installer.imagemagick.version}</version>
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
@@ -197,13 +154,6 @@
             <groupId>com.bitnami</groupId>
             <artifactId>installbuilder</artifactId>
             <version>${installer.installbuilder.version}</version>
-            <classifier>osx</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>com.bitnami</groupId>
-            <artifactId>installbuilder</artifactId>
-            <version>${installer.installbuilder.version}</version>
             <classifier>win</classifier>
             <type>tgz</type>
         </dependency>
@@ -214,13 +164,6 @@
             <artifactId>manager</artifactId>
             <version>${installer.manager.version}</version>
             <classifier>linux</classifier>
-            <type>tgz</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>manager</artifactId>
-            <version>${installer.manager.version}</version>
-            <classifier>osx</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>
@@ -255,21 +198,21 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-installer-resources</artifactId>
-                                    <version>${alfresco.platform.version}</version>
+                                    <version>${project.version}</version>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-community-distribution</artifactId>
+                                    <artifactId>alfresco-content-services-community-full-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}</outputDirectory>
                                 </artifactItem>
                                 <!-- Solr1 Distribution -->
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr1-distribution</artifactId>
-                                    <version>${alfresco.platform.version}</version>
+                                    <version>${alfresco.solr.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}/alf_data/solr</outputDirectory>
                                 </artifactItem>
@@ -328,14 +271,6 @@
                                     <artifactId>alfresco-googledocs-share</artifactId>
                                     <version>${alfresco.googledocs.version}</version>
                                     <type>amp</type>
-                                </artifactItem>
-                                <!-- Alfresco SPP -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-spp</artifactId>
-                                    <version>${alfresco.platform.version}</version>
-                                    <type>amp</type>
-                                    <destFileName>alfresco-spp.amp</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -417,17 +352,6 @@
             <activation>
                 <os>
                     <family>linux</family>
-                </os>
-            </activation>
-            <properties>
-                <bitrock.executable>${bitrock.folder}/bin/builder</bitrock.executable>
-            </properties>
-        </profile>
-        <profile>
-            <id>osx-bitrock</id>
-            <activation>
-                <os>
-                    <family>mac</family>
                 </os>
             </activation>
             <properties>

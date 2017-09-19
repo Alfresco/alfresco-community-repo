@@ -7,28 +7,34 @@
         <version>6</version>
     </parent>
     <artifactId>alfresco-full-installation</artifactId>
-    <version>5.2-SNAPSHOT</version>
+    <version>6.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Full Installation</name>
 
     <properties>
-        <!-- Alfresco Platform version -->
-        <alfresco.platform.version>5.2-SNAPSHOT</alfresco.platform.version>
+        <!-- Community Packaging version -->
+        <dependency.acs-community-packaging.version>6.0.b-SNAPSHOT</dependency.acs-community-packaging.version>
+
+        <!-- Enterprise Packaging version -->
+        <dependency.acs-packaging.version>6.0.0-SNAPSHOT</dependency.acs-packaging.version>
 
         <!-- Alfresco Share version -->
-        <alfresco.share.version>5.2-SNAPSHOT</alfresco.share.version>
+        <alfresco.share.version>5.2.2-SNAPSHOT</alfresco.share.version>
 
         <!-- Alfresco GoogleDocs integration version -->
-        <alfresco.googledocs.version>3.0.4</alfresco.googledocs.version>
+        <alfresco.googledocs.version>3.0.4.2</alfresco.googledocs.version>
 
         <!-- Alfresco Office Services Module -->
-        <alfresco.aos-module.version>1.1.6</alfresco.aos-module.version>
+        <alfresco.aos-module.version>1.1.7</alfresco.aos-module.version>
+
+        <alfresco.solr.version>6.1</alfresco.solr.version>
+        <alfresco.solr4.version>6.5</alfresco.solr4.version>
 
         <!-- Versions of binaries packaged in the installer -->
-        <installer.common.version>5.2-20170616</installer.common.version>
-        <installer.tomcat.version>7.0.78-alfresco-distribution-20170616</installer.tomcat.version>
-        <installer.java.version>1.8.0_131</installer.java.version>
-        <installer.postgresql.version>9.4.12</installer.postgresql.version>
+        <installer.common.version>5.2-20170508</installer.common.version>
+        <installer.tomcat.version>7.0.59-alfresco-distribution</installer.tomcat.version>
+        <installer.java.version>1.8.0_111</installer.java.version>
+        <installer.postgresql.version>9.4.4-20151016</installer.postgresql.version>
         <installer.libreoffice.version>5.2.1-alfresco</installer.libreoffice.version>
         <installer.ghostscript.version>8.64</installer.ghostscript.version>
         <installer.imagemagick.version>7.0.5</installer.imagemagick.version>
@@ -61,7 +67,21 @@
     <modules>
         <module>distribution</module>
         <module>public-javadoc</module>
+        <module>installer-resources</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Import Enterprise packaging dependency management -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>acs-packaging</artifactId>
+                <version>${dependency.acs-packaging.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <profiles>
         <profile>
@@ -79,6 +99,7 @@
                 <module>enterprise-war-for-ear</module>
                 <module>ear</module>
                 <module>enterprise-distribution</module>
+                <module>enterprise-installer-resources</module>
                 <module>enterprise-installer</module>
             </modules>
         </profile>

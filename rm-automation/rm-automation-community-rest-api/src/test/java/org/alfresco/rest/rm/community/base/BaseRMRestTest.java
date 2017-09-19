@@ -518,7 +518,7 @@ public class BaseRMRestTest extends RestTest
                                    .name(name)
                                    .nodeType(CONTENT_TYPE)
                                    .build();
-        return recordFolderAPI.createRecord(recordModel, parentId, getFile(IMAGE_FILE));
+        return recordFolderAPI.createRecord(recordModel, parentId);
     }
 
     /**

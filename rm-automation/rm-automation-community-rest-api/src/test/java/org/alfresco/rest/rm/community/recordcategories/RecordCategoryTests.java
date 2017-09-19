@@ -32,7 +32,8 @@ import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.RECORD_FOLDER_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.TRANSFERS_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias
+        .UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PATH;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
@@ -59,8 +60,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.alfresco.rest.core.v0.BaseAPI.RETENTION_SCHEDULE;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.base.TestData;
+import org.alfresco.rest.rm.community.base.DataProviderClass;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
@@ -71,7 +73,6 @@ import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.v0.RecordCategoriesAPI;
-import org.alfresco.rest.core.v0.BaseAPI.RETENTION_SCHEDULE;
 import org.alfresco.utility.report.Bug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.DataProvider;
@@ -267,7 +268,7 @@ public class RecordCategoryTests extends BaseRMRestTest
     @Test
     (
         description = "Create a record folder into a record category.",
-        dataProviderClass = TestData.class,
+        dataProviderClass = DataProviderClass.class,
         dataProvider = "folderTypes"
     )
     @Bug (id = "RM-4572")
@@ -299,7 +300,7 @@ public class RecordCategoryTests extends BaseRMRestTest
     }
     @Test
     (
-        dataProviderClass = TestData.class,
+        dataProviderClass = DataProviderClass.class,
         dataProvider = "categoryChild"
     )
     @Bug(id = "RM-5116")
@@ -452,7 +453,7 @@ public class RecordCategoryTests extends BaseRMRestTest
     @Test
     (
         description = "Create node types not allowed inside a category",
-        dataProviderClass = TestData.class,
+        dataProviderClass = DataProviderClass.class,
         dataProvider = "childrenNotAllowedForCategory"
     )
     @Bug (id="RM-4367, RM-4572")
@@ -757,7 +758,7 @@ public class RecordCategoryTests extends BaseRMRestTest
     @Test
     (
         description = "Create a record folder into transfers/unfiled/file plan container",
-        dataProviderClass = TestData.class,
+        dataProviderClass = DataProviderClass.class,
         dataProvider = "getContainers"
     )
     @Bug (id = "RM-4327")

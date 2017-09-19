@@ -53,10 +53,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class SearchAPI extends BaseAPI
 {
-
     /** http client factory */
-    @Autowired
-    private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
+    @Autowired private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
 
     /** search API endpoint */
     private static final String SEARCH_ENDPOINT = "{0}alfresco/s/slingshot/search?{1}";

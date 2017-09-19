@@ -29,7 +29,8 @@ package org.alfresco.rest.rm.community.unfiledcontainers;
 import static java.time.LocalDateTime.now;
 
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias
+        .UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
@@ -53,7 +54,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
-import org.alfresco.rest.rm.community.base.TestData;
+import org.alfresco.rest.rm.community.base.DataProviderClass;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.record.RecordProperties;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
@@ -63,8 +64,8 @@ import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChi
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledRecordFolder;
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil;
-import org.springframework.http.HttpStatus;
 import org.alfresco.utility.report.Bug;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
@@ -418,7 +419,7 @@ public class UnfiledContainerTests extends BaseRMRestTest
     @Test
     (
         dataProvider = "invalidRootTypes",
-        dataProviderClass = TestData.class,
+        dataProviderClass = DataProviderClass.class,
         description = "Only unfiled records folders and records  can be created as children for unfiled container root"
     )
     public void createInvalidUnfiledChildren(String filePlanComponentType)

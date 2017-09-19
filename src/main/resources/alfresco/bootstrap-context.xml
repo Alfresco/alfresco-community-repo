@@ -269,7 +269,7 @@
       </property>
       
    </bean>
-    
+
     <!-- Descriptor Service -->
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
        <property name="serverDescriptorDAO">

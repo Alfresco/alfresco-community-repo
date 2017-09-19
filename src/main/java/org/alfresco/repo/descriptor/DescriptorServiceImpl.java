@@ -303,9 +303,9 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             ((ConfigurableApplicationContext) applicationContext).getBeanFactory().registerSingleton(
                     "licenseService", licenseService);
         }
-        
+
         // Load heart-beat special service (even if disabled at the moment)
-        heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
+        heartBeat = constructSpecialService("org.alfresco.heartbeat.HeartBeat");
         
         // Now listen for future license changes
         licenseService.registerOnLicenseChange(this);

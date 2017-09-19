@@ -25,6 +25,7 @@
  */
 package org.alfresco;
 
+import org.alfresco.heartbeat.*;
 import org.alfresco.repo.action.ActionConditionDefinitionImplTest;
 import org.alfresco.repo.action.ActionConditionImplTest;
 import org.alfresco.repo.action.ActionDefinitionImplTest;
@@ -417,6 +418,7 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(ADMLuceneCategoryTest.class);
         suite.addTestSuite(ADMLuceneTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.blog.BlogServiceImplTest.class));
+        suite.addTest(new JUnit4TestAdapter(RepositoryDataCollectorTest.class));
     }
 
     // [classpath:alfresco/application-context.xml, classpath:cache-test/cache-test-context.xml]
@@ -587,6 +589,9 @@ public class AllRepositoryTestsCatalogue
 
         // [alfresco/scheduler-core-context.xml, org/alfresco/util/test-scheduled-jobs-context.xml]
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanTest.class));
+
+        // [alfresco/scheduler-core-context.xml, org/alfresco/heartbeat/test-heartbeat-context.xml]
+        suite.addTest(new JUnit4TestAdapter(HeartBeatTest.class));
     }
 
     // no context - true JUNIT tests
@@ -716,5 +721,6 @@ public class AllRepositoryTestsCatalogue
         suite.addTestSuite(WorklfowObjectFactoryTest.class);
         suite.addTestSuite(WorkflowSuiteContextShutdownTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.lucene.analysis.PathTokenFilterTest.class));
+        suite.addTest(new JUnit4TestAdapter(HBDataCollectorServiceImplTest.class));
     }
 }

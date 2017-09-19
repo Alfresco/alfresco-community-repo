@@ -15,7 +15,7 @@
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
       <alfresco.rm.share>alfresco-rm-community-share</alfresco.rm.share>
       <alfresco.rm.repo>alfresco-rm-community-repo</alfresco.rm.repo>
-      <tas.restapi.version>5.2.0-7</tas.restapi.version>
+      <tas.restapi.version>5.2.0-9</tas.restapi.version>
       <fluent.json.version>2.0.0</fluent.json.version>
    </properties>
 
@@ -67,6 +67,11 @@
          <groupId>org.jglue.fluent-json</groupId>
          <artifactId>fluent-json</artifactId>
          <version>${fluent.json.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.alfresco.test</groupId>
+         <artifactId>alfresco-testng</artifactId>
+         <version>1.1</version>
       </dependency>
    </dependencies>
 </project>

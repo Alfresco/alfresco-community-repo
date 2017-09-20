@@ -1,4 +1,4 @@
-FROM tomcat:8.5.20-jre8
+FROM tomcat:8.5.20-jre8-alpine
 
 RUN mkdir -p /usr/local/tomcat/shared/classes
 

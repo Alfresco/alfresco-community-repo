@@ -41,7 +41,7 @@
                         <id>copy-resources</id>
                         <phase>process-resources</phase>
                         <goals>
-                            <goal>copy</goal>
+                            <goal>unpack</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -53,7 +53,7 @@
                             <version>${project.version}</version>
                             <type>war</type>
                             <overWrite>false</overWrite>
-                            <outputDirectory>${project.build.directory}/war</outputDirectory>
+                            <outputDirectory>${project.build.directory}/war/alfresco</outputDirectory>
                             <destFileName>alfresco.war</destFileName>
                         </artifactItem>
                         <artifactItem>

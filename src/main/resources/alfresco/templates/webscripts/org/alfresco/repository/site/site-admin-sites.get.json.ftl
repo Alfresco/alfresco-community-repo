@@ -17,7 +17,7 @@
 	                        "entry" : {
 	                            "userName" : "${manager.userName}",
 	                            "firstName" : "${manager.firstName}",
-	                            "lastName" : "${manager.lastName}"
+	                            "lastName" : "${manager.lastName!""}"
 	                        }
 	                    }<#if manager_has_next>,</#if>
 	                     </#list>

@@ -15,8 +15,8 @@
 	                     <#list item.members as manager>
 	                    {
 	                        "entry" : {
-	                            "userName" : "${manager.userName}",
-	                            "firstName" : "${manager.firstName}",
+	                            "userName" : "${manager.userName!""}",
+	                            "firstName" : "${manager.firstName!""}",
 	                            "lastName" : "${manager.lastName!""}"
 	                        }
 	                    }<#if manager_has_next>,</#if>

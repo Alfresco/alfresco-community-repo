@@ -238,12 +238,14 @@ import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.util.StringUtils;
 
+import static java.util.Collections.singletonList;
+
 /**
  * Bridge connecting Alfresco and OpenCMIS.
  * <p/>
  * This class  provides many of the typical services that the {@link CmisService} implementation
  * will need to use Alfresco.
- * 
+ *
  * @author florian.mueller
  * @author Derek Hulley
  * @author steveglover
@@ -254,7 +256,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     // mappings from cmis property names to their Alfresco property name counterparts (used by getChildren)
     private static Map<String, QName> SORT_PROPERTY_MAPPINGS = new HashMap<String, QName>();
-    
+
     static
     {
     	SORT_PROPERTY_MAPPINGS.put(PropertyIds.LAST_MODIFICATION_DATE, ContentModel.PROP_MODIFIED);
@@ -338,13 +340,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private StoreRef storeRef;
     private String rootPath;
     private Map<String, List<String>> kindToRenditionNames;
-    
+
     // note: cache is tenant-aware (if using TransctionalCache impl)
-    
+
     private SimpleCache<String, Object> singletonCache; // eg. for cmisRootNodeRef, cmisRenditionMapping
     private final String KEY_CMIS_ROOT_NODEREF = "key.cmisRoot.noderef";
     private final String KEY_CMIS_RENDITION_MAPPING_NODEREF = "key.cmisRenditionMapping.noderef";
-    
+
     private String proxyUser;
     private boolean openHttpSession = false;
 
@@ -360,11 +362,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     private ObjectFilter objectFilter;
 
-    // Bulk update properties 
+    // Bulk update properties
     private int bulkMaxItems = 1000;
     private int bulkBatchSize = 20;
     private int bulkWorkerThreads = 2;
-    
+
     // --------------------------------------------------------------
     // Configuration
     // --------------------------------------------------------------
@@ -376,7 +378,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
 	/**
      * Sets the root store.
-     * 
+     *
      * @param store
      *            store_type://store_id
      */
@@ -394,7 +396,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
 		this.activityPoster = activityPoster;
 	}
-    
+
 	public CmisActivityPoster getActivityPoster()
 	{
 		return activityPoster;
@@ -413,7 +415,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     /**
      * Sets the root path.
-     * 
+     *
      * @param path
      *            path within default store
      */
@@ -500,7 +502,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
 		this.thumbnailService = thumbnailService;
 	}
-    
+
 	public void setServiceRegistry(ServiceRegistry serviceRegistry)
 	{
 		this.serviceRegistry = serviceRegistry;
@@ -601,7 +603,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         return contentService;
     }
-    
+
     /**
      * Sets the event publisher
      */
@@ -609,7 +611,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         this.eventPublisher = eventPublisher;
     }
-    
+
     /**
      * Sets the rendition service.
      */
@@ -638,12 +640,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         this.tenantAdminService = tenantAdminService;
     }
-    
+
     public void setSingletonCache(SimpleCache<String, Object> singletonCache)
     {
         this.singletonCache = singletonCache;
     }
-    
+
     /**
      * Sets the transaction service.
      */
@@ -721,7 +723,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         this.cmisQueryService11 = cmisQueryService;
     }
-    
+
     public CMISQueryService getOpenCMISQueryService()
     {
         CmisVersion cmisVersion = getRequestCmisVersion();
@@ -809,38 +811,38 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         bulkMaxItems = size;
     }
-    
+
     public int getBulkMaxItems()
     {
         return bulkMaxItems;
     }
-    
+
     public void setBulkBatchSize(int size)
     {
         bulkBatchSize = size;
     }
-    
+
     public int getBulkBatchSize()
     {
         return bulkBatchSize;
     }
-    
+
     public void setBulkWorkerThreads(int threads)
     {
         bulkWorkerThreads = threads;
     }
-    
+
     public int getBulkWorkerThreads()
     {
         return bulkWorkerThreads;
     }
-    
+
     // --------------------------------------------------------------
     // Lifecycle methods
     // --------------------------------------------------------------
 
     private File tmp;
-    
+
     public void setup()
     {
     	File tempDir = TempFileProvider.getTempDir();
@@ -850,7 +852,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     		throw new AlfrescoRuntimeException("Failed to create CMIS temporary directory");
     	}
     }
-    
+
     public void init()
     {
         // register as tenant deployer
@@ -916,12 +918,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     /*
      * For the given cmis property name get the corresponding Alfresco property name.
-     * 
+     *
      * Certain CMIS properties (e.g. cmis:creationDate and cmis:lastModifiedBy) don't
      * have direct mappings to Alfresco properties through the CMIS dictionary, because
      * these mappings should not be exposed outside the repository through CMIS. For these,
      * however, this method provides the mapping so that the sort works.
-     * 
+     *
      */
     public Pair<QName, Boolean> getSortProperty(String cmisPropertyName, String direction)
     {
@@ -966,7 +968,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     /**
      * Asynchronously generates thumbnails for the given node.
-     *  
+     *
      * @param nodeRef NodeRef
      */
     public void createThumbnails(NodeRef nodeRef, Set<String> thumbnailNames)
@@ -997,7 +999,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 	        ThumbnailDefinition details = registry.getThumbnailDefinition(thumbnailName);
 	        if(details == null)
 	        {
-	            // Throw exception 
+	            // Throw exception
 	            logger.warn("The thumbnail name '" + thumbnailName + "' is not registered");
 	            continue;
 	        }
@@ -1006,7 +1008,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 		        if(registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), mimeType, size, nodeRef, details))
 		        {
 		            org.alfresco.service.cmr.action.Action action = ThumbnailHelper.createCreateThumbnailAction(details, serviceRegistry);
-		            
+
 		            // Queue async creation of thumbnail
 		            actionService.executeAction(action, nodeRef, true, true);
 		        }
@@ -1021,7 +1023,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     /**
      * Extracts metadata for the node.
-     *  
+     *
      * @param nodeRef NodeRef
      */
     public void extractMetadata(NodeRef nodeRef)
@@ -1034,7 +1036,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
     	return siteService.getSite(nodeRef);
     }
-    
+
     /**
      *  Should the node be filtered?
      */
@@ -1052,7 +1054,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
         return wasEnabled;
     }
-	
+
     public boolean enableBehaviour(QName className)
     {
         boolean isEnabled = behaviourFilter.isEnabled(className);
@@ -1063,7 +1065,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return isEnabled;
     }
 
-    
+
     public boolean disableBehaviour(QName className, NodeRef nodeRef)
     {
         boolean wasEnabled = behaviourFilter.isEnabled(nodeRef, className);
@@ -1073,7 +1075,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
         return wasEnabled;
     }
-    
+
     public boolean enableBehaviour(QName className, NodeRef nodeRef)
     {
         boolean isEnabled = behaviourFilter.isEnabled(nodeRef, className);
@@ -1235,7 +1237,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     		return id;
     	}
     }
-    
+
     /*
      * Construct an object id based on the incoming assocRef and versionLabel. The object id will always
      * be the assocRef guid.
@@ -1244,7 +1246,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         return constructObjectId(assocRef, versionLabel, isPublicApi());
     }
-    
+
     public String constructObjectId(AssociationRef assocRef, String versionLabel, boolean dropStoreRef)
     {
     	StringBuilder sb = new StringBuilder(CMISConnector.ASSOC_ID_PREFIX);
@@ -1265,7 +1267,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     	}
     	return sb.toString();
     }
-    
+
     /*
      * Construct an object id based on the incoming incomingObjectId. The object id will always
      * be the node guid.
@@ -1283,7 +1285,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         return constructObjectId(incomingNodeId, versionLabel, isPublicApi());
     }
-    
+
     public String constructObjectId(String incomingNodeId, String versionLabel, boolean dropStoreRef)
     {
     	StringBuilder sb = new StringBuilder();
@@ -1348,7 +1350,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         return constructObjectId(incomingNodeRef, versionLabel, isPublicApi());
     }
-    
+
     public String constructObjectId(NodeRef incomingNodeRef, String versionLabel, boolean dropStoreRef)
     {
     	StringBuilder sb = new StringBuilder();
@@ -1368,22 +1370,22 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         return createObjectId(nodeRef, isPublicApi());
     }
-    
+
     public String createObjectId(NodeRef nodeRef, boolean dropStoreRef)
     {
     	QName typeQName = nodeService.getType(nodeRef);
         TypeDefinitionWrapper type = getOpenCMISDictionaryService().findNodeType(typeQName);
-    
+
     	if(type instanceof ItemTypeDefinitionWrapper)
     	{
     		return constructObjectId(nodeRef, null);
     	}
-    	
+
         if(type instanceof FolderTypeDefintionWrapper)
         {
             return constructObjectId(nodeRef, null, dropStoreRef);
         }
-        
+
         Serializable versionLabel = getNodeService()
                 .getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
         if (versionLabel == null)
@@ -1393,7 +1395,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         return constructObjectId(nodeRef, (String)versionLabel, dropStoreRef);
     }
-    
+
     private boolean isFolder(NodeRef nodeRef)
     {
         return getType(nodeRef) instanceof FolderTypeDefintionWrapper;
@@ -1455,7 +1457,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             case CMIS_POLICY:
                 throw new CmisConstraintException("Type is not a policy type!");
             case CMIS_ITEM:
-                throw new CmisConstraintException("Type is not an item type!");    
+                throw new CmisConstraintException("Type is not an item type!");
             }
         }
 
@@ -1517,7 +1519,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             return;
         }
-        
+
         if (!childTypes.contains(childType))
         {
             throw new CmisConstraintException("Objects of type '" + childType + "' cannot be added to this folder!");
@@ -1728,7 +1730,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
             result.setMimeType(contentReader.getMimetype());
             long contentSize = contentReader.getSize();
-            
+
             if ((offset == null) && (length == null))
             {
                 result.setStream(contentReader.getContentInputStream());
@@ -1774,7 +1776,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     /**
      * Notifies listeners that a read has taken place.
-     * 
+     *
      * @param nodeRef NodeRef
      * @param name String
      * @param mimeType String
@@ -1785,7 +1787,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     protected void publishReadEvent(final NodeRef nodeRef, final String name, final String mimeType, final long contentSize, final String encoding, final String range)
     {
         final QName nodeType = nodeRef==null?null:nodeService.getType(nodeRef);
-        
+
         eventPublisher.publishEvent(new EventPreparator(){
             @Override
             public Event prepareEvent(String user, String networkId, String transactionId)
@@ -1793,16 +1795,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 if (StringUtils.hasText(range))
                 {
                     return new ContentReadRangeEvent(user, networkId, transactionId,
-                                nodeRef.getId(), null, nodeType.toString(), Client.asType(ClientType.cmis), name, mimeType, contentSize, encoding, range); 
-                } 
-                else 
+                                nodeRef.getId(), null, nodeType.toString(), Client.asType(ClientType.cmis), name, mimeType, contentSize, encoding, range);
+                }
+                else
                 {
                     return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
-                                nodeRef.getId(), null, nodeType.toString(), Client.asType(ClientType.cmis), name, mimeType, contentSize, encoding);            
+                                nodeRef.getId(), null, nodeType.toString(), Client.asType(ClientType.cmis), name, mimeType, contentSize, encoding);
                 }
             }
         });
-        
+
 
     }
 
@@ -1811,7 +1813,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     	NodeRef nodeRef = nodeInfo.getNodeRef();
 
     	this.disableBehaviour(ContentModel.ASPECT_VERSIONABLE, nodeRef);
-		
+
     	if(!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CMIS_UPDATE_CONTEXT))
     	{
     		Map<QName, Serializable> props = new HashMap<QName, Serializable>();
@@ -1825,7 +1827,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     	ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
     	OutputStream out = new BufferedOutputStream(writer.getContentOutputStream());
-    	
+
     	InputStream in = null;
     	if(existingContentInput != null)
     	{
@@ -1856,9 +1858,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 			}
 			if(out != null)
 			{
-    	    	out.close();	
+    	    	out.close();
 			}
-			
+
 			this.enableBehaviour(ContentModel.ASPECT_VERSIONABLE, nodeRef);
 		}
     }
@@ -2071,7 +2073,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             attributes.put("localName", propertyDefinition.getLocalName());
         }
-        
+
 
         List<CmisExtensionElement> propertyValues = new ArrayList<CmisExtensionElement>();
         if (value != null)
@@ -2127,7 +2129,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         // MNT-12496 MNT-15044
         // Filter for AtomPub and Web services bindings only. Browser/json binding already encodes.
-        if (AlfrescoCmisServiceCall.get() != null && 
+        if (AlfrescoCmisServiceCall.get() != null &&
                 (CallContext.BINDING_ATOMPUB.equals(AlfrescoCmisServiceCall.get().getBinding()) ||
                  CallContext.BINDING_WEBSERVICES.equals(AlfrescoCmisServiceCall.get().getBinding())))
         {
@@ -2233,7 +2235,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                // MNT-12496 MNT-15044
                // Filter for AtomPub and Web services bindings only. Browser/json binding already encodes.
-                if (AlfrescoCmisServiceCall.get() != null && 
+                if (AlfrescoCmisServiceCall.get() != null &&
                         (CallContext.BINDING_ATOMPUB.equals(AlfrescoCmisServiceCall.get().getBinding()) ||
                          CallContext.BINDING_WEBSERVICES.equals(AlfrescoCmisServiceCall.get().getBinding())))
                 {
@@ -2270,7 +2272,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         return result;
     }
-    
+
     private String filterXmlRestrictedCharacters(String origValue)
     {
         if (origValue == null)
@@ -2285,7 +2287,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             boolean restricted = (ch < '\u0020') && !(ch == '\t' || ch == '\n' || ch == '\r');
             sb.append(restricted ? REPLACEMENT_CHAR : ch);
         }
-        
+
         return sb.toString();
     }
 
@@ -2767,7 +2769,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     /**
      * Converts Acl to map and ignore the indirect ACEs
-     * 
+     *
      * @param acl Acl
      * @return Map
      */
@@ -2814,7 +2816,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     /**
      * Filter acl to ignore inherited ACEs
-     * 
+     *
      * @param nodeRef NodeRef
      * @param acl Acl
      * @return Acl
@@ -2989,18 +2991,18 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             for (CMISResultSetRow row : rs)
             {
                 NodeRef nodeRef = row.getNodeRef();
-                
+
                 if(!nodeService.exists(nodeRef) || filter(nodeRef))
                 {
                     continue;
                 }
-                
+
                 TypeDefinitionWrapper type = getType(nodeRef);
                 if (type == null)
                 {
                     continue;
                 }
-                
+
                 ObjectDataImpl hit = new ObjectDataImpl();
                 PropertiesImpl properties = new PropertiesImpl();
                 hit.setProperties(properties);
@@ -3076,7 +3078,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             return;
         }
-        
+
         Map<String, PropertyData<?>> incomingPropsMap = properties.getProperties();
         if (incomingPropsMap == null)
         {
@@ -3170,7 +3172,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         for(Object o : secondaryTypes)
         {
             String secondaryType = (String)o;
-            
+
             TypeDefinitionWrapper wrapper = getOpenCMISDictionaryService().findType(secondaryType);
             if(wrapper != null)
             {
@@ -3183,28 +3185,34 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
         }
 
-        Set<QName> ignore = new HashSet<QName>();
-        ignore.add(ContentModel.ASPECT_REFERENCEABLE);
-        ignore.add(ContentModel.ASPECT_LOCALIZED); 
-        ignore.add(ContentModel.ASPECT_WORKING_COPY);
+        Set<QName> aspectsToIgnore = new HashSet<>();
+        aspectsToIgnore.add(ContentModel.ASPECT_REFERENCEABLE);
+        aspectsToIgnore.add(ContentModel.ASPECT_LOCALIZED);
+        aspectsToIgnore.add(ContentModel.ASPECT_WORKING_COPY);
+
+        Set<String> namespacesToIgnore = new HashSet<>(singletonList(NamespaceService.SYSTEM_MODEL_1_0_URI));
 
         // aspects to add == the list of secondary types - existing aspects - ignored aspects
         Set<QName> toAdd = new HashSet<QName>(secondaryTypeAspects);
         toAdd.removeAll(existingAspects);
-        toAdd.removeAll(ignore);
+        toAdd.removeAll(aspectsToIgnore);
+        toAdd.removeIf(a -> namespacesToIgnore.contains(a.getNamespaceURI()));
 
         // aspects to remove == existing aspects - secondary types
         Set<QName> aspectsToRemove = new HashSet<QName>();
         aspectsToRemove.addAll(existingAspects);
-        aspectsToRemove.removeAll(ignore);
+        aspectsToRemove.removeAll(aspectsToIgnore);
         Iterator<QName> it = aspectsToRemove.iterator();
         while(it.hasNext())
         {
             QName aspectQName = it.next();
             TypeDefinitionWrapper w = getOpenCMISDictionaryService().findNodeType(aspectQName);
-            if(w == null || secondaryTypeAspects.contains(aspectQName))
+            if(w == null || secondaryTypeAspects.contains(aspectQName) || namespacesToIgnore.contains(aspectQName.getNamespaceURI()))
             {
-                // the type is not exposed or is in the secondary types to set, so remove it from the to remove set
+                // the type is not exposed,
+                // or is in the secondary types to set,
+                // or is in the set of namespaces to ignore,
+                // so remove it from the "to remove" set
                 it.remove();
             }
         }

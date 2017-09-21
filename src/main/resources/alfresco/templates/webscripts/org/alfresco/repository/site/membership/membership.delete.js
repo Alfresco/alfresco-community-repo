@@ -27,7 +27,7 @@ function main()
       {
          status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, msg);
       }
-      else throw error;
+      else throw e;
 	}
 }
 

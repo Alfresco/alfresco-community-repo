@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rest.core;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -32,6 +33,7 @@ import javax.annotation.Resource;
 
 import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
+import org.alfresco.rest.requests.search.SearchAPI;
 import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
@@ -65,7 +67,7 @@ import lombok.Setter;
 public class RestAPIFactory
 {
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private DataUser dataUser;
 
     @Resource(name = "RMRestWrapper")
@@ -83,6 +85,12 @@ public class RestAPIFactory
     {
         getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withCoreAPI();
+    }
+
+    private SearchAPI getSearchAPI(UserModel userModel)
+    {
+        getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
+        return getRmRestWrapper().withSearchAPI();
     }
 
     public Node getNodeAPI(RepoTestModel model) throws Exception

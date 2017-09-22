@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rest.rm.community.base;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -40,15 +41,11 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
-import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_ADMIN;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createUnfiledContainerChildModel;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
 import static org.alfresco.rest.rm.community.utils.RMSiteUtil.createStandardRMSiteModel;
 import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
 import static org.springframework.http.HttpStatus.CREATED;
@@ -97,19 +94,19 @@ import lombok.Getter;
 public class BaseRMRestTest extends RestTest
 {
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private RestAPIFactory restAPIFactory;
 
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private DataUser dataUser;
 
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private ContentService contentService;
 
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
     /**
@@ -136,22 +133,22 @@ public class BaseRMRestTest extends RestTest
     @DataProvider(name = "validRootContainers")
     public String[][] getValidRootContainers() throws Exception
     {
-        return new String[][]
-        {
-            // an arbitrary record folder
-            { createCategoryFolderInFilePlan().getId(), RECORD_FOLDER_TYPE},
-            // unfiled records root
-            { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE},
-            // an arbitrary unfiled records folder
-            { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), UNFILED_RECORD_FOLDER_TYPE }
-        };
+        return new String[][] {
+                    // an arbitrary record folder
+                    { createCategoryFolderInFilePlan().getId(), RECORD_FOLDER_TYPE },
+                    // unfiled records root
+                    { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE },
+                    // an arbitrary unfiled records folder
+                    { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
+                                "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(),
+                                UNFILED_RECORD_FOLDER_TYPE } };
     }
 
     /**
      * @see org.alfresco.rest.RestTest#checkServerHealth()
      */
     @Override
-    @BeforeClass (alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void checkServerHealth() throws Exception
     {
         // Create RM Site if not exist
@@ -159,8 +156,7 @@ public class BaseRMRestTest extends RestTest
     }
 
     /**
-     * Helper method to create the RM Site via the POST request
-     * if the site doesn't exist
+     * Helper method to create the RM Site via the POST request if the site doesn't exist
      */
     public void createRMSiteIfNotExists() throws Exception
     {
@@ -224,10 +220,12 @@ public class BaseRMRestTest extends RestTest
      * @return The created category
      * @throws Exception on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle) throws Exception
+    public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle)
+                throws Exception
     {
         RecordCategory recordCategoryModel = createRecordCategoryModel(categoryName, categoryTitle);
-        return getRestAPIFactory().getFilePlansAPI(userModel).createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS);
+        return getRestAPIFactory().getFilePlansAPI(userModel).createRootRecordCategory(recordCategoryModel,
+                    FILE_PLAN_ALIAS);
     }
 
     /**
@@ -240,10 +238,12 @@ public class BaseRMRestTest extends RestTest
      * @return The created {@link RecordCategoryChild}
      * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
      */
-    public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name, String type) throws Exception
+    public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name,
+                String type) throws Exception
     {
         RecordCategoryChild recordCategoryChildModel = createRecordCategoryChildModel(name, type);
-        return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordCategoryChildModel, recordCategoryId);
+        return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordCategoryChildModel,
+                    recordCategoryId);
     }
 
     /**
@@ -255,7 +255,8 @@ public class BaseRMRestTest extends RestTest
      * @return The created {@link RecordCategoryChild}
      * @throws Exception {@link RecordCategoryAPI#createRecordCategoryChild(RecordCategoryChild, String)}
      */
-    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name, String type) throws Exception
+    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name, String type)
+                throws Exception
     {
         return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, type);
     }
@@ -298,7 +299,8 @@ public class BaseRMRestTest extends RestTest
     public RecordCategoryChild createFolder(UserModel user, String recordCategoryId, String name) throws Exception
     {
         RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(name, RECORD_FOLDER_TYPE);
-        return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordFolderModel, recordCategoryId);
+        return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordFolderModel,
+                    recordCategoryId);
     }
 
     /**
@@ -317,16 +319,18 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to create child unfiled record folder
      *
-     *@param user The user under whose privileges this structure is going to be created
+     * @param user The user under whose privileges this structure is going to be created
      * @param parentId The id of the parent folder
      * @param nodeType The child type
      * @return The created folder
      * @throws Exception on unsuccessful component creation
      */
-    public UnfiledContainerChild createUnfiledRecordsFolderChild(UserModel user, String parentId, String childName, String nodeType) throws Exception
+    public UnfiledContainerChild createUnfiledRecordsFolderChild(UserModel user, String parentId, String childName,
+                String nodeType) throws Exception
     {
         UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
-        UnfiledContainerChild child = getRestAPIFactory().getUnfiledRecordFoldersAPI(user).createUnfiledRecordFolderChild(childModel, parentId);
+        UnfiledContainerChild child = getRestAPIFactory().getUnfiledRecordFoldersAPI(user)
+                    .createUnfiledRecordFolderChild(childModel, parentId);
         assertStatusCode(CREATED);
 
         return child;
@@ -340,7 +344,8 @@ public class BaseRMRestTest extends RestTest
      * @return The created folder
      * @throws Exception on unsuccessful component creation
      */
-    public UnfiledContainerChild createUnfiledRecordsFolderChild(String parentId, String childName, String nodeType) throws Exception
+    public UnfiledContainerChild createUnfiledRecordsFolderChild(String parentId, String childName, String nodeType)
+                throws Exception
     {
         return createUnfiledRecordsFolderChild(getAdminUser(), parentId, childName, nodeType);
     }
@@ -355,14 +360,16 @@ public class BaseRMRestTest extends RestTest
      * @return The created chid
      * @throws Exception on unsuccessful child creation
      */
-    public UnfiledContainerChild createUnfiledContainerChild(UserModel user, String parentId, String childName, String nodeType) throws Exception
+    public UnfiledContainerChild createUnfiledContainerChild(UserModel user, String parentId, String childName,
+                String nodeType) throws Exception
     {
         UnfiledContainerChild child = null;
         UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
 
         if (FilePlanComponentType.CONTENT_TYPE.equals(nodeType))
         {
-            child = getRestAPIFactory().getUnfiledContainersAPI(user).uploadRecord(childModel, parentId, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
+            child = getRestAPIFactory().getUnfiledContainersAPI(user).uploadRecord(childModel, parentId,
+                        createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
         }
         else
         {
@@ -382,7 +389,8 @@ public class BaseRMRestTest extends RestTest
      * @return The created chid
      * @throws Exception on unsuccessful child creation
      */
-    public UnfiledContainerChild createUnfiledContainerChild(String parentId, String childName, String nodeType) throws Exception
+    public UnfiledContainerChild createUnfiledContainerChild(String parentId, String childName, String nodeType)
+                throws Exception
     {
         return createUnfiledContainerChild(getAdminUser(), parentId, childName, nodeType);
     }
@@ -397,11 +405,9 @@ public class BaseRMRestTest extends RestTest
     protected RecordFolder closeFolder(String folderId) throws Exception
     {
         RecordFolder recordFolderModel = RecordFolder.builder()
-                                            .properties(RecordFolderProperties.builder()
-                                                    .isClosed(true)
-                                                    .build())
-                                            .build();
-        RecordFolder updateRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolderModel, folderId);
+                    .properties(RecordFolderProperties.builder().isClosed(true).build()).build();
+        RecordFolder updateRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolderModel,
+                    folderId);
         assertStatusCode(OK);
 
         return updateRecordFolder;
@@ -497,10 +503,8 @@ public class BaseRMRestTest extends RestTest
      */
     public void deleteFolder(SiteModel siteModel, FolderModel folder)
     {
-        contentService.deleteTree(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),
-            siteModel.getId(),
-            folder.getName());
+        contentService.deleteTree(getAdminUser().getUsername(), getAdminUser().getPassword(), siteModel.getId(),
+                    folder.getName());
     }
 
     /**
@@ -514,10 +518,7 @@ public class BaseRMRestTest extends RestTest
     public Record createElectronicRecord(String parentId, String name) throws Exception
     {
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI();
-        Record recordModel = Record.builder()
-                                   .name(name)
-                                   .nodeType(CONTENT_TYPE)
-                                   .build();
+        Record recordModel = Record.builder().name(name).nodeType(CONTENT_TYPE).build();
         return recordFolderAPI.createRecord(recordModel, parentId);
     }
 
@@ -554,6 +555,7 @@ public class BaseRMRestTest extends RestTest
     {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, PERMISSION_FILING);
         rmRolesAndActionsAPI.assignUserToRole(dataUser.getAdminUser().getUsername(),
-            dataUser.getAdminUser().getPassword(), user.getUsername(), ROLE_RM_USER);
+                    dataUser.getAdminUser().getPassword(), user.getUsername(), ROLE_RM_USER);
     }
+
 }

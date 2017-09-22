@@ -3352,7 +3352,19 @@ public class CMISTest
                         
                         cmisService.updateProperties(repositoryId, new Holder<String>(fileInfo.getNodeRef().toString()), null, properties, null);
                     }
-                    
+                    //This extra check was added due to MNT-16641.
+                    {
+                        PropertiesImpl properties = new PropertiesImpl();
+                        properties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, "P:cm:lockable"));
+
+                        Set<QName> existingAspects = nodeService.getAspects(docs.get(0).getNodeRef());
+                        cmisService.updateProperties(repositoryId,new Holder<String>(docs.get(0).getNodeRef().toString()), null, properties, null);
+                        Set<QName> updatedAspects = nodeService.getAspects(docs.get(0).getNodeRef());
+                        updatedAspects.removeAll(existingAspects);
+
+                        assertEquals(ContentModel.ASPECT_LOCKABLE, updatedAspects.iterator().next());
+
+                    }
                     return repositoryId;
                 }
             }, CmisVersion.CMIS_1_1);

@@ -3214,13 +3214,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         for(QName aspectQName : aspectsToRemove)
         {
             nodeService.removeAspect(nodeRef, aspectQName);
-            // aspect is being removed so remove all of its properties from the propsToAdd map
-            TypeDefinitionWrapper w = getOpenCMISDictionaryService().findNodeType(aspectQName);
-            for(PropertyDefinitionWrapper wr : w.getProperties())
-            {
-                String propertyId = wr.getPropertyId();
-                propsToAdd.remove(propertyId);
-            }
         }
 
         // add aspects and properties
@@ -4093,7 +4086,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     /**
-     * Verify if a property is updatable. 
+     * Verify if a property is updatable.
      * @param updatability
      * @param isOnWorkingCopy
      * @return

@@ -3098,12 +3098,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 }
             }
 
+            Boolean isOnWorkingCopy = checkOutCheckInService.isWorkingCopy(nodeRef);
             Updatability updatability = propDef.getPropertyDefinition().getUpdatability();
-            if ((updatability == Updatability.READONLY)
-                    || (updatability == Updatability.WHENCHECKEDOUT && !checkOutCheckInService.isWorkingCopy(nodeRef)))
+            if (!isUpdatable(updatability, isOnWorkingCopy))
             {
-                throw new CmisInvalidArgumentException("Property " + property.getId() + " is read-only!");
+                throw new CmisInvalidArgumentException("Property " + propertyId + " is read-only!");
             }
+
             TypeDefinitionWrapper propType = propDef.getOwningType();
             Serializable value = getValue(property, propDef.getPropertyDefinition().getCardinality() == Cardinality.MULTI);
             Pair<TypeDefinitionWrapper, Serializable> pair = new Pair<TypeDefinitionWrapper, Serializable>(propType, value);
@@ -3129,7 +3130,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
         for (String propertyId : propsMap.keySet())
         {
-            if(propertyId.equals(PropertyIds.SECONDARY_OBJECT_TYPE_IDS))
+            if (propertyId.equals(PropertyIds.SECONDARY_OBJECT_TYPE_IDS))
             {
                 // already handled above
                 continue;
@@ -3213,39 +3214,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         for(QName aspectQName : aspectsToRemove)
         {
             nodeService.removeAspect(nodeRef, aspectQName);
-            // aspect is being removed so remove all of its properties from the propsToAdd map
-            TypeDefinitionWrapper w = getOpenCMISDictionaryService().findNodeType(aspectQName);
-            for(PropertyDefinitionWrapper wr : w.getProperties())
-            {
-                String propertyId = wr.getPropertyId();
-                propsToAdd.remove(propertyId);
-            }
         }
 
         // add aspects and properties
         for(QName aspectQName : toAdd)
         {
             nodeService.addAspect(nodeRef, aspectQName, null);
-            
-            // get aspect properties
-            AspectDefinition aspectDef = dictionaryService.getAspect(aspectQName);
-            Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> aspectPropDefs = aspectDef.getProperties();
-            TypeDefinitionWrapper w = getOpenCMISDictionaryService().findNodeType(aspectQName);
-            // for each aspect property...
-            for(QName propQName : aspectPropDefs.keySet())
-            {
-                // find CMIS property id
-                PropertyDefinitionWrapper property = w.getPropertyByQName(propQName);
-                String propertyId = property.getPropertyId();
-                if(!propsToAdd.containsKey(propertyId))
-                {
-                    TypeDefinitionWrapper propType = property.getOwningType();
-                    // CMIS 1.1 secondary types specification requires that all secondary type properties are set
-                    // property not included in propsToAdd, add it with null value
-                    Pair<TypeDefinitionWrapper, Serializable> pair = new Pair<TypeDefinitionWrapper, Serializable>(propType, null);
-                    propsToAdd.put(propertyId, pair);
-                }
-            }
         }
     }
 
@@ -3580,9 +3554,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             throw new CmisInvalidArgumentException("Property " + propertyId + " is unknown!");
         }
 
+        Boolean isOnWorkingCopy = checkOutCheckInService.isWorkingCopy(nodeRef);
         Updatability updatability = propDef.getPropertyDefinition().getUpdatability();
-        if ((updatability == Updatability.READONLY)
-                || (updatability == Updatability.WHENCHECKEDOUT && !checkOutCheckInService.isWorkingCopy(nodeRef)))
+        if (!isUpdatable(updatability, isOnWorkingCopy))
         {
             throw new CmisInvalidArgumentException("Property " + propertyId + " is read-only!");
         }
@@ -3610,7 +3584,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 {
                     String newName = value.toString();
                     // If the node is checked out and the name property is set on the working copy, make sure the new name has the working copy format
-                    if (checkOutCheckInService.isWorkingCopy(nodeRef))
+                    if (isOnWorkingCopy)
                     {
                         String wcLabel = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_WORKING_COPY_LABEL);
                         if (wcLabel == null)
@@ -4109,5 +4083,24 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             singletonCache.put(KEY_CMIS_RENDITION_MAPPING_NODEREF, renditionMapping);
         }
         return renditionMapping;
+    }
+
+    /**
+     * Verify if a property is updatable.
+     * @param updatability
+     * @param isOnWorkingCopy
+     * @return
+     */
+    private boolean isUpdatable(Updatability updatability, Boolean isOnWorkingCopy)
+    {
+        if ((updatability == Updatability.READONLY)
+                || (updatability == Updatability.WHENCHECKEDOUT && !isOnWorkingCopy))
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 }

@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
@@ -1755,9 +1756,13 @@ public class CMISTest
 
         List secondaryTypeIds = currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
 
+        assertTrue(secondaryTypeIds.contains(aspectName));
+
         secondaryTypeIds.remove(aspectName);
         final PropertiesImpl newProperties = new PropertiesImpl();
         newProperties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypeIds));
+        final String updatedName = "My_new_name_"+UUID.randomUUID().toString();
+        newProperties.replaceProperty(new PropertyStringImpl(PropertyIds.NAME, updatedName));
 
         withCmisService(new CmisServiceCallback<Void>()
         {
@@ -1765,6 +1770,8 @@ public class CMISTest
             public Void execute(CmisService cmisService)
             {
                 Holder<String> latestObjectIdHolder = getHolderOfObjectOfLatestVersion(cmisService, repositoryId, objectIdHolder);
+                // This will result in aspectName being removed
+                // but that shouldn't mean that, for example, a cmis:name prop update gets ignored (MNT-18340)
                 cmisService.updateProperties(repositoryId, latestObjectIdHolder, null, newProperties, null);
                 return null;
             }
@@ -1775,12 +1782,15 @@ public class CMISTest
             @Override
             public Properties execute(CmisService cmisService)
             {
-                Properties properties = cmisService.getProperties(repositoryId, objectIdHolder.getValue(), null, null);
+                Holder<String> latestObjectIdHolder = getHolderOfObjectOfLatestVersion(cmisService, repositoryId, objectIdHolder);
+                Properties properties = cmisService.getProperties(repositoryId, latestObjectIdHolder.getValue(), null, null);
                 return properties;
             }
         }, CmisVersion.CMIS_1_1);
         secondaryTypeIds = currentProperties1.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
 
+        assertFalse(secondaryTypeIds.contains(aspectName));
+        assertEquals(updatedName, currentProperties1.getProperties().get(PropertyIds.NAME).getFirstValue());
     }
 
     /**
@@ -3352,7 +3362,19 @@ public class CMISTest
                         
                         cmisService.updateProperties(repositoryId, new Holder<String>(fileInfo.getNodeRef().toString()), null, properties, null);
                     }
-                    
+                    //This extra check was added due to MNT-16641.
+                    {
+                        PropertiesImpl properties = new PropertiesImpl();
+                        properties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, "P:cm:lockable"));
+
+                        Set<QName> existingAspects = nodeService.getAspects(docs.get(0).getNodeRef());
+                        cmisService.updateProperties(repositoryId,new Holder<String>(docs.get(0).getNodeRef().toString()), null, properties, null);
+                        Set<QName> updatedAspects = nodeService.getAspects(docs.get(0).getNodeRef());
+                        updatedAspects.removeAll(existingAspects);
+
+                        assertEquals(ContentModel.ASPECT_LOCKABLE, updatedAspects.iterator().next());
+
+                    }
                     return repositoryId;
                 }
             }, CmisVersion.CMIS_1_1);

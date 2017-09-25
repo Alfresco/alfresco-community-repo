@@ -27,6 +27,10 @@ package org.alfresco.repo.node;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.copy.CopyBehaviourCallback;
+import org.alfresco.repo.copy.CopyDetails;
+import org.alfresco.repo.copy.CopyServicePolicies;
+import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.Behaviour;
@@ -35,6 +39,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -54,7 +59,8 @@ import org.alfresco.service.namespace.QName;
  * @author Neil Mc Erlean
  * @since 3.5.0
  */
-public class UndeletableAspect implements NodeServicePolicies.BeforeDeleteNodePolicy
+public class UndeletableAspect implements NodeServicePolicies.BeforeDeleteNodePolicy,
+        CopyServicePolicies.OnCopyNodePolicy
 {
    private PolicyComponent policyComponent;
    private NodeService nodeService;
@@ -87,6 +93,11 @@ public class UndeletableAspect implements NodeServicePolicies.BeforeDeleteNodePo
        this.policyComponent.bindClassBehaviour(BeforeDeleteNodePolicy.QNAME,
                ContentModel.ASPECT_UNDELETABLE,
                new JavaBehaviour(this, "beforeDeleteNode", Behaviour.NotificationFrequency.EVERY_EVENT));
+
+       policyComponent.bindClassBehaviour(
+               QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback"),
+               ContentModel.ASPECT_UNDELETABLE,
+               new JavaBehaviour(this, "getCopyCallback"));
    }
 
    /**
@@ -97,5 +108,11 @@ public class UndeletableAspect implements NodeServicePolicies.BeforeDeleteNodePo
     {
         QName nodeType = nodeService.getType(nodeRef);
         throw new AlfrescoRuntimeException(nodeType.toPrefixString() + " deletion is not allowed. Attempted to delete " + nodeRef);
+    }
+
+    @Override
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
+    {
+        return DoNothingCopyBehaviourCallback.getInstance();
     }
 }

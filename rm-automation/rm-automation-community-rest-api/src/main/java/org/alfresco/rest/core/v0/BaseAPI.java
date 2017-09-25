@@ -87,7 +87,7 @@ public abstract class BaseAPI
     @Autowired
     private ContentService contentService;
 
-    private static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
+    protected static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
     private static final String FILE_PLAN_PATH = "/Sites/rm/documentLibrary";
 
     /**
@@ -640,4 +640,29 @@ public abstract class BaseAPI
     {
         return FILE_PLAN_PATH;
     }
+
+    /**
+     * Used to set RM items properties
+     * including records, categories and folders
+     */
+    public enum CUSTOM_DEFINITIONS
+    {
+        ATTACHMENT("Attachment"),
+        MESSAGE("Message"),
+        NEXT_VERSION("Next Version"),
+        RENDITION("Rendition");
+        String definition;
+
+        private CUSTOM_DEFINITIONS(String definition)
+        {
+            this.definition = definition;
+        }
+
+        public String getDefinition()
+        {
+            return definition;
+        }
+
+    }
+
 }

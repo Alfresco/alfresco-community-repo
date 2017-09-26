@@ -642,8 +642,7 @@ public abstract class BaseAPI
     }
 
     /**
-     * Used to set RM items properties
-     * including records, categories and folders
+     * List of existing records management custom references.
      */
     public enum CUSTOM_DEFINITIONS
     {
@@ -662,7 +661,5 @@ public abstract class BaseAPI
         {
             return definition;
         }
-
     }
-
 }

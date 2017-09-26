@@ -115,7 +115,7 @@ public class CustomDefinitionsAPI extends BaseAPI
         {
             //create the request body
             JSONObject requestParams = new JSONObject();
-            requestParams.put("recordNodeIdto", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdto);
+            requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdto);
             requestParams.put("refId", getCustomReferencesId(adminUser, adminPassword, relationshipType
                     .getDefinition()));
             //send the API request to create the relationship

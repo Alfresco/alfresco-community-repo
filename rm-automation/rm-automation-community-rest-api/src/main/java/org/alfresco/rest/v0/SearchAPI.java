@@ -50,7 +50,8 @@ import org.springframework.stereotype.Component;
 public class SearchAPI extends BaseAPI
 {
     /** http client factory */
-    @Autowired private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
+    @Autowired
+    private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
 
     /** faceted search API endpoint */
     private static final String FACETED_SEARCH_ENDPOINT = "{0}alfresco/s/slingshot/rmsearch/faceted/rmsearch?{1}";

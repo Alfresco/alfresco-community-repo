@@ -541,10 +541,10 @@ public class BaseRMRestTest extends RestTest
      * @param categoryId the id of the category to assign permissions for
      * @throws Exception
      */
-    public void assignFillingPermissionsOnCategory(UserModel user, String categoryId) throws Exception
+    public void assignFillingPermissionsOnCategory(UserModel user, String categoryId, String userPermission, String userRole) throws Exception
     {
-        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, PERMISSION_FILING);
-        rmRolesAndActionsAPI.assignUserToRole(dataUser.getAdminUser().getUsername(),
-                    dataUser.getAdminUser().getPassword(), user.getUsername(), ROLE_RM_USER);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
+        rmRolesAndActionsAPI.assignUserToRole(getAdminUser().getUsername(),
+                    getAdminUser().getPassword(), user.getUsername(), userRole);
     }
 }

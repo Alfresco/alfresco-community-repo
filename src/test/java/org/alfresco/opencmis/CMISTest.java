@@ -1754,13 +1754,25 @@ public class CMISTest
             }
         }, CmisVersion.CMIS_1_1);
 
-        List secondaryTypeIds = currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+        List<String> secondaryTypeIds = (List<String>) currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
 
         assertTrue(secondaryTypeIds.contains(aspectName));
+        // We don't actually want to add these! (REPO-2926)
+        final Set<String> sysAspectsToAdd = new HashSet<>(Arrays.asList(
+                "P:sys:undeletable",
+                "P:sys:hidden"));
+        // Pre-condition of further test is that these aspects are not present
+        assertEquals(0, secondaryTypeIds.stream().filter(sysAspectsToAdd::contains).count());
+        // We also want to check that existing sys aspects aren't accidentally removed
+        assertTrue(secondaryTypeIds.contains("P:sys:localized"));
 
+        // Check we can remove an aspect - through its absence
         secondaryTypeIds.remove(aspectName);
+        // Check that attempts to update/add sys:* aspects are ignored
+        secondaryTypeIds.addAll(sysAspectsToAdd);
         final PropertiesImpl newProperties = new PropertiesImpl();
         newProperties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypeIds));
+
         final String updatedName = "My_new_name_"+UUID.randomUUID().toString();
         newProperties.replaceProperty(new PropertyStringImpl(PropertyIds.NAME, updatedName));
 
@@ -1787,10 +1799,14 @@ public class CMISTest
                 return properties;
             }
         }, CmisVersion.CMIS_1_1);
-        secondaryTypeIds = currentProperties1.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+        secondaryTypeIds = (List<String>) currentProperties1.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
 
         assertFalse(secondaryTypeIds.contains(aspectName));
         assertEquals(updatedName, currentProperties1.getProperties().get(PropertyIds.NAME).getFirstValue());
+        // sys aspects must not be added through CMIS (REPO-2926)
+        assertEquals(0, secondaryTypeIds.stream().filter(sysAspectsToAdd::contains).count());
+        // Check pre-existing sys aspects aren't accidentally removed
+        assertTrue(secondaryTypeIds.contains("P:sys:localized"));
     }
 
     /**

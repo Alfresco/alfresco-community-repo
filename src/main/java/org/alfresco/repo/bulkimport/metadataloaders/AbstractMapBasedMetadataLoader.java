@@ -107,10 +107,10 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
         if (contentAndMetadata.metadataFileExists())
         {
             final Path metadataFile = contentAndMetadata.getMetadataFile();
-            final String metadataFilePath = FileUtils.getFileName(metadataFile);
+            String metadataFilePath = FileUtils.getFileName(metadataFile);
             try
             {
-                loadMetadataInternal(metadata, metadataFile, metadataFilePath);
+                loadMetadataInternal(metadata, metadataFile);
             }
             catch (Exception e)
             {
@@ -120,8 +120,9 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
         }
     }
 
-    private void loadMetadataInternal(Metadata metadata, Path metadataFile, String metadataFilePath)
+    private void loadMetadataInternal(Metadata metadata, final Path metadataFile)
     {
+        final String metadataFilePath = FileUtils.getFileName(metadataFile);
             if (Files.isReadable(metadataFile))
             {
                 Map<String,Serializable> metadataProperties = loadMetadataFromFile(metadataFile);

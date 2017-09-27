@@ -98,10 +98,6 @@ public class CustomDefinitionsAPI extends BaseAPI
                     {
                         return item.getString("refId");
                     }
-                    else
-                    {
-                        return null;
-                    }
                 }
 
             }

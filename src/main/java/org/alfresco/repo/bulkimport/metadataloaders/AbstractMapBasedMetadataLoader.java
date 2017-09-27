@@ -101,14 +101,27 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
      */
     abstract protected Map<String,Serializable> loadMetadataFromFile(final Path metadataFile);
 
-
     @Override
     public final void loadMetadata(final ContentAndMetadata contentAndMetadata, Metadata metadata)
     {
         if (contentAndMetadata.metadataFileExists())
         {
             final Path metadataFile = contentAndMetadata.getMetadataFile();
+            final String metadataFilePath = FileUtils.getFileName(metadataFile);
+            try
+            {
+                loadMetadataInternal(metadata, metadataFile, metadataFilePath);
+            }
+            catch (Exception e)
+            {
+                log.error("Error encountered when reading metadata file '" + metadataFilePath + "'.");
+                throw new RuntimeException("Exception from reading file: '" + metadataFilePath + "'.", e);
+            }
+        }
+    }
 
+    private void loadMetadataInternal(Metadata metadata, Path metadataFile, String metadataFilePath)
+    {
             if (Files.isReadable(metadataFile))
             {
                 Map<String,Serializable> metadataProperties = loadMetadataFromFile(metadataFile);
@@ -154,16 +167,15 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
                     	}
                     	else
                     	{
-                    	    if (log.isWarnEnabled()) log.warn("Property " + String.valueOf(name) + " doesn't exist in the Data Dictionary.  Ignoring it.");
+                    	    if (log.isWarnEnabled()) log.warn("Property " + String.valueOf(name) + " from '" + metadataFilePath + "' doesn't exist in the Data Dictionary.  Ignoring it.");
                     	}
                     }
                 }
             }
             else
             {
-                if (log.isWarnEnabled()) log.warn("Metadata file '" + FileUtils.getFileName(metadataFile) + "' is not readable.");
+                if (log.isWarnEnabled()) log.warn("Metadata file '" + metadataFilePath + "' is not readable.");
             }
-        }
     }
 
 }

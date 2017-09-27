@@ -640,26 +640,4 @@ public abstract class BaseAPI
     {
         return FILE_PLAN_PATH;
     }
-
-    /**
-     * List of existing records management custom references.
-     */
-    public enum CUSTOM_DEFINITIONS
-    {
-        ATTACHMENT("Attachment"),
-        MESSAGE("Message"),
-        NEXT_VERSION("Next Version"),
-        RENDITION("Rendition");
-        String definition;
-
-        private CUSTOM_DEFINITIONS(String definition)
-        {
-            this.definition = definition;
-        }
-
-        public String getDefinition()
-        {
-            return definition;
-        }
-    }
 }

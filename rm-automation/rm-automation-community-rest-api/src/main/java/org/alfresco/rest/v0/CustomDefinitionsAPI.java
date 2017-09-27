@@ -29,6 +29,7 @@ package org.alfresco.rest.v0;
 import java.text.MessageFormat;
 
 import org.alfresco.rest.core.v0.BaseAPI;
+import org.alfresco.rest.rm.community.model.custom.CustomDefinitions;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,34 +56,51 @@ public class CustomDefinitionsAPI extends BaseAPI
      */
     private static final String CREATE_RELATIONSHIP_API_ENDPOINT = "{0}node/{1}/customreferences";
 
-    // logger
+    /**
+     * logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomDefinitionsAPI.class);
 
     /**
-     * Helper method to get custom references definitions
+     * Helper method to get the reference id for a custom reference
      *
      * @param adminUser        user with administrative privileges
      * @param adminPassword    password for adminUser
      * @param customDefinition custom reference definition name
+     * @return  <code>reference id</code>   if the customDefinition is found
+     *          <code> null </code> otherwise
+     *
      */
-
-    public String getCustomReferencesId(String adminUser, String adminPassword, String customDefinition)
+    public String getCustomReferenceId(String adminUser, String adminPassword, String customDefinition)
     {
 
         JSONObject getResponse = doGetRequest(adminUser, adminPassword, CUSTOM_REFERENCE_API_ENDPOINT);
         if (getResponse != null)
+        {
             try
             {
                 JSONArray customDefinitions = getResponse.getJSONObject("data").getJSONArray("customReferences");
                 for (int i = 0; i < customDefinitions.length(); i++)
                 {
                     JSONObject item = customDefinitions.getJSONObject(i);
-                    if (customDefinition.equalsIgnoreCase(item.has("source") ? item.getString("source") : null) ||
-                            customDefinition.equalsIgnoreCase(item.has("target") ? item.getString("target") : null) ||
-                            customDefinition.equalsIgnoreCase(item.has("label") ? item.getString("label") : null)
-                            )
+                    boolean hasSource = customDefinition.equalsIgnoreCase(
+                            item.has("source") ? item.getString("source") : null
+                                                                         );
+
+                    boolean hasTarget = customDefinition.equalsIgnoreCase(
+                            item.has("target") ? item.getString("target") : null
+                                                                         );
+
+                    boolean hasLabel = customDefinition.equalsIgnoreCase(
+                            item.has("label") ? item.getString("label") : null
+                                                                        );
+                    if ( hasSource || hasTarget || hasLabel)
                     {
                         return item.getString("refId");
+                    }
+                    else
+                    {
+                        return null;
                     }
                 }
 
@@ -91,6 +109,7 @@ public class CustomDefinitionsAPI extends BaseAPI
             {
                 LOGGER.error("Unable to get the refId for the custom reference definition " + customDefinition);
             }
+        }
         return null;
     }
 
@@ -100,23 +119,24 @@ public class CustomDefinitionsAPI extends BaseAPI
      * @param adminUser     user with administrative privileges
      * @param adminPassword password for adminUser
      * @param recordNodeIdFrom node ref to set a custom reference
-     * @param recordNodeIdto        node ref of the to record
-     * @return <code>true</code> if creating relationship was successful,
-     * <code>false</code>otherwise
+     * @param recordNodeIdTo        node ref of the to record
+     * @param   relationshipType    relation type to be created
+     * @return  <code>true</code>   if creating relationship was successful,
+     *          <code>false</code>  otherwise
      */
     public boolean createRelationship(
             String adminUser,
             String adminPassword,
             String recordNodeIdFrom,
-            String recordNodeIdto,
-            CUSTOM_DEFINITIONS relationshipType)
+            String recordNodeIdTo,
+            CustomDefinitions relationshipType)
     {
         try
         {
             //create the request body
             JSONObject requestParams = new JSONObject();
-            requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdto);
-            requestParams.put("refId", getCustomReferencesId(adminUser, adminPassword, relationshipType
+            requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdTo);
+            requestParams.put("refId", getCustomReferenceId(adminUser, adminPassword, relationshipType
                     .getDefinition()));
             //send the API request to create the relationship
             JSONObject setRelationshipStatus = doPostRequest(adminUser, adminPassword, requestParams,

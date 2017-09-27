@@ -101,68 +101,85 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
      */
     abstract protected Map<String,Serializable> loadMetadataFromFile(final Path metadataFile);
 
-
     @Override
     public final void loadMetadata(final ContentAndMetadata contentAndMetadata, Metadata metadata)
     {
         if (contentAndMetadata.metadataFileExists())
         {
             final Path metadataFile = contentAndMetadata.getMetadataFile();
-
-            if (Files.isReadable(metadataFile))
+            String metadataFilePath = FileUtils.getFileName(metadataFile);
+            try
             {
-                Map<String,Serializable> metadataProperties = loadMetadataFromFile(metadataFile);
-                
-                for (String key : metadataProperties.keySet())
+                loadMetadataInternal(metadata, metadataFile);
+            }
+            catch (Exception e)
+            {
+                log.error("Error encountered when reading metadata file '" + metadataFilePath + "'.");
+                throw new RuntimeException("Exception from reading file: '" + metadataFilePath + "'.", e);
+            }
+        }
+    }
+
+    private void loadMetadataInternal(Metadata metadata, final Path metadataFile)
+    {
+        final String metadataFilePath = FileUtils.getFileName(metadataFile);
+        if (Files.isReadable(metadataFile))
+        {
+            Map<String, Serializable> metadataProperties = loadMetadataFromFile(metadataFile);
+
+            for (String key : metadataProperties.keySet())
+            {
+                if (PROPERTY_NAME_TYPE.equals(key))
                 {
-                    if (PROPERTY_NAME_TYPE.equals(key))
+                    String typeName = (String) metadataProperties.get(key);
+                    QName type = QName.createQName(typeName, namespaceService);
+
+                    metadata.setType(type);
+                }
+                else if (PROPERTY_NAME_ASPECTS.equals(key))
+                {
+                    String[] aspectNames = ((String) metadataProperties.get(key)).split(",");
+
+                    for (final String aspectName : aspectNames)
                     {
-                        String typeName = (String)metadataProperties.get(key);
-                        QName  type     = QName.createQName(typeName, namespaceService);
-                        
-                        metadata.setType(type);
+                        QName aspect = QName.createQName(aspectName.trim(), namespaceService);
+                        metadata.addAspect(aspect);
                     }
-                    else if (PROPERTY_NAME_ASPECTS.equals(key))
+                }
+                else // Any other key => property
+                {
+                    // ####TODO: figure out how to handle properties of type cm:content - they need to be streamed in via a Writer
+                    QName name = QName.createQName(key, namespaceService);
+                    PropertyDefinition propertyDefinition = dictionaryService.getProperty(name);// TODO: measure performance impact of this API call!!
+
+                    if (propertyDefinition != null)
                     {
-                        String[] aspectNames = ((String)metadataProperties.get(key)).split(",");
-                        
-                        for (final String aspectName : aspectNames)
+                        if (propertyDefinition.isMultiValued())
                         {
-                            QName aspect = QName.createQName(aspectName.trim(), namespaceService);
-                            metadata.addAspect(aspect);
+                            // Multi-valued property
+                            ArrayList<Serializable> values = new ArrayList<Serializable>(
+                                    Arrays.asList(((String) metadataProperties.get(key)).split(multiValuedSeparator)));
+                            metadata.addProperty(name, values);
+                        }
+                        else
+                        {
+                            // Single value property
+                            metadata.addProperty(name, metadataProperties.get(key));
                         }
                     }
-                    else  // Any other key => property
+                    else
                     {
-                        //####TODO: figure out how to handle properties of type cm:content - they need to be streamed in via a Writer 
-                    	QName              name               = QName.createQName(key, namespaceService);
-                    	PropertyDefinition propertyDefinition = dictionaryService.getProperty(name);  // TODO: measure performance impact of this API call!!
-                    	
-                    	if (propertyDefinition != null)
-                    	{
-                        	if (propertyDefinition.isMultiValued())
-                        	{
-                                // Multi-valued property
-                        		ArrayList<Serializable> values = new ArrayList<Serializable>(Arrays.asList(((String)metadataProperties.get(key)).split(multiValuedSeparator)));
-                        	    metadata.addProperty(name, values);
-                        	}
-                        	else
-                        	{
-                        	    // Single value property
-                        		metadata.addProperty(name, metadataProperties.get(key));
-                        	}
-                    	}
-                    	else
-                    	{
-                    	    if (log.isWarnEnabled()) log.warn("Property " + String.valueOf(name) + " doesn't exist in the Data Dictionary.  Ignoring it.");
-                    	}
+                        if (log.isWarnEnabled())
+                            log.warn("Property " + String.valueOf(name) + " from '" + metadataFilePath
+                                    + "' doesn't exist in the Data Dictionary.  Ignoring it.");
                     }
                 }
             }
-            else
-            {
-                if (log.isWarnEnabled()) log.warn("Metadata file '" + FileUtils.getFileName(metadataFile) + "' is not readable.");
-            }
+        }
+        else
+        {
+            if (log.isWarnEnabled())
+                log.warn("Metadata file '" + metadataFilePath + "' is not readable.");
         }
     }
 

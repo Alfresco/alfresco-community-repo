@@ -329,6 +329,36 @@ public class BulkImportTest extends AbstractBulkImportTests
         });
     }
 
+    @Test
+    // Tests the mimetype is set correctly for .ai and eps files, plus gif (which was working anyway).
+    public void testMNT18275_ai_eps() throws Throwable
+    {
+        NodeRef folderNode = topLevelFolder.getNodeRef();
+        NodeImporter nodeImporter = null;
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport5"));
+
+        BulkImportParameters bulkImportParameters = new BulkImportParameters();
+        bulkImportParameters.setTarget(folderNode);
+        bulkImportParameters.setReplaceExisting(true);
+        bulkImportParameters.setDisableRulesService(true);
+        bulkImportParameters.setBatchSize(40);
+        bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+
+        System.out.println(bulkImporter.getStatus());
+
+        checkFiles(folderNode, null, 0, 3, new ExpectedFile[] {
+                new ExpectedFile("quick.gif", MimetypeMap.MIMETYPE_IMAGE_GIF),
+                new ExpectedFile("Amazing.ai", MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR),
+                new ExpectedFile("quick.eps", MimetypeMap.MIMETYPE_APPLICATION_EPS)
+        },
+        new ExpectedFolder[] {
+        });
+    }
+
     /**
      * MNT-9076: Penultimate version cannot be accessed from Share when uploading using bulkimport
      *

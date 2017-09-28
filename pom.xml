@@ -780,6 +780,11 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-data-model</artifactId>
+            <version>${dependency.alfresco-data-model.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-legacy-lucene</artifactId>
             <version>${dependency.alfresco-legacy-lucene.version}</version>
             <classifier>tests</classifier>

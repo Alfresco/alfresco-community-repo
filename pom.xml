@@ -40,7 +40,7 @@
         <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
         <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
         <dependency.alfresco-greenmail.version>6.0</dependency.alfresco-greenmail.version>
-        <dependency.alfresco-data-model.version>6.18</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>6.19</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-hb-data-sender.version>1.0.1</dependency.alfresco-hb-data-sender.version>

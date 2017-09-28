@@ -25,20 +25,7 @@
  */
 package org.alfresco.repo.content;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
+import junit.framework.TestCase;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -52,7 +39,19 @@ import org.springframework.extensions.config.ConfigService;
 import org.springframework.extensions.config.ConfigSource;
 import org.springframework.extensions.config.xml.XMLConfigService;
 
-import junit.framework.TestCase;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * @see org.alfresco.repo.content.MimetypeMap
@@ -238,6 +237,17 @@ public class MimetypeMapTest extends TestCase
         assertEquals(MimetypeMap.MIMETYPE_VIDEO_QUICKTIME, mimetypeService.guessMimetype("file.rm", reader));
     }
 
+    public void testTypeBasedOnDetectedTypeAndExtension() throws Exception
+    {
+        ContentReader reader = new DummyContentReader(MimetypeMap.MIMETYPE_PDF, "%PDF\r");
+        assertEquals(MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR, mimetypeService.guessMimetype("file.ai",  reader.getContentInputStream()));
+        assertEquals(MimetypeMap.MIMETYPE_PDF,                     mimetypeService.guessMimetype("file.pdf", reader.getContentInputStream()));
+
+        reader = new DummyContentReader(MimetypeMap.MIMETYPE_APPLICATION_PS, "%!PS");
+        assertEquals(MimetypeMap.MIMETYPE_APPLICATION_EPS, mimetypeService.guessMimetype("file.eps", reader.getContentInputStream()));
+        assertEquals(MimetypeMap.MIMETYPE_APPLICATION_PS,  mimetypeService.guessMimetype("file.ps",  reader.getContentInputStream()));
+    }
+
     public void testDuplicates() throws Exception
     {
         setConfigService(
@@ -288,17 +298,23 @@ public class MimetypeMapTest extends TestCase
 
     public static class DummyContentReader implements ContentReader
     {
-
-        private String mimetype = MimetypeMap.MIMETYPE_HTML;
+        private String mimetype;
+        private String content;
 
         public DummyContentReader()
         {
-            super();
+            this(MimetypeMap.MIMETYPE_HTML);
         }
 
         public DummyContentReader(String mimetype)
         {
+            this(mimetype, "<X>@@/Y");
+        }
+
+        public DummyContentReader(String mimetype, String content)
+        {
             this.mimetype = mimetype;
+            this.content = content;
         }
 
         @Override
@@ -340,7 +356,7 @@ public class MimetypeMapTest extends TestCase
         @Override
         public InputStream getContentInputStream() throws ContentIOException
         {
-            return new ByteArrayInputStream("<X>@@/Y".getBytes(StandardCharsets.UTF_8));
+            return new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
         }
 
         @Override

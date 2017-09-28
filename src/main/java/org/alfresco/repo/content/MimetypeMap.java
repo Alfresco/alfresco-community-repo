@@ -25,20 +25,6 @@
  */
 package org.alfresco.repo.content;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeMap;
-
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.FileContentReader;
@@ -56,6 +42,20 @@ import org.springframework.extensions.config.Config;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.ConfigLookupContext;
 import org.springframework.extensions.config.ConfigService;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeMap;
 
 /**
  * Provides a bidirectional mapping between well-known mimetypes and the
@@ -719,6 +719,7 @@ public class MimetypeMap implements MimetypeService
         try
         {
             type = detector.detect(inp, metadata);
+            type = typeBasedOnDetectedTypeAndExtension(type, filename);
             logger.debug(input + " detected by Tika as being " + type.toString());
         }
         catch (Exception e)
@@ -737,6 +738,36 @@ public class MimetypeMap implements MimetypeService
                 catch (Exception e)
                 {
                     // noop
+                }
+            }
+        }
+        return type;
+    }
+
+    // We have a problem with .ai files, as Tika detects them as .pdf, but if we can use the filename
+    // we can correct that. Similar problem with .eps and .ps.
+    private MediaType typeBasedOnDetectedTypeAndExtension(MediaType type, String filename)
+    {
+        if (filename != null && type != null)
+        {
+            String[] detectedAndPossibleTypes = new String[]
+            {
+                MIMETYPE_PDF, MIMETYPE_APPLICATION_ILLUSTRATOR,
+                MIMETYPE_APPLICATION_PS, MIMETYPE_APPLICATION_EPS
+            };
+
+            for (int i=detectedAndPossibleTypes.length-1; i>=0; i-=2)
+            {
+                String detectedType = detectedAndPossibleTypes[i-1];
+                if (detectedType.equals(type.toString()))
+                {
+                    String possibleType = detectedAndPossibleTypes[i];
+                    String extension = getExtension(possibleType);
+                    if (filename.endsWith("."+extension))
+                    {
+                        type = MediaType.parse(possibleType);
+                        break;
+                    }
                 }
             }
         }

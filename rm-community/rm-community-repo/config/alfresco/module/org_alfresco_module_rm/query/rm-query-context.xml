@@ -16,11 +16,11 @@
         <constructor-arg index="0" ref="rmSqlSessionFactory"/>
     </bean>
 
-	<bean id="recordsManagementQueryDAO" class="org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAOImpl">
-		<property name="sqlSessionTemplate" ref="rmSqlSessionTemplate"/>
-		<property name="qnameDAO" ref="qnameDAO"/>
+   <bean id="recordsManagementQueryDAO" class="org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAOImpl">
+      <property name="sqlSessionTemplate" ref="rmSqlSessionTemplate" />
+      <property name="qnameDAO" ref="qnameDAO" />
       <property name="nodeDAO" ref="nodeDAO" />
       <property name="tenantService" ref="tenantService" />
-	</bean>
+   </bean>
 
 </beans>

@@ -32,6 +32,7 @@ import javax.annotation.Resource;
 
 import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
+import org.alfresco.rest.requests.search.SearchAPI;
 import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
@@ -84,6 +85,12 @@ public class RestAPIFactory
         getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withCoreAPI();
     }
+    
+    private SearchAPI getSearchAPI(UserModel userModel)
+    {
+        getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
+        return getRmRestWrapper().withSearchAPI();
+    }   
 
     public Node getNodeAPI(RepoTestModel model) throws Exception
     {

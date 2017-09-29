@@ -19,5 +19,23 @@
             prop.string_value = ?
             
     </select>
-    
+
+   <!-- Counts the children that have at least one of the provided property values for a given property qname -->
+   <select id="select_CountChildrenWithPropertyValues"
+           parameterType="org.alfresco.module.org_alfresco_module_rm.query.ChildrenWithPropertyValuesQueryParams"
+           resultType="java.lang.Long">
+      select
+      count( distinct assoc.child_node_id )
+      from
+      alf_child_assoc assoc
+      left join alf_node_properties childProp on assoc.child_node_id = childProp.node_id
+      where
+      assoc.parent_node_id = #{parentId}
+      and childProp.qname_id = #{propertyQnameId}
+      and childProp.string_value in
+      <foreach item="item" index="index" collection="propertyValues" open="(" separator="," close=")">
+         '${item}'
+      </foreach>
+   </select>
+
 </mapper>

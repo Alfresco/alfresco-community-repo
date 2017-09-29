@@ -27,11 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.query;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.mybatis.spring.SqlSessionTemplate;
@@ -45,12 +50,15 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO, RecordsManagementModel
 {
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
+    private static final String COUNT_CHILDREN_WITH_PROPERTY_VALUES = "select_CountChildrenWithPropertyValues";
     
     /** SQL session template */
     protected SqlSessionTemplate template;
     
     /** QName DAO */
     protected QNameDAO qnameDAO;
+    protected NodeDAO nodeDAO;
+    protected TenantService tenantService;
     
     /**
      * @param sqlSessionTemplate    SQL session template
@@ -67,7 +75,17 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     {
         this.qnameDAO = qnameDAO;
     }
-    
+
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO#getCountRmaIdentifier(java.lang.String)
      */
@@ -97,4 +115,39 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         return result;
     }
 
+    @Override
+    public boolean hasChildrenWithPropertyValues(NodeRef parent, QName property, Collection propertyValues)
+    {
+        if(propertyValues.isEmpty())
+        {
+            return false;
+        }
+
+        ChildrenWithPropertyValuesQueryParams queryParams = new ChildrenWithPropertyValuesQueryParams();
+
+        // Set the parent node id
+        Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(tenantService.getName(parent));
+        if (nodePair == null)
+        {
+            throw new InvalidNodeRefException("The parent node does not exist.", parent);
+        }
+        Long parentNodeId = nodePair.getFirst();
+        queryParams.setParentId(parentNodeId);
+
+        // Set the property qname id
+        Pair<Long, QName> pair = qnameDAO.getQName(property);
+        if (pair == null)
+        {
+            return false;
+        }
+        queryParams.setPropertyQnameId(pair.getFirst());
+
+
+        // Set the property values
+        queryParams.setPropertyValues(propertyValues);
+
+        // Perform the query
+        Long count = template.selectOne(COUNT_CHILDREN_WITH_PROPERTY_VALUES, queryParams);
+        return count > 0;
+    }
 }

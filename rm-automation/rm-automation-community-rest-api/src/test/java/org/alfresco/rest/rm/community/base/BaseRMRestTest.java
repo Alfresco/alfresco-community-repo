@@ -52,6 +52,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.dataprep.ContentService;
@@ -71,6 +72,9 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
+import org.alfresco.rest.search.RestRequestQueryModel;
+import org.alfresco.rest.search.SearchNodeModel;
+import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FolderModel;
@@ -507,11 +511,24 @@ public class BaseRMRestTest extends RestTest
      */
     public Record createElectronicRecord(String parentId, String name) throws Exception
     {
-        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI();
+       return createElectronicRecord(parentId, name ,null);
+    }
+
+
+    /**
+     * Create an electronic record
+     *
+     * @param parentId the id of the parent
+     * @param name     the name of the record
+     * @return the created record
+     * @throws Exception
+     */
+    public Record createElectronicRecord(String parentId, String name, UserModel user) throws Exception
+    {
+        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
         Record recordModel = Record.builder().name(name).nodeType(CONTENT_TYPE).build();
         return recordFolderAPI.createRecord(recordModel, parentId);
     }
-
     /**
      * Delete a record folder
      *
@@ -541,10 +558,61 @@ public class BaseRMRestTest extends RestTest
      * @param categoryId the id of the category to assign permissions for
      * @throws Exception
      */
-    public void assignFillingPermissionsOnCategory(UserModel user, String categoryId, String userPermission, String userRole) throws Exception
+    public void assignFillingPermissionsOnCategory(UserModel user, String categoryId,
+                                                   String userPermission, String userRole) throws Exception
     {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
         rmRolesAndActionsAPI.assignUserToRole(getAdminUser().getUsername(),
                     getAdminUser().getPassword(), user.getUsername(), userRole);
+    }
+
+    /**
+     * Returns search results for the given search term
+     *
+     * @param user
+     * @param term
+     * @return
+     * @throws Exception
+     */
+    public List<String> searchForContentAsUser(UserModel user, String term) throws Exception
+    {
+        getRestAPIFactory().getRmRestWrapper().authenticateUser(user);
+        RestRequestQueryModel queryReq = new RestRequestQueryModel();
+        SearchRequest query = new SearchRequest(queryReq);
+        queryReq.setQuery("cm:name:*" + term + "*");
+
+        List<String> names = new ArrayList<>();
+        // wait for solr indexing
+        int counter = 0;
+        int waitInMilliSeconds = 6000;
+        while (counter < 3)
+        {
+            synchronized (this)
+            {
+                try
+                {
+                    this.wait(waitInMilliSeconds);
+                } catch (InterruptedException e)
+                {
+                }
+            }
+
+            List<SearchNodeModel> searchResults = getRestAPIFactory().getRmRestWrapper().withSearchAPI().search(query)
+                                                                     .getEntries();
+            if ((searchResults != null && !searchResults.isEmpty()))
+            {
+                searchResults.forEach(childNode ->
+                {
+                    names.add(childNode.onModel().getName());
+                });
+                break;
+            } else
+            {
+                counter++;
+            }
+            // double wait time to not overdo solr search
+            waitInMilliSeconds = (waitInMilliSeconds * 2);
+        }
+        return names;
     }
 }

@@ -34,6 +34,7 @@ import org.alfresco.rest.model.RestHtmlResponse;
 import org.alfresco.rest.model.RestSiteModel;
 import org.alfresco.rest.model.RestSiteModelsCollection;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
+import org.alfresco.rest.requests.search.SearchAPI;
 import org.alfresco.rest.rm.community.requests.gscore.GSCoreAPI;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.UserModel;
@@ -143,6 +144,12 @@ public class RMRestWrapper
     public RestCoreAPI withCoreAPI()
     {
         return restWrapper.withCoreAPI();
+    }
+
+    /** Get the Alfresco Search API. */
+    public SearchAPI withSearchAPI()
+    {
+        return restWrapper.withSearchAPI();
     }
 
     /**

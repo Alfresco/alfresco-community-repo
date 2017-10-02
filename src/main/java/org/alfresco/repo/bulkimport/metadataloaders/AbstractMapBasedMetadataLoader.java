@@ -170,8 +170,10 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
                     else
                     {
                         if (log.isWarnEnabled())
+                        {
                             log.warn("Property " + String.valueOf(name) + " from '" + metadataFilePath
                                     + "' doesn't exist in the Data Dictionary.  Ignoring it.");
+                        }
                     }
                 }
             }
@@ -179,7 +181,9 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
         else
         {
             if (log.isWarnEnabled())
+            {
                 log.warn("Metadata file '" + metadataFilePath + "' is not readable.");
+            }
         }
     }
 

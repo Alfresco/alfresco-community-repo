@@ -600,7 +600,7 @@ public class NodesImpl implements Nodes
     {
         node.setGuid(nodeRef);
         node.setTitle((String)properties.get(ContentModel.PROP_TITLE));
-        node.setDescription((String)properties.get(ContentModel.PROP_TITLE));
+        node.setDescription((String)properties.get(ContentModel.PROP_DESCRIPTION));
         node.setModifiedBy((String)properties.get(ContentModel.PROP_MODIFIER));
         node.setCreatedBy((String)properties.get(ContentModel.PROP_CREATOR));
     }

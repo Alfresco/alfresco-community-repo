@@ -44,12 +44,6 @@ public interface Join extends Source
     public Source getRight();
     
     /**
-     * Get the join type
-     * @return JoinType
-     */
-    public JoinType getJoinType();
-    
-    /**
      * Get the join condition.
      * Not all constraints are valid join conditions
      * @return Constraint

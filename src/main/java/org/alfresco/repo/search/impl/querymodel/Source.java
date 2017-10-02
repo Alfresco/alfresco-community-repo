@@ -40,4 +40,8 @@ public interface Source
     public Selector getSelector(String name);
     
     public List<Set<String>> getSelectorGroups(FunctionEvaluationContext functionContext);
+
+    public JoinType getJoinType();
+    
+	public void setJoinType(JoinType joinType);
 }

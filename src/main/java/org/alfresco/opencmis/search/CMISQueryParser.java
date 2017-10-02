@@ -143,7 +143,7 @@ public class CMISQueryParser
             CommonTree queryNode = (CommonTree) parser.query().getTree();
 
             CommonTree sourceNode = (CommonTree) queryNode.getFirstChildWithType(CMISParser.SOURCE);
-            Source source = buildSource(sourceNode, joinSupport, factory);
+            Source source = buildSource(sourceNode, joinSupport, factory, JoinType.NONE);
             Map<String, Selector> selectors = source.getSelectors();
             ArrayList<Column> columns = buildColumns(queryNode, factory, selectors, options.getQuery());
 
@@ -1391,7 +1391,7 @@ public class CMISQueryParser
     }
 
     @SuppressWarnings("unchecked")
-    private Source buildSource(CommonTree source, CapabilityJoin joinSupport, QueryModelFactory factory)
+    private Source buildSource(CommonTree source, CapabilityJoin joinSupport, QueryModelFactory factory, JoinType lhsJoin)
     {
         if (source.getChildCount() == 1)
         {
@@ -1404,7 +1404,7 @@ public class CMISQueryParser
                     throw new UnsupportedOperationException("Joins are not supported");
                 }
                 CommonTree tableSourceNode = (CommonTree) singleTableNode.getFirstChildWithType(CMISParser.SOURCE);
-                return buildSource(tableSourceNode, joinSupport, factory);
+                return buildSource(tableSourceNode, joinSupport, factory, JoinType.NONE);
 
             }
             if (singleTableNode.getType() != CMISParser.TABLE_REF)
@@ -1432,7 +1432,9 @@ public class CMISQueryParser
                             + typeDef.getTypeId());
                 }
             }
-            return factory.createSelector(typeDef.getAlfrescoClass(), alias);
+            Source lhs = factory.createSelector(typeDef.getAlfrescoClass(), alias);
+            lhs.setJoinType(lhsJoin);
+            return lhs;
         } else
         {
             if (joinSupport == CapabilityJoin.NONE)
@@ -1466,15 +1468,20 @@ public class CMISQueryParser
             }
 
             Source lhs = factory.createSelector(typeDef.getAlfrescoClass(), alias);
+            if(lhsJoin == JoinType.NONE)
+            {
+            	lhs.setJoinType(JoinType.INNER);
+            }
+            else
+            {
+            	lhs.setJoinType(lhsJoin);
+            }
 
             List<CommonTree> list = (List<CommonTree>) (source.getChildren());
             for (CommonTree joinNode : list)
             {
                 if (joinNode.getType() == CMISParser.JOIN)
                 {
-                    CommonTree rhsSource = (CommonTree) joinNode.getFirstChildWithType(CMISParser.SOURCE);
-                    Source rhs = buildSource(rhsSource, joinSupport, factory);
-
                     JoinType joinType = JoinType.INNER;
                     CommonTree joinTypeNode = (CommonTree) joinNode.getFirstChildWithType(CMISParser.LEFT);
                     if (joinTypeNode != null)
@@ -1482,10 +1489,13 @@ public class CMISQueryParser
                         joinType = JoinType.LEFT;
                     }
 
-                    if ((joinType == JoinType.LEFT) && (joinSupport == CapabilityJoin.INNERONLY))
+                    if ((joinType == JoinType.LEFT) && (joinSupport != CapabilityJoin.INNERANDOUTER))
                     {
                         throw new UnsupportedOperationException("Outer joins are not supported");
                     }
+
+                    CommonTree rhsSource = (CommonTree) joinNode.getFirstChildWithType(CMISParser.SOURCE);
+                    Source rhs = buildSource(rhsSource, joinSupport, factory, joinType);
 
                     Constraint joinCondition = null;
                     CommonTree joinConditionNode = (CommonTree) joinNode.getFirstChildWithType(CMISParser.ON);

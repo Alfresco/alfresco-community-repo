@@ -25,6 +25,10 @@ query:
   "(QUERY ALL_COLUMNS (SOURCE (TABLE_REF cmis:document d) (JOIN (SOURCE (TABLE_REF cm:titled t)) (ON (COLUMN_REF cmis:objectId d) = (COLUMN_REF cmis:objectId t))) (JOIN (SOURCE (TABLE_REF cm:ownable o)) LEFT (ON (COLUMN_REF cmis:objectId d) = (COLUMN_REF cmis:objectId o)))))"
 "SELECT d.*, t.*, o.* from cmis:document d JOIN cm:titled t ON d.cmis:objectId = t.cmis:objectId LEFT OUTER JOIN cm:ownable o ON d.cmis:objectId = o.cmis:objectId" -> 
   "(QUERY (COLUMNS (ALL_COLUMNS d) (ALL_COLUMNS t) (ALL_COLUMNS o)) (SOURCE (TABLE_REF cmis:document d) (JOIN (SOURCE (TABLE_REF cm:titled t)) (ON (COLUMN_REF cmis:objectId d) = (COLUMN_REF cmis:objectId t))) (JOIN (SOURCE (TABLE_REF cm:ownable o)) LEFT (ON (COLUMN_REF cmis:objectId d) = (COLUMN_REF cmis:objectId o)))))"
+"SELECT * from cmis:document d LEFT OUTER JOIN cm:titled t ON d.cmis:objectId = t.cmis:objectId" OK
+"SELECT * from cmis:document d LEFT JOIN cm:titled t ON d.cmis:objectId = t.cmis:objectId" OK
+"SELECT * from cmis:document d RIGHT OUTER JOIN cm:titled t ON d.cmis:objectId = t.cmis:objectId" OK
+"SELECT * from cmis:document d RIGHT JOIN cm:titled t ON d.cmis:objectId = t.cmis:objectId" OK
 
 "SELECT * from FOLDER JOIN RELATIONSHIP ON FOLDER.ID = RELATIONSHIP.ID" OK
 "SELECT * from FOLDER F JOIN RELATIONSHIP RL ON F.ID = RL.ID" OK

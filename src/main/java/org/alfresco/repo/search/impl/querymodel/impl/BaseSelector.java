@@ -60,10 +60,8 @@ public class BaseSelector implements Selector
         return alias;
     }
 
-    
-    
     @Override
-	public JoinType getJoinType()
+    public JoinType getJoinType()
     {
 		return joinType;
 	}

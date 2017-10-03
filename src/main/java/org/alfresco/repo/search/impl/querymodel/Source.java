@@ -43,5 +43,5 @@ public interface Source
 
     public JoinType getJoinType();
     
-	public void setJoinType(JoinType joinType);
+    public void setJoinType(JoinType joinType);
 }

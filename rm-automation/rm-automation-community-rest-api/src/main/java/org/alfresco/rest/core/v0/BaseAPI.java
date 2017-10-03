@@ -74,7 +74,7 @@ public abstract class BaseAPI
 
     /** exception key in JSON response body */
     private static final String EXCEPTION_KEY = "exception";
-    protected static final String NODE_PREFIX = "workspace/SpacesStore/";
+    public static final String NODE_PREFIX = "workspace/SpacesStore/";
     protected static final String UPDATE_METADATA_API = "{0}node/{1}/formprocessor";
     protected static final String ACTIONS_API = "{0}actionQueue";
     protected static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
@@ -87,7 +87,7 @@ public abstract class BaseAPI
     @Autowired
     private ContentService contentService;
 
-    private static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
+    protected static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
     private static final String FILE_PLAN_PATH = "/Sites/rm/documentLibrary";
 
     /**

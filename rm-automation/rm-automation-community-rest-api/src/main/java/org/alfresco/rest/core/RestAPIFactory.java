@@ -24,7 +24,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.rest.core;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -67,7 +66,7 @@ import lombok.Setter;
 public class RestAPIFactory
 {
     @Autowired
-    @Getter(value = PROTECTED)
+    @Getter (value = PROTECTED)
     private DataUser dataUser;
 
     @Resource(name = "RMRestWrapper")
@@ -86,12 +85,12 @@ public class RestAPIFactory
         getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withCoreAPI();
     }
-
+    
     private SearchAPI getSearchAPI(UserModel userModel)
     {
         getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withSearchAPI();
-    }
+    }   
 
     public Node getNodeAPI(RepoTestModel model) throws Exception
     {

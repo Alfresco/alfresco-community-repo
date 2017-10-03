@@ -26,11 +26,12 @@
  */
 package org.alfresco.rest.rm.community.model.common;
 
-import org.alfresco.utility.model.TestModel;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for owner parameter
@@ -43,6 +44,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 //@NoArgsConstructor
 //@AllArgsConstructor
+@JsonIgnoreProperties (ignoreUnknown = true)
 public class Owner extends TestModel
 {
 

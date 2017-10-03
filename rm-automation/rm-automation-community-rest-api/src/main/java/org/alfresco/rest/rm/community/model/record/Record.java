@@ -30,7 +30,10 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.rest.model.RestByUserModel;
+import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.model.common.Path;
 import org.alfresco.utility.model.TestModel;
 
@@ -51,7 +54,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Record extends TestModel
+public class Record extends TestModel implements IRestModel<RestNodeModel>
 {
     /*************************/
     /** Mandatory parameters */
@@ -100,4 +103,25 @@ public class Record extends TestModel
 
     @JsonProperty
     private Path path;
+
+    @Override
+    public ModelAssertion<RestNodeModel> assertThat()
+    {
+        return new ModelAssertion<RestNodeModel>(this);
+    }
+
+    @Override
+    public ModelAssertion<RestNodeModel> and()
+    {
+        return assertThat();
+    }
+
+    @JsonProperty (value = "entry")
+    RestNodeModel model;
+
+    @Override
+    public RestNodeModel onModel()
+    {
+        return model;
+    }
 }

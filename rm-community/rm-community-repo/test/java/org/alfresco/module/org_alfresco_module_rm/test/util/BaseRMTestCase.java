@@ -70,6 +70,8 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.DocumentLinkService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -147,6 +149,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected ActionService actionService;
     protected OwnableService ownableService;
     protected VersionService versionService;
+    protected CopyService copyService;
+    protected DocumentLinkService documentLinkService;
 
     /** RM Services */
     protected DispositionService dispositionService;
@@ -388,6 +392,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         actionService = (ActionService)applicationContext.getBean("ActionService");
         ownableService = (OwnableService)applicationContext.getBean("OwnableService");
         versionService = (VersionService)applicationContext.getBean("VersionService");
+        copyService = (CopyService)applicationContext.getBean("CopyService");
+        documentLinkService = (DocumentLinkService)applicationContext.getBean("DocumentLinkService");
 
         // Get RM services
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");

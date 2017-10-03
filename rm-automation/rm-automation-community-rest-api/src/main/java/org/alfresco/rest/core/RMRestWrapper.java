@@ -24,7 +24,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
 package org.alfresco.rest.core;
 
 import com.jayway.restassured.builder.RequestSpecBuilder;
@@ -154,17 +153,15 @@ public class RMRestWrapper
     }
 
     /**
-     * You can handle the request sent to server by calling this method. If for example you want to sent multipart form
-     * data you can use:
-     * 
-     * <pre>
-     * restClient.configureRequestSpec().addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
-     *             .addFormParam("renditions", "doclib").addFormParam("autoRename", true);
+     * You can handle the request sent to server by calling this method.
+     * If for example you want to sent multipart form data you can use: <pre>
+     * restClient.configureRequestSpec()
+     *              .addMultiPart("filedata", Utility.getResourceTestDataFile("restapi-resource"))
+     *              .addFormParam("renditions", "doclib")
+     *              .addFormParam("autoRename", true);
      *
      * restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();
-     * </pre>
-     * 
-     * This will create the node using the multipart data defined.
+     * </pre> This will create the node using the multipart data defined.
      */
     public RequestSpecBuilder configureRequestSpec()
     {

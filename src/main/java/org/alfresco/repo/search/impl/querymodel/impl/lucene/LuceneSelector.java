@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.repo.search.adaptor.lucene.LuceneQueryParserAdaptor;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.JoinType;
 import org.alfresco.repo.search.impl.querymodel.impl.BaseSelector;
 import org.alfresco.service.namespace.QName;
 
@@ -55,8 +56,18 @@ public class LuceneSelector<Q, S, E extends Throwable> extends BaseSelector impl
      */
     public Q addComponent(Set<String> selectors, Map<String, Argument> functionArgs, LuceneQueryBuilderContext<Q, S, E> luceneContext, FunctionEvaluationContext functionContext) throws E
     {
-        LuceneQueryParserAdaptor<Q, S, E> lqpa = luceneContext.getLuceneQueryParserAdaptor();
-        return lqpa.getFieldQuery("CLASS", getType().toString());
+    	LuceneQueryParserAdaptor<Q, S, E> lqpa = luceneContext.getLuceneQueryParserAdaptor();
+    	switch(getJoinType())
+    	{
+    	case INNER:
+    	case NONE:      
+           return lqpa.getFieldQuery("CLASS", getType().toString());
+    	case LEFT:
+    		return lqpa.getMatchAllNodesQuery();
+    	case  RIGHT:
+        default:
+        	throw new IllegalArgumentException();
+    	}
         
     }
 

@@ -194,7 +194,7 @@ public class BaseJoin implements Join
             }
         }
 
-        if ((getJoinType() == JoinType.INNER) && (lhsSelector != null) && (rhsSelector != null))
+        if ( ((getJoinType() == JoinType.INNER) ||  (getJoinType() == JoinType.LEFT)) && (lhsSelector != null) && (rhsSelector != null))
         {
 
             TOADD: for (Set<String> toAddTo : left)
@@ -247,4 +247,10 @@ public class BaseJoin implements Join
 
         return answer;
     }
+
+	@Override
+	public void setJoinType(JoinType joinType) 
+	{
+		this.joinType = joinType;
+	}
 }

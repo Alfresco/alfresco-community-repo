@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.JoinType;
 import org.alfresco.repo.search.impl.querymodel.Selector;
 import org.alfresco.service.namespace.QName;
 
@@ -44,6 +45,8 @@ public class BaseSelector implements Selector
     private QName type;
 
     private String alias;
+    
+    private JoinType joinType = JoinType.NONE;
 
     public BaseSelector(QName type, String alias)
     {
@@ -51,32 +54,39 @@ public class BaseSelector implements Selector
         this.alias = alias;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.search.impl.querymodel.Selector#getAlias()
-     */
+    @Override
     public String getAlias()
     {
         return alias;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.search.impl.querymodel.Selector#getType()
-     */
+    @Override
+    public JoinType getJoinType()
+    {
+		return joinType;
+	}
+    
+    @Override
+  	public void setJoinType(JoinType joinType)
+    {
+  		this.joinType = joinType;
+  	}
+
+    @Override
     public QName getType()
     {
         return type;
     }
+    
+    
 
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("BaseSelector[");
         builder.append("alias=").append(getAlias()).append(", ");
-        builder.append("type=").append(getType());
+        builder.append("type=").append(getType()).append(", ");
+        builder.append("joinType=").append(getJoinType());
         builder.append("]");
         return builder.toString();
     }

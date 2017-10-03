@@ -126,7 +126,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
         CMISQueryOptions options = CMISQueryOptions.create(searchParameters);
         options.setQueryMode(CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
 
-        CapabilityJoin joinSupport = CapabilityJoin.INNERONLY;
+        CapabilityJoin joinSupport = CapabilityJoin.INNERANDOUTER;
         BaseTypeId[] validScopes = CmisFunctionEvaluationContext.ALFRESCO_SCOPES;
         CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
         functionContext.setCmisDictionaryService(cmisDictionaryService);

@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.JoinType;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -45,7 +46,7 @@ public class TypeSupport implements DBQueryBuilderComponent
     
     DBQueryBuilderPredicatePartCommandType commandType;
 
-    private boolean leftOuter;
+    private JoinType joinType = JoinType.NONE;
 
     /**
      * @param qnameIds
@@ -111,29 +112,42 @@ public class TypeSupport implements DBQueryBuilderComponent
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
-        DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
-        command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
-        command.setAlias("node");
-        command.setFieldName("type_qname_id");
-        command.setType(commandType);
-        if(qnameIds.size() > 0)
-        {
-            command.setValues(qnameIds.toArray(new Long[]{}));
-        }
-        else
-        {
-            command.setValues(new Long[]{-1l});
-        }
-        predicatePartCommands.add(command);
+    	DBQueryBuilderPredicatePartCommand command;
+    	switch(joinType)
+    	{
+    	case NONE:
+    	case INNER:
+    	default:
+    		command = new DBQueryBuilderPredicatePartCommand();
+    		command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
+    		command.setAlias("node");
+    		command.setFieldName("type_qname_id");
+    		command.setType(commandType);
+    		if(qnameIds.size() > 0)
+    		{
+    			command.setValues(qnameIds.toArray(new Long[]{}));
+    		}
+    		else
+    		{
+    			command.setValues(new Long[]{-1l});
+    		}
+    		predicatePartCommands.add(command);
+    		break;
+    	case LEFT:
+    	case RIGHT:
+    		command = new DBQueryBuilderPredicatePartCommand();
+    		command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
+    		command.setType(DBQueryBuilderPredicatePartCommandType.NP_MATCHES);
+    		predicatePartCommands.add(command);
+    		break;
+    	}
 
     }
 
-    /**
-     * @param leftOuter boolean
-     */
-    public void setLeftOuter(boolean leftOuter)
-    {
-        this.leftOuter = leftOuter;
-    }
+
+	public void setJoinType(JoinType joinType) 
+	{
+		this.joinType = joinType;
+	}
     
 }

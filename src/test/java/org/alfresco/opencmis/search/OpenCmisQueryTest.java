@@ -3353,6 +3353,12 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:document where cmis:parentId <> 'woof://woof/woof'", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT D.*, O.cmis:name FROM CMIS:DOCUMENT AS D JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId", 1, false, "cmis:objectId", new String(), true,
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT D.*, O.cmis:name FROM CMIS:DOCUMENT AS D LEFT OUTER JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId where O.cm:owner is not null", 1, false, "cmis:objectId", new String(), true,
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT D.*, O.cmis:name FROM CMIS:DOCUMENT AS D LEFT OUTER JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId where O.cm:owner is null", 1, false, "cmis:objectId", new String(), true,
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT D.*, O.cmis:name FROM CMIS:DOCUMENT AS D LEFT OUTER JOIN CM:OWNABLE AS O ON D.cmis:objectId = O.cmis:objectId", 20, false, "cmis:objectId", new String(), true,
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
         testQuery("SELECT * FROM cmis:document order by cmis:parentId", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_STRICT);
         testQuery("SELECT * FROM cmis:document where CONTAINS('cmis:parentId:*')", 10, false, "cmis:objectId", new String(), true, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
     }
@@ -3762,6 +3768,18 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery(
                 "select o.*, t.* from ( cm:ownable o join cm:titled t on o.cmis:objectId = t.cmis:objectId JOIN cmis:document AS D ON D.cmis:objectId = o.cmis:objectId ) where o.cm:owner = 'andy' and t.cm:title = 'Alfresco tutorial' and CONTAINS(D, 'jumped') and D.cmis:contentStreamLength <> 2",
                 1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        
+        // LOJ
+        testQuery("SELECT * FROM cmis:document", 11, false, "cmis:objectId", new String(), false,
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT D.*, O.* FROM cmis:document AS D LEFT JOIN cm:ownable AS O ON D.cmis:objectId = O.cmis:objectId", 11, false, "cmis:objectId", new String(), false,
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT D.*, T.* FROM cmis:document AS D LEFT JOIN cm:titled AS T ON D.cmis:objectId = T.cmis:objectId", 11, false, "cmis:objectId", new String(), false,
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT T.*, O.* FROM cm:titled AS T LEFT JOIN cm:ownable AS O ON O.cmis:objectId = T.cmis:objectId", 11, false, "cmis:objectId", new String(), false,
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
+        testQuery("SELECT T.*, O.* FROM cm:ownable AS O LEFT JOIN cm:titled AS T ON O.cmis:objectId = T.cmis:objectId", 1, false, "cmis:objectId", new String(), false,
+                CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
     }
 
     public void testPaging()

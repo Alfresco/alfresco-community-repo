@@ -34,10 +34,13 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.JoinType;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+
+import com.sun.star.lang.IllegalArgumentException;
 
 public class AspectSupport implements DBQueryBuilderComponent
 {
@@ -45,6 +48,8 @@ public class AspectSupport implements DBQueryBuilderComponent
     String alias;
 
     List<Long> qnameIds = new ArrayList<Long>();
+
+	private JoinType joinType = JoinType.NONE;
 
     /**
      * @param qnameIds
@@ -101,19 +106,40 @@ public class AspectSupport implements DBQueryBuilderComponent
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
-        DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
-        command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
-        command.setAlias(alias);
-        command.setType(DBQueryBuilderPredicatePartCommandType.ASPECT);
-        if(qnameIds.size() > 0)
-        {
-            command.setValues(qnameIds.toArray(new Long[]{}));
-        }
-        else
-        {
-            command.setValues(new Long[]{-1l});
-        }
-        predicatePartCommands.add(command);
+    	DBQueryBuilderPredicatePartCommand command;
+    	switch(joinType)
+    	{
+    	case NONE:
+    	case INNER:
+    	default:
+    		command = new DBQueryBuilderPredicatePartCommand();
+    		command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
+    		command.setAlias(alias);
+    		command.setType(DBQueryBuilderPredicatePartCommandType.ASPECT);
+    		if(qnameIds.size() > 0)
+    		{
+    			command.setValues(qnameIds.toArray(new Long[]{}));
+    		}
+    		else
+    		{
+    			command.setValues(new Long[]{-1l});
+    		}
+    		predicatePartCommands.add(command);
+    		break;
+    	case LEFT:
+    	case RIGHT:
+    		command = new DBQueryBuilderPredicatePartCommand();
+    		command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
+    		command.setType(DBQueryBuilderPredicatePartCommandType.NP_MATCHES);
+    		predicatePartCommands.add(command);
+    		break;
+    	}
+    	
     }
+
+	public void setJoinType(JoinType joinType) 
+	{
+		this.joinType = joinType;
+	}
 
 }

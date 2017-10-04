@@ -31,6 +31,8 @@
     </distributionManagement>
 
     <properties>
+        <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
+
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>
             source/java/org/alfresco/repo/search/impl/parsers/CMIS*er.java,
@@ -145,7 +147,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>6.12</version>
+            <version>${dependency.alfresco-core.version}</version>
         </dependency>
         <!--
             | provided dependencies (are not transitive and not included in webapps)

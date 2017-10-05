@@ -53,6 +53,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RecordCategoryChild extends TestModel
 {
+    public final static String RECORD_FOLDER_NODE_TYPE = "rma:recordFolder";
+
     /*************************/
     /** Mandatory parameters */
     /*************************/

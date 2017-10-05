@@ -608,7 +608,26 @@ public class TestPeople extends AbstractBaseApiTest
             people.create(person, 400);
         }
     }
-    
+
+    /**
+     * Created for REPO-1882, '\\', '\r' and '\n' marked as invalid character for personId
+     */
+    @Test
+    public void testCreatePersonWithInvalidCharacter () throws Exception
+    {
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
+
+        Person person = new Person();
+        String personId = UUID.randomUUID().toString()+"\\";
+        person.setUserName(personId);
+        person.setFirstName("Joe");
+        person.setEmail(personId+"@"+account1.getId());
+        person.setEnabled(true);
+        person.setPassword("password123");
+
+        people.create(person, 400);
+    }
+
     @Test
     public void testGetPerson_withCustomProps() throws PublicApiException
     {

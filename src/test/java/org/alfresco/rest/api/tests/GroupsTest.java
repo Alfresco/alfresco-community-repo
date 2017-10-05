@@ -1438,6 +1438,15 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             groupsProxy.createGroup(group, null, HttpServletResponse.SC_CONFLICT);
         }
 
+        // Create Group with an id that contains "\" should return an error.
+        {
+            setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+
+            Group group = new Group();
+            group.setId("te\\st");
+            groupsProxy.createGroup(group, null, HttpServletResponse.SC_BAD_REQUEST);
+        }
+
         // Create subgroup with invalid parent.
         {
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);

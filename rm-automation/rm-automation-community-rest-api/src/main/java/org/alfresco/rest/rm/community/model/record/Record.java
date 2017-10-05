@@ -56,6 +56,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Record extends TestModel implements IRestModel<RestNodeModel>
 {
+    public final static String CONTENT_NODE_TYPE = "cm:content";
+
     /*************************/
     /** Mandatory parameters */
     /*************************/

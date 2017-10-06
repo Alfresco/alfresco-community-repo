@@ -115,6 +115,35 @@ public class RecordsAPI extends BaseAPI
 
 
     /**
+     * Reject the record given as parameter
+     *
+     * @param user       the user declaring the document as record
+     * @param password   the user's password
+     * @param recordName the record name
+     * @param reason     reject reason
+     * @return true if the action completed successfully
+     */
+    public boolean rejectRecord(String user, String password, String recordName, String reason)
+    {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
+
+        try
+        {
+            JSONObject requestParams = new JSONObject();
+            requestParams.put("name", "reject");
+            requestParams.put("nodeRef", recNodeRef);
+            requestParams.put("params",new JSONObject()
+                            .put("reason",reason));
+
+            return doPostJsonRequest(user, password, requestParams, RM_ACTIONS_API);
+        }
+        catch (JSONException error)
+        {
+            LOGGER.error("Unable to extract response parameter", error);
+        }
+        return false;
+    }
+    /**
      * Declare document version as record
      *
      * @param user         the user declaring the document version as record

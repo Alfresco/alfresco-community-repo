@@ -28,6 +28,11 @@
         class="org.alfresco.repo.bulkimport.metadataloaders.XmlPropertiesFileMetadataLoader"
         lazy-init="true">
     <constructor-arg index="0" ref="ServiceRegistry" />
+    <property name="protectedProperties">
+      <list>
+        <value>cm:versionLabel</value>
+      </list>
+    </property>
   </bean>
 
   <bean id="bfsiContentDataFactory" class="org.alfresco.repo.bulkimport.impl.FilesystemContentDataFactory">

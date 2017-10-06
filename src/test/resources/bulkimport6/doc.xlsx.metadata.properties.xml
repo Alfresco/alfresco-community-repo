@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="type">cm:content</entry>
+	<entry key="aspects">cm:versionable,cm:titled,cm:auditable,sys:referenceable,sys:localized,cm:author</entry>
+	<entry key="cm:creator">admin</entry>
+	<entry key="cm:autoVersion">true</entry>
+	<entry key="cm:title"></entry>
+	<entry key="cm:modifier">admin</entry>
+	<entry key="cm:versionType">MAJOR</entry>
+	<entry key="cm:created">2017-02-24T01:17:47.670-05:00</entry>
+	<entry key="cm:versionLabel">23.0</entry>
+	<entry key="cm:autoVersionOnUpdateProps">false</entry>
+	<entry key="sys:store-protocol">workspace</entry>
+	<entry key="sys:store-identifier">SpacesStore</entry>
+	<entry key="cm:description"></entry>
+	<entry key="cm:name">doc.xlsx</entry>
+	<entry key="cm:author">admin</entry>
+	<entry key="cm:initialVersion">true</entry>
+	<entry key="sys:locale">en_GB</entry>
+	<entry key="cm:modified">2017-02-24T01:25:19.626-05:00</entry>
+</properties>

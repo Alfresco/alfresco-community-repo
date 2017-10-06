@@ -39,8 +39,6 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
-import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
@@ -80,6 +78,7 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -614,5 +613,27 @@ public class BaseRMRestTest extends RestTest
             waitInMilliSeconds = (waitInMilliSeconds * 2);
         }
         return names;
+    }
+    
+    /**
+     * Helper method to check the response code and message returned
+     * 
+     * @param setClassificationResponse
+     * @param nodeId
+     */
+    public List<String> getResponseCodeAndMessage(JSONObject setClassificationResponse, String nodeId)
+    {
+        List<String> response = new ArrayList<String>();
+        if (setClassificationResponse != null)
+        {
+            String message = setClassificationResponse.getString("message");
+            response.add(message);
+            if (setClassificationResponse.getJSONObject("status") != null)
+            {
+                String code = setClassificationResponse.getJSONObject("status").get("code").toString();
+                response.add(code);
+            }
+        }
+        return response;
     }
 }

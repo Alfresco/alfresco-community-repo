@@ -6,17 +6,14 @@
         <artifactId>alfresco-super-pom</artifactId>
         <version>6</version>
     </parent>
-    <artifactId>alfresco-full-installation</artifactId>
-    <version>6.0-SNAPSHOT</version>
+    <artifactId>full-community-packaging</artifactId>
+    <version>6.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Full Installation</name>
 
     <properties>
         <!-- Community Packaging version -->
         <dependency.acs-community-packaging.version>6.0.b-SNAPSHOT</dependency.acs-community-packaging.version>
-
-        <!-- Enterprise Packaging version -->
-        <dependency.acs-packaging.version>6.0.0-SNAPSHOT</dependency.acs-packaging.version>
 
         <!-- Alfresco Share version -->
         <alfresco.share.version>5.2.2-SNAPSHOT</alfresco.share.version>
@@ -67,16 +64,17 @@
     <modules>
         <module>distribution</module>
         <module>public-javadoc</module>
-        <module>installer-resources</module>
+	<module>installer-resources</module>
+	<module>installer</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Import Enterprise packaging dependency management -->
+            <!-- Import packaging dependency management -->
             <dependency>
                 <groupId>org.alfresco</groupId>
-                <artifactId>acs-packaging</artifactId>
-                <version>${dependency.acs-packaging.version}</version>
+                <artifactId>acs-community-packaging</artifactId>
+                <version>${dependency.acs-community-packaging.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -84,25 +82,6 @@
     </dependencyManagement>
 
     <profiles>
-        <profile>
-            <id>community</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>installer</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>enterprise</id>
-            <modules>
-                <module>enterprise-war-for-ear</module>
-                <module>ear</module>
-                <module>enterprise-distribution</module>
-                <module>enterprise-installer-resources</module>
-                <module>enterprise-installer</module>
-            </modules>
-        </profile>
         <profile>
             <id>release</id>
             <properties>

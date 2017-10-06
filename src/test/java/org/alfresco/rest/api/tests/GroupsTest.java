@@ -1419,13 +1419,17 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             groupsProxy.createGroup(group, null, HttpServletResponse.SC_BAD_REQUEST);
         }
 
-        // Create group with an id that contains "/" should return an error.
+        // Create group with an id that contains invalid characters ("/", "\", "\n", "\r") should return an error.
         {
             setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
 
-            Group group = new Group();
-            group.setId("/test/");
-            groupsProxy.createGroup(group, null, HttpServletResponse.SC_BAD_REQUEST);
+            char[] invalidCharacters = {'/', '\\', '\n', '\r'};
+            for (char invalidCharacter : invalidCharacters)
+            {
+                Group group = new Group();
+                group.setId(invalidCharacter + "test" + invalidCharacter);
+                groupsProxy.createGroup(group, null, HttpServletResponse.SC_BAD_REQUEST);
+            }
         }
 
         // Id clashes with an existing group.

@@ -112,42 +112,41 @@ public class TypeSupport implements DBQueryBuilderComponent
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
-    	DBQueryBuilderPredicatePartCommand command;
-    	switch(joinType)
-    	{
-    	case NONE:
-    	case INNER:
-    	default:
-    		command = new DBQueryBuilderPredicatePartCommand();
-    		command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
-    		command.setAlias("node");
-    		command.setFieldName("type_qname_id");
-    		command.setType(commandType);
-    		if(qnameIds.size() > 0)
-    		{
-    			command.setValues(qnameIds.toArray(new Long[]{}));
-    		}
-    		else
-    		{
-    			command.setValues(new Long[]{-1l});
-    		}
-    		predicatePartCommands.add(command);
-    		break;
-    	case LEFT:
-    	case RIGHT:
-    		command = new DBQueryBuilderPredicatePartCommand();
-    		command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
-    		command.setType(DBQueryBuilderPredicatePartCommandType.NP_MATCHES);
-    		predicatePartCommands.add(command);
-    		break;
-    	}
+        DBQueryBuilderPredicatePartCommand command;
+        switch(joinType)
+        {
+            case NONE:
+            case INNER:
+            default:
+                command = new DBQueryBuilderPredicatePartCommand();
+                command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
+                command.setAlias("node");
+                command.setFieldName("type_qname_id");
+                command.setType(commandType);
+                if(qnameIds.size() > 0)
+                {
+                    command.setValues(qnameIds.toArray(new Long[]{}));
+                }
+                else
+                {
+                    command.setValues(new Long[]{-1l});
+                }
+                predicatePartCommands.add(command);
+                break;
+            case LEFT:
+            case RIGHT:
+                command = new DBQueryBuilderPredicatePartCommand();
+                command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
+                command.setType(DBQueryBuilderPredicatePartCommandType.NP_MATCHES);
+                predicatePartCommands.add(command);
+                break;
+        }
 
     }
 
+    public void setJoinType(JoinType joinType) 
+    {
+        this.joinType = joinType;
+    }
 
-	public void setJoinType(JoinType joinType) 
-	{
-		this.joinType = joinType;
-	}
-    
 }

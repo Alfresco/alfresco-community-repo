@@ -320,9 +320,17 @@ public class TestPeople extends AbstractBaseApiTest
         person.setUserName("myUserName11111111111111111111111111111111111111111111111111111111111111111111111111111111@" + account1.getId());
         people.create(person, 400);
 
-        // create person with special character '/'
-        person.setUserName("myUser/Name@" + account1.getId());
-        people.create(person, 400);
+        // create person with invalid characters ("/", "\", "\n", "\r")
+        {
+            char[] invalidCharacters = {'/', '\\', '\n', '\r'};
+
+            for (char invalidCharacter : invalidCharacters)
+            {
+                person.setUserName("myUser" + invalidCharacter + "Name@" + account1.getId());
+                people.create(person, 400);
+            }
+        }
+
 
         // check for reserved authority prefixes
         person.setUserName("GROUP_EVERYONE");
@@ -607,25 +615,6 @@ public class TestPeople extends AbstractBaseApiTest
             person.setProperties(Collections.singletonMap("sys:locale", "en_GB"));
             people.create(person, 400);
         }
-    }
-
-    /**
-     * Created for REPO-1882, '\\', '\r' and '\n' marked as invalid character for personId
-     */
-    @Test
-    public void testCreatePersonWithInvalidCharacter () throws Exception
-    {
-        publicApiClient.setRequestContext(new RequestContext(account1.getId(), account1Admin, "admin"));
-
-        Person person = new Person();
-        String personId = UUID.randomUUID().toString()+"\\";
-        person.setUserName(personId);
-        person.setFirstName("Joe");
-        person.setEmail(personId+"@"+account1.getId());
-        person.setEnabled(true);
-        person.setPassword("password123");
-
-        people.create(person, 400);
     }
 
     @Test

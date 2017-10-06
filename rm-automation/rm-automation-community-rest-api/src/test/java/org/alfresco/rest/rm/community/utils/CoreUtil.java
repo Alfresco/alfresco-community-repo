@@ -24,28 +24,33 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.model.common;
+package org.alfresco.rest.rm.community.utils;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.alfresco.utility.model.TestModel;
+import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 
 /**
- * POJO for owner parameter
+ * Utility class for core components models
  *
- * @author Tuna Aksoy
+ * @author Rodica Sutu
  * @since 2.6
  */
-@Builder
-@Data
-@EqualsAndHashCode(callSuper = true)
-//@NoArgsConstructor
-//@AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
-public class Owner extends TestModel
+public class CoreUtil
 {
+    private CoreUtil()
+    {
+        // Intentionally blank
+    }
 
+    /**
+     * Creates a body model for move/copy with the given the target node id
+     *
+     * @param nodeId The node id
+     * @return The {@link RestNodeBodyMoveCopyModel} with for the given node id
+     */
+    public static RestNodeBodyMoveCopyModel createBodyForMoveCopy(String nodeId)
+    {
+        RestNodeBodyMoveCopyModel moveDestinationInfo = new RestNodeBodyMoveCopyModel();
+        moveDestinationInfo.setTargetParentId(nodeId);
+        return moveDestinationInfo;
+    }
 }

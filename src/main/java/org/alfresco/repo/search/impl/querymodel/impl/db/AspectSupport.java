@@ -78,7 +78,7 @@ public class AspectSupport implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
+                Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
 
     }
@@ -135,9 +135,9 @@ public class AspectSupport implements DBQueryBuilderComponent
 
     }
 
-	public void setJoinType(JoinType joinType) 
-	{
-		this.joinType = joinType;
-	}
+    public void setJoinType(JoinType joinType) 
+    {
+        this.joinType = joinType;
+    }
 
 }

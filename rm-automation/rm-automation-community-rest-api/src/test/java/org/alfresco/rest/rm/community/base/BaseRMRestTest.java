@@ -53,6 +53,7 @@ import static org.testng.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.util.Pair;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
@@ -70,6 +71,7 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
+import org.alfresco.rest.rm.community.util.ParameterCheck;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
@@ -616,24 +618,18 @@ public class BaseRMRestTest extends RestTest
     }
     
     /**
-     * Helper method to check the response code and message returned
-     * 
+     * Helper method to get the error response code and message from the provided setClassificationResponse
+     *
      * @param setClassificationResponse
-     * @param nodeId
+     * @return a pair of <code, message> representing the code and message from the response
      */
-    public List<String> getResponseCodeAndMessage(JSONObject setClassificationResponse, String nodeId)
+    public Pair<Integer,String> parseErrorResponse(JSONObject setClassificationResponse)
     {
-        List<String> response = new ArrayList<String>();
-        if (setClassificationResponse != null)
-        {
-            String message = setClassificationResponse.getString("message");
-            response.add(message);
-            if (setClassificationResponse.getJSONObject("status") != null)
-            {
-                String code = setClassificationResponse.getJSONObject("status").get("code").toString();
-                response.add(code);
-            }
-        }
-        return response;
+        ParameterCheck.mandatoryObject("setClassificationResponse", setClassificationResponse);
+
+        String message = setClassificationResponse.getString("message");
+        String code = setClassificationResponse.getJSONObject("status").get("code").toString();
+
+        return new Pair<>(Integer.valueOf(code), message);
     }
 }

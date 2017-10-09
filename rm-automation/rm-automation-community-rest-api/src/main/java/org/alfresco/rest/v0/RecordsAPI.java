@@ -345,4 +345,30 @@ public class RecordsAPI extends BaseAPI
         return new Pair<>(false, String.valueOf(response.getJSONObject("status").getInt("code")));
     }
 
+    /**
+     * Hide in place record
+     *
+     * @param user         the user
+     * @param password     the user's password
+     * @param nodeId     the in place record node id
+     * @return true if the action was successful
+     */
+    public boolean hideRecord(String user, String password, String nodeId)
+    {
+        String docNodeRef = getNodeRefSpacesStore() + nodeId;
+
+        try
+        {
+            JSONObject requestParams = new JSONObject();
+            requestParams.put("actionedUponNode", docNodeRef);
+            requestParams.put("actionDefinitionName", "hide-record");
+
+            return doPostJsonRequest(user, password, requestParams, ACTIONS_API);
+        } catch (JSONException error)
+        {
+            LOGGER.error("Unable to extract response parameter", error);
+        }
+        return false;
+    }
+
 }

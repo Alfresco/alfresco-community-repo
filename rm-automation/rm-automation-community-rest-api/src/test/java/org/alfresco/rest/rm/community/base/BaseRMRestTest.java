@@ -53,7 +53,6 @@ import static org.testng.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import javafx.util.Pair;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
@@ -71,7 +70,6 @@ import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.rest.rm.community.util.ParameterCheck;
 import org.alfresco.rest.search.RestRequestQueryModel;
 import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
@@ -80,7 +78,6 @@ import org.alfresco.utility.data.DataUser;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -615,21 +612,5 @@ public class BaseRMRestTest extends RestTest
             waitInMilliSeconds = (waitInMilliSeconds * 2);
         }
         return names;
-    }
-    
-    /**
-     * Helper method to get the error response code and message from the provided setClassificationResponse
-     *
-     * @param setClassificationResponse
-     * @return a pair of <code, message> representing the code and message from the response
-     */
-    public Pair<Integer,String> parseErrorResponse(JSONObject setClassificationResponse)
-    {
-        ParameterCheck.mandatoryObject("setClassificationResponse", setClassificationResponse);
-
-        String message = setClassificationResponse.getString("message");
-        String code = setClassificationResponse.getJSONObject("status").get("code").toString();
-
-        return new Pair<>(Integer.valueOf(code), message);
     }
 }

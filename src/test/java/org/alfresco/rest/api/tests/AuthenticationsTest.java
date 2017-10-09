@@ -31,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
+import org.alfresco.rest.api.PublicApiAuthenticatorFactory;
 import org.alfresco.rest.api.model.LoginTicket;
 import org.alfresco.rest.api.model.LoginTicketResponse;
 import org.alfresco.rest.api.sites.SiteEntityResource;
@@ -41,6 +42,7 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.apache.commons.codec.binary.Base64;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -56,7 +58,43 @@ public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
 {
     private static final String TICKETS_URL = "tickets";
     private static final String TICKETS_API_NAME = "authentication";
+    private PublicApiAuthenticatorFactory authFactory;
     
+    @Before
+    public void setUpAuthTest()
+    {
+        authFactory = (PublicApiAuthenticatorFactory) applicationContext.getBean("publicapi.authenticator");
+    }
+    
+    @Test
+    public void canDisableBasicAuthChallenge() throws Exception
+    {
+        authFactory.setUseBasicAuth(false);
+        
+        // Expect to be challenged for an AlfTicket (REPO-2575)
+        testAuthChallenge("AlfTicket");
+    }
+
+    @Test
+    public void canEnableBasicAuthChallenge() throws Exception
+    {
+        authFactory.setUseBasicAuth(true);
+        
+        // Expect to be challenged for Basic auth.
+        testAuthChallenge("Basic");
+    }
+    
+    private void testAuthChallenge(String expectedScheme) throws Exception
+    {
+        // Unauthorized call
+        setRequestContext(null);
+        
+        HttpResponse response = getAll(SiteEntityResource.class, getPaging(0, 100), null, 401);
+        String authenticateHeader = response.getHeaders().get("WWW-Authenticate");
+        assertNotNull("Expected an authentication challenge", authenticateHeader);
+        String authScheme = authenticateHeader.split(" ")[0]; // Other parts may contain, e.g. realm="..."
+        assertEquals(expectedScheme, authScheme);
+    }
     
     /**
      * Tests login (create ticket), logout (delete ticket), and validate (get ticket).

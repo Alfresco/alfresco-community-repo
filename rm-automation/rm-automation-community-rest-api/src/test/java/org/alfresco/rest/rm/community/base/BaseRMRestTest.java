@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.base;
 
 import static lombok.AccessLevel.PROTECTED;
-
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.base.TestData.RECORD_CATEGORY_TITLE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
@@ -39,8 +38,6 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_CONTAINER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
-import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_USER;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryChildModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordCategoryModel;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
@@ -54,10 +51,12 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestAPIFactory;
+import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 import org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType;
 import org.alfresco.rest.rm.community.model.record.Record;
@@ -77,6 +76,7 @@ import org.alfresco.rest.search.SearchNodeModel;
 import org.alfresco.rest.search.SearchRequest;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.utility.data.DataUser;
+import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
@@ -615,4 +615,39 @@ public class BaseRMRestTest extends RestTest
         }
         return names;
     }
+
+    /**
+     * Helper method to return site document library content model
+     *
+     * @return ContentModel
+     * @throws Exception
+     */
+    public ContentModel getDocumentLibrary(UserModel usermodel, SiteModel testSite) throws Exception
+    {
+        ContentModel siteModel = new ContentModel();
+        siteModel.setNodeRef(testSite.getGuid());
+
+        restClient.authenticateUser(usermodel);
+
+        List<RestNodeModel> nodes = restClient.withCoreAPI().usingNode(siteModel)
+                                              .listChildren().getEntries().stream().collect(Collectors.toList());
+        ContentModel documentLibrary = new ContentModel();
+        documentLibrary.setName(nodes.get(0).onModel().getName());
+        documentLibrary.setNodeRef(nodes.get(0).onModel().getId());
+        return documentLibrary;
+    }
+
+    /**
+     * Helper method to create a Content Model
+     *
+     * @return ContentModel
+     * @throws Exception
+     */
+    public ContentModel toContentModel(String nodeId)
+    {
+        ContentModel node = new ContentModel();
+        node.setNodeRef(nodeId);
+        return node;
+    }
+
 }

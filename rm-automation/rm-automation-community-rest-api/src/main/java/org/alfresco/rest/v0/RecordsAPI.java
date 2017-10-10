@@ -115,6 +115,35 @@ public class RecordsAPI extends BaseAPI
 
 
     /**
+     * Reject the record given as parameter
+     *
+     * @param user       the user declaring the document as record
+     * @param password   the user's password
+     * @param recordName the record name
+     * @param reason     reject reason
+     * @return true if the action completed successfully
+     */
+    public boolean rejectRecord(String user, String password, String recordName, String reason)
+    {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
+
+        try
+        {
+            JSONObject requestParams = new JSONObject();
+            requestParams.put("name", "reject");
+            requestParams.put("nodeRef", recNodeRef);
+            requestParams.put("params",new JSONObject()
+                            .put("reason",reason));
+
+            return doPostJsonRequest(user, password, requestParams, RM_ACTIONS_API);
+        }
+        catch (JSONException error)
+        {
+            LOGGER.error("Unable to extract response parameter", error);
+        }
+        return false;
+    }
+    /**
      * Declare document version as record
      *
      * @param user         the user declaring the document version as record
@@ -314,6 +343,32 @@ public class RecordsAPI extends BaseAPI
             LOGGER.info("Unable to extract response parameter", e);
         }
         return new Pair<>(false, String.valueOf(response.getJSONObject("status").getInt("code")));
+    }
+
+    /**
+     * Hide in place record
+     *
+     * @param user         the user
+     * @param password     the user's password
+     * @param nodeId     the in place record node id
+     * @return true if the action was successful
+     */
+    public boolean hideRecord(String user, String password, String nodeId)
+    {
+        String docNodeRef = getNodeRefSpacesStore() + nodeId;
+
+        try
+        {
+            JSONObject requestParams = new JSONObject();
+            requestParams.put("actionedUponNode", docNodeRef);
+            requestParams.put("actionDefinitionName", "hide-record");
+
+            return doPostJsonRequest(user, password, requestParams, ACTIONS_API);
+        } catch (JSONException error)
+        {
+            LOGGER.error("Unable to extract response parameter", error);
+        }
+        return false;
     }
 
 }

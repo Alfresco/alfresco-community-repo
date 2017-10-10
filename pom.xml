@@ -9,7 +9,14 @@
     <artifactId>full-community-packaging</artifactId>
     <version>6.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Alfresco Full Community Packaging</name>
+    <name>Alfresco Content Services Community Full Packaging</name>
+
+    <scm>
+        <connection>scm:git:https://git.alfresco.com/Repository/full-community-packaging.gitt</connection>
+        <developerConnection>scm:git:https://git.alfresco.com/Repository/full-community-packaging.git</developerConnection>
+        <url>https://git.alfresco.com/Repository/full-community-packaging.git</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <!-- Community Packaging version -->
@@ -45,18 +52,12 @@
         <!-- Install builder version -->
         <installer.installbuilder.version>15.10.1</installer.installbuilder.version>
 
-        <!-- 
-            Build number (Default value is used unless overridden by command line)
-            Default value: SNAPSHOT-0
+        <!--
+           Set externally as "-ea", "-ga", "-la" or left empty
+           As the releasable artifacts are never published to nexus, the version is affecting only filenames
         -->
-        <installer.build.number>SNAPSHOT-0</installer.build.number>
-
-        <!-- 
-            Installer version that will be used in the final name.
-                - ${installer.build.timestamp}-${installer.build.number}    (SNAPSHOT version)
-        -->
-        <installer.version.name>${installer.build.timestamp}-${installer.build.number}</installer.version.name>
-
+        <alfresco.release.availability></alfresco.release.availability>
+        <installer.version.name>${project.version}${alfresco.release.availability}</installer.version.name>
         <alfresco.package.name>alfresco-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
     </properties>
@@ -64,8 +65,8 @@
     <modules>
         <module>distribution</module>
         <module>public-javadoc</module>
-	<module>installer-resources</module>
-	<module>installer</module>
+        <module>installer-resources</module>
+        <module>installer</module>
     </modules>
 
     <dependencyManagement>
@@ -78,26 +79,234 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-content-services-community-distribution</artifactId>
+                <version>${dependency.acs-community-packaging.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.aos-module</groupId>
+                <artifactId>alfresco-aos-module</artifactId>
+                <version>${alfresco.aos-module.version}</version>
+                <type>amp</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.aos-module</groupId>
+                <artifactId>alfresco-aos-module-distributionzip</artifactId>
+                <version>${alfresco.aos-module.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.aos-module</groupId>
+                <artifactId>alfresco-vti-bin</artifactId>
+                <version>${alfresco.aos-module.version}</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-content-services-share-distribution</artifactId>
+                <version>${alfresco.share.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-share-services</artifactId>
+                <version>${alfresco.share.version}</version>
+                <type>amp</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>share</artifactId>
+                <version>${alfresco.share.version}</version>
+                <type>war</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-solr1-distribution</artifactId>
+                <version>${alfresco.solr.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-solr4-distribution</artifactId>
+                <version>${alfresco.solr4.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-wcmqs-distribution</artifactId>
+                <version>${alfresco.share.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-wcmqs-web</artifactId>
+                <version>${alfresco.share.version}</version>
+                <classifier>classes</classifier>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-wcmqs-client-api</artifactId>
+                <version>${alfresco.share.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.integrations</groupId>
+                <artifactId>alfresco-googledocs-repo</artifactId>
+                <version>${alfresco.googledocs.version}</version>
+                <type>amp</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco.integrations</groupId>
+                <artifactId>alfresco-googledocs-share</artifactId>
+                <version>${alfresco.googledocs.version}</version>
+                <type>amp</type>
+            </dependency>
+
+            <!-- Common -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>installer-common</artifactId>
+                <version>${installer.common.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+
+            <!-- Tomcat -->
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat</artifactId>
+                <version>${installer.tomcat.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat</artifactId>
+                <version>${installer.tomcat.version}</version>
+                <classifier>win64</classifier>
+                <type>tgz</type>
+            </dependency>
+
+            <!-- PostgreSQL -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql-distribution</artifactId>
+                <version>${installer.postgresql.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql-distribution</artifactId>
+                <version>${installer.postgresql.version}</version>
+                <classifier>win64</classifier>
+                <type>tgz</type>
+            </dependency>
+
+            <!-- Java -->
+            <dependency>
+                <groupId>com.oracle.java</groupId>
+                <artifactId>jre</artifactId>
+                <version>${installer.java.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>com.oracle.java</groupId>
+                <artifactId>jre</artifactId>
+                <version>${installer.java.version}</version>
+                <classifier>win64</classifier>
+                <type>tgz</type>
+            </dependency>
+
+            <!-- LibreOffice -->
+            <dependency>
+                <groupId>org.libreoffice</groupId>
+                <artifactId>libreoffice-dist</artifactId>
+                <version>${installer.libreoffice.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.libreoffice</groupId>
+                <artifactId>libreoffice-dist</artifactId>
+                <version>${installer.libreoffice.version}</version>
+                <classifier>windows</classifier>
+                <type>tgz</type>
+            </dependency>
+
+            <!-- Alfresco Pdf Renderer -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-pdf-renderer</artifactId>
+                <version>${installer.alfresco-pdf-renderer.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-pdf-renderer</artifactId>
+                <version>${installer.alfresco-pdf-renderer.version}</version>
+                <classifier>win64</classifier>
+                <type>tgz</type>
+            </dependency>
+
+            <!-- ImageMagick -->
+            <dependency>
+                <groupId>org.imagemagick</groupId>
+                <artifactId>imagemagick-distribution</artifactId>
+                <version>${installer.imagemagick.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.imagemagick</groupId>
+                <artifactId>imagemagick-distribution</artifactId>
+                <version>${installer.imagemagick.version}</version>
+                <classifier>win64</classifier>
+                <type>tgz</type>
+            </dependency>
+
+            <!-- Installbuilder -->
+            <dependency>
+                <groupId>com.bitnami</groupId>
+                <artifactId>installbuilder</artifactId>
+                <version>${installer.installbuilder.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>com.bitnami</groupId>
+                <artifactId>installbuilder</artifactId>
+                <version>${installer.installbuilder.version}</version>
+                <classifier>win</classifier>
+                <type>tgz</type>
+            </dependency>
+
+            <!-- Manager -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>manager</artifactId>
+                <version>${installer.manager.version}</version>
+                <classifier>linux</classifier>
+                <type>tgz</type>
+            </dependency>
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>manager</artifactId>
+                <version>${installer.manager.version}</version>
+                <classifier>win64</classifier>
+                <type>tgz</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
-    <profiles>
-        <profile>
-            <id>release</id>
-            <properties>
-                <maven.build.timestamp.format>yyyyMM</maven.build.timestamp.format>
-                <!-- 
-                Installer version that will be used in the final name.
-                    - ${installer.build.timestamp}-EA   (Early Access release version)
-                    - ${installer.build.timestamp}-LA   (Limited Access release version)
-                    - ${installer.build.timestamp}-GA   (General Availability release version)
-                -->
-                <installer.version.name>${installer.build.timestamp}${release.availability}</installer.version.name>
-            </properties>
-        </profile>
-    </profiles>
-
     <distributionManagement>
+        <repository>
+            <id>alfresco-internal</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/enterprise-releases</url>
+        </repository>
         <snapshotRepository>
             <id>alfresco-internal-snapshots</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-snapshots</url>

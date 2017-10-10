@@ -429,6 +429,7 @@ public abstract class BaseAPI
 
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
                 case HttpStatus.SC_BAD_REQUEST:
+                case HttpStatus.SC_UNPROCESSABLE_ENTITY:
                     if (responseBody != null  && responseBody.has(EXCEPTION_KEY))
                     {
                         LOGGER.error("Request failed: " + responseBody.getString(EXCEPTION_KEY));

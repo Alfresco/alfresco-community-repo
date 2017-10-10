@@ -52,6 +52,7 @@
         <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>
         <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
         <dependency.mysql.version>5.1.40</dependency.mysql.version>
+        <dependency.mariadb.version>2.0.1</dependency.mariadb.version>
     </properties>
 
     <dependencyManagement>

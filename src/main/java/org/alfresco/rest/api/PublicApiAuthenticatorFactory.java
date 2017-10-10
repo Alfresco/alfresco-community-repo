@@ -67,6 +67,7 @@ public class PublicApiAuthenticatorFactory extends RemoteUserAuthenticatorFactor
     private TenantAuthentication tenantAuthentication;
     private Set<String> validAuthenticatorKeys = Collections.emptySet();
     private Set<String> outboundHeaderNames;
+    private boolean useBasicAuth = true;
     
     public void setAuthenticatorKeyHeader(String authenticatorKeyHeader)
     {
@@ -90,6 +91,23 @@ public class PublicApiAuthenticatorFactory extends RemoteUserAuthenticatorFactor
         }
         
         this.outboundHeaderNames = outboundHeaders;
+    }
+
+    /**
+     * Whether to suggest that users use Basic auth. If set to true, then a
+     * 401 (unauthorized) response will contain a WWW-Authentication header
+     * specifying the scheme "Basic". If this is set to false, then
+     * the scheme "AlfTicket" will be used.
+     * <p>
+     * Set this to false to avoid getting Basic auth dialogue popups in browsers
+     * when using the public API directly, for example.
+     * 
+     * @see <a href="https://issues.alfresco.com/jira/browse/REPO-2575">REPO-2575</a>
+     * @param useBasicAuth
+     */
+    public void setUseBasicAuth(boolean useBasicAuth)
+    {
+        this.useBasicAuth = useBasicAuth;
     }
 
     public void setTenantAuthentication(TenantAuthentication service)
@@ -232,7 +250,9 @@ public class PublicApiAuthenticatorFactory extends RemoteUserAuthenticatorFactor
                 if (!authorized)
                 {
                     servletRes.setStatus(401);
-                    servletRes.setHeader("WWW-Authenticate", "Basic realm=\"Alfresco " + servletReq.getTenant() + " tenant\"");
+                    String scheme = useBasicAuth ? "Basic" : "AlfTicket";
+                    String challenge = scheme + " realm=\"Alfresco " + servletReq.getTenant() + " tenant\"";
+                    servletRes.setHeader("WWW-Authenticate", challenge);
                 }
             }
         }

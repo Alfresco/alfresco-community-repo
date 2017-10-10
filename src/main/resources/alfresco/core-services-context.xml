@@ -27,7 +27,7 @@
                 <value>classpath:alfresco/domain/transaction.properties</value>
                 <value>classpath:alfresco/caches.properties</value>
                 <!-- Defaults for "decomposed" non-enterprise projects, e.g. alfresco-remote-api -->
-                <value>classpath*:alfresco/project.properties</value>
+                <value>classpath*:alfresco/project-*.properties</value>
                 <!-- Enterprise defaults -->
                 <!--  Overrides supplied if this is an enterprise install (none exist for community) -->
                 <value>classpath*:alfresco/enterprise/caches.properties</value>

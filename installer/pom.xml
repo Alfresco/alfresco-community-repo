@@ -15,15 +15,8 @@
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
         <alfresco.package.name>alfresco-content-services-community-full</alfresco.package.name>
-        <bitrock.arguments>
-            project.version=${installer.version.name}
-            project.fullName='Alfresco Content Services Community'
-            project.windowsSigningPkcs12File=${signing.key.location}
-            project.windowsSigningPkcs12Password=${p12Password}
-            alfresco_edition=community
-            alfresco_package='${alfresco.package.name}'
-            project.outputDirectory=${project.build.directory}
-        </bitrock.arguments>
+        <!-- it is a single line because it is sensitive to line endings -->
+        <bitrock.arguments>project.version=${installer.version.name} project.fullName='Alfresco Content Services Community' project.windowsSigningPkcs12File=${signing.key.location} project.windowsSigningPkcs12Password=${p12Password} alfresco_edition=community alfresco_package='${alfresco.package.name}' project.outputDirectory=${project.build.directory}</bitrock.arguments>
     </properties>
 
     <dependencies>

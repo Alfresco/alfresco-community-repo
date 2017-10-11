@@ -14,9 +14,6 @@
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
-        <signing.key.location></signing.key.location>
-        <license.file.location></license.file.location>
-        <p12Password></p12Password>
         <alfresco.package.name>alfresco-content-services-community-full</alfresco.package.name>
         <bitrock.arguments>
             project.version=${installer.version.name}

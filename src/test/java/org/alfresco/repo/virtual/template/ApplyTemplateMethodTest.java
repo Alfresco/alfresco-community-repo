@@ -40,8 +40,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(LuceneTests.class)
 public class ApplyTemplateMethodTest extends VirtualizationIntegrationTest
 {
     @Test

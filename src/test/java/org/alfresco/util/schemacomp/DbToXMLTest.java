@@ -30,7 +30,9 @@ import java.io.File;
 
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -38,6 +40,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Matt Ward
  */
+@Category(DBTests.class)
 public class DbToXMLTest
 {
     @Test

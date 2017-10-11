@@ -49,8 +49,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(LuceneTests.class)
 public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegrationTest
 {
 

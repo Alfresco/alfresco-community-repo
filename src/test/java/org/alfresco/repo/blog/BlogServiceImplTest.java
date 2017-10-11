@@ -66,11 +66,13 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -79,6 +81,7 @@ import org.springframework.context.ApplicationContext;
  * @author Neil Mc Erlean
  * @since 4.0
  */
+@Category(LuceneTests.class)
 public class BlogServiceImplTest
 {
 

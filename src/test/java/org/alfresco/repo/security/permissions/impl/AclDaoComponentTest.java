@@ -70,10 +70,11 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class AclDaoComponentTest extends TestCase
 {
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();

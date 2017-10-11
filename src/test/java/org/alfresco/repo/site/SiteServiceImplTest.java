@@ -92,6 +92,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -103,7 +104,7 @@ import static org.mockito.Mockito.when;
  * 
  * @author Roy Wetherall
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class SiteServiceImplTest extends BaseAlfrescoSpringTest 
 {
     public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");

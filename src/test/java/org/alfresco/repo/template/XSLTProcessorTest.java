@@ -46,6 +46,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.XMLUtil;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -54,7 +55,7 @@ import org.junit.experimental.categories.Category;
  * @author Brian
  * 
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class XSLTProcessorTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTProcessorTest.class);

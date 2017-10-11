@@ -61,11 +61,14 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(LuceneTests.class)
 public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTest
 {
     private static final String NODE2TEST1_2_TXT = "NODE2test1_2.txt";

@@ -39,6 +39,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -48,7 +49,7 @@ import org.springframework.context.ApplicationContext;
  * @author Derek Hulley
  * @since 3.2
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class LockDAOTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/LockDAOTest";

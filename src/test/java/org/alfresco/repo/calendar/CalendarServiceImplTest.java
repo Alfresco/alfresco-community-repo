@@ -67,11 +67,13 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.registry.NamedObjectRegistry;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -80,6 +82,7 @@ import org.springframework.context.ApplicationContext;
  * @author Nick Burch
  * @since 4.0
  */
+@Category(LuceneTests.class)
 public class CalendarServiceImplTest
 {
     private static final String TEST_SITE_PREFIX = "CalendarSiteTest";

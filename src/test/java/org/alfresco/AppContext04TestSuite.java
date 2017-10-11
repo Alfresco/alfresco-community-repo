@@ -25,15 +25,87 @@
  */
 package org.alfresco;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class AppContext04TestSuite extends TestSuite
+/**
+ * Repository project tests using the main context alfresco/application-context.xml.
+ * To balance test jobs tests using this context have been split into multiple test suites.
+ * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ */
+@RunWith(Categories.class)
+@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
+@Suite.SuiteClasses({
+    org.alfresco.repo.usage.RepoUsageComponentTest.class,
+    org.alfresco.repo.usage.UserUsageTest.class,
+    org.alfresco.repo.usage.UserUsageTrackingComponentTest.class,
+    org.alfresco.repo.version.VersionServiceImplTest.class,
+    org.alfresco.repo.version.NodeServiceImplTest.class,
+    org.alfresco.repo.version.ContentServiceImplTest.class,
+    org.alfresco.repo.workflow.StartWorkflowActionExecuterTest.class,
+    org.alfresco.repo.workflow.activiti.ActivitiWorkflowServiceIntegrationTest.class,
+    org.alfresco.repo.workflow.activiti.ActivitiSpringTransactionTest.class,
+    org.alfresco.repo.workflow.activiti.ActivitiTimerExecutionTest.class,
+    org.alfresco.repo.invitation.ActivitiInvitationServiceImplTests.class,
+    org.alfresco.repo.search.impl.solr.facet.SolrFacetConfigTest.class,
+    org.alfresco.repo.doclink.DocumentLinkServiceImplTest.class,
+
+    // This test opens, closes and again opens the alfresco application context.
+    org.alfresco.repo.dictionary.CustomModelRepoRestartTest.class,
+
+    org.alfresco.repo.rendition.StandardRenditionLocationResolverTest.class,
+    org.alfresco.repo.rendition.executer.HTMLRenderingEngineTest.class,
+    org.alfresco.repo.rendition.executer.XSLTFunctionsTest.class,
+    org.alfresco.repo.rendition.executer.XSLTRenderingEngineTest.class,
+    org.alfresco.repo.replication.ReplicationServiceIntegrationTest.class,
+    org.alfresco.repo.template.XSLTProcessorTest.class,
+    org.alfresco.repo.search.QueryRegisterComponentTest.class,
+    org.alfresco.repo.search.SearchServiceTest.class,
+    org.alfresco.repo.search.impl.lucene.ALF947Test.class,
+    org.alfresco.repo.search.impl.lucene.LuceneIndexBackupComponentTest.class,
+    org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class,
+    org.alfresco.repo.thumbnail.conditions.NodeEligibleForRethumbnailingEvaluatorTest.class,
+    org.alfresco.repo.transaction.ConnectionPoolOverloadTest.class,
+    org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinitionTest.class,
+    org.alfresco.repo.node.index.MissingContentReindexComponentTest.class,
+    org.alfresco.repo.node.integrity.IncompleteNodeTaggerTest.class,
+    org.alfresco.repo.node.integrity.IntegrityTest.class,
+    org.alfresco.repo.policy.PolicyComponentTransactionTest.class,
+    org.alfresco.repo.forms.FormServiceImplTest.class,
+    org.alfresco.repo.imap.ImapMessageTest.class,
+    org.alfresco.repo.imap.ImapServiceImplCacheTest.class,
+    org.alfresco.repo.imap.ImapServiceImplTest.class,
+    org.alfresco.repo.bulkimport.impl.BulkImportTest.class,
+    org.alfresco.repo.discussion.DiscussionServiceImplTest.class,
+    org.alfresco.repo.transfer.NodeCrawlerTest.class,
+    org.alfresco.repo.transfer.TransferServiceCallbackTest.class,
+    org.alfresco.repo.transfer.TransferServiceImplTest.class,
+    org.alfresco.repo.transfer.TransferServiceToBeRefactoredTest.class,
+    org.alfresco.repo.transfer.TransferVersionCheckerImplTest.class,
+    org.alfresco.repo.transfer.manifest.ManifestIntegrationTest.class,
+    org.alfresco.repo.transfer.script.ScriptTransferServiceTest.class,
+    org.alfresco.util.schemacomp.DbToXMLTest.class,
+    org.alfresco.util.schemacomp.ExportDbTest.class,
+    org.alfresco.util.schemacomp.SchemaReferenceFileTest.class,
+    org.alfresco.repo.module.ModuleComponentHelperTest.class,
+    org.alfresco.repo.node.getchildren.GetChildrenCannedQueryTest.class,
+    org.alfresco.repo.node.index.FullIndexRecoveryComponentTest.class,
+    org.alfresco.repo.node.index.IndexTransactionTrackerTest.class,
+    org.alfresco.util.CronTriggerBeanSystemTest.class,
+    org.alfresco.filesys.auth.cifs.CifsAuthenticatorPassthruTest.class,
+
+    // the following test fails locally - on windows
+    org.alfresco.repo.content.transform.DifferrentMimeTypeTest.class,
+
+    org.alfresco.repo.attributes.PropTablesCleanupJobIntegrationTest.class,
+    org.alfresco.service.ServiceRegistryTest.class,
+
+    // does not want to work in the same test suite as org.alfresco.repo.rule.* tests
+    org.alfresco.opencmis.search.OpenCmisQueryTest.class
+    })
+public class AppContext04TestSuite
 {
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_04(suite);
-        return suite;
-    }
 }

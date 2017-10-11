@@ -53,8 +53,8 @@ import java.util.TimeZone;
 
 import junit.framework.TestCase;
 
+import org.alfresco.MiscContextTestSuite;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.ContentMinimalContextTestSuite;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -103,7 +103,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     {
         // Grab the context, which will normally have been
         //  cached by the ApplicationContextHelper
-        ctx = ContentMinimalContextTestSuite.getContext();
+        ctx = MiscContextTestSuite.getMinimalContext();
         
         this.mimetypeMap = (MimetypeMap) ctx.getBean("mimetypeService");
         this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");

@@ -25,15 +25,48 @@
  */
 package org.alfresco;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class AppContext02TestSuite extends TestSuite
+/**
+ * Repository project tests using the main context alfresco/application-context.xml.
+ * To balance test jobs tests using this context have been split into multiple test suites.
+ * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ */
+@RunWith(Categories.class)
+@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
+@Suite.SuiteClasses({
+    
+    // there is a test that runs for 184s and another one that runs for 40s
+    org.alfresco.repo.attributes.AttributeServiceTest.class,
+
+    org.alfresco.repo.audit.AuditableAspectTest.class,
+    org.alfresco.repo.audit.AuditBootstrapTest.class,
+    org.alfresco.repo.audit.AuditComponentTest.class,
+    org.alfresco.repo.audit.UserAuditFilterTest.class,
+    org.alfresco.repo.audit.AuditMethodInterceptorTest.class,
+    org.alfresco.repo.audit.access.AccessAuditorTest.class,
+
+    // the following test will lock up the DB if run in the applicationContext_01 test suite
+    org.alfresco.repo.activities.feed.FeedNotifierTest.class,
+
+    org.alfresco.repo.activities.feed.FeedNotifierJobTest.class,
+    org.alfresco.repo.admin.RepoAdminServiceImplTest.class,
+    org.alfresco.repo.admin.patch.PatchTest.class,
+    org.alfresco.repo.bulkimport.impl.StripingFilesystemTrackerTest.class,
+    org.alfresco.repo.coci.CheckOutCheckInServiceImplTest.class,
+    org.alfresco.repo.configuration.ConfigurableServiceImplTest.class,
+    org.alfresco.repo.content.GuessMimetypeTest.class,
+    org.alfresco.repo.content.filestore.FileContentStoreTest.class,
+    org.alfresco.repo.content.filestore.NoRandomAccessFileContentStoreTest.class,
+    org.alfresco.repo.content.filestore.ReadOnlyFileContentStoreTest.class,
+    org.alfresco.repo.content.RoutingContentStoreTest.class,
+
+    // TODO REPO-2791 org.alfresco.repo.content.routing.StoreSelectorAspectContentStoreTest.class,
+})
+public class AppContext02TestSuite
 {
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_02(suite);
-        return suite;
-    }
 }

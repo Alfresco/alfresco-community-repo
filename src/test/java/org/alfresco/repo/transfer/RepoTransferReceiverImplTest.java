@@ -77,6 +77,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -90,7 +91,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Brian Remmington
  */
 @SuppressWarnings("deprecation")
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 {
     private static int fileCount = 0;

@@ -108,6 +108,7 @@ import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.SearchLanguageConversion;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
@@ -123,7 +124,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author andyh
  */
 @SuppressWarnings("unused")
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class ADMLuceneTest extends TestCase implements DictionaryListener
 {
 

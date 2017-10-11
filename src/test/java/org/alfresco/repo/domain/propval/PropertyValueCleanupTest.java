@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,7 +55,7 @@ import static org.junit.Assert.assertTrue;
  * @author Derek Hulley
  * @since 5.1
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class PropertyValueCleanupTest
 {
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

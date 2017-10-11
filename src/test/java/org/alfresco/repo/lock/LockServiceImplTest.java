@@ -62,6 +62,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -70,7 +71,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author Roy Wetherall
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class LockServiceImplTest extends BaseSpringTest
 {
     /**

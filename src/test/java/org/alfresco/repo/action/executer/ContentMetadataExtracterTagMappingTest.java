@@ -70,6 +70,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.jpeg.JpegParser;
@@ -87,7 +88,7 @@ import com.google.common.collect.Sets;
  * @author Nick Burch
  * @author Ray Gauss II
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class ContentMetadataExtracterTagMappingTest extends TestCase
 {
    private static ConfigurableApplicationContext ctx = 

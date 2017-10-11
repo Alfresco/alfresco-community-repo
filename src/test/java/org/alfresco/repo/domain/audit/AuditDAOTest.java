@@ -57,6 +57,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.hibernate.dialect.Dialect;
 import org.junit.experimental.categories.Category;
@@ -70,7 +71,7 @@ import junit.framework.TestCase;
  * @author Derek Hulley
  * @since 3.2
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class AuditDAOTest extends TestCase
 {
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
@@ -718,7 +719,7 @@ public class AuditDAOTest extends TestCase
         Dialect dialect = (Dialect) ctx.getBean("dialect");
         if (dialect instanceof AlfrescoMySQLClusterNDBDialect)
         {
-            throw new Exception("TODO review this test case with NDB - note: throw exeception here else causes later tests to fail (when running via DomainTestSuite)");
+            throw new Exception("TODO review this test case with NDB - note: throw exeception here else causes later tests to fail (when running via AllDBTestTestSuite)");
         }
         
         // single test

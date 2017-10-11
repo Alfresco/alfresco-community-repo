@@ -84,13 +84,16 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.SearchLanguageConversion;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.springframework.context.ApplicationContext;
 
+@Category(LuceneTests.class)
 public class HiddenAspectTest
 {
     @Rule public TestName name = new TestName();

@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.admin.RepoUsageStatus;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.FixMethodOrder;
@@ -54,7 +55,7 @@ import org.springframework.context.ApplicationContext;
  * @since 3.5
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class RepoUsageComponentTest extends TestCase
 {
     private  ApplicationContext ctx;

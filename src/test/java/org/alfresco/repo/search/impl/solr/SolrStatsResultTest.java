@@ -28,10 +28,12 @@ package org.alfresco.repo.search.impl.solr;
 import static org.junit.Assert.*;
 
 import org.alfresco.repo.search.impl.lucene.SolrStatsResult;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.util.StringUtils;
 
 /**
@@ -40,6 +42,7 @@ import org.springframework.util.StringUtils;
  * @author Gethin James
  * @since 5.0
  */
+@Category(LuceneTests.class)
 public class SolrStatsResultTest
 {
 

@@ -46,6 +46,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -67,7 +68,7 @@ import static org.junit.Assert.fail;
  * @author Derek Hulley
  * @since 3.2
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class PropertyValueDAOTest
 {
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

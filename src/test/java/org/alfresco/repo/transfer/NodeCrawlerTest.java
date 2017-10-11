@@ -48,6 +48,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -55,7 +56,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author Brian Remmington
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class NodeCrawlerTest extends BaseAlfrescoSpringTest
 {
     private ServiceRegistry serviceRegistry;

@@ -57,6 +57,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
@@ -80,6 +82,7 @@ import javax.naming.directory.SearchResult;
  * 
  * @author dward
  */
+@Category(LuceneTests.class)
 public class ChainingUserRegistrySynchronizerTest extends TestCase
 {
 

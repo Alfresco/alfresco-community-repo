@@ -44,6 +44,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.lang.mutable.MutableLong;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
@@ -53,7 +54,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Derek Hulley 
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class CacheTest extends TestCase
 {
     private  ApplicationContext ctx;

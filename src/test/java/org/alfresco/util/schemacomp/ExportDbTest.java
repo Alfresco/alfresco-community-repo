@@ -36,6 +36,7 @@ import org.alfresco.util.schemacomp.test.exportdb.AbstractExportTester;
 import org.alfresco.util.schemacomp.test.exportdb.AlfrescoMariaDBDialectExportTester;
 import org.alfresco.util.schemacomp.test.exportdb.MySQLDialectExportTester;
 import org.alfresco.util.schemacomp.test.exportdb.PostgreSQLDialectExportTester;
+import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.dialect.Dialect;
@@ -58,7 +59,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * @see AbstractExportTester
  * @author Matt Ward
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class ExportDbTest
 {
     private ApplicationContext ctx;

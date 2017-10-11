@@ -52,15 +52,18 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * @see FileFolderService
  * @author Dmitry Velichkevich
  */
+@Category(LuceneTests.class)
 public class FileFolderServicePropagationTest extends TestCase
 {
     private static final String TEST_USER_NAME = "userx";

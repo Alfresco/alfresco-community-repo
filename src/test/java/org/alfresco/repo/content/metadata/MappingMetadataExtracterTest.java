@@ -37,8 +37,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.alfresco.MiscContextTestSuite;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.content.ContentMinimalContextTestSuite;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -149,8 +149,8 @@ public class MappingMetadataExtracterTest extends TestCase
         String propertyPrefix = AbstractMappingMetadataExtracter.PROPERTY_PREFIX_METADATA + 
                 DummyMappingMetadataExtracter.EXTRACTER_NAME + 
                 AbstractMappingMetadataExtracter.PROPERTY_COMPONENT_EXTRACT;
-                
-        ApplicationContext ctx = ContentMinimalContextTestSuite.getContext();
+
+        ApplicationContext ctx = MiscContextTestSuite.getMinimalContext();
         Properties globalProperties = (Properties) ctx.getBean("global-properties");
         globalProperties.setProperty(
                 propertyPrefix + "namespace.prefix.my",

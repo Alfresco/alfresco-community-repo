@@ -39,6 +39,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.Map;
 
 import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -295,6 +296,13 @@ public class DefaultTypeConverter extends TypeConverter
         addConverter(String.class, Period.class, new TypeConverter.Converter<String, Period>()
         {
             public Period convert(String source)
+            {
+                return new Period(source);
+            }
+        });
+        addConverter(Map.class, Period.class, new TypeConverter.Converter<Map, Period>()
+        {
+            public Period convert(Map source)
             {
                 return new Period(source);
             }

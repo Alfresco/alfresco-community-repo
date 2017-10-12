@@ -44,4 +44,5 @@
     <import resource="classpath*:alfresco/smartfolder-context.xml" />
     <import resource="classpath*:alfresco/reset-password-context.xml" />
     <import resource="classpath:alfresco/heartbeat/heartbeat-repo-collector-context.xml"/>
+    <import resource="classpath*:alfresco/enterprise/heartbeat/heartbeat-enterprise-repo-collector-context.xml" />
 </beans>

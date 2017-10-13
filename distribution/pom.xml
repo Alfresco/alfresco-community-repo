@@ -8,7 +8,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>alfresco-content-services-community-full-distribution</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <name>Alfresco Content Services Community Full Distribution</name>
 
     <!-- To replace in share-config-custom.xml -->

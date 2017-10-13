@@ -27,6 +27,7 @@ package org.alfresco.service.cmr.repository;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * week|1 - one week week|2 - two weeks month year monthend quarterend The period type specifies a period
  * implementation. This is registered with this class and is used to when adding the period to a date, handles any
  * processing of the expression, reports if the expression is not required, optional or mandatory.
+ * The period data type can be also passed as a Map of keys: periodType and expression.
  * 
  * @author andyh
  */
@@ -101,6 +103,26 @@ public class Period implements Serializable
         {
             expression = parts[1];
         }
+    }
+    
+    /**
+     * Create a period using key-value
+     * 
+     * @param source
+     */
+    public Period(Map<String, String> source)
+    {
+        if (source == null)
+        {
+            throw new IllegalArgumentException("Cannot create Period.");
+        }
+        if (source.get("periodType") == null)
+        {
+            throw new IllegalArgumentException("Cannot create Period with null periodType");
+        }
+        
+        periodType = source.get("periodType");
+        expression = source.get("expression");
     }
 
     /**

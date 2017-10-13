@@ -112,17 +112,17 @@ public class Period implements Serializable
      */
     public Period(Map<String, String> source)
     {
-        if (source != null)
+        if (source == null)
         {
-            if (source.containsKey("periodType"))
-            {
-                periodType = source.get("periodType");
-            }
-            if (source.containsKey("expression"))
-            {
-                expression = source.get("expression");
-            }
+            throw new IllegalArgumentException("Cannot create Period.");
         }
+        if (source.get("periodType") == null)
+        {
+            throw new IllegalArgumentException("Cannot create Period with null periodType");
+        }
+        
+        periodType = source.get("periodType");
+        expression = source.get("expression");
     }
 
     /**

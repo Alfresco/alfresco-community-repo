@@ -10,7 +10,7 @@
     <artifactId>alfresco-data-model</artifactId>
     <name>Alfresco Data Model</name>
     <description>Alfresco Data Model classes</description>
-    <version>6.21-SNAPSHOT</version>
+    <version>6.22-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://github.com/Alfresco/alfresco-data-model.git</connection>
@@ -31,7 +31,7 @@
     </distributionManagement>
 
     <properties>
-        <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>6.14</dependency.alfresco-core.version>
 
         <!-- Files to exclude from SonarQube analysis -->
         <sonar.exclusions>

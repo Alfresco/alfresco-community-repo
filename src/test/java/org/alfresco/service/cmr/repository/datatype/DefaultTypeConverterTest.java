@@ -120,12 +120,8 @@ public class DefaultTypeConverterTest extends TestCase
         // VersionNumber
         assertEquals("1.2.3", DefaultTypeConverter.INSTANCE.convert(String.class, new VersionNumber("1.2.3")));
         // Period
-        //assertEquals("period", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period")));
+        assertEquals("period", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period")));
         assertEquals("period|12", DefaultTypeConverter.INSTANCE.convert(String.class, new Period("period|12")));
-        Map<String,String> periodMap = new HashMap<String, String>();
-        periodMap.put("periodType","month");
-        periodMap.put("expression","1");
-        assertEquals("month|1", DefaultTypeConverter.INSTANCE.convert(String.class, new Period(periodMap)));
         // Java Class
         assertEquals(this.getClass(), DefaultTypeConverter.INSTANCE.convert(Class.class, this.getClass().getName()));
     }
@@ -174,7 +170,7 @@ public class DefaultTypeConverterTest extends TestCase
         Map<String,String> periodMap = new HashMap<String, String>();
         periodMap.put("periodType","month");
         periodMap.put("expression","1");
-        assertEquals(new Period(periodMap), DefaultTypeConverter.INSTANCE.convert(Period.class, "month|1"));
+        assertEquals(new Period(periodMap), DefaultTypeConverter.INSTANCE.convert(Period.class, periodMap));
         // Java Class
         assertEquals(this.getClass().getName(), DefaultTypeConverter.INSTANCE.convert(String.class, this.getClass()));
     }

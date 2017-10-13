@@ -20,7 +20,7 @@
 
     <properties>
         <!-- Community Packaging version -->
-        <dependency.acs-community-packaging.version>6.0.b-SNAPSHOT</dependency.acs-community-packaging.version>
+        <dependency.acs-community-packaging.version>6.0.0-SNAPSHOT</dependency.acs-community-packaging.version>
 
         <!-- Alfresco Share version -->
         <alfresco.share.version>5.2.2-SNAPSHOT</alfresco.share.version>

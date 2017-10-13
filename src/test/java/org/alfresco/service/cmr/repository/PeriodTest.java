@@ -29,8 +29,6 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-
 import junit.framework.TestCase;
 
 /**
@@ -48,14 +46,15 @@ public class PeriodTest extends TestCase
         periodArgs.put("periodType", "day");
         Period period = new Period(periodArgs);
         assertNotNull(period.getPeriodType());
+        assertEquals("day", period.getPeriodType());
         assertNull(period.getExpression());
-        assertEquals(new Period(periodArgs), DefaultTypeConverter.INSTANCE.convert(Period.class, periodArgs));
 
         periodArgs.put("expression", "0");
         period = new Period(periodArgs);
         assertNotNull(period.getPeriodType());
         assertNotNull(period.getExpression());
-        assertEquals(new Period(periodArgs), DefaultTypeConverter.INSTANCE.convert(Period.class, periodArgs));
+        assertEquals("day", period.getPeriodType());
+        assertEquals("0", period.getExpression());
 
         try
         {

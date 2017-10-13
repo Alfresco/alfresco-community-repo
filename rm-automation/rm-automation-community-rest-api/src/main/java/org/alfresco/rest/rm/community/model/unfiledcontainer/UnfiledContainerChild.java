@@ -33,6 +33,7 @@ import org.alfresco.rest.rm.community.model.common.Path;
 import org.alfresco.rest.rm.community.model.record.RecordContent;
 import org.alfresco.utility.model.TestModel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -52,6 +53,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties (ignoreUnknown = true)
 public class UnfiledContainerChild extends TestModel
 {
     /*************************/

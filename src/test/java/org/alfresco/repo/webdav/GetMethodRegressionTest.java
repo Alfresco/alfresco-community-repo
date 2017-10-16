@@ -49,10 +49,12 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -66,6 +68,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
  * @author Dmitry Velichkevich
  */
 @RunWith(MockitoJUnitRunner.class)
+@Category(LuceneTests.class)
 public class GetMethodRegressionTest extends TestCase
 {
     private static final int DOCUMENTS_AMOUNT_FOR_GET_METHOD_TEST = 25;

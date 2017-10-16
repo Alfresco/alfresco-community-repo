@@ -37,7 +37,9 @@ import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -59,6 +61,7 @@ import static org.junit.Assert.*;
  *
  * @author janv
  */
+@Category(LuceneTests.class)
 public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_QUERIES_LSN = "queries/nodes";

@@ -60,9 +60,11 @@ import org.alfresco.service.cmr.quickshare.QuickShareLinkExpiryActionPersister;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -87,6 +89,7 @@ import java.util.Map;
  * @author mbhave
  */
 @SuppressWarnings("deprecation")
+@Category(LuceneTests.class)
 public class SharedLinkApiTest extends AbstractBaseApiTest
 {
     private static final String URL_SHARED_LINKS = "shared-links";

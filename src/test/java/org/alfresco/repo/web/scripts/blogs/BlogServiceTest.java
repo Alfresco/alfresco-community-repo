@@ -49,11 +49,13 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONStringer;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
@@ -67,6 +69,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @author mruflin
  */
+@Category(LuceneTests.class)
 public class BlogServiceTest extends BaseWebScriptTest
 {
     @SuppressWarnings("unused")

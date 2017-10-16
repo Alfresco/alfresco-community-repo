@@ -45,8 +45,10 @@ import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.workflow.api.model.Deployment;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.DeploymentsClient;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.json.simple.JSONObject;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.http.HttpStatus;
 
 /**
@@ -57,6 +59,7 @@ import org.springframework.http.HttpStatus;
  * @author steveglover
  *
  */
+@Category(LuceneTests.class)
 public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
 {   
     protected static HashSet<String> alfrescoPublicDeploymentNames = new HashSet<String>(Arrays.asList(new String[]{

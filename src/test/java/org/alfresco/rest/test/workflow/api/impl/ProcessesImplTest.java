@@ -54,10 +54,12 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.hibernate.dialect.Dialect;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 import junit.framework.TestCase;
@@ -67,6 +69,7 @@ import junit.framework.TestCase;
  * 
  * @author Dmitry Velichkevich
  */
+@Category(LuceneTests.class)
 public class ProcessesImplTest extends TestCase implements RecognizedParamsExtractor
 {
     private static final String[] CONFIG_LOCATIONS = new String[ApplicationContextHelper.CONFIG_LOCATIONS.length + 2];

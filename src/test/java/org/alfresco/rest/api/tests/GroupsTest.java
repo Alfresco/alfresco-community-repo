@@ -41,9 +41,11 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
@@ -55,6 +57,7 @@ import static org.junit.Assert.*;
  *
  * @author cturlica
  */
+@Category(LuceneTests.class)
 public class GroupsTest extends AbstractSingleNetworkSiteTest
 {
     private static final String MEMBER_TYPE_GROUP = "GROUP";

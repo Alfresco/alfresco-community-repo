@@ -28,6 +28,8 @@ package org.alfresco.repo.web.scripts;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -38,6 +40,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @author alex.mukha
  * @since 4.2.4
  */
+@Category(LuceneTests.class)
 public class DeclarativeSpreadsheetWebScriptTest extends BaseWebScriptTest
 {
     private String admin;

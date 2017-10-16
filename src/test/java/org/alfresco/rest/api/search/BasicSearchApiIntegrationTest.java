@@ -35,7 +35,9 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.FolderNode;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -50,6 +52,7 @@ import java.util.Map;
  *
  * @author Gethin James
  */
+@Category(LuceneTests.class)
 public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_SEARCH = "search";

@@ -33,10 +33,13 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(LuceneTests.class)
 public class WherePredicateApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final boolean NOT = true;

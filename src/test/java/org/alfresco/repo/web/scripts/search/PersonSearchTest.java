@@ -32,8 +32,10 @@ import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -44,6 +46,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  *  /alfresco/service/api/search/person?q=* 
  * @author Mark Rogers
  */
+@Category(LuceneTests.class)
 public class PersonSearchTest extends BaseWebScriptTest
 {
     private static Log logger = LogFactory.getLog(PersonSearchTest.class);

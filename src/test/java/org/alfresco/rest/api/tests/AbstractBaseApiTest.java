@@ -60,9 +60,11 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
 
 import java.io.ByteArrayInputStream;
@@ -82,6 +84,7 @@ import java.util.Map;
  * @author janv
  * @author gethin
  */
+@Category(LuceneTests.class)
 public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 {
     public static final String LAST_MODIFIED_HEADER = "Last-Modified";

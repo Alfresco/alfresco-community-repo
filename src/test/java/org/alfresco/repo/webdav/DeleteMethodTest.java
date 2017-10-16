@@ -51,6 +51,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,6 +59,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -69,6 +71,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
  * @author jcule
  *
  */
+@Category(LuceneTests.class)
 public class DeleteMethodTest
 {
     //protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");

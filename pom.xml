@@ -37,6 +37,9 @@
 
 
     <properties>
+        <!-- Set to "Early Access" to add to the version.edition property in version.properties -->
+        <release.availability></release.availability>
+
         <dependency.alfresco-repository.version>6.4</dependency.alfresco-repository.version>
         <dependency.alfresco-remote-api.version>6.2</dependency.alfresco-remote-api.version>
         <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>

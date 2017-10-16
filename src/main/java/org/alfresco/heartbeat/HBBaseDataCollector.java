@@ -32,12 +32,17 @@ import org.alfresco.service.cmr.repository.HBDataCollectorService;
 
 /**
  *
+ * This class is to be extended by HeartBeat data collectors.
+  *
  * @author eknizat
  */
 public abstract class HBBaseDataCollector
 {
     private HBDataCollectorService hbDataCollectorService;
 
+    /**
+     * This method will register this collector with the provided {@link HBDataCollectorService}
+     */
     public void register()
     {
         hbDataCollectorService.registerCollector(this);
@@ -47,6 +52,10 @@ public abstract class HBBaseDataCollector
     {
         this.hbDataCollectorService = hbDataCollectorService;
     }
-    
+
+    /**
+     * This method returns data to be collected.
+     * @return List of data wrapped in {@link HBData}
+     */
     public abstract List<HBData> collectData();
 }

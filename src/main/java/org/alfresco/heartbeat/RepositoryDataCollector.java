@@ -44,6 +44,21 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
+ * This class collects repository data for HeartBeat through multiple collector.
+ * <br>
+ * <b>Collector ID: </b> acs.repository.info
+ * <br>
+ * <b>Data points: </b> repoName, edition, versionMajor, versionMinor, schema
+ *
+ * <br>
+ * <b>Collector ID: </b> acs.repository.usage.system
+ * <br>
+ * <b>Data points: </b> memFree, memMax, memTotal
+ *
+ * <br>
+ * <b>Collector ID: </b> acs.repository.usage.model
+ * <br>
+ * <b>Data points: </b> numOfActiveModels, numOfActiveTypes, numOfActiveAspects
  *
  * @author eknizat
  */

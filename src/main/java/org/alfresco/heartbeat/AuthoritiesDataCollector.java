@@ -34,6 +34,11 @@ import org.apache.commons.logging.LogFactory;
 import java.util.*;
 
 /**
+ * This class collects authorities data for HeartBeat.
+ * <br>
+ * <b>Collector ID:</b> acs.repository.usage.authorities
+ * <br>
+ * <b>Data points:</b> numUsers, numGroups
  *
  * @author eknizat
  */

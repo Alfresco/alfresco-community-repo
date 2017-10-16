@@ -26,11 +26,8 @@
 package org.alfresco.heartbeat;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.security.GeneralSecurityException;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,16 +37,16 @@ import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.dictionary.CustomModelsInfo;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.usage.RepoUsageComponent;
-import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ *
+ * @author eknizat
+ */
 public class RepositoryDataCollector extends HBBaseDataCollector
 {
 
@@ -71,11 +68,6 @@ public class RepositoryDataCollector extends HBBaseDataCollector
     /** DAO for current descriptor. */
     private DescriptorDAO serverDescriptorDAO;
 
-    /** The authority service. */
-    private AuthorityService authorityService;
-
-    private RepoUsageComponent repoUsageComponent;
-
     /** Provides information about custom models */
     private CustomModelService customModelService;
 
@@ -87,16 +79,6 @@ public class RepositoryDataCollector extends HBBaseDataCollector
     public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO)
     {
         this.serverDescriptorDAO = serverDescriptorDAO;
-    }
-
-    public void setAuthorityService(AuthorityService authorityService) 
-    {
-        this.authorityService = authorityService;
-    }
-
-    public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent) 
-    {
-        this.repoUsageComponent = repoUsageComponent;
     }
 
     public void setTransactionService(TransactionService transactionService) 
@@ -127,7 +109,7 @@ public class RepositoryDataCollector extends HBBaseDataCollector
 
         // collect repository info data
         logger.debug("Preparing repository info data...");
-        Map<String, Object> infoValues = new HashMap<String, Object>();
+        Map<String, Object> infoValues = new HashMap<>();
         infoValues.put("repoName", this.staticParameters.get("repoName"));
         infoValues.put("edition", this.staticParameters.get("edition"));
         infoValues.put("versionMajor", this.staticParameters.get("versionMajor"));
@@ -144,7 +126,7 @@ public class RepositoryDataCollector extends HBBaseDataCollector
         // collect repository usage (system) data
         logger.debug("Preparing repository usage (system) data...");
         Runtime runtime = Runtime.getRuntime();
-        Map<String, Object> systemUsageValues = new HashMap<String, Object>();
+        Map<String, Object> systemUsageValues = new HashMap<>();
         systemUsageValues.put("memFree", runtime.freeMemory());
         systemUsageValues.put("memMax", runtime.maxMemory());
         systemUsageValues.put("memTotal", runtime.totalMemory());
@@ -167,7 +149,7 @@ public class RepositoryDataCollector extends HBBaseDataCollector
                     }
                 }, true);
 
-        Map<String, Object> modelUsageValues = new HashMap<String, Object>();
+        Map<String, Object> modelUsageValues = new HashMap<>();
         modelUsageValues.put("numOfActiveModels", new Integer(customModelsInfo.getNumberOfActiveModels()));
         modelUsageValues.put("numOfActiveTypes", new Integer(customModelsInfo.getNumberOfActiveTypes()));
         modelUsageValues.put("numOfActiveAspects", new Integer(customModelsInfo.getNumberOfActiveAspects()));
@@ -196,86 +178,13 @@ public class RepositoryDataCollector extends HBBaseDataCollector
             this.staticParameters = new TreeMap<String, Object>();
 
             // Load up the static parameters
-            final String ip = getLocalIps();
-            this.staticParameters.put("ip", ip);
-            final String uid;
-            final Descriptor currentRepoDescriptor = this.currentRepoDescriptorDAO.getDescriptor();
-            if (currentRepoDescriptor != null)
-            {
-                uid = currentRepoDescriptor.getId();
-                this.staticParameters.put("uid", uid);
-            }
-            else
-            {
-                uid = "Unknown";
-            }
-
             final Descriptor serverDescriptor = this.serverDescriptorDAO.getDescriptor();
             this.staticParameters.put("repoName", serverDescriptor.getName());
             this.staticParameters.put("edition", serverDescriptor.getEdition());
             this.staticParameters.put("versionMajor", serverDescriptor.getVersionMajor());
             this.staticParameters.put("versionMinor", serverDescriptor.getVersionMinor());
             this.staticParameters.put("schema", new Integer(serverDescriptor.getSchema()));
-            this.staticParameters.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                    AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-            this.staticParameters.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                    AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
-
-            if(repoUsageComponent != null)
-            {
-                RepoUsage usage = repoUsageComponent.getUsage();
-
-                if (usage.getUsers() != null)
-                {
-                    this.staticParameters.put("licenseUsers", new Long((usage.getUsers())));
-                }
-            }
 
         }
-    }
-
-    /**
-     * Attempts to get all the local IP addresses of this machine in order to distinguish it from other nodes in the
-     * same network. The machine may use a static IP address in conjunction with a loopback adapter (e.g. to support
-     * Oracle on Windows), so the IP of the default network interface may not be enough to uniquely identify this
-     * machine.
-     *
-     * @return the local IP addresses, separated by the '/' character
-     */
-    private String getLocalIps()
-    {
-        final StringBuilder ip = new StringBuilder(1024);
-        boolean first = true;
-        try
-        {
-            final Enumeration<NetworkInterface> i = NetworkInterface.getNetworkInterfaces();
-            while (i.hasMoreElements())
-            {
-                final NetworkInterface n = i.nextElement();
-                final Enumeration<InetAddress> j = n.getInetAddresses();
-                while (j.hasMoreElements())
-                {
-                    InetAddress a = j.nextElement();
-                    if (a.isLoopbackAddress())
-                    {
-                        continue;
-                    }
-                    if (first)
-                    {
-                        first = false;
-                    }
-                    else
-                    {
-                        ip.append('/');
-                    }
-                    ip.append(a.getHostAddress());
-                }
-            }
-        }
-        catch (final Exception e)
-        {
-            // Ignore
-        }
-        return first ? "127.0.0.1" : ip.toString();
     }
 }

@@ -7,10 +7,14 @@
     <bean id="repositoryDataCollector" class="org.alfresco.heartbeat.RepositoryDataCollector" parent="hbBaseDataCollector" init-method="register">
         <property name="currentRepoDescriptorDAO" ref="currentRepoDescriptorDAO"/>
         <property name="serverDescriptorDAO" ref="serverDescriptorDAO"/>
-        <property name="authorityService" ref="authorityService"/>
-        <property name="repoUsageComponent" ref="repoUsageComponent"/>
         <property name="transactionService" ref="transactionService"/>
         <property name="customModelService" ref="customModelService"/>
+    </bean>
+
+    <!-- HeartBeat authority data collector -->
+    <bean id="authorityDataCollector" class="org.alfresco.heartbeat.AuthoritiesDataCollector" parent="hbBaseDataCollector" init-method="register">
+        <property name="currentRepoDescriptorDAO" ref="currentRepoDescriptorDAO"/>
+        <property name="authorityService" ref="authorityService"/>
     </bean>
 
 </beans>

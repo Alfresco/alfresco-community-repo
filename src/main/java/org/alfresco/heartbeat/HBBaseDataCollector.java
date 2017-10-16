@@ -30,6 +30,10 @@ import java.util.List;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 
+/**
+ *
+ * @author eknizat
+ */
 public abstract class HBBaseDataCollector
 {
     private HBDataCollectorService hbDataCollectorService;

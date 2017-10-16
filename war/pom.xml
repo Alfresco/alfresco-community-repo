@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>content-services-community-ea</artifactId>
+    <artifactId>content-services-community</artifactId>
     <name>Alfresco Content Services Community WAR</name>
     <packaging>war</packaging>
 
     <parent>
         <groupId>org.alfresco</groupId>
-        <artifactId>acs-community-packaging-ea</artifactId>
+        <artifactId>acs-community-packaging</artifactId>
         <version>6.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>

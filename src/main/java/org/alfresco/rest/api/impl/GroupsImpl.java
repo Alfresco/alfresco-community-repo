@@ -58,6 +58,7 @@ import org.alfresco.rest.api.model.GroupMember;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -809,7 +810,15 @@ public class GroupsImpl implements Groups
         }
 
         validateGroupMemberId(groupMemberId);
-        // TODO: Verify if groupMemberId is member of groupId
+
+        // Verify if groupMemberId is member of groupId
+        AuthorityType authorityType = AuthorityType.getAuthorityType(groupMemberId);
+        Set<String> containedAuthorities = authorityService.getContainedAuthorities(authorityType, groupId, true);
+        if (!containedAuthorities.contains(groupMemberId))
+        {
+            throw new NotFoundException(groupMemberId + " is not member of " + groupId);
+        }
+
         authorityService.removeAuthority(groupId, groupMemberId);
     }
 

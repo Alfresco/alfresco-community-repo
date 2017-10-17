@@ -45,19 +45,10 @@
         <installer.manager.version>1.0</installer.manager.version>
         <installer.alfresco-pdf-renderer.version>1.0</installer.alfresco-pdf-renderer.version>
 
-        <!-- Build timestamp for installer file name -->
-        <installer.build.timestamp>${maven.build.timestamp}</installer.build.timestamp>
-        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
-
         <!-- Install builder version -->
         <installer.installbuilder.version>15.10.1</installer.installbuilder.version>
 
-        <!--
-           Set externally as "-ea", "-ga", "-la" or left empty
-           As the releasable artifacts are never published to nexus, the version is affecting only filenames
-        -->
-        <alfresco.release.availability></alfresco.release.availability>
-        <installer.version.name>${project.version}${alfresco.release.availability}</installer.version.name>
+        <installer.version.name>${project.version}</installer.version.name>
         <alfresco.package.name>alfresco-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
     </properties>

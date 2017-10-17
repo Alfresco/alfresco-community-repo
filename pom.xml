@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-super-pom</artifactId>
-        <version>8</version>
+        <version>9</version>
     </parent>
 
     <scm>
@@ -43,7 +43,7 @@
         <dependency.alfresco-data-model.version>6.21</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
-        <dependency.alfresco-hb-data-sender.version>1.0.1</dependency.alfresco-hb-data-sender.version>
+        <dependency.alfresco-hb-data-sender.version>1.0.2</dependency.alfresco-hb-data-sender.version>
 
 
         <dependency.spring.version>3.2.17.RELEASE</dependency.spring.version>

@@ -25,23 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -63,6 +46,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 /**
  * V1 REST API tests for managing Groups
@@ -1794,7 +1782,6 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             // Removing a group that is not a member (REPO-1943)
             {
-                setRequestContext(user1);
                 groupsProxy.deleteGroupMembership(groupB.getId(), personMember.getId(), HttpServletResponse.SC_NOT_FOUND);
             }
 

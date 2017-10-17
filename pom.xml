@@ -304,11 +304,11 @@
 
     <distributionManagement>
         <repository>
-            <id>alfresco-internal</id>
+            <id>alfresco-releases</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/releases</url>
         </repository>
         <snapshotRepository>
-            <id>alfresco-internal-snapshots</id>
+            <id>alfresco-snapshots</id>
             <url>https://artifacts.alfresco.com/nexus/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>

@@ -61,11 +61,14 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Nick Smith
  * @since 3.4.e
  */
+@Category(LuceneTests.class)
 public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServiceIntegrationTest
 {
     private final static String USER_RECREATED = "WFUserRecreated" + GUID.generate();

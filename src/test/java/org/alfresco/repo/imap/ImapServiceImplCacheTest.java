@@ -49,6 +49,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -60,7 +61,7 @@ import com.icegreen.greenmail.store.SimpleStoredMessage;
  * 
  * @author ArsenyKo
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class ImapServiceImplCacheTest extends TestCase
 {
     private static final String USER_NAME = "admin";

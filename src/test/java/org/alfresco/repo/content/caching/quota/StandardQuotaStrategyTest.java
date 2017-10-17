@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.SizeFileComparator;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
@@ -54,12 +55,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
  * Tests for the StandardQuotaStrategy.
  * @author Matt Ward
  */
+@Category(LuceneTests.class)
 public class StandardQuotaStrategyTest
 {
     private static ApplicationContext ctx;

@@ -66,6 +66,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
 
@@ -74,7 +75,7 @@ import org.springframework.util.ResourceUtils;
  * 
  * @author Roy Wetherall, janv
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class DictionaryModelTypeTest extends BaseSpringTest
 {
     /** QNames of the test models */

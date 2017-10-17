@@ -38,6 +38,8 @@ import org.alfresco.service.transaction.TransactionService;
 
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 
@@ -58,6 +60,7 @@ import junit.framework.TestCase;
  * 
  * @author Nick Burch
  */
+@Category(LuceneTests.class)
 public class RepositoryStartStopTest extends TestCase
 {
     private ServiceRegistry serviceRegistry;

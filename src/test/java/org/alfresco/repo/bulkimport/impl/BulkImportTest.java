@@ -329,6 +329,36 @@ public class BulkImportTest extends AbstractBulkImportTests
         });
     }
 
+    @Test
+    // Tests the mimetype is set correctly for .ai and eps files, plus gif (which was working anyway).
+    public void testMNT18275_ai_eps() throws Throwable
+    {
+        NodeRef folderNode = topLevelFolder.getNodeRef();
+        NodeImporter nodeImporter = null;
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport5"));
+
+        BulkImportParameters bulkImportParameters = new BulkImportParameters();
+        bulkImportParameters.setTarget(folderNode);
+        bulkImportParameters.setReplaceExisting(true);
+        bulkImportParameters.setDisableRulesService(true);
+        bulkImportParameters.setBatchSize(40);
+        bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+
+        System.out.println(bulkImporter.getStatus());
+
+        checkFiles(folderNode, null, 0, 3, new ExpectedFile[] {
+                new ExpectedFile("quick.gif", MimetypeMap.MIMETYPE_IMAGE_GIF),
+                new ExpectedFile("Amazing.ai", MimetypeMap.MIMETYPE_APPLICATION_ILLUSTRATOR),
+                new ExpectedFile("quick.eps", MimetypeMap.MIMETYPE_APPLICATION_EPS)
+        },
+        new ExpectedFolder[] {
+        });
+    }
+
     /**
      * MNT-9076: Penultimate version cannot be accessed from Share when uploading using bulkimport
      *
@@ -667,6 +697,39 @@ public class BulkImportTest extends AbstractBulkImportTests
 
          Files.deleteIfExists(destFile);
          Files.deleteIfExists(dest);
+    }
+
+    /**
+     * MNT-18001: Presence of versionLabel in metadata file throws error in bulk importer
+     */
+    @Test
+    public void testImportFilesWithVersionLabel() throws Throwable
+    {
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Get metadata file with versionLabel property
+        NodeRef folderNode = topLevelFolder.getNodeRef();
+        NodeImporter nodeImporter = streamingNodeImporterFactory.getNodeImporter(ResourceUtils.getFile("classpath:bulkimport6"));
+
+        // Set parameters for bulk import: Target space, Disable rule processing, Replace existing files, Batch size:1, Number of threads:1
+        BulkImportParameters bulkImportParameters = new BulkImportParameters();
+        bulkImportParameters.setTarget(folderNode);
+        bulkImportParameters.setDisableRulesService(true);
+        bulkImportParameters.setExistingFileMode(BulkImportParameters.ExistingFileMode.REPLACE);
+        bulkImportParameters.setBatchSize(1);
+        bulkImportParameters.setNumThreads(1);
+
+        bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
+
+        List<FileInfo> files = getFiles(folderNode, null);
+        assertNotNull(files);
+        FileInfo file = files.get(0);
+        assertNotNull(file);
+
+        VersionHistory history = versionService.getVersionHistory(file.getNodeRef());
+        assertEquals(1, bulkImporter.getStatus().getNumberOfContentNodesCreated());
+        assertEquals("Imported file should have 3 versions:", 3, history.getAllVersions().size());
     }
 
     /**

@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
@@ -118,6 +119,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
@@ -165,6 +167,7 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.GUID;
 
@@ -174,6 +177,7 @@ import org.springframework.extensions.webscripts.GUID;
  * @author steveglover
  *
  */
+@Category(LuceneTests.class)
 public class CMISTest
 {
     private static Log logger = LogFactory.getLog(CMISTest.class);
@@ -1753,11 +1757,27 @@ public class CMISTest
             }
         }, CmisVersion.CMIS_1_1);
 
-        List secondaryTypeIds = currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+        List<String> secondaryTypeIds = (List<String>) currentProperties.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
 
+        assertTrue(secondaryTypeIds.contains(aspectName));
+        // We don't actually want to add these! (REPO-2926)
+        final Set<String> sysAspectsToAdd = new HashSet<>(Arrays.asList(
+                "P:sys:undeletable",
+                "P:sys:hidden"));
+        // Pre-condition of further test is that these aspects are not present
+        assertEquals(0, secondaryTypeIds.stream().filter(sysAspectsToAdd::contains).count());
+        // We also want to check that existing sys aspects aren't accidentally removed
+        assertTrue(secondaryTypeIds.contains("P:sys:localized"));
+
+        // Check we can remove an aspect - through its absence
         secondaryTypeIds.remove(aspectName);
+        // Check that attempts to update/add sys:* aspects are ignored
+        secondaryTypeIds.addAll(sysAspectsToAdd);
         final PropertiesImpl newProperties = new PropertiesImpl();
         newProperties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypeIds));
+
+        final String updatedName = "My_new_name_"+UUID.randomUUID().toString();
+        newProperties.replaceProperty(new PropertyStringImpl(PropertyIds.NAME, updatedName));
 
         withCmisService(new CmisServiceCallback<Void>()
         {
@@ -1765,6 +1785,8 @@ public class CMISTest
             public Void execute(CmisService cmisService)
             {
                 Holder<String> latestObjectIdHolder = getHolderOfObjectOfLatestVersion(cmisService, repositoryId, objectIdHolder);
+                // This will result in aspectName being removed
+                // but that shouldn't mean that, for example, a cmis:name prop update gets ignored (MNT-18340)
                 cmisService.updateProperties(repositoryId, latestObjectIdHolder, null, newProperties, null);
                 return null;
             }
@@ -1775,12 +1797,19 @@ public class CMISTest
             @Override
             public Properties execute(CmisService cmisService)
             {
-                Properties properties = cmisService.getProperties(repositoryId, objectIdHolder.getValue(), null, null);
+                Holder<String> latestObjectIdHolder = getHolderOfObjectOfLatestVersion(cmisService, repositoryId, objectIdHolder);
+                Properties properties = cmisService.getProperties(repositoryId, latestObjectIdHolder.getValue(), null, null);
                 return properties;
             }
         }, CmisVersion.CMIS_1_1);
-        secondaryTypeIds = currentProperties1.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
+        secondaryTypeIds = (List<String>) currentProperties1.getProperties().get(PropertyIds.SECONDARY_OBJECT_TYPE_IDS).getValues();
 
+        assertFalse(secondaryTypeIds.contains(aspectName));
+        assertEquals(updatedName, currentProperties1.getProperties().get(PropertyIds.NAME).getFirstValue());
+        // sys aspects must not be added through CMIS (REPO-2926)
+        assertEquals(0, secondaryTypeIds.stream().filter(sysAspectsToAdd::contains).count());
+        // Check pre-existing sys aspects aren't accidentally removed
+        assertTrue(secondaryTypeIds.contains("P:sys:localized"));
     }
 
     /**
@@ -3352,7 +3381,19 @@ public class CMISTest
                         
                         cmisService.updateProperties(repositoryId, new Holder<String>(fileInfo.getNodeRef().toString()), null, properties, null);
                     }
-                    
+                    //This extra check was added due to MNT-16641.
+                    {
+                        PropertiesImpl properties = new PropertiesImpl();
+                        properties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, "P:cm:lockable"));
+
+                        Set<QName> existingAspects = nodeService.getAspects(docs.get(0).getNodeRef());
+                        cmisService.updateProperties(repositoryId,new Holder<String>(docs.get(0).getNodeRef().toString()), null, properties, null);
+                        Set<QName> updatedAspects = nodeService.getAspects(docs.get(0).getNodeRef());
+                        updatedAspects.removeAll(existingAspects);
+
+                        assertEquals(ContentModel.ASPECT_LOCKABLE, updatedAspects.iterator().next());
+
+                    }
                     return repositoryId;
                 }
             }, CmisVersion.CMIS_1_1);
@@ -3658,6 +3699,64 @@ public class CMISTest
 
                         assertEquals(property, Boolean.parseBoolean(pd.getDefaultValue()));
                     }
+
+                    return null;
+                }
+            });
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    @Test
+    public void testCreateDocWithVersioningStateNone() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        try
+        {
+            // get repository id
+            final String repositoryId = withCmisService(new CmisServiceCallback<String>()
+            {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    final String repositoryId = repo.getId();
+                    return repositoryId;
+                }
+            }, CmisVersion.CMIS_1_1);
+
+            final NodeRef documentNodeRef = withCmisService(new CmisServiceCallback<NodeRef>()
+            {
+                @Override
+                public NodeRef execute(CmisService cmisService)
+                {
+                    final PropertiesImpl properties = new PropertiesImpl();
+                    String objectTypeId = "cmis:document";
+                    properties.addProperty(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, objectTypeId));
+                    String fileName = "textFile" + GUID.generate();
+                    properties.addProperty(new PropertyStringImpl(PropertyIds.NAME, fileName));
+                    final ContentStreamImpl contentStream = new ContentStreamImpl(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Simple text plain document");
+
+                    String nodeId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.NONE, null, null);
+                    return new NodeRef(nodeId.substring(0, nodeId.indexOf(';')));
+                }
+            }, CmisVersion.CMIS_1_1);
+
+            // check versioning properties
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
+            {
+                @Override
+                public List<Void> execute() throws Throwable
+                {
+                    assertTrue(nodeService.exists(documentNodeRef));
+                    assertFalse(nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_VERSIONABLE));
 
                     return null;
                 }

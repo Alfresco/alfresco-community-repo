@@ -57,6 +57,8 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -66,6 +68,7 @@ import org.springframework.context.ApplicationContext;
  * @author andyh
  *
  */
+@Category(LuceneTests.class)
 public abstract class BaseCMISTest extends TestCase
 {
     protected ApplicationContext ctx;

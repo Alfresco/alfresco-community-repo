@@ -71,6 +71,7 @@ import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.TemporaryModels;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.codec.binary.Base64;
 import org.joda.time.DateTime;
 import org.junit.Assert;
@@ -79,6 +80,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 import org.safehaus.uuid.UUID;
 import org.safehaus.uuid.UUIDGenerator;
@@ -90,6 +92,7 @@ import org.springframework.context.ApplicationContext;
  * @author Alex Miller
  * @since Cloud/4.2
  */
+@Category(LuceneTests.class)
 public class QuickShareServiceIntegrationTest
 {
     private static final ApplicationContextInit testContext = new ApplicationContextInit();

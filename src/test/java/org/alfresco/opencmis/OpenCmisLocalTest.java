@@ -61,6 +61,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -93,7 +94,7 @@ import org.springframework.context.ApplicationContext;
  * @author Derek Hulley
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class OpenCmisLocalTest extends TestCase
 {
     public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml",

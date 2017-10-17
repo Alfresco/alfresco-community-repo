@@ -33,6 +33,7 @@ import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent.UserNameValidationMode;
 import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,7 +43,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     private Log logger = LogFactory.getLog(AuthenticationServiceImpl.class);
     AuthenticationComponent authenticationComponent;
     TicketComponent ticketComponent;
-    
+
+    /** a serviceInstanceId identifying this unique instance */
+    private String serviceInstanceId;
+
     private String domain;
     private boolean allowsUserCreation = true;
     private boolean allowsUserDeletion = true;
@@ -85,6 +89,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     public AuthenticationServiceImpl()
     {
         super();
+
+        this.serviceInstanceId = GUID.generate();
     }
     
     public void setTicketComponent(TicketComponent ticketComponent)
@@ -124,9 +130,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
             TenantContextHolder.setTenantDomain(tenant);
             if (protectionEnabled)
             {
-                if (protectedUsersCache.get(userName) != null)
+                final String protectedUserKey = getProtectedUserKey(userName);
+                if (protectedUsersCache.get(protectedUserKey) != null)
                 {
-                     protectedUsersCache.remove(userName);
+                     protectedUsersCache.remove(protectedUserKey);
                 }
             }
         }
@@ -148,7 +155,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
         boolean isProtected = false;
         if (protectionEnabled)
         {
-            ProtectedUser protectedUser = protectedUsersCache.get(userName);
+            final String protectedUserKey = getProtectedUserKey(userName);
+            ProtectedUser protectedUser = protectedUsersCache.get(protectedUserKey);
             if (protectedUser != null)
             {
                 long currentTimeStamp = System.currentTimeMillis();
@@ -168,7 +176,8 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     {
         if (protectionEnabled)
         {
-            ProtectedUser protectedUser = protectedUsersCache.get(userName);
+            final String protectedUserKey = getProtectedUserKey(userName);
+            ProtectedUser protectedUser = protectedUsersCache.get(protectedUserKey);
             if (protectedUser == null)
             {
                 protectedUser = new ProtectedUser(userName);
@@ -186,8 +195,16 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
                     }
                 }
             }
-            protectedUsersCache.put(userName, protectedUser);
+            protectedUsersCache.put(protectedUserKey, protectedUser);
         }
+    }
+
+    /**
+     * Creates a key by combining the service instance ID with the username. This are the type of keys maintained by protectedUsersCache map.
+     */
+    public String getProtectedUserKey(String userName)
+    {
+        return serviceInstanceId + "@@" + userName;
     }
 
     public String getCurrentUserName() throws AuthenticationException

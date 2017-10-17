@@ -69,9 +69,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
+@Category(LuceneTests.class)
 public class AbstractReadPermissionTest extends TestCase
 {
     protected static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();

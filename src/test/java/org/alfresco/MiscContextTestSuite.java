@@ -25,19 +25,149 @@
  */
 package org.alfresco;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.springframework.context.ApplicationContext;
 
+/**
+ * Repository project tests using the various application contexts including the minimal context
+ * alfresco/minimal-context.xml but not the main one alfresco/application-context.xml.
+ * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ */
+@RunWith(Categories.class)
+@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
+@Suite.SuiteClasses({
+
+    // ----------------------------------------------------------------------
+    // Minimum context [classpath:alfresco/minimal-context.xml]
+    // ----------------------------------------------------------------------
+
+    // Limits
+    org.alfresco.repo.content.transform.AbstractContentTransformerLimitsTest.class,
+
+    // Transform tests
+    org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest.class,
+    org.alfresco.repo.content.transform.ComplexContentTransformerTest.class,
+    org.alfresco.repo.content.transform.ContentTransformerRegistryTest.class,
+    org.alfresco.repo.content.transform.HtmlParserContentTransformerTest.class,
+    org.alfresco.repo.content.transform.MailContentTransformerTest.class,
+    org.alfresco.repo.content.transform.EMLTransformerTest.class,
+    org.alfresco.repo.content.transform.MediaWikiContentTransformerTest.class,
+    org.alfresco.repo.content.transform.OpenOfficeContentTransformerTest.class,
+    org.alfresco.repo.content.transform.PdfBoxContentTransformerTest.class,
+    org.alfresco.repo.content.transform.PoiContentTransformerTest.class,
+    org.alfresco.repo.content.transform.PoiHssfContentTransformerTest.class,
+    org.alfresco.repo.content.transform.PoiOOXMLContentTransformerTest.class,
+    org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerTest.class,
+    org.alfresco.repo.content.transform.StringExtractingContentTransformerTest.class,
+    org.alfresco.repo.content.transform.TextMiningContentTransformerTest.class,
+    org.alfresco.repo.content.transform.TextToPdfContentTransformerTest.class,
+    org.alfresco.repo.content.transform.TikaAutoContentTransformerTest.class,
+    org.alfresco.repo.content.transform.magick.ImageMagickContentTransformerTest.class,
+    org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest.class,
+    org.alfresco.repo.content.transform.ArchiveContentTransformerTest.class,
+
+    // Metadata tests
+    org.alfresco.repo.content.metadata.DWGMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.HtmlMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.MailMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.MP3MetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.OfficeMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.ConcurrencyPdfBoxMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.PoiMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.TikaAutoMetadataExtracterTest.class,
+
+    org.alfresco.repo.content.metadata.MappingMetadataExtracterTest.class,
+
+    // ----------------------------------------------------------------------
+    // Misc contexts
+    // ----------------------------------------------------------------------
+
+    // [classpath:alfresco/node-locator-context.xml, classpath:test-nodeLocatorServiceImpl-context.xml]
+    org.alfresco.repo.nodelocator.NodeLocatorServiceImplTest.class,
+
+    // [classpath*:alfresco/ibatis/ibatis-test-context.xml, classpath:alfresco/application-context.xml,
+    // classpath:alfresco/test/global-integration-test-context.xml]
+    org.alfresco.repo.domain.query.CannedQueryDAOTest.class,
+    // REPO-2783 only passes on a dirty DB. fails to pass on a clean DB - testConcurrentArchive
+    org.alfresco.repo.node.NodeServiceTest.class,
+
+    // [classpath:alfresco/application-context.xml, classpath:alfresco/minimal-context.xml]
+    org.alfresco.RepositoryStartStopTest.class,
+
+    // [classpath:cachingstore/test-context.xml]
+    org.alfresco.repo.content.caching.FullTest.class,
+
+    // [classpath:cachingstore/test-cleaner-context.xml]
+    org.alfresco.repo.content.caching.cleanup.CachedContentCleanupJobTest.class,
+
+    // [classpath:cachingstore/test-std-quota-context.xml]
+    org.alfresco.repo.content.caching.quota.StandardQuotaStrategyTest.class,
+
+    // [classpath:cachingstore/test-slow-context.xml]
+    org.alfresco.repo.content.caching.test.SlowContentStoreTest.class,
+    org.alfresco.repo.content.caching.test.ConcurrentCachingStoreTest.class,
+
+    // [classpath:org/alfresco/repo/jscript/test-context.xml]
+    org.alfresco.repo.jscript.ScriptBehaviourTest.class,
+
+    // [module/module-component-test-beans.xml]
+    org.alfresco.repo.module.ComponentsTest.class,
+
+    // TODO can we remove this? Was it EOLed?
+    // [classpath:test/alfresco/test-web-publishing-context.xml]
+    org.alfresco.repo.publishing.ChannelServiceImplTest.class,
+    org.alfresco.repo.publishing.PublishingEventHelperTest.class,
+
+    // [alfresco/scheduler-core-context.xml, org/alfresco/util/test-scheduled-jobs-context.xml]
+    org.alfresco.util.CronTriggerBeanTest.class,
+
+    // [alfresco/scheduler-core-context.xml, org/alfresco/heartbeat/test-heartbeat-context.xml]
+    org.alfresco.heartbeat.HeartBeatTest.class,
+
+    // ----------------------------------------------------------------------
+    // Transformer/Rendition contexts
+    //
+    // The following tests can be extracted in a separate test suite
+    // if/when we decide to move the transformations in a separate component
+    // ----------------------------------------------------------------------
+
+    // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
+    // some tests fail locally - on windows
+    org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class,
+
+    // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
+    // classpath:alfresco/test/global-integration-test-context.xml]
+    // this does NOT passes locally
+    org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
+
+    // [alfresco/scheduler-core-context.xml, org/alfresco/heartbeat/test-heartbeat-context.xml]
+    org.alfresco.heartbeat.HeartBeatTest.class,
+})
 public class MiscContextTestSuite
 {
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.minimalContext(suite);
-        AllRepositoryTestsCatalogue.miscContext(suite);
-        // the following tests can be extracted in a separate test suite 
-        // if/when we decide to move the transformations in a separate component
-        AllRepositoryTestsCatalogue.applicationContext_testThumnailContext(suite);
-        return suite;
-    }
+   /**
+    * Asks {@link ApplicationContextHelper} to give us a
+    *  suitable, perhaps cached context for use in our tests
+    */
+   public static ApplicationContext getMinimalContext() {
+      ApplicationContextHelper.setUseLazyLoading(false);
+      ApplicationContextHelper.setNoAutoStart(true);
+      return ApplicationContextHelper.getApplicationContext(
+           new String[] { "classpath:alfresco/minimal-context.xml" }
+      );
+   }
+
+   static
+   {
+       getMinimalContext();
+   }
 }

@@ -36,6 +36,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -46,7 +47,7 @@ import org.springframework.context.ApplicationContext;
  * @author sglover
  * @since 3.4
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class QNameDAOTest extends TestCase
 {
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

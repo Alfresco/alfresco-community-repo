@@ -92,6 +92,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -101,7 +102,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @since 3.3
  */
 @SuppressWarnings("deprecation")
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private static final String WHITE = "ffffff";

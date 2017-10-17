@@ -37,7 +37,10 @@ import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 
+@Category(LuceneTests.class)
 public class VirtualPreferenceServiceExtensionTest extends VirtualizationIntegrationTest
 {
     private static final String DOCUMENTS_FAVOURITES_KEY = "org.alfresco.share.documents.favourites";

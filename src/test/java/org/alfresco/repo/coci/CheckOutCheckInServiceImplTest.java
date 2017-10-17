@@ -1047,6 +1047,29 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
             fail("Lockable aspect should not be copied from the working copy to the original document");
         }
     }
+
+    public void testCanCheckInWhenOriginalHasUndeletableAspect()
+    {
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_UNDELETABLE, null);
+        // Pre-condition of test, original must have sys:undeletable
+        assertTrue(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_UNDELETABLE));
+
+        // Check-out nodeRef
+        NodeRef workingCopy = this.cociService.checkout(
+                this.nodeRef,
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("workingCopy"));
+        assertNotNull(workingCopy);
+
+        // Check that the working copy does not have the sys:undeletable aspect
+        assertFalse(nodeService.hasAspect(workingCopy, ContentModel.ASPECT_UNDELETABLE));
+
+        // Check-in: must work despite original having the sys:undeletable aspect (MNT-18546)
+        Map<String, Serializable> versionProperties = new HashMap<String, Serializable>();
+        versionProperties.put(Version.PROP_DESCRIPTION, "This is a test version");
+        cociService.checkin(workingCopy, versionProperties);
+    }
     
     private NodeRef createFolderWithPermission(NodeRef parent, String username, String permission)
     {

@@ -38,9 +38,11 @@ import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -48,6 +50,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Jamal Kaabi-Mofrad
  */
+@Category(LuceneTests.class)
 public class CustomModelRepoRestartTest
 {
     private CustomModelService customModelService;

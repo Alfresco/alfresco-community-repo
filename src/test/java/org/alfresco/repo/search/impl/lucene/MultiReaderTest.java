@@ -30,7 +30,10 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import junit.framework.TestCase;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 
+@Category(LuceneTests.class)
 public class MultiReaderTest extends TestCase
 {
 

@@ -64,6 +64,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
@@ -91,7 +92,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
-import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -103,7 +104,7 @@ import static org.mockito.Mockito.when;
  * 
  * @author Roy Wetherall
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class SiteServiceImplTest extends BaseAlfrescoSpringTest 
 {
     public static final StoreRef SITE_STORE = new StoreRef("workspace://SpacesStore");
@@ -1167,7 +1168,115 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             // Intentionally empty
         }
     }
-    
+
+    /**
+     * This is an integration test for MNT-18014
+     */
+    public void testMoveFolderStructureWithNonInheritedPermission()
+    {
+        //Login to share as the admin user
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+        // Create 2 sites test1, test2 as admin
+        String test1SiteShortName = "test1" + GUID.generate();
+        String test2SiteShortName = "test2" + GUID.generate();
+        createSite(test1SiteShortName, SiteService.DOCUMENT_LIBRARY, SiteVisibility.PUBLIC);
+        createSite(test2SiteShortName, SiteService.DOCUMENT_LIBRARY, SiteVisibility.PUBLIC);
+
+        SiteInfo test1SiteInfo = this.siteService.getSite(test1SiteShortName);
+        assertNotNull(test1SiteInfo);
+        SiteInfo test2SiteInfo = this.siteService.getSite(test2SiteShortName);
+        assertNotNull(test2SiteInfo);
+
+        // add user1 (USER_ONE) and user2 (USER_TWO) as managers on test1 site (test1SiteInfo)
+        siteService.setMembership(test1SiteShortName, USER_ONE, SiteModel.SITE_MANAGER);
+        siteService.setMembership(test1SiteShortName, USER_TWO, SiteModel.SITE_MANAGER);
+
+        // Give manager role to user1 to test2
+        siteService.setMembership(test2SiteShortName, USER_ONE, SiteModel.SITE_MANAGER);
+
+        // Log in as user2
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
+
+        // In document library of test1, create fol1 containing fol2 containing fol3
+        NodeRef documentLibraryTest1Site = siteService.getContainer(test1SiteShortName, SiteService.DOCUMENT_LIBRARY);
+        assertNotNull(documentLibraryTest1Site);
+        NodeRef fol1 = this.fileFolderService.create(documentLibraryTest1Site, "fol1-" + GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef fol2 = this.fileFolderService.create(fol1, "fol2-" + GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+        NodeRef fol3 = this.fileFolderService.create(fol2, "fol3-" + GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+
+        // Cut inheritance on fol2
+        permissionService.setInheritParentPermissions(fol2, false);
+
+        // this is what happens when called from Share : permissions.post:
+        // var siteManagerAuthority = "GROUP_site_" + location.site + "_SiteManager";
+        // // Insure Site Managers can still manage content.
+        // node.setPermission("SiteManager", siteManagerAuthority);
+        String test1SiteGroupPrefix = siteServiceImpl.getSiteGroup(test1SiteShortName, true);
+        String test1SiteManagerAuthority = test1SiteGroupPrefix + "_" + SiteModel.SITE_MANAGER;
+        permissionService.setPermission(fol2, test1SiteManagerAuthority, SiteModel.SITE_MANAGER, true);
+
+        // Log in as user1, go to site test1
+        AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
+
+        // Check that user1 can see fol1 fol2 fol3
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(documentLibraryTest1Site);
+        assertEquals("Size should be 1", 1, childAssocs.size());
+        assertTrue("Folder name should start with fol1", getFirstName(childAssocs).startsWith("fol1"));
+        childAssocs = nodeService.getChildAssocs(childAssocs.get(0).getChildRef());
+        assertEquals("Size should be 1", 1, childAssocs.size());
+        assertTrue("Folder name should start with fol2", getFirstName(childAssocs).startsWith("fol2"));
+        childAssocs = nodeService.getChildAssocs(childAssocs.get(0).getChildRef());
+        assertEquals("Size should be 1", 1, childAssocs.size());
+        assertTrue("Folder name should start with fol3", getFirstName(childAssocs).startsWith("fol3"));
+
+        NodeRef documentLibraryTest2Site = siteService.getContainer(test2SiteShortName, SiteService.DOCUMENT_LIBRARY);
+        assertNotNull(documentLibraryTest2Site);
+        childAssocs = nodeService.getChildAssocs(documentLibraryTest2Site);
+        assertTrue("Folder should be empty.", childAssocs.isEmpty());
+
+        // Move fol1 to site test2
+        ChildAssociationRef childAssociationRef = nodeService.moveNode(fol1, documentLibraryTest2Site, ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, GUID.generate()));
+
+        // This is what Share does:
+        // move the node
+        //result.success = fileNode.move(parent, destNode);
+        //
+        //if (result.success)
+        //{
+        //    // If this was an inter-site move, we'll need to clean up the permissions on the node
+        //    if ((fromSite) && (String(fromSite) !== String(fileNode.siteShortName)))
+        //    {
+        //        siteService.cleanSitePermissions(fileNode);
+        //    }
+        //}
+        siteService.cleanSitePermissions(fol1, test2SiteInfo);
+
+        childAssocs = nodeService.getChildAssocs(documentLibraryTest1Site);
+        assertTrue("test1Site document library should be empty.", childAssocs.isEmpty());
+
+        assertFalse("After the move the folder should keep the inherit permission value(false).",
+                permissionService.getInheritParentPermissions(fol2));
+
+        // Go to the site test2's document library and click on fol1
+        // user1 is able to see the contents of fol1
+        childAssocs = nodeService.getChildAssocs(documentLibraryTest2Site);
+        assertEquals("Size should be 1", 1, childAssocs.size());
+        assertTrue("Folder name should start with fol1", getFirstName(childAssocs).startsWith("fol1"));
+        childAssocs = nodeService.getChildAssocs(childAssocs.get(0).getChildRef());
+        assertEquals("Size should be 1", 1, childAssocs.size());
+        assertTrue("Folder name should start with fol2", getFirstName(childAssocs).startsWith("fol2"));
+        childAssocs = nodeService.getChildAssocs(childAssocs.get(0).getChildRef());
+        assertEquals("Size should be 1", 1, childAssocs.size());
+        assertTrue("Folder name should start with fol3", getFirstName(childAssocs).startsWith("fol3"));
+    }
+
+    private String getFirstName(List<ChildAssociationRef> childAssocs)
+    {
+        return nodeService.getProperties(childAssocs.get(0).getChildRef()).get(ContentModel.PROP_NAME).toString();
+    }
+
     public void testDeleteSite()
     {
         @SuppressWarnings("deprecation")

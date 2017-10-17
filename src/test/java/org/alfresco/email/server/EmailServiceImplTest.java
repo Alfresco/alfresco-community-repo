@@ -65,6 +65,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,7 +79,7 @@ import com.sun.mail.smtp.SMTPMessage;
  * @author mrogers
  *
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class EmailServiceImplTest extends TestCase 
 {
     /**

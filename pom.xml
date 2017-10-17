@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-repository</artifactId>
     <name>Alfresco Repository</name>
-    <version>6.7-SNAPSHOT</version>
+    <version>6.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -38,9 +38,9 @@
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
-        <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>6.14</dependency.alfresco-core.version>
         <dependency.alfresco-greenmail.version>6.0</dependency.alfresco-greenmail.version>
-        <dependency.alfresco-data-model.version>6.18</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>6.21</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-hb-data-sender.version>1.0.1</dependency.alfresco-hb-data-sender.version>
@@ -56,6 +56,8 @@
         <dependency.activiti-engine.version>5.22.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.22.0</dependency.activiti.version>
         <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
+        <dependency.mysql.version>5.1.40</dependency.mysql.version>
+        <dependency.mariadb.version>2.0.1</dependency.mariadb.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
 
     </properties>
@@ -780,6 +782,11 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-data-model</artifactId>
+            <version>${dependency.alfresco-data-model.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-legacy-lucene</artifactId>
             <version>${dependency.alfresco-legacy-lucene.version}</version>
             <classifier>tests</classifier>
@@ -795,6 +802,12 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${dependency.mysql.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>${dependency.mariadb.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

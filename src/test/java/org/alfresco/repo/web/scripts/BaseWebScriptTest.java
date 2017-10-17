@@ -40,6 +40,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.web.scripts.servlet.LocalTestRunAsAuthenticatorFactory;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethod;
@@ -52,6 +53,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -62,6 +64,7 @@ import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFac
  * 
  * @author Roy Wetherall
  */
+@Category(LuceneTests.class)
 public abstract class BaseWebScriptTest extends TestCase
 {
     // Test Listener

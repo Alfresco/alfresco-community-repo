@@ -72,12 +72,15 @@ import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Nick Smith
  * @author Frederik Heremans
  * @since 3.4.e
  */
+@Category(LuceneTests.class)
 public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringTest
 {
     private static final String XML = MimetypeMap.MIMETYPE_XML;

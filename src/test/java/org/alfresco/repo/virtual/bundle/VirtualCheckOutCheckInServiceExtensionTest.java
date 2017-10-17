@@ -44,9 +44,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+@Category(LuceneTests.class)
 public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIntegrationTest
 {
     private static final String PROP_VERSION_LABEL_3 = "1.0";

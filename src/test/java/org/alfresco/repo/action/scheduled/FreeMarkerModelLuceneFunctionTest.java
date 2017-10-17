@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
@@ -49,7 +50,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  * 
  * @author Andy Hind
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class FreeMarkerModelLuceneFunctionTest extends TestCase
 {
     //private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sssZ");

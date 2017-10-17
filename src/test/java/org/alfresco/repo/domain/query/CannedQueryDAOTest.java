@@ -43,6 +43,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
@@ -58,7 +59,7 @@ import org.junit.runners.MethodSorters;
  * @since 3.2
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class CannedQueryDAOTest
 {
     private static final String QUERY_NS = "alfresco.query.test";

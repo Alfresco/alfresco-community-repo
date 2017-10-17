@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -56,7 +57,7 @@ import org.w3c.dom.NodeList;
  * @author Brian
  *
  */
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class XSLTFunctionsTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTFunctionsTest.class);

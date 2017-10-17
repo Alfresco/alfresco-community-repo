@@ -61,6 +61,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -71,7 +72,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author janv
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class RepoAdminServiceImplTest extends TestCase
 {
     private static Log logger = LogFactory.getLog(RepoAdminServiceImplTest.class);

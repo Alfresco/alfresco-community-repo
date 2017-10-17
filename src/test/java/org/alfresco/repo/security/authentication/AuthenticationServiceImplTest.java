@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -57,6 +58,7 @@ public class AuthenticationServiceImplTest
     private SimpleCache<String, ProtectedUser> cache;
     private TicketComponent ticketComponent = mock(TicketComponent.class);
     private AuthenticationServiceImpl authService;
+    private AuthenticationServiceImpl authService2;
 
     private static final String USERNAME = "username";
     private static final char[] PASSWORD = "password".toCharArray();
@@ -69,6 +71,11 @@ public class AuthenticationServiceImplTest
         authService.setTicketComponent(ticketComponent);
         cache = new MockCache<>();
         authService.setProtectedUsersCache(cache);
+
+        authService2 = new AuthenticationServiceImpl();
+        authService2.setAuthenticationComponent(authenticationComponent);
+        authService2.setTicketComponent(ticketComponent);
+        authService2.setProtectedUsersCache(cache);
     }
 
     @Test
@@ -104,7 +111,9 @@ public class AuthenticationServiceImplTest
         }
         verify(authenticationComponent, times(limit)).authenticate(USERNAME, PASSWORD);
         assertTrue("The user should be protected.", authService.isUserProtected(USERNAME));
-        assertEquals("The number of recorded logins did not match.", attempts, cache.get(USERNAME).getNumLogins());
+
+        final String protectedUserKey = authService.getProtectedUserKey(USERNAME);
+        assertEquals("The number of recorded logins did not match.", attempts, cache.get(protectedUserKey).getNumLogins());
 
         // test that the protection is still in place even if the password is correct
         doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
@@ -118,7 +127,7 @@ public class AuthenticationServiceImplTest
             // normal
         }
         verify(authenticationComponent, times(limit)).authenticate(USERNAME, PASSWORD);
-        assertEquals("The number of recorded logins did not match.", attempts + 1, cache.get(USERNAME).getNumLogins());
+        assertEquals("The number of recorded logins did not match.", attempts + 1, cache.get(protectedUserKey).getNumLogins());
     }
 
     @Test
@@ -145,11 +154,13 @@ public class AuthenticationServiceImplTest
             }
         }
         assertTrue("The user should be protected.", authService.isUserProtected(USERNAME));
-        assertEquals("The number of recorded logins did not match.", attempts, cache.get(USERNAME).getNumLogins());
+
+        final String protectedUserKey = authService.getProtectedUserKey(USERNAME);
+        assertEquals("The number of recorded logins did not match.", attempts, cache.get(protectedUserKey).getNumLogins());
         Thread.sleep(timeLimit*1000 + 1);
         assertFalse("The user should not be protected any more.", authService.isUserProtected(USERNAME));
         assertEquals("The number of recorded logins should stay the same after protection period ends.",
-                attempts, cache.get(USERNAME).getNumLogins());
+                attempts, cache.get(protectedUserKey).getNumLogins());
 
         doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
         try
@@ -161,8 +172,77 @@ public class AuthenticationServiceImplTest
             fail("An " + AuthenticationException.class.getName() + " should not be thrown.");
         }
         assertNull("The user should be removed from the cache after successful login.",
-                cache.get(USERNAME));
+                cache.get(protectedUserKey));
     }
+
+    @Test
+    public void testAuthChainWorksIfFirstAuthFails() throws Exception
+    {
+        int timeLimit = 1;
+        int attempts = 2;
+        authService.setProtectionPeriodSeconds(timeLimit);
+        authService.setProtectionLimit(attempts);
+        authService.setProtectionEnabled(true);
+
+        authService2.setProtectionPeriodSeconds(timeLimit);
+        authService2.setProtectionLimit(attempts);
+        authService2.setProtectionEnabled(true);
+
+        AuthenticationServiceImpl[] authenticationChain = {authService, authService2};
+
+        doThrow(new AuthenticationException("Bad password"))
+                .when(authenticationComponent).authenticate(USERNAME, PASSWORD);
+
+        // Authentication fails on first run.
+        for (int i = 0; i < attempts; i++) {
+            for (AuthenticationServiceImpl authentication : authenticationChain) {
+                try {
+                    authentication.authenticate(USERNAME, PASSWORD);
+                    fail("An " + AuthenticationException.class.getName() + " should be thrown.");
+                } catch (AuthenticationException ae) {
+                    // normal
+                }
+            }
+        }
+
+        for (AuthenticationServiceImpl authentication : authenticationChain)
+        {
+            assertTrue("The user should be protected.", authentication.isUserProtected(USERNAME));
+        }
+
+        Thread.sleep(timeLimit*1000 + 1);
+
+        for (AuthenticationServiceImpl authentication : authenticationChain)
+        {
+            assertFalse("The user should not be protected any more.", authentication.isUserProtected(USERNAME));
+        }
+
+        // Authentication always fails on first authentication service in the chain.
+        try
+        {
+            authenticationChain[0].authenticate(USERNAME, PASSWORD);
+            fail("An " + AuthenticationException.class.getName() + " should be thrown.");
+        } catch (AuthenticationException ae) {
+            // normal
+        }
+
+        // Authentication should succeed on second authentication service in the chain.
+        doNothing().when(authenticationComponent).authenticate(USERNAME, PASSWORD);
+        try
+        {
+            authenticationChain[1].authenticate(USERNAME, PASSWORD);
+        }
+        catch (AuthenticationException ae)
+        {
+            fail("An " + AuthenticationException.class.getName() + " should not be thrown.");
+        }
+
+        assertNotNull("The user should not be removed from the cache for the corresponding authorization service after a failed login.",
+                cache.get(authenticationChain[0].getProtectedUserKey(USERNAME)));
+        assertNull("The user should be removed from the cache for the corresponding authorization service after successful login.",
+                cache.get(authenticationChain[1].getProtectedUserKey(USERNAME)));
+    }
+
 
     @Test
     public void testProtectionDisabledBadPassword()

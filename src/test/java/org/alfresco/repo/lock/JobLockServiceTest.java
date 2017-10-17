@@ -36,6 +36,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -54,7 +55,7 @@ import org.springframework.context.ApplicationContext;
  * @since 3.2
  */
 @SuppressWarnings("unused")
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class JobLockServiceTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/JobLockServiceTest";

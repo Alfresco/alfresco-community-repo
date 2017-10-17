@@ -36,8 +36,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.MiscContextTestSuite;
 import org.alfresco.repo.content.AbstractContentReader;
-import org.alfresco.repo.content.ContentMinimalContextTestSuite;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -67,7 +67,7 @@ public class AbstractContentTransformerLimitsTest
     @Before
     public void setUp() throws Exception
     {
-        ApplicationContext ctx = ContentMinimalContextTestSuite.getContext();
+        ApplicationContext ctx = MiscContextTestSuite.getMinimalContext();
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         MimetypeService mimetypeService = serviceRegistry.getMimetypeService();
         TransformerDebug transformerDebug = (TransformerDebug) ctx.getBean("transformerDebug");

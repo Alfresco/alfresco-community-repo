@@ -33,10 +33,12 @@ import static org.junit.Assert.fail;
 import org.alfresco.repo.client.config.ClientAppConfig.ClientApp;
 import org.alfresco.service.cmr.repository.TemporalSourceOptions;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -48,6 +50,7 @@ import java.util.Map;
  *
  * @author Jamal Kaabi-Mofrad
  */
+@Category(LuceneTests.class)
 public class ClientAppConfigTest
 {
     private ApplicationContext context;

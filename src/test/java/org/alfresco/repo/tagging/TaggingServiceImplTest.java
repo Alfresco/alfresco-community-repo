@@ -83,6 +83,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -98,7 +99,7 @@ import org.junit.runners.MethodSorters;
  * @author Nick Burch
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class TaggingServiceImplTest extends TestCase
 {
    private static ConfigurableApplicationContext ctx = 

@@ -25,21 +25,18 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.license.LicenseDescriptor;
 import org.alfresco.service.license.LicenseService;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.Arrays;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,7 +53,6 @@ public class HeartBeatTest
     private ApplicationContext context;
 
     LicenseService mockLicenseService;
-    HBDataSenderService mockDataSenderService;
     HBDataCollectorService mockDataCollectorService;
 
     @Before

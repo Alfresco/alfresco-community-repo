@@ -49,6 +49,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.experimental.categories.Category;
@@ -65,7 +66,7 @@ import org.springframework.util.ResourceUtils;
  * @author Derek Hulley
  * @since 3.4
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class AuditWebScriptTest extends BaseWebScriptTest
 {
     private static final String APP_REPOTEST_NAME = "AlfrescoRepositoryTest";

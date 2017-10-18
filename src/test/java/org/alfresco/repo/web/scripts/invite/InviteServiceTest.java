@@ -59,10 +59,12 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
@@ -77,6 +79,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  *
  * @author Glen Johnson at Alfresco dot com
  */
+@Category(LuceneTests.class)
 public class InviteServiceTest extends BaseWebScriptTest
 {
     // member variables for service instances

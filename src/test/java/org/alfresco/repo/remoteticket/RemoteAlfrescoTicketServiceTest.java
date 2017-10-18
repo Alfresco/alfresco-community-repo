@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 
 /**
  * Tests for {@link RemoteAlfrescoTicketServiceImpl}, which work by
@@ -53,6 +55,7 @@ import org.alfresco.util.PropertyMap;
  * @author Nick Burch
  * @since 4.0.2
  */
+@Category(LuceneTests.class)
 public class RemoteAlfrescoTicketServiceTest extends BaseWebScriptTest
 {
     private static final String TEST_REMOTE_SYSTEM_ID = "testingRemoteSystem";

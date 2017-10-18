@@ -53,9 +53,11 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -68,6 +70,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @author Roy Wetherall
  */
+@Category(LuceneTests.class)
 public class SiteServiceTest extends AbstractSiteServiceTest
 {    
     private SiteService siteService;

@@ -1842,6 +1842,10 @@ public class TestFavourites extends AbstractBaseApiTest
         file1Favourite = favouritesProxy.createFavourite(person12Id, file1Favourite, includePath);
         FavouriteNode node = ((FileFavouriteTarget) file1Favourite.getTarget()).getDocument();
         assertPathInfo(node.getPath(), "/Company Home/Sites/" + publicSite.getSiteId() + "/documentLibrary", true);
+        // Check the basic properties (REPO-2827)
+        assertEquals("Test Doc1", node.getName());
+        assertEquals("Test Doc1 Title", node.getTitle());
+        assertEquals("Test Doc1 Description", node.getDescription());
 
 
         // Favourite the doc (Test Doc2)

@@ -32,7 +32,9 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +53,7 @@ import static org.junit.Assert.*;
  *
  * @author janv
  */
+@Category(LuceneTests.class)
 public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_QUERIES_LSS = "queries/sites";

@@ -67,9 +67,11 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.alfresco.util.ISO8601DateFormat;
 import org.springframework.extensions.webscripts.Status;
@@ -84,6 +86,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @author Frederik Heremans
  * @since 3.4.e
  */
+@Category(LuceneTests.class)
 public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
 {
     protected final static String USER1 = "Bob" + GUID.generate();

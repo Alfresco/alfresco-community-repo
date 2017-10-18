@@ -54,12 +54,14 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -70,6 +72,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
  *
  * @author viachaslau.tsikhanovich, alex.mukha
  */
+@Category(LuceneTests.class)
 public class WebDAVonContentUpdateTest
 {
     private static ApplicationContext ctx;

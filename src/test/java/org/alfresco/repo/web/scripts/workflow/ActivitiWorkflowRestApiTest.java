@@ -31,12 +31,15 @@ import java.util.HashMap;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Nick Smith
  * @author Frederik Heremans
  * @since 3.4.e
  */
+@Category(LuceneTests.class)
 public class ActivitiWorkflowRestApiTest extends AbstractWorkflowRestApiTest 
 {
     private static final String ADHOC_WORKFLOW_DEFINITION_NAME = "activiti$activitiAdhoc";

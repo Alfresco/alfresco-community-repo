@@ -97,14 +97,15 @@ public class PeopleImpl implements People
             NamespaceService.SYSTEM_MODEL_1_0_URI,
             "http://www.alfresco.org/model/user/1.0",
             NamespaceService.CONTENT_MODEL_1_0_URI);
-	private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
-	private static final List<QName> EXCLUDED_PROPS = Arrays.asList();
+    private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
+    private static final List<QName> EXCLUDED_PROPS = Arrays.asList();
     private static final int USERNAME_MAXLENGTH = 100;
     private static final String[] RESERVED_AUTHORITY_PREFIXES =
     {
             PermissionService.GROUP_PREFIX,
             PermissionService.ROLE_PREFIX
     };
+    private static final char[] illegalCharacters = {'/', '\\', '\r', '\n'};
 
     protected Nodes nodes;
 	protected Sites sites;
@@ -544,10 +545,10 @@ public class PeopleImpl implements People
         return person;
     }
 
-	@Override
-	public Person create(Person person)
-	{
-		validateCreatePersonData(person);
+    @Override
+    public Person create(Person person)
+    {
+        validateCreatePersonData(person);
 
         if (! isAdminAuthority())
         {
@@ -556,15 +557,15 @@ public class PeopleImpl implements People
             throw new PermissionDeniedException();
         }
 
-		// Unfortunately PersonService.createPerson(...) only throws an AlfrescoRuntimeException
-		// rather than a more specific exception and does not use a message ID either, so there's
-		// no sensible way to know that it was thrown due to the user already existing - hence this check here.
-		if (personService.personExists(person.getUserName()))
-		{
-			throw new ConstraintViolatedException("Person '"+person.getUserName()+"' already exists.");
-		}
+        // Unfortunately PersonService.createPerson(...) only throws an AlfrescoRuntimeException
+        // rather than a more specific exception and does not use a message ID either, so there's
+        // no sensible way to know that it was thrown due to the user already existing - hence this check here.
+        if (personService.personExists(person.getUserName()))
+        {
+            throw new ConstraintViolatedException("Person '" + person.getUserName() + "' already exists.");
+        }
 
-		// set enabled default value true
+        // set enabled default value true
         if (person.isEnabled() == null)
         {
             person.setEnabled(true);
@@ -627,17 +628,17 @@ public class PeopleImpl implements People
         });
     }
 
-	private void validateCreatePersonData(Person person)
-	{
-	    // Mandatory field checks first
-		checkRequiredField("id", person.getUserName());
-		checkRequiredField("firstName", person.getFirstName());
-		checkRequiredField("email", person.getEmail());
-		checkRequiredField("password", person.getPassword());
+    private void validateCreatePersonData(Person person)
+    {
+        // Mandatory field checks first
+        checkRequiredField("id", person.getUserName());
+        checkRequiredField("firstName", person.getFirstName());
+        checkRequiredField("email", person.getEmail());
+        checkRequiredField("password", person.getPassword());
 
         validateUsername(person.getUserName());
         validateNamespaces(person.getAspectNames(), person.getProperties());
-	}
+    }
 
     private void validateUsername(String username)
     {
@@ -646,9 +647,12 @@ public class PeopleImpl implements People
             throw new InvalidArgumentException("Username exceeds max length of " + USERNAME_MAXLENGTH + " characters.");
         }
 
-        if (username.indexOf('/') != -1)
+        for (char illegalCharacter : illegalCharacters)
         {
-            throw new IllegalArgumentException("Username contains characters that are not permitted.");
+            if (username.indexOf(illegalCharacter) != -1)
+            {
+                throw new IllegalArgumentException("Username contains characters that are not permitted: "+username.charAt(username.indexOf(illegalCharacter)));
+            }
         }
 
         for (String prefix : RESERVED_AUTHORITY_PREFIXES)

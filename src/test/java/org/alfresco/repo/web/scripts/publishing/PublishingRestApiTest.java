@@ -113,9 +113,11 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.URLEncoder;
@@ -128,6 +130,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @author Nick Smith
  * @since 4.0
  */
+@Category(LuceneTests.class)
 public class PublishingRestApiTest extends BaseWebScriptTest
 {
     private static final String publishPdfType = "publishPdfForTest";

@@ -55,10 +55,12 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -73,6 +75,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
  * @author Matt Ward
  */
 @RunWith(MockitoJUnitRunner.class)
+@Category(LuceneTests.class)
 public class MoveMethodTest
 {
     private static ApplicationContext ctx;

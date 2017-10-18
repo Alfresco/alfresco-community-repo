@@ -43,11 +43,13 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.sun.star.lang.IllegalArgumentException;
+import org.junit.experimental.categories.Category;
 
 /**
 * V1 REST API tests for pre-defined 'live' search Queries on People
@@ -58,6 +60,7 @@ import com.sun.star.lang.IllegalArgumentException;
  *
  * @author Alan Davis
  */
+@Category(LuceneTests.class)
 public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_QUERIES_LSP = "queries/people";

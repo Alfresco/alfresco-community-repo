@@ -107,6 +107,13 @@ public class AspectSupport implements DBQueryBuilderComponent
         DBQueryBuilderPredicatePartCommand command;
         switch(joinType)
         {
+            case LEFT:
+            case RIGHT:
+                command = new DBQueryBuilderPredicatePartCommand();
+                command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
+                command.setType(DBQueryBuilderPredicatePartCommandType.NP_MATCHES);
+                predicatePartCommands.add(command);
+                break;
             case NONE:
             case INNER:
             default:
@@ -122,13 +129,6 @@ public class AspectSupport implements DBQueryBuilderComponent
                 {
                     command.setValues(new Long[]{-1l});
                 }
-                predicatePartCommands.add(command);
-                break;
-            case LEFT:
-            case RIGHT:
-                command = new DBQueryBuilderPredicatePartCommand();
-                command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
-                command.setType(DBQueryBuilderPredicatePartCommandType.NP_MATCHES);
                 predicatePartCommands.add(command);
                 break;
         }

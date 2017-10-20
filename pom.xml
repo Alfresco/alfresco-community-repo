@@ -37,11 +37,14 @@
 
 
     <properties>
-        <dependency.alfresco-repository.version>6.4</dependency.alfresco-repository.version>
-        <dependency.alfresco-remote-api.version>6.2</dependency.alfresco-remote-api.version>
+        <!-- Set to "Community Early Access" to add to the version.edition property in version.properties -->
+        <version.edition>Community</version.edition>
+
+        <dependency.alfresco-repository.version>6.8</dependency.alfresco-repository.version>
+        <dependency.alfresco-remote-api.version>6.3</dependency.alfresco-remote-api.version>
         <dependency.alfresco-trashcan-cleaner.version>2.2</dependency.alfresco-trashcan-cleaner.version>
-        <dependency.alfresco-core.version>6.13</dependency.alfresco-core.version>
-        <dependency.alfresco-data-model.version>6.19</dependency.alfresco-data-model.version>
+        <dependency.alfresco-core.version>6.14</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>6.21</dependency.alfresco-data-model.version>
         <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>

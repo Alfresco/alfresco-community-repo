@@ -37,8 +37,8 @@
 
 
     <properties>
-        <!-- Set to " Early Access" to add to the version.edition property in version.properties -->
-        <release.availability />
+        <!-- Set to "Community Early Access" to add to the version.edition property in version.properties -->
+        <version.edition>Community</version.edition>
 
         <dependency.alfresco-repository.version>6.8</dependency.alfresco-repository.version>
         <dependency.alfresco-remote-api.version>6.3</dependency.alfresco-remote-api.version>

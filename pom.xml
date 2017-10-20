@@ -37,7 +37,7 @@
 
 
     <properties>
-        <!-- Set to "Early Access" to add to the version.edition property in version.properties -->
+        <!-- Set to " Early Access" to add to the version.edition property in version.properties -->
         <release.availability />
 
         <dependency.alfresco-repository.version>6.8</dependency.alfresco-repository.version>

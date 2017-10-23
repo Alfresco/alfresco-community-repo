@@ -44,9 +44,11 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -54,6 +56,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Matt Ward
  */
+@Category(LuceneTests.class)
 public class FullTest
 {
     private static ApplicationContext ctx;

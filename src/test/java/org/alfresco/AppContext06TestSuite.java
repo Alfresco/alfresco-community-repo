@@ -25,15 +25,36 @@
  */
 package org.alfresco;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class AppContext06TestSuite extends TestSuite
+/**
+ * Repository project tests using the main context alfresco/application-context.xml.
+ * To balance test jobs tests using this context have been split into multiple test suites.
+ * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ */
+@RunWith(Categories.class)
+@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
+@Suite.SuiteClasses({
+    org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
+    org.alfresco.repo.tagging.TaggingServiceImplTest.class,
+    org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,
+    org.alfresco.repo.transaction.RetryingTransactionHelperTest.class,
+    org.alfresco.repo.transaction.TransactionAwareSingletonTest.class,
+    org.alfresco.repo.transaction.TransactionServiceImplTest.class,
+    org.alfresco.repo.oauth1.OAuth1CredentialsStoreServiceTest.class,
+    org.alfresco.repo.oauth2.OAuth2CredentialsStoreServiceTest.class,
+    org.alfresco.repo.template.TemplateServiceImplTest.class,
+    org.alfresco.repo.tenant.MultiTServiceImplTest.class,
+    org.alfresco.repo.search.SearcherComponentTest.class,
+    org.alfresco.repo.search.impl.lucene.ADMLuceneCategoryTest.class,
+    org.alfresco.repo.search.impl.lucene.ADMLuceneTest.class,
+    org.alfresco.repo.blog.BlogServiceImplTest.class,
+    org.alfresco.heartbeat.RepositoryDataCollectorTest.class,
+})
+public class AppContext06TestSuite
 {
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_06(suite);
-        return suite;
-    }
 }

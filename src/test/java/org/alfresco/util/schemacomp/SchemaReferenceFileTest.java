@@ -34,6 +34,7 @@ import java.io.PrintWriter;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +56,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @see DbToXML
  * @author Matt Ward
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class SchemaReferenceFileTest
 {
     private ClassPathXmlApplicationContext ctx;

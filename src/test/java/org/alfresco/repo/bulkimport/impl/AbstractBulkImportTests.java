@@ -48,9 +48,11 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 import javax.transaction.HeuristicMixedException;
@@ -74,6 +76,7 @@ import static org.junit.Assert.fail;
 /**
  * @since 4.0
  */
+@Category(LuceneTests.class)
 public class AbstractBulkImportTests
 {
     protected static ApplicationContext ctx;

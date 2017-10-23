@@ -33,8 +33,11 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.alfresco.repo.bulkimport.MetadataLoader;
 import org.alfresco.repo.bulkimport.impl.FileUtils;
@@ -97,6 +100,15 @@ public final class XmlPropertiesFileMetadataLoader extends AbstractMapBasedMetad
 {
     private final static Log log = LogFactory.getLog(XmlPropertiesFileMetadataLoader.class);
     private final static String METADATA_FILE_EXTENSION = "properties.xml";
+    // MNT-18001
+    // list of properties to be ignored from the metadata files
+    private final Set<String> protectedProperties = new HashSet<>();
+
+    public void setProtectedProperties(List<String> protectedProperties)
+    {
+        this.protectedProperties.clear();
+        this.protectedProperties.addAll(protectedProperties);
+    }
     
     public XmlPropertiesFileMetadataLoader(final ServiceRegistry serviceRegistry)
     {
@@ -121,6 +133,9 @@ public final class XmlPropertiesFileMetadataLoader extends AbstractMapBasedMetad
             Properties props = new Properties();
             props.loadFromXML(new BufferedInputStream(Files.newInputStream(metadataFile)));
             result = new HashMap<String,Serializable>((Map)props);
+
+            // MNT-18001
+            removeProtectedProperties(result);
         }
         catch (final IOException ioe)
         {
@@ -130,4 +145,13 @@ public final class XmlPropertiesFileMetadataLoader extends AbstractMapBasedMetad
         return(result);
     }
 
+    /**
+     * Removes protected properties from the map supplied
+     *
+     * @param props Map with the properties from metadata file
+     */
+    private void removeProtectedProperties(Map<String,Serializable> props)
+    {
+        props.keySet().removeAll(protectedProperties);
+    }
 }

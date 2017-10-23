@@ -30,17 +30,20 @@ import static org.junit.Assert.*;
 
 import java.text.MessageFormat;
 
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.AfterClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.junit.BeforeClass;
 import static org.hamcrest.CoreMatchers.is;
 
+@Category(LuceneTests.class)
 public class FullTextSearchIndexerBootstrapBeanTest
 {
     private FullTextSearchIndexerBootstrapBean bean;

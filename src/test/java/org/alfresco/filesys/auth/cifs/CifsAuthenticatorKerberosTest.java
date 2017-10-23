@@ -44,13 +44,16 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 
+@Category(LuceneTests.class)
 public class CifsAuthenticatorKerberosTest
 {
     public static final String[] CONFIG_LOCATIONS = new String[] { "classpath:alfresco/application-context.xml",

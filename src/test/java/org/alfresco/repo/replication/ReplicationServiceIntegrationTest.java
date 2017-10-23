@@ -86,6 +86,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -97,7 +98,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  *  to run async actions and know how they'll behave
  * @author Nick Burch
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class ReplicationServiceIntegrationTest extends TestCase
 {
    private ConfigurableApplicationContext ctx;

@@ -65,6 +65,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -75,7 +76,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  *
  * @since 4.0
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class SOLRTrackingComponentTest extends TestCase
 {
     private static final Log logger = LogFactory.getLog(SOLRTrackingComponentTest.class);

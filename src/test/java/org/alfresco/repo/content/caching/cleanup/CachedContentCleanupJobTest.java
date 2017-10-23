@@ -42,10 +42,12 @@ import org.alfresco.repo.content.caching.Key;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -53,6 +55,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Matt Ward
  */
+@Category(LuceneTests.class)
 public class CachedContentCleanupJobTest
 {
     private enum UrlSource { PROPS_FILE, REVERSE_CACHE_LOOKUP, NOT_PRESENT };

@@ -66,12 +66,15 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.traitextender.SpringExtensionBundle;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 @Ignore
+@Category(LuceneTests.class)
 public abstract class VirtualizationIntegrationTest extends TestCase implements VirtualizationTest
 {
     private static Log logger = LogFactory.getLog(VirtualizationIntegrationTest.class);

@@ -69,12 +69,14 @@ import org.alfresco.service.cmr.search.StatsRequestParameters;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.codec.net.URLCodec;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Basic test of SolrQueryHTTPClient
@@ -82,6 +84,7 @@ import org.junit.Test;
  * @author Gethin James
  * @since 5.0
  */
+@Category(LuceneTests.class)
 public class SolrQueryHTTPClientTest
 {
     static SolrQueryHTTPClient client = new SolrQueryHTTPClient();

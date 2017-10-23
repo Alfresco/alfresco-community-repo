@@ -61,9 +61,11 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ThreadPoolExecutorFactoryBean;
 import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
+import org.alfresco.util.testing.category.DBTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-
+@Category(DBTests.class)
 public class RepoDictionaryDAOTest extends TestCase
 {
     public static final String TEST_RESOURCE_MESSAGES = "alfresco/messages/dictionary-messages";

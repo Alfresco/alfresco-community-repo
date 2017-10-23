@@ -53,9 +53,11 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.quartz.Scheduler;
 import org.springframework.context.ApplicationContext;
 
@@ -67,6 +69,7 @@ import org.springframework.context.ApplicationContext;
  * @author Dmitry Velichkevich
  * @see CronScheduledQueryBasedTemplateActionDefinitionTest#initializeScheduler()
  */
+@Category(LuceneTests.class)
 public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCase
 {
     private static final int AMOUNT_OF_DAYS_BEFORE = -4;

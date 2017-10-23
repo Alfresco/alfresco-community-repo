@@ -46,6 +46,8 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.PerformanceTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -56,7 +58,7 @@ import org.springframework.dao.DataIntegrityViolationException;
  * @author Derek Hulley
  * @since 3.2
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class ContentDataDAOTest extends TestCase
 {
     private ConfigurableApplicationContext ctx = (ConfigurableApplicationContext) ApplicationContextHelper.getApplicationContext();
@@ -378,7 +380,7 @@ public class ContentDataDAOTest extends TestCase
                                                             Locale.JAPANESE,
                                                             Locale.ENGLISH
                                                          };
-    
+
     private List<Pair<Long, ContentData>> speedTestWrite(String name, int total)
     {
         System.out.println("Starting write speed test: " + name);
@@ -448,12 +450,14 @@ public class ContentDataDAOTest extends TestCase
         // Done
     }
     
+    @Category(PerformanceTests.class)
     public void testCreateSpeedIndividualTxns()
     {
         List<Pair<Long, ContentData>> pairs = speedTestWrite(getName(), 2000);
         speedTestRead(getName(), pairs);
     }
-    
+
+    @Category(PerformanceTests.class)
     public void testCreateSpeedSingleTxn()
     {
         RetryingTransactionCallback<List<Pair<Long, ContentData>>> writeCallback = new RetryingTransactionCallback<List<Pair<Long, ContentData>>>()

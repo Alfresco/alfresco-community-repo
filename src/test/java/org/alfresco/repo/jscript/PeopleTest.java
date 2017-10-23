@@ -44,6 +44,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.ScriptPagingDetails;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -56,7 +57,7 @@ import org.springframework.context.ApplicationContext;
  * @author Jamal Kaabi-Mofrad
  * @since 4.2
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class PeopleTest extends TestCase
 {
     private static final String SIMPLE_FILTER = "a";

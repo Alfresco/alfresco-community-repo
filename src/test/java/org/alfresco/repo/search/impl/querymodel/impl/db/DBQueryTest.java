@@ -76,11 +76,13 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -88,6 +90,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Andy
  *
  */
+@Category(LuceneTests.class)
 public class DBQueryTest  implements DictionaryListener
 {
     protected static ApplicationContext ctx = null;

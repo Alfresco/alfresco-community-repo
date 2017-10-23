@@ -34,6 +34,7 @@ import javax.sql.DataSource;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.dialect.Dialect;
@@ -42,6 +43,7 @@ import org.hibernate.dialect.PostgreSQLDialect;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -50,6 +52,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * 
  * @author Matt Ward
  */
+@Category(LuceneTests.class)
 public class ScriptExecutorImplIntegrationTest
 {
     private final static Log log = LogFactory.getLog(ScriptExecutorImplIntegrationTest.class);

@@ -96,6 +96,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -113,7 +114,7 @@ import org.springframework.extensions.webscripts.GUID;
 /**
  * @author andyh
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class OpenCmisQueryTest extends BaseCMISTest
 {
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/cmis-query-test";

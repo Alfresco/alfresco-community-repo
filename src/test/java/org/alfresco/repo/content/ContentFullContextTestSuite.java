@@ -38,8 +38,7 @@ import org.alfresco.repo.content.filestore.SpoofedTextContentReaderTest;
 /**
  * Suite for content-related tests.
  * 
- * This includes all the tests that need a full context, the
- *  rest are in {@link ContentMinimalContextTestSuite}
+ * This includes all the tests that need a full context.
  * 
  * @author Derek Hulley
  */

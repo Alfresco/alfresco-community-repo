@@ -25,15 +25,70 @@
  */
 package org.alfresco;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class AppContext03TestSuite extends TestSuite
+/**
+ * Repository project tests using the main context alfresco/application-context.xml.
+ * To balance test jobs tests using this context have been split into multiple test suites.
+ * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ */
+@RunWith(Categories.class)
+@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
+@Suite.SuiteClasses({
+
+    // needs a clean DB to run
+    org.alfresco.repo.calendar.CalendarServiceImplTest.class,
+
+    org.alfresco.RepositoryStartupTest.class,
+    org.alfresco.repo.content.cleanup.ContentStoreCleanerTest.class,
+    org.alfresco.repo.content.RoutingContentServiceTest.class,
+    org.alfresco.repo.exporter.ExporterComponentTest.class,
+
+    // the following two tests fail on windows
+    org.alfresco.repo.rendition.MultiUserRenditionTest.class,
+    org.alfresco.repo.rendition.RenditionServiceIntegrationTest.class,
+
+    org.alfresco.repo.publishing.PublishingQueueImplTest.class,
+    org.alfresco.repo.publishing.PublishingIntegratedTest.class,
+    org.alfresco.repo.lock.LockBehaviourImplTest.class,
+    org.alfresco.repo.node.archive.LargeArchiveAndRestoreTest.class,
+    org.alfresco.repo.copy.CopyServiceImplTest.class,
+    org.alfresco.repo.descriptor.DescriptorServiceTest.class,
+    org.alfresco.repo.dictionary.DictionaryModelTypeTest.class,
+    org.alfresco.repo.dictionary.DictionaryRepositoryBootstrapTest.class,
+    org.alfresco.repo.dictionary.ModelValidatorTest.class,
+    org.alfresco.repo.dictionary.types.period.PeriodTest.class,
+    org.alfresco.repo.exporter.RepositoryExporterComponentTest.class,
+    org.alfresco.repo.i18n.MessageServiceImplTest.class,
+    org.alfresco.repo.importer.FileImporterTest.class,
+    org.alfresco.repo.importer.ImporterComponentTest.class,
+    org.alfresco.repo.jscript.PeopleTest.class,
+    org.alfresco.repo.jscript.RhinoScriptTest.class,
+
+    // needs a clean DB to run
+    org.alfresco.repo.links.LinksServiceImplTest.class,
+    org.alfresco.repo.lock.JobLockServiceTest.class,
+    org.alfresco.repo.lock.LockServiceImplTest.class,
+    org.alfresco.repo.lock.mem.LockStoreImplTxTest.class,
+    org.alfresco.repo.lock.mem.LockableAspectInterceptorTest.class,
+    org.alfresco.repo.management.JmxDumpUtilTest.class,
+    org.alfresco.repo.node.ConcurrentNodeServiceSearchTest.class,
+    org.alfresco.repo.node.ConcurrentNodeServiceTest.class,
+    org.alfresco.repo.node.FullNodeServiceTest.class,
+    org.alfresco.repo.node.NodeRefPropertyMethodInterceptorTest.class,
+    org.alfresco.repo.node.PerformanceNodeServiceTest.class,
+    org.alfresco.repo.node.archive.ArchiveAndRestoreTest.class,
+    org.alfresco.repo.publishing.ChannelServiceImplIntegratedTest.class,
+    org.alfresco.repo.publishing.PublishingPackageSerializerTest.class,
+    org.alfresco.repo.publishing.PublishingRootObjectTest.class,
+    org.alfresco.repo.node.db.DbNodeServiceImplTest.class,
+    org.alfresco.repo.node.cleanup.TransactionCleanupTest.class,
+    org.alfresco.repo.node.db.DbNodeServiceImplPropagationTest.class,
+})
+public class AppContext03TestSuite
 {
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        AllRepositoryTestsCatalogue.applicationContext_03(suite);
-        return suite;
-    }
 }

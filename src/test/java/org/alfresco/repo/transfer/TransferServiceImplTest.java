@@ -108,6 +108,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
 
@@ -119,7 +120,7 @@ import org.springframework.util.ResourceUtils;
  * @author Mark Rogers
  */
 @SuppressWarnings("deprecation")
-@Category(BaseSpringTestsCategory.class)
+@Category({BaseSpringTestsCategory.class, LuceneTests.class})
 public class TransferServiceImplTest extends BaseAlfrescoSpringTest 
 {
     private TransferService transferService;

@@ -28,11 +28,8 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.dictionary.CustomModelsInfo;
-import org.alfresco.repo.usage.RepoUsageComponent;
-import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -62,26 +59,19 @@ public class RepositoryDataCollectorTest
 
         TransactionService transactionService = (TransactionService) context.getBean("transactionService");
         HBDataCollectorService mockCollectorService = mock(HBDataCollectorService.class);
-        AuthorityService authorityService = mock(AuthorityService.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
         DescriptorDAO descriptorDAO = mock(DescriptorDAO.class);
         when(descriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        RepoUsage mockRepoUsage = mock(RepoUsage.class);
-        RepoUsageComponent repoUsageComponent = mock(RepoUsageComponent.class);
-        when(repoUsageComponent.getUsage()).thenReturn(mockRepoUsage);
-
         CustomModelsInfo mockCustomModelsInfo = mock(CustomModelsInfo.class);
         CustomModelService customModelService = mock(CustomModelService.class);
         when(customModelService.getCustomModelsInfo()).thenReturn(mockCustomModelsInfo);
 
         repoCollector = new RepositoryDataCollector();
-        repoCollector.setAuthorityService(authorityService);
         repoCollector.setCurrentRepoDescriptorDAO(descriptorDAO);
         repoCollector.setCustomModelService(customModelService);
-        repoCollector.setRepoUsageComponent(repoUsageComponent);
         repoCollector.setServerDescriptorDAO(descriptorDAO);
         repoCollector.setTransactionService(transactionService);
         repoCollector.setHbDataCollectorService(mockCollectorService);
@@ -99,7 +89,6 @@ public class RepositoryDataCollectorTest
             assertNotNull(data.getSystemId());
             assertNotNull(data.getTimestamp());
         }
-
     }
 
     @Test

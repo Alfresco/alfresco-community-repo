@@ -49,8 +49,11 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(LuceneTests.class)
 public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegrationTest
 {
     private PermissionServiceSPI permissionService;

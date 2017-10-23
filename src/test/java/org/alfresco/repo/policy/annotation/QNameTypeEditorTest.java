@@ -30,6 +30,7 @@ import static org.junit.Assert.assertEquals;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -41,7 +42,7 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Tom Page
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, LuceneTests.class})
 public class QNameTypeEditorTest
 {
     /** The location of the Spring context file used by this test. */

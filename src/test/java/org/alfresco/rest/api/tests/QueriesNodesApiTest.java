@@ -86,39 +86,49 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
         return result;
     }
     
+    /**
+     * Test basic api for nodes using parameter term with white-spaces
+     *
+     * <p>
+     * GET:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/nodes}
+     * 
+     * @throws Exception
+     */
     @Test
-    public void testSearchTermWhiteSpace() throws Exception{
+    public void testSearchTermWhiteSpace() throws Exception
+    {
         setRequestContext(user1);
-        
+
         String myFolderNodeId = getMyNodeId();
 
         String parentTerm = createFolder(myFolderNodeId, "folder term1").getId();
         String childTerm = "find" + Math.random();
-        String childTermWS =  childTerm + " " + "find";
-        
-        Map<String,String> docProps = new HashMap<>(2);
+        String childTermWS = childTerm + " " + "find";
+
+        Map<String, String> docProps = new HashMap<>(2);
         docProps.put("cm:title", childTerm);
         docProps.put("cm:description", childTerm);
         createTextFile(parentTerm, childTerm, childTerm, "UTF-8", docProps);
-        
+
         docProps.put("cm:title", childTermWS);
         docProps.put("cm:description", childTermWS);
         createTextFile(parentTerm, childTermWS, childTermWS, "UTF-8", docProps);
 
         Paging paging = getPaging(0, 100);
-        HashMap<String,String> params = new HashMap<>(1);
-        params.put(Queries.PARAM_TERM,  childTerm);
+        HashMap<String, String> params = new HashMap<>(1);
+        params.put(Queries.PARAM_TERM, childTerm);
         HttpResponse response = getAll(URL_QUERIES_LSN, paging, params, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
-        
-        params.put(Queries.PARAM_TERM,  childTermWS);
+
+        params.put(Queries.PARAM_TERM, childTermWS);
         response = getAll(URL_QUERIES_LSN, paging, params, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(1, nodes.size());
 
     }
-    
 
     /**
      * Tests basic api for nodes live search - metadata (name, title, description) &/or full text search of file/content

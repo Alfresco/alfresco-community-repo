@@ -81,18 +81,18 @@ public class PathInfo
 
         private String id;
         private String name;
-        private String type;
+        private String nodeType;
         private List<String> aspectNames;
 
         public ElementInfo()
         {
         }
         
-        public ElementInfo(String id, String name, String type, List<String> aspectNames)
+        public ElementInfo(String id, String name, String nodeType, List<String> aspectNames)
         {
             this.id = id;
             this.name = name;
-            this.type = type;
+            this.nodeType = nodeType;
             this.aspectNames = aspectNames;
         }
 
@@ -106,9 +106,9 @@ public class PathInfo
             return id;
         }
 
-        public String getType()
+        public String getNodeType()
         {
-            return type;
+            return nodeType;
         }
 
         public List<String> getAspectNames()
@@ -122,7 +122,7 @@ public class PathInfo
             final StringBuilder sb = new StringBuilder(250);
             sb.append("PathElement [id=").append(id)
                         .append(", name=").append(name)
-                        .append(", type=").append(type)
+                        .append(", nodeType=").append(nodeType)
                         .append(", aspectNames=").append(aspectNames)
                         .append(']');
             return sb.toString();

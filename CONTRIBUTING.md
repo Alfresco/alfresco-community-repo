@@ -15,14 +15,14 @@ Useful but not necessary:
 * An [Alfresco community](https://community.alfresco.com/) account - this is a good place to ask questions and find answers. 
 ##Making changes
 
-We use Jira to track issues if you are committing a fix for a raised issue please include the ticket number in both the merge requests and the git commit messages.
+We use Jira to track issues. If you are committing a fix for a raised issue please include the ticket number in both the merge requests and the git commit messages.
 For example a fix for the ticket [ALF-21953](https://issues.alfresco.com/jira/browse/ALF-21953) will have the following git commit message: "ALF-21953: updated to use super pom v9"
 
-If you are Adding in a new feature or bug fix please do so [here.](https://issues.alfresco.com/jira/projects/ALF/issues/?filter=allopenissues) By raising a ticket in this project you will be agreeing to the Alfresco Contribution Agreement which can be found at the bottom of the 'Create Issue' form or alternatively attached to[this](https://community.alfresco.com/docs/DOC-7070-alfresco-contribution-agreement)page.
+If you are adding in a new feature or bug fix please do so [here.](https://issues.alfresco.com/jira/projects/ALF/issues/?filter=allopenissues) By raising a ticket in this project you will be agreeing to the Alfresco Contribution Agreement which can be found at the bottom of the 'Create Issue' form or alternatively attached to[this](https://community.alfresco.com/docs/DOC-7070-alfresco-contribution-agreement)page.
 
 When you are ready to make a change you just need to fork the [records-management](https://github.com/Alfresco/records-management) repository and then make your changes into your copy of the code.
 
-We have a set of standards we follow when writing code these can be found [here.](https://community.alfresco.com/docs/DOC-4658-coding-standards)
+We have a set of standards we follow when writing code. These can be found [here.](https://community.alfresco.com/docs/DOC-4658-coding-standards)
 
 When formatting your change please make sure not to change the format of any other code as this can make the changes difficult to spot and please make sure to use the correct line ending (we use LF)
 
@@ -38,7 +38,7 @@ It really helps speed up the review process if you include a description of the 
 
 After your change has been accepted you can add it to the page[here](https://community.alfresco.com/docs/DOC-5279-featured-contributions)to let other members of the community know (A community account is required to update this page). 
 
-Occasionally we may have to revert a change after it has been accepted this will usually be cause by failing integration or UI tests if this happens to you feel free to get in touch for more information.
+Occasionally we may have to revert a change after it has been accepted. This will usually be cause by failing integration or UI tests. If this happens to you feel free to get in touch for more information.
 
 ##Additional info and links
 

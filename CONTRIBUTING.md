@@ -1,5 +1,5 @@
 #How to contribute
-Alfresco's maturity comes from the contributions of its community. Contributing back to Alfresco can be a bit confusing as Alfresco is a collection of separate open source projects. Each open source project officially sponsored by Alfresco has a page in this space detailing its governance policy and the method for reporting issues and submitting contributions.
+TODO
  
 For the details on the Records Management project see[here.](https://community.alfresco.com/docs/DOC-6387-project-overview-records-management)
 

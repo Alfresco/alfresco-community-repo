@@ -813,8 +813,8 @@ public class GroupsImpl implements Groups
 
         // Verify if groupMemberId is member of groupId
         AuthorityType authorityType = AuthorityType.getAuthorityType(groupMemberId);
-        Set<String> containedAuthorities = authorityService.getContainedAuthorities(authorityType, groupId, true);
-        if (!containedAuthorities.contains(groupMemberId))
+        Set<String> parents = authorityService.getContainingAuthorities(AuthorityType.GROUP, groupMemberId, true);
+        if (!parents.contains(groupId))
         {
             throw new NotFoundException(groupMemberId + " is not member of " + groupId);
         }

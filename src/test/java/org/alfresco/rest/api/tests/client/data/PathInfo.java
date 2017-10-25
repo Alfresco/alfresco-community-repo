@@ -67,19 +67,42 @@ public class PathInfo
         return elements;
     }
 
+    @Override
+    public String toString()
+    {
+        final StringBuilder sb = new StringBuilder(120);
+        sb.append("PathInfo [name=").append(name)
+                    .append(", isComplete=").append(isComplete)
+                    .append(", elements=").append(elements)
+                    .append(']');
+        return sb.toString();
+    }
+
     public static class ElementInfo
     {
         private String id;
         private String name;
+        private String type;
+        private List<String> aspectNames;
 
+        /**
+         * Required by jackson deserialisation.
+         */
         public ElementInfo()
         {
         }
 
         public ElementInfo(String id, String name)
         {
+            this(id, name, null, null);
+        }
+        
+        public ElementInfo(String id, String name, String type, List<String> aspectNames)
+        {
             this.id = id;
             this.name = name;
+            this.type = type;
+            this.aspectNames = aspectNames;
         }
 
         public String getName()
@@ -92,6 +115,28 @@ public class PathInfo
             return id;
         }
 
+        public String getType()
+        {
+            return type;
+        }
+
+        public List<String> getAspectNames()
+        {
+            return aspectNames;
+        }
+
+        @Override
+        public String toString()
+        {
+            final StringBuilder sb = new StringBuilder(250);
+            sb.append("PathElement [id=").append(id)
+                    .append(", name=").append(name)
+                    .append(", type=").append(type)
+                    .append(", aspectNames=").append(aspectNames)
+                    .append(']');
+            return sb.toString();
+        }
+        
         public void expected(Object o)
         {
             assertTrue(o instanceof ElementInfo);
@@ -99,6 +144,7 @@ public class PathInfo
             ElementInfo other = (ElementInfo) o;
             assertEquals(id, other.getName());
             assertEquals(name, other.getName());
+            assertEquals(type, other.getType());
         }
     }
 

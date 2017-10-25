@@ -1,6 +1,4 @@
 #How to contribute
-TODO
- 
 For the details on the Records Management project see[here.](https://community.alfresco.com/docs/DOC-6387-project-overview-records-management)
 
 ##Getting started
@@ -28,8 +26,7 @@ When formatting your change please make sure not to change the format of any oth
 
 We ask that when adding/changing code you also add/change the appropriate unit tests and that these tests all run before creating the pull request (these will be run as part of the request it just saves time if you know they will pass before hand). 
 
-###Writing translatable code
-TODO
+If you are adding any user facing strings be advised these may be change after being reviewed by a member of our UA team. For UI consistency please write to these[guidelines.](http://docs.alfresco.com/sites/docs.alfresco.com/files/public/docs_team/u2/Alfresco-Writing-Guide.pdf)
 
 ##Submitting changes
 When you create a pull request we will run the unit tests using Travis. If these pass a member of the team will look over the change and then assuming there are no issues will accept your change. If there are any issue we will discuss this with you using the pull request.
@@ -50,9 +47,15 @@ Occasionally we may have to revert a change after it has been accepted. This wil
 
 [Alfresco contribution agreement](https://community.alfresco.com/docs/DOC-7070-alfresco-contribution-agreement)
 
+[Alfresco writing guidelines](http://docs.alfresco.com/sites/docs.alfresco.com/files/public/docs_team/u2/Alfresco-Writing-Guide.pdf)
+
 [GitHub "Records Management" code repository](https://github.com/Alfresco/records-management)
 
+[IDE settings for Eclipse and Intellij](https://github.com/Alfresco/records-management/tree/master/ide-config)
+
 [Jira project for raising issues/features](https://issues.alfresco.com/jira/projects/ALF/issues/?filter=allopenissues)
+
+[Jira project used by GS team](https://issues.alfresco.com/jira/projects/RM/issues)
 
 [Records Management project details](https://community.alfresco.com/docs/DOC-6387-project-overview-records-management)
 

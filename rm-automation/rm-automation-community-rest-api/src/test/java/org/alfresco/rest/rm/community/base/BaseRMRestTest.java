@@ -33,6 +33,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_COMPLETED_RECORD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_CATEGORY_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.RECORD_TYPE;
@@ -529,6 +530,35 @@ public class BaseRMRestTest extends RestTest
         Record recordModel = Record.builder().name(name).nodeType(CONTENT_TYPE).build();
         return recordFolderAPI.createRecord(recordModel, parentId);
     }
+
+    /**
+     * Create a non-electronic record
+     *
+     * @param parentId the id of the parent
+     * @param name     the name of the record
+     * @return the created record
+     * @throws Exception
+     */
+    public Record createNonElectronicRecord(String parentId, String name) throws Exception
+    {
+        return createNonElectronicRecord(parentId, name, null);
+    }
+
+    /**
+     * Create a non-electronic record
+     *
+     * @param parentId the id of the parent
+     * @param name     the name of the record
+     * @return the created record
+     * @throws Exception
+     */
+    public Record createNonElectronicRecord(String parentId, String name, UserModel user) throws Exception
+    {
+        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
+        Record recordModel = Record.builder().name(name).nodeType(NON_ELECTRONIC_RECORD_TYPE).build();
+        return recordFolderAPI.createRecord(recordModel, parentId);
+    }
+
     /**
      * Delete a record folder
      *

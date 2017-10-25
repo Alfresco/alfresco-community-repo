@@ -618,10 +618,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         
         assertEquals(site1Id, pathElements.get(2).getName());
         assertEquals("st:site", pathElements.get(2).getType());
-        // Do some 'spot checks' that expected aspects are present.
         assertTrue(pathElements.get(2).getAspectNames().contains("cm:titled"));
-        assertTrue(pathElements.get(2).getAspectNames().contains("sys:undeletable"));
-        assertTrue(pathElements.get(2).getAspectNames().contains("sys:unmovable"));
+        // Check that sys:* is filtered out - to be consistent with other aspect name lists
+        // e.g. /nodes/{nodeId}/children?include=aspectNames
+        assertFalse(pathElements.get(2).getAspectNames().contains("sys:undeletable"));
+        assertFalse(pathElements.get(2).getAspectNames().contains("sys:unmovable"));
 
         assertEquals("documentLibrary", pathElements.get(3).getName());
         assertEquals("cm:folder", pathElements.get(3).getType());

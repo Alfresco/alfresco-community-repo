@@ -1071,7 +1071,7 @@ public class NodesImpl implements Nodes
                         Serializable nameProp = nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
                         String type = getNodeType(childNodeRef).toPrefixString(namespaceService);
                         Set<QName> aspects = nodeService.getAspects(childNodeRef);
-                        List<String> aspectNames = mapFromNodeAspects(aspects, Collections.emptyList(), Collections.emptyList());
+                        List<String> aspectNames = mapFromNodeAspects(aspects, EXCLUDED_NS, EXCLUDED_ASPECTS);
                         pathElements.add(0, new ElementInfo(childNodeRef.getId(), nameProp.toString(), type, aspectNames));
                     }
                     else

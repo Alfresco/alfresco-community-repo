@@ -1780,6 +1780,11 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
                 groupsProxy.deleteGroupMembership(GROUP_EVERYONE, groupMemberA.getId(), HttpServletResponse.SC_CONFLICT);
             }
 
+            // Removing a group that is not a member (REPO-1943)
+            {
+                groupsProxy.deleteGroupMembership(groupB.getId(), personMember.getId(), HttpServletResponse.SC_NOT_FOUND);
+            }
+
             // Authentication failed
             {
                 setRequestContext(networkOne.getId(), GUID.generate(), "password");
@@ -1788,8 +1793,10 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
 
             // User does not have permission to delete a group membership
             {
+                setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
+                groupsProxy.createGroupMember(groupA.getId(), personMember, HttpServletResponse.SC_CREATED);
                 setRequestContext(user1);
-                groupsProxy.deleteGroupMembership(groupA.getId(), groupMemberA.getId(), HttpServletResponse.SC_FORBIDDEN);
+                groupsProxy.deleteGroupMembership(groupA.getId(), personMember.getId(), HttpServletResponse.SC_FORBIDDEN);
             }
         }
         finally

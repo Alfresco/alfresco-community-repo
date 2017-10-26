@@ -87,7 +87,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
     }
     
     /**
-     * Test basic api for nodes using parameter term with white-spaces.
+     * Test basic api for nodes using parameter term with white-spaces.(REPO-1154)
      *
      * <p>
      * GET:

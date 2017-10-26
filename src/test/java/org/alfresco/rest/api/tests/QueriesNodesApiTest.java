@@ -87,7 +87,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
     }
     
     /**
-     * Test basic api for nodes using parameter term with white-spaces
+     * Test basic api for nodes using parameter term with white-spaces.
      *
      * <p>
      * GET:
@@ -103,30 +103,35 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 
         String myFolderNodeId = getMyNodeId();
 
-        String parentTerm = createFolder(myFolderNodeId, "folder term1").getId();
+        String parentFolder = createFolder(myFolderNodeId, "folder term1").getId();
+        //I use "find123" and "find123 find", the search using second term must return less result
+        //The space must not break the query
         String childTerm = "find" + Math.random();
         String childTermWS = childTerm + " " + "find";
 
         Map<String, String> docProps = new HashMap<>(2);
         docProps.put("cm:title", childTerm);
         docProps.put("cm:description", childTerm);
-        createTextFile(parentTerm, childTerm, childTerm, "UTF-8", docProps);
+        createTextFile(parentFolder, childTerm, childTerm, "UTF-8", docProps);
 
         docProps.put("cm:title", childTermWS);
         docProps.put("cm:description", childTermWS);
-        createTextFile(parentTerm, childTermWS, childTermWS, "UTF-8", docProps);
+        createTextFile(parentFolder, childTermWS, childTermWS, "UTF-8", docProps);
 
         Paging paging = getPaging(0, 100);
         HashMap<String, String> params = new HashMap<>(1);
         params.put(Queries.PARAM_TERM, childTerm);
         HttpResponse response = getAll(URL_QUERIES_LSN, paging, params, 200);
-        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-        assertEquals(2, nodes.size());
+        List<Node> nodesChildTerm = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        //check if the search returns all nodes which contain that query term
+        assertEquals(2, nodesChildTerm.size());
 
         params.put(Queries.PARAM_TERM, childTermWS);
         response = getAll(URL_QUERIES_LSN, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-        assertEquals(1, nodes.size());
+        List<Node> nodesChildTermWS = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        //check if search works for words with space and the space don't break the query
+        assertEquals(1, nodesChildTermWS.size());
+        assertTrue(nodesChildTerm.size() >= nodesChildTermWS.size());
 
     }
 

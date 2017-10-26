@@ -54,6 +54,7 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
@@ -172,6 +173,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected HoldService holdService;
     protected InplaceRecordService inplaceRecordService;
     protected RelationshipService relationshipService;
+
+    /** test utils */
+    protected UserAndGroupsUtils userAndGroupsUtils;
 
     /** test data */
     protected String siteId;
@@ -340,6 +344,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // Get the application context
         applicationContext = ApplicationContextHelper.getApplicationContext(getConfigLocations());
         utils = new CommonRMTestUtils(applicationContext);
+        userAndGroupsUtils = new UserAndGroupsUtils(applicationContext);
 
         // Initialise the service beans
         initServices();

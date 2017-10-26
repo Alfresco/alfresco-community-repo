@@ -85,6 +85,55 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
         }
         return result;
     }
+    
+    /**
+     * Test basic api for nodes using parameter term with white-spaces.(REPO-1154)
+     *
+     * <p>
+     * GET:
+     * </p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/nodes}
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testSearchTermWhiteSpace() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myFolderNodeId = getMyNodeId();
+
+        String parentFolder = createFolder(myFolderNodeId, "folder term1").getId();
+        //I use "find123" and "find123 find", the search using second term must return less result
+        //The space must not break the query
+        String childTerm = "find" + Math.random();
+        String childTermWS = childTerm + " " + "find";
+
+        Map<String, String> docProps = new HashMap<>(2);
+        docProps.put("cm:title", childTerm);
+        docProps.put("cm:description", childTerm);
+        createTextFile(parentFolder, childTerm, childTerm, "UTF-8", docProps);
+
+        docProps.put("cm:title", childTermWS);
+        docProps.put("cm:description", childTermWS);
+        createTextFile(parentFolder, childTermWS, childTermWS, "UTF-8", docProps);
+
+        Paging paging = getPaging(0, 100);
+        HashMap<String, String> params = new HashMap<>(1);
+        params.put(Queries.PARAM_TERM, childTerm);
+        HttpResponse response = getAll(URL_QUERIES_LSN, paging, params, 200);
+        List<Node> nodesChildTerm = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        //check if the search returns all nodes which contain that query term
+        assertEquals(2, nodesChildTerm.size());
+
+        params.put(Queries.PARAM_TERM, childTermWS);
+        response = getAll(URL_QUERIES_LSN, paging, params, 200);
+        List<Node> nodesChildTermWS = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        //check if search works for words with space and the space don't break the query
+        assertEquals(1, nodesChildTermWS.size());
+        assertTrue(nodesChildTerm.size() >= nodesChildTermWS.size());
+
+    }
 
     /**
      * Tests basic api for nodes live search - metadata (name, title, description) &/or full text search of file/content

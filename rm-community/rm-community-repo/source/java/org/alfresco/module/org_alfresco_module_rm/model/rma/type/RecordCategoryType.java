@@ -155,7 +155,10 @@ public class RecordCategoryType extends    BaseBehaviourBean
                 public Void doWork()
                 {
                     // setup vital record definition
-                    vitalRecordService.setupVitalRecordDefinition(child);
+                    if(nodeService.exists(child))
+                    {
+                        vitalRecordService.setupVitalRecordDefinition(child);
+                    }
 
                     return null;
                 }
@@ -190,7 +193,10 @@ public class RecordCategoryType extends    BaseBehaviourBean
             public Void doWork()
             {
                 // setup record category permissions
-                filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef());
+                if(nodeService.exists(childAssocRef.getChildRef()))
+                {
+                    filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef());
+                }
 
                 return null;
             }

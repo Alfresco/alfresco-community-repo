@@ -549,6 +549,7 @@ public class BaseRMRestTest extends RestTest
      *
      * @param parentId the id of the parent
      * @param name     the name of the record
+     * @param user the user who creates the  non-electronic record
      * @return the created record
      * @throws Exception
      */

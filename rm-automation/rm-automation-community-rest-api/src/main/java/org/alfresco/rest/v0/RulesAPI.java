@@ -71,7 +71,8 @@ public class RulesAPI extends BaseAPI
         try
         {
             return doPostJsonRequest(username, password, getRuleRequest(ruleProperties), MessageFormat.format(RULES_API, "{0}", containerNodeRef));
-        } catch (JSONException error)
+        }
+        catch (JSONException error)
         {
             LOGGER.error("Unable to extract response parameter.", error);
         }

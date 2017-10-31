@@ -288,8 +288,8 @@
       <indexes>
         <index name="idx_alf_acs_ctms" unique="false">
           <columnnames>
-            <columnname order="1">commit_time_ms</columnname>
-            <columnname order="2">id</columnname>
+            <columnname>commit_time_ms</columnname>
+            <columnname>id</columnname>
           </columnnames>
         </index>
       </indexes>

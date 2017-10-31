@@ -25,17 +25,6 @@
  */
 package org.alfresco.repo.tagging;
 
-import java.io.ByteArrayInputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -62,19 +51,12 @@ import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.CopyService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.ScriptLocation;
-import org.alfresco.service.cmr.repository.ScriptService;
-import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.tagging.TagDetails;
 import org.alfresco.service.cmr.tagging.TagScope;
-import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -84,13 +66,25 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import org.junit.FixMethodOrder;
-import org.junit.experimental.categories.Category;
-import org.junit.runners.MethodSorters;
+import java.io.ByteArrayInputStream;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 /**
  * Tagging service implementation unit test
@@ -100,7 +94,8 @@ import org.junit.runners.MethodSorters;
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
-public class TaggingServiceImplTest extends TestCase
+@RunWith(MockitoJUnitRunner.class)
+public class TaggingServiceImplTest
 {
    private static ConfigurableApplicationContext ctx = 
       (ConfigurableApplicationContext)ApplicationContextHelper.getApplicationContext();
@@ -108,7 +103,7 @@ public class TaggingServiceImplTest extends TestCase
    private static final Log logger = LogFactory.getLog(TaggingServiceImplTest.class);
    
     /** Services */
-    private TaggingService taggingService;
+    private TaggingServiceImpl taggingService;
     private NodeService nodeService;
     private FileFolderService fileFolderService;
     private CopyService copyService;
@@ -147,10 +142,9 @@ public class TaggingServiceImplTest extends TestCase
     private static final String LOWER_TAG = "house";
     
     private static boolean init = false;
-    
-    
-    @Override
-    protected void setUp() throws Exception
+
+    @Before
+    public void setUp() throws Exception
     {
         // Detect any dangling transactions as there is a lot of direct UserTransaction manipulation
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
@@ -162,7 +156,7 @@ public class TaggingServiceImplTest extends TestCase
         }
         
         // Get services
-        this.taggingService = (TaggingService)ctx.getBean("TaggingService");
+        this.taggingService = (TaggingServiceImpl)ctx.getBean("taggingService");
         this.nodeService = (NodeService) ctx.getBean("NodeService");
         this.fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
         this.copyService = (CopyService) ctx.getBean("CopyService");
@@ -237,8 +231,8 @@ public class TaggingServiceImplTest extends TestCase
         createTestDocumentsAndFolders();
     }
     
-    @Override
-    protected void tearDown() throws Exception
+    @After
+    public void tearDown() throws Exception
     {
         removeTestDocumentsAndFolders();
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
@@ -336,7 +330,9 @@ public class TaggingServiceImplTest extends TestCase
             }
         });
     }
-    
+
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void test1TagCRUD()
         throws Exception
     {
@@ -357,7 +353,7 @@ public class TaggingServiceImplTest extends TestCase
                 return null;
             }
         });
-                    
+
         this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
 
             @Override
@@ -420,7 +416,9 @@ public class TaggingServiceImplTest extends TestCase
             }
         });
     }
-    
+
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void test2AddRemoveTag()
         throws Exception
     {
@@ -483,7 +481,8 @@ public class TaggingServiceImplTest extends TestCase
             }
         });
     }
-    
+
+    @Test
     public void test3TagScopeFindAddRemove()
         throws Exception
     {
@@ -542,7 +541,8 @@ public class TaggingServiceImplTest extends TestCase
             }
         });
     }
-    
+
+    @Test
     public void test4TagScope()
     throws Exception
     {
@@ -684,42 +684,49 @@ public class TaggingServiceImplTest extends TestCase
                 return null;
             }
         });
-        
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                // re get the tag scopes
-                TagScope ts1 = taggingService.findTagScope(subDocument);
-                TagScope ts2 = taggingService.findTagScope(folder);
-                
-                // Recheck the tag scopes
-                assertEquals(
-                      "Wrong tags on sub folder: " + ts1.getTags(),
-                      2, ts1.getTags().size()
-                );
-                assertEquals(
-                      "Wrong tags on main folder: " + ts2.getTags(),
-                      2, ts2.getTags().size()
-                );
-                
-                // Sub-folder should be ordered by tag name, as all values 1
-                assertEquals(1, ts1.getTags().get(0).getCount());
-                assertEquals(1, ts1.getTags().get(1).getCount());
-                assertEquals(TAG_2, ts1.getTags().get(0).getName());
-                assertEquals(TAG_3.toLowerCase(), ts1.getTags().get(1).getName());
-                
-                // Folder should be still sorted by size, as a 2 & a 1
-                assertEquals(2, ts2.getTags().get(0).getCount());
-                assertEquals(1, ts2.getTags().get(1).getCount());
-                assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(0).getName());
-                assertEquals(TAG_2, ts2.getTags().get(1).getName());
-                return null;
-            }
-        });
+
+        /*
+        The following code from the test was commented out as part of REPO-2028 to remove
+        the lucene dependencies in the tests.
+        @Category({RedundantTests.class,LuceneTests.class})
+         */
+//
+//        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+//        {
+//            @Override
+//            public Void execute() throws Throwable
+//            {
+//                // re get the tag scopes
+//                TagScope ts1 = taggingService.findTagScope(subDocument);
+//                TagScope ts2 = taggingService.findTagScope(folder);
+//
+//                // Recheck the tag scopes
+//                assertEquals(
+//                      "Wrong tags on sub folder: " + ts1.getTags(),
+//                      2, ts1.getTags().size()
+//                );
+//                assertEquals(
+//                      "Wrong tags on main folder: " + ts2.getTags(),
+//                      2, ts2.getTags().size()
+//                );
+//
+//                // Sub-folder should be ordered by tag name, as all values 1
+//                assertEquals(1, ts1.getTags().get(0).getCount());
+//                assertEquals(1, ts1.getTags().get(1).getCount());
+//                assertEquals(TAG_2, ts1.getTags().get(0).getName());
+//                assertEquals(TAG_3.toLowerCase(), ts1.getTags().get(1).getName());
+//
+//                // Folder should be still sorted by size, as a 2 & a 1
+//                assertEquals(2, ts2.getTags().get(0).getCount());
+//                assertEquals(1, ts2.getTags().get(1).getCount());
+//                assertEquals(TAG_3.toLowerCase(), ts2.getTags().get(0).getName());
+//                assertEquals(TAG_2, ts2.getTags().get(1).getName());
+//                return null;
+//            }
+//        });
 }
 
+    @Test
     @SuppressWarnings("unchecked")
     public void test5TagScopeSummary() throws Exception
     {
@@ -821,6 +828,8 @@ public class TaggingServiceImplTest extends TestCase
         });
     }
 
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void test6TagScopeRefresh()
         throws Exception
     {
@@ -875,7 +884,8 @@ public class TaggingServiceImplTest extends TestCase
             }
         });
     }
-    
+
+    @Test
     public void test7TagScopeSetUpdate()
         throws Exception
     {
@@ -969,26 +979,32 @@ public class TaggingServiceImplTest extends TestCase
                 return null;
             }
         });
+        /*
+        This part of the code was commented out as part of the REPO-2028 to remove the lucene dependency from tests
+        @Category({RedundantTests.class,LuceneTests.class})
+         */
         
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                // Check that the tagscope has been updated correctly
-                TagScope ts1 = taggingService.findTagScope(folder);
-                assertEquals(3, ts1.getTag(TAG_1).getCount());
-                assertEquals(2, ts1.getTag(TAG_2).getCount());
-                assertEquals(1, ts1.getTag(TAG_3.toLowerCase()).getCount());
-                assertEquals(1, ts1.getTag(TAG_4).getCount());
-                return null;
-            }
-        });
+//        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+//        {
+//            @Override
+//            public Void execute() throws Throwable
+//            {
+//                // Check that the tagscope has been updated correctly
+//                TagScope ts1 = taggingService.findTagScope(folder);
+//                assertEquals(3, ts1.getTag(TAG_1).getCount());
+//                assertEquals(2, ts1.getTag(TAG_2).getCount());
+//                assertEquals(1, ts1.getTag(TAG_3.toLowerCase()).getCount());
+//                assertEquals(1, ts1.getTag(TAG_4).getCount());
+//                return null;
+//            }
+//        });
     }
     
     /* 
      * https://issues.alfresco.com/jira/browse/ETHREEOH-220 
      */
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void test8ETHREEOH_220() throws Exception
     {
         // Add tag scope to a folder, then add a non-ASCII (unicode)
@@ -1033,6 +1049,8 @@ public class TaggingServiceImplTest extends TestCase
      *  when folders and content are created, updated,
      *  moved, copied and deleted.
      */
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void test9TagScopeUpdateViaNodePolicies() throws Exception {
         class TestData
         {
@@ -1466,6 +1484,8 @@ public class TaggingServiceImplTest extends TestCase
      * Also checks that policies are disabled during tag scope updates,
      *  so that the auditable flags aren't incorrectly set by the change
      */
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void test91PermissionsAndPolicies() throws Exception
     {
         class TestData
@@ -1589,7 +1609,8 @@ public class TaggingServiceImplTest extends TestCase
     }
     
     // == Test the JavaScript API ==
-    
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void test92JSAPI() throws Exception
     {
         asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
@@ -1612,7 +1633,9 @@ public class TaggingServiceImplTest extends TestCase
             }
         });
     }
-    
+
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void test93JSTagScope() throws Exception
     {        
         asyncOccurs.awaitExecution(new RetryingTransactionCallback<Void>()
@@ -1725,6 +1748,7 @@ public class TaggingServiceImplTest extends TestCase
      * Test that the scheduled task will do the right thing
      *  when it runs.
      */
+    @Test
     public void test93OnStartupJob() throws Exception
     {
         final UpdateTagScopesActionExecuter updateTagsAction = (UpdateTagScopesActionExecuter) ctx
@@ -1859,6 +1883,7 @@ public class TaggingServiceImplTest extends TestCase
      * Test that when multiple threads do tag updates, the right thing still
      * happens
      */
+    @Test
     public void test94MultiThreaded() throws Exception
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
@@ -2105,6 +2130,7 @@ public class TaggingServiceImplTest extends TestCase
      * 
      * @throws Exception
      */
+    @Test
     public void testALF_17260() throws Exception 
     {
         // Add tag scope to our container
@@ -2205,7 +2231,8 @@ public class TaggingServiceImplTest extends TestCase
             }
         });
     }
-    
+
+    @Test
     public void testTagFileRead() throws UnsupportedEncodingException
     {
         List<TagDetails> tags = TaggingServiceImpl.readTagDetails(new ByteArrayInputStream("Tag1|10\nTag2|20\nInvalid\nInvalid2|\nInvalid3|One\nTooMany|1|2\n\n".getBytes("UTF-8")));
@@ -2218,6 +2245,8 @@ public class TaggingServiceImplTest extends TestCase
         assertEquals(tags.get(2).getCount(), 1);
     }
 
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void testPagedTags() throws UnsupportedEncodingException
     {
         authenticationComponent.setSystemUserAsCurrentUser();
@@ -2244,7 +2273,9 @@ public class TaggingServiceImplTest extends TestCase
         assertNotNull(res);
         assertTrue(res.getTotalResultCount().getFirst() == 1);
     }
-    
+
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void testChangeTags() throws UnsupportedEncodingException
     {
         try
@@ -2303,6 +2334,7 @@ public class TaggingServiceImplTest extends TestCase
 
     
     /* Test adding tags containing \n and | chars. Test all ways to create tag (e.g. createTag, addTag, setTags) */
+    @Test
     public void testBadTags()
     {
         testTag(BAD_TAG);
@@ -2356,6 +2388,8 @@ public class TaggingServiceImplTest extends TestCase
     /**
      * Tests that when the deleteTag() method runs, it will remove invalid references to the deleted tag. 
      */
+    @Test
+    @Category({RedundantTests.class,LuceneTests.class})
     public void testDeleteTag() throws Exception{
         
         try{
@@ -2371,6 +2405,8 @@ public class TaggingServiceImplTest extends TestCase
                 public Void execute() throws Throwable
                 {
                     taggingService.clearTags(folder);
+                    // addTag uses lucene to get a reference to the existing TAG_1 tag node.
+                    // this fails without lucene
                     taggingService.addTag(folder, TAG_1);
                     
                     // The deleteTag() should remove any reference to the deleted tag

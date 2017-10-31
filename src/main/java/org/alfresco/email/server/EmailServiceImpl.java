@@ -437,49 +437,25 @@ public class EmailServiceImpl implements EmailService
             return ref;
         }
 
-        StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-        
-//        // Ok, alias wasn't found, let's try to interpret recipient address as 'node-bdid' value
-//        try 
-//        {
-//            Long nodeId = Long.parseLong(parts[0]);
-//       
-//            NodeRef byNodeId = nodeService.getNodeRef(nodeId);
-//            
-//            if(byNodeId != null)
-//            {
-//                if(logger.isDebugEnabled())
-//                {
-//                    logger.debug("found email alias via node service =" + alias);
-//                }
-//                return byNodeId;
-//            }
-//        }
-//        catch (NumberFormatException ne)
-//        {
-//        }
-
         // Ok, alias wasn't found, let's try to interpret recipient address as 'node-bdid' value
-        ResultSet resultSet = null;
         try
         {
             Long nodeId = Long.parseLong(parts[0]);
-            String query = "@sys\\:node-dbid:" + nodeId;
-            resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
-            if (resultSet.length() > 0)
+
+            // Get recipient by system account
+            NodeRef byNodeId = AuthenticationUtil.runAsSystem(() -> nodeService.getNodeRef(nodeId));
+
+            if(byNodeId != null)
             {
-                return resultSet.getNodeRef(0);
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("found email alias via node service =" + alias);
+                }
+                return byNodeId;
             }
         }
-        catch (NumberFormatException e) 
+        catch (NumberFormatException ne)
         {
-        }
-        finally
-        {
-            if(resultSet != null)
-            {
-                resultSet.close();
-            }
         }
         
         throw new EmailMessageException(ERR_INVALID_NODE_ADDRESS, recipient);

@@ -132,6 +132,7 @@
        <property name="behaviourFilter" ref="policyBehaviourFilter" />
        <property name="renditionLocationResolver" ref="renditionLocationResolver" />
        <property name="actionTrackingService" ref="actionTrackingService" />
+       <property name="namespaceService" ref="namespaceService" />
    </bean>
 
    <bean id="baseTemplateRenderingAction" abstract="true" parent="baseRenderingAction"

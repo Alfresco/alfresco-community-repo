@@ -42,6 +42,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -64,7 +65,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.transfer.TransferException;
@@ -74,7 +74,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
@@ -91,7 +90,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
  * @author Brian Remmington
  */
 @SuppressWarnings("deprecation")
-@Category({BaseSpringTestsCategory.class, LuceneTests.class})
+@Category({BaseSpringTestsCategory.class})
 public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 {
     private static int fileCount = 0;
@@ -103,6 +102,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     private byte[] dummyContentBytes;
     private NodeRef guestHome;
     private PolicyComponent policyComponent;
+    private Repository repositoryHelper;
+    private NamespaceService namespaceService;
     
     @Override
     public void runBare() throws Throwable
@@ -131,16 +132,15 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         this.receiver = (RepoTransferReceiverImpl) this.getApplicationContext().getBean("transferReceiver");
         this.policyComponent = (PolicyComponent) this.getApplicationContext().getBean("policyComponent");
         this.searchService = (SearchService) this.getApplicationContext().getBean("searchService");
+        this.repositoryHelper = (Repository) this.getApplicationContext().getBean("repositoryHelper");
+        this.namespaceService = (NamespaceService) this.getApplicationContext().getBean("namespaceService");
         this.dummyContent = "This is some dummy content.";        
         this.dummyContentBytes = dummyContent.getBytes("UTF-8");
         setTransactionDefinition(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW));
         authenticationComponent.setSystemUserAsCurrentUser();
 
         startNewTransaction();
-        String guestHomeQuery = "/app:company_home/app:guest_home";
-        ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-        assertEquals("", 1, guestHomeResult.length());
-        guestHome = guestHomeResult.getNodeRef(0);
+        guestHome = repositoryHelper.getGuestHome();
         endTransaction();
     }
 
@@ -162,10 +162,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             public TestContext execute() throws Throwable
             {
                 TestContext tc = new TestContext();
-                ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, 
-                        "/app:company_home");
-                assertEquals(1, rs.length());
-                NodeRef companyHome = rs.getNodeRef(0);
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>();
                 props.put(ContentModel.PROP_NAME, uuid);
                 tc.childAssoc = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS, 
@@ -1650,25 +1647,13 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
     {
         NodeRef reportParentFolder = null;
         log.debug("Trying to find transfer summary report records folder: " + transferSummaryReportLocation);
-        ResultSet rs = null;
-
-        try
+        List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
+                transferSummaryReportLocation, null, namespaceService, false);
+        if (refs.size() > 0)
         {
-            rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, transferSummaryReportLocation);
-            if (rs.length() > 0)
-            {
-                reportParentFolder = rs.getNodeRef(0);
+            reportParentFolder = refs.get(0);
 
-                log.debug("Found transfer summary report records folder: " + reportParentFolder);
-            }
-
-        }
-        finally
-        {
-            if (rs != null)
-            {
-                rs.close();
-            }
+            log.debug("Found transfer summary report records folder: " + reportParentFolder);
         }
         return reportParentFolder;
     }
@@ -1827,15 +1812,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
         node.setType(ContentModel.TYPE_FOLDER);
         
-        /**
-         * Get guest home
-         */
-        String guestHomeQuery = "/app:company_home/app:guest_home";
-        ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-        assertEquals("", 1, guestHomeResult.length());
-        NodeRef guestHome = guestHomeResult.getNodeRef(0); 
-        NodeRef parentFolder = guestHome;
-        
+        NodeRef parentFolder = repositoryHelper.getGuestHome();
+
         String nodeName = folderName == null ? uuid + ".folder" + getNameSuffix() : folderName;
 
         List<ChildAssociationRef> parents = new ArrayList<ChildAssociationRef>();

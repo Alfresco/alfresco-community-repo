@@ -55,6 +55,7 @@ import javax.xml.validation.Validator;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -109,6 +110,7 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
 
@@ -138,6 +140,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     private Descriptor serverDescriptor;
     private TaggingService taggingService; 
     private CategoryService categoryService;
+    private Repository repositoryHelper;
     
     String COMPANY_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home";
     String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
@@ -174,6 +177,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
         this.taggingService = ((TaggingService)this.applicationContext.getBean("TaggingService"));
         this.categoryService = (CategoryService)this.applicationContext.getBean("CategoryService");
+        this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
         
         this.serverDescriptor = descriptorService.getServerDescriptor();
         
@@ -705,13 +709,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext ctx = new TestContext();
                 
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test node that we will read and write
@@ -1077,13 +1075,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext ctx = new TestContext();
 
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test node that we will read and write
@@ -1275,13 +1267,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext ctx = new TestContext();
                 
-                /**
-                 * Get guest home
-                 */
-               String guestHomeQuery = "/app:company_home/app:guest_home";
-               ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-               assertEquals("", 1, guestHomeResult.length());
-               NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+               NodeRef guestHome = repositoryHelper.getGuestHome();
        
                /**
                 * Create a test node that we will read and write
@@ -1530,13 +1516,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext ctx = new TestContext();
                 ctx.targetName = GUID.generate();
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                ctx.guestHome = guestHomeResult.getNodeRef(0); 
+                ctx.guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test node that we will transfer.   Its path is what is important
@@ -1709,13 +1689,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext ctx = new TestContext();
                 
-                /**
-                 * Get guest home
-                 */
-               String guestHomeQuery = "/app:company_home/app:guest_home";
-               ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-               assertEquals("", 1, guestHomeResult.length());
-               final NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+               final NodeRef guestHome = repositoryHelper.getGuestHome();
                 
                 ctx.nodeRefA = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME_A);
                 
@@ -1896,13 +1870,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         final Locale CONTENT_LOCALE = Locale.GERMAN; 
         final String CONTENT_STRING = "Hello";
         final String targetName = "testAsyncCallback";
-        /**
-         * Get guest home
-         */
-        String guestHomeQuery = "/app:company_home/app:guest_home";
-        ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-        assertEquals("unable to find guest home", 1, guestHomeResult.length());
-        final NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+        final NodeRef guestHome = repositoryHelper.getGuestHome();
 
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
 
@@ -2189,15 +2157,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 {
                     TestContext ctx = new TestContext();
                     
-                    String guestHomeQuery = "/app:company_home/app:guest_home";
-                    ResultSet result = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                        
-                    assertEquals("", 1, result.length());
-                    NodeRef guestHome = result.getNodeRef(0);
+                    NodeRef guestHome = repositoryHelper.getGuestHome();
               
-                    System.out.println("Guest home:" + guestHome);
-                    assertNotNull(guestHome);
-                 
                     ctx.contentNodeRef = nodeService.getChildByName(guestHome, ContentModel.ASSOC_CONTAINS, CONTENT_NAME);
                     if(ctx.contentNodeRef == null)
                     {
@@ -2343,13 +2304,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext ctx = new TestContext();
 
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test node with an empty content that we will read and write
@@ -2616,13 +2571,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext testContext = new TestContext();
             
-                /**
-                 * Get guest home
-                 */
-               String guestHomeQuery = "/app:company_home/app:guest_home";
-               ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-               assertEquals("", 1, guestHomeResult.length());
-               NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+               NodeRef guestHome = repositoryHelper.getGuestHome();
    
                /**
                 * Create a test node that we will read and write
@@ -2752,14 +2701,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         
         DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
         transferServiceImpl.setDescriptorService(mockedDescriptorService);
-        
-        /**
-         * Get guest home
-         */
-        String guestHomeQuery = "/app:company_home/app:guest_home";
-        ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-        assertEquals("", 1, guestHomeResult.length());
-        final NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+
+        final NodeRef guestHome = repositoryHelper.getGuestHome();
         
         final String targetName = "testRepeatUpdateOfContent";
         
@@ -3150,13 +3093,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext testContext = new TestContext();
 
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test node that we will read and write
@@ -3364,21 +3301,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext testContext = new TestContext();
 
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0); 
-                guestHomeResult.close();
-                
-                String companyHomeQuery = "/app:company_home";
-                ResultSet companyHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, companyHomeQuery);
-                assertEquals("", 1, companyHomeResult.length());
-                NodeRef companyHome = companyHomeResult.getNodeRef(0); 
-                companyHomeResult.close();
-
+                NodeRef guestHome = repositoryHelper.getGuestHome();
+                NodeRef companyHome = repositoryHelper.getCompanyHome();
 
                 /**
                  * Create a test node that we will read and write
@@ -3505,6 +3429,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
      * 
      * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
      */
+    @Category(RedundantTests.class)
     public void testCategoriesAndTags() throws Exception
     {
         final String CONTENT_TITLE = "ContentTitle";
@@ -3540,13 +3465,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
             {
                 TestContext ctx = new TestContext();
                 
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test node that we will read and write

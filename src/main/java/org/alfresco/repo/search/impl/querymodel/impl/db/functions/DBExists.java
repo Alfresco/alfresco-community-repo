@@ -33,6 +33,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.JoinType;
 import org.alfresco.repo.search.impl.querymodel.PropertyArgument;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQuery;
 import org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent;
@@ -120,7 +121,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 typeSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
-                typeSupport.setLeftOuter(true);
+                typeSupport.setJoinType(JoinType.LEFT);
             }
             else
             {
@@ -134,7 +135,7 @@ public class DBExists extends Exists implements DBQueryBuilderComponent
             if ((not != null) && (not.equals(Boolean.TRUE)))
             {
                 typeSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTEXISTS);
-                typeSupport.setLeftOuter(true);
+                typeSupport.setJoinType(JoinType.LEFT);
             }
             else
             {

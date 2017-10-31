@@ -120,6 +120,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
@@ -2336,7 +2337,8 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-    
+
+    @Category(RedundantTests.class)
     @Test
     public void mnt10548test() throws Exception
     {

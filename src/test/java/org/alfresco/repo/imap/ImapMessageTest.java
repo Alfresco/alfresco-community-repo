@@ -81,6 +81,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -486,7 +487,8 @@ public class ImapMessageTest extends TestCase
         assertNotNull(imapMessageCc);
         assertEquals(decodedAddress, imapMessageCc);
     }
-    
+
+    @Category(RedundantTests.class)
     public void testEightBitMessage() throws Exception
     {
 

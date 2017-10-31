@@ -52,7 +52,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -1361,7 +1360,6 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
         AuthorityService authorityService = serviceRegistry.getAuthorityService();
         PersonService personService = serviceRegistry.getPersonService();
-        SearchService searchService = serviceRegistry.getSearchService();
 
         authenticationComponent.setSystemUserAsCurrentUser();
 
@@ -1370,7 +1368,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         
         // create test users
         this.personManager = new TestPersonManager(authenticationService, personService, nodeService);
-        this.groupManager = new TestGroupManager(authorityService, searchService);
+        this.groupManager = new TestGroupManager(authorityService);
         
         personManager.createPerson(USER1);
         personManager.createPerson(USER2);

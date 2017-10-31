@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.*;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -35,6 +37,7 @@ import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.junit.Before;
 import org.junit.Test;
 
 public class VirtualRatingServiceExtensionTest extends VirtualizationIntegrationTest
@@ -53,8 +56,8 @@ public class VirtualRatingServiceExtensionTest extends VirtualizationIntegration
 
     private String user2;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
 
@@ -119,13 +122,14 @@ public class VirtualRatingServiceExtensionTest extends VirtualizationIntegration
                       1f,
                       LIKES_RATING_SCHEME,
                       user2);
-
+        
+        double delta = 0.0000001;
         assertEquals(1f,
                      ratingService.getAverageRating(virtualContent,
-                                                    LIKES_RATING_SCHEME));
+                                                    LIKES_RATING_SCHEME), delta);
         assertEquals(1f,
                      ratingService.getAverageRating(actualNodeRef,
-                                                    LIKES_RATING_SCHEME));
+                                                    LIKES_RATING_SCHEME), delta);
 
         applyRatingAs(virtualContent,
                       1f,
@@ -137,9 +141,9 @@ public class VirtualRatingServiceExtensionTest extends VirtualizationIntegration
                       user2);
         assertEquals(2f,
                      ratingService.getAverageRating(virtualContent,
-                                                    FIVE_STAR_RATING_SCHEME));
+                                                    FIVE_STAR_RATING_SCHEME), delta);
         assertEquals(2f,
                      ratingService.getAverageRating(actualNodeRef,
-                                                    FIVE_STAR_RATING_SCHEME));
+                                                    FIVE_STAR_RATING_SCHEME), delta);
     }
 }

@@ -25,15 +25,12 @@
  */
 package org.alfresco.repo.model.filefolder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -45,9 +42,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
@@ -86,10 +80,9 @@ public class FileFolderServicePropagationTest extends TestCase
 
     private PermissionService permissionService;
 
-    private SearchService searchService;
-
     private NodeService nodeService;
 
+    private Repository repositoryHelper;
 
     private FileInfo testFile;
 
@@ -115,8 +108,8 @@ public class FileFolderServicePropagationTest extends TestCase
         authenticationService = serviceRegistry.getAuthenticationService();
         transactionService = serviceRegistry.getTransactionService();
         permissionService = serviceRegistry.getPermissionService();
-        searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
+        repositoryHelper = (Repository) applicationContext.getBean("repositoryHelper");
 
         testFile = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
         {
@@ -128,9 +121,7 @@ public class FileFolderServicePropagationTest extends TestCase
                     @Override
                     public FileInfo doWork() throws Exception
                     {
-                        ResultSet resultSet = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home\"");
-                        NodeRef companyHome = resultSet.getNodeRef(0);
-                        resultSet.close();
+                        NodeRef companyHome = repositoryHelper.getCompanyHome();
 
                         StringBuilder name = new StringBuilder("TestRootFolder-").append(System.currentTimeMillis());
                         testRootFolder = fileFolderService.create(companyHome, name.toString(), ContentModel.TYPE_FOLDER);

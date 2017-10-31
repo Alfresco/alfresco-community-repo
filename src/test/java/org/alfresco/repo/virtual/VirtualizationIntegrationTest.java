@@ -26,12 +26,22 @@
 
 package org.alfresco.repo.virtual;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,12 +49,11 @@ import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.search.impl.SearchServiceSubSystemDelegator;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -59,7 +68,9 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -69,13 +80,17 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 
-@Ignore
 @Category(LuceneTests.class)
-public abstract class VirtualizationIntegrationTest extends TestCase implements VirtualizationTest
+public abstract class VirtualizationIntegrationTest implements VirtualizationTest
 {
     private static Log logger = LogFactory.getLog(VirtualizationIntegrationTest.class);
 
@@ -151,7 +166,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
 
     protected PermissionService permissionService;
 
-    protected SearchService searchService;
+    //protected SearchService searchService;
 
     protected RetryingTransactionHelper retryingTransactionHelper;
 
@@ -180,8 +195,14 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
     /** when set to a not-null value will be restored up[on {@link #tearDown()} */
     protected String configuredTemplatesClassPath = null;
 
-    @Override
-    protected void setUp() throws Exception
+    private @Mock ResultSet dbResults;
+    private @Mock ResultSetRow resultSetRow;
+    private SearchServiceSubSystemDelegator searchServiceDelegatorSpy;
+    
+    private String queryMatcher;
+
+    @Before
+    public void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
         
@@ -197,7 +218,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
         contentService = serviceRegistry.getContentService();
         fileAndFolderService = serviceRegistry.getFileFolderService();
         permissionService = serviceRegistry.getPermissionService();
-        searchService = serviceRegistry.getSearchService();
+        //searchService = serviceRegistry.getSearchService();
 
         authenticationComponent = ctx.getBean("authenticationComponent",
                                               AuthenticationComponent.class);
@@ -242,9 +263,10 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
                                                         VIRTUAL_FOLDER_1_NAME,
                                                         TEST_TEMPLATE_1_JSON_SYS_PATH);
         rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-
+        setupMocks();
     }
 
+    @After
     public void tearDown() throws Exception
     {
         if (!virtualizationConfigTestBootstrap.areVirtualFoldersEnabled())
@@ -272,7 +294,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
                          e);
         }
 
-        super.tearDown();
+       // super.tearDown();
     }
 
     /**
@@ -473,5 +495,88 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
         writer.setEncoding(encoding);
         writer.putContent(contentString);
         return nodeAssoc;
+    }
+
+    protected void setupMocks()
+    {
+        SearchServiceSubSystemDelegator searchServiceDelegator = (SearchServiceSubSystemDelegator) ctx.getBean("searchService");
+        searchServiceDelegatorSpy = spy(searchServiceDelegator);
+        searchServiceDelegator.setSubSystem(searchServiceDelegatorSpy);
+        
+        doReturn(dbResults).when(searchServiceDelegatorSpy).query(Matchers.argThat(getArgMatcher()));
+    }
+
+    protected void prepareMocks(String queryMatcher, NodeRef realNodeToReturn)
+    {
+        this.queryMatcher = queryMatcher;
+        List<ResultSetRow> dbRows = new ArrayList<ResultSetRow>();
+        dbRows.add(resultSetRow);
+        when(resultSetRow.getNodeRef()).thenReturn(realNodeToReturn);
+        // make sure we return a new iterator each time
+        when(dbResults.iterator()).thenAnswer(new Answer<Iterator<ResultSetRow>>()
+        {
+            public Iterator<ResultSetRow> answer(org.mockito.invocation.InvocationOnMock invocation) throws Throwable
+            {
+                return dbRows.iterator();
+            };
+        });
+        when(dbResults.hasMore()).thenReturn(false);
+        when(dbResults.getNumberFound()).thenReturn(1L);
+        when(dbResults.getStart()).thenReturn(0);
+    }
+    protected void prepareMocks(String queryMatcher, List<NodeRef> realNodeToReturn)
+    {
+        this.queryMatcher = queryMatcher;
+        List<ResultSetRow> dbRows = new ArrayList<ResultSetRow>();
+        for(NodeRef node: realNodeToReturn)
+        {
+            ResultSetRow mock = mock(ResultSetRow.class);
+            dbRows.add(mock);
+            when(mock.getNodeRef()).thenReturn(node);
+        }
+        
+        // make sure we return a new iterator each time
+        when(dbResults.iterator()).thenAnswer(new Answer<Iterator<ResultSetRow>>()
+        {
+            public Iterator<ResultSetRow> answer(org.mockito.invocation.InvocationOnMock invocation) throws Throwable
+            {
+                return dbRows.iterator();
+            };
+        });
+        when(dbResults.hasMore()).thenReturn(false);
+        when(dbResults.getNumberFound()).thenReturn(2L);
+        when(dbResults.getStart()).thenReturn(0);
+    }
+
+    protected void resetMocks()
+    {
+        // this will invalidate any match on the parameter for the query function,
+        // so the queries will go to the real object
+        this.queryMatcher = null;
+    }
+
+    protected ArgumentMatcher<SearchParameters> getArgMatcher()
+    {
+        return new ArgumentMatcher<SearchParameters>()
+        {
+            @Override
+            public boolean matches(Object argument)
+            {
+                if (argument instanceof SearchParameters)
+                {
+                    String matchingString = getMatchingString();
+                    if (matchingString != null && argument.toString().contains(matchingString))
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+
+    protected String getMatchingString()
+    {
+        return queryMatcher;
     }
 }

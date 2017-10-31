@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.virtual.template;
 
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -36,6 +38,7 @@ import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.VirtualContext;
 import org.alfresco.repo.virtual.ref.ClasspathResource;
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TemplateResourceProcessorTest extends VirtualizationIntegrationTest
@@ -43,8 +46,8 @@ public class TemplateResourceProcessorTest extends VirtualizationIntegrationTest
 
     private VirtualFolderDefinition testTemplate2Definition;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
 

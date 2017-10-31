@@ -78,7 +78,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
@@ -199,6 +198,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     private AlienProcessor alienProcessor;
     private JobLockService jobLockService;
     private TransferVersionChecker transferVersionChecker;
+    private NamespaceService namespaceService;
     
     // note: cache is tenant-aware (if using TransctionalCache impl)
     private SimpleCache<String, NodeRef> singletonCache; // eg. for transfer temp folder nodeRef
@@ -254,6 +254,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         PropertyCheck.mandatory(this, "alienProcessor", alienProcessor);
         PropertyCheck.mandatory(this, "jobLockService", getJobLockService());
         PropertyCheck.mandatory(this, "transferVersionChecker", getTransferVersionChecker());
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
 
         beforeStartInboundTransferDelegate = policyComponent.registerClassPolicy(TransferServicePolicies.BeforeStartInboundTransferPolicy.class);
         onStartInboundTransferDelegate = policyComponent.registerClassPolicy(TransferServicePolicies.OnStartInboundTransferPolicy.class);
@@ -361,26 +362,17 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         // If not then do so.
         if (transferTempFolder == null)
         {
-            ResultSet rs = null;
-            
-            try
+            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
+                    transferTempFolderPath, null, namespaceService, false);
+            if (refs.size() > 0)
             {
-                rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
-                    transferTempFolderPath);
-                if (rs.length() > 0)
-                {
-                    transferTempFolder = rs.getNodeRef(0);
+                transferTempFolder = refs.get(0);
                 singletonCache.put(KEY_TRANSFER_TEMP_NODEREF, transferTempFolder);
-                }
-                else
-                {
-                    throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] { transferId,
-                        transferTempFolderPath });
-                }
             }
-            finally
+            else
             {
-            	if (rs != null) {rs.close();}
+                throw new TransferException(MSG_TRANSFER_TEMP_FOLDER_NOT_FOUND, new Object[] { transferId,
+                        transferTempFolderPath });
             }
         }
 
@@ -516,27 +508,18 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         if (inboundTransferRecordsFolder == null)
         {
             log.debug("Trying to find transfer records folder: " + inboundTransferRecordsPath);
-            ResultSet rs = null;
-            
-            try
+            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
+                    inboundTransferRecordsPath, null, namespaceService, false);
+            if (refs.size() > 0)
             {
-                rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
-                    inboundTransferRecordsPath);
-                if (rs.length() > 0)
-                {
-                    inboundTransferRecordsFolder = rs.getNodeRef(0);
+                inboundTransferRecordsFolder = refs.get(0);
                 singletonCache.put(KEY_INBOUND_TRANSFER_RECORDS_NODEREF, inboundTransferRecordsFolder);
-                    log.debug("Found inbound transfer records folder: " + inboundTransferRecordsFolder);
-                }
-                else
-                {
-                    throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND,
-                        new Object[] { inboundTransferRecordsPath });
-                }
+                log.debug("Found inbound transfer records folder: " + inboundTransferRecordsFolder);
             }
-            finally
+            else
             {
-            	if (rs != null) {rs.close();}
+                throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND,
+                        new Object[] { inboundTransferRecordsPath });
             }
         }
 
@@ -1153,6 +1136,11 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     public RuleService getRuleService()
     {
         return this.ruleService;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 
     /**

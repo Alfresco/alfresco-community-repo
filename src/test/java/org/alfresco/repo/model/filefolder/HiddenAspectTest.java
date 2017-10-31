@@ -93,7 +93,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.springframework.context.ApplicationContext;
 
-@Category(LuceneTests.class)
 public class HiddenAspectTest
 {
     @Rule public TestName name = new TestName();
@@ -110,7 +109,6 @@ public class HiddenAspectTest
     private CheckOutCheckInService cociService;
     private UserTransaction txn;
 
-    private SearchService searchService;
     private DictionaryNamespaceComponent namespacePrefixResolver;
     private ImapService imapService;
     private PersonService personService;
@@ -143,7 +141,6 @@ public class HiddenAspectTest
         cociService = (CheckOutCheckInService) ctx.getBean("checkOutCheckInService");
         imapService = serviceRegistry.getImapService();
         personService = serviceRegistry.getPersonService();
-        searchService = serviceRegistry.getSearchService();
         permissionService = serviceRegistry.getPermissionService();
         imapEnabled = serviceRegistry.getImapService().getImapServerEnabled();
         
@@ -237,8 +234,6 @@ public class HiddenAspectTest
             assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_TEMPORARY));
             assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_INDEX_CONTROL));
-            ResultSet results = searchForName(".TemporaryItems");
-            assertEquals("", 0, results.length());
 
             children = fileFolderService.list(parent);
             assertEquals(1, children.size());
@@ -259,8 +254,6 @@ public class HiddenAspectTest
             assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
             assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName("Thumbs.db");
-            assertEquals("", 0, results.length());
             children = fileFolderService.list(parent);
             assertEquals(1, children.size());
             // set hidden attribute for cifs, webdav. ftp, nfs should be able to see, other clients not
@@ -275,8 +268,6 @@ public class HiddenAspectTest
             NodeRef node = fileFolderService.create(topNodeRef, "surf-config", ContentModel.TYPE_FOLDER).getNodeRef();
             assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName("surf-config");
-            assertEquals("", 0, results.length());
             for(Client client : hiddenAspect.getClients())
             {
             	if(!client.equals(Client.admin))
@@ -289,8 +280,6 @@ public class HiddenAspectTest
             node = fileFolderService.create(topNodeRef, ".DS_Store", ContentModel.TYPE_CONTENT).getNodeRef();
             assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName(".DS_Store");
-            assertEquals("", 0, results.length());
             for(Client client : hiddenAspect.getClients())
             {
                 if(client == Client.cifs)
@@ -311,8 +300,6 @@ public class HiddenAspectTest
             node = fileFolderService.create(topNodeRef, "._resourceFork", ContentModel.TYPE_FOLDER).getNodeRef();
             assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-            results = searchForName("._resourceFork");
-            assertEquals("", 0, results.length());
             for(Client client : hiddenAspect.getClients())
             {
                 if(client != Client.admin)
@@ -536,10 +523,7 @@ public class HiddenAspectTest
             assertTrue(nodeService.hasAspect(node31, ContentModel.ASPECT_INDEX_CONTROL));
             assertTrue(nodeService.hasAspect(node41, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(node41, ContentModel.ASPECT_INDEX_CONTROL));
-    
-            ResultSet results = searchForName(nodeName);
-            assertEquals("", 1, results.length());
-    
+
             try
             {
                 fileFolderService.rename(node, "." + nodeName);
@@ -568,12 +552,6 @@ public class HiddenAspectTest
             assertTrue(nodeService.hasAspect(node41, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(node41, ContentModel.ASPECT_INDEX_CONTROL));
     
-            results = searchForName(nodeName);
-            assertEquals("", 0, results.length());
-    
-            results = searchForName("." + nodeName);
-            assertEquals("", 0, results.length());
-    
             try
             {
                 fileFolderService.rename(node, nodeName);
@@ -601,9 +579,6 @@ public class HiddenAspectTest
             assertTrue(nodeService.hasAspect(node31, ContentModel.ASPECT_INDEX_CONTROL));
             assertTrue(nodeService.hasAspect(node41, ContentModel.ASPECT_HIDDEN));
             assertTrue(nodeService.hasAspect(node41, ContentModel.ASPECT_INDEX_CONTROL));
-
-            results = searchForName(nodeName);
-            assertEquals("", 1, results.length());
         }
         finally
         {
@@ -625,9 +600,6 @@ public class HiddenAspectTest
             NodeRef node = fileFolderService.create(topNodeRef, nodeName, ContentModel.TYPE_FOLDER).getNodeRef();
             NodeRef checkedOutNode = fileFolderService.create(node, guid + ".lockedchild",  ContentModel.TYPE_CONTENT).getNodeRef();
 
-            ResultSet results = searchForName(nodeName);
-            assertEquals("", 1, results.length());
-            
             workingCopyNodeRef = cociService.checkout(checkedOutNode);
             assertNotNull(workingCopyNodeRef);
             assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_CHECKED_OUT));
@@ -649,12 +621,6 @@ public class HiddenAspectTest
             {
                 fail();
             }
-            
-            results = searchForName(nodeName);
-            assertEquals("File with old name should not be found", 0, results.length());
-    
-            results = searchForName(newName);
-            assertEquals("File with new name should be found", 1, results.length());
         }
         finally
         {
@@ -678,8 +644,6 @@ public class HiddenAspectTest
 	            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
 	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
-	            ResultSet results = searchForName("file.tmp");
-	            assertEquals("", 1, results.length());
 	            List<FileInfo> children = fileFolderService.list(parent);
 	            assertEquals(1, children.size());
 	
@@ -692,8 +656,6 @@ public class HiddenAspectTest
 	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
 	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
-	            results = searchForName(".TemporaryItems");
-	            assertEquals("", 1, results.length());
 	            children = fileFolderService.list(parent);
 	            assertEquals(1, children.size());
 	
@@ -702,22 +664,16 @@ public class HiddenAspectTest
 	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_TEMPORARY));
 	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
-	            results = searchForName("Thumbs.db");
-	            assertEquals("", 1, results.length());
 	            children = fileFolderService.list(parent);
 	            assertEquals(1, children.size());
 	
 	            NodeRef node = fileFolderService.create(topNodeRef, "surf-config", ContentModel.TYPE_FOLDER).getNodeRef();
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-	            results = searchForName("surf-config");
-	            assertEquals("", 1, results.length());
-	            
+
 	            node = fileFolderService.create(topNodeRef, ".DS_Store", ContentModel.TYPE_CONTENT).getNodeRef();
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-	            results = searchForName(".DS_Store");
-	            assertEquals("", 1, results.length());
 	            for(Client client : hiddenAspect.getClients())
 	            {
 	                assertEquals("Should be visible for client " + client, Visibility.Visible, hiddenAspect.getVisibility(client, node));
@@ -726,9 +682,7 @@ public class HiddenAspectTest
 	            node = fileFolderService.create(topNodeRef, "._resourceFork", ContentModel.TYPE_FOLDER).getNodeRef();
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-	            results = searchForName("._resourceFork");
-	            assertEquals("", 1, results.length());
-	
+
 	            children = fileFolderService.list(parent);
 	            assertEquals(1, children.size());
 	            
@@ -737,8 +691,6 @@ public class HiddenAspectTest
 	            node = fileFolderService.create(topNodeRef, nodeName, ContentModel.TYPE_CONTENT).getNodeRef();
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-	            results = searchForName(nodeName);
-	            assertEquals("", 1, results.length());
 	            try
 	            {
 	                fileFolderService.rename(node, "." + nodeName);
@@ -754,12 +706,6 @@ public class HiddenAspectTest
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
 	
-	            results = searchForName(nodeName);
-	            assertEquals("", 1, results.length());
-	
-	            results = searchForName("." + nodeName);
-	            assertEquals("", 1, results.length());
-	            
 	            try
 	            {
 	                fileFolderService.rename(node, nodeName);
@@ -774,9 +720,6 @@ public class HiddenAspectTest
 	            }
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_HIDDEN));
 	            assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_INDEX_CONTROL));
-	
-	            results = searchForName("." + nodeName);
-	            assertEquals("", 1, results.length());
 	
 	            imapService.getOrCreateMailbox(user, MAILBOX_NAME_A, false, true);
 	            imapService.renameMailbox(user, MAILBOX_NAME_A, MAILBOX_NAME_B);
@@ -810,10 +753,6 @@ public class HiddenAspectTest
             NodeRef node22 = fileFolderService.create(node11, nodeName + ".22", ContentModel.TYPE_CONTENT).getNodeRef();
             NodeRef node31 = fileFolderService.create(node21, ".31", ContentModel.TYPE_FOLDER).getNodeRef();
             NodeRef node41 = fileFolderService.create(node31, nodeName + ".41", ContentModel.TYPE_CONTENT).getNodeRef();
-
-            assertEquals(1, searchForName(".12").length());
-            assertEquals(1, searchForName(".31").length());
-            assertEquals(1, searchForName(nodeName + ".41").length());
 
             txn.commit();
         }
@@ -932,15 +871,5 @@ public class HiddenAspectTest
             return false;
         }
         return true;
-    }
-    
-    private ResultSet searchForName(String name)
-    {
-        SearchParameters sp = new SearchParameters();
-        sp.addStore(rootNodeRef.getStoreRef());
-        sp.setLanguage("lucene");
-        sp.setQuery("@" + SearchLanguageConversion.escapeLuceneQuery(ContentModel.PROP_NAME.toString()) + ":\"" + name + "\"");
-        sp.addLocale(new Locale("en"));
-        return searchService.query(sp);
     }
 }

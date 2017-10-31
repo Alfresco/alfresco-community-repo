@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.virtual.template;
 
+import static org.junit.Assert.*;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.ref.Reference;

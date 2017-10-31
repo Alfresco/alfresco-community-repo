@@ -1106,23 +1106,6 @@
         <constructor-arg value="false" />
         <constructor-arg value="false" />
     </bean>
-    
-    <bean id="buildonly" class="org.alfresco.repo.management.subsystems.LuceneChildApplicationContextFactory" parent="abstractPropertyBackedBean">
-        <property name="autoStart">
-            <value>false</value>
-        </property>
-        <property name="category">
-            <value>Search</value>
-        </property>
-        <property name="typeName">
-            <value>buildonly</value>
-        </property>
-        <property name="instancePath">
-            <list>
-                <value>hidden</value>
-            </list>
-        </property>
-    </bean>
 
     <bean id="noindex" class="org.alfresco.repo.management.subsystems.NoIndexChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">

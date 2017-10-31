@@ -130,6 +130,7 @@ CREATE TABLE alf_access_control_list
     UNIQUE KEY acl_id (acl_id, latest, acl_version),
     KEY idx_alf_acl_inh (inherits, inherits_from),
     KEY fk_alf_acl_acs (acl_change_set),
+    KEY idx_alf_acl_acs (acl_change_set, acl_id),
     CONSTRAINT fk_alf_acl_acs FOREIGN KEY (acl_change_set) REFERENCES alf_acl_change_set (id)
 ) ENGINE=InnoDB;
 

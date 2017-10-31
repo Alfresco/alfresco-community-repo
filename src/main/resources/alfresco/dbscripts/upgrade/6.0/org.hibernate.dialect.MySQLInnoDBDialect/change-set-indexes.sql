@@ -7,7 +7,9 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
--- Nothing to do for MySQLInnoDB: the existing index is fine
+DROP INDEX idx_alf_acl_acs ON alf_access_control_list;  --(optional)
+CREATE INDEX idx_alf_acl_acs ON alf_access_control_list (acl_change_set, acl_id);  --(optional)
+
 
 --
 -- Record script finish

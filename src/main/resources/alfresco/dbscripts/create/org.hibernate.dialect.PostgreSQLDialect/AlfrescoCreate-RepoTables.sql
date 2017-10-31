@@ -141,6 +141,7 @@ CREATE TABLE alf_access_control_list
 CREATE UNIQUE INDEX acl_id ON alf_access_control_list (acl_id, latest, acl_version);
 CREATE INDEX idx_alf_acl_inh ON alf_access_control_list (inherits, inherits_from);
 CREATE INDEX fk_alf_acl_acs ON alf_access_control_list (acl_change_set);
+CREATE INDEX idx_alf_acl_acs ON alf_access_control_list (acl_change_set, acl_id);
 
 CREATE SEQUENCE alf_acl_member_seq START WITH 1 INCREMENT BY 1;
 CREATE TABLE alf_acl_member

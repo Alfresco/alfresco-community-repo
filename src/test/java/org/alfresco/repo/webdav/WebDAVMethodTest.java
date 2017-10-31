@@ -226,7 +226,7 @@ public class WebDAVMethodTest
         }
     }
     
-    private void checkLockedNodeTestTenantWork() throws WebDAVServerException
+    private void checkLockedNodeTestTenantWork() throws Exception
     {
         req = new MockHttpServletRequest();
         resp = new MockHttpServletResponse();

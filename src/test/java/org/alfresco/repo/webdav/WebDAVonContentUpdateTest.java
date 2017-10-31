@@ -32,6 +32,7 @@ import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -39,6 +40,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -51,6 +53,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
@@ -95,11 +98,13 @@ public class WebDAVonContentUpdateTest
     private LockService lockService;
     private PolicyComponent policyComponent;
 
+    private Repository repositoryHelper;
     private NodeRef companyHomeNodeRef;
     private StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
 	private boolean flag;
 	private int counter = 0;
+    private NamespaceService namespaceService;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
@@ -122,22 +127,12 @@ public class WebDAVonContentUpdateTest
         webDAVHelper = ctx.getBean("webDAVHelper", WebDAVHelper.class);
         lockService = ctx.getBean("LockService", LockService.class);
         policyComponent = ctx.getBean("policyComponent", PolicyComponent.class);
+        namespaceService = ctx.getBean("namespaceService", NamespaceService.class);
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        companyHomeNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-        {
-            @Override
-            public NodeRef execute() throws Throwable
-            {
-                // find "Company Home"
-                ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home\"");
-                NodeRef result = resultSet.getNodeRef(0);
-                resultSet.close();
-
-                return result;
-            }
-        });
+        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
+        companyHomeNodeRef = repositoryHelper.getCompanyHome();
 
         InputStream testDataIS = getClass().getClassLoader().getResourceAsStream(TEST_DATA_FILE_NAME);
         InputStream davLockInfoIS = getClass().getClassLoader().getResourceAsStream(DAV_LOCK_INFO_XML);
@@ -191,10 +186,10 @@ public class WebDAVonContentUpdateTest
         {
             executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoFile, null);
             
-            ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home//cm:" + fileName + "\"");
-            fileNoderef = resultSet.getNodeRef(0);
-            resultSet.close();
-            
+            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef),
+                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+            fileNoderef = refs.get(0);
+
             assertEquals("File should be locked", LockStatus.LOCK_OWNER, lockService.getLockStatus(fileNoderef));
         }
         catch (Exception e)

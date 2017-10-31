@@ -38,6 +38,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -103,6 +104,7 @@ public class MoveMethodTest
     private ContentService contentService;
     private WebDAVHelper webDAVHelper;
 
+    private Repository repositoryHelper;
     private NodeRef companyHomeNodeRef;
 
     @BeforeClass
@@ -189,20 +191,8 @@ public class MoveMethodTest
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        companyHomeNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
-            @Override
-            public NodeRef execute() throws Throwable
-            {
-                // find "Company Home"
-                StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
-                ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home\"");
-                NodeRef result = resultSet.getNodeRef(0);
-                resultSet.close();
-
-                return result;
-            }
-        });
+        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
+        companyHomeNodeRef = repositoryHelper.getCompanyHome();
     }
 
     

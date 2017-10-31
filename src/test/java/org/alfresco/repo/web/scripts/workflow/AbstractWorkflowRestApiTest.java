@@ -1632,7 +1632,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         
         AuthorityService authorityService = (AuthorityService) appContext.getBean("AuthorityService");
         personManager = new TestPersonManager(authenticationService, personService, nodeService);
-        groupManager = new TestGroupManager(authorityService, searchService);
+        groupManager = new TestGroupManager(authorityService);
 
         authenticationComponent = (AuthenticationComponent) appContext.getBean("authenticationComponent");
         dictionaryService = (DictionaryService) appContext.getBean("dictionaryService");

@@ -608,13 +608,34 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertTrue(path.getName().startsWith("/Company Home"));
         List<ElementInfo> pathElements = path.getElements();
         assertEquals(7, pathElements.size());
+        
+        // Check path element names and types, and one or two random aspects.
         assertEquals("Company Home", pathElements.get(0).getName());
+        assertEquals("cm:folder", pathElements.get(0).getNodeType());
+        
         assertEquals("Sites", pathElements.get(1).getName());
+        assertEquals("st:sites", pathElements.get(1).getNodeType());
+        
         assertEquals(site1Id, pathElements.get(2).getName());
+        assertEquals("st:site", pathElements.get(2).getNodeType());
+        assertTrue(pathElements.get(2).getAspectNames().contains("cm:titled"));
+        // Check that sys:* is filtered out - to be consistent with other aspect name lists
+        // e.g. /nodes/{nodeId}/children?include=aspectNames
+        assertFalse(pathElements.get(2).getAspectNames().contains("sys:undeletable"));
+        assertFalse(pathElements.get(2).getAspectNames().contains("sys:unmovable"));
+
         assertEquals("documentLibrary", pathElements.get(3).getName());
+        assertEquals("cm:folder", pathElements.get(3).getNodeType());
+        assertTrue(pathElements.get(3).getAspectNames().contains("st:siteContainer"));
+        
         assertEquals(folderA, pathElements.get(4).getName());
+        assertEquals("cm:folder", pathElements.get(4).getNodeType());
+        
         assertEquals(folderB, pathElements.get(5).getName());
+        assertEquals("cm:folder", pathElements.get(5).getNodeType());
+
         assertEquals(folderC, pathElements.get(6).getName());
+        assertEquals("cm:folder", pathElements.get(6).getNodeType());
 
         // Try the above tests with user2 (site consumer)
         setRequestContext(user2);

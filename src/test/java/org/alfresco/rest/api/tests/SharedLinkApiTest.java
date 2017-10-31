@@ -61,6 +61,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -500,6 +501,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links}
      */
     @Test
+    @Category({LuceneTests.class, RedundantTests.class})
     public void testSharedLinkFind() throws Exception
     {
         // As user 1 ...
@@ -991,6 +993,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path}
      */
     @Test
+    @Category({LuceneTests.class, RedundantTests.class})
     public void testGetSharedLinksIncludePath() throws Exception
     {
         String contentText = "includePathTest" + RUNID;
@@ -1188,6 +1191,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links?include=path,allowableOperations}
      */
     @Test
+    @Category({LuceneTests.class, RedundantTests.class})
     public void testCreateSharedLinkWithIncludeParam() throws Exception
     {
         String content = "The quick brown fox jumps over the lazy dog.";

@@ -26,6 +26,7 @@
 package org.alfresco.repo.webdav;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -45,6 +46,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -69,6 +71,7 @@ import javax.transaction.UserTransaction;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -112,10 +115,12 @@ public class PutMethodTest
     private CheckOutCheckInService checkOutCheckInService;
     private PermissionService permissionService;
 
+    private Repository repositoryHelper;
     private NodeRef companyHomeNodeRef;
     private NodeRef versionableDoc;
     private String versionableDocName;
     private StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+    private NamespaceService namespaceService;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception
@@ -142,22 +147,12 @@ public class PutMethodTest
         contentService = ctx.getBean("contentService", ContentService.class);
         checkOutCheckInService = ctx.getBean("CheckOutCheckInService", CheckOutCheckInService.class);
         permissionService = ctx.getBean("PermissionService", PermissionService.class);
+        namespaceService = ctx.getBean("namespaceService", NamespaceService.class);
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        companyHomeNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-        {
-            @Override
-            public NodeRef execute() throws Throwable
-            {
-                // find "Company Home"
-                ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home\"");
-                NodeRef result = resultSet.getNodeRef(0);
-                resultSet.close();
-
-                return result;
-            }
-        });
+        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
+        companyHomeNodeRef = repositoryHelper.getCompanyHome();
         txn = transactionService.getUserTransaction();
         txn.begin();
         createUser(USER1_NAME);
@@ -281,9 +276,9 @@ public class PutMethodTest
         {
             executeMethod(WebDAV.METHOD_PUT, fileName, testDataFile, null);
 
-            ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home//cm:" + fileName + "\"");
-            fileNoderef = resultSet.getNodeRef(0);
-            resultSet.close();
+            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef),
+                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+            fileNoderef = refs.get(0);
 
             assertTrue("File does not exist.", nodeService.exists(fileNoderef));
             assertEquals("Filename is not correct", fileName, nodeService.getProperty(fileNoderef, ContentModel.PROP_NAME));
@@ -704,9 +699,9 @@ public class PutMethodTest
         {
             executeMethod(WebDAV.METHOD_PUT, fileName, new byte[0], null);
 
-            ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home//cm:" + fileName + "\"");
-            fileNoderef = resultSet.getNodeRef(0);
-            resultSet.close();
+            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef),
+                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+            fileNoderef = refs.get(0);
 
             assertTrue("File should exist.", nodeService.exists(fileNoderef));
             assertEquals("Filename is not correct", fileName, nodeService.getProperty(fileNoderef, ContentModel.PROP_NAME));
@@ -792,9 +787,9 @@ public class PutMethodTest
         try
         {
             executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoAdminFile, null);
-            ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home//cm:" + fileName + "\"");
-            fileNoderef = resultSet.getNodeRef(0);
-            resultSet.close();
+            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
+                "/app:company_home/cm:" + fileName , null, namespaceService, false);
+            fileNoderef = refs.get(0);
         }
         catch (Exception e)
         {

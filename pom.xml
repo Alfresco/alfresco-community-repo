@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-remote-api</artifactId>
     <name>Alfresco Remote API</name>
-    <version>-SNAPSHOT</version>
+    <version>6.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -32,11 +32,10 @@
     <properties>
         <licenseName>community</licenseName>
 
-        <index.subsystem.name>buildonly</index.subsystem.name>
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
 
-        <dependency.alfresco-repository.version>6.8</dependency.alfresco-repository.version>
+        <dependency.alfresco-repository.version>6.9</dependency.alfresco-repository.version>
         <dependency.alfresco-core.version>6.14</dependency.alfresco-core.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
 
@@ -245,7 +244,9 @@
 									<target>
 										<echo message="Extracting alfresco-pdf-renderer (windows) for testing..." />
 										<mkdir dir="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
-										<untar compression="gzip" src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz" dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
+										<untar compression="gzip"
+											   src="${settings.localRepository}/org/alfresco/alfresco-pdf-renderer/${dependency.alfresco-pdf-renderer.version}/alfresco-pdf-renderer-${dependency.alfresco-pdf-renderer.version}-win64.tgz"
+											   dest="${project.build.directory}/test-binaries/alfresco-pdf-renderer" />
 									</target>
 								</configuration>
 							</execution>
@@ -400,8 +401,6 @@
                                 <!-- BDE-91 -->
                                 <alfresco.rmi.services.retries>30</alfresco.rmi.services.retries>
                                 <alfresco.rmi.services.retryInterval>2000</alfresco.rmi.services.retryInterval>
-                                <!-- Enables Lucene in continuous integration -->
-                                <index.subsystem.name>${index.subsystem.name}</index.subsystem.name>
                                 <!-- FTR used in TransferWebScriptTest -->
                                 <transferservice.receiver.enabled>true</transferservice.receiver.enabled>
                             </systemPropertyVariables>
@@ -445,8 +444,9 @@
                 <configuration>
                     <target>
                         <copy todir="${project.build.outputDirectory}">
-                            <fileset dir="${basedir}/src/main/resources" includes="alfresco/messages/**/*.properties,alfresco/templates/webscripts/**/*.properties" />
-                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties" />
+                            <fileset dir="${basedir}/src/main/resources"
+                                includes="alfresco/messages/**/*.properties,alfresco/templates/webscripts/**/*.properties" />
+                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
                         </copy>
                     </target>
                 </configuration>

@@ -40,6 +40,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Property;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.util.JettyComponent;
@@ -51,6 +52,8 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
@@ -70,6 +73,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * OpenCMIS TCK unit tests.
@@ -81,24 +85,6 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
 {
 	private static final String CMIS_URL = "http://{0}:{1}/{2}/cmisatom";
 	protected static final Log logger = LogFactory.getLog(TestEnterpriseAtomPubTCK.class);
-
-	private static NodeRef getCompanyHome(NodeService nodeService, SearchService searchService, NamespaceService namespaceService)
-	{
-        NodeRef storeRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        List<NodeRef> results = searchService.selectNodes(
-                storeRootNodeRef,
-                "/app:company_home",
-                null,
-                namespaceService,
-                false,
-                SearchService.LANGUAGE_XPATH);
-        if (results.size() == 0)
-        {
-            throw new AlfrescoRuntimeException("Didn't find Company Home");
-        }
-        NodeRef companyHomeNodeRef = results.get(0);
-        return companyHomeNodeRef;
-	}
 
 	@Before
 	public void setup() throws Exception
@@ -119,7 +105,8 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
 			{
 				AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-				NodeRef companyHome = getCompanyHome(nodeService, searchService, namespaceService);
+                Repository repositoryHelper = (Repository)jetty.getApplicationContext().getBean("repositoryHelper");
+				NodeRef companyHome = repositoryHelper.getCompanyHome();
 				fileFolderService.create(companyHome, name, ContentModel.TYPE_FOLDER).getNodeRef();
 
 				return null;
@@ -173,6 +160,7 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
     }
 
     @Test
+    @Category({LuceneTests.class, RedundantTests.class})
     public void testCMISTCKQuery() throws Exception
     {
         OverrideQueryTestGroup queryTestGroup = new OverrideQueryTestGroup();

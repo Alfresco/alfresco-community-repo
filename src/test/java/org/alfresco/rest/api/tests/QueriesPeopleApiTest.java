@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,31 +25,44 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.alfresco.rest.api.Queries.PARAM_FIRSTNAME;
-import static org.alfresco.rest.api.Queries.PARAM_LASTNAME;
-import static org.alfresco.rest.api.Queries.PARAM_PERSON_ID;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringJoiner;
-
+import com.sun.star.lang.IllegalArgumentException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Queries;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.sun.star.lang.IllegalArgumentException;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
+
+import static org.alfresco.rest.api.Queries.PARAM_FIRSTNAME;
+import static org.alfresco.rest.api.Queries.PARAM_LASTNAME;
+import static org.alfresco.rest.api.Queries.PARAM_PERSON_ID;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
 * V1 REST API tests for pre-defined 'live' search Queries on People
@@ -60,14 +73,14 @@ import org.junit.experimental.categories.Category;
  *
  * @author Alan Davis
  */
-@Category(LuceneTests.class)
+@RunWith(MockitoJUnitRunner.class)
 public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_QUERIES_LSP = "queries/people";
     
     private static String TEST_TERM_PREFIX = Long.toString(System.currentTimeMillis()/1000);
     
-    // TODO Yuck: Would like to use @BeforeClass and @AfterClass. But creating and
+    // TODO Would like to use @BeforeClass and @AfterClass. But creating and
     //      deleting users is hard from from static methods. For the moment do it
     //      in the first and last tests, but we have to get the TEST count right!
     //      If we don't, a test fails or the users get left behind (not too bad).
@@ -75,12 +88,12 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     private static int testCounter = 0;
 
     // Test usernames
+    private static final String USER0 = TEST_TERM_PREFIX+"user0";
     private static final String USER1 = TEST_TERM_PREFIX+"user1";
     private static final String USER2 = TEST_TERM_PREFIX+"user2";
     private static final String USER3 = TEST_TERM_PREFIX+"user3";
     private static final String USER4 = TEST_TERM_PREFIX+"user4";
     private static final String USER5 = TEST_TERM_PREFIX+"user5";
-    private static final String USER6 = TEST_TERM_PREFIX+"user6";
 
     // Test firstnames
     private static final String FIRST_A = TEST_TERM_PREFIX+"FirstA";
@@ -92,43 +105,40 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     private static final String LAST_B = TEST_TERM_PREFIX+"LastB";
     private static final String LAST_C = TEST_TERM_PREFIX+"LastC";
 
-    private static Map<String, Person> testUsers = new HashMap<String, Person>();
+    private static final List<String> testUsernames = new ArrayList<>();
+    private static final List<Person> testPersons = new ArrayList<>();
+    private static final List<NodeRef> testPersonNodeRefs = new ArrayList<>();
+    private static final String[][] userProperties = new String[][]
+    {
+        {USER0, FIRST_A, LAST_A},
+        {USER1, FIRST_A, LAST_B},
+        {USER2, FIRST_B, LAST_A},
+        {USER3, FIRST_C,},
+        {USER4, null   , LAST_A},
+        {USER5, null,    LAST_C},
+    };
 
     // inputs
     private String term = "";
     private String orderBy = null;
     private String fields = null;
     private Paging paging;
-    
+
     // available for extra tests after call.
     private Map<String, String> params;
     private HttpResponse response;
     private List<Person> people;
-    
-    // expected values
-    private int expectedStatus;
-    private String[] expectedPeople;
-    
+
     @Before
     @Override
     @SuppressWarnings("deprecation")
     public void setup() throws Exception
     {
         super.setup();
-        
-        setRequestContext(user1);
-        
+
         if (testCounter++ == 0)
         {
-            createTestUsers(new String[][]
-                {
-                {USER1, FIRST_A, LAST_A},
-                {USER2, FIRST_A, LAST_B},
-                {USER3, FIRST_B, LAST_A},
-                {USER4, FIRST_C,       },
-                {USER5,    null, LAST_A},
-                {USER6,    null, LAST_C},
-                });
+            createTestUsers();
         }
         
         paging = getPaging(0, 100);
@@ -137,9 +147,7 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         orderBy = null;
         fields = null;
 
-        // Default sort order is: firstname asc, lastname asc
-        expectedPeople = expectedPeople(USER5, USER6, USER1, USER2, USER3, USER4);
-        expectedStatus = 200;
+        setRequestContext(user1);
     }
 
     @After
@@ -147,17 +155,17 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     public void tearDown() throws Exception
     {
         super.tearDown();
-        
+
         if (testCounter == TEST_COUNT)
         {
             deleteTestUsers();
         }
     }
-    
+
     // Helper method to create users. These are deleted on tearDown.
-    // The prefix is added to the username, firstname and lastname if they exist.
-    private Map<String, Person> createTestUsers(String[][] userProperties) throws IllegalArgumentException 
+    private void createTestUsers() throws IllegalArgumentException, SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, RollbackException
     {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
         for (String[] properties: userProperties)
         {
             int l = properties.length;
@@ -180,20 +188,24 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
                     personInfo.getInstantmsg(),
                     personInfo.getGoogle(),
                                null); // description
-                testUsers.put(originalUsername, person);
-                
-                // The following would automatically delete users after a test, but
-                // we need to clear other data and as we created them we should delete
-                // them.
-                // super.users.add(id);
+                testUsernames.add(originalUsername);
+                testPersons.add(person);
+
+                // The following call to personService.getPerson(id) returns a NodeRef like:
+                //    workspace://SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
+                // We call tenantService.getName(nodeRef) to get a fully qualified NodeRef as Solr returns this.
+                // They look like:
+                //    workspace://@org.alfresco.rest.api.tests.queriespeopleapitest@SpacesStore/9db76769-96de-4de4-bdb4-a127130af362
+                NodeRef nodeRef = personService.getPerson(id);
+                nodeRef = tenantService.getName(nodeRef);
+                testPersonNodeRefs.add(nodeRef);
             }
         }
-        return testUsers;
     }
-    
+
     private void deleteTestUsers()
     {
-        for (String id: testUsers.keySet())
+        for (String id: testUsernames)
         {
             try
             {
@@ -204,13 +216,13 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
                 System.err.println("Failed to delete test user "+id);
             }
         }
-        testUsers.clear();
+        testPersons.clear();
     }
-    
+
     // Helper method to create a PersonInfo object
     // first 3 parameters are username, firstname, lastname unlike PersonInfo
     // password defaults to "password"
-    private static PersonInfo newPersonInfo(String... properties) throws IllegalArgumentException 
+    private static PersonInfo newPersonInfo(String... properties) throws IllegalArgumentException
     {
         int l = properties.length;
         if (l > 17)
@@ -221,7 +233,7 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
             (l <=  1 ? null : properties[ 1]),  // firstName
             (l <=  2 ? null : properties[ 2]),  // lastName
             (l <=  0 ? null : properties[ 0]),  // username
-            
+
             (l <=  3 || properties[ 3] == null
                ? "password" : properties[ 3]),  // password
             (l <=  4 ? null : new Company(
@@ -238,30 +250,48 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
             (l <= 14 ? null : properties[14]),  // tel
             (l <= 15 ? null : properties[15]),  // mob
             (l <= 16 ? null : properties[16]),  // instantmsg
-            (l <= 17 ? null : properties[17])); // google 
+            (l <= 17 ? null : properties[17])); // google
     }
 
     private void checkApiCall(String term, String orderBy, String fields, Paging paging,
-        int expectedStatus, String[] expectedPeople) throws Exception
+                              int expectedStatus,
+                              List<String> expectedPeople, int... userIds) throws Exception
     {
         createParamIdNotNull(Queries.PARAM_TERM, term);
         createParamIdNotNull(Queries.PARAM_ORDERBY, orderBy);
         createParamIdNotNull(Queries.PARAM_FIELDS, fields);
 
+        dummySearchServiceQueryNodeRefs.clear();
+        for (int i: userIds)
+        {
+            NodeRef nodeRef = testPersonNodeRefs.get(i);
+            dummySearchServiceQueryNodeRefs.add(nodeRef);
+        }
+
         response = getAll(URL_QUERIES_LSP, paging, params, expectedStatus);
-        
+
         if (expectedStatus == 200)
         {
+            String termWithEscapedAsterisks = term.replaceAll("\\*", "\\\\*");
+            String expectedQuery = "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*"+ termWithEscapedAsterisks +"*\")";
+            ArgumentCaptor<SearchParameters> searchParametersCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+            verify(mockSearchService, times(++callCountToMockSearchService)).query(searchParametersCaptor.capture());
+            SearchParameters parameters = searchParametersCaptor.getValue();
+            assertEquals("Query", expectedQuery, parameters.getQuery());
+
             people = Person.parsePeople(response.getJsonResponse()).getList();
             
-            if (expectedPeople != null)
+            if (!expectedPeople.isEmpty())
             {
                 StringJoiner actual = new StringJoiner("\n");
                 StringJoiner expected = new StringJoiner("\n");
-                for (int i=0; i<expectedPeople.length; i++)
+                for (String people : expectedPeople)
                 {
-                    actual.add(people.get(i).toString());
-                    expected.add(expectedPeople[i]);
+                    expected.add(people);
+                }
+                for (Person person : people)
+                {
+                    actual.add(person.toString());
                 }
                 String exp = expected.toString().replaceAll(TEST_TERM_PREFIX, "");
                 String act = actual.toString().replaceAll(TEST_TERM_PREFIX, "");
@@ -269,7 +299,7 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
             }
         }
     }
-    
+
     private void createParamIdNotNull(String param, String value)
     {
         if (value != null && params != null)
@@ -278,20 +308,16 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         }
     }
 
-    private String[] expectedPeople(String... testUserIds)
+    private List<String> expectedPeople(int... userIds)
     {
         List<String> list = new ArrayList<>();
-        for (String id: testUserIds)
+        for (int i : userIds)
         {
-            Person person = testUsers.get(id);
-            if (person == null)
-            {
-                fail("Did not find test Person "+id+" Check TEST_COUNT has the correct number of tests.");
-            }
+            Person person = testPersons.get(i);
             String string = person.toString();
-            list.add(string); 
+            list.add(string);
         }
-        return list.toArray(new String[list.size()]);
+        return list;
     }
 
     @Test
@@ -299,88 +325,69 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     public void testUnauthenticated() throws Exception
     {
         setRequestContext(null);
-        expectedStatus = 401;
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+
+        checkApiCall(term, orderBy, fields, paging, 401, null);
     }
 
     @Test
     public void testOnlyTestUsersAndDefaultOrder() throws Exception
     {
         // Checks only test users are found as a result of using TEST_TERM_PREFIX.
-        
+
         // Also checks the default sort order (firstname lastname):
-        //  5   A
-        //  6   C
-        //  1 A A
-        //  2 A B
-        //  3 B A
-        //  4 C
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        //  4   A
+        //  5   C
+        //  0 A A
+        //  1 A B
+        //  2 B A
+        //  3 C
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(4, 5, 0, 1, 2, 3), 4, 5, 0, 1, 2, 3);
     }
 
     @Test
     public void testSearchFirstname() throws Exception
     {
-        term = FIRST_A;
-        expectedPeople = expectedPeople(USER1, USER2);
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(FIRST_A, orderBy, fields, paging, 200, expectedPeople(0, 1), 0, 1);
     }
 
     @Test
     public void testSearchLastName() throws Exception
     {
-        term = LAST_A;
-        expectedPeople = expectedPeople(USER5, USER1, USER3);
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(LAST_A, orderBy, fields, paging, 200, expectedPeople(4, 0, 2), 4, 0, 2);
     }
-    
+
     @Test
     public void testSearchUsername() throws Exception
     {
-        term = USER1;
-        expectedPeople = expectedPeople(USER1);
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(USER0, orderBy, fields, paging, 200, expectedPeople(0), 0);
     }
-    
+
     @Test
     public void testNoParams() throws Exception
     {
         params = null;
-        expectedStatus = 400;
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 400, null);
     }
 
     @Test
     public void testNoTerm() throws Exception
     {
-        term = null;
-        expectedStatus = 400;
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(null, orderBy, fields, paging, 400, null);
     }
 
     @Test
     public void testTermShorterThan2() throws Exception
     {
-        term = "X";
-        expectedStatus = 400;
-       
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall("X", orderBy, fields, paging, 400, null);
     }
 
     @Test
     public void testOrderbySameAsDefault() throws Exception
     {
         orderBy = "firstName asc, lastName"; // same as default (asc is default order)
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(4, 5, 0, 1, 2, 3), 4, 5, 0, 1, 2, 3);
     }
-    
+
     @Test
     public void testOrderbyDescAndAsc() throws Exception
     {
@@ -391,9 +398,7 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         //  5   A
         //  6   C
         orderBy = "firstName desc, lastName";
-        expectedPeople = expectedPeople(USER4, USER3, USER1, USER2, USER5, USER6);
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(3, 2, 0, 1, 4, 5), 3, 2, 0, 1, 4, 5);
     }
 
     @Test
@@ -406,27 +411,21 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         //  6   C
         //  5   A
         orderBy = "firstName desc, lastName desc";
-        expectedPeople = expectedPeople(USER4, USER3, USER2, USER1, USER6, USER5);
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(3, 2, 1, 0, 5, 4), 3, 2, 1, 0, 5, 4);
     }
 
     @Test
     public void testOrderbyId() throws Exception
     {
         orderBy = PARAM_PERSON_ID;
-        expectedPeople = expectedPeople(USER1, USER2, USER3, USER4, USER5, USER6);
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(0, 1, 2, 3, 4, 5), 0, 1, 2, 3, 4, 5);
     }
 
     @Test
     public void testBadOrderByField() throws Exception
     {
         orderBy = "rubbish";
-        expectedStatus = 400;
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 400, null);
     }
 
     @Test
@@ -434,64 +433,51 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     {
         fields = PARAM_FIRSTNAME+","+PARAM_LASTNAME;
         term = LAST_A;
-        expectedPeople = new String[]
-        {
-            "Person ["+                  "lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER5
-            "Person ["+"firstName=FirstA, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER1
-            "Person ["+"firstName=FirstB, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER3
-        };
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        List<String> expectedPeople = Arrays.asList(
+            "Person [" + "lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER4
+            "Person [" + "firstName=FirstA, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER0
+            "Person [" + "firstName=FirstB, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]"  // USER2
+        );
+
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople, 4, 0, 2);
     }
-    
+
     @Test
     public void testFieldsId() throws Exception
     {
         fields = PARAM_PERSON_ID;
-        term = LAST_A;
-        
         String tenantSuffix = (useDefaultNetwork ? "" : "@"+networkOne.getId());
-        
-        expectedPeople = new String[]
-        {
-            "Person [id=user5"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER5
-            "Person [id=user1"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER1
-            "Person [id=user3"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER3
-        };
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        List<String> expectedPeople = Arrays.asList(
+            "Person [id=user4"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER4
+            "Person [id=user0"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER0
+            "Person [id=user2"+tenantSuffix+", company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]"  // USER2
+        );
+
+        checkApiCall(LAST_A, orderBy, fields, paging, 200, expectedPeople, 4, 0, 2);
     }
-    
+
     @Test
     public void testSearchFirstnameWithWildcard() throws Exception
     {
-      term = FIRST_A;
-      term = term.substring(0,term.length()-3) + "*A";
-
-         expectedPeople = expectedPeople(USER1, USER2);
-         
-         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+         term = FIRST_A.substring(0,FIRST_A.length()-3) + "*A";
+         checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(0, 1), 0, 1);
     }
-    
+
     @Test
     public void testSearchLastNameWithWildcard() throws Exception
     {
         term = LAST_A;
         term = term.substring(0,term.length()-3) + "*A";
-        expectedPeople = expectedPeople(USER5, USER1, USER3);
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(4, 0, 2), 4, 0, 2);
     }
-    
+
     @Test
     public void testSearchUsernameWithWildcard() throws Exception
     {
         term = TEST_TERM_PREFIX+"us*1";
-        expectedPeople = expectedPeople(USER1);
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(0), 0);
     }
-    
+
     @Test
     public void testOrderbyDescAndAscWithWildcard() throws Exception
     {
@@ -499,30 +485,23 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         //  1 A A
         //  5   A
         term = TEST_TERM_PREFIX+"la*A";
-        expectedPeople = expectedPeople(USER3, USER1, USER5);
-        
         orderBy = "firstName desc,lastName";
         
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople(2, 0, 4), 2, 0, 4);
     }
     
     @Test
     public void testOnlyWildcard() throws Exception
     {
-        term = "*";
-        expectedStatus = 400;
-       
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall("*", orderBy, fields, paging, 400, null);
     }
     
     @Test
     public void testBadOrderByDirection() throws Exception
     {
         // note: also tested generically in RecognizedParamsExtractorTest
-        orderBy = "firstName rubbish, lastName asc"; 
-        expectedStatus = 400;
-        
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        orderBy = "firstName rubbish, lastName asc";
+        checkApiCall(term, orderBy, fields, paging, 400, null);
     }
     
     @Test
@@ -530,13 +509,12 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     {
         fields = PARAM_FIRSTNAME+", "+PARAM_LASTNAME;
         term = LAST_A;
-        expectedPeople = new String[]
-        {
-            "Person ["+                  "lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER5
-            "Person ["+"firstName=FirstA, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER1
-            "Person ["+"firstName=FirstB, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]" // USER3
-        };
+        List<String> expectedPeople = Arrays.asList(
+            "Person ["+                  "lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER4
+            "Person ["+"firstName=FirstA, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]", // USER0
+            "Person ["+"firstName=FirstB, lastName=LastA, company=Company [address1=null, address2=null, address3=null, postcode=null, telephone=null, fax=null, email=null], ]"  // USER2
+        );
         
-        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+        checkApiCall(term, orderBy, fields, paging, 200, expectedPeople, 4, 0, 2);
     }
 }

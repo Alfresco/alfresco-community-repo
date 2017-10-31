@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.virtual.store;
 
+import static org.junit.Assert.*;
+
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -49,6 +51,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
 import org.junit.Test;
 
 public class VirtualStoreImplTest extends VirtualizationIntegrationTest
@@ -57,8 +60,8 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
 
     private VirtualStoreImpl smartStore;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
 
@@ -67,6 +70,7 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
 
     }
 
+    @Test
     public void testResolveVirtualFolderDefinition_inactiveSynchronization() throws Exception
     {
         txnTamperHint = "VirtualStoreImplTest::testResolveVirtualFolderDefinition_inactiveSynchronization";

@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.*;
+
 import java.util.Collection;
 
 import org.alfresco.model.ContentModel;
@@ -38,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
+import org.junit.Before;
 import org.junit.Test;
 
 public class VirtualVersionServiceExtensionTest extends VirtualizationIntegrationTest
@@ -49,8 +52,8 @@ public class VirtualVersionServiceExtensionTest extends VirtualizationIntegratio
 
     private NodeRef node2_1;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
 

@@ -26,6 +26,11 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,9 +43,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @Category(LuceneTests.class)
+@RunWith(MockitoJUnitRunner.class)
 public class VirtualPreferenceServiceExtensionTest extends VirtualizationIntegrationTest
 {
     private static final String DOCUMENTS_FAVOURITES_KEY = "org.alfresco.share.documents.favourites";
@@ -55,14 +65,15 @@ public class VirtualPreferenceServiceExtensionTest extends VirtualizationIntegra
 
     private PreferenceService preferenceService;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
         preferenceService = ctx.getBean("preferenceService",
                                         PreferenceService.class);
     }
 
+    @Test
     public void testSetFavoritesPreferencesForDocuments() throws Exception
     {
         NodeRef node2 = nodeService.getChildByName(virtualFolder1NodeRef,
@@ -141,7 +152,7 @@ public class VirtualPreferenceServiceExtensionTest extends VirtualizationIntegra
                                                             EXT_DOCUMENTS_FAVOURITES + physicalTestfile1.toString()
                                                                         + CREATED_AT));
     }
-
+    @Test
     public void testSetFavoritesPreferencesForFolders() throws Exception
     {
         NodeRef physicalFolder = createFolder(testRootFolder.getNodeRef(),
@@ -154,6 +165,9 @@ public class VirtualPreferenceServiceExtensionTest extends VirtualizationIntegra
                                                    "Node1");
         assertNotNull(node1);
 
+        prepareMocks("FOLDER", physicalFolder);
+        try
+        {
         NodeRef physicalFolderInVirtualContext = nodeService.getChildByName(node1,
                                                                             ContentModel.ASSOC_CONTAINS,
                                                                             "FOLDER");
@@ -206,5 +220,10 @@ public class VirtualPreferenceServiceExtensionTest extends VirtualizationIntegra
         assertNull((String) preferenceService.getPreference("admin",
                                                             EXT_FOLDERS_FAVOURITES + physicalFolder.toString()
                                                                         + CREATED_AT));
+        }
+        finally
+        {
+            resetMocks();
+        }
     }
 }

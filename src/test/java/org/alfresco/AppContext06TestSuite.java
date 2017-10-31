@@ -50,8 +50,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.template.TemplateServiceImplTest.class,
     org.alfresco.repo.tenant.MultiTServiceImplTest.class,
     org.alfresco.repo.search.SearcherComponentTest.class,
-    org.alfresco.repo.search.impl.lucene.ADMLuceneCategoryTest.class,
-    org.alfresco.repo.search.impl.lucene.ADMLuceneTest.class,
     org.alfresco.repo.blog.BlogServiceImplTest.class,
     org.alfresco.heartbeat.RepositoryDataCollectorTest.class,
 })

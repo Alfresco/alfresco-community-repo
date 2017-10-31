@@ -26,12 +26,17 @@
 
 package org.alfresco.repo.virtual.config;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+
 import java.io.Serializable;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.VirtualizationTest;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.junit.Before;
 import org.junit.Test;
 
 public class NodeRefPathExpressionTest extends VirtualizationIntegrationTest implements VirtualizationTest
@@ -40,8 +45,8 @@ public class NodeRefPathExpressionTest extends VirtualizationIntegrationTest imp
 
     private NodeRefPathExpressionFactory nodeRefPathExpressionFactory;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
         nodeRefPathExpressionFactory = (NodeRefPathExpressionFactory) ctx.getBean(NODE_REF_PATH_EXPRESSION_FACTORY_ID);

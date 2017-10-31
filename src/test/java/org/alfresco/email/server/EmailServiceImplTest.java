@@ -79,7 +79,7 @@ import com.sun.mail.smtp.SMTPMessage;
  * @author mrogers
  *
  */
-@Category({OwnJVMTestsCategory.class, LuceneTests.class})
+@Category({OwnJVMTestsCategory.class})
 public class EmailServiceImplTest extends TestCase 
 {
     /**

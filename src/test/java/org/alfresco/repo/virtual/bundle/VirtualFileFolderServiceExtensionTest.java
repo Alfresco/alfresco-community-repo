@@ -26,6 +26,12 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,25 +47,39 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
+import org.alfresco.repo.virtual.store.VirtualStoreImpl;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @Category(LuceneTests.class)
+@RunWith(MockitoJUnitRunner.class)
 public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegrationTest
 {
 
     private static final String NEW_FILE_NAME_2 = "RenameTest2";
 
     private static final String NEW_FILE_NAME_1 = "RenamedTest";
+
+    private VirtualStoreImpl smartStore;
+
+    @Before
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        smartStore = ctx.getBean("smartStore", VirtualStoreImpl.class);
+    }
 
     @Test
     public void testListOne() throws Exception
@@ -290,14 +310,16 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
         final HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_DESCRIPTION,
                        "Node2_folder_FR");
-        createFolder(vf,
+        ChildAssociationRef createFolder = createFolder(vf,
                      folderName,
                      properties);
 
         final String contentName = "ContentVirtualChild";
-        createContent(node2,
+        ChildAssociationRef createContent = createContent(node2,
                       contentName);
 
+        prepareMocks("Node2", createFolder.getChildRef());
+        try
         {
             PagingResults<FileInfo> folderChildren = fileAndFolderService.list(node2,
                                                                                false,
@@ -313,7 +335,13 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
             assertMissesNames(page,
                               contentName);
         }
-
+        finally
+        {
+            resetMocks();
+        }
+        
+        prepareMocks("Node2", smartStore.materializeIfPossible(createContent.getChildRef()));
+        try
         {
             PagingResults<FileInfo> contentChildren = fileAndFolderService.list(node2,
                                                                                 true,
@@ -329,7 +357,10 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
             assertContainsNames(page,
                                 contentName);
         }
-
+        finally
+        {
+            resetMocks();
+        }
     }
 
     @Test
@@ -465,13 +496,13 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
         NodeRef node1 = nodeService.getChildByName(vf,
                                                    ContentModel.ASSOC_CONTAINS,
                                                    "Node1");
-        createContent(node1,
+        ChildAssociationRef createContent = createContent(node1,
                       name,
                       "0",
                       MimetypeMap.MIMETYPE_TEXT_PLAIN,
                       "UTF-8");
 
-        createContent(node1,
+        ChildAssociationRef createContent1 = createContent(node1,
                       name1,
                       "01",
                       MimetypeMap.MIMETYPE_TEXT_PLAIN,
@@ -482,8 +513,15 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
                       "1",
                       MimetypeMap.MIMETYPE_TEXT_PLAIN,
                       "UTF-8");
-
         String namePattern = "A N.&ame*.txt";
+        
+        List<NodeRef> querySolution = new ArrayList<NodeRef>();
+        querySolution.add(smartStore.materializeIfPossible(createContent1.getChildRef()));
+        querySolution.add(smartStore.materializeIfPossible(createContent.getChildRef()));
+        
+        prepareMocks("A", querySolution);
+        try
+        {
         PagingResults<FileInfo> results = fileAndFolderService.list(node1,
                                                                     true,
                                                                     false,
@@ -499,6 +537,11 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
                      name1);
         assertEquals(page.get(1).getName(),
                      name);
+        }
+        finally
+        {
+            resetMocks();
+        }
     }
 
     @Test
@@ -540,6 +583,9 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
                                                            .getFileInfo(aNameNodeRef)
                                                                .getContentData()
                                                                .getMimetype());
+        prepareMocks("=cm:name:AName", smartStore.materializeIfPossible(aNameNodeRef));
+        try
+        {
         PagingResults<FileInfo> results = fileAndFolderService
                     .list(nodeService.getPrimaryParent(aNameNodeRef).getParentRef(),
                           true,
@@ -550,13 +596,15 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
                           new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
 
         List<FileInfo> page = results.getPage();
-        FileInfo fileInfo = null;
-        if (page.size() > 0)
-        {
-            fileInfo = page.get(0);
-            lastDup = fileInfo.getNodeRef();
+
+        assertTrue(page.size() > 0);
+
+        assertFalse(page.get(0).getNodeRef().equals(nameAfterNodeRef));
         }
-        assertFalse(lastDup.equals(nameAfterNodeRef));
+        finally
+        {
+            resetMocks();
+        }
     }
 
     private String addWildCardInName(String name, String mimetype)

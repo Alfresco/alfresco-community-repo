@@ -90,6 +90,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.FixMethodOrder;
@@ -208,8 +209,6 @@ public class MultiTDemoTest extends TestCase
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         siteService = (SiteService) ctx.getBean("SiteService");
         
-        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
-        indexRecoverer = (FullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.indexRecoveryComponent");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
         
         createTenants();
@@ -1220,7 +1219,8 @@ public class MultiTDemoTest extends TestCase
             }, tenantAdminName, tenantDomain);
         }
     }
-    
+
+    @Category(RedundantTests.class)
     public void test10CreateCategories()
     {
         logger.info("Create demo categories");
@@ -1491,7 +1491,8 @@ public class MultiTDemoTest extends TestCase
             }, tenantAdminName, tenantDomain);
         }
     }
-    
+
+    @Category(RedundantTests.class)
     public void test15COCIandSearch()
     {
         logger.info("Test checkout/checkin and search");

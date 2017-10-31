@@ -132,7 +132,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.virtual.template.ApplyTemplateMethodTest.class,
     org.alfresco.repo.virtual.model.SystemTemplateLocationsConstraintTest.class,
     org.alfresco.repo.virtual.store.SystemVirtualizationMethodTest.class,
-    org.alfresco.repo.virtual.store.TypeVirtualizationMethodTest.Integration.class,
+    org.alfresco.repo.virtual.store.TypeVirtualizationMethodIntegrationTest.class,
     org.alfresco.repo.virtual.template.TemplateResourceProcessorTest.class,
     org.alfresco.repo.virtual.store.VirtualStoreImplTest.class,
     org.alfresco.repo.virtual.config.NodeRefPathExpressionTest.class,

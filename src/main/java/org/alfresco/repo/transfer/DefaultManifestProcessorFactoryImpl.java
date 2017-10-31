@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
+import org.alfresco.service.namespace.NamespaceService;
 
 /**
  * @author brian
@@ -59,6 +60,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     private String transferSummaryReportLocation;
     private Properties properties;
     private FileFolderService fileFolderService;
+    private NamespaceService namespaceService;
 
     /*
      * (non-Javadoc)
@@ -76,6 +78,7 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
             summaryReport.setSearchService(searchService);
             summaryReport.setFileFolderService(fileFolderService);
             summaryReport.setTransferSummaryReportLocation(transferSummaryReportLocation);
+            summaryReport.setNamespaceService(namespaceService);
 
             transferSummaryReport = summaryReport;
         }
@@ -216,6 +219,11 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
 	public void setTaggingService(TaggingService taggingService)
     {
 	    this.taggingService = taggingService;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 
     /**

@@ -76,6 +76,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -175,6 +176,7 @@ public class ExporterComponentTest extends BaseSpringTest
      * assigned to it as for the exported content -- provided the source and destination stores are the same.
      */
     @SuppressWarnings("unchecked")
+    @Category(RedundantTests.class)
     public void testRoundTripKeepsCategoriesWhenWithinSameStore() throws Exception
     {   
         // Use a store ref that has the bootstrapped categories
@@ -204,6 +206,7 @@ public class ExporterComponentTest extends BaseSpringTest
      * on the exported content.
      */
     @SuppressWarnings("unchecked")
+    @Category(RedundantTests.class)
     public void testRoundTripLosesCategoriesImportingToDifferentStore() throws Exception
     {   
         // Use a store ref that has the bootstrapped categories

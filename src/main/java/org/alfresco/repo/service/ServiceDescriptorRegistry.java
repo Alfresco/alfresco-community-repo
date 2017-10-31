@@ -102,7 +102,7 @@ public class ServiceDescriptorRegistry
 {
     // Bean Factory within which the registry lives
     private BeanFactory beanFactory = null;
-
+    private SearchService mockSearchService;
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException
@@ -192,7 +192,17 @@ public class ServiceDescriptorRegistry
     @Override
     public SearchService getSearchService()
     {
-        return (SearchService)getService(SEARCH_SERVICE);
+        return mockSearchService == null ? (SearchService)getService(SEARCH_SERVICE) : mockSearchService;
+    }
+
+    /**
+     * For use in test classes only that need to mock the searchServices.
+     * @param mockSearchService to be set. If {@code null} the next call to {@link #getSearchService()} will return
+     *                      the real search service from the context.
+     */
+    public void setMockSearchService(SearchService mockSearchService)
+    {
+        this.mockSearchService = mockSearchService;
     }
 
     @Override

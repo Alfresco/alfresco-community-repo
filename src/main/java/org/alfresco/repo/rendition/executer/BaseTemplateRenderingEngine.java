@@ -31,6 +31,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -41,7 +42,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -180,21 +180,14 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
             if (path != null && path.length() > 0)
             {
                 StoreRef storeRef = context.getDestinationNode().getStoreRef();
-                ResultSet result = null;
-                
-                try
+
+                List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
+                        path, null, namespaceService, false);
+                if (refs.size() != 1)
                 {
-                    result = searchService.query(storeRef, SearchService.LANGUAGE_XPATH, path);
-                    if (result.length() != 1)
-                    {
-                        throw new RenditionServiceException("Could not find template node for path: " + path);
-                    }
-                    node = result.getNodeRef(0);
+                    throw new RenditionServiceException("Could not find template node for path: " + path);
                 }
-                finally
-                {
-                	if (result != null) {result.close();}
-                }
+                node = refs.get(0);
             }
         }
         return node;

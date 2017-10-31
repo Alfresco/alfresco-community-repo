@@ -69,6 +69,7 @@ public class TransferSummaryReportImpl implements TransferSummaryReport
     private FileFolderService fileFolderService;
     private NodeRef reportFile;
     private TransferDestinationReportWriter destinationWriter;
+    private NamespaceService namespaceService;
 
     // where the summary report will be stored
     private String transferSummaryReportLocation;
@@ -243,28 +244,18 @@ public class TransferSummaryReportImpl implements TransferSummaryReport
     {
         NodeRef reportParentFolder = null;
         log.debug("Trying to find transfer summary report records folder: " + transferSummaryReportLocation);
-        ResultSet rs = null;
 
-        try
+        List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE),
+                transferSummaryReportLocation, null, namespaceService, false);
+        if (refs.size() > 0)
         {
-            rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, transferSummaryReportLocation);
-            if (rs.length() > 0)
-            {
-                reportParentFolder = rs.getNodeRef(0);
+            reportParentFolder = refs.get(0);
 
-                log.debug("Found transfer summary report records folder: " + reportParentFolder);
-            }
-            else
-            {
-                throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND, new Object[] { transferSummaryReportLocation });
-            }
+            log.debug("Found transfer summary report records folder: " + reportParentFolder);
         }
-        finally
+        else
         {
-            if (rs != null)
-            {
-                rs.close();
-            }
+            throw new TransferException(MSG_INBOUND_TRANSFER_FOLDER_NOT_FOUND, new Object[] { transferSummaryReportLocation });
         }
         return reportParentFolder;
     }
@@ -294,4 +285,8 @@ public class TransferSummaryReportImpl implements TransferSummaryReport
         this.searchService = searchService;
     }
 
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
 }

@@ -102,7 +102,7 @@ import org.springframework.context.ConfigurableApplicationContext;
  * @since 3.3
  */
 @SuppressWarnings("deprecation")
-@Category({OwnJVMTestsCategory.class, LuceneTests.class})
+@Category({OwnJVMTestsCategory.class})
 public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 {
     private static final String WHITE = "ffffff";

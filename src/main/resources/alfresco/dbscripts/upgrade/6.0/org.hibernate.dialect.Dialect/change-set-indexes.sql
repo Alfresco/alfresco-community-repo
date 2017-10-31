@@ -7,7 +7,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-DROP INDEX idx_alf_acs_ctms ON alf_acl_change_set; --(optional)
+DROP INDEX idx_alf_acs_ctms; --(optional)
 CREATE INDEX idx_alf_acs_ctms ON alf_acl_change_set(commit_time_ms, id);  --(optional)
 
 --

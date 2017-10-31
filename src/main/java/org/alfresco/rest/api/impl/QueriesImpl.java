@@ -188,7 +188,12 @@ public class QueriesImpl implements Queries, InitializingBean
                     NodeRef nodeRef = nodes.validateOrLookupNode(rootNodeId, null);
                     query.append("PATH:\"").append(getQNamePath(nodeRef.getId())).append("//*\" AND (");
                 }
-                query.append(term);
+                if (term != null)
+                {
+                    query.append("\"");
+                    query.append(term);
+                    query.append("\"");
+                }
                 if (rootNodeId != null)
                 {
                     query.append(")");

@@ -32,6 +32,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -76,6 +77,7 @@ public class SubscriptionServiceImplTest extends TestCase
     protected PersonService personService;
     protected NodeService nodeService;
     protected SearchService searchService;
+    protected Repository repositoryHelper;
 
     @Override
     public void setUp() throws Exception
@@ -87,6 +89,7 @@ public class SubscriptionServiceImplTest extends TestCase
         personService = (PersonService) ctx.getBean("PersonService");
         nodeService = (NodeService) ctx.getBean("NodeService");
         searchService = (SearchService) ctx.getBean("SearchService");
+        repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
@@ -272,31 +275,7 @@ public class SubscriptionServiceImplTest extends TestCase
 
     public void testSubscriptionsRemovalOnArchivingNodesForAlf12358() throws Exception
     {
-        NodeRef companyHome = null;
-        ResultSet resultSet = null;
-        try
-        {
-            resultSet = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, "PATH:\"/app\\:company_home\"");
-            assertNotNull("Can't find Company Home NodeRef!", resultSet);
-            assertEquals("Found too many Company Home nodes!", 1, resultSet.length());
-
-            companyHome = resultSet.getNodeRef(0);
-            assertNotNull("Company Home NodeRef is invalid!", companyHome);
-        }
-        finally
-        {
-            if (null != resultSet)
-            {
-                try
-                {
-                    resultSet.close();
-                }
-                catch (Exception e)
-                {
-                    // Doing nothing
-                }
-            }
-        }
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
 
         ChildAssociationRef followed = null;
 

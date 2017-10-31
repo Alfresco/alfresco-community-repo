@@ -29,10 +29,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -57,12 +56,17 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -71,6 +75,7 @@ import org.springframework.context.ApplicationContext;
  * @author Nick Burch
  * @since 4.0
  */
+@RunWith(MockitoJUnitRunner.class)
 @Category(LuceneTests.class)
 public class LinksServiceImplTest
 {
@@ -90,6 +95,7 @@ public class LinksServiceImplTest
     private static PermissionService            PERMISSION_SERVICE;
     private static SiteService                  SITE_SERVICE;
     private static ContentService               CONTENT_SERVICE;
+    @Mock
     private static TaggingService               TAGGING_SERVICE;
     
     private static final String TEST_USER = LinksServiceImplTest.class.getSimpleName() + "_testuser";
@@ -119,7 +125,6 @@ public class LinksServiceImplTest
         PERMISSION_SERVICE     = (PermissionService)testContext.getBean("permissionService");
         SITE_SERVICE           = (SiteService)testContext.getBean("siteService");
         CONTENT_SERVICE        = (ContentService)testContext.getBean("ContentService");
-        TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
 
         // Do the setup as admin
         AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
@@ -129,7 +134,15 @@ public class LinksServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
         createTestSites();
     }
-    
+
+   @Before
+   public void before()
+   {
+      // Inject a mock to a real service instead of tagging service
+      ((LinksServiceImpl) testContext.getBean("linksService")).setTaggingService(TAGGING_SERVICE);
+      when(TAGGING_SERVICE.isTagScope(Matchers.any(NodeRef.class))).thenReturn(true);
+   }
+
     @Test public void createNewEntry() throws Exception
     {
        LinkInfo link;
@@ -307,7 +320,7 @@ public class LinksServiceImplTest
        
        // Check
        assertEquals(0, link.getTags().size());
-       
+       when(TAGGING_SERVICE.getTags(link.getNodeRef())).thenReturn(new ArrayList<>(10));
        link = LINKS_SERVICE.getLink(LINKS_SITE.getShortName(), link.getSystemName());       
        assertEquals(0, link.getTags().size());
        
@@ -320,6 +333,7 @@ public class LinksServiceImplTest
        LINKS_SERVICE.updateLink(link);
        
        // Check
+       when(TAGGING_SERVICE.getTags(link.getNodeRef())).thenReturn(new ArrayList<>(Arrays.asList(TAG_1, TAG_2)));
        link = LINKS_SERVICE.getLink(LINKS_SITE.getShortName(), link.getSystemName());       
        assertEquals(2, link.getTags().size());
        assertEquals(true, link.getTags().contains(TAG_1));
@@ -334,12 +348,14 @@ public class LinksServiceImplTest
        LINKS_SERVICE.updateLink(link);
        
        // Check it as-is
+       when(TAGGING_SERVICE.getTags(link.getNodeRef())).thenReturn(new ArrayList<>(Arrays.asList(TAG_1, TAG_3)));
        assertEquals(3, link.getTags().size()); // Includes duplicate tag until re-loaded
        assertEquals(true, link.getTags().contains(TAG_1));
        assertEquals(false, link.getTags().contains(TAG_2));
        assertEquals(true, link.getTags().contains(TAG_3));
        
        // Now load and re-check
+       when(TAGGING_SERVICE.getTags(link.getNodeRef())).thenReturn(new ArrayList<>(Arrays.asList(TAG_1, TAG_3)));
        link = LINKS_SERVICE.getLink(LINKS_SITE.getShortName(), link.getSystemName());       
        assertEquals(2, link.getTags().size()); // Duplicate now gone
        assertEquals(true, link.getTags().contains(TAG_1));
@@ -352,6 +368,7 @@ public class LinksServiceImplTest
        LINKS_SERVICE.updateLink(link);
        
        // Check
+       when(TAGGING_SERVICE.getTags(link.getNodeRef())).thenReturn(new ArrayList<>());
        link = LINKS_SERVICE.getLink(LINKS_SITE.getShortName(), link.getSystemName());       
        assertEquals(0, link.getTags().size());
 
@@ -363,6 +380,7 @@ public class LinksServiceImplTest
        LINKS_SERVICE.updateLink(link);
        
        // Check
+       when(TAGGING_SERVICE.getTags(link.getNodeRef())).thenReturn(new ArrayList<>(Arrays.asList(TAG_1, TAG_2, TAG_3)));
        link = LINKS_SERVICE.getLink(LINKS_SITE.getShortName(), link.getSystemName());       
        assertEquals(3, link.getTags().size());
        assertEquals(true, link.getTags().contains(TAG_1));
@@ -617,6 +635,7 @@ public class LinksServiceImplTest
     /**
      * The lucene based searching
      */
+    @Category(RedundantTests.class)
     @Test public void linksSearching() throws Exception 
     {
        AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);

@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -53,7 +54,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  * @author Derek Hulley
  */
-@Category(LuceneTests.class)
+@Category({LuceneTests.class, RedundantTests.class})
 public class ComponentsTest extends TestCase
 {
     private static ApplicationContext ctx = new ClassPathXmlApplicationContext("module/module-component-test-beans.xml");

@@ -48,6 +48,7 @@ import javax.xml.validation.Validator;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -125,6 +126,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     private DescriptorService descriptorService;
     private CopyService copyService;
     private Descriptor serverDescriptor;
+    private Repository repositoryHelper;
     
     String COMPANY_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home";
     String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
@@ -172,6 +174,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
         this.descriptorService = (DescriptorService)this.applicationContext.getBean("DescriptorService");
         this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
         this.serverDescriptor = descriptorService.getServerDescriptor();
+        this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
         
         REPO_ID_B = descriptorService.getCurrentRepositoryDescriptor().getId();
         
@@ -188,14 +191,8 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
     public void testTransferReport() throws Exception
     {
         setDefaultRollback(false);
-        
-        /**
-          * Get guest home
-          */
-        String guestHomeQuery = "/app:company_home/app:guest_home";
-        ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-        assertEquals("", 1, guestHomeResult.length());
-        final NodeRef guestHome = guestHomeResult.getNodeRef(0);
+
+        final NodeRef guestHome = repositoryHelper.getGuestHome();
 
         /**
           *  For unit test 
@@ -679,13 +676,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test nodes A1 through A5 that we will read and write
@@ -1401,13 +1392,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test nodes A1 through A8 that we will read and write
@@ -2062,13 +2047,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test nodes A1 through A8 that we will read and write
@@ -2408,13 +2387,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test node that we will read and write
@@ -2758,13 +2731,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test node that we will read and write
@@ -3169,13 +3136,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Create a test nodes A1 through A5 that we will read and write
@@ -3469,13 +3430,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 {
                     /**
@@ -3906,13 +3861,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 {
                     /**
@@ -4313,13 +4262,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 /**
                  * Node Source - located under guest home
@@ -4557,13 +4500,7 @@ public class TransferServiceToBeRefactoredTest extends BaseAlfrescoSpringTest
             @Override
             public Void execute() throws Throwable
             {
-                /**
-                 * Get guest home
-                 */
-                String guestHomeQuery = "/app:company_home/app:guest_home";
-                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-                assertEquals("", 1, guestHomeResult.length());
-                NodeRef guestHome = guestHomeResult.getNodeRef(0);
+                NodeRef guestHome = repositoryHelper.getGuestHome();
 
                 {
                     /**

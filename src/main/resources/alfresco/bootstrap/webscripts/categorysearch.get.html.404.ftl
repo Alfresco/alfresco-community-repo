@@ -1,5 +1,5 @@
 <html>
   <body>
-    ${status.message}
+    ${status.message?html}
   </body>
 </html>

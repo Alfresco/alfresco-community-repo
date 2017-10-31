@@ -32,13 +32,12 @@
     <properties>
         <licenseName>community</licenseName>
 
-        <index.subsystem.name>buildonly</index.subsystem.name>
         <dir.root>${project.build.directory}/alf_data</dir.root>
         <img.exe>convert</img.exe>
 
         <dependency.alfresco-legacy-lucene.version>6.2</dependency.alfresco-legacy-lucene.version>
         <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
-        <dependency.alfresco-core.version>6.14</dependency.alfresco-core.version>
+        <dependency.alfresco-core.version>6.15</dependency.alfresco-core.version>
         <dependency.alfresco-greenmail.version>6.0</dependency.alfresco-greenmail.version>
         <dependency.alfresco-data-model.version>6.21</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>
@@ -1026,8 +1025,6 @@
                                 <!-- BDE-91 -->
                                 <alfresco.rmi.services.retries>30</alfresco.rmi.services.retries>
                                 <alfresco.rmi.services.retryInterval>2000</alfresco.rmi.services.retryInterval>
-                                <!-- Enables Lucene in continuous integration -->
-                                <index.subsystem.name>${index.subsystem.name}</index.subsystem.name>
                                 <!-- FTR used in TransferWebScriptTest -->
                                 <transferservice.receiver.enabled>true</transferservice.receiver.enabled>
                                 <!-- Allow FTP server unit test to run unprivileged -->

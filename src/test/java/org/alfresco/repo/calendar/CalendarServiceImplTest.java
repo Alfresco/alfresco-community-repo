@@ -30,12 +30,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
@@ -74,6 +71,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -83,6 +84,7 @@ import org.springframework.context.ApplicationContext;
  * @since 4.0
  */
 @Category(LuceneTests.class)
+@RunWith(MockitoJUnitRunner.class)
 public class CalendarServiceImplTest
 {
     private static final String TEST_SITE_PREFIX = "CalendarSiteTest";
@@ -102,6 +104,7 @@ public class CalendarServiceImplTest
     private static RetryingTransactionHelper    TRANSACTION_HELPER;
     private static PermissionService            PERMISSION_SERVICE;
     private static SiteService                  SITE_SERVICE;
+    @Mock
     private static TaggingService               TAGGING_SERVICE;
     private static GetCalendarEntriesCannedQueryFactory CALENDAR_CQ_FACTORY;
     
@@ -132,8 +135,6 @@ public class CalendarServiceImplTest
         TRANSACTION_HELPER     = (RetryingTransactionHelper)testContext.getBean("retryingTransactionHelper");
         PERMISSION_SERVICE     = (PermissionService)testContext.getBean("permissionService");
         SITE_SERVICE           = (SiteService)testContext.getBean("SiteService");
-        TAGGING_SERVICE        = (TaggingService)testContext.getBean("TaggingService");
-
         // Get the canned query registry, and from that the factory
         @SuppressWarnings("unchecked")
         NamedObjectRegistry<CannedQueryFactory<? extends Object>> calendarCannedQueryRegistry =
@@ -149,7 +150,15 @@ public class CalendarServiceImplTest
         AuthenticationUtil.setFullyAuthenticatedUser(TEST_USER);
         createTestSites();
     }
-    
+
+    @Before
+    public void before()
+    {
+       // Inject a mock to a real calendar service instead of tagging service
+       ((CalendarServiceImpl) testContext.getBean("calendarService")).setTaggingService(TAGGING_SERVICE);
+       when(TAGGING_SERVICE.isTagScope(Matchers.any(NodeRef.class))).thenReturn(true);
+    }
+
     @Test public void createNewEntry() throws Exception
     {
        CalendarEntry entry;
@@ -384,7 +393,8 @@ public class CalendarServiceImplTest
        CALENDAR_SERVICE.updateCalendarEntry(entry);
        
        // Check
-       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
+       when(TAGGING_SERVICE.getTags(entry.getNodeRef())).thenReturn(Arrays.asList(TAG_1, TAG_2));
+       entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());
        assertEquals(2, entry.getTags().size());
        assertEquals(true, entry.getTags().contains(TAG_1));
        assertEquals(true, entry.getTags().contains(TAG_2));
@@ -404,6 +414,7 @@ public class CalendarServiceImplTest
        assertEquals(true, entry.getTags().contains(TAG_3));
        
        // Now load and re-check
+       when(TAGGING_SERVICE.getTags(entry.getNodeRef())).thenReturn(Arrays.asList(TAG_1, TAG_3));
        entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());
        assertEquals(2, entry.getTags().size()); // Duplicate now gone
        assertEquals(true, entry.getTags().contains(TAG_1));
@@ -416,6 +427,7 @@ public class CalendarServiceImplTest
        CALENDAR_SERVICE.updateCalendarEntry(entry);
        
        // Check
+       when(TAGGING_SERVICE.getTags(entry.getNodeRef())).thenReturn(Collections.EMPTY_LIST);
        entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
        assertEquals(0, entry.getTags().size());
 
@@ -427,6 +439,7 @@ public class CalendarServiceImplTest
        CALENDAR_SERVICE.updateCalendarEntry(entry);
        
        // Check
+       when(TAGGING_SERVICE.getTags(entry.getNodeRef())).thenReturn(Arrays.asList(TAG_1, TAG_2, TAG_3));
        entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
        assertEquals(3, entry.getTags().size());
        assertEquals(true, entry.getTags().contains(TAG_1));
@@ -447,6 +460,7 @@ public class CalendarServiceImplTest
        testNodesToTidy.add(entry.getNodeRef());
        
        // Check
+       when(TAGGING_SERVICE.getTags(entry.getNodeRef())).thenReturn(Arrays.asList(TAG_1, TAG_2));
        entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
        assertEquals(2, entry.getTags().size());
        assertEquals(true, entry.getTags().contains(TAG_1));
@@ -460,7 +474,8 @@ public class CalendarServiceImplTest
        entry.getTags().add(TAG_1);
        CALENDAR_SERVICE.updateCalendarEntry(entry);
        
-       // Check 
+       // Check
+       when(TAGGING_SERVICE.getTags(entry.getNodeRef())).thenReturn(Arrays.asList(TAG_1, TAG_3));
        entry = CALENDAR_SERVICE.getCalendarEntry(CALENDAR_SITE.getShortName(), entry.getSystemName());       
        assertEquals(2, entry.getTags().size());
        assertEquals(true, entry.getTags().contains(TAG_1));

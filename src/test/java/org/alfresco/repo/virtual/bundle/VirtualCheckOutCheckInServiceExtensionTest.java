@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.*;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +47,8 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -84,8 +88,8 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
 
     private NodeRef physicalFileNodeRef;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
         PROP_WORKING_COPY_NAME = CheckOutCheckInServiceImpl
@@ -113,7 +117,7 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
                                                          PROP_FILE_NAME);
     }
     
-    @Override
+    @After
     public void tearDown() throws Exception
     {
         super.tearDown();
@@ -387,7 +391,8 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
                      sourceAssocs.get(0).getSourceRef());
         checkOutCheckInService.cancelCheckout(workingCopyVirtualContext);
     }
-    
+
+    @Test
     public void test_ACE_4699() throws Exception
     {
         checkOutCheckInService.checkout(originalContentNodeRef);

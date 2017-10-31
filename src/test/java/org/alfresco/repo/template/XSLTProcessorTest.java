@@ -30,23 +30,19 @@ import java.io.StringWriter;
 import java.util.Locale;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.rendition.executer.XSLTFunctions;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateProcessor;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.XMLUtil;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
@@ -55,16 +51,15 @@ import org.junit.experimental.categories.Category;
  * @author Brian
  * 
  */
-@Category({BaseSpringTestsCategory.class, LuceneTests.class})
+@Category({BaseSpringTestsCategory.class})
 public class XSLTProcessorTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTProcessorTest.class);
-    private XSLTFunctions xsltFunctions;
-    private SearchService searchService;
     private NodeRef companyHome;
     private FileFolderService fileFolderService;
     private TemplateProcessor xsltProcessor;
     private TemplateService templateService;
+    private Repository repositoryHelper;
 
     /*
      * (non-Javadoc)
@@ -76,16 +71,13 @@ public class XSLTProcessorTest extends BaseAlfrescoSpringTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
-        this.searchService = (SearchService) this.applicationContext.getBean("SearchService");
-        this.xsltFunctions = (XSLTFunctions) this.applicationContext.getBean("xsltFunctions");
         this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
         this.fileFolderService = (FileFolderService) this.applicationContext.getBean("FileFolderService");
         this.xsltProcessor = (TemplateProcessor) this.applicationContext.getBean("xsltProcessor");
         this.templateService = (TemplateService) this.applicationContext.getBean("TemplateService");
-        ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH,
-                "/app:company_home");
-        this.companyHome = rs.getNodeRef(0);
+        this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        this.companyHome = repositoryHelper.getCompanyHome();
     }
 
     public void testSimplestStringTemplate() throws Exception

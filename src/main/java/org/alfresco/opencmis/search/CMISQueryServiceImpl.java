@@ -165,7 +165,7 @@ public class CMISQueryServiceImpl implements CMISQueryService
         CapabilityJoin joinSupport = getJoinSupport();
         if (options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)
         {
-            joinSupport = CapabilityJoin.INNERONLY;
+            joinSupport = CapabilityJoin.INNERANDOUTER;
         }
 
         // TODO: Refactor to avoid duplication of valid scopes here and in

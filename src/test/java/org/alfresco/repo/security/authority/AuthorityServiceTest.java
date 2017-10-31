@@ -82,6 +82,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.FixMethodOrder;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
@@ -346,13 +347,15 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(1, pubAuthorityService.getAllRootAuthoritiesInZone("Three", AuthorityType.GROUP).size());
     }
 
+    @Category(RedundantTests.class)
     public void test_ETWOTWO_400()
     {
         pubAuthorityService.createAuthority(AuthorityType.GROUP, "wo\"of");
         Set<String> authorities = pubAuthorityService.findAuthorities(AuthorityType.GROUP, null, true, "wo\"of*", AuthorityService.ZONE_APP_DEFAULT);
         assertEquals(1, authorities.size());
     }
-    
+
+    @Category(RedundantTests.class)
     public void testGroupWildcards()
     {
         long before, after;

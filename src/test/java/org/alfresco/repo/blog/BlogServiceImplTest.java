@@ -67,6 +67,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -329,7 +330,8 @@ public class BlogServiceImplTest
             }
         }
     }
-    
+
+    @Category(RedundantTests.class)
     @Test public void createTaggedDraftBlogPost() throws Exception
     {
         // Our tags, which are a mixture of English, Accented European and Chinese
@@ -412,6 +414,7 @@ public class BlogServiceImplTest
     /**
      * This test method uses the eventually consistent find*() method and so may fail if Lucene is disabled.
      */
+    @Category(RedundantTests.class)
     @Test public void findBlogPostsByPublishedDate() throws Exception
     {
         final List<String> tags = Arrays.asList(new String[]{"hello", "goodbye"});
@@ -823,7 +826,8 @@ public class BlogServiceImplTest
     /**
      * Test that correct paging info is returned when searching for tagged blog posts.
      */
-    @Test 
+    @Test
+    @Category(RedundantTests.class)
     public void testGetBlogPostsByTagPaging() throws Exception{
         final String tagToSearchBy = "testtag";
         final int numberOfBlogPostsTagged = 2;

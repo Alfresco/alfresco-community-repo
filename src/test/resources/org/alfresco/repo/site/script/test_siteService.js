@@ -57,45 +57,45 @@ function testListSites()
 	// TODO .. check the filters
 }
 
-function testFindSites()
-{
-   // Find all the sites
-   var sites = siteService.findSites(null, null, -1);
-   test.assertEquals(preexistingSiteCount + 2, sites.length);
-      
-   // find all sites with "short" in the name
-   sites = siteService.findSites("short", null, -1);
-   test.assertEquals(2, sites.length);
-   
-   sites = siteService.findSites("short", null, 0);
-   test.assertEquals(2, sites.length);
-   
-   // find just one site with "short" in the name
-   sites = siteService.findSites("short", null, 1);
-   test.assertEquals(1, sites.length);
-}
+// function testFindSites()
+// {
+//    // Find all the sites
+//    var sites = siteService.findSites(null, null, -1);
+//    test.assertEquals(preexistingSiteCount + 2, sites.length);
+//
+//    // find all sites with "short" in the name
+//    sites = siteService.findSites("short", null, -1);
+//    test.assertEquals(2, sites.length);
+//
+//    sites = siteService.findSites("short", null, 0);
+//    test.assertEquals(2, sites.length);
+//
+//    // find just one site with "short" in the name
+//    sites = siteService.findSites("short", null, 1);
+//    test.assertEquals(1, sites.length);
+// }
 
-function testGetSites()
-{
-   // get all the sites
-   var sites = siteService.getSites(null, null, -1);
-   test.assertEquals(preexistingSiteCount + 2, sites.length);
-   
-   sites = siteService.getSites("*", null, -1);
-   test.assertEquals(preexistingSiteCount + 2, sites.length);
-   
-   // get all sites whose name starts with "site"
-   sites = siteService.getSites("site", null, -1);
-   test.assertEquals(2, sites.length);
-   
-   // get all sites whose name starts with "short"
-   sites = siteService.getSites("short", null, -1);
-   test.assertEquals(0, sites.length);
-   
-   // get all sites with "short" in the name
-   sites = siteService.getSites("*short", null, -1);
-   test.assertEquals(2, sites.length);
-}
+// function testGetSites()
+// {
+//    // get all the sites
+//    var sites = siteService.getSites(null, null, -1);
+//    test.assertEquals(preexistingSiteCount + 2, sites.length);
+//
+//    sites = siteService.getSites("*", null, -1);
+//    test.assertEquals(preexistingSiteCount + 2, sites.length);
+//
+//    // get all sites whose name starts with "site"
+//    sites = siteService.getSites("site", null, -1);
+//    test.assertEquals(2, sites.length);
+//
+//    // get all sites whose name starts with "short"
+//    sites = siteService.getSites("short", null, -1);
+//    test.assertEquals(0, sites.length);
+//
+//    // get all sites with "short" in the name
+//    sites = siteService.getSites("*short", null, -1);
+//    test.assertEquals(2, sites.length);
+// }
 
 function testMembership()
 {
@@ -302,8 +302,9 @@ function testSiteCustomProperties()
 // Execute test's
 testCRUD();
 testListSites();
-testFindSites();
-testGetSites();
+// redundant, tests search
+// testFindSites();
+// testGetSites();
 testMembership();
 testContainer();
 testPermissions();

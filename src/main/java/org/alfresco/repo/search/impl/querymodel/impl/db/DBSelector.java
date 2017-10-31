@@ -104,6 +104,7 @@ public class DBSelector extends BaseSelector implements DBQueryBuilderComponent
             }
             AspectSupport aspectSupport = new AspectSupport();
             aspectSupport.setQnameIds(qnameIds);
+            aspectSupport.setJoinType(getJoinType());
             builderSupport = aspectSupport;
         }
         else
@@ -125,6 +126,7 @@ public class DBSelector extends BaseSelector implements DBQueryBuilderComponent
             TypeSupport typeSupport = new TypeSupport();
             typeSupport.setQnameIds(qnameIds);
             typeSupport.setCommandType(DBQueryBuilderPredicatePartCommandType.IN);
+            typeSupport.setJoinType(getJoinType());
             builderSupport = typeSupport;
         }
 

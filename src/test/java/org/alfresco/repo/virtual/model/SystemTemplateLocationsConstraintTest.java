@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.virtual.model;
 
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -44,6 +46,8 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 public class SystemTemplateLocationsConstraintTest extends VirtualizationIntegrationTest
@@ -54,8 +58,8 @@ public class SystemTemplateLocationsConstraintTest extends VirtualizationIntegra
 
     private NodeRefExpression templatesParentRepositoryPath;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -63,7 +67,7 @@ public class SystemTemplateLocationsConstraintTest extends VirtualizationIntegra
 
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception
     {
         if (templatesParentRepositoryPath != null)

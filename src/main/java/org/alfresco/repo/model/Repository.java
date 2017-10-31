@@ -72,10 +72,13 @@ public class Repository implements ApplicationContextAware
     private StoreRef companyHomeStore; // ie. workspace://SpaceStore
     private String companyHomePath;    // ie. /app:company_home
     private String sharedHomePath;     // ie. /app:shared
+
+    private String guestHomePath;       // /app:company_home/app:guest_home
     
     // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
     private SimpleCache<String, NodeRef> singletonCache; // eg. for companyHomeNodeRef
     private final String KEY_COMPANYHOME_NODEREF = "key.companyhome.noderef";
+    private final String KEY_GUESTHOME_NODEREF = "key.guesthome.noderef";
     private final String KEY_SHAREDHOME_NODEREF = "key.sharedhome.noderef";
     
     
@@ -113,7 +116,12 @@ public class Repository implements ApplicationContextAware
     {
         this.singletonCache = singletonCache;
     }
-    
+
+    public void setGuestHomePath(String guestHomePath)
+    {
+        this.guestHomePath = guestHomePath;
+    }
+
     /**
      * Sets helper that provides transaction callbacks
      */
@@ -242,7 +250,41 @@ public class Repository implements ApplicationContextAware
         }
         return companyHomeRef;
     }
-    
+
+    /**
+     * Gets the Guest Home. Note this is tenant-aware if the correct Cache is supplied.
+     *
+     * @return  guest home node ref
+     */
+    public NodeRef getGuestHome()
+    {
+        NodeRef guestHomeRef = singletonCache.get(KEY_GUESTHOME_NODEREF);
+        if (guestHomeRef == null)
+        {
+            guestHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+                    {
+                        public NodeRef execute() throws Exception
+                        {
+                            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), guestHomePath, null, namespaceService, false);
+                            if (refs.size() != 1)
+                            {
+                                throw new IllegalStateException("Invalid guest home path: " + guestHomePath + " - found: " + refs.size());
+                            }
+                            return refs.get(0);
+                        }
+                    }, true);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+
+            singletonCache.put(KEY_COMPANYHOME_NODEREF, guestHomeRef);
+        }
+        return guestHomeRef;
+    }
+
     /**
      * Gets the Shared Home. Note this is tenant-aware if the correct Cache is supplied.
      *  

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,18 +25,14 @@
  */
 package org.alfresco.repo.jscript;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.transaction.UserTransaction;
-
 import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.transaction.TransactionService;
@@ -44,37 +40,59 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.ScriptPagingDetails;
-import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
+
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link org.alfresco.repo.jscript.People}
- * <p>
- * Note that this class currently works with Lucene only. In other words, it
- * won't work with Solr.
- * 
+ *
  * @author Jamal Kaabi-Mofrad
  * @since 4.2
  */
-@Category({OwnJVMTestsCategory.class, LuceneTests.class})
+@Category({OwnJVMTestsCategory.class})
 public class PeopleTest extends TestCase
 {
     private static final String SIMPLE_FILTER = "a";
 
     private static final String CQ_SIMPLE_FILTER = SIMPLE_FILTER + " [hint:useCQ]";
 
-    private static final String DEFAULT_SORT_BY_FIELD = "username";
+    private static final String DEFAULT_SORT_BY_FIELD = "PeopleTestUsername";
 
-
-    private static final UserInfo USER_1 = new UserInfo("user1", "john junior", "lewis second");
-    private static final UserInfo USER_2 = new UserInfo("user2", "john senior", "lewis second");
-    private static final UserInfo USER_3 = new UserInfo("user3", "john junior", "lewis third");
-    private static final UserInfo USER_4 = new UserInfo("user4", "john", "lewis third");
-    private static final UserInfo USER_5 = new UserInfo("user5", "mike", "doe first");
-    private static final UserInfo USER_6 = new UserInfo("user6", "sam", "doe first");
-    private static final UserInfo USER_7 = new UserInfo("user7", "sara jones", "doe");
-    private static final UserInfo USER_8 = new UserInfo("user8", "sara", "doe");
+    // These tests users are only created once, even if the test is rerun.
+    private static final List<NodeRef> userNodeRefs = new ArrayList<>();
+    private static final UserInfo[] userInfos =
+    {
+        new UserInfo("PeopleTestUser0", "john junior", "lewis second"),
+        new UserInfo("PeopleTestUser1", "john senior", "lewis second"),
+        new UserInfo("PeopleTestUser2", "john junior", "lewis third"),
+        new UserInfo("PeopleTestUser3", "john", "lewis third"),
+        new UserInfo("PeopleTestUser4", "mike", "doe first"),
+        new UserInfo("PeopleTestUser5", "sam", "doe first"),
+        new UserInfo("PeopleTestUser6", "sara jones", "doe"),
+        new UserInfo("PeopleTestUser7", "sara", "doe"),
+    };
 
     private ApplicationContext ctx;
 
@@ -84,24 +102,38 @@ public class PeopleTest extends TestCase
     private People people;
     private PersonService personService;
 
+    @Mock
+    private SearchService mockSearchService;
+    @Mock
+    private ResultSet mockResultSet;
+    private List<NodeRef> mockResultSetNodeRefs = new ArrayList<>();
+    private int callCount = 0;
+
     /*
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception
     {
+        MockitoAnnotations.initMocks(this);
+
         ctx = ApplicationContextHelper.getApplicationContext();
         people = (People) ctx.getBean("peopleScript");
         serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
         transactionService = serviceRegistry.getTransactionService();
         personService = serviceRegistry.getPersonService();
 
+        ServiceRegistry mockServiceRegistry = spy(serviceRegistry);
+        people.setServiceRegistry(mockServiceRegistry);
+        doReturn(mockSearchService).when(mockServiceRegistry).getSearchService();
+        when(mockSearchService.query(any())).thenReturn(mockResultSet);
+        when(mockResultSet.getNodeRefs()).thenReturn(mockResultSetNodeRefs);
+
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        createUsers();
+
         // Start a transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
-
-        // Create users
-        createUser(USER_1, USER_2, USER_3, USER_4, USER_5, USER_6, USER_7, USER_8);
     }
 
     @Override
@@ -115,78 +147,125 @@ public class PeopleTest extends TestCase
         {
             e.printStackTrace();
         }
+
         AuthenticationUtil.clearCurrentSecurityContext();
+
+        people.setServiceRegistry(serviceRegistry);
     }
 
     public void testGetPeople()
     {
+        // 1 Get people with multi-part firstNames. Users 0 & 2 both have 'john junior' as their firstName, but the query shouldn't select user 3
+        assertPeopleImpl(
+            "john junior",
+            "There are two users who have \"john junior\" as their first name.",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*junior*\" OR lastName:\"*john*\" \"*junior*\")",
+            0, 2);
+
+        // 2 Get user with multi-part firstNames and lastNames
+        assertPeopleImpl(
+            "john junior lewis sec*",
+            "There is one user with the name: \"john junior lewis second\".",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*junior*\"\"*lewis*\"\"*sec*\" OR lastName:\"*john*\" \"*junior*\"\"*lewis*\"\"*sec*\")",
+            0);
+
+        // 3 Only USER_2's first name is "john senior"
+        assertPeopleImpl(
+            "john senior",
+            "There is one user who has \"john senior\" as his first name.",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*john*\" \"*senior*\" OR lastName:\"*john*\" \"*senior*\")",
+            1);
+
+        // 4*
+        assertPeopleImpl(
+            "john*",
+            "There are four users with \"john\" as their first name.",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*john**\")",
+            0, 1, 2, 3);
+
+        // 5 Get people with multi-part lastNames. Users 2 & 3 both have 'lewis third' as their lastName
+        assertPeopleImpl(
+            "lewis third",
+            "There are two users who have \"lewis third\" as their last name.",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*lewis*\" \"*third*\" OR lastName:\"*lewis*\" \"*third*\")",
+            2, 3);
+
+        // 6 Only user 4 & 5 have last name "doe first". The query shouldn't select user 6
+        assertPeopleImpl(
+            "doe fi*",
+            "There are two users who have \"doe first\" as their last name.",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*doe*\" \"*fi*\" OR lastName:\"*doe*\" \"*fi*\")",
+            4, 5);
+
+        // 7*
+        assertPeopleImpl(
+            "lewi*",
+            "There are four users with \"lewis\" as their last name.",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*lewi**\")",
+            0, 1, 2, 3);
+
+        // 8*
+        assertPeopleImpl(
+            "thir*",
+            "There are two users with \"lewis third\" as their last name.",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (\"*thir**\")",
+            2, 3);
+
+        // 9 Get people with single firstName and multi-part lastNames
+        assertPeopleImpl(
+            "sam doe first",
+            "There is one user with the name: \"sam doe first\".",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sam*\" \"*doe*\"\"*first*\" OR lastName:\"*sam*\" \"*doe*\"\"*first*\")",
+            5);
+
+        // 10 Get people with multi-part firstNames and single lastName
+        assertPeopleImpl(
+            "sara jones doe",
+            "There is one user with the name: \"sara jones doe\".",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sara*\" \"*jones*\"\"*doe*\" OR lastName:\"*sara*\" \"*jones*\"\"*doe*\")",
+            6);
+
+        // 11 Get people with single firstName and single lastName
+        assertPeopleImpl(
+            "sara doe",
+            "There are two users with the name: \"sara doe\".",
+            "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (firstName:\"*sara*\" \"*doe*\" OR lastName:\"*sara*\" \"*doe*\")",
+            6, 7);
+    }
+
+    private void assertPeopleImpl(String filter, String sizeMessage, String expectedQuery, int... userIds)
+    {
+        String expectedSort = "[]";
+        int expectedMaxItems = -1;
+        int expectedSkipCount = 0;
+
+        mockResultSetNodeRefs.clear();
+        for (int i: userIds)
+        {
+            NodeRef nodeRef = userNodeRefs.get(i);
+            mockResultSetNodeRefs.add(nodeRef);
+        }
+
+        ArgumentCaptor<SearchParameters> searchParametersCaptor = ArgumentCaptor.forClass(SearchParameters.class);
         ScriptPagingDetails paging = new ScriptPagingDetails(0, 0);
-        // Get people with multi-part firstNames
-        // USER_1 and USER_3 both have 'john junior' as their firstName
-        // The query shouldn't select USER_4
-        List<PersonInfo> persons = people.getPeopleImpl("john junior", paging, null, null);
-        assertEquals("There are two users who have \"john junior\" as their first name.", 2,
-                    persons.size());
-        assertEquals(USER_1.getFirstName(), persons.get(0).getFirstName());
-        assertEquals(USER_3.getFirstName(), persons.get(1).getFirstName());
+        List<PersonInfo> persons = people.getPeopleImpl(filter, paging, null, null);
+        verify(mockSearchService, times(++callCount)).query(searchParametersCaptor.capture());
 
-        // Get user with multi-part firstNames and lastNames
-        persons = people.getPeopleImpl("john junior lewis sec*", paging, null, null);
-        assertEquals("There is one user with the name: \"john junior lewis second\".", 1,
-                    persons.size());
-        assertEquals(USER_1.getFirstName(), persons.get(0).getFirstName());
-        assertEquals(USER_1.getLastName(), persons.get(0).getLastName());
+        SearchParameters parameters = searchParametersCaptor.getValue();
+        assertEquals("Query", expectedQuery, parameters.getQuery().toString());
+        assertEquals("Sort", expectedSort, parameters.getSortDefinitions().toString());
+        assertEquals("maxItems", expectedMaxItems, parameters.getMaxItems());
+        assertEquals("SkipCount", expectedSkipCount, parameters.getSkipCount());
 
-        // Only USER_2's first name is "john senior"
-        persons = people.getPeopleImpl("john senior", paging, null, null);
-        assertEquals("There is one user who has \"john senior\" as his first name.", 1,
-                    persons.size());
-        assertEquals(USER_2.getFirstName(), persons.get(0).getFirstName());
-        assertEquals(USER_2.getLastName(), persons.get(0).getLastName());
-
-        persons = people.getPeopleImpl("john*", paging, null, null);
-        assertEquals("There are four users with \"john\" as their first name.", 4, persons.size());
-
-        // Get people with multi-part lastNames
-        // USER_3 and USER_4 both have 'lewis third' as their lastName
-        persons = people.getPeopleImpl("lewis third", paging, null, null);
-        assertEquals("There are two users who have \"lewis third\" as their last name.", 2,
-                    persons.size());
-        assertEquals(USER_3.getLastName(), persons.get(0).getLastName());
-        assertEquals(USER_4.getLastName(), persons.get(1).getLastName());
-
-        // Only USER_5 and USER_6 have last name "doe first"
-        // The query shouldn't select USER_7
-        persons = people.getPeopleImpl("doe fi*", paging, null, null);
-        assertEquals("There are two users who have \"doe first\" as their last name.", 2,
-                    persons.size());
-        assertEquals(USER_5.getLastName(), persons.get(0).getLastName());
-        assertEquals(USER_6.getLastName(), persons.get(1).getLastName());
-
-        persons = people.getPeopleImpl("lewi*", paging, null, null);
-        assertEquals("There are four users with \"lewis\" as their last name.", 4, persons.size());
-
-        persons = people.getPeopleImpl("thir*", paging, null, null);
-        assertEquals("There are two users with \"lewis third\" as their last name.", 2, persons.size());
-
-        // Get people with single firstName and multi-part lastNames
-        persons = people.getPeopleImpl("sam doe first", paging, null, null);
-        assertEquals("There is one user with the name: \"sam doe first\".", 1, persons.size());
-        assertEquals(USER_6.getFirstName(), persons.get(0).getFirstName());
-        assertEquals(USER_6.getLastName(), persons.get(0).getLastName());
-
-        // Get people with multi-part firstNames and single lastName
-        persons = people.getPeopleImpl("sara jones doe", paging, null, null);
-        assertEquals("There is one user with the name: \"sara jones doe\".", 1, persons.size());
-        assertEquals(USER_7.getFirstName(), persons.get(0).getFirstName());
-        assertEquals(USER_7.getLastName(), persons.get(0).getLastName());
-
-        // Get people with single firstName and single lastName
-        persons = people.getPeopleImpl("sara doe", paging, null, null);
-        assertEquals("There are two users with the name: \"sara doe\".", 2, persons.size());
-        assertEquals(USER_7.getLastName(), persons.get(0).getLastName());
-        assertEquals(USER_8.getLastName(), persons.get(0).getLastName());
-
+        assertEquals(sizeMessage, userIds.length, persons.size());
+        int n = 0;
+        for (int i : userIds)
+        {
+            UserInfo userInfo = userInfos[i];
+            assertEquals("PeopleTestUser " + i + " firstName ", userInfo.getFirstName(), persons.get(n).getFirstName());
+            assertEquals("PeopleTestUser " + i + " lastName ", userInfo.getLastName(), persons.get(n).getLastName());
+            n++;
+        }
     }
 
     /**
@@ -194,11 +273,12 @@ public class PeopleTest extends TestCase
      * <br />
      * This test is also valid for SOLR1 and SOLR4!
      */
+    @Category(RedundantTests.class) // This test is checking that canned queries and Solr searches return the same. We no longer test SOLR.
     public void testGetPeopleByPatternIndexedAndCQ() throws Exception
     {
         ScriptPagingDetails paging = new ScriptPagingDetails(0, 0);
         List<PersonInfo> unsortedPeople = people.getPeopleImpl(CQ_SIMPLE_FILTER, paging, null, null);
-        assertNotNull("No one person is found!", unsortedPeople);
+        assertNotNull("Not one person was found!", unsortedPeople);
 
         Set<NodeRef> expectedUsers = new HashSet<NodeRef>();
         for (PersonInfo person : unsortedPeople)
@@ -216,19 +296,30 @@ public class PeopleTest extends TestCase
         }
     }
 
-    private void createUser(UserInfo... userInfo)
+    private void createUsers() throws HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException, NotSupportedException
     {
-        for (UserInfo user : userInfo)
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        for (UserInfo user : userInfos)
         {
-            PropertyMap testUser = new PropertyMap();
-            testUser.put(ContentModel.PROP_USERNAME, user.getUserName());
-            testUser.put(ContentModel.PROP_FIRSTNAME, user.getFirstName());
-            testUser.put(ContentModel.PROP_LASTNAME, user.getLastName());
-            testUser.put(ContentModel.PROP_EMAIL, user.getUserName() + "@acme.test");
-            testUser.put(ContentModel.PROP_PASSWORD, "password");
+            String username = user.getUserName();
+            NodeRef nodeRef = personService.getPersonOrNull(username);
+            boolean create = nodeRef == null;
+            if (create)
+            {
+                PropertyMap testUser = new PropertyMap();
+                testUser.put(ContentModel.PROP_USERNAME, username);
+                testUser.put(ContentModel.PROP_FIRSTNAME, user.getFirstName());
+                testUser.put(ContentModel.PROP_LASTNAME, user.getLastName());
+                testUser.put(ContentModel.PROP_EMAIL, user.getUserName() + "@acme.test");
+                testUser.put(ContentModel.PROP_PASSWORD, "password");
 
-            personService.createPerson(testUser);
+                nodeRef = personService.createPerson(testUser);
+            }
+            userNodeRefs.add(nodeRef);
+//            System.out.println((create ? "create" : "existing")+" user " + username + " nodeRef=" + nodeRef);
         }
+        txn.commit();
     }
 
     static class UserInfo
@@ -262,7 +353,7 @@ public class PeopleTest extends TestCase
         @Override
         public String toString()
         {
-            return "UserInfo [userName=" + this.userName + ", firstName=" + this.firstName
+            return "PeopleTestUserInfo [userName=" + this.userName + ", firstName=" + this.firstName
                         + ", lastName=" + this.lastName + "]";
         }
     }

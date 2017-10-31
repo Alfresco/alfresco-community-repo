@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.search.impl.querymodel.Argument;
 import org.alfresco.repo.search.impl.querymodel.FunctionEvaluationContext;
+import org.alfresco.repo.search.impl.querymodel.JoinType;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -45,6 +46,8 @@ public class AspectSupport implements DBQueryBuilderComponent
     String alias;
 
     List<Long> qnameIds = new ArrayList<Long>();
+
+    private JoinType joinType = JoinType.NONE;
 
     /**
      * @param qnameIds
@@ -75,7 +78,7 @@ public class AspectSupport implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
+                Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
 
     }
@@ -101,19 +104,40 @@ public class AspectSupport implements DBQueryBuilderComponent
     @Override
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
-        DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
-        command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
-        command.setAlias(alias);
-        command.setType(DBQueryBuilderPredicatePartCommandType.ASPECT);
-        if(qnameIds.size() > 0)
+        DBQueryBuilderPredicatePartCommand command;
+        switch(joinType)
         {
-            command.setValues(qnameIds.toArray(new Long[]{}));
+            case LEFT:
+            case RIGHT:
+                command = new DBQueryBuilderPredicatePartCommand();
+                command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
+                command.setType(DBQueryBuilderPredicatePartCommandType.NP_MATCHES);
+                predicatePartCommands.add(command);
+                break;
+            case NONE:
+            case INNER:
+            default:
+                command = new DBQueryBuilderPredicatePartCommand();
+                command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
+                command.setAlias(alias);
+                command.setType(DBQueryBuilderPredicatePartCommandType.ASPECT);
+                if(qnameIds.size() > 0)
+                {
+                    command.setValues(qnameIds.toArray(new Long[]{}));
+                }
+                else
+                {
+                    command.setValues(new Long[]{-1l});
+                }
+                predicatePartCommands.add(command);
+                break;
         }
-        else
-        {
-            command.setValues(new Long[]{-1l});
-        }
-        predicatePartCommands.add(command);
+
+    }
+
+    public void setJoinType(JoinType joinType) 
+    {
+        this.joinType = joinType;
     }
 
 }

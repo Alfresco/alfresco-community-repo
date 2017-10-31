@@ -143,7 +143,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.virtual.ref.StoredPathHasherTest.class,
 
     org.alfresco.repo.virtual.template.VirtualQueryImplTest.class,
-    org.alfresco.repo.virtual.store.TypeVirtualizationMethodTest.Unit.class,
+    org.alfresco.repo.virtual.store.TypeVirtualizationMethodUnitTest.class,
 
     org.alfresco.repo.security.authentication.AuthenticationServiceImplTest.class,
     org.alfresco.util.EmailHelperTest.class,
@@ -170,8 +170,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.domain.propval.PropertyTypeConverterTest.class,
     org.alfresco.repo.search.MLAnaysisModeExpansionTest.class,
     org.alfresco.repo.search.DocumentNavigatorTest.class,
-    org.alfresco.repo.search.impl.lucene.MultiReaderTest.class,
-    org.alfresco.repo.search.impl.lucene.index.IndexInfoTest.class,
     org.alfresco.util.NumericEncodingTest.class,
     org.alfresco.repo.search.impl.parsers.CMIS_FTSTest.class,
     org.alfresco.repo.search.impl.parsers.CMISTest.class,

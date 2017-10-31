@@ -26,6 +26,11 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,6 +47,7 @@ import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.store.VirtualStoreImpl;
 import org.alfresco.repo.virtual.store.VirtualUserPermissions;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -50,10 +56,15 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @Category(LuceneTests.class)
+@RunWith(MockitoJUnitRunner.class)
 public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegrationTest
 {
     private PermissionServiceSPI permissionService;
@@ -81,8 +92,8 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
 
     private NodeRef contributionsSMF;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
         // we set our own virtual user permissions in order to be context xml
@@ -160,7 +171,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         smartStore.setUserPermissions(testPermissions);
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception
     {
         if (savedUserPermissions != null)
@@ -839,9 +850,11 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
 
             // test that the admin user can see documents from virtual nodes
             // with filing path with no inherited parent permissions
-            fileAndFolderService.create(contributionsSMF,
+            FileInfo t1File = fileAndFolderService.create(contributionsSMF,
                                         "T1",
                                         ContentModel.TYPE_CONTENT);
+            //"cm:Contribution" taken from testTemplate7.json smart folder query
+            prepareMocks("cm:Contribution", smartStore.materializeIfPossible(t1File.getNodeRef()));
 
             NodeRef childContet = nodeService.getChildByName(contributionsSMF,
                                                              ContentModel.ASSOC_CONTAINS,
@@ -867,6 +880,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         }
         finally
         {
+            resetMocks();
             if (contributionDocsFolder != null)
             {
                 nodeService.deleteNode(contributionDocsFolder);

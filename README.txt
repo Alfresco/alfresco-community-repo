@@ -58,6 +58,13 @@ profile in your tests (-Dwebdriver.firefox.profile="ProfileName"). If your Firef
 MacOS X Sierra users: if you experience by order of magnitude slower performance when connected to a WiFi network (e.g. office WiFi)
 add your workstation to your local /etc/hosts file as described on https://github.com/SeleniumHQ/selenium/issues/2824.
 
+To use Chrome instead of Firefox:
+   - copy webdriver.properties from https://github.com/AlfrescoTestAutomation/selenium-grid/tree/master/src/main/resources
+    - put it under src/test/resource in rm-automation-ui project
+    - download the chrome driver from http://chromedriver.storage.googleapis.com/ and extract it
+    - change the following properties in webdriver.properties: webdriver.browser (Chrome) and webdriver.chrome.server.path (path/to/chrome/driver)
+    - run the tests as usual
+
 
 Updating License Headers:
 -------------------------

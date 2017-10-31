@@ -25,29 +25,85 @@
  */
 package org.alfresco;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class AppContextExtraTestSuite extends TestSuite
-{
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
+@RunWith(Categories.class)
+@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
+@Suite.SuiteClasses({
 
-        AllRemoteApiTestsCatalogue.unitTestsNoContext(suite);
+    // very fast - no context tests - true jUnit tests
+    org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest.class,
+    org.alfresco.repo.web.scripts.solr.StatsGetTest.class,
+    org.alfresco.repo.web.scripts.solr.SOLRSerializerTest.class,
+    org.alfresco.repo.web.util.PagingCursorTest.class,
+    org.alfresco.repo.web.util.paging.PagingTest.class,
+    org.alfresco.repo.webdav.GetMethodTest.class,
+    org.alfresco.repo.webdav.LockInfoImplTest.class,
+    org.alfresco.repo.webdav.RenameShuffleDetectionTest.class,
+    org.alfresco.repo.webdav.WebDAVHelperTest.class,
+    org.alfresco.repo.webdav.WebDAVLockServiceImplTest.class,
+    org.alfresco.rest.api.search.ResultMapperTests.class,
+    org.alfresco.rest.api.search.SearchApiWebscriptTests.class,
+    org.alfresco.rest.api.search.SearchMapperTests.class,
+    org.alfresco.rest.api.search.SearchQuerySerializerTests.class,
+    org.alfresco.rest.api.search.StoreMapperTests.class,
+    org.alfresco.rest.api.tests.ModulePackageTest.class,
+    org.alfresco.rest.framework.tests.core.InspectorTests.class,
+    org.alfresco.rest.framework.tests.core.JsonJacksonTests.class,
+    org.alfresco.rest.framework.tests.core.ParamsExtractorTests.class,
+    org.alfresco.rest.framework.tests.core.ResourceWebScriptHelperTests.class,
+    org.alfresco.rest.framework.tests.core.WhereTests.class,
+    org.alfresco.rest.framework.tests.core.WithResponseTest.class,
+    org.alfresco.rest.framework.tools.RecognizedParamsExtractorTest.class,
         // add applicationContext_02_part2 as it is compatible with the rest of the tests in this test suite
         // and because it balances the load of the build jobs
-        AllRemoteApiTestsCatalogue.applicationContext_02_part2(suite);
+    
+    // [classpath:alfresco/application-context.xml, classpath:alfresco/web-scripts-application-context-test.xml,
+    // classpath:alfresco/web-scripts-application-context.xml]
+    // this uses the same context set as applicationContext_02
+    // this does not want to run at the beginning or the end of the applicationContext_02
+    // these tests run very fast once the context is up
+    org.alfresco.repo.remoteticket.RemoteAlfrescoTicketServiceTest.class,
+    org.alfresco.repo.web.scripts.servlet.RemoteAuthenticatorFactoryTest.class,
         
-        // the order is important
-        AllRemoteApiTestsCatalogue.applicationContext_06(suite);
-        AllRemoteApiTestsCatalogue.applicationContext_07(suite);
-        AllRemoteApiTestsCatalogue.applicationContext_03(suite);
-        AllRemoteApiTestsCatalogue.applicationContext_04(suite);
-        AllRemoteApiTestsCatalogue.applicationContext_05(suite);
+        
+    // [classpath:alfresco/application-context.xml, classpath:subsystem-test-context.xml]
+    org.alfresco.repo.management.subsystems.test.SubsystemsTest.class,
 
-        AllRemoteApiTestsCatalogue.testRestContext(suite);
+    // [classpath:alfresco/application-context.xml]
+    org.alfresco.repo.webdav.GetMethodRegressionTest.class,
+    org.alfresco.repo.webdav.WebDAVHelperIntegrationTest.class,
 
-        return suite;
-    }
+    // [classpath:alfresco/application-context.xml, classpath:alfresco/web-scripts-application-context.xml,
+    // classpath:alfresco/web-scripts-application-context-test.xml,
+    // classpath:alfresco/declarative-spreadsheet-webscript-application-context.xml]
+    org.alfresco.repo.web.scripts.DeclarativeSpreadsheetWebScriptTest.class,
+
+    // [classpath:alfresco/application-context.xml, classpath:alfresco/public-rest-context.xml,
+    // classpath:alfresco/web-scripts-application-context.xml]
+    org.alfresco.rest.test.workflow.api.impl.ProcessesImplTest.class,
+
+    // [classpath:alfresco/application-context.xml, classpath:alfresco/web-scripts-application-context.xml,
+    // classpath:alfresco/remote-api-context.xml]
+    org.alfresco.repo.webdav.DeleteMethodTest.class,
+    org.alfresco.repo.webdav.LockMethodTest.class,
+    org.alfresco.repo.webdav.MoveMethodTest.class,
+    org.alfresco.repo.webdav.UnlockMethodTest.class,
+    org.alfresco.repo.webdav.WebDAVMethodTest.class,
+    org.alfresco.repo.webdav.PutMethodTest.class,
+    org.alfresco.repo.webdav.WebDAVonContentUpdateTest.class,
+
+    // [classpath:test-rest-context.xml]
+    org.alfresco.rest.framework.tests.core.ExceptionResolverTests.class,
+    org.alfresco.rest.framework.tests.core.ExecutionTests.class,
+    org.alfresco.rest.framework.tests.core.ResourceLocatorTests.class,
+    org.alfresco.rest.framework.tests.core.SerializeTests.class,
+    org.alfresco.rest.framework.tests.metadata.WriterTests.class,
+})
+public class AppContextExtraTestSuite
+{
 }

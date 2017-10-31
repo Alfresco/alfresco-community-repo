@@ -50,11 +50,13 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONStringer;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
@@ -368,6 +370,8 @@ public class BlogServiceTest extends BaseWebScriptTest
     /**
      * @since 4.0
      */
+    @Test
+    @Category({LuceneTests.class, RedundantTests.class})
     public void testCreateDraftPostWithTagsAndComment() throws Exception
     {
         String[] tags = new String[]{"foo", "bar"};

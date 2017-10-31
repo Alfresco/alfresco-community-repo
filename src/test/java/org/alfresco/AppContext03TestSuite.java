@@ -25,17 +25,33 @@
  */
 package org.alfresco;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.NonBuildTests;
+import org.junit.experimental.categories.Categories;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
-public class AppContext03TestSuite extends TestSuite
+@RunWith(Categories.class)
+@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
+@Suite.SuiteClasses({
+    // [classpath*:/publicapi/lucene/, classpath:alfresco/application-context.xml,
+    // classpath:alfresco/web-scripts-application-context-test.xml,
+    // classpath:alfresco/web-scripts-application-context.xml, rest-api-test-context.xml, testcmis-model-context.xml]
+    org.alfresco.rest.workflow.api.tests.ProcessWorkflowApiTest.class,
+    org.alfresco.rest.workflow.api.tests.TaskWorkflowApiTest.class,
+    org.alfresco.rest.api.tests.TestCustomConstraint.class,
+    org.alfresco.rest.api.tests.TestCustomModel.class,
+    org.alfresco.rest.api.tests.TestCustomProperty.class,
+    org.alfresco.rest.api.tests.TestCustomTypeAspect.class,
+    org.alfresco.rest.api.tests.TestSiteContainers.class,
+    org.alfresco.rest.api.tests.TestSiteMembers.class,
+    org.alfresco.rest.api.tests.TestSiteMembershipRequests.class,
+    org.alfresco.rest.api.tests.TestSites.class,
+    org.alfresco.rest.api.tests.TestTags.class,
+    org.alfresco.rest.api.tests.SharedLinkApiTest.class,
+    org.alfresco.rest.api.tests.RenditionsTest.class,
+    org.alfresco.rest.api.tests.TestPeople.class,
+})
+public class AppContext03TestSuite
 {
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-
-        AllRemoteApiTestsCatalogue.applicationContext_01_part3(suite);
-
-        return suite;
-    }
 }

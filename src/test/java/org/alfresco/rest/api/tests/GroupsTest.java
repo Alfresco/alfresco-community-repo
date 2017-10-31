@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.AuthorityDAOImpl;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Groups;
@@ -37,6 +38,7 @@ import org.alfresco.rest.api.tests.client.data.Group;
 import org.alfresco.rest.api.tests.client.data.GroupMember;
 import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
+import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -46,18 +48,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mock;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 /**
  * V1 REST API tests for managing Groups
  *
  * @author cturlica
  */
-@Category(LuceneTests.class)
 public class GroupsTest extends AbstractSingleNetworkSiteTest
 {
     private static final String MEMBER_TYPE_GROUP = "GROUP";
@@ -73,6 +76,12 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
     private GroupMember groupMemberA = null;
     private GroupMember groupMemberB = null;
     private GroupMember personMember = null;
+    @Mock
+    private ResultSetRow groupAResultSetRow;
+    @Mock
+    private ResultSetRow groupBResultSetRow;
+    @Mock
+    private Iterator iterator;
 
     @Before
     public void setup() throws Exception
@@ -80,6 +89,9 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
         super.setup();
 
         authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
+        AuthorityDAOImpl authorityDAOImpl = (AuthorityDAOImpl) applicationContext.getBean("authorityDAO");
+        authorityDAOImpl.setSearchService(mockSearchService);
+        when(mockSearchServiceQueryResultSet.iterator()).thenReturn(iterator);
     }
 
     @After
@@ -576,11 +588,13 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             authorityService.setAuthorityDisplayName(groupBAuthorityName, "B Group");
             authorityService.addAuthority(rootGroupName, groupBAuthorityName);
             authorityService.addAuthorityToZones(groupBAuthorityName, zoneSet("APITEST.MYZONE"));
+            when(groupBResultSetRow.getNodeRef()).thenReturn(authorityService.getAuthorityNodeRef(groupBAuthorityName));
 
             String groupAAuthorityName = authorityService.createAuthority(AuthorityType.GROUP, "Test_GroupA" + GUID.generate());
             authorityService.setAuthorityDisplayName(groupAAuthorityName, "A Group");
             authorityService.addAuthority(rootGroupName, groupAAuthorityName);
             authorityService.addAuthorityToZones(groupAAuthorityName, zoneSet("APITEST.MYZONE", "APITEST.ANOTHER"));
+            when(groupAResultSetRow.getNodeRef()).thenReturn(authorityService.getAuthorityNodeRef(groupAAuthorityName));
 
             authorityService.addAuthority(groupAAuthorityName, user1);
             authorityService.addAuthority(groupBAuthorityName, user2);
@@ -1186,6 +1200,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Default order.
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, null);
 
+            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
             List<GroupMember> groupMembers = resp.getList();
             assertTrue("group members order not valid", groupMembers.indexOf(groupMemberA) < groupMembers.indexOf(groupMemberB));
@@ -1193,6 +1209,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Ascending order
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
 
+            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> respOrderAsc = getGroupMembers(rootGroupName, paging, otherParams);
 
             checkList(respOrderAsc.getList(), resp.getPaging(), resp);
@@ -1208,6 +1226,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             // Default order.
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME, true);
 
+            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
             List<GroupMember> groupMembers = resp.getList();
             assertTrue("group members order not valid", groupMembers.indexOf(groupMemberA) < groupMembers.indexOf(groupMemberB));
@@ -1221,6 +1241,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Map<String, String> otherParams = new HashMap<>();
             addOrderBy(otherParams, org.alfresco.rest.api.Groups.PARAM_ID, false);
 
+            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             // list sites
             ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
 
@@ -1235,6 +1257,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             Map<String, String> otherParams = new HashMap<>();
             otherParams.put("orderBy", org.alfresco.rest.api.Groups.PARAM_ID + " ASC," + org.alfresco.rest.api.Groups.PARAM_DISPLAY_NAME + " ASC");
 
+            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             getGroupMembers(rootGroupName, paging, otherParams, "", HttpServletResponse.SC_BAD_REQUEST);
         }
     }
@@ -1253,6 +1277,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             int maxItems = 2;
             Paging paging = getPaging(skipCount, maxItems);
 
+            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> resp = getGroupMembers(rootGroupName, paging, otherParams);
 
             // Paging and list groups with skip count.
@@ -1261,6 +1287,8 @@ public class GroupsTest extends AbstractSingleNetworkSiteTest
             maxItems = 1;
             paging = getPaging(skipCount, maxItems);
 
+            when(iterator.hasNext()).thenReturn(true, true,false);
+            when(iterator.next()).thenReturn(groupBResultSetRow, groupAResultSetRow);
             ListResponse<GroupMember> sublistResponse = getGroupMembers(rootGroupName, paging, otherParams);
 
             List<GroupMember> expectedSublist = sublist(resp.getList(), skipCount, maxItems);

@@ -53,12 +53,17 @@ import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category({LuceneTests.class, RedundantTests.class})
 public class TestTags extends EnterpriseTestApi
 {
 	@Test
+	@Category({LuceneTests.class, RedundantTests.class})
 	public void testTags() throws Exception
 	{
 		Iterator<TestNetwork> networksIt = getTestFixture().getNetworksIt();

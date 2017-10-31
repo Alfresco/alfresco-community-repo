@@ -115,6 +115,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -149,6 +151,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.URLEncoder;
 
@@ -753,10 +756,11 @@ public class TestCMIS extends EnterpriseTestApi
             NodeRating rating = nodesProxy.createNodeRating(testFolder.getId(), expectedNodeRating);
             expectedNodeRating.expected(rating);
             assertNotNull(rating.getId());
-            
-            Tag tag = nodesProxy.createNodeTag(testFolder.getId(), expectedTag);
-            expectedTag.expected(tag);
-            assertNotNull(tag.getId());
+
+            // REPO-2028 - remove lucene tests
+            //Tag tag = nodesProxy.createNodeTag(testFolder.getId(), expectedTag);
+            //expectedTag.expected(tag);
+            //assertNotNull(tag.getId());
 
             Comment comment = commentsProxy.createNodeComment(testFolder.getId(), expectedComment);
             expectedComment.expected(comment);
@@ -774,9 +778,10 @@ public class TestCMIS extends EnterpriseTestApi
             expectedNodeRating.expected(rating);
             assertNotNull(rating.getId());
 
-            Tag tag = nodesProxy.createNodeTag(testDoc.getId(), expectedTag);
-            expectedTag.expected(tag);
-            assertNotNull(tag.getId());
+            // REPO-2028 - remove lucene tests
+            //Tag tag = nodesProxy.createNodeTag(testDoc.getId(), expectedTag);
+            //expectedTag.expected(tag);
+            //assertNotNull(tag.getId());
 
             Comment comment = commentsProxy.createNodeComment(testDoc.getId(), expectedComment);
             expectedComment.expected(comment);
@@ -838,48 +843,49 @@ public class TestCMIS extends EnterpriseTestApi
             ItemIterable<CmisObject> children = folder.getChildren();
             testFolderNode.checkChildren(children);
         }
-        
+
+        // REPO-2028 - remove lucene tests
         // query
-        {
-            Folder folder = (Folder)cmisSession.getObjectByPath("/Sites/" + site.getSiteId() + "/documentLibrary/" + testFolder.getName());
-            String folderId = folder.getId();
-
-            Set<String> expectedFolderNames = new HashSet<String>();
-            for(CMISNode n : testFolderNode.getFolderNodes().values())
-            {
-                expectedFolderNames.add((String)n.getProperty("cmis:name"));
-            }
-            int expectedNumFolders = expectedFolderNames.size();
-            int numMatchingFoldersFound = 0;
-            List<CMISNode> results = cmisSession.query("SELECT * FROM cmis:folder WHERE IN_TREE('" + folderId + "')", false, 0, Integer.MAX_VALUE);
-            for(CMISNode node : results)
-            {
-                String name = (String)node.getProperties().get("cmis:name");
-                if(expectedFolderNames.contains(name))
-                {
-                    numMatchingFoldersFound++;
-                }
-            }
-            assertEquals(expectedNumFolders, numMatchingFoldersFound);
-
-            Set<String> expectedDocNames = new HashSet<String>();
-            for(CMISNode n : testFolderNode.getDocumentNodes().values())
-            {
-                expectedDocNames.add((String)n.getProperty("cmis:name"));
-            }
-            int expectedNumDocs = expectedDocNames.size();
-            int numMatchingDocsFound = 0;
-            results = cmisSession.query("SELECT * FROM cmis:document where IN_TREE('" + folderId + "')", false, 0, Integer.MAX_VALUE);
-            for(CMISNode node : results)
-            {
-                String name = (String)node.getProperties().get("cmis:name");
-                if(expectedDocNames.contains(name))
-                {
-                    numMatchingDocsFound++;
-                }
-            }
-            assertEquals(expectedNumDocs, numMatchingDocsFound);
-        }
+//        {
+//            Folder folder = (Folder)cmisSession.getObjectByPath("/Sites/" + site.getSiteId() + "/documentLibrary/" + testFolder.getName());
+//            String folderId = folder.getId();
+//
+//            Set<String> expectedFolderNames = new HashSet<String>();
+//            for(CMISNode n : testFolderNode.getFolderNodes().values())
+//            {
+//                expectedFolderNames.add((String)n.getProperty("cmis:name"));
+//            }
+//            int expectedNumFolders = expectedFolderNames.size();
+//            int numMatchingFoldersFound = 0;
+//            List<CMISNode> results = cmisSession.query("SELECT * FROM cmis:folder WHERE IN_TREE('" + folderId + "')", false, 0, Integer.MAX_VALUE);
+//            for(CMISNode node : results)
+//            {
+//                String name = (String)node.getProperties().get("cmis:name");
+//                if(expectedFolderNames.contains(name))
+//                {
+//                    numMatchingFoldersFound++;
+//                }
+//            }
+//            assertEquals(expectedNumFolders, numMatchingFoldersFound);
+//
+//            Set<String> expectedDocNames = new HashSet<String>();
+//            for(CMISNode n : testFolderNode.getDocumentNodes().values())
+//            {
+//                expectedDocNames.add((String)n.getProperty("cmis:name"));
+//            }
+//            int expectedNumDocs = expectedDocNames.size();
+//            int numMatchingDocsFound = 0;
+//            results = cmisSession.query("SELECT * FROM cmis:document where IN_TREE('" + folderId + "')", false, 0, Integer.MAX_VALUE);
+//            for(CMISNode node : results)
+//            {
+//                String name = (String)node.getProperties().get("cmis:name");
+//                if(expectedDocNames.contains(name))
+//                {
+//                    numMatchingDocsFound++;
+//                }
+//            }
+//            assertEquals(expectedNumDocs, numMatchingDocsFound);
+//        }
 
         // versioning
         {
@@ -1232,8 +1238,13 @@ public class TestCMIS extends EnterpriseTestApi
             assertEquals(nodes.get(0).getId(), targetVersionSeriesId);
         }
     }
-    
+
+    /*
+     * This test requires lucene, and needs to probably be moved to the repository project or in a system test
+     * See REPO-2028 and follow up : REPO-3019
+     */
     @Test
+    @Category({LuceneTests.class, RedundantTests.class})
     public void testObjectIds() throws Exception
     {
         String username = "enterpriseuser" + System.currentTimeMillis();

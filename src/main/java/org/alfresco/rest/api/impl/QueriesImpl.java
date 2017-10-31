@@ -126,7 +126,6 @@ public class QueriesImpl implements Queries, InitializingBean
     }
     
     private ServiceRegistry sr;
-    private SearchService searchService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
@@ -164,7 +163,6 @@ public class QueriesImpl implements Queries, InitializingBean
         ParameterCheck.mandatory("people", this.people);
         ParameterCheck.mandatory("sites", this.sites);
         
-        this.searchService = sr.getSearchService();
         this.nodeService = sr.getNodeService();
         this.namespaceService = sr.getNamespaceService();
         this.dictionaryService = sr.getDictionaryService();
@@ -174,6 +172,7 @@ public class QueriesImpl implements Queries, InitializingBean
     @Override
     public CollectionWithPagingInfo<Node> findNodes(Parameters parameters)
     {
+        SearchService searchService = sr.getSearchService();
         return new AbstractQuery<Node>(nodeService, searchService)
         {
             private final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
@@ -291,6 +290,7 @@ public class QueriesImpl implements Queries, InitializingBean
     @Override
     public CollectionWithPagingInfo<Person> findPeople(Parameters parameters)
     {
+        SearchService searchService = sr.getSearchService();
         return new AbstractQuery<Person>(nodeService, searchService)
         {
             @Override
@@ -329,6 +329,7 @@ public class QueriesImpl implements Queries, InitializingBean
     @Override
     public CollectionWithPagingInfo<Site> findSites(Parameters parameters)
     {
+        SearchService searchService = sr.getSearchService();
         return new AbstractQuery<Site>(nodeService, searchService)
         {
             @Override

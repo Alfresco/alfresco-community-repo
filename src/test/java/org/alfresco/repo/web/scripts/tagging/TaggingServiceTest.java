@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
@@ -50,7 +51,7 @@ import org.json.JSONArray;
  * 
  * @author Roy Wetherall
  */
-@Category(LuceneTests.class)
+@Category({LuceneTests.class, RedundantTests.class})
 public class TaggingServiceTest extends BaseWebScriptTest
 {    
     private MutableAuthenticationService authenticationService;

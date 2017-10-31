@@ -60,6 +60,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1078,6 +1079,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         startInvite(PERSON_FIRSTNAME, PERSON_LASTNAME, emailAddress, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, Status.STATUS_BAD_REQUEST);
     }
 
+    @Category(RedundantTests.class)
     public void testMNT9905() throws Exception
     {
         String[] managerUsersArr = { "user1", "user2" };

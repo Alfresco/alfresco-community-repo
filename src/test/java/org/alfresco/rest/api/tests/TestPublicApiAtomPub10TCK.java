@@ -37,6 +37,8 @@ import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
@@ -54,6 +56,7 @@ import org.hibernate.dialect.Dialect;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * OpenCMIS TCK unit tests.
@@ -124,6 +127,7 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
     }
 
     @Test
+    @Category({LuceneTests.class, RedundantTests.class})
     public void testCMISTCKQuery() throws Exception
     {
         OverrideQueryTestGroup queryTestGroup = new OverrideQueryTestGroup();

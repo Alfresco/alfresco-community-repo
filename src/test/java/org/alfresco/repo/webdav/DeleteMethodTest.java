@@ -39,6 +39,7 @@ import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -89,6 +90,7 @@ public class DeleteMethodTest
     private ContentService contentService;
     private WebDAVHelper webDAVHelper;
     
+    private Repository repositoryHelper;
     private NodeRef companyHomeNodeRef;
     private NodeRef versionableDoc;
     private String versionableDocName;
@@ -114,6 +116,8 @@ public class DeleteMethodTest
         nodeService = ctx.getBean("NodeService", NodeService.class);
         contentService = ctx.getBean("contentService", ContentService.class);
         webDAVHelper = ctx.getBean("webDAVHelper", WebDAVHelper.class);         
+        repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
+        companyHomeNodeRef = repositoryHelper.getCompanyHome();
     }
     
     @After
@@ -194,19 +198,6 @@ public class DeleteMethodTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
-        companyHomeNodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-        {
-            @Override
-            public NodeRef execute() throws Throwable
-            {
-                // find "Company Home"
-                ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home\"");
-                NodeRef result = resultSet.getNodeRef(0);
-                resultSet.close();
-
-                return result;
-            }
-         });
          txn = transactionService.getUserTransaction();
          txn.begin();
          

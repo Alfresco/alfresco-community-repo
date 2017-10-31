@@ -30,6 +30,8 @@ import java.util.Map;
 import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
+import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
 import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
@@ -58,6 +60,7 @@ import org.apache.chemistry.opencmis.tck.tests.versioning.VersionDeleteTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningStateCreateTest;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterpriseOpenCMISTCKTest
 {
@@ -97,6 +100,7 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
     }
 
     @Test
+    @Category({LuceneTests.class, RedundantTests.class})
     public void testCMISTCKQuery() throws Exception
     {
         OverrideQueryTestGroup queryTestGroup = new OverrideQueryTestGroup();

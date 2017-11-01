@@ -145,6 +145,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected ContentService contentService;
     protected MimetypeMap mimetypeMap;
     protected ActionTrackingService actionTrackingService;
+    protected NamespaceService namespaceService;
 
     /* Parameter names common to all Rendering Actions */
     /**
@@ -249,7 +250,12 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     {
         this.renditionLocationResolver = renditionLocationResolver;
     }
-    
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
     public AbstractRenderingEngine(NodeLocator temporaryParentNodeLocator, QName temporaryRenditionLinkType)
     {
         this.publicAction = false;

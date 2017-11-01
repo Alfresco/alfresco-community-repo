@@ -26,6 +26,9 @@
 
 package org.alfresco.repo.virtual.template;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -38,15 +41,16 @@ import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(LuceneTests.class)
 public class ApplyTemplateMethodTest extends VirtualizationIntegrationTest
 {
+    @Category(RedundantTests.class)
     @Test
     public void testExecute_vanillaISO9075ActualPath() throws Exception
     {
@@ -87,9 +91,12 @@ public class ApplyTemplateMethodTest extends VirtualizationIntegrationTest
         searchParameters.setQuery(query.getQueryString());
         searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         searchParameters.setLanguage(query.getLanguage());
-        ResultSet qresult = searchService.query(searchParameters);
-        assertEquals(1,
-                     qresult.getNumberFound());
+        
+        /* Code commented out as part of REPO-2028
+         * If this test needs to be reactivated, please refactor this to use the prepareMocks/resetMocks methods
+         */ 
+        // ResultSet qresult = searchService.query(searchParameters);
+        // assertEquals(1, qresult.getNumberFound());
 
     }
 
@@ -160,6 +167,7 @@ public class ApplyTemplateMethodTest extends VirtualizationIntegrationTest
 
     }
 
+    @Category(RedundantTests.class)
     @Test
     public void testExecuteRepositoryJS() throws Exception
     {

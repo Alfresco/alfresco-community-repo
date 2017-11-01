@@ -97,6 +97,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.CachingDateFormat;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -255,9 +256,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
         cmisConnector.destroy(); // clean cached NodeRefs
         cmisConnector.setStore(storeRef.toString());
         cmisConnector.setRootPath("/");
-
-        // If FTS kicks in at the wrong moment, it can skew the test results. Temporarily disable it during the test
-        this.luceneFTS.pause();
 
         DataTypeDefinition dataType = dictionaryService.getDataType(DataTypeDefinition.DATETIME);
         String analyserClassName = dataType.resolveAnalyserClassName();
@@ -523,7 +521,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
         {
             authenticationService.deleteAuthentication("cmis");
         }
-        this.luceneFTS.resume();
 
         AuthenticationUtil.clearCurrentSecurityContext();
     }
@@ -725,6 +722,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
                 new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_PARENT() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder", rootNodeRef.getStoreRef());
@@ -875,6 +873,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:isPrivateWorkingCopy =  TRUE", 0, false, "cmis:objectId", new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_CONTENT_STREAM_FILENAME() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -1051,6 +1050,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
                 new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_CONTENT_STREAM_LENGTH() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -1417,6 +1417,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT cmis:versionLabel FROM cmis:document WHERE ANY cmis:versionLabel NOT IN ('company')", doc_count, false, "cmis:objectId", new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_IS_LATEST_MAJOR_VERSION() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -1686,6 +1687,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT cmis:name FROM cmis:folder WHERE ANY cmis:name NOT IN ('Folder 1')", 9, false, "cmis:objectId", new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_document_Name() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -1801,6 +1803,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT cmis:changeToken FROM cmis:folder WHERE ANY cmis:changeToken NOT IN ('test')", 10, false, "cmis:objectId", new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_LAST_MODIFICATION_DATE() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -2080,6 +2083,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void test_LAST_MODIFIED_BY() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -2149,6 +2153,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
                 new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_CREATION_DATE() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -2419,6 +2424,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void test_CREATED_BY() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -2488,6 +2494,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void test_OBJECT_TYPE_ID() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -2590,6 +2597,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void test_BASE_TYPE_ID() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -2705,6 +2713,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void test_ObjectId() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());
@@ -2855,6 +2864,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void testOrderBy() throws Exception
     {
         testOrderBy("SELECT  cmis:objectId FROM cmis:folder ORDER BY cmis:objectId", folder_count, false, Order.ASCENDING, CMISQueryMode.CMS_STRICT, "cmis:objectId");
@@ -3387,6 +3397,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void testFolderEquals() throws Exception
     {
        
@@ -3398,6 +3409,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE cmis:allowedChildObjectTypeIds = 'meep'", 0, false, "cmis:objectId", new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_IN_TREE() throws Exception
     {
         String id = cmisConnector.createNodeInfo(f0).getObjectId();
@@ -3417,6 +3429,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE IN_TREE('woof://woof/woof;woof')", 0, false, "cmis:objectId", new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void test_IN_FOLDER() throws Exception
     {
         String id = cmisConnector.createNodeInfo(f0).getObjectId();
@@ -3439,6 +3452,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:folder WHERE IN_FOLDER('woof://woof/woof;woof')", 0, false, "cmis:objectId", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void testFTS() throws Exception
     {
         testQuery("SELECT SCORE(), D.* FROM cmis:document D WHERE D.cmis:contentStreamFileName = 'zebra'", doc_count-1, false, "cmis:objectId", new String(), true);
@@ -3454,6 +3468,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testExtendedQuery("SELECT * FROM cmis:document D WHERE CONTAINS('d:content:\\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void testScoreValues()
     {
 
@@ -3711,6 +3726,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
     }
 
+    @Category(RedundantTests.class)
     public void testAspectProperties()
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cm:ownable O", rootNodeRef.getStoreRef());
@@ -3733,6 +3749,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
     }
 
+    @Category(RedundantTests.class)
     public void testAspectJoin() throws Exception
     {
         testQuery(
@@ -3783,6 +3800,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
                 CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS);
     }
 
+    @Category(RedundantTests.class)
     public void testPaging()
     {
 
@@ -3809,6 +3827,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void testFTSConnectives() throws Exception
     {
         testQuery("SELECT * FROM cmis:document where contains('\\'one\\' OR \\'zebra\\'')", doc_count-1, false, "cmis:objectId", new String(), false, CMISQueryMode.CMS_STRICT);
@@ -3872,6 +3891,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT cmis:name FROM cmis:document WHERE cmis:name     LIKE 'DD\\''", 1, false, "cmis:name", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void testColumnAliasUse() throws Exception
     {
         testQuery("SELECT cmis:name as myname FROM cmis:document WHERE myname LIKE 'Alfresco Tutorial'", 1, false, "myname", new String(), false);
@@ -3912,6 +3932,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         return queryNode;
     }
 
+    @Category(RedundantTests.class)
     public void test_d_text() throws Exception
     {
         addTypeTestData();
@@ -4151,6 +4172,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT T.test:multipleTextTokenised alias FROM test:extendedContent T WHERE ANY alias NOT IN ('tokenized')", 1, false, "cmis:name", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void test_locale() throws Exception
     {
         addTypeTestData();
@@ -4255,6 +4277,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         rs.close();
     }
 
+    @Category(RedundantTests.class)
     public void test_d_mltext() throws Exception
     {
         addTypeTestData();
@@ -4576,6 +4599,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleMLTextTokenised alias FROM test:extendedContent WHERE ANY alias NOT IN ('EEEE')", 1, false, "cmis:name", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void test_d_float() throws Exception
     {
         addTypeTestData();
@@ -4709,6 +4733,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleFloat as alias FROM test:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)", 1, false, "cmis:name", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void test_d_double() throws Exception
     {
         addTypeTestData();
@@ -4842,6 +4867,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleDouble alias FROM test:extendedContent WHERE ANY alias NOT IN (1.3, 2.3)", 1, false, "cmis:name", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void test_d_int() throws Exception
     {
         addTypeTestData();
@@ -4977,6 +5003,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleInteger as alias FROM test:extendedContent WHERE ANY alias NOT IN (3, 4)", 1, false, "cmis:name", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void test_d_long() throws Exception
     {
         addTypeTestData();
@@ -5112,6 +5139,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleLong alias FROM test:extendedContent WHERE ANY alias NOT IN (3, 4)", 1, false, "cmis:name", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void test_d_date() throws Exception
     {
         addTypeTestData();
@@ -5278,6 +5306,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void test_d_datetime() throws Exception
     {
         addTypeTestData();
@@ -5447,6 +5476,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    @Category(RedundantTests.class)
     public void test_d_boolean() throws Exception
     {
         addTypeTestData();
@@ -5590,6 +5620,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT test:multipleBoolean as alias FROM test:extendedContent WHERE ANY alias NOT IN (3, 4)", 1, false, "cmis:name", new String(), true);
     }
 
+    @Category(RedundantTests.class)
     public void testBasicContainsSyntax() throws Exception
     {
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick')", 1, false, "cmis:name", new String(), false);
@@ -5623,6 +5654,7 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:document WHERE CONTAINS('quick OR brown one')", 1, false, "cmis:name", new String(), false);
     }
 
+    @Category(RedundantTests.class)
     public void testOrderableProperties()
     {
 

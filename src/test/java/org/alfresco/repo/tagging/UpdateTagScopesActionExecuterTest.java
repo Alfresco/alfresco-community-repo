@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +67,7 @@ import org.springframework.context.ApplicationContext;
  * 
  * @author Dmitry Velichkevich
  */
-@Category(LuceneTests.class)
+@Category({LuceneTests.class, RedundantTests.class})
 public class UpdateTagScopesActionExecuterTest extends TestCase
 {
     private static final int TAGSCOPE_LAYERS = 3;

@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.virtual.store;
 
+import static org.junit.Assert.*;
+
 import java.io.InputStream;
 
 import org.alfresco.model.ContentModel;
@@ -37,6 +39,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
 import org.junit.Test;
 
 public class SystemVirtualizationMethodTest extends VirtualizationIntegrationTest
@@ -46,8 +49,8 @@ public class SystemVirtualizationMethodTest extends VirtualizationIntegrationTes
 
     private SystemVirtualizationMethod systemVirtualizationMethod;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
         systemVirtualizationMethod = ctx.getBean("systemVirtualizationMethod",

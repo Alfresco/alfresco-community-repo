@@ -93,6 +93,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -575,6 +576,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * {@link SiteService#listSites(List, List, org.alfresco.query.PagingRequest)} and the other listSites methods
      * should offer consistent, accurate result sets.
      */
+    @Category(RedundantTests.class)
     public void testListSites() throws Exception
     {
         // We'll match against the first few letter of TEST_TITLE in various listSites() tests below.
@@ -886,6 +888,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * This test method ensures that searches with wildcards work as they should
      */
+    @Category(RedundantTests.class)
     public void testfindSitesWithWildcardTitles() throws Exception
     {
         // How many sites are there already in the repo?
@@ -917,6 +920,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * This test method ensures that searches with wildcards work as they should
      */
+    @Category(RedundantTests.class)
     public void testfindSitesForLiveSearchWithWildcardTitles() throws Exception
     {
         // How many sites are there already in the repo?

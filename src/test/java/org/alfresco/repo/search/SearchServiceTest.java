@@ -46,6 +46,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -188,6 +189,7 @@ public class SearchServiceTest extends TestCase
         }
     }
 
+    @Category(RedundantTests.class)
     public void testAdmim()
     {
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -239,6 +241,7 @@ public class SearchServiceTest extends TestCase
         results.close();
     }
 
+    @Category(RedundantTests.class)
     public void testAndy()
     {
         authenticationComponent.setCurrentUser("andy");

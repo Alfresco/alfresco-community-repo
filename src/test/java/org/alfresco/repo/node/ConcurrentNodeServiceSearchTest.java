@@ -34,7 +34,6 @@ import junit.framework.TestCase;
 
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
-import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -50,11 +49,11 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.DBTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
-@Category({OwnJVMTestsCategory.class, LuceneTests.class})
+@Category({OwnJVMTestsCategory.class, DBTests.class})
 public class ConcurrentNodeServiceSearchTest extends TestCase
 {
     
@@ -77,8 +76,6 @@ public class ConcurrentNodeServiceSearchTest extends TestCase
     private TransactionService transactionService;
 
     private NodeRef rootNodeRef;
-
-    private FullTextSearchIndexer luceneFTS;
 
     private AuthenticationComponent authenticationComponent;
 
@@ -105,7 +102,6 @@ public class ConcurrentNodeServiceSearchTest extends TestCase
 
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
-        luceneFTS = (FullTextSearchIndexer) ctx.getBean("LuceneFullTextSearchIndexer");
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
@@ -142,9 +138,6 @@ public class ConcurrentNodeServiceSearchTest extends TestCase
 
     public void testConcurrent() throws Exception
     {
-        luceneFTS.pause();
-        // TODO: LUCENE UPDATE ISSUE fix commit lock timeout here
-        // IndexWriter.COMMIT_LOCK_TIMEOUT = 100000;
         int count = 10;
         int repeats = 10;
 

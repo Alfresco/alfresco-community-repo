@@ -51,7 +51,6 @@ import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.node.BaseNodeServiceTest;
-import org.alfresco.repo.search.impl.lucene.ADMLuceneTest.UnknownDataType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -948,5 +947,10 @@ public class DBQueryTest  implements DictionaryListener
         assertEquals(count, results.length());
         results.getResultSetMetaData();
         results.close();
+    }
+
+    private static class UnknownDataType implements Serializable
+    {
+        private static final long serialVersionUID = -6729690518573349055L;
     }
 }

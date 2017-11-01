@@ -31,9 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 
@@ -45,14 +42,12 @@ import org.alfresco.service.cmr.security.AuthorityType;
 public class TestGroupManager
 {
     private final AuthorityService authorityService;
-    private final SearchService searchService;
 
     private final Map<String, NodeRef> groups = new HashMap<String, NodeRef>();
 
-    public TestGroupManager(AuthorityService authorityService, SearchService searchService)
+    public TestGroupManager(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
-        this.searchService = searchService;
     }
 
     /**
@@ -139,30 +134,8 @@ public class TestGroupManager
     
     private NodeRef findGroupNode(String groupShortName)
     {
-        //TODO Use new AuthorityService.getNode() method on HEAD
-        NodeRef group = null;
-        
-        String query = "+TYPE:\"cm:authorityContainer\" AND @cm\\:authorityName:*" + groupShortName;
-        
-        ResultSet results = null;
-        try
-        {
-            results = searchService.query(
-                    new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore"), 
-                    SearchService.LANGUAGE_LUCENE, query);
-            
-            if (results.length() > 0)
-            {
-                group = results.getNodeRefs().get(0);
-            }
-        }
-        finally
-        {
-            if (results != null)
-            {
-                results.close();
-            }
-        }
+        String fullName = authorityService.getName(AuthorityType.GROUP, groupShortName);
+        NodeRef group = authorityService.getAuthorityNodeRef(fullName);
         return group;
     }
 }

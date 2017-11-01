@@ -701,6 +701,7 @@
       <property name="companyHomeStore"><value>${spaces.store}</value></property>
       <property name="companyHomePath"><value>/${spaces.company_home.childname}</value></property>
       <property name="sharedHomePath"><value>/${spaces.company_home.childname}/${spaces.shared.childname}</value></property>
+      <property name="guestHomePath"><value>/${spaces.company_home.childname}/${spaces.guest_home.childname}</value></property>
       <property name="singletonCache" ref="immutableSingletonCache" />
    </bean>
 

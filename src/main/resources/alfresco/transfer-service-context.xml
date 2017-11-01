@@ -127,6 +127,7 @@
 		<property name="behaviourFilter" ref="policyBehaviourFilter" />
 		<property name="progressMonitor" ref="transferProgressMonitor" />
 		<property name="policyComponent" ref="policyComponent" />
+		<property name="namespaceService" ref="namespaceService" />
 	</bean>
 
 	<bean id="transferProgressMonitor"
@@ -166,6 +167,7 @@
             <ref bean="global-properties" />
         </property>
         <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="namespaceService" ref="namespaceService" />
 	</bean>
 
 	<bean id="transferNodeResolverFactory"

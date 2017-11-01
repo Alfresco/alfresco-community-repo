@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -40,8 +41,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
@@ -57,14 +56,14 @@ import org.w3c.dom.NodeList;
  * @author Brian
  *
  */
-@Category({BaseSpringTestsCategory.class, LuceneTests.class})
+@Category({BaseSpringTestsCategory.class})
 public class XSLTFunctionsTest extends BaseAlfrescoSpringTest
 {
     private final static Log log = LogFactory.getLog(XSLTFunctionsTest.class);
     private XSLTFunctions xsltFunctions;
-    private SearchService searchService;
     private NodeRef companyHome;
     private FileFolderService fileFolderService;
+    private Repository repositoryHelper;
 
     /* (non-Javadoc)
      * @see org.alfresco.util.BaseAlfrescoSpringTest#onSetUpInTransaction()
@@ -74,13 +73,12 @@ public class XSLTFunctionsTest extends BaseAlfrescoSpringTest
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
-        this.searchService = (SearchService) this.applicationContext.getBean("SearchService");
         this.xsltFunctions = (XSLTFunctions) this.applicationContext.getBean("xsltFunctions");
         this.nodeService = (NodeService) this.applicationContext.getBean("NodeService");
         this.contentService = (ContentService) this.applicationContext.getBean("ContentService");
         this.fileFolderService = (FileFolderService) this.applicationContext.getBean("FileFolderService");
-        ResultSet rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, "/app:company_home");
-        this.companyHome = rs.getNodeRef(0);
+        this.repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        this.companyHome = repositoryHelper.getCompanyHome();
     }
 
     public void testSimplestParseXMLDocument()

@@ -75,11 +75,10 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
-@Category({OwnJVMTestsCategory.class, LuceneTests.class})
+@Category({OwnJVMTestsCategory.class})
 public class PersonTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -1697,85 +1696,4 @@ public class PersonTest extends TestCase
             }
         }, false, true);
     }    
-    
-    // Test case for MNT-8539
-    // note: This test can be removed as and when we remove the deprecated "getPeople" impl. 
-    // also, the test currently works with Lucene only. In other words, it won't work with Solr.
-    public void testPeopleFiltering_deprecatedFTS()
-    {
-        personService.setCreateMissingPeople(false);
-        assertEquals(2, getPeopleCount());
-
-        checkPeopleContain(AuthenticationUtil.getAdminUserName());
-        checkPeopleContain(AuthenticationUtil.getGuestUserName());
-        
-        String suffix = Long.toString(System.currentTimeMillis());
-        String jjFirstname = "john junior"+suffix;
-        String jjLastname = "lewis second"+suffix;
-        
-        personService.createPerson(createDefaultProperties("janedoe", "jane", "doe"+suffix, "johndoe@yz", "alfresco", rootNodeRef));
-        personService.createPerson(createDefaultProperties("janemoe", "jane", "moe"+suffix, "janemoe@yz", "alfresco", rootNodeRef));
-        personService.createPerson(createDefaultProperties("jjlewis", jjFirstname, jjLastname, "jjlewis@yzd", "alfresco", rootNodeRef));
-        personService.createPerson(createDefaultProperties("jlewis", "john", jjLastname, "jlewis@yzd", "alfresco", rootNodeRef));
-
-        assertEquals(6, getPeopleCount());
-
-        PagingRequest pr = new PagingRequest(100, null);
-        List<Pair<QName, String>> filters = new ArrayList<Pair<QName, String>>(3);
-
-        filters.clear();
-        // Set username, firstname and lastname same as
-        // "org.alfresco.web.ui.common.Utils.generatePersonFilter(String term)" method
-        String searchTerm = "jane doe"+suffix;
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, searchTerm));
-        List<PersonInfo> result = personService.getPeople(filters, true, null, pr).getPage();
-        assertEquals(1, result.size());
-        assertEquals("jane", result.get(0).getFirstName());
-        assertEquals("doe"+suffix, result.get(0).getLastName());
-
-        // test two parts firstname
-        filters.clear();
-        searchTerm = jjFirstname;
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, searchTerm));
-        result = personService.getPeople(filters, true, null, pr).getPage();
-        assertEquals(1, result.size());
-        assertEquals(jjFirstname, result.get(0).getFirstName());
-        assertEquals(jjLastname, result.get(0).getLastName());
-
-        // test two parts lastname
-        filters.clear();
-        searchTerm = "john " + jjLastname;
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, searchTerm));
-        result = personService.getPeople(filters, true, null, pr).getPage();
-        assertEquals(2, result.size());
-
-        // test two parts firstname and lastname
-        filters.clear();
-        searchTerm = jjFirstname + " " + jjLastname;
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, searchTerm));
-        result = personService.getPeople(filters, true, null, pr).getPage();
-        assertEquals(1, result.size());
-        assertEquals(jjFirstname, result.get(0).getFirstName());
-        assertEquals(jjLastname, result.get(0).getLastName());
-
-        // test different firstname and lastname
-        filters.clear();
-        searchTerm = jjFirstname + " " + jjLastname;
-        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, searchTerm));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, jjFirstname));
-        filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, jjLastname));
-        result = personService.getPeople(filters, true, null, pr).getPage();
-        assertEquals(1, result.size());
-        assertEquals(jjFirstname, result.get(0).getFirstName());
-        assertEquals(jjLastname, result.get(0).getLastName());
-    }
-
 }

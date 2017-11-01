@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,7 +57,7 @@ import org.junit.experimental.categories.Category;
  * 
  * @author Brian Remmington
  */
-@Category({BaseSpringTestsCategory.class, LuceneTests.class})
+@Category({BaseSpringTestsCategory.class})
 public class NodeCrawlerTest extends BaseAlfrescoSpringTest
 {
     private ServiceRegistry serviceRegistry;
@@ -75,13 +76,8 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
         this.nodeService = (NodeService) this.getApplicationContext().getBean("NodeService");
         this.serviceRegistry = (ServiceRegistry) this.getApplicationContext().getBean("ServiceRegistry");
         this.nodeCrawlerFactory = (NodeCrawlerFactory) this.getApplicationContext().getBean("NodeCrawlerFactory");
-        ResultSet rs = serviceRegistry.getSearchService().query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                SearchService.LANGUAGE_XPATH, "/app:company_home");
-        if (rs.length() == 0)
-        {
-            fail("Could not find company home");
-        }
-        companyHome = rs.getNodeRef(0);
+        Repository repositoryHelper = (Repository) this.applicationContext.getBean("repositoryHelper");
+        this.companyHome = repositoryHelper.getCompanyHome();
     }
 
     public void testContentClassFilter() throws Exception

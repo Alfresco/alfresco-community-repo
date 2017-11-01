@@ -26,6 +26,13 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,7 +56,6 @@ import org.alfresco.repo.virtual.ref.GetActualNodeRefMethod;
 import org.alfresco.repo.virtual.ref.GetParentReferenceMethod;
 import org.alfresco.repo.virtual.ref.Protocols;
 import org.alfresco.repo.virtual.ref.Reference;
-import org.alfresco.repo.virtual.ref.ReferenceEncodingException;
 import org.alfresco.repo.virtual.ref.VirtualProtocol;
 import org.alfresco.repo.virtual.store.VirtualStore;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -64,11 +70,15 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 @Category(LuceneTests.class)
+@RunWith(MockitoJUnitRunner.class)
 public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTest
 {
     private static final String NODE2TEST1_2_TXT = "NODE2test1_2.txt";
@@ -87,8 +97,8 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
 
     private NodeRef node2Test1_2_TXTNodeRef;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         // TODO:is the store really needed when testing node service ? why ?
         super.setUp();
@@ -97,6 +107,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         downloadStorage = ctx.getBean("downloadStorage",
                                       DownloadStorage.class);
     }
+
 
     @Test
     public void testCreateNode_withFilingRuleAspects() throws Exception
@@ -344,18 +355,6 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
             assertEquals("Node2_folder_FR",
                          environment.getProperties(folderChildRef).get(ContentModel.PROP_DESCRIPTION));
         }
-    }
-
-    private void createNode(Reference reference, final QName assocQName, HashMap<QName, Serializable> properties)
-                throws ReferenceEncodingException
-    {
-        ChildAssociationRef childAssocsRef = nodeService.createNode(reference.toNodeRef(),
-                                                                    ContentModel.ASSOC_CONTAINS,
-                                                                    assocQName,
-                                                                    ContentModel.TYPE_CONTENT,
-                                                                    properties);
-        assertNewVirtualChildAssocRef(reference,
-                                      childAssocsRef);
     }
 
     private void uploadNode(Reference reference, String name)
@@ -1079,6 +1078,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                    "Node1");
         assertNotNull(node1);
 
+        prepareMocks("cm:TestFolder//cm:FOLDER", createFolder);
+        try
+        {
         NodeRef physicalFolderInVirtualContext = nodeService.getChildByName(node1,
                                                                             ContentModel.ASSOC_CONTAINS,
                                                                             "FOLDER");
@@ -1091,6 +1093,11 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         assertEquals("testFile1",
                      nodeService.getProperty(childAssocs.get(0).getChildRef(),
                                              ContentModel.PROP_NAME));
+        }
+        finally
+        {
+            resetMocks();
+        }
     }
 
     @Test
@@ -1138,6 +1145,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                    "Node1");
         assertNotNull(node1);
 
+        prepareMocks("FOLDER", physicalFolder);
+        try
+        {
         NodeRef physicalFolderInVirtualContext = nodeService.getChildByName(node1,
                                                                             ContentModel.ASSOC_CONTAINS,
                                                                             "FOLDER");
@@ -1162,8 +1172,14 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
 
       childFolderNodeRef = nodeService.getChildByName(physicalFolder,ContentModel.ASSOC_CONTAINS, "testFolder1");
       assertNotNull(childFolderNodeRef);
+        }
+        finally
+        {
+            resetMocks();
+        }
     }
 
+    @Test
     public void testChildByName_ACE_4700() throws Exception
     {
         NodeRef node1 = nodeService.getChildByName(virtualFolder1NodeRef,
@@ -1206,7 +1222,8 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                               ContentModel.ASSOC_CONTAINS,
                                               suportedCharsFileName2));
     }
-
+    
+    @Test
     public void testHasAspect() throws Exception
     {
         // test for virtual folder
@@ -1230,7 +1247,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                          VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT));
 
         // test for folder in virtual context
-        createFolder(testRootFolder.getNodeRef(),
+        NodeRef realFolderNode= createFolder(testRootFolder.getNodeRef(),
                                               "FOLDER").getChildRef();
         NodeRef virtualFolder = createVirtualizedFolder(testRootFolder.getNodeRef(),
                                                         VIRTUAL_FOLDER_2_NAME,
@@ -1240,6 +1257,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                      "Node1");
         assertNotNull(node1_1);
 
+        prepareMocks("cm:TestFolder//cm:FOLDER", realFolderNode);
+        try
+        {
         NodeRef physicalFolderInVirtualContext = nodeService.getChildByName(node1_1,
                                                                             ContentModel.ASSOC_CONTAINS,
                                                                             "FOLDER");
@@ -1265,7 +1285,11 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                           VirtualContentModel.ASPECT_VIRTUAL));
         assertFalse(nodeService.hasAspect(childFileNodeRef,
                                          VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT));
-
+        }
+        finally
+        {
+            resetMocks();
+        }
     }
 
     private NodeRef createDownloadNode()

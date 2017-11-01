@@ -26,6 +26,8 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.*;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.lock.mem.Lifetime;
@@ -33,6 +35,7 @@ import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.junit.Before;
 import org.junit.Test;
 
 public class VirtualLockableAspectInterceptorExtensionTest extends VirtualizationIntegrationTest
@@ -41,8 +44,8 @@ public class VirtualLockableAspectInterceptorExtensionTest extends Virtualizatio
 
     private NodeRef originalContentNodeRef;
 
-    @Override
-    protected void setUp() throws Exception
+    @Before
+    public void setUp() throws Exception
     {
         super.setUp();
         lockService = ctx.getBean("lockService",

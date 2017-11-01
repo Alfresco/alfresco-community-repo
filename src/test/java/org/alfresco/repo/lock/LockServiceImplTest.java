@@ -63,6 +63,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.TestWithUserUtils;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -375,6 +376,7 @@ public class LockServiceImplTest extends BaseSpringTest
     }
 
     @Test
+    @Category(RedundantTests.class)
     public void testEphemeralLockIndexing()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, authenticationService);
@@ -730,7 +732,8 @@ public class LockServiceImplTest extends BaseSpringTest
         LockStatus lockStatus4 = this.lockService.getLockStatus(this.parentNode); 
         assertEquals(LockStatus.LOCK_OWNER, lockStatus4);
     }
-    
+
+    @Category(RedundantTests.class)
     public void testGetLocks()
     {
         TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);

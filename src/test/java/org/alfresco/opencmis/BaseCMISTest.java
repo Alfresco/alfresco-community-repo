@@ -119,8 +119,6 @@ public abstract class BaseCMISTest extends TestCase
 
     protected VersionService versionService;
 
-    protected FullTextSearchIndexer luceneFTS;    
-
     protected StoreRef storeRef;
 
     public void setUp() throws Exception
@@ -157,8 +155,7 @@ public abstract class BaseCMISTest extends TestCase
         
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         namespaceDao = (NamespaceDAO) ctx.getBean("namespaceDAO");
-        luceneFTS = (FullTextSearchIndexer)ctx.getBean("LuceneFullTextSearchIndexer");
-        
+
         testTX = transactionService.getUserTransaction();
         testTX.begin();
         this.authenticationComponent.setSystemUserAsCurrentUser();

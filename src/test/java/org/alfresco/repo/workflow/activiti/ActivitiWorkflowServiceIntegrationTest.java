@@ -62,6 +62,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -510,7 +511,8 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         taskQuery.setProcessId(workflowInstanceId);
         checkNoTasksFoundUsingQuery(taskQuery);
     }
-    
+
+    @Category(RedundantTests.class)
     public void testStartWorkflowFromTaskListener() throws Exception
     {
         WorkflowDefinition testDefinition = deployDefinition("activiti/testStartWfFromListener.bpmn20.xml");

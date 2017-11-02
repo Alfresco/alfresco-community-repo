@@ -87,7 +87,7 @@ public abstract class BaseAPI
     @Autowired
     private ContentService contentService;
 
-    protected static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
+    public static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
     private static final String FILE_PLAN_PATH = "/Sites/rm/documentLibrary";
 
     /**

@@ -163,8 +163,8 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extens
      */
     public void setOwnableService(OwnableService ownableService) 
     {
-		this.ownableService = ownableService;
-	}
+        this.ownableService = ownableService;
+    }
     
     /**
      * Sets the lock service
@@ -868,7 +868,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extens
         }
         else
         {
-        	throw new IllegalArgumentException("workingCopyLabel is null or empty");
+            throw new IllegalArgumentException("workingCopyLabel is null or empty");
         }
 
         return name;

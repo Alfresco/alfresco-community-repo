@@ -80,6 +80,7 @@ public abstract class BaseAPI
     protected static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
     protected static final String RM_SITE_ID = "rm";
     protected static final String SHARE_ACTION_API = "{0}internal/shared/share/workspace/SpacesStore/{1}";
+    private static final String SLINGSHOT_PREFIX = "alfresco/s/slingshot/";
 
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
@@ -352,12 +353,50 @@ public abstract class BaseAPI
                                     String... urlTemplateParams)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String requestUrl = MessageFormat.format(
-                urlTemplate,
-                client.getApiUrl(),
-                urlTemplateParams);
-        client.close();
+        return doPostJsonRequest(adminUser, adminPassword, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
+    }
 
+    /**
+     * Helper method for POST requests to slingshot.
+     *
+     * @param adminUser         user with administrative privileges
+     * @param adminPassword     password for adminUser
+     * @param requestParams     zero or more endpoint specific request parameters
+     * @param urlTemplate       request URL template
+     * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     */
+    protected boolean doSlingshotPostJsonRequest(String adminUser,
+                String adminPassword,
+                JSONObject requestParams,
+                String urlTemplate,
+                String... urlTemplateParams)
+    {
+        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        return doPostJsonRequest(adminUser, adminPassword, client.getAlfrescoUrl() + SLINGSHOT_PREFIX, requestParams, urlTemplate, urlTemplateParams);
+    }
+
+    /**
+     * Helper method for POST requests
+     *
+     * @param adminUser         user with administrative privileges
+     * @param adminPassword     password for adminUser
+     * @param urlStart          the start of the URL (for example "alfresco/s/slingshot").
+     * @param requestParams     zero or more endpoint specific request parameters
+     * @param urlTemplate       request URL template
+     * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     */
+    private boolean doPostJsonRequest(String adminUser,
+                String adminPassword,
+                String urlStart,
+                JSONObject requestParams,
+                String urlTemplate,
+                String... urlTemplateParams)
+    {
+        // Ensure the host is part of the request URL.
+        String requestUrl = MessageFormat.format(
+                    urlTemplate,
+                    urlStart,
+                    urlTemplateParams);
         try
         {
             return doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
@@ -482,7 +521,11 @@ public abstract class BaseAPI
                 ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(requestParams.toString()));
             }
 
-            return client.execute(adminUser, adminPassword, request).getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+            LOGGER.info("Sending {} request to {}", requestType.getSimpleName(), requestUrl);
+            LOGGER.info("Request body: {}", requestParams);
+            HttpResponse httpResponse = client.execute(adminUser, adminPassword, request);
+            LOGGER.info("Response: {}", httpResponse.getStatusLine());
+            return httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
         }
         catch (UnsupportedEncodingException | URISyntaxException error1)
         {

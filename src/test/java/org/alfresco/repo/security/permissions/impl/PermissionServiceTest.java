@@ -93,10 +93,62 @@ public class PermissionServiceTest extends AbstractPermissionTest
 
     public void testPublicAccessService()
     {
+        AuthenticationUtil.clearCurrentSecurityContext();
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getOwnerAuthority") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllAuthorities") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllPermission") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getSettablePermissions", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "hasPermission", rootNodeRef, PermissionService.READ_PERMISSIONS) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "hasReadPermission", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getInheritParentPermissions", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAuthorisations") ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getPermissions", rootNodeRef) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllSetPermissions", rootNodeRef) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllPermission") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "deletePermissions", rootNodeRef) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "deletePermission", rootNodeRef, "andy", PermissionService.READ_PERMISSIONS) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "setPermission", rootNodeRef, "andy", PermissionService.READ_PERMISSIONS, true) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "setInheritParentPermissions", rootNodeRef, true) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "clearPermission", rootNodeRef, "andy") ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAuthorisations") ==  AccessStatus.DENIED);
+
         runAs("admin");
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getOwnerAuthority") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllAuthorities") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllPermission") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getSettablePermissions", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "hasPermission", rootNodeRef, PermissionService.READ_PERMISSIONS) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "hasReadPermission", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getReaders", nodeService.getNodeAclId(rootNodeRef)) == AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getPermissions", rootNodeRef) ==  AccessStatus.ALLOWED);
         assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllSetPermissions", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllPermission") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "deletePermissions", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "deletePermission", rootNodeRef, "andy", PermissionService.READ_PERMISSIONS) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "setPermission", rootNodeRef, "andy", PermissionService.READ_PERMISSIONS, true) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "setInheritParentPermissions", rootNodeRef, true) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "clearPermission", rootNodeRef, "andy") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAuthorisations") ==  AccessStatus.DENIED);
+
         assertTrue(publicServiceAccessService.hasAccess("SiteService", "createSite", "", "", "", "", true) == AccessStatus.ALLOWED);
-      
+
+        runAs("andy");
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getOwnerAuthority") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllAuthorities") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllPermission") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getSettablePermissions", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "hasPermission", rootNodeRef, PermissionService.READ_PERMISSIONS) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "hasReadPermission", rootNodeRef) ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getReaders", nodeService.getNodeAclId(rootNodeRef)) == AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getPermissions", rootNodeRef) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllSetPermissions", rootNodeRef) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAllPermission") ==  AccessStatus.ALLOWED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "deletePermissions", rootNodeRef) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "deletePermission", rootNodeRef, "andy", PermissionService.READ_PERMISSIONS) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "setPermission", rootNodeRef, "andy", PermissionService.READ_PERMISSIONS, true) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "setInheritParentPermissions", rootNodeRef, true) ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "clearPermission", rootNodeRef, "andy") ==  AccessStatus.DENIED);
+        assertTrue(publicServiceAccessService.hasAccess("PermissionService", "getAuthorisations") ==  AccessStatus.DENIED);
     }
     
     public void testAnyDenyDeniesAndRead()

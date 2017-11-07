@@ -30,8 +30,8 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import org.alfresco.rest.core.v0.BaseAPI;
+import org.apache.http.HttpResponse;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,22 +60,32 @@ public class CopyToAPI extends BaseAPI
      * "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
      * "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
      * @param nodeRefs The list of nodes to copy.
-     * @return true if the request was successful.
+     * @return The HTTP Response.
+     * @throws AssertionError If the API call didn't return a 200 response.
      */
-    public boolean copyTo(String user, String password, String targetContainerPath, List<String> nodeRefs)
+    public HttpResponse copyTo(String user, String password, String targetContainerPath, List<String> nodeRefs)
     {
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("nodeRefs", new JSONArray(nodeRefs));
+        return copyToAndGetResponse(user, password, false, targetContainerPath, nodeRefs);
+    }
 
-            return doSlingshotPostJsonRequest(user, password, requestParams,
-                        MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath));
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+    /**
+     * Copy a list of nodes to the target container.
+     *
+     * @param user The username of the user to use.
+     * @param password The password of the user.
+     * @param expectFailure If false then an exception will be thrown if the POST is not successful.
+     * @param targetContainerPath The destination to copy the nodes to. This should be in the format
+     * "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
+     * "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
+     * @param nodeRefs The list of nodes to copy.
+     * @return The HTTP Response.
+     */
+    public HttpResponse copyToAndGetResponse(String user, String password, boolean expectFailure, String targetContainerPath, List<String> nodeRefs)
+    {
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("nodeRefs", new JSONArray(nodeRefs));
+
+        return doSlingshotPostJsonRequest(user, password, expectFailure, requestParams,
+                    MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath));
     }
 }

@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
+import org.apache.http.HttpResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,20 +64,20 @@ public class RulesAPI extends BaseAPI
      *
      * @param containerNodeRef the container to have the rule created on
      * @param ruleProperties   the rule properties
-     * @return true if the rule has been created successfully, false otherwise
+     * @return The HTTP Response (or null if the response could not be understood).
      */
 
-    public boolean createRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
+    public HttpResponse createRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
     {
         try
         {
-            return doPostJsonRequest(username, password, getRuleRequest(ruleProperties), MessageFormat.format(RULES_API, "{0}", containerNodeRef));
+            return doPostJsonRequest(username, password, false, getRuleRequest(ruleProperties), MessageFormat.format(RULES_API, "{0}", containerNodeRef));
         }
         catch (JSONException error)
         {
             LOGGER.error("Unable to extract response parameter.", error);
         }
-        return false;
+        return null;
     }
 
     /**
@@ -309,22 +310,15 @@ public class RulesAPI extends BaseAPI
      * @param password the password
      * @param containerNodeRef the container nodeRef
      *
-     * @return true if the rule has been disabled or if the current state is disabled
+     * @return The HTTP Response (or null if the current state is disabled).
      */
-    public boolean disableRulesInheritance(String username, String password, String containerNodeRef)
+    public HttpResponse disableRulesInheritance(String username, String password, String containerNodeRef)
     {
-        try
+        if(containerInheritsRulesFromParent(username, password, containerNodeRef))
         {
-            if(containerInheritsRulesFromParent(username, password, containerNodeRef))
-            {
-                return doPostJsonRequest(username, password, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
-            }
+            return doPostJsonRequest(username, password, false, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
         }
-        catch (JSONException e)
-        {
-           return false;
-        }
-        return true;
+        return null;
     }
 
     /**
@@ -333,22 +327,15 @@ public class RulesAPI extends BaseAPI
      * @param username         the username
      * @param password         the password
      * @param containerNodeRef the container nodeRef
-     * @return true if the rule has been enabled or if the current state is enabled
+     * @return The HTTP Response (or null if the current state is disabled).
      */
-    public boolean enableRulesInheritance(String username, String password, String containerNodeRef)
+    public HttpResponse enableRulesInheritance(String username, String password, String containerNodeRef)
     {
-        try
+        if (!containerInheritsRulesFromParent(username, password, containerNodeRef))
         {
-            if (!containerInheritsRulesFromParent(username, password, containerNodeRef))
-            {
-                return doPostJsonRequest(username, password, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
-            }
+            return doPostJsonRequest(username, password, false, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
         }
-        catch (JSONException e)
-        {
-            return false;
-        }
-        return true;
+        return null;
     }
 
     /**

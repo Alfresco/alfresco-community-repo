@@ -27,6 +27,7 @@
 package org.alfresco.rest.v0;
 
 import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
+import static org.testng.AssertJUnit.assertNotNull;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -206,9 +207,9 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param user        the user executing the action
      * @param password    the user's password
      * @param contentName the content name
-     * @return true if the action completed successfully
+     * @return The HTTP response.
      */
-    public boolean executeAction(String user, String password, String contentName, RM_ACTIONS rm_action)
+    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS rm_action)
     {
         return executeAction(user, password, contentName, rm_action, null);
     }
@@ -220,32 +221,24 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param password    the user's password
      * @param contentName the record folder name
      * @param date        the date to be updated
-     * @return true if the action completed successfully
+     * @return The HTTP response.
      */
-    public boolean executeAction(String user, String password, String contentName, RM_ACTIONS action, ZonedDateTime date)
+    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action, ZonedDateTime date)
     {
         String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
-        try
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", action.getAction());
+        requestParams.put("nodeRef", recNodeRef);
+        if (date != null)
         {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("name", action.getAction());
-            requestParams.put("nodeRef", recNodeRef);
-            if (date != null)
-            {
-                String thisMoment = date.format(DateTimeFormatter.ISO_INSTANT);
-                requestParams.put("params", new JSONObject()
-                                .put("asOfDate", new JSONObject()
-                                        .put("iso8601", thisMoment)
-                                    )
-                                 );
-            }
-            return doPostJsonRequest(user, password, requestParams, RM_ACTIONS_API);
+            String thisMoment = date.format(DateTimeFormatter.ISO_INSTANT);
+            requestParams.put("params", new JSONObject()
+                            .put("asOfDate", new JSONObject()
+                                    .put("iso8601", thisMoment)
+                                )
+                             );
         }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(user, password, false, requestParams, RM_ACTIONS_API);
     }
 
     /**
@@ -288,37 +281,32 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param holdName    the hold name
      * @param reason      hold reason
      * @param description hold description
-     * @return true if the hold creation has been successful
+     * @return The HTTP response (or null if no POST call was needed).
      */
-    public boolean createHold(String user, String password, String holdName, String reason, String description)
+    public HttpResponse createHold(String user, String password, String holdName, String reason, String description)
     {
         // if the hold already exists don't try to create it again
         String holdsContainerPath = getFilePlanPath() + "/Holds";
-
-        CmisObject hold = getObjectByPath(user, password, holdsContainerPath + "/" + holdName);
+        String fullHoldPath = holdsContainerPath + "/" + holdName;
+        CmisObject hold = getObjectByPath(user, password, fullHoldPath);
         if (hold != null)
         {
-            return true;
+            return null;
         }
         // retrieve the Holds container nodeRef
         String parentNodeRef = getItemNodeRef(user, password, "/Holds");
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
-            requestParams.put("prop_cm_name", holdName);
-            requestParams.put("prop_cm_description", description);
-            requestParams.put("prop_rma_holdReason", reason);
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
+        requestParams.put("prop_cm_name", holdName);
+        requestParams.put("prop_cm_description", description);
+        requestParams.put("prop_rma_holdReason", reason);
 
-            boolean requestSucceeded = doPostJsonRequest(user, password, requestParams, CREATE_HOLDS_API);
-            return requestSucceeded && getObjectByPath(user, password, holdsContainerPath + "/" + holdName) != null;
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        // Make the POST request and throw an assertion error if it fails.
+        HttpResponse httpResponse = doPostJsonRequest(user, password, false, requestParams, CREATE_HOLDS_API);
+        assertNotNull("Expected object to have been created at " + fullHoldPath,
+                    getObjectByPath(user, password, fullHoldPath));
+        return httpResponse;
     }
 
     /**
@@ -327,24 +315,16 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param username    the user updating the item
      * @param password    the user's password
      * @param itemNodeRef the item noderef
-     * @return true if the update of the item properties has been successful
+     * @return The HTTP response.
      */
-    public boolean updateMetadata(String username, String password, String itemNodeRef, Map<RMProperty, String> properties)
+    public HttpResponse updateMetadata(String username, String password, String itemNodeRef, Map<RMProperty, String> properties)
     {
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            addPropertyToRequest(requestParams, "prop_cm_name", properties, RMProperty.NAME);
-            addPropertyToRequest(requestParams, "prop_cm_title", properties, RMProperty.TITLE);
-            addPropertyToRequest(requestParams, "prop_cm_description", properties, RMProperty.DESCRIPTION);
-            addPropertyToRequest(requestParams, "prop_cm_author", properties, RMProperty.AUTHOR);
+        JSONObject requestParams = new JSONObject();
+        addPropertyToRequest(requestParams, "prop_cm_name", properties, RMProperty.NAME);
+        addPropertyToRequest(requestParams, "prop_cm_title", properties, RMProperty.TITLE);
+        addPropertyToRequest(requestParams, "prop_cm_description", properties, RMProperty.DESCRIPTION);
+        addPropertyToRequest(requestParams, "prop_cm_author", properties, RMProperty.AUTHOR);
 
-            return doPostJsonRequest(username, password, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", itemNodeRef));
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(username, password, false, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", itemNodeRef));
     }
 }

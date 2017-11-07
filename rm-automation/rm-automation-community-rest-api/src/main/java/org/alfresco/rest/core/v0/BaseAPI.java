@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.core.v0;
 
+import static org.testng.AssertJUnit.assertEquals;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -342,18 +344,20 @@ public abstract class BaseAPI
      *
      * @param adminUser         user with administrative privileges
      * @param adminPassword     password for adminUser
+     * @param expectFailure     If false then an exception will be thrown if the POST is not successful.
      * @param requestParams     zero or more endpoint specific request parameters
      * @param urlTemplate       request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected boolean doPostJsonRequest(String adminUser,
+    protected HttpResponse doPostJsonRequest(String adminUser,
                                     String adminPassword,
+                                    boolean expectFailure,
                                     JSONObject requestParams,
                                     String urlTemplate,
                                     String... urlTemplateParams)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        return doPostJsonRequest(adminUser, adminPassword, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
+        return doPostJsonRequest(adminUser, adminPassword, expectFailure, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
     }
 
     /**
@@ -361,18 +365,20 @@ public abstract class BaseAPI
      *
      * @param adminUser         user with administrative privileges
      * @param adminPassword     password for adminUser
+     * @param expectFailure     If false then an exception will be thrown if the POST is not successful.
      * @param requestParams     zero or more endpoint specific request parameters
      * @param urlTemplate       request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected boolean doSlingshotPostJsonRequest(String adminUser,
+    protected HttpResponse doSlingshotPostJsonRequest(String adminUser,
                 String adminPassword,
+                boolean expectFailure,
                 JSONObject requestParams,
                 String urlTemplate,
                 String... urlTemplateParams)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        return doPostJsonRequest(adminUser, adminPassword, client.getAlfrescoUrl() + SLINGSHOT_PREFIX, requestParams, urlTemplate, urlTemplateParams);
+        return doPostJsonRequest(adminUser, adminPassword, expectFailure, client.getAlfrescoUrl() + SLINGSHOT_PREFIX, requestParams, urlTemplate, urlTemplateParams);
     }
 
     /**
@@ -380,13 +386,15 @@ public abstract class BaseAPI
      *
      * @param adminUser         user with administrative privileges
      * @param adminPassword     password for adminUser
+     * @param expectFailure     If false then an exception will be thrown if the POST is not successful.
      * @param urlStart          the start of the URL (for example "alfresco/s/slingshot").
      * @param requestParams     zero or more endpoint specific request parameters
      * @param urlTemplate       request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    private boolean doPostJsonRequest(String adminUser,
+    private HttpResponse doPostJsonRequest(String adminUser,
                 String adminPassword,
+                boolean expectFailure,
                 String urlStart,
                 JSONObject requestParams,
                 String urlTemplate,
@@ -399,7 +407,9 @@ public abstract class BaseAPI
                     urlTemplateParams);
         try
         {
-            return doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
+            HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
+            assertEquals("POST request was not successful.", httpResponse.getStatusLine().getStatusCode(), 200);
+            return httpResponse;
         }
         catch (InstantiationException | IllegalAccessException error)
         {
@@ -501,7 +511,7 @@ public abstract class BaseAPI
         return returnValues;
     }
 
-    private <T extends HttpRequestBase> boolean doRequestJson(
+    private <T extends HttpRequestBase> HttpResponse doRequestJson(
             Class<T> requestType,
             String requestUrl,
             String adminUser,
@@ -525,7 +535,7 @@ public abstract class BaseAPI
             LOGGER.info("Request body: {}", requestParams);
             HttpResponse httpResponse = client.execute(adminUser, adminPassword, request);
             LOGGER.info("Response: {}", httpResponse.getStatusLine());
-            return httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+            return httpResponse;
         }
         catch (UnsupportedEncodingException | URISyntaxException error1)
         {
@@ -540,7 +550,7 @@ public abstract class BaseAPI
             client.close();
         }
 
-        return false;
+        return null;
     }
 
     /**

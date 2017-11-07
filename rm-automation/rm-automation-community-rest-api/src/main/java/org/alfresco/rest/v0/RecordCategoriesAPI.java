@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.rest.core.v0.BaseAPI;
-import org.json.JSONException;
+import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,24 +56,17 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param user         the user creating the disposition schedule
      * @param password     the user's password
      * @param categoryName the category name to create the retention schedule for
-     * @return true if the creation completed successfully
+     * @return The HTTP Response.
      */
-    public boolean createRetentionSchedule(String user, String password, String categoryName)
+    public HttpResponse createRetentionSchedule(String user, String password, String categoryName)
     {
         String catNodeRef = getNodeRefSpacesStore() + getItemNodeRef(user, password, "/" + categoryName);
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("name", "createDispositionSchedule");
-            requestParams.put("nodeRef", catNodeRef);
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", "createDispositionSchedule");
+        requestParams.put("nodeRef", catNodeRef);
 
-            return doPostJsonRequest(user, password, requestParams, RM_ACTIONS_API);
-        } catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(user, password, false, requestParams, RM_ACTIONS_API);
     }
 
     /**
@@ -82,24 +75,17 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param user             the user creating the disposition schedule
      * @param password         the user's password
      * @param retentionNodeRef the retention nodeRef
-     * @return true if the creation completed successfully
+     * @return The HTTP Response.
      */
-    public boolean setRetentionScheduleGeneralFields(String user, String password, String retentionNodeRef, Map<RETENTION_SCHEDULE, String> retentionProperties, Boolean appliedToRecords)
+    public HttpResponse setRetentionScheduleGeneralFields(String user, String password, String retentionNodeRef, Map<RETENTION_SCHEDULE, String> retentionProperties, Boolean appliedToRecords)
     {
         String dispRetentionNodeRef = NODE_PREFIX + retentionNodeRef;
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("prop_rma_dispositionAuthority", getPropertyValue(retentionProperties, RETENTION_SCHEDULE.RETENTION_AUTHORITY));
-            requestParams.put("prop_rma_dispositionInstructions", getPropertyValue(retentionProperties, RETENTION_SCHEDULE.RETENTION_INSTRUCTIONS));
-            requestParams.put("prop_rma_recordLevelDisposition", appliedToRecords.toString());
-            return doPostJsonRequest(user, password, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", dispRetentionNodeRef));
-        } catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("prop_rma_dispositionAuthority", getPropertyValue(retentionProperties, RETENTION_SCHEDULE.RETENTION_AUTHORITY));
+        requestParams.put("prop_rma_dispositionInstructions", getPropertyValue(retentionProperties, RETENTION_SCHEDULE.RETENTION_INSTRUCTIONS));
+        requestParams.put("prop_rma_recordLevelDisposition", appliedToRecords.toString());
+        return doPostJsonRequest(user, password, false, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", dispRetentionNodeRef));
     }
 
     /**
@@ -108,30 +94,22 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param user         the user creating the disposition schedule
      * @param password     the user's password
      * @param categoryName the category name to create the retention schedule for
-     * @return true if the creation completed successfully
+     * @return The HTTP Response.
      */
-    public boolean addDispositionScheduleSteps(String user, String password, String categoryName, Map<RETENTION_SCHEDULE, String> properties)
+    public HttpResponse addDispositionScheduleSteps(String user, String password, String categoryName, Map<RETENTION_SCHEDULE, String> properties)
     {
         String catNodeRef = NODE_PREFIX + getItemNodeRef(user, password, "/" + categoryName);
-        {
-            try
-            {
-                JSONObject requestParams = new JSONObject();
-                addPropertyToRequest(requestParams, "name", properties, RETENTION_SCHEDULE.NAME);
-                addPropertyToRequest(requestParams, "description", properties, RETENTION_SCHEDULE.DESCRIPTION);
-                addPropertyToRequest(requestParams, "period", properties, RETENTION_SCHEDULE.RETENTION_PERIOD);
-                addPropertyToRequest(requestParams, "ghostOnDestroy", properties, RETENTION_SCHEDULE.RETENTION_GHOST);
-                addPropertyToRequest(requestParams, "periodProperty", properties, RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY);
-                addPropertyToRequest(requestParams, "events", properties, RETENTION_SCHEDULE.RETENTION_EVENTS);
-                addPropertyToRequest(requestParams, "eligibleOnFirstCompleteEvent", properties, RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT);
 
-                return doPostJsonRequest(user, password, requestParams, MessageFormat.format(DISPOSITION_ACTIONS_API, "{0}", catNodeRef));
-            } catch (JSONException error)
-            {
-                LOGGER.error("Unable to extract response parameter", error);
-            }
-            return false;
-        }
+        JSONObject requestParams = new JSONObject();
+        addPropertyToRequest(requestParams, "name", properties, RETENTION_SCHEDULE.NAME);
+        addPropertyToRequest(requestParams, "description", properties, RETENTION_SCHEDULE.DESCRIPTION);
+        addPropertyToRequest(requestParams, "period", properties, RETENTION_SCHEDULE.RETENTION_PERIOD);
+        addPropertyToRequest(requestParams, "ghostOnDestroy", properties, RETENTION_SCHEDULE.RETENTION_GHOST);
+        addPropertyToRequest(requestParams, "periodProperty", properties, RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY);
+        addPropertyToRequest(requestParams, "events", properties, RETENTION_SCHEDULE.RETENTION_EVENTS);
+        addPropertyToRequest(requestParams, "eligibleOnFirstCompleteEvent", properties, RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT);
+
+        return doPostJsonRequest(user, password, false, requestParams, MessageFormat.format(DISPOSITION_ACTIONS_API, "{0}", catNodeRef));
     }
 
     /**

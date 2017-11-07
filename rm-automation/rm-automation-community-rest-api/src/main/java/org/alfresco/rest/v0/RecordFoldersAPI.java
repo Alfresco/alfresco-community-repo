@@ -28,6 +28,7 @@ package org.alfresco.rest.v0;
 
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.core.v0.BaseAPI;
+import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -55,9 +56,9 @@ public class RecordFoldersAPI extends BaseAPI
      * @param user         the user closing the folder
      * @param password     the user's password
      * @param recordFolder the record folder name
-     * @return true if the action completed successfully
+     * @return The HTTP Response (or null if the response could not be understood).
      */
-    public boolean closeRecordFolder(String user, String password, String recordFolder)
+    public HttpResponse closeRecordFolder(String user, String password, String recordFolder)
     {
         String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
 
@@ -67,12 +68,12 @@ public class RecordFoldersAPI extends BaseAPI
             requestParams.put("name", "closeRecordFolder");
             requestParams.put("nodeRef", recNodeRef);
 
-            return doPostJsonRequest(user, password, requestParams, RM_ACTIONS_API);
+            return doPostJsonRequest(user, password, false, requestParams, RM_ACTIONS_API);
         }
         catch (JSONException error)
         {
             LOGGER.error("Unable to extract response parameter", error);
         }
-        return false;
+        return null;
     }
 }

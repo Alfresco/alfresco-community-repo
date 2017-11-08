@@ -52,13 +52,13 @@
 
 #
 # SQLServer connection
-# Requires jTDS driver version 1.2.5 and SNAPSHOT isolation mode
+# Requires SNAPSHOT isolation mode
 # Enable TCP protocol on fixed port 1433
 # Prepare the database with:
 # ALTER DATABASE alfresco SET ALLOW_SNAPSHOT_ISOLATION ON; 
 #
-#db.driver=net.sourceforge.jtds.jdbc.Driver
-#db.url=jdbc:jtds:sqlserver://localhost:1433/alfresco
+#db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
+#db.url=jdbc:sqlserver://${db.host}:${db.port};databaseName=${db.name};lockTimeout=1000;
 #db.txn.isolation=4096
 
 #

@@ -166,8 +166,6 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
 
     protected PermissionService permissionService;
 
-    //protected SearchService searchService;
-
     protected RetryingTransactionHelper retryingTransactionHelper;
 
     protected FileInfo testRootFolder;
@@ -218,7 +216,6 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         contentService = serviceRegistry.getContentService();
         fileAndFolderService = serviceRegistry.getFileFolderService();
         permissionService = serviceRegistry.getPermissionService();
-        //searchService = serviceRegistry.getSearchService();
 
         authenticationComponent = ctx.getBean("authenticationComponent",
                                               AuthenticationComponent.class);
@@ -502,7 +499,7 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         SearchServiceSubSystemDelegator searchServiceDelegator = (SearchServiceSubSystemDelegator) ctx.getBean("searchService");
         searchServiceDelegatorSpy = spy(searchServiceDelegator);
         searchServiceDelegator.setSubSystem(searchServiceDelegatorSpy);
-        
+
         doReturn(dbResults).when(searchServiceDelegatorSpy).query(Matchers.argThat(getArgMatcher()));
     }
 
@@ -512,29 +509,24 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
         List<ResultSetRow> dbRows = new ArrayList<ResultSetRow>();
         dbRows.add(resultSetRow);
         when(resultSetRow.getNodeRef()).thenReturn(realNodeToReturn);
-        // make sure we return a new iterator each time
-        when(dbResults.iterator()).thenAnswer(new Answer<Iterator<ResultSetRow>>()
-        {
-            public Iterator<ResultSetRow> answer(org.mockito.invocation.InvocationOnMock invocation) throws Throwable
-            {
-                return dbRows.iterator();
-            };
-        });
-        when(dbResults.hasMore()).thenReturn(false);
-        when(dbResults.getNumberFound()).thenReturn(1L);
-        when(dbResults.getStart()).thenReturn(0);
+        prepareMocksCommon(dbRows);
     }
-    protected void prepareMocks(String queryMatcher, List<NodeRef> realNodeToReturn)
+
+    protected void prepareMocks(String queryMatcher, List<NodeRef> realNodesToReturn)
     {
         this.queryMatcher = queryMatcher;
         List<ResultSetRow> dbRows = new ArrayList<ResultSetRow>();
-        for(NodeRef node: realNodeToReturn)
+        for (NodeRef node : realNodesToReturn)
         {
             ResultSetRow mock = mock(ResultSetRow.class);
             dbRows.add(mock);
             when(mock.getNodeRef()).thenReturn(node);
         }
-        
+        prepareMocksCommon(dbRows);
+    }
+
+    protected void prepareMocksCommon(List<ResultSetRow> dbRows)
+    {
         // make sure we return a new iterator each time
         when(dbResults.iterator()).thenAnswer(new Answer<Iterator<ResultSetRow>>()
         {
@@ -544,7 +536,7 @@ public abstract class VirtualizationIntegrationTest implements VirtualizationTes
             };
         });
         when(dbResults.hasMore()).thenReturn(false);
-        when(dbResults.getNumberFound()).thenReturn(2L);
+        when(dbResults.getNumberFound()).thenReturn((long) dbRows.size());
         when(dbResults.getStart()).thenReturn(0);
     }
 

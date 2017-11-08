@@ -27,6 +27,7 @@
 package org.alfresco.rest.v0;
 
 import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertNotNull;
 
 import java.io.IOException;
@@ -238,7 +239,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
                                 )
                              );
         }
-        return doPostJsonRequest(user, password, 200, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 
     /**
@@ -303,7 +304,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
         requestParams.put("prop_rma_holdReason", reason);
 
         // Make the POST request and throw an assertion error if it fails.
-        HttpResponse httpResponse = doPostJsonRequest(user, password, 200, requestParams, CREATE_HOLDS_API);
+        HttpResponse httpResponse = doPostJsonRequest(user, password, SC_OK, requestParams, CREATE_HOLDS_API);
         assertNotNull("Expected object to have been created at " + fullHoldPath,
                     getObjectByPath(user, password, fullHoldPath));
         return httpResponse;
@@ -325,6 +326,6 @@ public class RMRolesAndActionsAPI extends BaseAPI
         addPropertyToRequest(requestParams, "prop_cm_description", properties, RMProperty.DESCRIPTION);
         addPropertyToRequest(requestParams, "prop_cm_author", properties, RMProperty.AUTHOR);
 
-        return doPostJsonRequest(username, password, 200, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", itemNodeRef));
+        return doPostJsonRequest(username, password, SC_OK, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", itemNodeRef));
     }
 }

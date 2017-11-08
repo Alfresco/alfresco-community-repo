@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.apache.http.HttpStatus.SC_OK;
+
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,7 +68,7 @@ public class RecordCategoriesAPI extends BaseAPI
         requestParams.put("name", "createDispositionSchedule");
         requestParams.put("nodeRef", catNodeRef);
 
-        return doPostJsonRequest(user, password, 200, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 
     /**
@@ -85,7 +87,7 @@ public class RecordCategoriesAPI extends BaseAPI
         requestParams.put("prop_rma_dispositionAuthority", getPropertyValue(retentionProperties, RETENTION_SCHEDULE.RETENTION_AUTHORITY));
         requestParams.put("prop_rma_dispositionInstructions", getPropertyValue(retentionProperties, RETENTION_SCHEDULE.RETENTION_INSTRUCTIONS));
         requestParams.put("prop_rma_recordLevelDisposition", appliedToRecords.toString());
-        return doPostJsonRequest(user, password, 200, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", dispRetentionNodeRef));
+        return doPostJsonRequest(user, password, SC_OK, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", dispRetentionNodeRef));
     }
 
     /**
@@ -109,7 +111,7 @@ public class RecordCategoriesAPI extends BaseAPI
         addPropertyToRequest(requestParams, "events", properties, RETENTION_SCHEDULE.RETENTION_EVENTS);
         addPropertyToRequest(requestParams, "eligibleOnFirstCompleteEvent", properties, RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT);
 
-        return doPostJsonRequest(user, password, 200, requestParams, MessageFormat.format(DISPOSITION_ACTIONS_API, "{0}", catNodeRef));
+        return doPostJsonRequest(user, password, SC_OK, requestParams, MessageFormat.format(DISPOSITION_ACTIONS_API, "{0}", catNodeRef));
     }
 
     /**

@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.apache.http.HttpStatus.SC_OK;
+
 import java.text.MessageFormat;
 import java.util.Map;
 
@@ -77,7 +79,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "create-record");
 
-        return doPostJsonRequest(user, password, 200, requestParams, ACTIONS_API);
+        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
 
     /**
@@ -96,7 +98,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("name", "declareRecord");
         requestParams.put("nodeRef", recNodeRef);
 
-        return doPostJsonRequest(user, password, 200, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 
     /**
@@ -111,7 +113,7 @@ public class RecordsAPI extends BaseAPI
      */
     public HttpResponse rejectRecord(String user, String password, String recordName, String reason)
     {
-        return rejectRecord(user, password, 200, recordName, reason);
+        return rejectRecord(user, password, SC_OK, recordName, reason);
     }
 
     /**
@@ -155,7 +157,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "declare-as-version-record");
 
-        return doPostJsonRequest(user, password, 200, requestParams, ACTIONS_API);
+        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
 
     /**
@@ -217,7 +219,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("prop_rma_box", box);
         requestParams.put("prop_rma_file", file);
 
-        return doPostJsonRequest(username, password, 200, requestParams, CREATE_NON_ELECTRONIC_RECORD_API);
+        return doPostJsonRequest(username, password, SC_OK, requestParams, CREATE_NON_ELECTRONIC_RECORD_API);
     }
 
     /**
@@ -343,7 +345,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "hide-record");
 
-        return doPostJsonRequest(user, password, 200, requestParams, ACTIONS_API);
+        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
 
 }

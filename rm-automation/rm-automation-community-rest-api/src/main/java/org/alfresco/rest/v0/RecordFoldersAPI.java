@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.apache.http.HttpStatus.SC_OK;
+
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
@@ -68,7 +70,7 @@ public class RecordFoldersAPI extends BaseAPI
             requestParams.put("name", "closeRecordFolder");
             requestParams.put("nodeRef", recNodeRef);
 
-            return doPostJsonRequest(user, password, 200, requestParams, RM_ACTIONS_API);
+            return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
         }
         catch (JSONException error)
         {

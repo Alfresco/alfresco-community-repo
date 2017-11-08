@@ -68,7 +68,7 @@ public class RecordFoldersAPI extends BaseAPI
             requestParams.put("name", "closeRecordFolder");
             requestParams.put("nodeRef", recNodeRef);
 
-            return doPostJsonRequest(user, password, false, requestParams, RM_ACTIONS_API);
+            return doPostJsonRequest(user, password, 200, requestParams, RM_ACTIONS_API);
         }
         catch (JSONException error)
         {

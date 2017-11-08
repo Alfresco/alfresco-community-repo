@@ -77,7 +77,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "create-record");
 
-        return doPostJsonRequest(user, password, false, requestParams, ACTIONS_API);
+        return doPostJsonRequest(user, password, 200, requestParams, ACTIONS_API);
     }
 
     /**
@@ -96,7 +96,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("name", "declareRecord");
         requestParams.put("nodeRef", recNodeRef);
 
-        return doPostJsonRequest(user, password, false, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(user, password, 200, requestParams, RM_ACTIONS_API);
     }
 
     /**
@@ -111,21 +111,21 @@ public class RecordsAPI extends BaseAPI
      */
     public HttpResponse rejectRecord(String user, String password, String recordName, String reason)
     {
-        return rejectRecordAndGetResponse(user, password, false, recordName, reason);
+        return rejectRecord(user, password, 200, recordName, reason);
     }
 
     /**
      * Reject the record given as parameter
      *
-     * @param user       the user declaring the document as record
-     * @param password   the user's password
-     * @param expectFailure If false then throws an exception if the POST call fails.
+     * @param user the user declaring the document as record
+     * @param password the user's password
+     * @param expectedStatusCode The expected return status code.
      * @param recordName the record name
-     * @param reason     reject reason
+     * @param reason reject reason
      * @return The HTTP Response.
-     * @throws AssertionError If expectFailure is false and the POST call is not successful.
+     * @throws AssertionError If the expectedStatusCode was not returned.
      */
-    public HttpResponse rejectRecordAndGetResponse(String user, String password, boolean expectFailure, String recordName, String reason)
+    public HttpResponse rejectRecord(String user, String password, int expectedStatusCode, String recordName, String reason)
     {
         String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
 
@@ -135,7 +135,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("params",new JSONObject()
                     .put("reason",reason));
 
-        return doPostJsonRequest(user, password, expectFailure, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(user, password, expectedStatusCode, requestParams, RM_ACTIONS_API);
     }
 
     /**
@@ -155,7 +155,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "declare-as-version-record");
 
-        return doPostJsonRequest(user, password, false, requestParams, ACTIONS_API);
+        return doPostJsonRequest(user, password, 200, requestParams, ACTIONS_API);
     }
 
     /**
@@ -217,7 +217,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("prop_rma_box", box);
         requestParams.put("prop_rma_file", file);
 
-        return doPostJsonRequest(username, password, false, requestParams, CREATE_NON_ELECTRONIC_RECORD_API);
+        return doPostJsonRequest(username, password, 200, requestParams, CREATE_NON_ELECTRONIC_RECORD_API);
     }
 
     /**
@@ -343,7 +343,7 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "hide-record");
 
-        return doPostJsonRequest(user, password, false, requestParams, ACTIONS_API);
+        return doPostJsonRequest(user, password, 200, requestParams, ACTIONS_API);
     }
 
 }

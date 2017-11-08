@@ -46,7 +46,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
          </#list>
       </@options>
       <@button label=msg("nodebrowser.root") onclick="AdminConsole_action('root')" />
-      <#if action??><@button label=msg("nodebrowser.refresh") onclick="AdminConsole_action('${action?html}')" class="input" style="position:absolute;top:60px;left:1042px" /></#if>
+      <#if action??><@button label=msg("nodebrowser.refresh") onclick="AdminConsole_action('${action?js_string?html}')" class="input" style="position:absolute;top:60px;left:1042px" /></#if>
       
       <@section label=msg("nodebrowser.query") />
       <@options name="nodebrowser-search" style="display:inline" valueStyle="display:inline" value="${args.searcher!''}">
@@ -299,7 +299,7 @@ function AdminConsole_execute(value, execute)
 {
    el("execute-value").value = value;
    el("execute").value = execute;
-   AdminConsole_action('${(action!"")?html}');
+   AdminConsole_action('${(action!"")?js_string?html}');
 }
 
 function AdminConsole_confirmExecute(value, execute)

@@ -342,59 +342,60 @@ public abstract class BaseAPI
     /**
      * Helper method for POST requests
      *
-     * @param adminUser         user with administrative privileges
-     * @param adminPassword     password for adminUser
-     * @param expectFailure     If false then an exception will be thrown if the POST is not successful.
-     * @param requestParams     zero or more endpoint specific request parameters
-     * @param urlTemplate       request URL template
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
     protected HttpResponse doPostJsonRequest(String adminUser,
                                     String adminPassword,
-                                    boolean expectFailure,
+                                    int expectedStatusCode,
                                     JSONObject requestParams,
                                     String urlTemplate,
                                     String... urlTemplateParams)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        return doPostJsonRequest(adminUser, adminPassword, expectFailure, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
+        return doPostJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
     }
 
     /**
      * Helper method for POST requests to slingshot.
      *
-     * @param adminUser         user with administrative privileges
-     * @param adminPassword     password for adminUser
-     * @param expectFailure     If false then an exception will be thrown if the POST is not successful.
-     * @param requestParams     zero or more endpoint specific request parameters
-     * @param urlTemplate       request URL template
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
     protected HttpResponse doSlingshotPostJsonRequest(String adminUser,
                 String adminPassword,
-                boolean expectFailure,
+                int expectedStatusCode,
                 JSONObject requestParams,
                 String urlTemplate,
                 String... urlTemplateParams)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        return doPostJsonRequest(adminUser, adminPassword, expectFailure, client.getAlfrescoUrl() + SLINGSHOT_PREFIX, requestParams, urlTemplate, urlTemplateParams);
+        return doPostJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getAlfrescoUrl() + SLINGSHOT_PREFIX, requestParams, urlTemplate, urlTemplateParams);
     }
 
     /**
      * Helper method for POST requests
      *
-     * @param adminUser         user with administrative privileges
-     * @param adminPassword     password for adminUser
-     * @param expectFailure     If false then an exception will be thrown if the POST is not successful.
-     * @param urlStart          the start of the URL (for example "alfresco/s/slingshot").
-     * @param requestParams     zero or more endpoint specific request parameters
-     * @param urlTemplate       request URL template
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param urlStart the start of the URL (for example "alfresco/s/slingshot").
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     * @throws AssertionError if the returned status code is not as expected.
      */
     private HttpResponse doPostJsonRequest(String adminUser,
                 String adminPassword,
-                boolean expectFailure,
+                int expectedStatusCode,
                 String urlStart,
                 JSONObject requestParams,
                 String urlTemplate,
@@ -408,10 +409,7 @@ public abstract class BaseAPI
         try
         {
             HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
-            if (!expectFailure)
-            {
-                assertEquals("POST request was not successful.", httpResponse.getStatusLine().getStatusCode(), 200);
-            }
+            assertEquals("POST request to " + requestUrl + " was not successful.", httpResponse.getStatusLine().getStatusCode(), expectedStatusCode);
             return httpResponse;
         }
         catch (InstantiationException | IllegalAccessException error)

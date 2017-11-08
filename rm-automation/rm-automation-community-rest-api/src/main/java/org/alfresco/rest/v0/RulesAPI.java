@@ -71,7 +71,7 @@ public class RulesAPI extends BaseAPI
     {
         try
         {
-            return doPostJsonRequest(username, password, false, getRuleRequest(ruleProperties), MessageFormat.format(RULES_API, "{0}", containerNodeRef));
+            return doPostJsonRequest(username, password, 200, getRuleRequest(ruleProperties), MessageFormat.format(RULES_API, "{0}", containerNodeRef));
         }
         catch (JSONException error)
         {
@@ -316,7 +316,7 @@ public class RulesAPI extends BaseAPI
     {
         if(containerInheritsRulesFromParent(username, password, containerNodeRef))
         {
-            return doPostJsonRequest(username, password, false, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
+            return doPostJsonRequest(username, password, 200, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
         }
         return null;
     }
@@ -333,7 +333,7 @@ public class RulesAPI extends BaseAPI
     {
         if (!containerInheritsRulesFromParent(username, password, containerNodeRef))
         {
-            return doPostJsonRequest(username, password, false, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
+            return doPostJsonRequest(username, password, 200, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
         }
         return null;
     }

@@ -65,7 +65,7 @@ public class CopyToAPI extends BaseAPI
      */
     public HttpResponse copyTo(String user, String password, String targetContainerPath, List<String> nodeRefs)
     {
-        return copyToAndGetResponse(user, password, false, targetContainerPath, nodeRefs);
+        return copyTo(user, password, 200, targetContainerPath, nodeRefs);
     }
 
     /**
@@ -73,19 +73,20 @@ public class CopyToAPI extends BaseAPI
      *
      * @param user The username of the user to use.
      * @param password The password of the user.
-     * @param expectFailure If false then an exception will be thrown if the POST is not successful.
+     * @param expectedStatusCode The expected return status code.
      * @param targetContainerPath The destination to copy the nodes to. This should be in the format
      * "{site}/{container}/{path}", "{site}/{container}", "{store_type}/{store_id}/{id}/{path}",
      * "{store_type}/{store_id}/{id}" or "{store_type}/{store_id}".
      * @param nodeRefs The list of nodes to copy.
      * @return The HTTP Response.
+     * @throws AssertionError If the API didn't return the expected status code.
      */
-    public HttpResponse copyToAndGetResponse(String user, String password, boolean expectFailure, String targetContainerPath, List<String> nodeRefs)
+    public HttpResponse copyTo(String user, String password, int expectedStatusCode, String targetContainerPath, List<String> nodeRefs)
     {
         JSONObject requestParams = new JSONObject();
         requestParams.put("nodeRefs", new JSONArray(nodeRefs));
 
-        return doSlingshotPostJsonRequest(user, password, expectFailure, requestParams,
+        return doSlingshotPostJsonRequest(user, password, expectedStatusCode, requestParams,
                     MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath));
     }
 }

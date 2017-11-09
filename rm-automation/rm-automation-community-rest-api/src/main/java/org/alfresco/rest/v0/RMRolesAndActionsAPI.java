@@ -268,15 +268,16 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param password      its password
      * @param siteId        the site id in which the container is located
      * @param containerName the container to look for items into
-     * @return true if the deletion has been successful
+     * @throws AssertionError if not all items could be deleted.
      */
-    public boolean deleteAllItemsInContainer(String username, String password, String siteId, String containerName)
+    public void deleteAllItemsInContainer(String username, String password, String siteId, String containerName)
     {
         for (CmisObject item : contentService.getFolderObject(contentService.getCMISSession(username, password), siteId, containerName).getChildren())
         {
             item.delete();
         }
-        return !(contentService.getFolderObject(contentService.getCMISSession(username, password), siteId, containerName).getChildren().getHasMoreItems());
+        boolean success = !(contentService.getFolderObject(contentService.getCMISSession(username, password), siteId, containerName).getChildren().getHasMoreItems());
+        assertTrue("Not all items were deleted from " + containerName, success);
     }
 
     /**

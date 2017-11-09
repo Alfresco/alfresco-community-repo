@@ -189,12 +189,6 @@
             <columnname>acl_change_set</columnname>
           </columnnames>
         </index>
-        <index name="idx_alf_acl_acs" unique="false">
-          <columnnames>
-            <columnname>acl_change_set</columnname>
-            <columnname>acl_id</columnname>
-          </columnnames>
-        </index>
       </indexes>
     </table>
     <table name="alf_ace_context">

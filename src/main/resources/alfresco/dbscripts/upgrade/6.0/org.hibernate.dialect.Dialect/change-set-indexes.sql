@@ -11,7 +11,7 @@ DROP INDEX idx_alf_acs_ctms;  --(optional)
 CREATE INDEX idx_alf_acs_ctms ON alf_acl_change_set (commit_time_ms, id);  --(optional)
 
 DROP INDEX idx_alf_acl_acs;  --(optional)
-CREATE INDEX idx_alf_acl_acs ON alf_access_control_list (acl_change_set, acl_id);  --(optional)
+CREATE INDEX idx_alf_acl_acs ON alf_access_control_list (acl_change_set, id);  --(optional)
 
 --
 -- Record script finish

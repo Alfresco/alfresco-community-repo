@@ -7,9 +7,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-DROP INDEX idx_alf_acl_acs ON alf_access_control_list;  --(optional)
-CREATE INDEX idx_alf_acl_acs ON alf_access_control_list (acl_change_set, acl_id);  --(optional)
-
+-- Nothing required
 
 --
 -- Record script finish

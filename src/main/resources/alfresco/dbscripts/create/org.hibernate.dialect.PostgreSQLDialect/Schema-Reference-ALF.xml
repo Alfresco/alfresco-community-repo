@@ -231,7 +231,7 @@
         <index name="idx_alf_acl_acs" unique="false">
           <columnnames>
             <columnname>acl_change_set</columnname>
-            <columnname>acl_id</columnname>
+            <columnname>id</columnname>
           </columnnames>
         </index>
       </indexes>

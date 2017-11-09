@@ -39,7 +39,7 @@
         select
             acs.id              as id,
             acs.commit_time_ms  as commit_time_ms,
-            count(acl_id) as acl_count
+            count(acl.id) as acl_count
         from
             alf_acl_change_set acs
         join alf_access_control_list acl on (acl.acl_change_set = acs.id)

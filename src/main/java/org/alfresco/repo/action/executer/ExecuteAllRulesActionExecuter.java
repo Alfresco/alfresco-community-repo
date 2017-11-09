@@ -124,84 +124,86 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
     
     private void executeImpl(final Action ruleAction, NodeRef actionedUponNodeRef, List<Rule> parentRules)
     {
-        if (this.nodeService.exists(actionedUponNodeRef) == true)
+        if (!this.nodeService.exists(actionedUponNodeRef))
         {
-            // Get the parameter value
-            boolean includeInherited = false;
-            Boolean includeInheritedValue = (Boolean)ruleAction.getParameterValue(PARAM_EXECUTE_INHERITED_RULES);
-            if (includeInheritedValue != null)
-            {
-                includeInherited = includeInheritedValue.booleanValue();
-            }
-            
-            boolean runAllChildren = false;
-            Boolean runAllChildrenValue = (Boolean)ruleAction.getParameterValue(PARAM_RUN_ALL_RULES_ON_CHILDREN);
-            if (runAllChildrenValue != null)
-            {
-                runAllChildren = runAllChildrenValue.booleanValue();
-            }
+            return;
+        }
+        
+        // Get the parameter value
+        boolean includeInherited = false;
+        Boolean includeInheritedValue = (Boolean)ruleAction.getParameterValue(PARAM_EXECUTE_INHERITED_RULES);
+        if (includeInheritedValue != null)
+        {
+            includeInherited = includeInheritedValue.booleanValue();
+        }
+        
+        boolean runAllChildren = false;
+        Boolean runAllChildrenValue = (Boolean)ruleAction.getParameterValue(PARAM_RUN_ALL_RULES_ON_CHILDREN);
+        if (runAllChildrenValue != null)
+        {
+            runAllChildren = runAllChildrenValue.booleanValue();
+        }
 
-            // Collect all the rules to execute on the current node.
-            List<Rule> rules = new ArrayList<>();
-            // This is a recursive method, collect the rules specified for this particular invocation's node.
-            List<Rule> currentNodeRules = ruleService.getRules(actionedUponNodeRef, includeInherited);
-            if (currentNodeRules != null)
-            {
-                rules.addAll(currentNodeRules);
-            }
+        // Collect all the rules to execute on the current node.
+        List<Rule> rules = new ArrayList<>();
+        // This is a recursive method, collect the rules specified for this particular invocation's node.
+        List<Rule> currentNodeRules = ruleService.getRules(actionedUponNodeRef, includeInherited);
+        if (currentNodeRules != null)
+        {
+            rules.addAll(currentNodeRules);
+        }
 
-            if (runAllChildren)
+        if (runAllChildren)
+        {
+            if (parentRules != null)
             {
-                if (parentRules != null)
-                {
-                    // Currently recursing into a child folder, add the rules from the recursive set
-                    // to any other rules we've collected for this node.
-                    rules.addAll(parentRules);
-                }
-                else
-                {
-                    // Currently executing on the "top-level" folder.
-                    // We'll propagate the rules of the top-level node during recursive calls,
-                    // so save the rules (parentRules) to pass down the line.
-                    parentRules = currentNodeRules;
-                }
+                // Currently recursing into a child folder, add the rules from the recursive set
+                // to any other rules we've collected for this node.
+                rules.addAll(parentRules);
             }
-            
-            if (!rules.isEmpty())
+            else
             {
-                // Get the child nodes for the actioned upon node
-                List<ChildAssociationRef> children = nodeService.getChildAssocs(actionedUponNodeRef);
-                for (ChildAssociationRef childAssoc : children)
+                // Currently executing on the "top-level" folder.
+                // We'll propagate the rules of the top-level node during recursive calls,
+                // so save the rules (parentRules) to pass down the line.
+                parentRules = currentNodeRules;
+            }
+        }
+        
+        if (!rules.isEmpty())
+        {
+            // Get the child nodes for the actioned upon node
+            List<ChildAssociationRef> children = nodeService.getChildAssocs(actionedUponNodeRef);
+            for (ChildAssociationRef childAssoc : children)
+            {
+                // Get the child node reference
+                NodeRef child = childAssoc.getChildRef();
+                
+                // Only execute rules on non-system folders
+                QName childType = nodeService.getType(child);
+                if (dictionaryService.isSubClass(childType, ContentModel.TYPE_SYSTEM_FOLDER) == false)
                 {
-                    // Get the child node reference
-                    NodeRef child = childAssoc.getChildRef();
-                    
-                    // Only execute rules on non-system folders
-                    QName childType = nodeService.getType(child);
-                    if (dictionaryService.isSubClass(childType, ContentModel.TYPE_SYSTEM_FOLDER) == false)
-                    {
-                        for (Rule rule : rules)
-                        {       
-                           // Only re-apply rules that are enabled
-                           if (rule.getRuleDisabled() == false)
+                    for (Rule rule : rules)
+                    {       
+                       // Only re-apply rules that are enabled
+                       if (rule.getRuleDisabled() == false)
+                       {
+                           Action action = rule.getAction();
+                           if (action != null)
                            {
-                               Action action = rule.getAction();
-                               if (action != null)
-                               {
-                                  runtimeRuleService.addRulePendingExecution(actionedUponNodeRef, child, rule);
-                               }
+                              runtimeRuleService.addRulePendingExecution(actionedUponNodeRef, child, rule);
                            }
-                        }
-                        
-                        // If the child is a folder and we have asked to run rules on children
-                        if (runAllChildren == true &&
-                            dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER) == true)
-                        {
-                            // Recurse with the child folder, passing down the top-level folder rules.
-                            executeImpl(ruleAction, child, parentRules);
-                        }
-                    }                    
-                }
+                       }
+                    }
+                    
+                    // If the child is a folder and we have asked to run rules on children
+                    if (runAllChildren == true &&
+                        dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER) == true)
+                    {
+                        // Recurse with the child folder, passing down the top-level folder rules.
+                        executeImpl(ruleAction, child, parentRules);
+                    }
+                }                    
             }
         }
     }

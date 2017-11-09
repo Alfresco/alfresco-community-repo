@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.action.executer;
 
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.rule.RuntimeRuleService;
@@ -40,6 +38,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This action executes all rules present on the actioned upon node 
@@ -116,7 +117,12 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
-    public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
+    public void executeImpl(final Action ruleAction, NodeRef actionedUponNodeRef)
+    {
+        executeImpl(ruleAction, actionedUponNodeRef, null);
+    }
+    
+    private void executeImpl(final Action ruleAction, NodeRef actionedUponNodeRef, List<Rule> parentRules)
     {
         if (this.nodeService.exists(actionedUponNodeRef) == true)
         {
@@ -134,10 +140,34 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
             {
                 runAllChildren = runAllChildrenValue.booleanValue();
             }
+
+            // Collect all the rules to execute on the current node.
+            List<Rule> rules = new ArrayList<>();
+            // This is a recursive method, collect the rules specified for this particular invocation's node.
+            List<Rule> currentNodeRules = ruleService.getRules(actionedUponNodeRef, includeInherited);
+            if (currentNodeRules != null)
+            {
+                rules.addAll(currentNodeRules);
+            }
+
+            if (runAllChildren)
+            {
+                if (parentRules != null)
+                {
+                    // Currently recursing into a child folder, add the rules from the recursive set
+                    // to any other rules we've collected for this node.
+                    rules.addAll(parentRules);
+                }
+                else
+                {
+                    // Currently executing on the "top-level" folder.
+                    // We'll propagate the rules of the top-level node during recursive calls,
+                    // so save the rules (parentRules) to pass down the line.
+                    parentRules = currentNodeRules;
+                }
+            }
             
-            // Get the rules
-            List<Rule> rules = ruleService.getRules(actionedUponNodeRef, includeInherited);
-            if (rules != null && rules.isEmpty() == false)
+            if (!rules.isEmpty())
             {
                 // Get the child nodes for the actioned upon node
                 List<ChildAssociationRef> children = nodeService.getChildAssocs(actionedUponNodeRef);
@@ -167,8 +197,8 @@ public class ExecuteAllRulesActionExecuter extends ActionExecuterAbstractBase
                         if (runAllChildren == true &&
                             dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER) == true)
                         {
-                            // Recurse with the child folder
-                            executeImpl(ruleAction, child);
+                            // Recurse with the child folder, passing down the top-level folder rules.
+                            executeImpl(ruleAction, child, parentRules);
                         }
                     }                    
                 }

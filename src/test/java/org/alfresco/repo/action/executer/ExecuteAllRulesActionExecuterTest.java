@@ -25,12 +25,9 @@
  */
 package org.alfresco.repo.action.executer;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.rule.LinkRules;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -38,6 +35,10 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -48,10 +49,16 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.junit.experimental.categories.Category;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
 
 /**
  * Execute all rules action execution test
@@ -74,6 +81,10 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
     private CheckOutCheckInService checkOutCheckInService;
     
     private RetryingTransactionHelper transactionHelper;
+    
+    private FileFolderService fileFolderService;
+    
+    private ContentService contentService;
     
     /** The store reference */
     private StoreRef testStoreRef;
@@ -98,6 +109,8 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         this.ruleService = (RuleService)this.applicationContext.getBean("ruleService");
         this.actionService = (ActionService)this.applicationContext.getBean("actionService");
         transactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
+        fileFolderService = applicationContext.getBean("fileFolderService", FileFolderService.class);
+        contentService = applicationContext.getBean("contentService", ContentService.class);
         
         AuthenticationComponent authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
@@ -301,8 +314,10 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
                 assertTrue(nodeService.hasAspect(doc2, ContentModel.ASPECT_VERSIONABLE));
                 assertTrue(nodeService.hasAspect(doc2, ContentModel.ASPECT_CLASSIFIABLE));
                 assertFalse(nodeService.hasAspect(doc2, ContentModel.ASPECT_TITLED));
-                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_VERSIONABLE));
-                assertFalse(nodeService.hasAspect(doc3, ContentModel.ASPECT_CLASSIFIABLE));
+                // Running recursively (PARAM_RUN_ALL_RULES_ON_CHILDREN), so folder2 has folder1's rules applied
+                // in addition to its own rule.
+                assertTrue(nodeService.hasAspect(doc3, ContentModel.ASPECT_VERSIONABLE));
+                assertTrue(nodeService.hasAspect(doc3, ContentModel.ASPECT_CLASSIFIABLE));
                 assertTrue(nodeService.hasAspect(doc3, ContentModel.ASPECT_TITLED));
                 
                 clearAspects(doc1);
@@ -314,6 +329,184 @@ public class ExecuteAllRulesActionExecuterTest extends BaseSpringTest
         }); 
     }
     
+    /**
+     * Test for MNT-13055:
+     * 
+     * We create a folder structure thus:
+     * <pre>
+     * rootFolder (rule: add an aspect)
+     * |
+     * +- folderA ("do not inherit rules" + link to rootFolder's rule set) 
+     *    |
+     *    +- fileA
+     *    |
+     *    +- folderB
+     *       |
+     *       +- fileB 
+     * </pre>
+     * This test case specifies a rule on rootFolder that adds an aspect to all files within.
+     * folderA has the ignoreInheritedRules aspect applied, but also links to rootFolder's rule set.
+     * <p>
+     * We then explicitly execute folderA's rules, including for subfolders. Ultimately, we want to
+     * know that fileB did indeed have the ruleset executed on it, and therefore gained the classifiable aspect.
+     */
+    public void testRulesFireOnNonInheritedFolderUsingLinkedRuleSetInstead()
+    {
+        final NodeRef rootFolder = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}rootFolderForTest"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        
+        final NodeRef folderA = fileFolderService.
+                create(rootFolder, "folderA", ContentModel.TYPE_FOLDER).getNodeRef();
+        
+        // Set folderA to "Don't Inherit Rules".
+        nodeService.addAspect(folderA, ASPECT_IGNORE_INHERITED_RULES, Collections.emptyMap());
+        
+        NodeRef fileA = createFile(folderA, "fileA.txt").getNodeRef();
+        
+        final NodeRef folderB = fileFolderService.
+                create(folderA, "folderB", ContentModel.TYPE_FOLDER).getNodeRef();
+        
+        NodeRef fileB = createFile(folderB, "fileB.txt").getNodeRef();
+        
+        // Create a rule on rootFolder
+        Rule rule = new Rule();
+        rule.setRuleType(RuleType.INBOUND);
+        Action action = actionService.createAction(AddFeaturesActionExecuter.NAME);
+        action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+        rule.setAction(action);
+        // It mustn't matter whether this rule "applies to children", since we'll explicitly
+        // run it on "the folder and its subfolders".
+        rule.applyToChildren(false);
+        rule.setExecuteAsynchronously(false);
+        ruleService.enableRule(rule);
+        ruleService.saveRule(rootFolder, rule);
+
+        // Link to Rule Set of rootFolder to folderA
+        Action linkAction = actionService.createAction(LinkRules.NAME);
+        linkAction.setParameterValue(LinkRules.PARAM_LINK_FROM_NODE, rootFolder);
+        linkAction.setExecuteAsynchronously(false);
+        actionService.executeAction(linkAction, folderA);
+        
+        setComplete();
+        endTransaction();
+
+        transactionHelper.doInTransaction(() -> {
+            assertFalse(nodeService.hasAspect(folderA, ContentModel.ASPECT_CLASSIFIABLE));
+            assertFalse(nodeService.hasAspect(fileA, ContentModel.ASPECT_CLASSIFIABLE));
+            assertFalse(nodeService.hasAspect(folderB, ContentModel.ASPECT_CLASSIFIABLE));
+            assertFalse(nodeService.hasAspect(fileB, ContentModel.ASPECT_CLASSIFIABLE));
+            return null;
+        });
+        
+        
+        // rootFolder: "Run rule for this folder and its subfolders".
+        transactionHelper.doInTransaction(() -> {
+            Map<String, Serializable> actionParams = new HashMap<>();
+            actionParams.put(ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, true);
+            // In Share, when you manually trigger rules on a folder, this parameter (execute-inherited-rules)
+            // will be false if the aspect rule:ignoreInheritedRules is present, and true otherwise.
+            actionParams.put(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, false);
+            Action rulesAction = actionService.createAction(ExecuteAllRulesActionExecuter.NAME, actionParams);
+            executer.execute(rulesAction, folderA);
+            return null;
+        });
+
+        transactionHelper.doInTransaction(() -> {
+            // We're running the rule on folderA, so the folder itself won't be processed.
+            assertFalse(nodeService.hasAspect(folderA, ContentModel.ASPECT_CLASSIFIABLE));
+            
+            // The contents of folderA will all have the aspect added.
+            assertTrue(nodeService.hasAspect(fileA, ContentModel.ASPECT_CLASSIFIABLE));
+            assertTrue(nodeService.hasAspect(folderB, ContentModel.ASPECT_CLASSIFIABLE));
+            // The contents of folderB will all have the aspect added.
+            assertTrue(nodeService.hasAspect(fileB, ContentModel.ASPECT_CLASSIFIABLE));
+            return null;
+        });
+    }
+    
+    private FileInfo createFile(NodeRef parent, String name)
+    {
+        FileInfo file = fileFolderService.create(parent, name, ContentModel.TYPE_CONTENT);
+        ContentWriter writer = contentService.getWriter(file.getNodeRef(), ContentModel.PROP_CONTENT, true);
+        writer.putContent(file.getName()+" contents");
+        return file;
+    }
+
+    /**
+     * Test execution as per MNT-13055.
+     * <p>
+     * When we use the ExecuteAllRulesActionExecuter to explicitly (e.g. "manually")
+     * execute all the rules on a folder and its subfolders, the rule must correctly
+     * recurse into those subfolders. This is a more simple test case than the steps
+     * described in the above issue, but is crucial to the more complicated case
+     * succeeding.
+     */
+    public void testRuleAppliesToSubfoldersSuccessfully()
+    {
+        final NodeRef rootFolder = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}rootFolderForTest"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+
+        final NodeRef folderA = fileFolderService.
+                create(rootFolder, "folderA", ContentModel.TYPE_FOLDER).getNodeRef();
+
+        NodeRef fileA = createFile(folderA, "fileA.txt").getNodeRef();
+
+        final NodeRef folderB = fileFolderService.
+                create(folderA, "folderB", ContentModel.TYPE_FOLDER).getNodeRef();
+
+        NodeRef fileB = createFile(folderB, "fileB.txt").getNodeRef();
+
+        setComplete();
+        endTransaction();
+
+        // On RootFolder create a rule
+        transactionHelper.doInTransaction(() -> {
+            Rule rule1 = new Rule();
+            rule1.setRuleType(RuleType.INBOUND);
+            Action action1 = actionService.createAction(AddFeaturesActionExecuter.NAME);
+            action1.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+            rule1.setAction(action1);
+            rule1.applyToChildren(true);
+            rule1.setExecuteAsynchronously(false);
+            ruleService.enableRule(rule1);
+            ruleService.saveRule(rootFolder, rule1);
+            return null;
+        });
+        
+        // Check the the docs don't have the aspects yet
+        transactionHelper.doInTransaction(() -> {
+            assertFalse(nodeService.hasAspect(folderA, ContentModel.ASPECT_CLASSIFIABLE));
+            assertFalse(nodeService.hasAspect(folderB, ContentModel.ASPECT_CLASSIFIABLE));
+            assertFalse(nodeService.hasAspect(fileA, ContentModel.ASPECT_CLASSIFIABLE));
+            assertFalse(nodeService.hasAspect(fileB, ContentModel.ASPECT_CLASSIFIABLE));
+            return null;
+        });
+        
+        // Execute the action
+        transactionHelper.doInTransaction(() -> {
+            Map<String, Serializable> actionParams = new HashMap<>();
+            actionParams.put(ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, true);
+            actionParams.put(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, true);
+            Action action = actionService.createAction(ExecuteAllRulesActionExecuter.NAME, actionParams);
+            executer.execute(action, rootFolder);
+            return null;
+        });
+        
+        transactionHelper.doInTransaction(() -> {
+            assertTrue(nodeService.hasAspect(folderA, ContentModel.ASPECT_CLASSIFIABLE));
+            assertTrue(nodeService.hasAspect(folderB, ContentModel.ASPECT_CLASSIFIABLE));
+            assertTrue(nodeService.hasAspect(fileA, ContentModel.ASPECT_CLASSIFIABLE));
+            assertTrue(nodeService.hasAspect(fileB, ContentModel.ASPECT_CLASSIFIABLE));
+            return null;
+        });
+    }
+
     private void clearAspects(NodeRef nodeRef)
     {
         nodeService.removeAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);

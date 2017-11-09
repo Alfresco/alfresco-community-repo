@@ -1,4 +1,4 @@
-## Component Name
+## Records Management Technical Overview
 
 ![Completeness Badge](https://img.shields.io/badge/Document_Level-Complete-green.svg?style=flat-square)
 
@@ -62,6 +62,8 @@ Each Java service will have at least four beans defined for it:
 The DAOs are not part of the Java Public API, but handle CRUD operations against RM stored data. We have some custom queries to improve performance for particularly heavy operations.
 
 We use standard Alfresco [data modelling](http://docs.alfresco.com/5.2/references/dev-extension-points-content-model.html) to store RM metadata. We extend the [Alfresco patching mechanism](http://docs.alfresco.com/5.2/references/dev-extension-points-patch.html) to provide community and enterprise schema upgrades.
+
+***
 
 ### Design Decisions
 

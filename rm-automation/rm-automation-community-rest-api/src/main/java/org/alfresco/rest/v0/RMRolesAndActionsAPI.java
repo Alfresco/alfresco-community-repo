@@ -266,11 +266,11 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param username user's username
      * @param password its password
      * @param holdName the hold name
-     * @return true if the delete is successful
+     * @throws AssertionError if the deletion was unsuccessful.
      */
-    public boolean deleteHold(String username, String password, String holdName)
+    public void deleteHold(String username, String password, String holdName)
     {
-        return deleteItem(username, password, "/Holds/" + holdName);
+        deleteItem(username, password, "/Holds/" + holdName);
     }
 
 

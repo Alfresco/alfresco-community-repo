@@ -243,24 +243,25 @@ public class RecordsAPI extends BaseAPI
 
     /**
      * Delete a record from the given path
-     *
+     * <ul>
+     * <li>eg. of usage in the case in which the record is inside a folder in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "unfiled records folder");
+     * <li>eg. of usage in the case in which the record is created directly in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "");
+     * </ul>
      * @param username     user's username
      * @param password     its password
      * @param recordName   the record name
      * @param categoryName the name of the category in which the folder is, in case of unfiled record, this will have UNFILED_RECORDS_BREADCRUMB as container
      * @param folderName   folder name, in case in which trying to delete a record in Unfiled records directly, this will be ""
-     * @return true if the delete is successful
-     * eg. of usage in the case in which the record is inside a folder in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "unfiled records folder");
-     * eg. of usage in the case in which the record is created directly in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "");
+     * @throws AssertionError If the record could not be deleted.
      */
-    public boolean deleteRecord(String username, String password, String recordName, String categoryName, String folderName)
+    public void deleteRecord(String username, String password, String recordName, String categoryName, String folderName)
     {
         String recordPath = "/" + categoryName;
         if (!folderName.equals(""))
         {
             recordPath = recordPath + "/" + folderName;
         }
-        return deleteItem(username, password, recordPath + "/" + recordName);
+        deleteItem(username, password, recordPath + "/" + recordName);
     }
 
     /**

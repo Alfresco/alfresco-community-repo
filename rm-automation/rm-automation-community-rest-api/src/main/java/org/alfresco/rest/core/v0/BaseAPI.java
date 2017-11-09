@@ -27,6 +27,7 @@
 package org.alfresco.rest.core.v0;
 
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNull;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -664,16 +665,16 @@ public abstract class BaseAPI
      * @param itemPath the path to the item eg. in case of a category it would be the "/" + category name,
      *                 in case of a folder or subCategory it would be /categoryName/folderName or /categoryName/subCategoryName/
      *                 in case of a record /categoryName/folderName/recordName
-     * @return true if the deletion has been successful
+     * @throws AssertionError if the delete was not successful.
      */
-    protected boolean deleteItem(String username, String password, String itemPath)
+    protected void deleteItem(String username, String password, String itemPath)
     {
         CmisObject container = getObjectByPath(username, password, FILE_PLAN_PATH + itemPath);
         if (container != null)
         {
             container.delete();
         }
-        return getObjectByPath(username, password, itemPath) == null;
+        assertNull("Could not delete " + itemPath, getObjectByPath(username, password, itemPath));
     }
 
     /**

@@ -27,6 +27,7 @@
 package org.alfresco.rest.v0;
 
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.text.MessageFormat;
 import java.util.Map;
@@ -224,20 +225,20 @@ public class RecordsAPI extends BaseAPI
 
     /**
      * Uploads an electronic record
-     *
+     * <p>
+     * eg. of usage for creating record directly in Unfiled Records : uploadElectronicRecord(getAdminName(), getAdminPassword(), recordPropertiesStringMap, UNFILED_RECORDS_BREADCRUMB, DocumentType.HTML)
      * @param username   the username
      * @param password   the password
      * @param properties a map of record properties and their values
-     * @param folderName the folder inside which the record will be created, it needs to have a unique name
-     * @return true if the creation of the record has been successful
-     * eg. of usage for creating record directly in Unfiled Records : uploadElectronicRecord(getAdminName(), getAdminPassword(), recordPropertiesStringMap, UNFILED_RECORDS_BREADCRUMB, DocumentType.HTML)
-     * the folder name in which the record gets created has to have a unique name, as this method doesn't check other containers than the folder name
+     * @param folderName the folder inside which the record will be created, it needs to have a unique name, as this method doesn't check other containers than the folder name
+     * @throws AssertionError if the upload was unsuccessful.
      */
-    public boolean uploadElectronicRecord(String username, String password, Map<RMProperty, String> properties, String folderName, DocumentType documentType)
+    public void uploadElectronicRecord(String username, String password, Map<RMProperty, String> properties, String folderName, DocumentType documentType)
     {
         String recordName = getPropertyValue(properties, RMProperty.NAME);
         String recordContent = getPropertyValue(properties, RMProperty.CONTENT);
-        return (getRecord(username, password, folderName, recordName) != null) || (contentService.createDocumentInFolder(username, password, RM_SITE_ID, folderName, documentType, recordName, recordContent) != null);
+        boolean success = (getRecord(username, password, folderName, recordName) != null) || (contentService.createDocumentInFolder(username, password, RM_SITE_ID, folderName, documentType, recordName, recordContent) != null);
+        assertTrue("Failed to upload electronic record to " + folderName, success);
     }
 
     /**

@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.core.v0;
 
+import static org.testng.AssertJUnit.assertEquals;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -80,6 +82,7 @@ public abstract class BaseAPI
     protected static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
     protected static final String RM_SITE_ID = "rm";
     protected static final String SHARE_ACTION_API = "{0}internal/shared/share/workspace/SpacesStore/{1}";
+    private static final String SLINGSHOT_PREFIX = "alfresco/s/slingshot/";
 
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
@@ -339,28 +342,75 @@ public abstract class BaseAPI
     /**
      * Helper method for POST requests
      *
-     * @param adminUser         user with administrative privileges
-     * @param adminPassword     password for adminUser
-     * @param requestParams     zero or more endpoint specific request parameters
-     * @param urlTemplate       request URL template
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected boolean doPostJsonRequest(String adminUser,
+    protected HttpResponse doPostJsonRequest(String adminUser,
                                     String adminPassword,
+                                    int expectedStatusCode,
                                     JSONObject requestParams,
                                     String urlTemplate,
                                     String... urlTemplateParams)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String requestUrl = MessageFormat.format(
-                urlTemplate,
-                client.getApiUrl(),
-                urlTemplateParams);
-        client.close();
+        return doPostJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
+    }
 
+    /**
+     * Helper method for POST requests to slingshot.
+     *
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
+     * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     */
+    protected HttpResponse doSlingshotPostJsonRequest(String adminUser,
+                String adminPassword,
+                int expectedStatusCode,
+                JSONObject requestParams,
+                String urlTemplate,
+                String... urlTemplateParams)
+    {
+        AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
+        return doPostJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getAlfrescoUrl() + SLINGSHOT_PREFIX, requestParams, urlTemplate, urlTemplateParams);
+    }
+
+    /**
+     * Helper method for POST requests
+     *
+     * @param adminUser user with administrative privileges
+     * @param adminPassword password for adminUser
+     * @param expectedStatusCode The expected return status code.
+     * @param urlStart the start of the URL (for example "alfresco/s/slingshot").
+     * @param requestParams zero or more endpoint specific request parameters
+     * @param urlTemplate request URL template
+     * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
+     * @throws AssertionError if the returned status code is not as expected.
+     */
+    private HttpResponse doPostJsonRequest(String adminUser,
+                String adminPassword,
+                int expectedStatusCode,
+                String urlStart,
+                JSONObject requestParams,
+                String urlTemplate,
+                String... urlTemplateParams)
+    {
+        // Ensure the host is part of the request URL.
+        String requestUrl = MessageFormat.format(
+                    urlTemplate,
+                    urlStart,
+                    urlTemplateParams);
         try
         {
-            return doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
+            HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
+            assertEquals("POST request to " + requestUrl + " was not successful.", httpResponse.getStatusLine().getStatusCode(), expectedStatusCode);
+            return httpResponse;
         }
         catch (InstantiationException | IllegalAccessException error)
         {
@@ -462,7 +512,7 @@ public abstract class BaseAPI
         return returnValues;
     }
 
-    private <T extends HttpRequestBase> boolean doRequestJson(
+    private <T extends HttpRequestBase> HttpResponse doRequestJson(
             Class<T> requestType,
             String requestUrl,
             String adminUser,
@@ -482,7 +532,11 @@ public abstract class BaseAPI
                 ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(requestParams.toString()));
             }
 
-            return client.execute(adminUser, adminPassword, request).getStatusLine().getStatusCode() == HttpStatus.SC_OK;
+            LOGGER.info("Sending {} request to {}", requestType.getSimpleName(), requestUrl);
+            LOGGER.info("Request body: {}", requestParams);
+            HttpResponse httpResponse = client.execute(adminUser, adminPassword, request);
+            LOGGER.info("Response: {}", httpResponse.getStatusLine());
+            return httpResponse;
         }
         catch (UnsupportedEncodingException | URISyntaxException error1)
         {
@@ -497,7 +551,7 @@ public abstract class BaseAPI
             client.close();
         }
 
-        return false;
+        return null;
     }
 
     /**

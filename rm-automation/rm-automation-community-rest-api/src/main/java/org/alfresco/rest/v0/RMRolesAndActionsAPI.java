@@ -28,6 +28,7 @@ package org.alfresco.rest.v0;
 
 import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
 
 import java.io.IOException;
@@ -107,8 +108,10 @@ public class RMRolesAndActionsAPI extends BaseAPI
 
     /**
      * assign user to records management role
+     *
+     * @throws AssertionError if the assignation is unsuccessful.
      */
-    public boolean assignUserToRole(String adminUser, String adminPassword, String userName, String role)
+    public void assignUserToRole(String adminUser, String adminPassword, String userName, String role)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         String reqURL = MessageFormat.format(
@@ -119,20 +122,11 @@ public class RMRolesAndActionsAPI extends BaseAPI
                 client.getAlfTicket(adminUser, adminPassword));
 
         HttpPost request = null;
-        HttpResponse response = null;
+        HttpResponse response;
         try
         {
             request = new HttpPost(reqURL);
             response = client.execute(adminUser, adminPassword, request);
-            switch (response.getStatusLine().getStatusCode())
-            {
-                case HttpStatus.SC_OK:
-                    return true;
-                case HttpStatus.SC_CONFLICT:
-                    break;
-                default:
-                    break;
-            }
         }
         finally
         {
@@ -142,8 +136,8 @@ public class RMRolesAndActionsAPI extends BaseAPI
             }
             client.close();
         }
-
-        return false;
+        assertEquals("Assigning user " + userName + " to role " + role + " failed.", SC_OK,
+                    response.getStatusLine().getStatusCode());
     }
 
     /**

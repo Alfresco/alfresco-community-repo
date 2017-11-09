@@ -26,20 +26,24 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.apache.http.HttpStatus.SC_OK;
+
 import java.text.MessageFormat;
 import java.util.Map;
 
-import javafx.util.Pair;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.apache.http.HttpResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javafx.util.Pair;
 
 /**
  * Methods to make API requests using v0 API on records
@@ -65,25 +69,17 @@ public class RecordsAPI extends BaseAPI
      * @param password     the user's password
      * @param siteID       the site id in which the document exists
      * @param documentName the document name
-     * @return true if the action was successful
+     * @return The HTTP Response.
      */
-    public boolean declareDocumentAsRecord(String user, String password, String siteID, String documentName)
+    public HttpResponse declareDocumentAsRecord(String user, String password, String siteID, String documentName)
     {
         String docNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, siteID, documentName);
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("actionedUponNode", docNodeRef);
-            requestParams.put("actionDefinitionName", "create-record");
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("actionedUponNode", docNodeRef);
+        requestParams.put("actionDefinitionName", "create-record");
 
-            return doPostJsonRequest(user, password, requestParams, ACTIONS_API);
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
 
     /**
@@ -92,27 +88,18 @@ public class RecordsAPI extends BaseAPI
      * @param user       the user declaring the document as record
      * @param password   the user's password
      * @param recordName the record name
-     * @return true if the action completed successfully
+     * @return The HTTP Response.
      */
-    public boolean completeRecord(String user, String password, String recordName)
+    public HttpResponse completeRecord(String user, String password, String recordName)
     {
         String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("name", "declareRecord");
-            requestParams.put("nodeRef", recNodeRef);
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", "declareRecord");
+        requestParams.put("nodeRef", recNodeRef);
 
-            return doPostJsonRequest(user, password, requestParams, RM_ACTIONS_API);
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
-
 
     /**
      * Reject the record given as parameter
@@ -121,28 +108,38 @@ public class RecordsAPI extends BaseAPI
      * @param password   the user's password
      * @param recordName the record name
      * @param reason     reject reason
-     * @return true if the action completed successfully
+     * @return The HTTP Response.
+     * @throws AssertionError If the POST call is not successful.
      */
-    public boolean rejectRecord(String user, String password, String recordName, String reason)
+    public HttpResponse rejectRecord(String user, String password, String recordName, String reason)
+    {
+        return rejectRecord(user, password, SC_OK, recordName, reason);
+    }
+
+    /**
+     * Reject the record given as parameter
+     *
+     * @param user the user declaring the document as record
+     * @param password the user's password
+     * @param expectedStatusCode The expected return status code.
+     * @param recordName the record name
+     * @param reason reject reason
+     * @return The HTTP Response.
+     * @throws AssertionError If the expectedStatusCode was not returned.
+     */
+    public HttpResponse rejectRecord(String user, String password, int expectedStatusCode, String recordName, String reason)
     {
         String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("name", "reject");
-            requestParams.put("nodeRef", recNodeRef);
-            requestParams.put("params",new JSONObject()
-                            .put("reason",reason));
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", "reject");
+        requestParams.put("nodeRef", recNodeRef);
+        requestParams.put("params",new JSONObject()
+                    .put("reason",reason));
 
-            return doPostJsonRequest(user, password, requestParams, RM_ACTIONS_API);
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(user, password, expectedStatusCode, requestParams, RM_ACTIONS_API);
     }
+
     /**
      * Declare document version as record
      *
@@ -150,29 +147,25 @@ public class RecordsAPI extends BaseAPI
      * @param password     the user's password
      * @param siteID       the site id in which the document exists
      * @param documentName the document name
-     * @return true if the action was successful
+     * @return The HTTP Response.
      */
-    public boolean declareDocumentVersionAsRecord(String user, String password, String siteID, String documentName)
+    public HttpResponse declareDocumentVersionAsRecord(String user, String password, String siteID, String documentName)
     {
         String docNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, siteID, documentName);
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("actionedUponNode", docNodeRef);
-            requestParams.put("actionDefinitionName", "declare-as-version-record");
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("actionedUponNode", docNodeRef);
+        requestParams.put("actionDefinitionName", "declare-as-version-record");
 
-            return doPostJsonRequest(user, password, requestParams, ACTIONS_API);
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
 
     /**
      * Creates a non-electronic record
+     * <ul>
+     * <li>eg. of usage for Unfiled records  with folder : createNonElectronicRecord(getAdminName(), getAdminPassword(), properties, UNFILED_RECORDS_BREADCRUMB, "unfiled records folder");
+     * <li>eg. of usage for creating record directly in Unfiled Records : createNonElectronicRecord(getAdminName(), getAdminPassword(), properties, UNFILED_RECORDS_BREADCRUMB, "");
+     * </ul>
      *
      * @param username     the username
      * @param password     the password
@@ -180,16 +173,14 @@ public class RecordsAPI extends BaseAPI
      * @param categoryName the category that contains the record, in the case in which the container would be Unfiled records use UNFILED_RECORDS_BREADCRUMB as value
      * @param folderName   the folder inside which the record exists, in the case in which the folder name is "", the record will be created directly in the specified container
      *                     this case is useful when trying to create a record directly in Unfiled Records
-     * @return true if the creation of the record has been successful
-     * eg. of usage for Unfiled records  with folder : createNonElectronicRecord(getAdminName(), getAdminPassword(), properties, UNFILED_RECORDS_BREADCRUMB, "unfiled records folder");
-     * eg. of usage for creating record directly in Unfiled Records : createNonElectronicRecord(getAdminName(), getAdminPassword(), properties, UNFILED_RECORDS_BREADCRUMB, "");
+     * @return The HTTP Response (or null if the request was not needed).
      */
-    public <K extends Enum<?>> boolean createNonElectronicRecord(String username, String password, Map<K, String> properties, String categoryName, String folderName)
+    public <K extends Enum<?>> HttpResponse createNonElectronicRecord(String username, String password, Map<K, String> properties, String categoryName, String folderName)
     {
         String recordName = properties.get(RMProperty.NAME);
         if (getRecord(username, password, folderName, recordName) != null)
         {
-            return true;
+            return null;
         }
         String recordPath = "/" + categoryName;
         if (!folderName.equals(""))
@@ -201,7 +192,7 @@ public class RecordsAPI extends BaseAPI
 
         if (record != null)
         {
-            return true;
+            return null;
         }
         // non-electronic properties
         String recordTitle = getPropertyValue(properties, RMProperty.TITLE);
@@ -216,26 +207,19 @@ public class RecordsAPI extends BaseAPI
         // retrieve the container nodeRef
         String parentNodeRef = getItemNodeRef(username, password, recordPath);
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
-            requestParams.put("prop_cm_name", recordName);
-            requestParams.put("prop_cm_title", recordTitle);
-            requestParams.put("prop_cm_description", description);
-            requestParams.put("prop_rma_physicalSize", physicalSize);
-            requestParams.put("prop_rma_numberOfCopies", numberOfCopies);
-            requestParams.put("prop_rma_storageLocation", storage);
-            requestParams.put("prop_rma_shelf", shelf);
-            requestParams.put("prop_rma_box", box);
-            requestParams.put("prop_rma_file", file);
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
+        requestParams.put("prop_cm_name", recordName);
+        requestParams.put("prop_cm_title", recordTitle);
+        requestParams.put("prop_cm_description", description);
+        requestParams.put("prop_rma_physicalSize", physicalSize);
+        requestParams.put("prop_rma_numberOfCopies", numberOfCopies);
+        requestParams.put("prop_rma_storageLocation", storage);
+        requestParams.put("prop_rma_shelf", shelf);
+        requestParams.put("prop_rma_box", box);
+        requestParams.put("prop_rma_file", file);
 
-            return doPostJsonRequest(username, password, requestParams, CREATE_NON_ELECTRONIC_RECORD_API);
-        } catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(username, password, SC_OK, requestParams, CREATE_NON_ELECTRONIC_RECORD_API);
     }
 
     /**
@@ -351,24 +335,17 @@ public class RecordsAPI extends BaseAPI
      * @param user         the user
      * @param password     the user's password
      * @param nodeId     the in place record node id
-     * @return true if the action was successful
+     * @return The HTTP Response.
      */
-    public boolean hideRecord(String user, String password, String nodeId)
+    public HttpResponse hideRecord(String user, String password, String nodeId)
     {
         String docNodeRef = getNodeRefSpacesStore() + nodeId;
 
-        try
-        {
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("actionedUponNode", docNodeRef);
-            requestParams.put("actionDefinitionName", "hide-record");
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("actionedUponNode", docNodeRef);
+        requestParams.put("actionDefinitionName", "hide-record");
 
-            return doPostJsonRequest(user, password, requestParams, ACTIONS_API);
-        } catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
 
 }

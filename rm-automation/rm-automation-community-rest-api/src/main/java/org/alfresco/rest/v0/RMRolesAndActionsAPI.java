@@ -30,6 +30,8 @@ import static org.alfresco.dataprep.AlfrescoHttpClient.MIME_TYPE_JSON;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.fail;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -147,15 +149,16 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param password        the user's password
      * @param contentPath     path to the content to be moved
      * @param destinationPath destination path
-     * @return true if the action completed successfully
+     * @throws AssertionError if the move was unsuccessful.
      */
-    public boolean moveTo(String user, String password, String contentPath, String destinationPath)
+    public void moveTo(String user, String password, String contentPath, String destinationPath)
     {
         String contentNodeRef = getNodeRefSpacesStore() + getItemNodeRef(user, password, contentPath);
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         String url = MessageFormat.format(client.getAlfrescoUrl() + "alfresco/s/slingshot/doclib/" + MOVE_ACTIONS_API, destinationPath);
         HttpPost request = new HttpPost(url);
 
+        boolean success = false;
         try
         {
             JSONObject body = new JSONObject();
@@ -169,18 +172,17 @@ public class RMRolesAndActionsAPI extends BaseAPI
             {
                 case HttpStatus.SC_OK:
                     JSONObject json = new JSONObject(EntityUtils.toString(response.getEntity()));
-                    return (Boolean) json.get("overallSuccess");
+                    success = (Boolean) json.get("overallSuccess");
+                    break;
                 case HttpStatus.SC_NOT_FOUND:
                     LOGGER.info("The provided paths couldn't be found " + response.toString());
+                    break;
                 default:
                     LOGGER.error("Unable to move: " + response.toString());
+                    break;
             }
         }
-        catch (JSONException e)
-        {
-            e.printStackTrace();
-        }
-        catch (IOException e)
+        catch (JSONException | IOException e)
         {
             e.printStackTrace();
         }
@@ -193,7 +195,30 @@ public class RMRolesAndActionsAPI extends BaseAPI
             client.close();
         }
 
-        return false;
+        assertTrue("Moving " + contentPath + " to " + destinationPath + " failed.", success);
+    }
+
+    /**
+     * Move action
+     *
+     * @param user            the user to move the contentPath
+     * @param password        the user's password
+     * @param contentPath     path to the content to be moved
+     * @param destinationPath destination path
+     * @throws AssertionError if the move was unexpectedly successful.
+     */
+    public void moveToAndExpectFailure(String user, String password, String contentPath, String destinationPath)
+    {
+        try
+        {
+            moveTo(user, password, contentPath, destinationPath);
+        }
+        catch(AssertionError e)
+        {
+            // We are expecting the move to fail.
+            return;
+        }
+        fail("Moving " + contentPath + " to " + destinationPath + " succeeded unexpectedly.");
     }
 
     /**

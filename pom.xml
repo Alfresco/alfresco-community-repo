@@ -20,7 +20,7 @@
 
     <properties>
         <!-- Community Packaging version -->
-        <dependency.acs-community-packaging.version>6.0.0-SNAPSHOT</dependency.acs-community-packaging.version>
+        <dependency.acs-community-packaging.version>6.0.0-ea</dependency.acs-community-packaging.version>
 
         <!-- Alfresco Share version -->
         <alfresco.share.version>5.2.2-SNAPSHOT</alfresco.share.version>
@@ -40,7 +40,6 @@
         <installer.java.version>1.8.0_131</installer.java.version>
         <installer.postgresql.version>9.4.12</installer.postgresql.version>
         <installer.libreoffice.version>5.2.1-alfresco</installer.libreoffice.version>
-        <installer.ghostscript.version>8.64</installer.ghostscript.version>
         <installer.imagemagick.version>7.0.5</installer.imagemagick.version>
         <installer.manager.version>1.0</installer.manager.version>
         <installer.alfresco-pdf-renderer.version>1.0</installer.alfresco-pdf-renderer.version>

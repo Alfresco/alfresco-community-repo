@@ -452,7 +452,10 @@ public abstract class BaseAPI
             {
                 ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(requestParams.toString()));
             }
+            LOGGER.info("Sending {} request to {}", requestType.getSimpleName(), requestUrl);
+            LOGGER.info("Request body: {}", requestParams);
             response = client.execute(adminUser, adminPassword, request);
+            LOGGER.info("Response: {}", response.getStatusLine());
 
             try
             {

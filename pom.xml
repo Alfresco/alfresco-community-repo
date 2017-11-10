@@ -23,7 +23,7 @@
         <dependency.acs-community-packaging.version>6.0.0-ea</dependency.acs-community-packaging.version>
 
         <!-- Alfresco Share version -->
-        <alfresco.share.version>5.2.2-SNAPSHOT</alfresco.share.version>
+        <alfresco.share.version>5.2.f</alfresco.share.version>
 
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledocs.version>3.0.4.2</alfresco.googledocs.version>

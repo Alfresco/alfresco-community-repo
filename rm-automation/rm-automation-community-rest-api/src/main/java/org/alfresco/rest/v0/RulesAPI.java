@@ -69,7 +69,6 @@ public class RulesAPI extends BaseAPI
      * @param ruleProperties   the rule properties
      * @return The HTTP Response (or null if the response could not be understood).
      */
-
     public HttpResponse createRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
     {
         try
@@ -90,7 +89,6 @@ public class RulesAPI extends BaseAPI
      * @param ruleProperties   the rule properties
      * @return true if the rule has been updated successfully, false otherwise
      */
-
     public JSONObject updateRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
     {
         String ruleId = ruleProperties.getId();
@@ -131,7 +129,7 @@ public class RulesAPI extends BaseAPI
      * @param username         the user performing the request
      * @param password         the password
      * @param containerNodeRef the container on which the rules have been created
-     * @throws if at least one of the rules could not be deleted.
+     * @throws AssertionError if at least one of the rules could not be deleted.
      */
     public void deleteAllRulesOnContainer(String username, String password, String containerNodeRef)
     {

@@ -105,15 +105,15 @@ public class RMRolesAndActionsAPI extends BaseAPI
         {
             userService.create(adminUser, adminPassword, userName, password, email, firstName, lastName);
         }
-        assignUserToRole(adminUser, adminPassword, userName, role);
+        assignRoleToUser(adminUser, adminPassword, userName, role);
     }
 
     /**
-     * assign user to records management role
+     * Assign a records management role to a user.
      *
      * @throws AssertionError if the assignation is unsuccessful.
      */
-    public void assignUserToRole(String adminUser, String adminPassword, String userName, String role)
+    public void assignRoleToUser(String adminUser, String adminPassword, String userName, String role)
     {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         String reqURL = MessageFormat.format(
@@ -138,7 +138,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
             }
             client.close();
         }
-        assertEquals("Assigning user " + userName + " to role " + role + " failed.", SC_OK,
+        assertEquals("Assigning role " + role + " to user " + userName + " failed.", SC_OK,
                     response.getStatusLine().getStatusCode());
     }
 

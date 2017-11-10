@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.alfresco</groupId>
@@ -7,7 +6,7 @@
         <version>6</version>
     </parent>
     <artifactId>full-community-packaging</artifactId>
-    <version>6.0.0-SNAPSHOT</version>
+    <version>6.0.0-ea</version>
     <packaging>pom</packaging>
     <name>Alfresco Content Services Community Full Packaging</name>
 
@@ -15,7 +14,7 @@
         <connection>scm:git:https://git.alfresco.com/Repository/full-community-packaging.gitt</connection>
         <developerConnection>scm:git:https://git.alfresco.com/Repository/full-community-packaging.git</developerConnection>
         <url>https://git.alfresco.com/Repository/full-community-packaging.git</url>
-        <tag>HEAD</tag>
+        <tag>full-community-packaging-6.0.0-ea</tag>
     </scm>
 
     <properties>

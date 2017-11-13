@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.batch;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 import java.util.Collection;
 
 /**
@@ -33,6 +35,7 @@ import java.util.Collection;
  * @author Derek Hulley
  * @since 3.4
  */
+@AlfrescoPublicApi
 public interface BatchProcessWorkProvider<T>
 {
     /**

@@ -256,7 +256,6 @@
    
    <!-- Abstract bean definition defining base definition for all metadata extracters -->
    <bean id="baseMetadataExtracter"
-         class="org.alfresco.repo.content.metadata.AbstractMetadataExtracter"
          abstract="true"
          init-method="register">
       <property name="registry">

@@ -43,6 +43,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -66,6 +67,7 @@ import org.springframework.context.ApplicationEventPublisher;
  * 
  * @author dward
  */
+@AlfrescoPublicApi
 public class BatchProcessor<T> implements BatchMonitor
 {
     /** The factory for all new threads */
@@ -530,6 +532,7 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * Adaptor that allows implementations to only implement {@link #process(Object)}
      */
+    @AlfrescoPublicApi
     public static abstract class BatchProcessWorkerAdaptor<TT> implements BatchProcessWorker<TT>
     {
         /**

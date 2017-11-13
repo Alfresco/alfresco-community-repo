@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -40,6 +41,7 @@ import org.alfresco.service.namespace.QName;
  * @author Derek Hulley
  * @since 3.2
  */
+@AlfrescoPublicApi
 public class CopyDetails
 {
     private final NodeRef sourceNodeRef;

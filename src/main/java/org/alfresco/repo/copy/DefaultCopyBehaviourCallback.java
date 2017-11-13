@@ -28,6 +28,7 @@ package org.alfresco.repo.copy;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.copy.traitextender.DefaultCopyBehaviourCallbackExtension;
 import org.alfresco.repo.copy.traitextender.DefaultCopyBehaviourCallbackTrait;
 import org.alfresco.service.namespace.QName;
@@ -55,6 +56,7 @@ import org.alfresco.util.Pair;
  * @author Derek Hulley
  * @since 3.2
  */
+@AlfrescoPublicApi
 public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback implements Extensible
 {
     private static CopyBehaviourCallback instance = new DefaultCopyBehaviourCallback();

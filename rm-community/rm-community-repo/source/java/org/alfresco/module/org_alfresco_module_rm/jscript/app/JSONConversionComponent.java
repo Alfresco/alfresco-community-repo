@@ -370,13 +370,13 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
      */
     private String getDisplayPath(final NodeRef nodeRef)
     {
-        return AuthenticationUtil.runAs(new RunAsWork<String>()
+        return AuthenticationUtil.runAsSystem(new RunAsWork<String>()
         {
             public String doWork() throws Exception
             {
                 return PathUtil.getDisplayPath(nodeService.getPath(nodeRef), true);
             }
-        }, AuthenticationUtil.getAdminUserName());
+        });
     }
 
     /**

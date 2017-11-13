@@ -35,7 +35,7 @@ Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
 Technical documentation:
 ------------------------
 
-Technical documentation is available at rm-community/documentation/index.md and rm-enterprise/documentation/index.md.
+Technical documentation is available at rm-community/documentation/README.md and rm-enterprise/documentation/README.md.
 This should be particularly useful for anyone wanting to integrate with or extend RM.
 
 

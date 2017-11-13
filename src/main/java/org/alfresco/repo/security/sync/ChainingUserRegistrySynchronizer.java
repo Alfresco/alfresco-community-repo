@@ -714,9 +714,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     }
                     if (isFullSync && ChainingUserRegistrySynchronizer.logger.isWarnEnabled())
                     {
-                        ChainingUserRegistrySynchronizer.logger
-                                .warn("Full synchronization with user registry '"
-                                        + id + "'");
                         if (allowDeletions)
                         {
                             ChainingUserRegistrySynchronizer.logger

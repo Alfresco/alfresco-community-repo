@@ -81,7 +81,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.transfer.TransferServiceCallbackTest.class,
     org.alfresco.repo.transfer.TransferServiceImplTest.class,
     org.alfresco.repo.transfer.TransferServiceToBeRefactoredTest.class,
-    org.alfresco.repo.transfer.TransferVersionCheckerImplTest.class,
     org.alfresco.repo.transfer.manifest.ManifestIntegrationTest.class,
     org.alfresco.repo.transfer.script.ScriptTransferServiceTest.class,
     org.alfresco.util.schemacomp.DbToXMLTest.class,

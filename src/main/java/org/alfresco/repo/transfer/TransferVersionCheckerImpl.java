@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * This is an implementation of TransferVersionChecker.
  * 
- * It allows transfer to the same edition/major/minor but ignores revision.
+ * It allows transfer to the same major version.
  */
 public class TransferVersionCheckerImpl implements TransferVersionChecker
 {
@@ -42,26 +42,16 @@ public class TransferVersionCheckerImpl implements TransferVersionChecker
     {
         logger.debug("checkTransferVersions from:" + from + ", to:" + to);
         
-        if(from == null || to == null || to.getEdition() == null || to.getVersionMajor() == null || to.getVersionMinor() == null)
+        if(from == null || to == null || from.getVersionMajor() == null || to.getVersionMajor() == null)
         {
             return false;
         }
-        
-        if(!from.getEdition().equalsIgnoreCase(to.getEdition()))
-        {
-            return false;
-        }
-        
+
         if(!from.getVersionMajor().equalsIgnoreCase(to.getVersionMajor()))
         {
             return false;
         }
-        
-        if(!from.getVersionMinor().equalsIgnoreCase(to.getVersionMinor()))
-        {
-            return false;
-        }
-        
+
         // ignore revisions
         
         return true;

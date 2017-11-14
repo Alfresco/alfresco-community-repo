@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,20 +26,21 @@
 package org.alfresco.repo.transfer;
 
 import org.alfresco.service.cmr.transfer.TransferVersion;
-import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.util.BaseAlfrescoSpringTest;
-import org.junit.experimental.categories.Category;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit test for TransferVersionChecker
  * @author mrogers
  */
-@Category(BaseSpringTestsCategory.class)
-public class TransferVersionCheckerImplTest extends BaseAlfrescoSpringTest 
+public class TransferVersionCheckerImplTest
 {
     /**
      * Test TransferVersionCheckerImpl
      */
+    @Test
     public void testTransferVersionCheckerImpl()
     {
         
@@ -61,11 +62,10 @@ public class TransferVersionCheckerImplTest extends BaseAlfrescoSpringTest
         assertTrue("not equals", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "1", EDITION)));
         assertTrue("not equals", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "2", EDITION)));
         
-        // These should not match
-        assertFalse("not equals minor different", checker.checkTransferVersions(e, new TransferVersionImpl("3", "4", "0", EDITION)));     
-        assertFalse("not equals major different", checker.checkTransferVersions(e, new TransferVersionImpl("4", "3", "0", EDITION)));     
-        assertFalse("not equals edition different", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "0", "Whatever")));     
-        assertFalse("not equals edition null ", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "0", null)));                        
+        assertTrue("Checker should not flag minor difference", checker.checkTransferVersions(e, new TransferVersionImpl("3", "4", "0", EDITION)));
+        assertFalse("Checker should flag major difference", checker.checkTransferVersions(e, new TransferVersionImpl("4", "3", "0", EDITION)));
+        assertTrue("Checker should not flag edition difference", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "0", "Whatever")));
+        assertTrue("Checker should not flag edition absence", checker.checkTransferVersions(e, new TransferVersionImpl("3", "3", "0", null)));
     }
 
 }

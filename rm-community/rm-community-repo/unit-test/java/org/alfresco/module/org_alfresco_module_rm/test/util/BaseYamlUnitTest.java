@@ -17,6 +17,7 @@ import java.util.Set;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.dataformat.yaml.snakeyaml.parser.ParserException;
 import com.github.fge.jackson.JsonLoader;
 import com.github.fge.jsonschema.core.exceptions.ProcessingException;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
@@ -29,7 +30,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
-
 /**
  * Unit tests for Yaml files.
  *
@@ -41,6 +41,9 @@ public class BaseYamlUnitTest
     private static String SWAGGER_2_SCHEMA_LOCATION = "/rest/schema.json";
     private static String OPEN_API_SPECIFICATION = "2.0";
 
+    /**
+     * Helper method to obtain path names for all yaml files found on the given path
+     */
     protected Set<String> getYamlFilesList(String pathName) throws Exception
     {
         Set<String> yamlFilePathNames = new HashSet<>();
@@ -52,7 +55,10 @@ public class BaseYamlUnitTest
         return yamlFilePathNames;
     }
 
-    protected void validateYamlFiles(final Set<String> yamlFileNames) throws Exception
+    /**
+     * Helper method to validate that all given yaml files are valid readable Swagger format
+     */
+    protected void validateYamlFiles(final Set<String> yamlFileNames) throws ProcessingException, IOException
     {
         assertFalse("Expected at least 1 yaml file to validate", yamlFileNames.isEmpty());
 
@@ -61,15 +67,27 @@ public class BaseYamlUnitTest
         
         for (String yamlFilePath : yamlFileNames)
         {
-            // check the yaml file is valid against Swagger JSON schema
-            assertTrue("Yaml file is not a valid Swagger file", validateYamlFile(yamlFilePath, swaggerSchema));
+            try
+            {
+                // check the yaml file is valid against Swagger JSON schema
+                assertTrue("Yaml file is not a valid Swagger file: " + yamlFilePath, validateYamlFile(yamlFilePath, swaggerSchema));
 
-            // check we can read the swagger object for the swagger version
-            Swagger swagger = new SwaggerParser().read(yamlFilePath);
-            assertEquals("Failed to obtain Swagger version from yaml file", swagger.getSwagger(), OPEN_API_SPECIFICATION);
+                // check can read the swagger object to obtain the swagger version
+                Swagger swagger = new SwaggerParser().read(yamlFilePath);
+                assertEquals("Failed to obtain Swagger version from yaml file " + yamlFilePath, swagger.getSwagger(), OPEN_API_SPECIFICATION);
+            }
+            catch (ParserException ex)
+            {
+                // ensure the yaml filename is included in the message
+                String context = String.format(yamlFilePath + ": %n" + ex.getContext());
+                throw new ParserException(context, ex.getContextMark(), ex.getProblem(), ex.getProblemMark()) ;
+            }
         }
     }
 
+    /**
+     * Helper method to read in the Swagger JSON schema file
+     */
     private JsonSchema getSwaggerSchema(final String schemaLocation) throws IOException, ProcessingException
     {
         JsonSchema swaggerSchema = null;
@@ -84,16 +102,21 @@ public class BaseYamlUnitTest
         return swaggerSchema;
     }
 
+    /**
+     * Helper method to validate Yaml file against JSON schema
+     */
     private boolean validateYamlFile(final String yamlFilePath, final JsonSchema jsonSchema) throws IOException, ProcessingException
     {
-        // Get yaml string and convert to JSON string
+        // Get yaml file as a string
         final String yaml = new String(Files.readAllBytes(Paths.get(yamlFilePath)));
+
+        // Convert yaml string to JSON string
         final ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
         final Object obj = yamlReader.readValue(yaml, Object.class);
         final ObjectMapper jsonWriter = new ObjectMapper();
-        final String yamlAsJson = jsonWriter.writeValueAsString(obj);
-
-        return validateJSON(yamlAsJson, jsonSchema);
+        final String yamlAsJsonString = jsonWriter.writeValueAsString(obj);
+        
+        return validateJSON(yamlAsJsonString, jsonSchema);
     }
 
     /**

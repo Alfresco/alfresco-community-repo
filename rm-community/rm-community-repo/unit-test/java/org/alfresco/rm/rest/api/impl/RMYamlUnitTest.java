@@ -39,7 +39,7 @@ import org.junit.Test;
  */
 public class RMYamlUnitTest extends BaseYamlUnitTest
 {
-    private static String RM_COMMUNITY_YAML_FILES_PATH = "/dev6/records-management/rm-community/rm-community-rest-api-explorer/src/main/webapp/definitions";
+    private static String RM_COMMUNITY_YAML_FILES_PATH = "../rm-community-rest-api-explorer/src/main/webapp/definitions";
 
     @Test
     public void validateYamlFile() throws Exception

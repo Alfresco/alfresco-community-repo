@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.testng.AssertJUnit.assertNotNull;
+
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.springframework.stereotype.Component;
 
@@ -45,12 +47,12 @@ public class UserTrashcanAPI extends BaseAPI
      *
      * @param username the username
      * @param password the password
-     *
-     * @return true if the request succeeded, false if not
+     * @throws AssertionError if emptying the trashcan fails.
      */
-    public boolean emptyTrashcan(String username, String password)
+    public void emptyTrashcan(String username, String password)
     {
-        return doDeleteRequest(username, password, EMPTY_TRASHCAN) != null;
+        assertNotNull("Emptying trashcan failed for user " + username,
+                    doDeleteRequest(username, password, EMPTY_TRASHCAN));
     }
 
 }

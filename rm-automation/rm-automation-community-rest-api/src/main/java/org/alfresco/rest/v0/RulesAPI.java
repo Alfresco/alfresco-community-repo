@@ -30,6 +30,7 @@ package org.alfresco.rest.v0;
 import static java.util.Arrays.asList;
 
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.testng.AssertJUnit.assertTrue;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -68,7 +69,6 @@ public class RulesAPI extends BaseAPI
      * @param ruleProperties   the rule properties
      * @return The HTTP Response (or null if the response could not be understood).
      */
-
     public HttpResponse createRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
     {
         try
@@ -89,7 +89,6 @@ public class RulesAPI extends BaseAPI
      * @param ruleProperties   the rule properties
      * @return true if the rule has been updated successfully, false otherwise
      */
-
     public JSONObject updateRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
     {
         String ruleId = ruleProperties.getId();
@@ -115,12 +114,13 @@ public class RulesAPI extends BaseAPI
      * @param password         the password
      * @param containerNodeRef the container on which the rule has been created
      * @param ruleId           the rule id
-     * @return true if the rule is deleted successfully
+     * @throws AssertionError if the rule could not be deleted.
      */
-    public boolean deleteRule(String username, String password, String containerNodeRef, String ruleId)
+    public void deleteRule(String username, String password, String containerNodeRef, String ruleId)
     {
         doDeleteRequest(username, password, MessageFormat.format(RULE_API, "{0}", containerNodeRef, ruleId));
-        return !getRulesIdsSetOnContainer(username, password, containerNodeRef).contains(ruleId);
+        boolean success = !getRulesIdsSetOnContainer(username, password, containerNodeRef).contains(ruleId);
+        assertTrue("Rule " + ruleId + " was not deleted successfully from " + containerNodeRef, success);
     }
 
     /**
@@ -129,22 +129,15 @@ public class RulesAPI extends BaseAPI
      * @param username         the user performing the request
      * @param password         the password
      * @param containerNodeRef the container on which the rules have been created
-     * @return true if the rules are deleted successfully
+     * @throws AssertionError if at least one of the rules could not be deleted.
      */
-    public boolean deleteAllRulesOnContainer(String username, String password, String containerNodeRef)
+    public void deleteAllRulesOnContainer(String username, String password, String containerNodeRef)
     {
-        boolean allDeleted = false;
         List<String> ruleIds = getRulesIdsSetOnContainer(username, password, containerNodeRef);
-
-        if(ruleIds.isEmpty())
-        {
-            return true;
-        }
         for (String ruleId : ruleIds)
         {
-            allDeleted = deleteRule(username, password, containerNodeRef, ruleId);
+            deleteRule(username, password, containerNodeRef, ruleId);
         }
-        return allDeleted;
     }
 
     /**

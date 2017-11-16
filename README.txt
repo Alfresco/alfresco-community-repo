@@ -32,6 +32,13 @@ Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
   mvn clean install -Pstart-repo,use-mysql
 
 
+Technical documentation:
+------------------------
+
+Technical documentation is available at rm-community/documentation/README.md and rm-enterprise/documentation/README.md.
+This should be particularly useful for anyone wanting to integrate with or extend RM.
+
+
 Running integration test:
 -------------------------
 

@@ -70,11 +70,13 @@ public class BaseYamlUnitTest
             try
             {
                 // check the yaml file is valid against Swagger JSON schema
-                assertTrue("Yaml file is not a valid Swagger file: " + yamlFilePath, validateYamlFile(yamlFilePath, swaggerSchema));
+                assertTrue("Yaml file is not valid Swagger " + OPEN_API_SPECIFICATION + ": " + yamlFilePath, 
+                        validateYamlFile(yamlFilePath, swaggerSchema));
 
                 // check can read the swagger object to obtain the swagger version
                 Swagger swagger = new SwaggerParser().read(yamlFilePath);
-                assertEquals("Failed to obtain Swagger version from yaml file " + yamlFilePath, swagger.getSwagger(), OPEN_API_SPECIFICATION);
+                assertEquals("Failed to obtain Swagger version from yaml file " + yamlFilePath, 
+                        swagger.getSwagger(), OPEN_API_SPECIFICATION);
             }
             catch (ParserException ex)
             {

@@ -533,7 +533,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
     private QuickShareLink getQuickShareInfo(String sharedId, boolean noAuth, List<String> includeParam)
     {
         checkValidShareId(sharedId);
-
+        
         Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(sharedId).get("item");
         NodeRef nodeRef = new NodeRef((String) map.get("nodeRef"));
 
@@ -581,11 +581,21 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
             // note: if noAuth mode then do not return allowable operations (eg. but can be optionally returned when finding shared links)
             if (!noAuth)
             {
-                if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS) && quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
+                if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
                 {
-                    qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
+                    if (quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
+                    {
+                        // the allowable operations for the shared link
+                        qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
+                    }
+
+                    Node doc = nodes.getFolderOrDocument(nodeRef, null, null, includeParam, null);
+                    List<String> allowableOps = doc.getAllowableOperations();
+                    // the allowable operations for the actual file being shared
+                    qs.setAllowableOperationsOnTarget(allowableOps);
                 }
 
+                
                 // in noAuth mode we don't return the path info
                 if (includeParam.contains(PARAM_INCLUDE_PATH))
                 {

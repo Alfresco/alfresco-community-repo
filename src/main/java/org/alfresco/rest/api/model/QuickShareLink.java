@@ -62,6 +62,8 @@ public class QuickShareLink
 
     private List<String> allowableOperations;
 
+    private List<String> allowableOperationsOnTarget;
+
 
     public QuickShareLink()
     {
@@ -159,14 +161,34 @@ public class QuickShareLink
         this.sharedByUser = sharedByUser;
     }
 
+    /**
+     * Retrieve the allowable operations for the shared link.
+     * 
+     * @return List of operation labels, e.g. "delete"
+     */
     public List<String> getAllowableOperations()
     {
         return allowableOperations;
     }
-
+    
     public void setAllowableOperations(List<String> allowableOperations)
     {
         this.allowableOperations = allowableOperations;
+    }
+
+    /**
+     * Retrieve the allowable operations for the actual file being shared.
+     * 
+     * @return List of operation labels, e.g. "delete"
+     */
+    public List<String> getAllowableOperationsOnTarget()
+    {
+        return allowableOperationsOnTarget;
+    }
+
+    public void setAllowableOperationsOnTarget(List<String> allowableOperationsOnTarget)
+    {
+        this.allowableOperationsOnTarget = allowableOperationsOnTarget;
     }
 
     // eg. for debug logging etc
@@ -183,6 +205,7 @@ public class QuickShareLink
         sb.append(", sharedByUser=").append(getSharedByUser());
         sb.append(", content=").append(getContent());
         sb.append(", allowableOperations=").append(getAllowableOperations());
+        sb.append(", allowableOperationsOnTarget=").append(getAllowableOperationsOnTarget());
         sb.append(", expiresAt=").append(getExpiresAt());
         sb.append("]");
         return sb.toString();

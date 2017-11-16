@@ -25,12 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -71,12 +65,21 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * V1 REST API tests for Shared Links (aka public "quick shares")
@@ -1242,10 +1245,18 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals("Incorrect number of path elements.", 3, pathInfo.getElements().size());
         assertEquals("Incorrect path name.", "/Company Home/User Homes/" + user1, pathInfo.getName());
 
-        // Check allowableOperations
+        // Check allowableOperations (i.e. the shared link)
         allowableOperations = quickShareLinkResponse.getAllowableOperations();
         assertNotNull("'allowableOperations' should have been returned.", allowableOperations);
         assertEquals("allowableOperations should only have 'Delete' as allowable operation.", 1, allowableOperations.size());
+        assertEquals("Incorrect allowable operation.", "delete", allowableOperations.get(0));
+        
+        // Check allowableOperationsOnTarget (i.e. for the actual file being shared)
+        allowableOperations = quickShareLinkResponse.getAllowableOperationsOnTarget();
+        assertNotNull("'allowableOperationsOnTarget' should have been returned.", allowableOperations);
+        Collection<?> expectedOps = Arrays.asList("delete", "update", "updatePermissions");
+        assertTrue(allowableOperations.containsAll(expectedOps));
+        assertEquals(expectedOps.size(), allowableOperations.size());
         assertEquals("Incorrect allowable operation.", "delete", allowableOperations.get(0));
 
         // Test that listing shared links also support the include parameter.

@@ -225,6 +225,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
+        assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
@@ -240,6 +241,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
+        assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
+
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
@@ -251,6 +254,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id, null, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         assertNull(resp.getAllowableOperations());
+        assertNull(resp.getAllowableOperationsOnTarget());
 
         setRequestContext(null);
 
@@ -263,6 +267,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
+        assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
+
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
@@ -779,6 +785,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
+        assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
+
 
         // unauth access to file 1 content (via shared link)
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id + "/content", null, 200);
@@ -1254,7 +1262,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // Check allowableOperationsOnTarget (i.e. for the actual file being shared)
         allowableOperations = quickShareLinkResponse.getAllowableOperationsOnTarget();
         assertNotNull("'allowableOperationsOnTarget' should have been returned.", allowableOperations);
-        Collection<?> expectedOps = Arrays.asList("delete", "update", "updatePermissions");
+        Collection<String> expectedOps = Arrays.asList("delete", "update", "updatePermissions");
         assertTrue(allowableOperations.containsAll(expectedOps));
         assertEquals(expectedOps.size(), allowableOperations.size());
         assertEquals("Incorrect allowable operation.", "delete", allowableOperations.get(0));
@@ -1277,6 +1285,13 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             List<String> operations = sharedLink.getAllowableOperations();
             assertNotNull("'allowableOperations' should have been returned.", operations);
             assertEquals("allowableOperations should only have 'Delete' as allowable operation.", 1, operations.size());
+            assertEquals("Incorrect allowable operation.", "delete", operations.get(0));
+
+            // Check allowableOperationsOnTarget (i.e. for the actual file being shared)
+            operations = sharedLink.getAllowableOperationsOnTarget();
+            assertNotNull("'allowableOperationsOnTarget' should have been returned.", operations);
+            assertTrue(operations.containsAll(expectedOps));
+            assertEquals(expectedOps.size(), operations.size());
             assertEquals("Incorrect allowable operation.", "delete", operations.get(0));
         });
     }

@@ -283,7 +283,7 @@ public class RecordAspect extends    AbstractDisposableItem
             isFilePlanComponent(oldChildAssocRef.getParentRef()))
         {
             final NodeRef record = newChildAssocRef.getChildRef();
-            authenticationUtil.runAs(new RunAsWork<Object>()
+            authenticationUtil.runAsSystem(new RunAsWork<Object>()
             {
                 public Object doWork()
                 {
@@ -299,7 +299,7 @@ public class RecordAspect extends    AbstractDisposableItem
 
                     return null;
                 }
-            }, authenticationUtil.getAdminUserName());
+            });
         }
     }
 

@@ -120,11 +120,11 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param username     user's username
      * @param password     its password
      * @param categoryName the name of the category
-     * @return true if the delete is successful
+     * @throws AssertionError if the delete was unsuccessful.
      */
-    public boolean deleteCategory(String username, String password, String categoryName)
+    public void deleteCategory(String username, String password, String categoryName)
     {
-        return deleteItem(username, password, "/" + categoryName);
+        deleteItem(username, password, "/" + categoryName);
     }
 
     /**
@@ -133,11 +133,11 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param username     user's username
      * @param password     its password
      * @param categoryName the name of the sub-category
-     * @return true if the delete is successful
+     * @throws AssertionError if the deletion was unsuccessful.
      */
-    public boolean deleteSubCategory(String username, String password, String categoryName, String subCategoryName)
+    public void deleteSubCategory(String username, String password, String categoryName, String subCategoryName)
     {
-        return deleteItem(username, password, "/" + categoryName + "/" + subCategoryName);
+        deleteItem(username, password, "/" + categoryName + "/" + subCategoryName);
     }
 
     /**
@@ -147,11 +147,11 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param password      its password
      * @param folderName    folder name
      * @param containerName the name of the category or container sin which the folder is
-     * @return true if the delete is successful
+     * @throws AssertionError if the deletion was unsuccessful.
      */
-    public boolean deleteFolderInContainer(String username, String password, String folderName, String containerName)
+    public void deleteFolderInContainer(String username, String password, String folderName, String containerName)
     {
-        return deleteItem(username, password, "/" + containerName + "/" + folderName);
+        deleteItem(username, password, "/" + containerName + "/" + folderName);
     }
 
     /**

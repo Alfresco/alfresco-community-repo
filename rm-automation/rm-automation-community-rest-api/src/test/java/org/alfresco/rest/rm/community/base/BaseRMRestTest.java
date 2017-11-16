@@ -593,7 +593,7 @@ public class BaseRMRestTest extends RestTest
                                                    String userPermission, String userRole) throws Exception
     {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
-        rmRolesAndActionsAPI.assignUserToRole(getAdminUser().getUsername(),
+        rmRolesAndActionsAPI.assignRoleToUser(getAdminUser().getUsername(),
                     getAdminUser().getPassword(), user.getUsername(), userRole);
     }
 

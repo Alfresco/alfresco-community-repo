@@ -26,6 +26,8 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.testng.AssertJUnit.assertTrue;
+
 import java.text.MessageFormat;
 
 import org.alfresco.rest.core.v0.BaseAPI;
@@ -117,37 +119,26 @@ public class CustomDefinitionsAPI extends BaseAPI
      * @param recordNodeIdFrom node ref to set a custom reference
      * @param recordNodeIdTo        node ref of the to record
      * @param   relationshipType    relation type to be created
-     * @return  <code>true</code>   if creating relationship was successful,
-     *          <code>false</code>  otherwise
+     * @throws AssertionError if the creation fails.
      */
-    public boolean createRelationship(
+    public void createRelationship(
             String adminUser,
             String adminPassword,
             String recordNodeIdFrom,
             String recordNodeIdTo,
             CustomDefinitions relationshipType)
     {
-        try
-        {
-            //create the request body
-            JSONObject requestParams = new JSONObject();
-            requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdTo);
-            requestParams.put("refId", getCustomReferenceId(adminUser, adminPassword, relationshipType
-                    .getDefinition()));
-            //send the API request to create the relationship
-            JSONObject setRelationshipStatus = doPostRequest(adminUser, adminPassword, requestParams,
-                    MessageFormat.format(CREATE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom));
-            //check the response
-            if (setRelationshipStatus != null)
-            {
-                return setRelationshipStatus.getBoolean("success");
-            }
-        }
-        catch (JSONException error)
-        {
-            LOGGER.error("Unable to extract response parameter", error);
-        }
-        return false;
+       //create the request body
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdTo);
+        requestParams.put("refId", getCustomReferenceId(adminUser, adminPassword, relationshipType
+                .getDefinition()));
+        //send the API request to create the relationship
+        JSONObject setRelationshipStatus = doPostRequest(adminUser, adminPassword, requestParams,
+                MessageFormat.format(CREATE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom));
+        //check the response
+        boolean success = (setRelationshipStatus != null) && setRelationshipStatus.getBoolean("success");
+        assertTrue("Creating relationship from " + recordNodeIdFrom + " to " + recordNodeIdTo + " failed.", success);
     }
 
 }

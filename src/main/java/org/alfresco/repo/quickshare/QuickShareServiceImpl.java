@@ -570,6 +570,7 @@ public class QuickShareServiceImpl implements QuickShareService,
         metadata.put("nodeRef", nodeRef.toString());
         metadata.put("name", nodeProps.get(ContentModel.PROP_NAME));
         metadata.put("title", nodeProps.get(ContentModel.PROP_TITLE));
+        metadata.put("description", nodeProps.get(ContentModel.PROP_DESCRIPTION));
         
         if (contentData != null)
         {

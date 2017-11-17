@@ -572,6 +572,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
             QuickShareLink qs = new QuickShareLink(sharedId, nodeRef.getId());
             qs.setName((String) map.get("name"));
+            qs.setTitle((String) map.get("title"));
+            qs.setDescription((String) map.get("description"));
             qs.setContent(contentInfo);
             qs.setModifiedAt((Date) map.get("modified"));
             qs.setModifiedByUser(modifiedByUser);

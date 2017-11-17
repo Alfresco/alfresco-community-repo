@@ -184,6 +184,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(fileName1, resp.getName());
+        assertEquals("The quick brown fox jumps over the lazy dog", resp.getTitle());
+        assertEquals("Gym class featuring a brown fox and lazy dog", resp.getDescription());
 
         assertEquals(file1_MimeType, resp.getContent().getMimeType());
         assertEquals("Adobe PDF Document", resp.getContent().getMimeTypeName());
@@ -1293,6 +1295,10 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             assertTrue(operations.containsAll(expectedOps));
             assertEquals(expectedOps.size(), operations.size());
             assertEquals("Incorrect allowable operation.", "delete", operations.get(0));
+
+            // Quick check that some extended info is present. 
+            assertEquals("The quick brown fox jumps over the lazy dog", sharedLink.getTitle());
+            assertEquals("Gym class featuring a brown fox and lazy dog", sharedLink.getDescription());
         });
     }
 

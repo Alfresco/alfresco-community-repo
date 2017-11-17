@@ -52,6 +52,8 @@ public class QuickShareLink
 
     private String nodeId;
     private String name;
+    private String title;
+    private String description;
     private PathInfo path;
 
     private ContentInfo content;
@@ -119,6 +121,26 @@ public class QuickShareLink
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
     }
 
     public PathInfo getPath()
@@ -199,6 +221,8 @@ public class QuickShareLink
         sb.append("QuickShareLink [id=").append(getId());
         sb.append(", nodeId=").append(getNodeId());
         sb.append(", name=").append(getName());
+        sb.append(", title=").append(getTitle());
+        sb.append(", description=").append(getDescription());
         sb.append(", path=").append(getPath());
         sb.append(", modifiedAt=").append(getModifiedAt());
         sb.append(", modifiedByUser=").append(getModifiedByUser());

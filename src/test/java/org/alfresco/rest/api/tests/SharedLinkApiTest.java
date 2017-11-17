@@ -225,6 +225,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         assertEquals(shared1Id, resp.getId());
         assertEquals(fileName1, resp.getName());
+        assertEquals("The quick brown fox jumps over the lazy dog", resp.getTitle());
+        assertEquals("Gym class featuring a brown fox and lazy dog", resp.getDescription());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
         assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored

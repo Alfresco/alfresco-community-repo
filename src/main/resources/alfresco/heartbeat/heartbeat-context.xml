@@ -16,10 +16,13 @@
     <bean id="hbDataCollectorService" class="org.alfresco.heartbeat.HBDataCollectorServiceImpl">
         <constructor-arg value="${heartbeat.enabled}" />
         <property name="hbDataSenderService" ref="hbDataSenderService" />
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="jobLockService" ref="jobLockService" />
+        <property name="testMode" value="true"/>
     </bean>
 
-    <!-- HeartBeat abstract data collector -->
-    <bean id="hbBaseDataCollector" class="org.alfresco.heartbeat.HBBaseDataCollector" abstract="true">
+    <!-- HeartBeat template data collector -->
+    <bean id="hbBaseDataCollector" abstract="true" init-method="register">
         <property name="hbDataCollectorService" ref="hbDataCollectorService"/>
     </bean>
 

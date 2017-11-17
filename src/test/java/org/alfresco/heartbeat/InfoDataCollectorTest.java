@@ -27,13 +27,19 @@ package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
+import org.alfresco.repo.dictionary.CustomModelsInfo;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ApplicationContextHelper;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+
 import java.util.List;
 import java.util.Map;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -42,29 +48,34 @@ import static org.mockito.Mockito.when;
 /**
  * @author eknizat
  */
-public class AuthoritiesDataCollectorTest
+public class InfoDataCollectorTest
 {
 
-    private AuthoritiesDataCollector authorityDataCollector;
+    private InfoDataCollector infoCollector;
+    private HBDataCollectorService mockCollectorService;
+    private DescriptorDAO mockDescriptorDAO;
+    private DescriptorDAO mockServerDescriptorDAO;
     private List<HBData> collectedData;
 
     @Before
     public void setUp()
     {
-        HBDataCollectorService mockCollectorService = mock(HBDataCollectorService.class);
-        AuthorityService authorityService = mock(AuthorityService.class);
+        mockDescriptorDAO = mock(DescriptorDAO.class);
+        mockServerDescriptorDAO = mock(DescriptorDAO.class);
+        mockCollectorService = mock(HBDataCollectorService.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
-        DescriptorDAO descriptorDAO = mock(DescriptorDAO.class);
-        when(descriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
+        when(mockServerDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
+        when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        authorityDataCollector = new AuthoritiesDataCollector("acs.repository.usage.authorities");
-        authorityDataCollector.setCollectorVersion("1.0");
-        authorityDataCollector.setAuthorityService(authorityService);
-        authorityDataCollector.setCurrentRepoDescriptorDAO(descriptorDAO);
-        authorityDataCollector.setHbDataCollectorService(mockCollectorService);
-        collectedData = authorityDataCollector.collectData();
+        infoCollector = new InfoDataCollector("acs.repository.info");
+        infoCollector.setCollectorVersion("1.0");
+        infoCollector.setHbDataCollectorService(mockCollectorService);
+        infoCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
+        infoCollector.setServerDescriptorDAO(mockServerDescriptorDAO);
+
+        collectedData = infoCollector.collectData();
     }
 
     @Test
@@ -78,20 +89,21 @@ public class AuthoritiesDataCollectorTest
             assertNotNull(data.getSystemId());
             assertNotNull(data.getTimestamp());
         }
-
     }
 
     @Test
     public void testInfoDataIsCollected()
     {
-        HBData authorityInfo = grabDataByCollectorId(authorityDataCollector.getCollectorId());
-        assertNotNull("Authority info data missing.", authorityInfo);
+        HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
+        assertNotNull("Repository info data missing.", repoInfo);
 
-        Map<String,Object> data = authorityInfo.getData();
-        assertTrue(data.containsKey("numUsers"));
-        assertTrue(data.containsKey("numGroups"));
+        Map<String,Object> data = repoInfo.getData();
+        assertTrue(data.containsKey("repoName"));
+        assertTrue(data.containsKey("edition"));
+        assertTrue(data.containsKey("versionMajor"));
+        assertTrue(data.containsKey("versionMinor"));
+        assertTrue(data.containsKey("schema"));
     }
-
 
     private HBData grabDataByCollectorId(String collectorId)
     {

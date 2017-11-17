@@ -27,35 +27,30 @@ package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.repo.dictionary.CustomModelsInfo;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import java.util.*;
 
-/**
- * This class collects authorities data for HBDataCollectorService.
- * <br>
- * <b>Collector ID:</b> acs.repository.usage.authorities
- * <br>
- * <b>Data points:</b> numUsers, numGroups
- *
- * @author eknizat
- */
-public class AuthoritiesDataCollector extends HBBaseDataCollector
+public class UsageModelDataCollector extends HBBaseDataCollector
 {
-
     /** The logger. */
-    private static final Log logger = LogFactory.getLog(AuthoritiesDataCollector.class);
+    private static final Log logger = LogFactory.getLog(UsageModelDataCollector.class);
 
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
-    /** The authority service. */
-    private AuthorityService authorityService;
+    /** Provides information about custom models */
+    private CustomModelService customModelService;
 
-    public AuthoritiesDataCollector(String collectorId)
-    {
+    /** The transaction service. */
+    private TransactionService transactionService;
+
+    public UsageModelDataCollector(String collectorId) {
         super(collectorId);
     }
 
@@ -64,17 +59,27 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setAuthorityService(AuthorityService authorityService)
+    public void setCustomModelService(CustomModelService customModelService)
     {
-        this.authorityService = authorityService;
+        this.customModelService = customModelService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     @Override
     public List<HBData> collectData()
     {
-        if(authorityService == null)
+        if(transactionService == null)
         {
-            logger.debug("Couldn't collect data because authority service is null");
+            logger.debug("Couldn't collect data because transaction service is null");
+            return null;
+        }
+        if(customModelService == null)
+        {
+            logger.debug("Couldn't collect data because custom model service is null");
             return null;
         }
         if(currentRepoDescriptorDAO == null)
@@ -82,23 +87,24 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector
             logger.debug("Couldn't collect data because repository descriptor is null");
             return null;
         }
+        logger.debug("Preparing repository usage (model) data...");
 
-        this.logger.debug("Preparing repository usage (authorities) data...");
+        final CustomModelsInfo customModelsInfo = transactionService.getRetryingTransactionHelper().doInTransaction(
+                () -> customModelService.getCustomModelsInfo(), true);
 
-        Map<String, Object> authoritiesUsageValues = new HashMap<>();
-        authoritiesUsageValues.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-        authoritiesUsageValues.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
-        HBData authoritiesUsageData = new HBData(
+        Map<String, Object> modelUsageValues = new HashMap<>();
+        modelUsageValues.put("numOfActiveModels", new Integer(customModelsInfo.getNumberOfActiveModels()));
+        modelUsageValues.put("numOfActiveTypes", new Integer(customModelsInfo.getNumberOfActiveTypes()));
+        modelUsageValues.put("numOfActiveAspects", new Integer(customModelsInfo.getNumberOfActiveAspects()));
+        HBData modelUsageData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),
                 this.getCollectorVersion(),
                 new Date(),
-                authoritiesUsageValues);
-        List<HBData> collectedData = new LinkedList<>();
-        collectedData.add(authoritiesUsageData);
+                modelUsageValues);
 
+        List<HBData> collectedData = new LinkedList<>();
+        collectedData.add(modelUsageData);
         return collectedData;
     }
 }

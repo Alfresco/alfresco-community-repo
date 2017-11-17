@@ -36,12 +36,48 @@ import org.alfresco.service.cmr.repository.HBDataCollectorService;
   *
  * @author eknizat
  */
-public abstract class HBBaseDataCollector
-{
-    private HBDataCollectorService hbDataCollectorService;
+public abstract class HBBaseDataCollector {
+    private String collectorId;
+    private String collectorVersion;
+    private String cronExpression;
 
     /**
-     * This method will register this collector with the provided {@link HBDataCollectorService}
+     * The collector service managing this collector.
+     */
+    private HBDataCollectorService hbDataCollectorService;
+
+    public HBBaseDataCollector(String collectorId)
+    {
+        this.collectorId = collectorId;
+    }
+
+    public String getCollectorId()
+    {
+        return collectorId;
+    }
+
+    public void setCollectorVersion(String collectorVersion)
+    {
+        this.collectorVersion = collectorVersion;
+    }
+
+    public String getCollectorVersion()
+    {
+        return this.collectorVersion;
+    }
+
+    public void setCronExpression(String cronExpression)
+    {
+        this.cronExpression = cronExpression;
+    }
+
+    public String getCronExpression()
+    {
+        return this.cronExpression;
+    }
+
+    /**
+     * This method is called by Spring at initialisation and will register this collector with the provided {@link HBDataCollectorService}
      */
     public void register()
     {
@@ -55,7 +91,7 @@ public abstract class HBBaseDataCollector
 
     /**
      * This method returns data to be collected.
-     * @return List of data wrapped in {@link HBData}
+     * @return List of {@link HBData}
      */
     public abstract List<HBData> collectData();
 }

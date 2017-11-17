@@ -27,34 +27,20 @@ package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import java.util.*;
 
-/**
- * This class collects authorities data for HBDataCollectorService.
- * <br>
- * <b>Collector ID:</b> acs.repository.usage.authorities
- * <br>
- * <b>Data points:</b> numUsers, numGroups
- *
- * @author eknizat
- */
-public class AuthoritiesDataCollector extends HBBaseDataCollector
+public class UsageSystemDataCollector extends HBBaseDataCollector
 {
-
     /** The logger. */
-    private static final Log logger = LogFactory.getLog(AuthoritiesDataCollector.class);
+    private static final Log logger = LogFactory.getLog(UsageSystemDataCollector.class);
 
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
-    /** The authority service. */
-    private AuthorityService authorityService;
-
-    public AuthoritiesDataCollector(String collectorId)
+    public UsageSystemDataCollector(String collectorId)
     {
         super(collectorId);
     }
@@ -64,40 +50,30 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setAuthorityService(AuthorityService authorityService)
-    {
-        this.authorityService = authorityService;
-    }
-
     @Override
     public List<HBData> collectData()
     {
-        if(authorityService == null)
-        {
-            logger.debug("Couldn't collect data because authority service is null");
-            return null;
-        }
         if(currentRepoDescriptorDAO == null)
         {
             logger.debug("Couldn't collect data because repository descriptor is null");
             return null;
         }
+        logger.debug("Preparing repository usage (system) data...");
 
-        this.logger.debug("Preparing repository usage (authorities) data...");
-
-        Map<String, Object> authoritiesUsageValues = new HashMap<>();
-        authoritiesUsageValues.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-        authoritiesUsageValues.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
-        HBData authoritiesUsageData = new HBData(
+        Runtime runtime = Runtime.getRuntime();
+        Map<String, Object> systemUsageValues = new HashMap<>();
+        systemUsageValues.put("memFree", runtime.freeMemory());
+        systemUsageValues.put("memMax", runtime.maxMemory());
+        systemUsageValues.put("memTotal", runtime.totalMemory());
+        HBData systemUsageData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),
                 this.getCollectorVersion(),
                 new Date(),
-                authoritiesUsageValues);
+                systemUsageValues);
+
         List<HBData> collectedData = new LinkedList<>();
-        collectedData.add(authoritiesUsageData);
+        collectedData.add(systemUsageData);
 
         return collectedData;
     }

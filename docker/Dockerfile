@@ -17,7 +17,7 @@ RUN echo -e '\n\
 alfresco-pdf-renderer.exe=/usr/bin/alfresco-pdf-renderer\n\
 \n\
 ooo.enabled=true\n\
-ooo.port=8100
+ooo.port=8100\n\
 ooo.exe=/opt/libreoffice5.4/program/soffice.bin\n\
 jodconverter.enabled=false\n\
 \n\

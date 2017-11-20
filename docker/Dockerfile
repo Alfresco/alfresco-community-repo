@@ -15,9 +15,12 @@ RUN sed -i "s/shared.loader=/shared.loader=\${catalina.base}\/shared\/classes/" 
 
 RUN echo -e '\n\
 alfresco-pdf-renderer.exe=/usr/bin/alfresco-pdf-renderer\n\
-ooo.enabled=false\n\
-jodconverter.officeHome=/opt/libreoffice5.4/\n\
-jodconverter.enabled=true\n\
+\n\
+ooo.enabled=true\n\
+ooo.port=8100
+ooo.exe=/opt/libreoffice5.4/program/soffice.bin\n\
+jodconverter.enabled=false\n\
+\n\
 img.root=/usr/lib64/ImageMagick-7.0.7\n\
 img.coders=/usr/lib64/ImageMagick-7.0.7/modules-Q16HDRI/coders\n\
 img.config=/usr/lib64/ImageMagick-7.0.7/config-Q16HDRI\n\

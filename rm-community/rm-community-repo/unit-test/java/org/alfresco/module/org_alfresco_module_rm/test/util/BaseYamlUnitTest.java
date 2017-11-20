@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -58,7 +58,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
 /**
- * Unit tests for Yaml files.
+ * Base class for unit tests for Yaml files.
  *
  * @author Sara Aspery
  * @since 2.6

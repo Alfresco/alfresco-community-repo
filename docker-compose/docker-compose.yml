@@ -27,7 +27,7 @@ services:
         - 5432:5432
 
   solr6:
-     image: docker-internal.alfresco.com/search-services:1.1.0
+     image: docker-internal.alfresco.com/search-services:1.0.0
      environment:
         #Solr needs to know how to register itself with Alfresco
         - SOLR_ALFRESCO_HOST=alfresco

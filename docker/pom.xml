@@ -118,6 +118,7 @@
                                     <type>war</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/server-root</outputDirectory>
+                                    <destFileName>ROOT.war</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

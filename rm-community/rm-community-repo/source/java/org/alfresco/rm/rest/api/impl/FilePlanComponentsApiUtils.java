@@ -927,7 +927,7 @@ public class FilePlanComponentsApiUtils
         }
 
         String pathStr = null;
-        if (pathElements.size() > 0)
+        if (!pathElements.isEmpty())
         {
             StringBuilder sb = new StringBuilder(120);
             for (PathInfo.ElementInfo e : pathElements)

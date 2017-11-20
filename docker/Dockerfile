@@ -14,7 +14,8 @@ COPY target/server-root/* /usr/local/tomcat/webapps
 RUN sed -i "s/shared.loader=/shared.loader=\${catalina.base}\/shared\/classes/" /usr/local/tomcat/conf/catalina.properties
 
 RUN echo -e '\n\
-alfresco-pdf-renderer.exe=/usr/bin/alfresco-pdf-renderer\n\
+alfresco-pdf-renderer.root=/usr/bin/\n\
+alfresco-pdf-renderer.exe=${alfresco-pdf-renderer.root}/alfresco-pdf-renderer\n\
 \n\
 ooo.enabled=true\n\
 ooo.port=8100\n\

@@ -1,4 +1,4 @@
-FROM quay.io/alfresco/alfresco-base-tomcat:0.1.0
+FROM quay.io/alfresco/alfresco-base-repository:0.1.1
 
 RUN mkdir -p /usr/local/tomcat/shared/classes && \
     mkdir /usr/local/tomcat/alfresco-mmt

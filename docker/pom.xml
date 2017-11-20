@@ -19,6 +19,12 @@
             <type>war</type>
         </dependency>
         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-server-root</artifactId>
+            <version>${dependency.alfresco-server-root.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${dependency.mysql.version}</version>
@@ -32,6 +38,11 @@
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${dependency.postgresql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-mmt</artifactId>
+            <version>${dependency.alfresco-mmt.version}</version>
         </dependency>
     </dependencies>
 
@@ -91,6 +102,22 @@
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/connector</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-mmt</artifactId>
+                                    <version>${dependency.alfresco-mmt.version}</version>
+                                    <type>jar</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/alfresco-mmt</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-server-root</artifactId>
+                                    <version>${dependency.alfresco-server-root.version}</version>
+                                    <type>war</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/server-root</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

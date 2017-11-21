@@ -28,18 +28,19 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.dictionary.CustomModelsInfo;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
-public class UsageModelDataCollector extends HBBaseDataCollector
+public class ModelUsageDataCollector extends HBBaseDataCollector implements InitializingBean
 {
     /** The logger. */
-    private static final Log logger = LogFactory.getLog(UsageModelDataCollector.class);
+    private static final Log logger = LogFactory.getLog(ModelUsageDataCollector.class);
 
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
@@ -50,8 +51,9 @@ public class UsageModelDataCollector extends HBBaseDataCollector
     /** The transaction service. */
     private TransactionService transactionService;
 
-    public UsageModelDataCollector(String collectorId) {
-        super(collectorId);
+    public ModelUsageDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    {
+        super(collectorId, collectorVersion, cronExpression);
     }
 
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
@@ -70,23 +72,16 @@ public class UsageModelDataCollector extends HBBaseDataCollector
     }
 
     @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "customModelService", customModelService);
+        PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
+    }
+
+    @Override
     public List<HBData> collectData()
     {
-        if(transactionService == null)
-        {
-            logger.debug("Couldn't collect data because transaction service is null");
-            return null;
-        }
-        if(customModelService == null)
-        {
-            logger.debug("Couldn't collect data because custom model service is null");
-            return null;
-        }
-        if(currentRepoDescriptorDAO == null)
-        {
-            logger.debug("Couldn't collect data because repository descriptor is null");
-            return null;
-        }
         logger.debug("Preparing repository usage (model) data...");
 
         final CustomModelsInfo customModelsInfo = transactionService.getRetryingTransactionHelper().doInTransaction(
@@ -103,8 +98,6 @@ public class UsageModelDataCollector extends HBBaseDataCollector
                 new Date(),
                 modelUsageValues);
 
-        List<HBData> collectedData = new LinkedList<>();
-        collectedData.add(modelUsageData);
-        return collectedData;
+        return Arrays.asList(modelUsageData);
     }
 }

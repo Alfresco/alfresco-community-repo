@@ -69,8 +69,7 @@ public class InfoDataCollectorTest
         when(mockServerDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        infoCollector = new InfoDataCollector("acs.repository.info");
-        infoCollector.setCollectorVersion("1.0");
+        infoCollector = new InfoDataCollector("acs.repository.info","1.0","0 0 0 ? * *");
         infoCollector.setHbDataCollectorService(mockCollectorService);
         infoCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         infoCollector.setServerDescriptorDAO(mockServerDescriptorDAO);

@@ -321,8 +321,7 @@ public class HBDataCollectorServiceImplTest
     {
         public SimpleHBDataCollector(String collectorId, String cron)
         {
-            super(collectorId);
-            this.setCronExpression(cron);
+            super(collectorId,"1.0",cron);
         }
 
         public List<HBData> collectData()

@@ -189,8 +189,8 @@ import org.junit.runners.Suite;
     org.alfresco.heartbeat.HBDataCollectorServiceImplTest.class,
     org.alfresco.heartbeat.HeartBeatJobTest.class,
     org.alfresco.heartbeat.InfoDataCollectorTest.class,
-    org.alfresco.heartbeat.UsageModelDataCollectorTest.class,
-    org.alfresco.heartbeat.UsageSystemDataCollectorTest.class
+    org.alfresco.heartbeat.ModelUsageDataCollectorTest.class,
+    org.alfresco.heartbeat.SystemUsageDataCollectorTest.class
 })
 public class AllUnitTestsSuite
 {

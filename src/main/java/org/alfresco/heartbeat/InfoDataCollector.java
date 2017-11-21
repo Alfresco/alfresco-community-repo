@@ -28,12 +28,14 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
-public class InfoDataCollector extends HBBaseDataCollector
+public class InfoDataCollector extends HBBaseDataCollector implements InitializingBean
 {
     /** The logger. */
     private static final Log logger = LogFactory.getLog(InfoDataCollector.class);
@@ -44,9 +46,9 @@ public class InfoDataCollector extends HBBaseDataCollector
     /** DAO for current descriptor. */
     private DescriptorDAO serverDescriptorDAO;
 
-    public InfoDataCollector(String collectorId)
+    public InfoDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
-        super(collectorId);
+        super(collectorId, collectorVersion, cronExpression);
     }
 
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
@@ -60,18 +62,15 @@ public class InfoDataCollector extends HBBaseDataCollector
     }
 
     @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "serverDescriptorDAO", serverDescriptorDAO);
+        PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
+    }
+
+    @Override
     public List<HBData> collectData()
     {
-        if(serverDescriptorDAO == null)
-        {
-            logger.debug("Couldn't collect data because server descriptor is null");
-            return null;
-        }
-        if(currentRepoDescriptorDAO == null)
-        {
-            logger.debug("Couldn't collect data because repository descriptor is null");
-            return null;
-        }
         logger.debug("Preparing repository info data...");
 
         final Descriptor serverDescriptor = this.serverDescriptorDAO.getDescriptor();
@@ -87,9 +86,7 @@ public class InfoDataCollector extends HBBaseDataCollector
                 this.getCollectorVersion(),
                 new Date(),
                 infoValues);
-        List<HBData> collectedData = new LinkedList<>();
-        collectedData.add(infoData);
 
-        return collectedData;
+        return Arrays.asList(infoData);
     }
 }

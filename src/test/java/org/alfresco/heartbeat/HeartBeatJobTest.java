@@ -72,7 +72,7 @@ public class HeartBeatJobTest
 
         public SimpleHBDataCollector(String collectorId)
         {
-            super(collectorId);
+            super(collectorId,"1.0","0 0 0 ? * *");
         }
 
         public List<HBData> collectData()

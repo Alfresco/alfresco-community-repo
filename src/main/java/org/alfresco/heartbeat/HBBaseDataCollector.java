@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
+import org.alfresco.util.PropertyCheck;
 
 /**
  *
@@ -36,19 +37,26 @@ import org.alfresco.service.cmr.repository.HBDataCollectorService;
   *
  * @author eknizat
  */
-public abstract class HBBaseDataCollector {
-    private String collectorId;
-    private String collectorVersion;
-    private String cronExpression;
+public abstract class HBBaseDataCollector
+{
+    private final String collectorId;
+    private final String collectorVersion;
+    private final String cronExpression;
 
     /**
      * The collector service managing this collector.
      */
     private HBDataCollectorService hbDataCollectorService;
 
-    public HBBaseDataCollector(String collectorId)
+    public HBBaseDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
+        PropertyCheck.mandatory(this, "collectorId", collectorId);
+        PropertyCheck.mandatory(this, "collectorVersion", collectorVersion);
+        PropertyCheck.mandatory(this, "cronExpression", cronExpression);
+
         this.collectorId = collectorId;
+        this.collectorVersion = collectorVersion;
+        this.cronExpression = cronExpression;
     }
 
     public String getCollectorId()
@@ -56,19 +64,9 @@ public abstract class HBBaseDataCollector {
         return collectorId;
     }
 
-    public void setCollectorVersion(String collectorVersion)
-    {
-        this.collectorVersion = collectorVersion;
-    }
-
     public String getCollectorVersion()
     {
         return this.collectorVersion;
-    }
-
-    public void setCronExpression(String cronExpression)
-    {
-        this.cronExpression = cronExpression;
     }
 
     public String getCronExpression()
@@ -76,17 +74,18 @@ public abstract class HBBaseDataCollector {
         return this.cronExpression;
     }
 
+    public void setHbDataCollectorService(HBDataCollectorService hbDataCollectorService)
+    {
+        this.hbDataCollectorService = hbDataCollectorService;
+    }
+
     /**
      * This method is called by Spring at initialisation and will register this collector with the provided {@link HBDataCollectorService}
      */
     public void register()
     {
+        PropertyCheck.mandatory(this, "hbDataCollectorService", hbDataCollectorService);
         hbDataCollectorService.registerCollector(this);
-    }
-    
-    public void setHbDataCollectorService(HBDataCollectorService hbDataCollectorService)
-    {
-        this.hbDataCollectorService = hbDataCollectorService;
     }
 
     /**

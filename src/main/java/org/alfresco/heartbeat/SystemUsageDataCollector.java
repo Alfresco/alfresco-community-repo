@@ -27,22 +27,24 @@ package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
-public class UsageSystemDataCollector extends HBBaseDataCollector
+public class SystemUsageDataCollector extends HBBaseDataCollector implements InitializingBean
 {
     /** The logger. */
-    private static final Log logger = LogFactory.getLog(UsageSystemDataCollector.class);
+    private static final Log logger = LogFactory.getLog(SystemUsageDataCollector.class);
 
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
-    public UsageSystemDataCollector(String collectorId)
+    public SystemUsageDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
-        super(collectorId);
+        super(collectorId, collectorVersion, cronExpression);
     }
 
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
@@ -51,13 +53,14 @@ public class UsageSystemDataCollector extends HBBaseDataCollector
     }
 
     @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
+    }
+
+    @Override
     public List<HBData> collectData()
     {
-        if(currentRepoDescriptorDAO == null)
-        {
-            logger.debug("Couldn't collect data because repository descriptor is null");
-            return null;
-        }
         logger.debug("Preparing repository usage (system) data...");
 
         Runtime runtime = Runtime.getRuntime();
@@ -72,9 +75,6 @@ public class UsageSystemDataCollector extends HBBaseDataCollector
                 new Date(),
                 systemUsageValues);
 
-        List<HBData> collectedData = new LinkedList<>();
-        collectedData.add(systemUsageData);
-
-        return collectedData;
+        return Arrays.asList(systemUsageData);
     }
 }

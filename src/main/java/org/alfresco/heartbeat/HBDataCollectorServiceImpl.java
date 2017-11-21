@@ -122,7 +122,8 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
         {
             if(collector.getCollectorId().equals(col.getCollectorId()))
             {
-                logger.error("HeartBeat did not registered collector, ID must be unique. ID: " + collector.getCollectorId());
+                logger.error("HeartBeat did not registered collector, ID must be unique. ID: "
+                        + collector.getCollectorId());
                 return;
             }
         }
@@ -151,7 +152,8 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
     }
 
     /**
-     * Start or stop the HertBeat jobs for all registered collectors depending on whether the heartbeat is enabled or not
+     * Start or stop the HertBeat jobs for all registered collectors
+     * depending on whether the heartbeat is enabled or not
      */
     private synchronized void scheduleCollector(final HBBaseDataCollector collector) throws ParseException, SchedulerException
     {
@@ -173,9 +175,9 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
     {
         final JobDetail jobDetail = new JobDetail(jobName, Scheduler.DEFAULT_GROUP, HeartBeatJob.class);
         final String cronExpression = testMode ? testCronExpression : collector.getCronExpression();
-        jobDetail.getJobDataMap().put("collector", collector);
-        jobDetail.getJobDataMap().put("hbDataSenderService", hbDataSenderService);
-        jobDetail.getJobDataMap().put("jobLockService", jobLockService);
+        jobDetail.getJobDataMap().put(HeartBeatJob.COLLECTOR_KEY, collector);
+        jobDetail.getJobDataMap().put(HeartBeatJob.DATA_SENDER_SERVICE_KEY, hbDataSenderService);
+        jobDetail.getJobDataMap().put(HeartBeatJob.JOB_LOCK_SERVICE_KEY, jobLockService);
 
         // Ensure the job wasn't already scheduled in an earlier retry of this transaction
         scheduler.unscheduleJob(triggerName, Scheduler.DEFAULT_GROUP);
@@ -213,7 +215,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
             {
                 logger.debug("HeartBeat enabled state change. Enabled=" + newEnabled);
             }
-            enable(newEnabled);
+            setEnable(newEnabled);
             restartAllCollectorSchedules();
         }
     }
@@ -232,7 +234,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
             {
                 logger.debug("HeartBeat enabled state change. Enabled=" + newEnabled);
             }
-            enable(newEnabled);
+            setEnable(newEnabled);
             restartAllCollectorSchedules();
         }
     }
@@ -253,7 +255,7 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
         }
     }
 
-    private void enable(boolean enable)
+    private void setEnable(boolean enable)
     {
         this.enabled = enable;
         if (hbDataSenderService != null)

@@ -59,8 +59,7 @@ public class AuthoritiesDataCollectorTest
         DescriptorDAO descriptorDAO = mock(DescriptorDAO.class);
         when(descriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        authorityDataCollector = new AuthoritiesDataCollector("acs.repository.usage.authorities");
-        authorityDataCollector.setCollectorVersion("1.0");
+        authorityDataCollector = new AuthoritiesDataCollector("acs.repository.usage.authorities", "1.0", "0 0 0 ? * *");
         authorityDataCollector.setAuthorityService(authorityService);
         authorityDataCollector.setCurrentRepoDescriptorDAO(descriptorDAO);
         authorityDataCollector.setHbDataCollectorService(mockCollectorService);

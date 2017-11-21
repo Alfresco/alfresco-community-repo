@@ -52,15 +52,20 @@ public class HeartBeatJob implements Job
 
     /** Time to live 5 seconds */
     private static final long LOCK_TTL = 5000L;
-    /** Additional 5 seconds for how much longer the log will be kept */
+    /** Additional 5 seconds for how much longer the lock will be kept */
     private static final long LOCK_TTL_OFFSET = 5000L;
+
+    public static final String COLLECTOR_KEY = "collector";
+    public static final String DATA_SENDER_SERVICE_KEY = "hbDataSenderService";
+    public static final String JOB_LOCK_SERVICE_KEY = "jobLockService";
+
 
     public void execute(final JobExecutionContext jobexecutioncontext) throws JobExecutionException
     {
         final JobDataMap dataMap = jobexecutioncontext.getJobDetail().getJobDataMap();
-        final HBBaseDataCollector collector = (HBBaseDataCollector) dataMap.get("collector");
-        final HBDataSenderService hbDataSenderService = (HBDataSenderService) dataMap.get("hbDataSenderService");
-        final JobLockService jobLockService = (JobLockService) dataMap.get("jobLockService");
+        final HBBaseDataCollector collector = (HBBaseDataCollector) dataMap.get(COLLECTOR_KEY);
+        final HBDataSenderService hbDataSenderService = (HBDataSenderService) dataMap.get(DATA_SENDER_SERVICE_KEY);
+        final JobLockService jobLockService = (JobLockService) dataMap.get(JOB_LOCK_SERVICE_KEY);
 
         if(collector == null)
         {
@@ -94,7 +99,7 @@ public class HeartBeatJob implements Job
             // Get a dynamic lock
             lockToken = acquireLock(lockCallback, qName, jobLockService);
             collectAndSendDataLocked(collector, hbDataSenderService);
-            // after it finished we want to keep the lock for 30 seconds more
+            // after it finished we want to keep the lock for 5 seconds more
             try
             {
                 Thread.sleep(LOCK_TTL_OFFSET);
@@ -122,27 +127,14 @@ public class HeartBeatJob implements Job
         try
         {
             List<HBData> data = collector.collectData();
-            try
-            {
-                hbDataSenderService.sendData(data);
-            }
-            catch (Exception e)
-            {
-                logger.warn(e);
-            }
+            hbDataSenderService.sendData(data);
         }
         catch (final Exception e)
         {
             if (logger.isDebugEnabled())
             {
                 // Verbose logging
-                logger.debug("Heartbeat job failure from collector: " + collector.getCollectorId(), e);
-            }
-            else
-            {
-                // Heartbeat errors are non-fatal and will show as single line warnings
-                logger.warn(e.toString());
-                throw new JobExecutionException(e);
+                logger.debug("Heartbeat failed to collect data for collector ID: " + collector.getCollectorId(), e);
             }
         }
     }

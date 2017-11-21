@@ -29,8 +29,11 @@ import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import java.util.*;
 
 /**
@@ -42,7 +45,7 @@ import java.util.*;
  *
  * @author eknizat
  */
-public class AuthoritiesDataCollector extends HBBaseDataCollector
+public class AuthoritiesDataCollector extends HBBaseDataCollector implements InitializingBean
 {
 
     /** The logger. */
@@ -54,9 +57,9 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector
     /** The authority service. */
     private AuthorityService authorityService;
 
-    public AuthoritiesDataCollector(String collectorId)
+    public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
-        super(collectorId);
+        super(collectorId, collectorVersion, cronExpression);
     }
 
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
@@ -70,19 +73,15 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector
     }
 
     @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
+    }
+
+    @Override
     public List<HBData> collectData()
     {
-        if(authorityService == null)
-        {
-            logger.debug("Couldn't collect data because authority service is null");
-            return null;
-        }
-        if(currentRepoDescriptorDAO == null)
-        {
-            logger.debug("Couldn't collect data because repository descriptor is null");
-            return null;
-        }
-
         this.logger.debug("Preparing repository usage (authorities) data...");
 
         Map<String, Object> authoritiesUsageValues = new HashMap<>();
@@ -96,9 +95,7 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector
                 this.getCollectorVersion(),
                 new Date(),
                 authoritiesUsageValues);
-        List<HBData> collectedData = new LinkedList<>();
-        collectedData.add(authoritiesUsageData);
 
-        return collectedData;
+        return Arrays.asList(authoritiesUsageData);
     }
 }

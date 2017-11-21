@@ -49,10 +49,10 @@ import static org.mockito.Mockito.when;
 /**
  * @author eknizat
  */
-public class UsageModelDataCollectorTest
+public class ModelUsageDataCollectorTest
 {
 
-    private UsageModelDataCollector usageModelCollector;
+    private ModelUsageDataCollector usageModelCollector;
     private HBDataCollectorService mockCollectorService;
     private DescriptorDAO mockDescriptorDAO;
     private List<HBData> collectedData;
@@ -76,8 +76,8 @@ public class UsageModelDataCollectorTest
         when(mockRetryingTransactionHelper.doInTransaction(any(RetryingTransactionHelper.RetryingTransactionCallback.class), anyBoolean())).thenReturn(mockCustomModelsInfo);
         when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
 
-        usageModelCollector = new UsageModelDataCollector("acs.repository.usage.model");
-        usageModelCollector.setCollectorVersion("1.0");
+        usageModelCollector = new ModelUsageDataCollector("acs.repository.usage.model","1.0", "0 0 0 ? * *" );
+
         usageModelCollector.setHbDataCollectorService(mockCollectorService);
         usageModelCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         usageModelCollector.setCustomModelService(customModelService);

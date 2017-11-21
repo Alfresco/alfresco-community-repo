@@ -542,6 +542,21 @@
         <property name="permissionService" ref="permissionService"/>
     </bean>
 
+    <bean id="actions" class="org.alfresco.rest.api.impl.ActionsImpl">
+        <property name="actionService" ref="ActionService"/>
+        <property name="prefixResolver" ref="namespaceService"/>
+    </bean>
+    <bean id="Actions" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces" value="org.alfresco.rest.api.Actions"/>
+        <property name="target" ref="actions" />
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+
     <bean id="Downloads" class="org.springframework.aop.framework.ProxyFactoryBean">
             <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.Downloads</value>
@@ -919,6 +934,10 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeTagsRelation">
         <property name="tags" ref="Tags" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeActionDefinitionsRelation" parent="baseNodeRelation">
+        <property name="actions" ref="Actions"/>
     </bean>
 
     <bean class="org.alfresco.rest.api.trashcan.TrashcanEntityResource">

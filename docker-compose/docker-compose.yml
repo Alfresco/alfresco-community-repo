@@ -4,16 +4,6 @@ services:
   alfresco:
      build:
         context: ./alfresco
-     environment:
-        - db.driver=org.postgresql.Driver
-        - db.username=alfresco
-        - db.password=alfresco
-        - db.url=jdbc:postgresql://postgres:5432/alfresco
-        - solr.host=solr6
-        - solr.port=8983
-        - solr.secureComms=none
-        - solr.base.url=/solr
-        - index.subsystem.name=solr6
      ports:
         - 8080:8080 #Browser port
 

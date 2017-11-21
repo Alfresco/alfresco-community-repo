@@ -25,32 +25,41 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
-import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.Iterator;
+import java.util.Map;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 public class TestActions extends AbstractBaseApiTest
 {
+    private NodeService nodeService;
     private PublicApiClient.Actions actions;
     private RepoService.TestNetwork account1;
     private Iterator<RepoService.TestNetwork> accountsIt;
     private Iterator<String> account1PersonIt;
-    
+    private final static Map<String, String> emptyParams = Collections.EMPTY_MAP;
+
     @Before
     public void setUp() throws Exception
     {
+        nodeService = applicationContext.getBean("NodeService", NodeService.class);
         actions = publicApiClient.actions();
 
         accountsIt = getTestFixture().getNetworksIt();
@@ -82,13 +91,44 @@ public class TestActions extends AbstractBaseApiTest
     }
     
     @Test
-    public void canGetActionDefinitionsForNode() throws PublicApiException
+    public void canGetActionDefinitionsForNode() throws Exception
     {
         final String person1 = account1PersonIt.next();
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
         
-        ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitionsForNode("-my-", null);
-        assertNotNull("Action definition list should not be null", actionDefs);
-        assertFalse("Action definition list should not be empty", actionDefs.getList().isEmpty());
+        // Get the actions available on the -my- node-ref alias
+        {
+            ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitionsForNode("-my-", emptyParams, 200);
+            
+            assertNotNull("Action definition list should not be null", actionDefs);
+            assertFalse("Action definition list should not be empty", actionDefs.getList().isEmpty());
+        }
+
+        AuthenticationUtil.setFullyAuthenticatedUser(person1);
+        
+        // Get the actions available using a specific node ID
+        {
+            String myNode = getMyNodeId();
+            NodeRef validNode = nodeService.createNode(
+                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNode),
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("test", "test-node"),
+                    ContentModel.TYPE_CONTENT).getChildRef();
+            
+            ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitionsForNode(validNode.getId(), emptyParams, 200);
+            
+            assertNotNull("Action definition list should not be null", actionDefs);
+            assertFalse("Action definition list should not be empty", actionDefs.getList().isEmpty());
+        }
+        
+        // Non-existent node ID
+        {
+            NodeRef nodeRef = new NodeRef(
+                    StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+                    "750a2867-ecfa-478c-8343-fa0e39d27be3");
+            assertFalse("Test pre-requisite: node must not exist", nodeService.exists(nodeRef));
+            
+            actions.getActionDefinitionsForNode(nodeRef.getId(), emptyParams, 404);
+        }
     }
 }

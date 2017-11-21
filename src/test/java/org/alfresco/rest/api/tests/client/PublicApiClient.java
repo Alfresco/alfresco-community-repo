@@ -2642,10 +2642,14 @@ public class PublicApiClient
     
     public class Actions extends AbstractProxy
     {
-        public ListResponse<ActionDefinition> getActionDefinitionsForNode(String nodeId, Map<String, String> params)
+        public ListResponse<ActionDefinition> getActionDefinitionsForNode(String nodeId,
+                                                                          Map<String, String> params,
+                                                                          int expectedStatus)
                 throws PublicApiException
         {
-            HttpResponse response = getAll("nodes", nodeId, "action-definitions", null, params, "Failed to get actions");
+            HttpResponse response = getAll("nodes", nodeId, "action-definitions",
+                    null, params, "Unexpected response", expectedStatus);
+            
             if (response != null && response.getJsonResponse() != null)
             {
                 JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");

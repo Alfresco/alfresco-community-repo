@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.quartz.CronTrigger;
 import org.quartz.Scheduler;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -211,22 +212,15 @@ public class HBDataCollectorServiceImplTest
     /**
      * Test scheduling job for collector with invalid cron expression
      */
-    @Test
+    @Test(expected=RuntimeException.class)
     public void testInvalidCronExpression() throws Exception
     {
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
         collectorService.setScheduler(scheduler);
 
-        // Register collector with valid cron expression
-        SimpleHBDataCollector c1 = new SimpleHBDataCollector("c1", VALID_CRON);
-        collectorService.registerCollector(c1);
-
         // Register collector with invalid cron expression
         SimpleHBDataCollector c2 = new SimpleHBDataCollector("c2", INVALID_CRON);
         collectorService.registerCollector(c2);
-
-        assertTrue(isJobScheduledForCollector(c1.getCollectorId(),scheduler));
-        assertFalse(isJobScheduledForCollector(c2.getCollectorId(),scheduler));
     }
 
     /**
@@ -266,7 +260,7 @@ public class HBDataCollectorServiceImplTest
         assertEquals("Cron expression doesn't match", cron3, testCron3);
     }
 
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void testRegisterSameCollectorTwice() throws Exception
     {
         final HBDataCollectorServiceImpl collectorService = new HBDataCollectorServiceImpl(true);
@@ -276,8 +270,6 @@ public class HBDataCollectorServiceImplTest
 
         collectorService.registerCollector(c1);
         collectorService.registerCollector(c1);
-
-        assertEquals("Expected only one collector to be scheduled.",1,scheduler.getJobNames(Scheduler.DEFAULT_GROUP).length );
     }
 
     // Helper methods

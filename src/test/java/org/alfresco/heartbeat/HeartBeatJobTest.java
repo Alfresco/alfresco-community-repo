@@ -147,7 +147,6 @@ public class HeartBeatJobTest
         verify(mockJobLockService, Mockito.times(2)).getLock(any(QName.class), anyLong());
         verify(mockJobLockService, Mockito.times(2)).refreshLock(eq(lockToken), any(QName.class), anyLong(), any(
                 JobLockService.JobLockRefreshCallback.class));
-        verify(mockJobLockService, Mockito.times(2)).releaseLock(eq(lockToken), any(QName.class));
     }
 
     @Test
@@ -214,6 +213,5 @@ public class HeartBeatJobTest
         verify(mockJobLockService, Mockito.times(2)).getLock(any(QName.class), anyLong());
         verify(mockJobLockService, Mockito.times(1)).refreshLock(eq(lockToken), any(QName.class), anyLong(), any(
                 JobLockService.JobLockRefreshCallback.class));
-        verify(mockJobLockService, Mockito.times(1)).releaseLock(eq(lockToken), any(QName.class));
     }
 }

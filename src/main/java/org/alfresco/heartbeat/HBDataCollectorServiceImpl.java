@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
@@ -110,21 +111,13 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
     @Override
     public void registerCollector(final HBBaseDataCollector collector)
     {
-        // Check collector ID is not null
-        if (collector.getCollectorId() == null)
-        {
-            logger.error("HeartBeat did not registered collector, collector ID must not be null.");
-            return;
-        }
-
         // Check collector with the same ID does't already exist
         for (HBBaseDataCollector col : collectors)
         {
             if(collector.getCollectorId().equals(col.getCollectorId()))
             {
-                logger.error("HeartBeat did not registered collector, ID must be unique. ID: "
+                throw new IllegalArgumentException("HeartBeat did not registered collector, ID must be unique. ID: "
                         + collector.getCollectorId());
-                return;
             }
         }
 
@@ -141,7 +134,8 @@ public class HBDataCollectorServiceImpl implements HBDataCollectorService, Licen
         }
         catch (Exception e)
         {
-            logger.error("HeartBeat did not registered collector: " + collectorInfo(collector), e);
+            throw new RuntimeException("HeartBeat did not registered collector: "
+                    + collectorInfo(collector), e);
         }
     }
 

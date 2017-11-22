@@ -33,6 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,8 +54,36 @@ public class ActionsImpl implements Actions
     }
 
     @Override
-    public List<ActionDefinition> getActionDefinitions(NodeRef nodeRef)
+    public List<ActionDefinition> getActionDefinitions(NodeRef nodeRef, SortKey sortKey, Boolean ascending)
     {
+        Comparator<? super ActionDefinition> comparator;
+        if (sortKey == null)
+        {
+            sortKey = SortKey.NAME; // default
+        }
+        
+        switch (sortKey)
+        {
+            case TITLE:
+                comparator = Comparator.comparing(ActionDefinition::getTitle);
+                break;
+            case NAME:
+                comparator = Comparator.comparing(ActionDefinition::getName);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid sort key, must be either 'title' or 'name'.");
+        }
+        
+        if (ascending == null)
+        {
+            ascending = true;
+        }
+        if (!ascending)
+        {
+            comparator = comparator.reversed();
+        }
+        
+        
         return actionService.getActionDefinitions(nodeRef).
                 stream().
                 map(actionDefinition -> {
@@ -73,6 +102,7 @@ public class ActionsImpl implements Actions
                             actionDefinition.getTrackStatus(),
                             paramDefs);
                 }).
+                sorted(comparator).
                 collect(Collectors.toList());
     }
 

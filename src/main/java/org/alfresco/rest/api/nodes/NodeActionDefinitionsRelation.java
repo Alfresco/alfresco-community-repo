@@ -31,10 +31,12 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RelationshipResource(name = "action-definitions",  entityResource = NodesEntityResource.class, title = "Node action definitions")
 public class NodeActionDefinitionsRelation extends AbstractNodeRelation
@@ -58,10 +60,35 @@ public class NodeActionDefinitionsRelation extends AbstractNodeRelation
     public CollectionWithPagingInfo<ActionDefinition> readAll(String entityResourceId, Parameters params)
     {
         NodeRef parentNodeRef = nodes.validateOrLookupNode(entityResourceId, null);
-        List<ActionDefinition> actionDefinitions = actions.getActionDefinitions(parentNodeRef);
+        
+        List<SortColumn> sorting = params.getSorting();
+        Actions.SortKey sortKey = null;
+        Boolean sortAsc = null;
+        if (sorting != null && !sorting.isEmpty())
+        {
+            if (sorting.size() > 1)
+            {
+                throw new IllegalArgumentException("Only a single sort field ('name' or 'title') is supported.");
+            }
+            sortKey = Actions.SortKey.valueOf(sorting.get(0).column.toUpperCase());
+            sortAsc = sorting.get(0).asc;
+        }
+        
+        List<ActionDefinition> actionDefinitions = actions.getActionDefinitions(parentNodeRef, sortKey, sortAsc);
+        
+        final int maxItems = params.getPaging().getMaxItems();
+        final int skip = params.getPaging().getSkipCount();
+        
+        List<ActionDefinition> pagedActionDefs = actionDefinitions.stream().
+                skip(skip).
+                limit(maxItems).
+                collect(Collectors.toList());
 
-        // TODO: filter list according to params.getPaging()
-
-        return CollectionWithPagingInfo.asPaged(params.getPaging(), actionDefinitions, false, actionDefinitions.size());
+        boolean hasMoreItems = actionDefinitions.size() > (skip + maxItems); 
+        return CollectionWithPagingInfo.asPaged(
+                params.getPaging(),
+                pagedActionDefs,
+                hasMoreItems,
+                actionDefinitions.size());
     }
 }

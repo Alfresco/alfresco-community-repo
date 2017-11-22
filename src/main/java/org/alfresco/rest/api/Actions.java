@@ -33,5 +33,11 @@ import java.util.List;
 
 public interface Actions
 {
-    List<ActionDefinition> getActionDefinitions(NodeRef nodeRef);
+    List<ActionDefinition> getActionDefinitions(NodeRef nodeRef, SortKey sortKey, Boolean ascending);
+    
+    enum SortKey
+    {
+        NAME,
+        TITLE
+    };
 }

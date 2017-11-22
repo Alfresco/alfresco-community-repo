@@ -28,6 +28,7 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockServiceImpl;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -52,8 +53,6 @@ public class HeartBeatJob implements Job
 
     /** Time to live 5 seconds */
     private static final long LOCK_TTL = 5000L;
-    /** Additional 5 seconds for how much longer the lock will be kept */
-    private static final long LOCK_TTL_OFFSET = 5000L;
 
     public static final String COLLECTOR_KEY = "collector";
     public static final String DATA_SENDER_SERVICE_KEY = "hbDataSenderService";
@@ -69,26 +68,17 @@ public class HeartBeatJob implements Job
 
         if(collector == null)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Exit HeartBeatJob because there is no assigned HB collector");
-            }
+            logger.error("Exit HeartBeatJob because there is no assigned HB collector");
             return;
         }
         if(hbDataSenderService == null)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Exit HeartBeatJob because there is no HBDataSenderService");
-            }
+            logger.error("Exit HeartBeatJob because there is no HBDataSenderService");
             return;
         }
         if(jobLockService == null)
         {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Exit HeartBeatJob because there is no JobLockService");
-            }
+            logger.error("Exit HeartBeatJob because there is no JobLockService");
             return;
         }
         QName qName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, collector.getCollectorId());
@@ -99,15 +89,6 @@ public class HeartBeatJob implements Job
             // Get a dynamic lock
             lockToken = acquireLock(lockCallback, qName, jobLockService);
             collectAndSendDataLocked(collector, hbDataSenderService);
-            // after it finished we want to keep the lock for 5 seconds more
-            try
-            {
-                Thread.sleep(LOCK_TTL_OFFSET);
-            }
-            catch (InterruptedException e)
-            {
-                //
-            }
         }
         catch (LockAcquisitionException e)
         {
@@ -118,7 +99,11 @@ public class HeartBeatJob implements Job
         }
         finally
         {
-            releaseLock(lockCallback, lockToken, qName, jobLockService);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Finished collector job. ID:" + collector.getCollectorId());
+            }
+            lockCallback.running.set(false);
         }
     }
 
@@ -131,11 +116,8 @@ public class HeartBeatJob implements Job
         }
         catch (final Exception e)
         {
-            if (logger.isDebugEnabled())
-            {
-                // Verbose logging
-                logger.debug("Heartbeat failed to collect data for collector ID: " + collector.getCollectorId(), e);
-            }
+            // Log the error but don't rethrow, collector errors are non fatal
+            logger.error("Heartbeat failed to collect data for collector ID: " + collector.getCollectorId(), e);
         }
     }
 
@@ -178,23 +160,6 @@ public class HeartBeatJob implements Job
             if (logger.isDebugEnabled())
             {
                 logger.debug("Lock release notification: " + lockQname);
-            }
-        }
-    }
-
-    private void releaseLock(LockCallback lockCallback, String lockToken, QName lockQname, JobLockService jobLockService)
-    {
-        if (lockCallback != null)
-        {
-            lockCallback.running.set(false);
-        }
-
-        if (lockToken != null)
-        {
-            jobLockService.releaseLock(lockToken, lockQname);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Lock released: " + lockQname + ": " + lockToken);
             }
         }
     }

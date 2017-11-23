@@ -25,12 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -71,12 +65,21 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * V1 REST API tests for Shared Links (aka public "quick shares")
@@ -181,6 +184,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(fileName1, resp.getName());
+        assertEquals("The quick brown fox jumps over the lazy dog", resp.getTitle());
+        assertEquals("Gym class featuring a brown fox and lazy dog", resp.getDescription());
 
         assertEquals(file1_MimeType, resp.getContent().getMimeType());
         assertEquals("Adobe PDF Document", resp.getContent().getMimeTypeName());
@@ -220,8 +225,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         assertEquals(shared1Id, resp.getId());
         assertEquals(fileName1, resp.getName());
+        assertEquals("The quick brown fox jumps over the lazy dog", resp.getTitle());
+        assertEquals("Gym class featuring a brown fox and lazy dog", resp.getDescription());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
+        assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
@@ -237,6 +245,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
+        assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
+
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
@@ -248,6 +258,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id, null, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         assertNull(resp.getAllowableOperations());
+        assertNull(resp.getAllowableOperationsOnTarget());
 
         setRequestContext(null);
 
@@ -260,6 +271,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
+        assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
+
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
@@ -776,6 +789,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
+        assertNull(resp.getAllowableOperationsOnTarget()); // include is ignored
+
 
         // unauth access to file 1 content (via shared link)
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id + "/content", null, 200);
@@ -1242,10 +1257,18 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals("Incorrect number of path elements.", 3, pathInfo.getElements().size());
         assertEquals("Incorrect path name.", "/Company Home/User Homes/" + user1, pathInfo.getName());
 
-        // Check allowableOperations
+        // Check allowableOperations (i.e. the shared link)
         allowableOperations = quickShareLinkResponse.getAllowableOperations();
         assertNotNull("'allowableOperations' should have been returned.", allowableOperations);
         assertEquals("allowableOperations should only have 'Delete' as allowable operation.", 1, allowableOperations.size());
+        assertEquals("Incorrect allowable operation.", "delete", allowableOperations.get(0));
+        
+        // Check allowableOperationsOnTarget (i.e. for the actual file being shared)
+        allowableOperations = quickShareLinkResponse.getAllowableOperationsOnTarget();
+        assertNotNull("'allowableOperationsOnTarget' should have been returned.", allowableOperations);
+        Collection<String> expectedOps = Arrays.asList("delete", "update", "updatePermissions");
+        assertTrue(allowableOperations.containsAll(expectedOps));
+        assertEquals(expectedOps.size(), allowableOperations.size());
         assertEquals("Incorrect allowable operation.", "delete", allowableOperations.get(0));
 
         // Test that listing shared links also support the include parameter.
@@ -1267,6 +1290,17 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             assertNotNull("'allowableOperations' should have been returned.", operations);
             assertEquals("allowableOperations should only have 'Delete' as allowable operation.", 1, operations.size());
             assertEquals("Incorrect allowable operation.", "delete", operations.get(0));
+
+            // Check allowableOperationsOnTarget (i.e. for the actual file being shared)
+            operations = sharedLink.getAllowableOperationsOnTarget();
+            assertNotNull("'allowableOperationsOnTarget' should have been returned.", operations);
+            assertTrue(operations.containsAll(expectedOps));
+            assertEquals(expectedOps.size(), operations.size());
+            assertEquals("Incorrect allowable operation.", "delete", operations.get(0));
+
+            // Quick check that some extended info is present. 
+            assertEquals("The quick brown fox jumps over the lazy dog", sharedLink.getTitle());
+            assertEquals("Gym class featuring a brown fox and lazy dog", sharedLink.getDescription());
         });
     }
 

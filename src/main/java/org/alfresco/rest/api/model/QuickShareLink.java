@@ -52,6 +52,8 @@ public class QuickShareLink
 
     private String nodeId;
     private String name;
+    private String title;
+    private String description;
     private PathInfo path;
 
     private ContentInfo content;
@@ -61,6 +63,8 @@ public class QuickShareLink
     private UserInfo sharedByUser;
 
     private List<String> allowableOperations;
+
+    private List<String> allowableOperationsOnTarget;
 
 
     public QuickShareLink()
@@ -119,6 +123,26 @@ public class QuickShareLink
         this.name = name;
     }
 
+    public String getTitle()
+    {
+        return title;
+    }
+
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
     public PathInfo getPath()
     {
         return path;
@@ -159,14 +183,34 @@ public class QuickShareLink
         this.sharedByUser = sharedByUser;
     }
 
+    /**
+     * Retrieve the allowable operations for the shared link.
+     * 
+     * @return List of operation labels, e.g. "delete"
+     */
     public List<String> getAllowableOperations()
     {
         return allowableOperations;
     }
-
+    
     public void setAllowableOperations(List<String> allowableOperations)
     {
         this.allowableOperations = allowableOperations;
+    }
+
+    /**
+     * Retrieve the allowable operations for the actual file being shared.
+     * 
+     * @return List of operation labels, e.g. "delete"
+     */
+    public List<String> getAllowableOperationsOnTarget()
+    {
+        return allowableOperationsOnTarget;
+    }
+
+    public void setAllowableOperationsOnTarget(List<String> allowableOperationsOnTarget)
+    {
+        this.allowableOperationsOnTarget = allowableOperationsOnTarget;
     }
 
     // eg. for debug logging etc
@@ -177,12 +221,15 @@ public class QuickShareLink
         sb.append("QuickShareLink [id=").append(getId());
         sb.append(", nodeId=").append(getNodeId());
         sb.append(", name=").append(getName());
+        sb.append(", title=").append(getTitle());
+        sb.append(", description=").append(getDescription());
         sb.append(", path=").append(getPath());
         sb.append(", modifiedAt=").append(getModifiedAt());
         sb.append(", modifiedByUser=").append(getModifiedByUser());
         sb.append(", sharedByUser=").append(getSharedByUser());
         sb.append(", content=").append(getContent());
         sb.append(", allowableOperations=").append(getAllowableOperations());
+        sb.append(", allowableOperationsOnTarget=").append(getAllowableOperationsOnTarget());
         sb.append(", expiresAt=").append(getExpiresAt());
         sb.append("]");
         return sb.toString();

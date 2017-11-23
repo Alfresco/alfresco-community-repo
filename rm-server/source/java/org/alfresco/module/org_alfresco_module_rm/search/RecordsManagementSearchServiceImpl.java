@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
@@ -48,6 +49,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.SAVED_SEARCH_ASPECT;
 
 /**
  * Records management search service implementation
@@ -72,6 +75,9 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 
 	/** Namespace service */
 	private NamespaceService namespaceService;
+
+	/** Node service */
+	private NodeService nodeService;
 
 	/** List of report details */
 	private List<ReportDetails> reports = new ArrayList<ReportDetails>(13);
@@ -108,7 +114,15 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         this.namespaceService = namespaceService;
     }
 
-	/**
+    /**
+     * @param nodeService Node service
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
 	 * @param reportsJSON
 	 */
 	public void setReportsJSON(String reportsJSON)
@@ -520,7 +534,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
-
+        nodeService.addAspect(searchNode, SAVED_SEARCH_ASPECT, null);
         // Write the JSON content to search node
         final NodeRef writableSearchNode = searchNode;
         AuthenticationUtil.runAs(new RunAsWork<Void>()

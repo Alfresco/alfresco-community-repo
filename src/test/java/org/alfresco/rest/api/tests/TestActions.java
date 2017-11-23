@@ -399,6 +399,12 @@ public class TestActions extends AbstractBaseApiTest
             assertEquals(expectedActions, retrievedActions);
         }
         
+        // Badly formed request -> 400
+        {
+            PublicApiClient.Paging paging = getPaging(0, -1); // -1 is not acceptable
+            actions.getActionDefinitionsForNode(validNode.getId(), createParams(paging, null), 400);
+        }
+        
         // Non-existent node ID
         {
             NodeRef nodeRef = new NodeRef(
@@ -407,6 +413,12 @@ public class TestActions extends AbstractBaseApiTest
             assertFalse("Test pre-requisite: node must not exist", nodeService.exists(nodeRef));
             
             actions.getActionDefinitionsForNode(nodeRef.getId(), emptyParams, 404);
+        }
+        
+        // Unauthorized -> 401
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1, "invalid-password"));
+            actions.getActionDefinitionsForNode(validNode.getId(), emptyParams, 401);
         }
     }
 }

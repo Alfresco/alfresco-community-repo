@@ -29,6 +29,7 @@ import java.util.List;
 
 public class ActionDefinition
 {
+    private String id;
     private String name;
     private String title;
     private String description;
@@ -44,7 +45,8 @@ public class ActionDefinition
     {
     }
 
-    public ActionDefinition(String name,
+    public ActionDefinition(String id,
+                            String name,
                             String title,
                             String description,
                             List<String> applicableTypes,
@@ -52,6 +54,7 @@ public class ActionDefinition
                             boolean trackStatus,
                             List<ParameterDefinition> parameterDefinitions)
     {
+        this.id = id;
         this.name = name;
         this.title = title;
         this.description = description;
@@ -62,11 +65,11 @@ public class ActionDefinition
     }
 
     /**
-     * Synonym for name.
+     * Will be used as a synonym for name.
      */
     public String getId()
     {
-        return getName();
+        return id;
     }
     
     public String getName()

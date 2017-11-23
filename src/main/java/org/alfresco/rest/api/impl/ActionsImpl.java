@@ -94,6 +94,7 @@ public class ActionsImpl implements Actions
                                     map(this::toModel).
                                     collect(Collectors.toList());
                     return new ActionDefinition(
+                            actionDefinition.getName(), // ID is a synonym for name.
                             actionDefinition.getName(),
                             actionDefinition.getTitle(),
                             actionDefinition.getDescription(),

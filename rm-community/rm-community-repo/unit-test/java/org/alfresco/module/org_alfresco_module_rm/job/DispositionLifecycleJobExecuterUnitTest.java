@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -50,9 +52,11 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
@@ -92,7 +96,8 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         executer.setDispositionActions(dispositionActions);
 
         // setup interactions
-        doReturn(mockedResultSet).when(mockedSearchService).query(eq(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), eq(SearchService.LANGUAGE_FTS_ALFRESCO), anyString());
+        doReturn(mockedResultSet).when(mockedSearchService).query(any(SearchParameters.class));
+        when(mockedResultSet.hasMore()).thenReturn(false);
     }
 
     /**
@@ -100,7 +105,9 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
      */
     private void verifyQuery()
     {
-        verify(mockedSearchService, times(1)).query(eq(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), eq(SearchService.LANGUAGE_FTS_ALFRESCO), contains(QUERY));
+        ArgumentCaptor<SearchParameters> paramsCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+        verify(mockedSearchService, times(1)).query(paramsCaptor.capture());
+        assertTrue(paramsCaptor.getValue().getQuery().contains(QUERY));
         verify(mockedResultSet, times(1)).getNodeRefs();
         verify(mockedResultSet, times(1)).close();
     }

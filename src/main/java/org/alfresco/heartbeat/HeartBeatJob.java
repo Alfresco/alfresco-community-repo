@@ -28,10 +28,10 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.JobLockServiceImpl;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
@@ -66,28 +66,29 @@ public class HeartBeatJob implements Job
         final HBDataSenderService hbDataSenderService = (HBDataSenderService) dataMap.get(DATA_SENDER_SERVICE_KEY);
         final JobLockService jobLockService = (JobLockService) dataMap.get(JOB_LOCK_SERVICE_KEY);
 
-        if(collector == null)
-        {
-            logger.error("Exit HeartBeatJob because there is no assigned HB collector");
-            return;
-        }
-        if(hbDataSenderService == null)
-        {
-            logger.error("Exit HeartBeatJob because there is no HBDataSenderService");
-            return;
-        }
-        if(jobLockService == null)
-        {
-            logger.error("Exit HeartBeatJob because there is no JobLockService");
-            return;
-        }
-        QName qName = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, collector.getCollectorId());
-        String lockToken = null;
-        LockCallback lockCallback = new LockCallback(qName);
+        ParameterCheck.mandatory( COLLECTOR_KEY, collector);
+        ParameterCheck.mandatory(DATA_SENDER_SERVICE_KEY, hbDataSenderService);
+        ParameterCheck.mandatory(JOB_LOCK_SERVICE_KEY, jobLockService);
+
+        QName lockQname = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, collector.getCollectorId());
+        LockCallback lockCallback = new LockCallback(lockQname);
         try
         {
-            // Get a dynamic lock
-            lockToken = acquireLock(lockCallback, qName, jobLockService);
+            // Get lock
+            String lockToken = jobLockService.getLock(lockQname, LOCK_TTL);
+
+            // Register the refresh callback which will keep the lock alive.
+            // The lock will not be released manually,
+            // instead the job lock service will check the callback (running) flag every LOCK_TTL/2 ms from lock acquisition
+            // and release the lock when the flag is set to false.
+            jobLockService.refreshLock(lockToken, lockQname, LOCK_TTL, lockCallback);
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Lock acquired: " + lockQname + ": " + lockToken);
+            }
+
+            // Collect data and pass it to the data sender service
             collectAndSendDataLocked(collector, hbDataSenderService);
         }
         catch (LockAcquisitionException e)
@@ -119,22 +120,6 @@ public class HeartBeatJob implements Job
             // Log the error but don't rethrow, collector errors are non fatal
             logger.error("Heartbeat failed to collect data for collector ID: " + collector.getCollectorId(), e);
         }
-    }
-
-    private String acquireLock(JobLockService.JobLockRefreshCallback lockCallback, QName lockQname, JobLockService jobLockService)
-    {
-        // Get lock
-        String lockToken = jobLockService.getLock(lockQname, LOCK_TTL);
-
-        // Register the refresh callback which will keep the lock alive
-        jobLockService.refreshLock(lockToken, lockQname, LOCK_TTL, lockCallback);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Lock acquired: " + lockQname + ": " + lockToken);
-        }
-
-        return lockToken;
     }
 
     private class LockCallback implements JobLockService.JobLockRefreshCallback

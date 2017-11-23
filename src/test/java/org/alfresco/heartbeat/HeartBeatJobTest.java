@@ -28,6 +28,7 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockServiceImpl;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
@@ -136,9 +137,11 @@ public class HeartBeatJobTest
         Thread t2 = new Thread(r2);
 
         t1.start();
-        Thread.sleep(6000);
+        Thread.sleep(500);
         t2.start();
-        Thread.sleep(6000);
+
+        // Wait for threads to finish before testing
+        Thread.sleep(1000);
 
         // verify that we collected and send data but just one time
         verify(simpleCollector, Mockito.times(2)).collectData();
@@ -149,69 +152,45 @@ public class HeartBeatJobTest
                 JobLockService.JobLockRefreshCallback.class));
     }
 
+
     @Test
-    public void testJobInClusterLocked() throws Exception
+    public void testJobLocking() throws Exception
     {
+        HBBaseDataCollector simpleCollector = mock(HBBaseDataCollector.class);
+        when(simpleCollector.getCollectorId()).thenReturn("c1");
+        when(simpleCollector.getCronExpression()).thenReturn("0 0 0 ? * *");
+
         // mock the job context
         JobExecutionContext mockJobExecutionContext = mock(JobExecutionContext.class);
         JobDetail jobDetail = new JobDetail();
         when(mockJobExecutionContext.getJobDetail()).thenReturn(jobDetail);
 
-        // create the hb collector
-        SimpleHBDataCollector simpleCollector = spy(new SimpleHBDataCollector("simpleCollector"));
         JobDataMap jobDataMap = new JobDataMap();
         jobDataMap.put("collector", simpleCollector);
         jobDataMap.put("hbDataSenderService", mockDataSenderService);
         jobDataMap.put("jobLockService", mockJobLockService);
         jobDetail.setJobDataMap(jobDataMap);
 
-        // collector job is not locked from an other collector
-        String lockToken = "locked";
+        // Simulate job lock service
+        String lockToken = "token";
+        when(mockJobLockService.getLock(isA(QName.class), anyLong()))
+                .thenReturn(lockToken)                                    // first job gets the lock
+                .thenThrow(new LockAcquisitionException("", ""));         // second job doesn't get the lock
 
-        Runnable r1 = () ->
-        {
-            // if a second job tries to get the lock before we finished that will raise the exception
-            when(mockJobLockService.getLock(isA(QName.class), anyLong())).thenReturn(lockToken).thenThrow(new LockAcquisitionException("", ""));
-            try
-            {
-                new HeartBeatJob().execute(mockJobExecutionContext);
-            }
-            catch (JobExecutionException e)
-            {
-                //
-            }
-            finally
-            {
-                // when we are finished an other job can have the lock
-                when(mockJobLockService.getLock(isA(QName.class), anyLong())).thenReturn(lockToken);
-            }
-        };
-        Runnable r2 = () ->
-        {
-            try
-            {
-                new HeartBeatJob().execute(mockJobExecutionContext);
-            }
-            catch (JobExecutionException e)
-            {
-                //
-            }
-        };
+        // Run two heart beat jobs
+        new HeartBeatJob().execute(mockJobExecutionContext);
+        new HeartBeatJob().execute(mockJobExecutionContext);
 
-        Thread t1 = new Thread(r1);
-        Thread t2 = new Thread(r2);
-
-        t1.start();
-        Thread.sleep(1000);
-        t2.start();
-        Thread.sleep(6000);
-
-        // verify that we collected and send data but just one time
+        // Verify that the collector only collects data once, since only one job got the lock
         verify(simpleCollector, Mockito.times(1)).collectData();
+        // Verify that data was passed to data sender
         verify(mockDataSenderService, Mockito.times(1)).sendData(any(List.class));
         verify(mockDataSenderService, Mockito.times(0)).sendData(any(HBData.class));
+        // Verify that both jobs tried to get the lock
         verify(mockJobLockService, Mockito.times(2)).getLock(any(QName.class), anyLong());
-        verify(mockJobLockService, Mockito.times(1)).refreshLock(eq(lockToken), any(QName.class), anyLong(), any(
-                JobLockService.JobLockRefreshCallback.class));
+        // Verify that a callback was registered once
+        verify(mockJobLockService, Mockito.times(1)).refreshLock(eq(lockToken), any(QName.class),
+                anyLong(),
+                any(JobLockService.JobLockRefreshCallback.class));
     }
 }

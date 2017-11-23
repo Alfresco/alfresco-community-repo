@@ -13,8 +13,8 @@ Please refer to our [How to contribute](/CONTRIBUTING.md) guide and our [Contrib
    mvn clean install -Pstart-share
    ```
 
-   (these commands work best if run from the specific directories, e.g. start share from
-  rm-enterprise/rm-enterprise-share/ or rm-community/rm-community-share/ )
+   (these commands work best if run from the specific directories, e.g. start Share from
+   rm-community/rm-community-share/ or rm-enterprise/rm-enterprise-share/ )
 
 ## Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL)
 * Create a file called _local.properties_ under src/main/resources in alfresco-rm-enterprise-repo
@@ -103,11 +103,11 @@ Follow these instructions to install licence and Outlook plugin:
 
 ## SNAPSHOT dependencies
 If you're building Enterprise RM, the base project (Community) is pulled in via a snapshot dependency configured in maven.
-This dependency will either be loaded from your local .m2 cache or from Nexus if the version in your .m2 doesn't exist or is old
-(Old in maven terms is anything over 24hrs old). If maven fetches it from Nexus, your code it's unlikely to be the correct version.
+This dependency will either be loaded from your local .m2 cache, or from Nexus if the version in your .m2 doesn't exist or is old
+('old' in maven terms is anything over 24 hours old). If maven fetches community dependencies from Nexus, then it's unlikely to contain your changes.
 You want to always use the version in your local cache - this means either doing a daily build at the root project level
 that pushes a new copy of the correct version into your cache, or alternatively you could run mvn with the
-`--no-snapshot-dependency` (or -nsu) option, which won't try to download a newer version.
+`--no-snapshot-dependency` (or `-nsu`) option, which won't try to download a newer version.
 
 ## Code Formatting
 This project follows the usual Alfresco Coding Standards. If you use Eclipse or IntelliJ, there are settings inside the ide-config directory for you to import.

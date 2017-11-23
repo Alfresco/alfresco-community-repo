@@ -42,6 +42,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.rest.api.model.ActionDefinition;
@@ -130,6 +131,7 @@ public class PublicApiClient
     
 
     private ThreadLocal<RequestContext> rc = new ThreadLocal<RequestContext>();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public PublicApiClient(PublicApiHttpClient client, UserDataService userDataService)
     {
@@ -2685,17 +2687,17 @@ public class PublicApiClient
 
         private ActionDefinition parseActionDefinition(JSONObject entry)
         {
-            ActionDefinition def = new ActionDefinition(
-                    (String) entry.get("name"),
-                    (String) entry.get("title"),
-                    (String) entry.get("description"),
-                    null,
-                    (Boolean) entry.get("adhocPropertiesAllowed"),
-                    (Boolean) entry.get("trackStatus"),
-                    null
-            );
+            ActionDefinition def = null;
+            try
+            {
+                def = objectMapper.readValue(entry.toString(), ActionDefinition.class);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException("Unable to parse ActionDefinition JSON", e);
+            }
+            
             return def;
         }
-
     }
 }

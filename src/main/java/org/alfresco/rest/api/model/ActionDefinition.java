@@ -29,13 +29,20 @@ import java.util.List;
 
 public class ActionDefinition
 {
-    private final String name;
-    private final String title;
-    private final String description;
-    private final List<String> applicableTypes;
-    private final boolean adhocPropertiesAllowed;
-    private final boolean trackStatus;
-    private final List<ParameterDefinition> parameterDefinitions;
+    private String name;
+    private String title;
+    private String description;
+    private List<String> applicableTypes;
+    private boolean adhocPropertiesAllowed;
+    private boolean trackStatus;
+    private List<ParameterDefinition> parameterDefinitions;
+
+    /**
+     * For Jackson deserialisation.
+     */
+    public ActionDefinition()
+    {
+    }
 
     public ActionDefinition(String name,
                             String title,
@@ -54,6 +61,14 @@ public class ActionDefinition
         this.parameterDefinitions = parameterDefinitions;
     }
 
+    /**
+     * Synonym for name.
+     */
+    public String getId()
+    {
+        return getName();
+    }
+    
     public String getName()
     {
         return name;
@@ -91,13 +106,19 @@ public class ActionDefinition
 
     public static class ParameterDefinition
     {
+        private String name;
+        private String type;
+        private boolean multiValued;
+        private boolean mandatory;
+        private String displayLabel;
+        private String parameterConstraintName;
 
-        private final String name;
-        private final String type;
-        private final boolean multiValued;
-        private final boolean mandatory;
-        private final String displayLabel;
-        private final String parameterConstraintName;
+        /**
+         * For Jackson deserialisation.
+         */
+        public ParameterDefinition()
+        {
+        }
 
         public ParameterDefinition(String name,
                                    String type,

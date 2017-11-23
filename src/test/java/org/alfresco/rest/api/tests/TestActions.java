@@ -26,14 +26,18 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
+import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.tests.client.Pair;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -113,12 +117,87 @@ public class TestActions extends AbstractBaseApiTest
         // Get the actions available on the -my- node-ref alias
         {
             ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitionsForNode("-my-", emptyParams, 200);
-            
+
             assertNotNull("Action definition list should not be null", actionDefs);
             assertFalse("Action definition list should not be empty", actionDefs.getList().isEmpty());
+
+            // Check defaults, given that no paging params were sent in the request
+            assertEquals(Paging.DEFAULT_MAX_ITEMS, actionDefs.getPaging().getMaxItems().intValue());
+            assertEquals(Paging.DEFAULT_SKIP_COUNT, actionDefs.getPaging().getSkipCount().intValue());
+
+            // Check ActionDefinition fields
+            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().
+                    filter(ad -> ad.getName().equals("add-features")).collect(Collectors.toList());
+            assertEquals(1, actionDefinitions.size());
+
+            ActionDefinition action = actionDefinitions.get(0);
+            assertEquals("add-features", action.getId());
+            assertEquals("add-features", action.getName());
+            assertEquals("Add aspect", action.getTitle());
+            assertEquals("This will add an aspect to the matched item.", action.getDescription());
+            // Applicable types
+            assertEquals(0, action.getApplicableTypes().size());
+            assertEquals(false, action.isTrackStatus());
+            // Parameter definitions
+            assertEquals(1, action.getParameterDefinitions().size());
+            ActionDefinition.ParameterDefinition paramDefs = action.getParameterDefinitions().get(0);
+            assertEquals(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, paramDefs.getName());
+            assertEquals("d:qname", paramDefs.getType());
+            assertEquals(true, paramDefs.isMandatory());
+            assertEquals("Aspect", paramDefs.getDisplayLabel());
+            assertEquals(false, paramDefs.isMultiValued());
+            assertEquals("ac-aspects", paramDefs.getParameterConstraintName());
         }
 
         AuthenticationUtil.setFullyAuthenticatedUser(person1);
+        
+        // Get the actions for a "checked out" node - there should be a "check-in" action present.
+        // Inspect the fields, to make sure that they're all there. Especially applicableTypes, as
+        // this isn't available on any of the actions that appear for the "-my-" alias in the test above.
+        {   
+            NodeRef nodeForCheckout = nodeService.createNode(
+                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, getMyNodeId()),
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("test", "test-node-checkedout"),
+                    ContentModel.TYPE_CONTENT).getChildRef();
+            CheckOutCheckInService coci = applicationContext.getBean("CheckOutCheckInService", CheckOutCheckInService.class);
+            coci.checkout(nodeForCheckout);
+
+            ListResponse<ActionDefinition> actionDefs =
+                    actions.getActionDefinitionsForNode(nodeForCheckout.getId(), emptyParams, 200);
+
+            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().
+                    filter(ad -> ad.getName().equals("check-in")).collect(Collectors.toList());
+            assertEquals(1, actionDefinitions.size());
+            
+            ActionDefinition action = actionDefinitions.get(0);
+            assertEquals("check-in", action.getId());
+            assertEquals("check-in", action.getName());
+            assertEquals("Check in", action.getTitle());
+            assertEquals("This will check in the matched content.", action.getDescription());
+            // Applicable types
+            assertEquals(1, action.getApplicableTypes().size());
+            assertEquals("cm:content", action.getApplicableTypes().get(0));
+            assertEquals(false, action.isTrackStatus());
+            // Parameter definitions
+            assertEquals(2, action.getParameterDefinitions().size());
+            //    "description"
+            ActionDefinition.ParameterDefinition paramDefs = action.getParameterDefinitions().get(0);
+            assertEquals(CheckInActionExecuter.PARAM_DESCRIPTION, paramDefs.getName());
+            assertEquals("d:text", paramDefs.getType());
+            assertEquals(false, paramDefs.isMandatory());
+            assertEquals("Description", paramDefs.getDisplayLabel());
+            assertEquals(false, paramDefs.isMultiValued());
+            assertEquals(null, paramDefs.getParameterConstraintName());
+            //    "minorChange"
+            paramDefs = action.getParameterDefinitions().get(1);
+            assertEquals(CheckInActionExecuter.PARAM_MINOR_CHANGE, paramDefs.getName());
+            assertEquals("d:boolean", paramDefs.getType());
+            assertEquals(false, paramDefs.isMandatory());
+            assertEquals("Minor change", paramDefs.getDisplayLabel());
+            assertEquals(false, paramDefs.isMultiValued());
+            assertEquals(null, paramDefs.getParameterConstraintName());
+        }
 
         String myNode = getMyNodeId();
         NodeRef validNode = nodeService.createNode(
@@ -319,7 +398,6 @@ public class TestActions extends AbstractBaseApiTest
             Collections.reverse(expectedActions);
             assertEquals(expectedActions, retrievedActions);
         }
-        
         
         // Non-existent node ID
         {

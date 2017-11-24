@@ -74,12 +74,22 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
         logger.debug("Preparing repository info data...");
 
         final Descriptor serverDescriptor = this.serverDescriptorDAO.getDescriptor();
+
         Map<String, Object> infoValues = new HashMap<>();
         infoValues.put("repoName", serverDescriptor.getName());
-        infoValues.put("edition", serverDescriptor.getEdition());
-        infoValues.put("versionMajor", serverDescriptor.getVersionMajor());
-        infoValues.put("versionMinor", serverDescriptor.getVersionMinor());
+
+        Map<String, Object> version = new HashMap<>();
+        version.put("full", serverDescriptor.getVersion());
+        version.put("servicePack", serverDescriptor.getVersionNumber().toString());
+        version.put("major", serverDescriptor.getVersionMajor());
+        version.put("minor", serverDescriptor.getVersionMinor());
+        version.put("patch", serverDescriptor.getVersionRevision());
+        version.put("hotfix", serverDescriptor.getVersionLabel());
+
+        infoValues.put("version", version);
         infoValues.put("schema", new Integer(serverDescriptor.getSchema()));
+        infoValues.put("edition", serverDescriptor.getEdition());
+
         HBData infoData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),

@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
@@ -122,7 +123,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.append("TYPE:\"rma:dispositionAction\" + ");
+            sb.append("TYPE:\"rma:dispositionAction\" AND ");
             sb.append("(@rma\\:dispositionAction:(");
 
             boolean bFirst = true;
@@ -164,68 +165,32 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             if (dispositionActions != null && !dispositionActions.isEmpty())
             {
-                // execute search
-                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                            SearchService.LANGUAGE_FTS_ALFRESCO, getQuery());
-                List<NodeRef> resultNodes = results.getNodeRefs();
-                results.close();
-
-                if (logger.isDebugEnabled())
+                boolean hasMore = true;
+                int skipCount = 0;
+                while(hasMore)
                 {
-                    logger.debug("Processing " + resultNodes.size() + " nodes");
-                }
+                    SearchParameters params = new SearchParameters();
+                    params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+                    params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+                    params.setQuery(getQuery());
+                    params.setSkipCount(skipCount);
 
-                // process search results
-                for (NodeRef node : resultNodes)
-                {
-                    final NodeRef currentNode = node;
+                    // execute search
+                    ResultSet results = searchService.query(params);
+                    List<NodeRef> resultNodes = results.getNodeRefs();
+                    hasMore = results.hasMore();
+                    skipCount += resultNodes.size(); // increase by page size
+                    results.close();
 
-                    RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
+                    if (logger.isDebugEnabled())
                     {
-                        public Boolean execute()
-                        {
-                            final String dispAction = (String) nodeService.getProperty(currentNode,
-                                        RecordsManagementModel.PROP_DISPOSITION_ACTION);
+                        logger.debug("Processing " + resultNodes.size() + " nodes");
+                    }
 
-                            // Run disposition action
-                            if (dispAction != null && dispositionActions.contains(dispAction))
-                            {
-                                ChildAssociationRef parent = nodeService.getPrimaryParent(currentNode);
-                                if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
-                                {
-                                    Map<String, Serializable> props = new HashMap<String, Serializable>(1);
-                                    props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK,
-                                                Boolean.FALSE);
-
-                                    try
-                                    {
-                                        // execute disposition action
-                                        recordsManagementActionService.executeRecordsManagementAction(
-                                                    parent.getParentRef(), dispAction, props);
-
-                                        if (logger.isDebugEnabled())
-                                        {
-                                            logger.debug("Processed action: " + dispAction + "on" + parent);
-                                        }
-                                    }
-                                    catch (AlfrescoRuntimeException exception)
-                                    {
-                                        if (logger.isDebugEnabled())
-                                        {
-                                            logger.debug(exception);
-                                        }
-                                    }
-                                }
-                            }
-
-                            return Boolean.TRUE;
-                        }
-                    };
-
-                    // if exists
-                    if (nodeService.exists(currentNode))
+                    // process search results
+                    for (NodeRef node : resultNodes)
                     {
-                        retryingTransactionHelper.doInTransaction(processTranCB);
+                        executeAction(node);
                     }
                 }
             }
@@ -238,6 +203,62 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             {
                 logger.debug(exception);
             }
+        }
+    }
+
+    /**
+     * Helper method that executes a disposition action
+     *
+     * @param actionNode - the disposition action to execute
+     */
+    private void executeAction(final NodeRef actionNode)
+    {
+        RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
+        {
+            public Boolean execute()
+            {
+                final String dispAction = (String) nodeService.getProperty(actionNode,
+                            RecordsManagementModel.PROP_DISPOSITION_ACTION);
+
+                // Run disposition action
+                if (dispAction != null && dispositionActions.contains(dispAction))
+                {
+                    ChildAssociationRef parent = nodeService.getPrimaryParent(actionNode);
+                    if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
+                    {
+                        Map<String, Serializable> props = new HashMap<String, Serializable>(1);
+                        props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK,
+                                    Boolean.FALSE);
+
+                        try
+                        {
+                            // execute disposition action
+                            recordsManagementActionService.executeRecordsManagementAction(
+                                        parent.getParentRef(), dispAction, props);
+
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Processed action: " + dispAction + "on" + parent);
+                            }
+                        }
+                        catch (AlfrescoRuntimeException exception)
+                        {
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug(exception);
+                            }
+                        }
+                    }
+                }
+
+                return Boolean.TRUE;
+            }
+        };
+
+        // if exists
+        if (nodeService.exists(actionNode))
+        {
+            retryingTransactionHelper.doInTransaction(processTranCB);
         }
     }
 

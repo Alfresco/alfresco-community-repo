@@ -25,6 +25,7 @@
  */
 package org.alfresco.heartbeat;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -37,6 +38,7 @@ import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.util.VersionNumber;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,11 +47,13 @@ import org.junit.Test;
  */
 public class InfoDataCollectorTest
 {
+
     private InfoDataCollector infoCollector;
     private HBDataCollectorService mockCollectorService;
     private DescriptorDAO mockDescriptorDAO;
     private DescriptorDAO mockServerDescriptorDAO;
     private List<HBData> collectedData;
+    private VersionNumber versionNumber;
 
     @Before
     public void setUp()
@@ -63,24 +67,38 @@ public class InfoDataCollectorTest
         when(mockServerDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        infoCollector = new InfoDataCollector("acs.repository.info","1.0","0 0 0 ? * *");
+        infoCollector = new InfoDataCollector("acs.repository.info", "1.0", "0 0 0 ? * *");
         infoCollector.setHbDataCollectorService(mockCollectorService);
         infoCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         infoCollector.setServerDescriptorDAO(mockServerDescriptorDAO);
 
+        versionNumber = new VersionNumber("5.1.2");
+        when(mockDescriptor.getName()).thenReturn("repository");
+        when(mockDescriptor.getVersion()).thenReturn("5.1.2.4");
+        when(mockDescriptor.getVersionNumber()).thenReturn(versionNumber);
+        when(mockDescriptor.getVersionMajor()).thenReturn("5");
+        when(mockDescriptor.getVersionMinor()).thenReturn("1");
+        when(mockDescriptor.getVersionRevision()).thenReturn("2");
+        when(mockDescriptor.getVersionLabel()).thenReturn("4");
+        when(mockDescriptor.getSchema()).thenReturn(1000);
+        when(mockDescriptor.getEdition()).thenReturn("Community");
         collectedData = infoCollector.collectData();
     }
 
     @Test
     public void testHBDataFields()
     {
-        for(HBData data : this.collectedData)
+        HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
+        assertNotNull("Repository info data missing.", repoInfo);
+
+        for (HBData data : this.collectedData)
         {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
             assertNotNull(data.getSchemaVersion());
             assertNotNull(data.getSystemId());
             assertNotNull(data.getTimestamp());
+            assertNotNull(data.getData());
         }
     }
 
@@ -90,12 +108,18 @@ public class InfoDataCollectorTest
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
         assertNotNull("Repository info data missing.", repoInfo);
 
-        Map<String,Object> data = repoInfo.getData();
-        assertTrue(data.containsKey("repoName"));
-        assertTrue(data.containsKey("edition"));
-        assertTrue(data.containsKey("versionMajor"));
-        assertTrue(data.containsKey("versionMinor"));
-        assertTrue(data.containsKey("schema"));
+        Map<String, Object> data = repoInfo.getData();
+        assertEquals("repository", data.get("repoName"));
+        assertEquals(1000, data.get("schema"));
+        assertEquals("Community", data.get("edition"));
+        assertTrue(data.containsKey("version"));
+        Map<String, Object> version = (Map<String, Object>) data.get("version");
+        assertEquals("5.1.2.4", (version.get("full")));
+        assertEquals("5.1.2", version.get("servicePack"));
+        assertEquals("5", version.get("major"));
+        assertEquals("1", version.get("minor"));
+        assertEquals("2", version.get("patch"));
+        assertEquals("4", version.get("hotfix"));
     }
 
     private HBData grabDataByCollectorId(String collectorId)

@@ -11,7 +11,7 @@ introduced the [ExtendedPermissionService](../../rm-community/rm-community-repo/
 
 ### Overview
 
-The ExtendedPermissionService is wired in, via [Spring config](../../rm-community-repo/alfresco/module/org_alfresco_module_rm/extended-repository-context.xml) 
+The ExtendedPermissionService is wired in, via [Spring config](../../rm-community/rm-community-repo/alfresco/module/org_alfresco_module_rm/extended-repository-context.xml), 
 to extend Alfresco's core PermissionService, and adds support for: 
 * the [RMPermissionModel](../../rm-community/rm-community-repo/source/java/org/alfresco/module/org_alfresco_module_rm/capability/RMPermissionModel.java), which defines the available permissions capabilities.
 * the [PermissionProcessorRegistry](../../rm-community/rm-community-repo/source/java/org/alfresco/repo/security/permissions/processor/PermissionProcessorRegistry.java), which introduces pre- and post- processors.
@@ -33,7 +33,7 @@ Out of the box, a system with the RM module installed will have the following pe
 
 ##### Post-processors: 
 * [RecordsManagementPermissionPostProcessor](../../rm-community/rm-community-repo/source/java/org/alfresco/module/org_alfresco_module_rm/permission/RecordsManagementPermissionPostProcessor.java)
-  * If the node is an RM node (i.e. it has the [RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT](../../rm-community/rm-community-repo/source/java/org/alfresco/module/org_alfresco_module_rm/model/RecordsManagementModel.java) marker aspect) and the 
+  * If the node is an RM node (i.e. it has the [RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT](../../rm-community/rm-community-repo/source/java/org/alfresco/module/org_alfresco_module_rm/model/RecordsManagementModel.java#L184) marker aspect) and the 
   core permissions evaluates to DENIED, then this post processor allows read/writes if the appropriate read/file 
   permissions are present.
 
@@ -43,7 +43,7 @@ Out of the box, a system with the RM module installed will have the following pe
 ##### Pre-processors:
 * [SecurityMarksPermissionPreProcessor](../../rm-enterprise/rm-enterprise-repo/src/main/java/org/alfresco/module/org_alfresco_module_rm/securitymarks/permission/SecurityMarksPermissionPreProcessor.java)
   * For all content: denies the result if the required security clearance rules (for classification or marks) are not satisfied. (uses 
-[securityClearanceService.isClearedFor](../../rm-enterprise/rm-enterprise-repo/src/main/java/org/alfresco/module/org_alfresco_module_rm/securitymarks/SecurityClearanceServiceImpl.java))
+[securityClearanceService.isClearedFor](../../rm-enterprise/rm-enterprise-repo/src/main/java/org/alfresco/module/org_alfresco_module_rm/securitymarks/SecurityClearanceServiceImpl.java#L86))
 
 ##### Post-processors: 
 * None.

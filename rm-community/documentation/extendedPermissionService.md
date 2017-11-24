@@ -11,7 +11,7 @@ introduced the [ExtendedPermissionService](../../rm-community/rm-community-repo/
 
 ### Overview
 
-The ExtendedPermissionService is wired in, via [Spring config](../../rm-community/rm-community-repo/alfresco/module/org_alfresco_module_rm/extended-repository-context.xml), 
+The ExtendedPermissionService is wired in, via [Spring config](../../rm-community/rm-community-repo/config/alfresco/module/org_alfresco_module_rm/extended-repository-context.xml#L105), 
 to extend Alfresco's core PermissionService, and adds support for: 
 * the [RMPermissionModel](../../rm-community/rm-community-repo/source/java/org/alfresco/module/org_alfresco_module_rm/capability/RMPermissionModel.java), which defines the available permissions capabilities.
 * the [PermissionProcessorRegistry](../../rm-community/rm-community-repo/source/java/org/alfresco/repo/security/permissions/processor/PermissionProcessorRegistry.java), which introduces pre- and post- processors.

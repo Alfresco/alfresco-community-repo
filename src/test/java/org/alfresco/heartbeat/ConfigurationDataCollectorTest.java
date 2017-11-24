@@ -46,7 +46,6 @@ import org.junit.Test;
  */
 public class ConfigurationDataCollectorTest
 {
-
     private ConfigurationDataCollector configurationCollector;
     private HBDataCollectorService mockCollectorService;
     private SpringExtensionBundle smartFoldersBundle;
@@ -89,7 +88,7 @@ public class ConfigurationDataCollectorTest
     }
 
     @Test
-    public void testInfoDataIsCollected()
+    public void testConfigurationDataIsCollected()
     {
         HBData repoInfo = grabDataByCollectorId(configurationCollector.getCollectorId());
         assertNotNull("Repository configuration data missing.", repoInfo);

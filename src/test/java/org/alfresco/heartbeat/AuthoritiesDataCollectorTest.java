@@ -44,7 +44,6 @@ import static org.mockito.Mockito.when;
  */
 public class AuthoritiesDataCollectorTest
 {
-
     private AuthoritiesDataCollector authorityDataCollector;
     private List<HBData> collectedData;
 
@@ -77,11 +76,10 @@ public class AuthoritiesDataCollectorTest
             assertNotNull(data.getSystemId());
             assertNotNull(data.getTimestamp());
         }
-
     }
 
     @Test
-    public void testInfoDataIsCollected()
+    public void testAuthDataIsCollected()
     {
         HBData authorityInfo = grabDataByCollectorId(authorityDataCollector.getCollectorId());
         assertNotNull("Authority info data missing.", authorityInfo);
@@ -91,12 +89,11 @@ public class AuthoritiesDataCollectorTest
         assertTrue(data.containsKey("numGroups"));
     }
 
-
     private HBData grabDataByCollectorId(String collectorId)
     {
         for (HBData d : this.collectedData)
         {
-            if(d.getCollectorId()!=null && d.getCollectorId().equals(collectorId))
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId))
             {
                 return d;
             }

@@ -25,32 +25,26 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.repo.dictionary.CustomModelsInfo;
-import org.alfresco.service.cmr.dictionary.CustomModelService;
-import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.alfresco.service.descriptor.Descriptor;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
-
-import java.util.List;
-import java.util.Map;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.repo.descriptor.DescriptorDAO;
+import org.alfresco.service.cmr.repository.HBDataCollectorService;
+import org.alfresco.service.descriptor.Descriptor;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author eknizat
  */
 public class InfoDataCollectorTest
 {
-
     private InfoDataCollector infoCollector;
     private HBDataCollectorService mockCollectorService;
     private DescriptorDAO mockDescriptorDAO;
@@ -108,7 +102,7 @@ public class InfoDataCollectorTest
     {
         for (HBData d : this.collectedData)
         {
-            if(d.getCollectorId()!=null && d.getCollectorId().equals(collectorId))
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId))
             {
                 return d;
             }

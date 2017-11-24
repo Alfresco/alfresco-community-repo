@@ -25,9 +25,9 @@
  */
 package org.alfresco.heartbeat;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * This class collects authorities data for HeartBeat.
+ * This class collects repository configuration data for HeartBeat.
  * <br>
  * <b>Collector ID:</b> acs.repository.configuration
  * <br>
@@ -76,8 +76,8 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "smartFoldersBundle", smartFoldersBundle);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
+        PropertyCheck.mandatory(this, "smartFoldersBundle", smartFoldersBundle);
     }
 
     @Override
@@ -93,9 +93,7 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
                 this.getCollectorVersion(),
                 new Date(),
                 configurationValues);
-        List<HBData> collectedData = new LinkedList<>();
-        collectedData.add(configurationData);
-        return collectedData;
+        return Arrays.asList(configurationData);
     }
 
 }

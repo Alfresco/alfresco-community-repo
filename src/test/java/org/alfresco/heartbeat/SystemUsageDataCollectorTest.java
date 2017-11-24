@@ -37,7 +37,6 @@ import java.util.Map;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +45,6 @@ import static org.mockito.Mockito.when;
  */
 public class SystemUsageDataCollectorTest
 {
-
     private SystemUsageDataCollector usageSystemCollector;
     private HBDataCollectorService mockCollectorService;
     private DescriptorDAO mockDescriptorDAO;
@@ -72,7 +70,7 @@ public class SystemUsageDataCollectorTest
     @Test
     public void testHBDataFields()
     {
-        for(HBData data : this.collectedData)
+        for (HBData data : this.collectedData)
         {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
@@ -98,7 +96,7 @@ public class SystemUsageDataCollectorTest
     {
         for (HBData d : this.collectedData)
         {
-            if(d.getCollectorId()!=null && d.getCollectorId().equals(collectorId))
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId))
             {
                 return d;
             }

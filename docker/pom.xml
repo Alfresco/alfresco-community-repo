@@ -25,16 +25,6 @@
             <type>war</type>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>${dependency.mysql.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mariadb.jdbc</groupId>
-            <artifactId>mariadb-java-client</artifactId>
-            <version>${dependency.mariadb.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>${dependency.postgresql.version}</version>
@@ -81,20 +71,6 @@
                         </goals>
                         <configuration>
                             <artifactItems>
-                                <artifactItem>
-                                    <groupId>mysql</groupId>
-                                    <artifactId>mysql-connector-java</artifactId>
-                                    <type>jar</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/connector</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.mariadb.jdbc</groupId>
-                                    <artifactId>mariadb-java-client</artifactId>
-                                    <version>${dependency.mariadb.version}</version>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/connector</outputDirectory>
-                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.postgresql</groupId>
                                     <artifactId>postgresql</artifactId>

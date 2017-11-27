@@ -123,7 +123,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.append("TYPE:\"rma:dispositionAction\" + ");
+            sb.append("TYPE:\"rma:dispositionAction\" AND ");
             sb.append("(@rma\\:dispositionAction:(");
 
             boolean bFirst = true;
@@ -179,7 +179,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     ResultSet results = searchService.query(params);
                     List<NodeRef> resultNodes = results.getNodeRefs();
                     hasMore = results.hasMore();
-                    skipCount += results.length();
+                    skipCount += resultNodes.size(); // increase by page size
                     results.close();
 
                     if (logger.isDebugEnabled())

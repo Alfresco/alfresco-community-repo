@@ -2637,7 +2637,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
             {
                 public Pair<NodeRef, Boolean> call() throws IOException
                 {
-                    // Check if the file is an OpenOffice document and hte truncation flag is set
+                    // Check if the file is an OpenOffice document and the truncation flag is set
                     //
                     // Note: Check before the timestamp update
                     

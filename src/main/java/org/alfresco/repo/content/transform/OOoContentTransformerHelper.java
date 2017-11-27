@@ -36,11 +36,11 @@ import java.io.Reader;
 import java.io.Writer;
 
 import com.sun.star.task.ErrorCodeIOException;
-import net.sf.jooreports.converter.DocumentFamily;
-import net.sf.jooreports.converter.DocumentFormat;
-import net.sf.jooreports.converter.DocumentFormatRegistry;
-import net.sf.jooreports.converter.XmlDocumentFormatRegistry;
-import net.sf.jooreports.openoffice.connection.OpenOfficeException;
+import org.artofsolving.jodconverter.document.DefaultDocumentFormatRegistry;
+import org.artofsolving.jodconverter.document.DocumentFamily;
+import org.artofsolving.jodconverter.document.DocumentFormat;
+import org.artofsolving.jodconverter.document.DocumentFormatRegistry;
+import org.artofsolving.jodconverter.document.JsonDocumentFormatRegistry;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
@@ -55,6 +55,7 @@ import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
+import org.artofsolving.jodconverter.office.OfficeException;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.FileCopyUtils;
 
@@ -107,7 +108,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
             try
             {
                 InputStream is = resourceLoader.getResource(this.documentFormatsConfiguration).getInputStream();
-                formatRegistry = new XmlDocumentFormatRegistry(is);
+                formatRegistry = new JsonDocumentFormatRegistry(is);
                 // We do not need to explicitly close this InputStream as it is closed for us within the XmlDocumentFormatRegistry
             }
             catch (IOException e)
@@ -119,7 +120,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         }
         else
         {
-            formatRegistry = new XmlDocumentFormatRegistry();
+            formatRegistry = new DefaultDocumentFormatRegistry();
         }
     }
 
@@ -187,14 +188,14 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         String sourceExtension = mimetypeService.getExtension(sourceMimetype);
         String targetExtension = mimetypeService.getExtension(targetMimetype);
         // query the registry for the source format
-        DocumentFormat sourceFormat = formatRegistry.getFormatByFileExtension(sourceExtension);
+        DocumentFormat sourceFormat = formatRegistry.getFormatByExtension(sourceExtension);
         if (sourceFormat == null)
         {
             // no document format
             return false;
         }
         // query the registry for the target format
-        DocumentFormat targetFormat = formatRegistry.getFormatByFileExtension(targetExtension);
+        DocumentFormat targetFormat = formatRegistry.getFormatByExtension(targetExtension);
         if (targetFormat == null)
         {
             // no document format
@@ -202,17 +203,10 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         }
 
         // get the family of the target document
-        DocumentFamily sourceFamily = sourceFormat.getFamily();
+        DocumentFamily sourceFamily = sourceFormat.getInputFamily();
         // does the format support the conversion
-        if (!targetFormat.isExportableFrom(sourceFamily))
-        {
-            // unable to export from source family of documents to the target format
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        boolean transformable = formatRegistry.getOutputFormats(sourceFamily).contains(targetFormat); // same as: targetFormat.getStoreProperties(sourceFamily) != null
+        return transformable;
     }
     
     @Override
@@ -319,23 +313,23 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
         String sourceExtension = mimetypeService.getExtension(sourceMimetype);
         String targetExtension = mimetypeService.getExtension(targetMimetype);
         // query the registry for the source format
-        DocumentFormat sourceFormat = formatRegistry.getFormatByFileExtension(sourceExtension);
+        DocumentFormat sourceFormat = formatRegistry.getFormatByExtension(sourceExtension);
         if (sourceFormat == null)
         {
             // source format is not recognised
             throw new ContentIOException("No OpenOffice document format for source extension: " + sourceExtension);
         }
         // query the registry for the target format
-        DocumentFormat targetFormat = formatRegistry.getFormatByFileExtension(targetExtension);
+        DocumentFormat targetFormat = formatRegistry.getFormatByExtension(targetExtension);
         if (targetFormat == null)
         {
             // target format is not recognised
             throw new ContentIOException("No OpenOffice document format for target extension: " + targetExtension);
         }
         // get the family of the target document
-        DocumentFamily sourceFamily = sourceFormat.getFamily();
+        DocumentFamily sourceFamily = sourceFormat.getInputFamily();
         // does the format support the conversion
-        if (!targetFormat.isExportableFrom(sourceFamily))
+        if (!formatRegistry.getOutputFormats(sourceFamily).contains(targetFormat)) // same as: targetFormat.getStoreProperties(sourceFamily) == null
         {
             throw new ContentIOException(
                     "OpenOffice conversion not supported: \n" +
@@ -376,7 +370,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
             {
                 convert(tempFromFile, sourceFormat, tempToFile, targetFormat);
             }
-            catch (OpenOfficeException e)
+            catch (OfficeException e)
             {
                 throw new ContentIOException("OpenOffice server conversion failed: \n" +
                         "   reader: " + reader + "\n" +

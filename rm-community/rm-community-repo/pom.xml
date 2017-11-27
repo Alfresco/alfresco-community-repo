@@ -378,6 +378,20 @@
           <version>0.9.10</version>
           <scope>test</scope>
       </dependency>
+      <!-- swagger parser -->
+      <dependency>
+         <groupId>io.swagger</groupId>
+         <artifactId>swagger-parser</artifactId>
+         <version>1.0.23</version>
+         <scope>test</scope>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/com.github.fge/json-schema-validator -->
+      <dependency>
+         <groupId>com.github.fge</groupId>
+         <artifactId>json-schema-validator</artifactId>
+         <version>2.2.6</version>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <profiles>

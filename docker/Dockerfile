@@ -17,10 +17,9 @@ RUN echo -e '\n\
 alfresco-pdf-renderer.root=/usr/bin/\n\
 alfresco-pdf-renderer.exe=${alfresco-pdf-renderer.root}/alfresco-pdf-renderer\n\
 \n\
-ooo.enabled=true\n\
-ooo.port=8100\n\
-ooo.exe=/opt/libreoffice5.4/program/soffice.bin\n\
-jodconverter.enabled=false\n\
+jodconverter.enabled=true\n\
+jodconverter.portNumbers=8100\n\
+jodconverter.officeHome=/opt/libreoffice5.4/\n\
 \n\
 img.root=/usr/lib64/ImageMagick-7.0.7\n\
 img.coders=/usr/lib64/ImageMagick-7.0.7/modules-Q16HDRI/coders\n\

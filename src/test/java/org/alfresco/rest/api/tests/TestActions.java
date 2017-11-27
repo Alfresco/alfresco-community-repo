@@ -159,6 +159,19 @@ public class TestActions extends AbstractBaseApiTest
                         collect(Collectors.toList()),
                 // Actual results
                 paging -> actions.getActionDefinitions(createParams(paging, null), 200));
+
+
+        // Badly formed request -> 400
+        {
+            PublicApiClient.Paging paging = getPaging(0, -1); // -1 is not acceptable
+            actions.getActionDefinitions(createParams(paging, null), 400);
+        }
+
+        // Unauthorized -> 401
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1, "invalid-password"));
+            actions.getActionDefinitions(emptyParams, 401);
+        }
     }
     
     @Test

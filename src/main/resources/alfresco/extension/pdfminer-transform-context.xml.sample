@@ -23,24 +23,6 @@
       </property>
    </bean>
 
-   <!-- Add ??? -> pdf -> text transformer using PdfMiner and disable PdfBox version -->
-   <bean id="transformer.complex.OpenOffice.PdfBox" class="java.lang.String"/>
-   <bean id="transformer.complex.OpenOffice.PdfMiner"
-        class="org.alfresco.repo.content.transform.ComplexContentTransformer"
-        parent="baseContentTransformer" >
-      <property name="transformers">
-         <list>
-            <ref bean="transformer.OpenOffice" />
-            <ref bean="transformer.PdfMiner" />
-         </list>
-      </property>
-      <property name="intermediateMimetypes">
-         <list>
-            <value>application/pdf</value>
-         </list>    
-      </property>
-   </bean>
-
    <!-- Add pdf -> text transformer using PdfMiner and disable PdfBox version -->
    <bean id="transformer.PdfBox" class="java.lang.String"/>
    <bean id="transformer.PdfMiner" class="org.alfresco.repo.content.transform.ProxyContentTransformer"

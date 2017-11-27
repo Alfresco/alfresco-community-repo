@@ -572,7 +572,7 @@ public class TransformerPropertySetterTest
     }
     
     @Test
-    public void removeSimplePropetyTest()
+    public void removeSimplePropertyTest()
     {
         mockProperties(transformerProperties, "transformer.log.entries", "12");
         

@@ -6,8 +6,6 @@
   <!-- disable standard pdfbox text transformer -->
   <bean id="transformer.PdfBox" class="java.lang.String"/>
   <!-- has the above injected, is newly created below -->
-  <bean id="transformer.complex.OpenOffice.PdfBox" class="java.lang.String"/>
-  
   <bean id="transformer.complex.JodConverter.PdfBox" class="java.lang.String"/>
   
   <!-- pdftotext command line binary -->
@@ -88,11 +86,11 @@
     </property>
   </bean>
   
-  <!-- replaces bean transformer.complex.OpenOffice.PdfBox -->
-  <bean id="transformer.complex.OpenOffice.PdfToTextTool" class="org.alfresco.repo.content.transform.ComplexContentTransformer" parent="baseContentTransformer">
+  <!-- replaces bean transformer.complex.JodConverter.PdfBox -->
+  <bean id="transformer.complex.JodConverter.PdfToTextTool" class="org.alfresco.repo.content.transform.ComplexContentTransformer" parent="baseContentTransformer">
     <property name="transformers">
       <list>
-        <ref bean="transformer.OpenOffice"/>
+        <ref bean="transformer.JodConverter"/>
         <ref bean="transformer.PdfToTextTool"/>
       </list>
     </property>

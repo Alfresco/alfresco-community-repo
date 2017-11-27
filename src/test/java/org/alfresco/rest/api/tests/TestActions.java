@@ -33,6 +33,7 @@ import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.tests.client.Pair;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
+import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.action.ActionService;
@@ -54,6 +55,7 @@ import java.util.EmptyStackException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
@@ -106,6 +108,57 @@ public class TestActions extends AbstractBaseApiTest
     public String getScope()
     {
         return "public";
+    }
+    
+    @Test
+    public void canGetActionsDefinitions() throws PublicApiException
+    {
+        final String person1 = account1PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
+
+        {
+            ListResponse<ActionDefinition> actionDefs = actions.getActionDefinitions(emptyParams, 200);
+            
+            assertNotNull("Action definition list should not be null", actionDefs);
+            assertFalse("Action definition list should not be empty", actionDefs.getList().isEmpty());
+
+            // Check defaults, given that no paging params were sent in the request
+            assertEquals(Paging.DEFAULT_MAX_ITEMS, actionDefs.getPaging().getMaxItems().intValue());
+            assertEquals(Paging.DEFAULT_SKIP_COUNT, actionDefs.getPaging().getSkipCount().intValue());
+
+            // Check ActionDefinition fields
+            List<ActionDefinition> actionDefinitions = actionDefs.getList().stream().
+                    filter(ad -> ad.getName().equals("add-features")).collect(Collectors.toList());
+            assertEquals(1, actionDefinitions.size());
+
+            ActionDefinition action = actionDefinitions.get(0);
+            assertEquals("add-features", action.getId());
+            assertEquals("add-features", action.getName());
+            assertEquals("Add aspect", action.getTitle());
+            assertEquals("This will add an aspect to the matched item.", action.getDescription());
+            // Applicable types
+            assertEquals(0, action.getApplicableTypes().size());
+            assertEquals(false, action.isTrackStatus());
+            // Parameter definitions
+            assertEquals(1, action.getParameterDefinitions().size());
+            ActionDefinition.ParameterDefinition paramDefs = action.getParameterDefinitions().get(0);
+            assertEquals(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, paramDefs.getName());
+            assertEquals("d:qname", paramDefs.getType());
+            assertEquals(true, paramDefs.isMandatory());
+            assertEquals("Aspect", paramDefs.getDisplayLabel());
+            assertEquals(false, paramDefs.isMultiValued());
+            assertEquals("ac-aspects", paramDefs.getParameterConstraintName());
+        }
+
+        checkBasicPagingAndSorting(
+                // Expected
+                () -> actionService.getActionDefinitions().
+                        stream().
+                        sorted(Comparator.comparing(org.alfresco.service.cmr.action.ActionDefinition::getName)).
+                        map(ParameterizedItemDefinition::getName).
+                        collect(Collectors.toList()),
+                // Actual results
+                paging -> actions.getActionDefinitions(createParams(paging, null), 200));
     }
     
     @Test
@@ -215,71 +268,15 @@ public class TestActions extends AbstractBaseApiTest
             assertFalse("Action definition list should not be empty", actionDefs.getList().isEmpty());
         }
 
-        // Test paging
-        {
-            // Default sort order is by name ascending
-            List<String> expectedNames =
-                    actionService.getActionDefinitions(validNode).
-                    stream().
-                    sorted(Comparator.comparing(org.alfresco.service.cmr.action.ActionDefinition::getName)).
-                    map(ParameterizedItemDefinition::getName).        
-                    collect(Collectors.toList());
-            
-            // Retrieve all action defs using the REST API - then check that they match
-            // the list retrieved directly from the ActionService.
-            PublicApiClient.Paging paging = getPaging(0, Integer.MAX_VALUE);
-            
-            // Retrieve all the results, sorted, on one page
-            ListResponse<ActionDefinition> actionDefs = actions.
-                    getActionDefinitionsForNode(validNode.getId(), createParams(paging, null), 200);
-            
-            // ActionService and the REST API return very different types, so mapping both lists
-            // to Strings to make a simple comparison easy.
-            List<String> actionNames = actionDefs.getList().stream().
-                    map(ActionDefinition::getName).
-                    collect(Collectors.toList());
-            
-            // Check the whole lists match
-            assertEquals(expectedNames, actionNames);
-
-            final int pageSize = 2;
-            if (expectedNames.size() < ((pageSize * 2) + 1)) // need at least 3 pages worth
-            {
-                // By default there are plenty of actions available to the created node. If this
-                // ceases to be the case in the future, this test should be modified to make sure
-                // there are sufficient action definitions to be listed for the node.
-                fail("Cannot perform useful paging tests - too few action definitions.");
-            }
-            else
-            {
-                // Page 1
-                paging = getPaging(0, pageSize);
-                actionDefs = actions.
-                        getActionDefinitionsForNode(validNode.getId(), createParams(paging, null), 200);
-                assertEquals(pageSize, actionDefs.getList().size());
-                assertEquals(pageSize, (long) actionDefs.getPaging().getCount());
-                assertEquals(expectedNames.size(), (int) actionDefs.getPaging().getTotalItems());
-                assertTrue(actionDefs.getPaging().getHasMoreItems());
-
-                // Page 2
-                paging = getPaging(pageSize, pageSize, expectedNames.size(), expectedNames.size());
-                actionDefs = actions.
-                        getActionDefinitionsForNode(validNode.getId(), createParams(paging, null), 200);
-                assertEquals(pageSize, actionDefs.getList().size());
-                assertEquals(pageSize, (long) actionDefs.getPaging().getCount());
-                assertEquals(expectedNames.size(), (int) actionDefs.getPaging().getTotalItems());
-                assertTrue(actionDefs.getPaging().getHasMoreItems());
-                
-                // Get a 'page' consisting of just the last item, regardless of pageSize 
-                paging = getPaging(expectedNames.size()-1, pageSize);
-                actionDefs = actions.
-                        getActionDefinitionsForNode(validNode.getId(), createParams(paging, null), 200);
-                assertEquals(1, actionDefs.getList().size());
-                assertEquals(1L, (long) actionDefs.getPaging().getCount());
-                assertEquals(expectedNames.size(), (int) actionDefs.getPaging().getTotalItems());
-                assertFalse(actionDefs.getPaging().getHasMoreItems());
-            }
-        }
+        checkBasicPagingAndSorting(
+                // Expected
+                () -> actionService.getActionDefinitions(validNode).
+                        stream().
+                        sorted(Comparator.comparing(org.alfresco.service.cmr.action.ActionDefinition::getName)).
+                        map(ParameterizedItemDefinition::getName).
+                        collect(Collectors.toList()),
+                // Actual results
+                paging -> actions.getActionDefinitionsForNode(validNode.getId(), createParams(paging, null), 200));
         
         // Test sorting by title
         {
@@ -419,6 +416,76 @@ public class TestActions extends AbstractBaseApiTest
         {
             publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1, "invalid-password"));
             actions.getActionDefinitionsForNode(validNode.getId(), emptyParams, 401);
+        }
+    }
+
+    /**
+     * We could use {@link java.util.function.Function}, but that makes things messy
+     * when wanting to throw a checked exception, as the public API methods do.
+     */
+    @FunctionalInterface
+    private interface CheckedFunction<T, U, V extends Exception>
+    {
+        U apply(T t) throws V;
+    }
+    
+    private void checkBasicPagingAndSorting(
+            Supplier<List<String>> expectedNamesFun,
+            CheckedFunction<PublicApiClient.Paging, ListResponse<ActionDefinition>, PublicApiException> actionsFun)
+            throws PublicApiException
+    {
+        // Default sort order is by name ascending
+        List<String> expectedNames = expectedNamesFun.get();
+
+        // Retrieve all action defs using the REST API - then check that they match
+        // the list retrieved directly from the ActionService.
+        PublicApiClient.Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+        // Retrieve all the results, sorted, on one page
+        ListResponse<ActionDefinition> actionDefs = actionsFun.apply(paging);
+
+        // ActionService and the REST API return very different types, so mapping both lists
+        // to Strings to make a simple comparison easy.
+        List<String> actionNames = actionDefs.getList().stream().
+                map(ActionDefinition::getName).
+                collect(Collectors.toList());
+
+        // Check the whole lists match
+        assertEquals(expectedNames, actionNames);
+
+        final int pageSize = 2;
+        if (expectedNames.size() < ((pageSize * 2) + 1)) // need at least 3 pages worth
+        {
+            // By default there are plenty of actions available to the created node. If this
+            // ceases to be the case in the future, this test should be modified to make sure
+            // there are sufficient action definitions to be listed for the node.
+            fail("Cannot perform useful paging tests - too few action definitions.");
+        }
+        else
+        {
+            // Page 1
+            paging = getPaging(0, pageSize);
+            actionDefs = actionsFun.apply(paging);
+            assertEquals(pageSize, actionDefs.getList().size());
+            assertEquals(pageSize, (long) actionDefs.getPaging().getCount());
+            assertEquals(expectedNames.size(), (int) actionDefs.getPaging().getTotalItems());
+            assertTrue(actionDefs.getPaging().getHasMoreItems());
+
+            // Page 2
+            paging = getPaging(pageSize, pageSize, expectedNames.size(), expectedNames.size());
+            actionDefs = actionsFun.apply(paging);
+            assertEquals(pageSize, actionDefs.getList().size());
+            assertEquals(pageSize, (long) actionDefs.getPaging().getCount());
+            assertEquals(expectedNames.size(), (int) actionDefs.getPaging().getTotalItems());
+            assertTrue(actionDefs.getPaging().getHasMoreItems());
+
+            // Get a 'page' consisting of just the last item, regardless of pageSize 
+            paging = getPaging(expectedNames.size()-1, pageSize);
+            actionDefs = actionsFun.apply(paging);
+            assertEquals(1, actionDefs.getList().size());
+            assertEquals(1L, (long) actionDefs.getPaging().getCount());
+            assertEquals(expectedNames.size(), (int) actionDefs.getPaging().getTotalItems());
+            assertFalse(actionDefs.getPaging().getHasMoreItems());
         }
     }
 }

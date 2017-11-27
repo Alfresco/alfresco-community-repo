@@ -2651,7 +2651,25 @@ public class PublicApiClient
         {
             HttpResponse response = getAll("nodes", nodeId, "action-definitions",
                     null, params, "Unexpected response", expectedStatus);
-            
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return parseActionDefinitions(response.getJsonResponse());
+                }
+            }
+            return null;
+        }
+
+        public ListResponse<ActionDefinition> getActionDefinitions(Map<String, String> params,
+                                                                   int expectedStatus)
+                throws PublicApiException
+        {
+            HttpResponse response = getAll("action-definitions", null, null,
+                    null, params, "Unexpected response", expectedStatus);
+
             if (response != null && response.getJsonResponse() != null)
             {
                 JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");

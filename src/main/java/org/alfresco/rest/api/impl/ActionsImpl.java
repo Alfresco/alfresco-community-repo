@@ -27,6 +27,9 @@ package org.alfresco.rest.api.impl;
 
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,8 +57,34 @@ public class ActionsImpl implements Actions
     }
 
     @Override
-    public List<ActionDefinition> getActionDefinitions(NodeRef nodeRef, SortKey sortKey, Boolean ascending)
+    public CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params)
     {
+        return actionDefinitions(actionService.getActionDefinitions(nodeRef), params);
+    }
+
+    @Override
+    public CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params)
+    {
+        return actionDefinitions(actionService.getActionDefinitions(), params);
+    }
+
+    private CollectionWithPagingInfo<ActionDefinition> actionDefinitions(
+            List<org.alfresco.service.cmr.action.ActionDefinition> actionDefinitions,
+            Parameters params)
+    {
+        List<SortColumn> sorting = params.getSorting();
+        Actions.SortKey sortKey = null;
+        Boolean sortAsc = null;
+        if (sorting != null && !sorting.isEmpty())
+        {
+            if (sorting.size() > 1)
+            {
+                throw new IllegalArgumentException("Only a single sort field ('name' or 'title') is supported.");
+            }
+            sortKey = Actions.SortKey.valueOf(sorting.get(0).column.toUpperCase());
+            sortAsc = sorting.get(0).asc;
+        }
+        
         Comparator<? super ActionDefinition> comparator;
         if (sortKey == null)
         {
@@ -74,17 +103,20 @@ public class ActionsImpl implements Actions
                 throw new IllegalArgumentException("Invalid sort key, must be either 'title' or 'name'.");
         }
         
-        if (ascending == null)
+        if (sortAsc == null)
         {
-            ascending = true;
+            sortAsc = true;
         }
-        if (!ascending)
+        if (!sortAsc)
         {
             comparator = comparator.reversed();
         }
-        
-        
-        return actionService.getActionDefinitions(nodeRef).
+
+
+        final int maxItems = params.getPaging().getMaxItems();
+        final int skip = params.getPaging().getSkipCount();
+
+        List<ActionDefinition> sortedPage = actionDefinitions.
                 stream().
                 map(actionDefinition -> {
                     List<ActionDefinition.ParameterDefinition> paramDefs =
@@ -104,7 +136,17 @@ public class ActionsImpl implements Actions
                             paramDefs);
                 }).
                 sorted(comparator).
+                skip(skip).
+                limit(maxItems).
                 collect(Collectors.toList());
+        
+        boolean hasMoreItems = actionDefinitions.size() > (skip + maxItems);
+
+        return CollectionWithPagingInfo.asPaged(
+                params.getPaging(),
+                sortedPage,
+                hasMoreItems,
+                actionDefinitions.size());
     }
 
     private List<String> toShortQNames(Set<QName> types)

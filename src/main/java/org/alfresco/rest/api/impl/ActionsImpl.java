@@ -73,8 +73,8 @@ public class ActionsImpl implements Actions
             Parameters params)
     {
         List<SortColumn> sorting = params.getSorting();
-        Actions.SortKey sortKey = null;
-        Boolean sortAsc = null;
+        Actions.SortKey sortKey = SortKey.NAME; // default
+        Boolean sortAsc = true; // default
         if (sorting != null && !sorting.isEmpty())
         {
             if (sorting.size() > 1)
@@ -86,11 +86,6 @@ public class ActionsImpl implements Actions
         }
         
         Comparator<? super ActionDefinition> comparator;
-        if (sortKey == null)
-        {
-            sortKey = SortKey.NAME; // default
-        }
-        
         switch (sortKey)
         {
             case TITLE:
@@ -103,10 +98,6 @@ public class ActionsImpl implements Actions
                 throw new IllegalArgumentException("Invalid sort key, must be either 'title' or 'name'.");
         }
         
-        if (sortAsc == null)
-        {
-            sortAsc = true;
-        }
         if (!sortAsc)
         {
             comparator = comparator.reversed();
@@ -156,7 +147,7 @@ public class ActionsImpl implements Actions
                 map(this::toShortQName).
                 collect(Collectors.toList());
     }
-
+    
     private String toShortQName(QName type)
     {
         return type.toPrefixString(prefixResolver);

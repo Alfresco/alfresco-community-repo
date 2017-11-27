@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -36,9 +37,8 @@ import java.util.Map;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
+import org.alfresco.repo.descriptor.DescriptorServiceImpl.BaseDescriptor;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.alfresco.service.descriptor.Descriptor;
-import org.alfresco.util.VersionNumber;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +53,6 @@ public class InfoDataCollectorTest
     private DescriptorDAO mockDescriptorDAO;
     private DescriptorDAO mockServerDescriptorDAO;
     private List<HBData> collectedData;
-    private VersionNumber versionNumber;
 
     @Before
     public void setUp()
@@ -62,7 +61,7 @@ public class InfoDataCollectorTest
         mockServerDescriptorDAO = mock(DescriptorDAO.class);
         mockCollectorService = mock(HBDataCollectorService.class);
 
-        Descriptor mockDescriptor = mock(Descriptor.class);
+        BaseDescriptor mockDescriptor = spy(BaseDescriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
         when(mockServerDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
@@ -72,14 +71,11 @@ public class InfoDataCollectorTest
         infoCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         infoCollector.setServerDescriptorDAO(mockServerDescriptorDAO);
 
-        versionNumber = new VersionNumber("5.1.2");
         when(mockDescriptor.getName()).thenReturn("repository");
-        when(mockDescriptor.getVersion()).thenReturn("5.1.2.4");
-        when(mockDescriptor.getVersionNumber()).thenReturn(versionNumber);
         when(mockDescriptor.getVersionMajor()).thenReturn("5");
         when(mockDescriptor.getVersionMinor()).thenReturn("1");
         when(mockDescriptor.getVersionRevision()).thenReturn("2");
-        when(mockDescriptor.getVersionLabel()).thenReturn("4");
+        when(mockDescriptor.getVersionLabel()).thenReturn(".4");
         when(mockDescriptor.getSchema()).thenReturn(1000);
         when(mockDescriptor.getEdition()).thenReturn("Community");
         collectedData = infoCollector.collectData();
@@ -114,7 +110,6 @@ public class InfoDataCollectorTest
         assertEquals("Community", data.get("edition"));
         assertTrue(data.containsKey("version"));
         Map<String, Object> version = (Map<String, Object>) data.get("version");
-        assertEquals("5.1.2.4", (version.get("full")));
         assertEquals("5.1.2", version.get("servicePack"));
         assertEquals("5", version.get("major"));
         assertEquals("1", version.get("minor"));

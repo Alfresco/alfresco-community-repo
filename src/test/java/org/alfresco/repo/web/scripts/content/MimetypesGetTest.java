@@ -71,17 +71,12 @@ public class MimetypesGetTest extends BaseWebScriptTest
         assertTrue("Expected transformerName to contain 'Proxy' but was " + transformerName,
                 transformerName.contains("Proxy via"));
         
-        boolean oodirectPresent = ctx.containsBean(MimetypesGet.OODIRECT_WORKER_BEAN);
         boolean jodPresent = ctx.containsBean(MimetypesGet.JOD_WORKER_BEAN);
         
         // Test the office transformer name
         transformerName = mimetypesGet.getTransformer(MimetypeMap.MIMETYPE_WORD, 1000, MimetypeMap.MIMETYPE_PDF);
         assertNotNull(transformerName);
-        if (oodirectPresent)
-        {
-            assertEquals("Using a Direct Open Office Connection", transformerName);
-        }
-        else if (jodPresent)
+        if (jodPresent)
         {
             assertEquals("Using JOD Converter / Open Office", transformerName);
         }

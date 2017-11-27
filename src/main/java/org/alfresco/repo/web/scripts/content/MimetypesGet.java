@@ -72,7 +72,6 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
     private Map<String, String> knownWorkerBeanLabels;
     private Map<ContentTransformerWorker, String> knownWorkers;
 
-    protected static final String OODIRECT_WORKER_BEAN = "transformer.worker.OpenOffice";
     protected static final String JOD_WORKER_BEAN = "transformer.worker.JodConverter";
     protected static final String RTS_WORKER_BEAN = "transformer.worker.remoteServer";
     
@@ -95,7 +94,6 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
         if (knownWorkerBeanLabels == null)
         {
             knownWorkerBeanLabels = new HashMap<String, String>();
-            knownWorkerBeanLabels.put(OODIRECT_WORKER_BEAN, "Using a Direct Open Office Connection");
             knownWorkerBeanLabels.put(JOD_WORKER_BEAN, "Using JOD Converter / Open Office");
             knownWorkerBeanLabels.put(RTS_WORKER_BEAN, "Using the Remote Transformation Server v{1}");
         }

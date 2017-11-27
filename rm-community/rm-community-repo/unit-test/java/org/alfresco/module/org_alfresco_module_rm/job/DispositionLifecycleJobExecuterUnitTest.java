@@ -32,16 +32,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,15 +50,15 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * Disposition lifecycle job execution unit test.
@@ -256,7 +256,64 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     {
         String actual = executer.getQuery();
 
-        String expected = "TYPE:\"rma:dispositionAction\" + (@rma\\:dispositionAction:(\"cutoff\" OR \"retain\")) AND ISUNSET:\"rma:dispositionActionCompletedAt\"  AND ( @rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW] ) ";
+        String expected = "TYPE:\"rma:dispositionAction\" AND " +
+                "(@rma\\:dispositionAction:(\"cutoff\" OR \"retain\")) " +
+                "AND ISUNSET:\"rma:dispositionActionCompletedAt\"  " +
+                "AND ( @rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW] ) ";
+
         assertEquals(expected, actual);
+    }
+
+    /**
+     * Given the maximum page of elements for search service is 2
+     *       and search service finds more than one page of elements
+     * When the job executer runs
+     * Then the executer retrieves both pages and iterates all elements
+     */
+    @Test
+    public void testPagination()
+    {
+        final NodeRef node1 = generateNodeRef();
+        final NodeRef node2 = generateNodeRef();
+        final NodeRef node3 = generateNodeRef();
+        final NodeRef node4 = generateNodeRef();
+
+        // mock the search service to return the right page
+        when(mockedSearchService.query(any(SearchParameters.class))).thenAnswer(
+            new Answer<ResultSet>()
+            {
+                @Override
+                public ResultSet answer(InvocationOnMock invocation)
+                {
+                    SearchParameters params = invocation.getArgumentAt(0, SearchParameters.class);
+                    if (params.getSkipCount() == 0)
+                    {
+                        // mock first page
+                        ResultSet result1 = mock(ResultSet.class);
+                        when(result1.getNodeRefs()).thenReturn(Arrays.asList(node1, node2));
+                        when(result1.hasMore()).thenReturn(true);
+                        return result1;
+                    }
+                    else if (params.getSkipCount() == 2)
+                    {
+                        // mock second page
+                        ResultSet result2 = mock(ResultSet.class);
+                        when(result2.getNodeRefs()).thenReturn(Arrays.asList(node3, node4));
+                        when(result2.hasMore()).thenReturn(false);
+                        return result2;
+                    }
+                    throw new IndexOutOfBoundsException("Pagination did not stop after the second page!");
+                }
+            });
+
+        // call the service
+        executer.executeImpl();
+
+        // check the loop iterated trough all the elements
+        verify(mockedNodeService).exists(node1);
+        verify(mockedNodeService).exists(node2);
+        verify(mockedNodeService).exists(node3);
+        verify(mockedNodeService).exists(node4);
+        verify(mockedSearchService, times(2)).query(any(SearchParameters.class));
     }
 }

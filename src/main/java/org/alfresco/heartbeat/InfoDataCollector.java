@@ -35,6 +35,16 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
+/**
+ * This class collects repository info data for HeartBeat.
+ * <br>
+ * <b>Collector ID:</b> acs.repository.info
+ * <br>
+ * <b>Data points:</b> repoName, version, schema, edition
+ * <br>
+ * <b>Version points:</b> full, servicePack, major, minor, patch, hotfix
+ *
+ */
 public class InfoDataCollector extends HBBaseDataCollector implements InitializingBean
 {
     /** The logger. */
@@ -84,8 +94,11 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
         version.put("major", serverDescriptor.getVersionMajor());
         version.put("minor", serverDescriptor.getVersionMinor());
         version.put("patch", serverDescriptor.getVersionRevision());
-        version.put("hotfix", serverDescriptor.getVersionLabel());
-
+        String hotfix = serverDescriptor.getVersionLabel();
+        if (hotfix != null && hotfix.length() > 0)
+        {
+            version.put("hotfix", hotfix.startsWith(".") ? hotfix.substring(1) : hotfix);
+        }
         infoValues.put("version", version);
         infoValues.put("schema", new Integer(serverDescriptor.getSchema()));
         infoValues.put("edition", serverDescriptor.getEdition());
@@ -99,4 +112,5 @@ public class InfoDataCollector extends HBBaseDataCollector implements Initializi
 
         return Arrays.asList(infoData);
     }
+
 }

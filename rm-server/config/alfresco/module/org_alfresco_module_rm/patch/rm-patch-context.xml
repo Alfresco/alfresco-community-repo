@@ -9,7 +9,7 @@
       <property name="description" value="RM patch executer"/>
       <property name="sinceVersion" value="2.2"/>
       <property name="executeOnceOnly" value="false"/>
-      <property name="moduleSchema" value="1012"/>      
+      <property name="moduleSchema" value="1013"/>
       <property name="attributeService" ref="AttributeService" />   
       <property name="dependsOn">
       	<list>

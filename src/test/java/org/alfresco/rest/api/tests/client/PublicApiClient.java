@@ -42,8 +42,10 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.tests.client.data.AuditEntry;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.api.tests.TestPeople;
@@ -99,6 +101,7 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
@@ -124,9 +127,11 @@ public class PublicApiClient
     private Groups groups;
     private RawProxy rawProxy;
     private AuditApps auditApps;
+    private Actions actions;
     
 
     private ThreadLocal<RequestContext> rc = new ThreadLocal<RequestContext>();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     public PublicApiClient(PublicApiHttpClient client, UserDataService userDataService)
     {
@@ -148,6 +153,7 @@ public class PublicApiClient
         groups = new Groups();
         rawProxy = new RawProxy();
         auditApps = new AuditApps();
+        actions = new Actions();
     }
 
     public void setRequestContext(RequestContext rc)
@@ -219,6 +225,11 @@ public class PublicApiClient
         return auditApps;
     }
 
+    public Actions actions()
+    {
+        return actions;
+    }
+    
     public CmisSession createPublicApiCMISSession(Binding binding, String version)
     {
        return createPublicApiCMISSession(binding, version, null);
@@ -2629,5 +2640,64 @@ public class PublicApiClient
             return null;
         }
 
+    }
+    
+    public class Actions extends AbstractProxy
+    {
+        public ListResponse<ActionDefinition> getActionDefinitionsForNode(String nodeId,
+                                                                          Map<String, String> params,
+                                                                          int expectedStatus)
+                throws PublicApiException
+        {
+            HttpResponse response = getAll("nodes", nodeId, "action-definitions",
+                    null, params, "Unexpected response", expectedStatus);
+            
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonList = (JSONObject) response.getJsonResponse().get("list");
+                if (jsonList != null)
+                {
+                    return parseActionDefinitions(response.getJsonResponse());
+                }
+            }
+            return null;
+        }
+        
+        private ListResponse<ActionDefinition> parseActionDefinitions(JSONObject jsonResponse)
+        {
+            List<ActionDefinition> actionDefinitions = new ArrayList<>();
+
+
+            JSONObject jsonList = (JSONObject) jsonResponse.get("list");
+            assertNotNull(jsonList);
+
+            JSONArray jsonEntries = (JSONArray) jsonList.get("entries");
+            assertNotNull(jsonEntries);
+
+            for (int i = 0; i < jsonEntries.size(); i++)
+            {
+                JSONObject jsonEntry = (JSONObject) jsonEntries.get(i);
+                JSONObject entry = (JSONObject) jsonEntry.get("entry");
+                actionDefinitions.add(parseActionDefinition(entry));
+            }
+
+            ExpectedPaging paging = ExpectedPaging.parsePagination(jsonList);
+            return new ListResponse<>(paging, actionDefinitions);
+        }
+
+        private ActionDefinition parseActionDefinition(JSONObject entry)
+        {
+            ActionDefinition def = null;
+            try
+            {
+                def = objectMapper.readValue(entry.toString(), ActionDefinition.class);
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException("Unable to parse ActionDefinition JSON", e);
+            }
+            
+            return def;
+        }
     }
 }

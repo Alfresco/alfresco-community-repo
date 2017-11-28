@@ -22,6 +22,8 @@ import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.SAVED_SEARCH_ASPECT;
 
@@ -38,6 +40,8 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
 
     /** node service */
     private NodeService nodeService;
+
+    private static final String RM_SITE_ID = "rm";
 
     /**
      * @param recordsManagementSearchService	records management search service
@@ -61,10 +65,9 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     @Override
     public void applyInternal()
     {
-       for(SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches("rm"))
+       for(SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches(RM_SITE_ID))
         {
             nodeService.addAspect(savedSearchDetails.getNodeRef(),SAVED_SEARCH_ASPECT,null);
         }
     }
-    
 }

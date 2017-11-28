@@ -25,7 +25,7 @@
  */
 package org.alfresco.repo.content.transform;
 
-import net.sf.jooreports.converter.DocumentFormatRegistry;
+import org.artofsolving.jodconverter.document.DocumentFormatRegistry;
 
 import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.service.cmr.repository.ContentReader;

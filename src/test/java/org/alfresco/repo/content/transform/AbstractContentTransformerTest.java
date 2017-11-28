@@ -48,6 +48,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.exec.RuntimeExec;
@@ -449,32 +450,8 @@ public abstract class AbstractContentTransformerTest extends TestCase
      */
     protected boolean isOpenOfficeWorkerAvailable() throws InterruptedException
     {
-        // workaround for build machines (originally taken from OpenOfficeContentTransformerTest)
-        ContentTransformerWorker ooWorker = (ContentTransformerWorker) ctx.getBean("transformer.worker.OpenOffice");
-
-        if (!ooWorker.isAvailable())
-        {
-            // TODO - temporarily attempt to start LibreOffice/OpenOffice (eg. when locally running individual test class &/or method)
-            // TODO - can we remove this once we have fixed repo startup issue (where LO/OO may not start first time) ?
-            ChildApplicationContextFactory oooDirectSubsystem = (ChildApplicationContextFactory) ctx.getBean("OOoDirect");
-            oooDirectSubsystem.start();
-
-            Thread.sleep(5000);
-
-            RuntimeExec runtimeExec = (RuntimeExec) oooDirectSubsystem.getApplicationContext().getBean("openOfficeStartupCommand");
-            runtimeExec.execute();
-
-            Thread.sleep(5000);
-
-            if (!ooWorker.isAvailable())
-            {
-                if (failTestIfOOWorkerUnavailable)
-                {
-                    fail("Failed to run test - ooWorker not available");
-                }
-                return false;
-            }
-        }
-        return true;
+        ChildApplicationContextFactory jodconverterSubsystem = (ChildApplicationContextFactory) ctx.getBean("OOoJodconverter");
+        JodContentTransformer jodContentTransformer = (JodContentTransformer)jodconverterSubsystem.getApplicationContext().getBean("transformer.worker.JodConverter");
+        return jodContentTransformer.isAvailable();
     }
 }

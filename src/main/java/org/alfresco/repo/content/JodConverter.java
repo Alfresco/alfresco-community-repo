@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,24 +23,21 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.util;
+package org.alfresco.repo.content;
 
-import java.util.Collection;
+import org.artofsolving.jodconverter.office.OfficeManager;
 
-/**
- * Supplies OOoJodconverter subsystems config parameters that might clash with the OOoDirect subsystem.
- * 
- * @author Alan Davis
- */
-public interface JodConfig
+public interface JodConverter
 {
-    public abstract Collection<String> getPortsCollection();
+    /**
+     * Gets the JodConverter OfficeManager.
+     * @return
+     */
+    public abstract OfficeManager getOfficeManager();
     
-    public abstract String getPorts();
-
-    public abstract void setPorts(String ports);
-
-    public abstract boolean isEnabled();
-
-    public abstract void setEnabled(boolean enabled);
+    /**
+     * This method returns a boolean indicating whether the JodConverter connection to OOo is available.
+     * @return <code>true</code> if available, else <code>false</code>
+     */
+    public abstract boolean isAvailable();
 }

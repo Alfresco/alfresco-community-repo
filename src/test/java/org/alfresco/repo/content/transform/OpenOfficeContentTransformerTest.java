@@ -37,7 +37,8 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 
 /**
- * @see org.alfresco.repo.content.transform.OpenOfficeContentTransformerWorker
+ * We no longer use ooo.direct in Community. This test class now is connnected up to the JODConverter which was moved
+ * from the Enterprise Edition.
  * 
  * @author Derek Hulley
  */
@@ -53,7 +54,7 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
     {
         super.setUp();
         
-        this.worker = (ContentTransformerWorker) ctx.getBean("transformer.worker.OpenOffice");
+        this.worker = (ContentTransformerWorker) ctx.getBean("transformer.worker.JodConverter");
         transformer = new ProxyContentTransformer();
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);

@@ -52,7 +52,10 @@ public class TransformerProperties
     private static final String TRANSFORMERS_PROPERTIES = "alfresco/subsystems/Transformers/default/transformers.properties";
 
     private static Log logger = LogFactory.getLog(TransformerProperties.class);
-    
+
+    private static final String JOD_CONVERTER = ".JodConverter.";
+    private static final String OPEN_OFFICE = ".OpenOffice.";
+
     private final ChildApplicationContextFactory subsystem;
     
     private final Properties globalProperties;
@@ -69,6 +72,12 @@ public class TransformerProperties
         if (value == null)
         {
             value = globalProperties.getProperty(name);
+
+            if (value == null)
+            {
+                name = alias(name, JOD_CONVERTER, OPEN_OFFICE);
+                value = globalProperties.getProperty(name);
+            }
         }
         return value;
     }
@@ -104,13 +113,36 @@ public class TransformerProperties
         Set<String> propertyNames = new HashSet<String>(subsystem.getPropertyNames());
         for (String name: globalProperties.stringPropertyNames())
         {
-            if (name.startsWith(TransformerConfig.PREFIX) && !propertyNames.contains(name))
+            if (name.startsWith(TransformerConfig.PREFIX))
             {
-                propertyNames.add(name);
+                name = alias(name, OPEN_OFFICE, JOD_CONVERTER);
+                if (!propertyNames.contains(name))
+                {
+                    propertyNames.add(name);
+                }
             }
         }
 
         return propertyNames;
+    }
+
+    // When we moved the JodConverter into the Community edition (after 6.0.0-ea) we wanted to allow any Community
+    // settings for content.transformer.OpenOffice (and related pipeline transformers specified) in
+    // alfresco.global.properties to apply to the JodConverter (and related pipeline transformers), but where there
+    // is jodConverter that value should be used.
+    //     content.transformer.JodConverter.
+    //     content.transformer.JodConverter.Html2Pdf.
+    //     content.transformer.JodConverter.2Pdf.
+    //     content.transformer.complex.JodConverter.Image.
+    //     content.transformer.complex.JodConverter.PdfBox
+    private String alias(String name, String from, String to)
+    {
+        int i = name.indexOf(from);
+        if (i != -1)
+        {
+            name = name.substring(0, i) + to + name.substring(i+from.length());
+        }
+        return name;
     }
 
     public void setProperties(Map<String, String> map)

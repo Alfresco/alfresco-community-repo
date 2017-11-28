@@ -58,6 +58,7 @@ import org.joda.time.format.ISODateTimeFormat;
 public class ISO8601DateFormat
 {
     private static ThreadLocal<Map<TimeZone, Calendar>> calendarThreadLocal = new ThreadLocal<Map<TimeZone, Calendar>>();
+    public static final TimeZone UTC_TIMEZONE = TimeZone.getTimeZone("UTC");
     /**
      * Get a calendar object from cache.
      * @return calendar object from cache or newly created (if cache is empty)
@@ -69,11 +70,11 @@ public class ISO8601DateFormat
             calendarThreadLocal.set(new HashMap<TimeZone, Calendar>());
         }
         
-        Calendar calendar = calendarThreadLocal.get().get(TimeZone.getDefault());
+        Calendar calendar = calendarThreadLocal.get().get(UTC_TIMEZONE);
         if (calendar == null)
         {
-            calendar = new GregorianCalendar();
-            calendarThreadLocal.get().put(TimeZone.getDefault(), calendar);
+            calendar = new GregorianCalendar(UTC_TIMEZONE);
+            calendarThreadLocal.get().put(UTC_TIMEZONE, calendar);
         }
         
         return calendar;

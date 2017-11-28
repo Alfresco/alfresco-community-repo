@@ -27,8 +27,9 @@ package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.repo.dictionary.CustomModelsInfo;
+import org.alfresco.service.cmr.dictionary.CustomModelService;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,28 +37,21 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
-/**
- * This class collects authorities data for HBDataCollectorService.
- * <br>
- * <b>Collector ID:</b> acs.repository.usage.authorities
- * <br>
- * <b>Data points:</b> numUsers, numGroups
- *
- * @author eknizat
- */
-public class AuthoritiesDataCollector extends HBBaseDataCollector implements InitializingBean
+public class ModelUsageDataCollector extends HBBaseDataCollector implements InitializingBean
 {
-
     /** The logger. */
-    private static final Log logger = LogFactory.getLog(AuthoritiesDataCollector.class);
+    private static final Log logger = LogFactory.getLog(ModelUsageDataCollector.class);
 
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
-    /** The authority service. */
-    private AuthorityService authorityService;
+    /** Provides information about custom models */
+    private CustomModelService customModelService;
 
-    public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    /** The transaction service. */
+    private TransactionService transactionService;
+
+    public ModelUsageDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
         super(collectorId, collectorVersion, cronExpression);
     }
@@ -67,35 +61,43 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector implements Ini
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setAuthorityService(AuthorityService authorityService)
+    public void setCustomModelService(CustomModelService customModelService)
     {
-        this.authorityService = authorityService;
+        this.customModelService = customModelService;
+    }
+
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "customModelService", customModelService);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
     }
 
     @Override
     public List<HBData> collectData()
     {
-        this.logger.debug("Preparing repository usage (authorities) data...");
+        logger.debug("Preparing repository usage (model) data...");
 
-        Map<String, Object> authoritiesUsageValues = new HashMap<>();
-        authoritiesUsageValues.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-        authoritiesUsageValues.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
-        HBData authoritiesUsageData = new HBData(
+        final CustomModelsInfo customModelsInfo = transactionService.getRetryingTransactionHelper().doInTransaction(
+                () -> customModelService.getCustomModelsInfo(), true);
+
+        Map<String, Object> modelUsageValues = new HashMap<>();
+        modelUsageValues.put("numOfActiveModels", new Integer(customModelsInfo.getNumberOfActiveModels()));
+        modelUsageValues.put("numOfActiveTypes", new Integer(customModelsInfo.getNumberOfActiveTypes()));
+        modelUsageValues.put("numOfActiveAspects", new Integer(customModelsInfo.getNumberOfActiveAspects()));
+        HBData modelUsageData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),
                 this.getCollectorVersion(),
                 new Date(),
-                authoritiesUsageValues);
+                modelUsageValues);
 
-        return Arrays.asList(authoritiesUsageData);
+        return Arrays.asList(modelUsageData);
     }
 }

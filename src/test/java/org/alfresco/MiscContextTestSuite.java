@@ -130,9 +130,6 @@ import org.springframework.context.ApplicationContext;
     // [alfresco/scheduler-core-context.xml, org/alfresco/util/test-scheduled-jobs-context.xml]
     org.alfresco.util.CronTriggerBeanTest.class,
 
-    // [alfresco/scheduler-core-context.xml, org/alfresco/heartbeat/test-heartbeat-context.xml]
-    org.alfresco.heartbeat.HeartBeatTest.class,
-
     // ----------------------------------------------------------------------
     // Transformer/Rendition contexts
     //
@@ -149,8 +146,6 @@ import org.springframework.context.ApplicationContext;
     // this does NOT passes locally
     org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
 
-    // [alfresco/scheduler-core-context.xml, org/alfresco/heartbeat/test-heartbeat-context.xml]
-    org.alfresco.heartbeat.HeartBeatTest.class,
 })
 public class MiscContextTestSuite
 {

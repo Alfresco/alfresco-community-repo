@@ -28,54 +28,62 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.repo.dictionary.CustomModelsInfo;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
+
 import java.util.List;
 import java.util.Map;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author eknizat
  */
-public class RepositoryDataCollectorTest
+public class ModelUsageDataCollectorTest
 {
 
-    private ApplicationContext context;
-    private RepositoryDataCollector repoCollector;
+    private ModelUsageDataCollector usageModelCollector;
+    private HBDataCollectorService mockCollectorService;
+    private DescriptorDAO mockDescriptorDAO;
     private List<HBData> collectedData;
 
     @Before
     public void setUp()
     {
-        context = ApplicationContextHelper.getApplicationContext();
-
-        TransactionService transactionService = (TransactionService) context.getBean("transactionService");
-        HBDataCollectorService mockCollectorService = mock(HBDataCollectorService.class);
+        mockDescriptorDAO = mock(DescriptorDAO.class);
+        mockCollectorService = mock(HBDataCollectorService.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
-        DescriptorDAO descriptorDAO = mock(DescriptorDAO.class);
-        when(descriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
+        when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
         CustomModelsInfo mockCustomModelsInfo = mock(CustomModelsInfo.class);
         CustomModelService customModelService = mock(CustomModelService.class);
         when(customModelService.getCustomModelsInfo()).thenReturn(mockCustomModelsInfo);
 
-        repoCollector = new RepositoryDataCollector();
-        repoCollector.setCurrentRepoDescriptorDAO(descriptorDAO);
-        repoCollector.setCustomModelService(customModelService);
-        repoCollector.setServerDescriptorDAO(descriptorDAO);
-        repoCollector.setTransactionService(transactionService);
-        repoCollector.setHbDataCollectorService(mockCollectorService);
-        collectedData = repoCollector.collectData();
+        TransactionService mockTransactionService = mock(TransactionService.class);
+        RetryingTransactionHelper mockRetryingTransactionHelper = mock(RetryingTransactionHelper.class);
+        when(mockRetryingTransactionHelper.doInTransaction(any(RetryingTransactionHelper.RetryingTransactionCallback.class), anyBoolean())).thenReturn(mockCustomModelsInfo);
+        when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
+
+        usageModelCollector = new ModelUsageDataCollector("acs.repository.usage.model","1.0", "0 0 0 ? * *" );
+
+        usageModelCollector.setHbDataCollectorService(mockCollectorService);
+        usageModelCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
+        usageModelCollector.setCustomModelService(customModelService);
+        usageModelCollector.setTransactionService(mockTransactionService);
+
+        collectedData = usageModelCollector.collectData();
     }
 
     @Test
@@ -92,35 +100,9 @@ public class RepositoryDataCollectorTest
     }
 
     @Test
-    public void testInfoDataIsCollected()
-    {
-        HBData repoInfo = grabDataByCollectorId("acs.repository.info");
-        assertNotNull("Repository info data missing.", repoInfo);
-
-        Map<String,Object> data = repoInfo.getData();
-        assertTrue(data.containsKey("repoName"));
-        assertTrue(data.containsKey("edition"));
-        assertTrue(data.containsKey("versionMajor"));
-        assertTrue(data.containsKey("versionMinor"));
-        assertTrue(data.containsKey("schema"));
-    }
-
-    @Test
-    public void testSystemUsageDataIsCollected()
-    {
-        HBData systemUsage = grabDataByCollectorId("acs.repository.usage.system");
-        assertNotNull("Repository usage data missing.", systemUsage);
-
-        Map<String,Object> data = systemUsage.getData();
-        assertTrue(data.containsKey("memFree"));
-        assertTrue(data.containsKey("memMax"));
-        assertTrue(data.containsKey("memTotal"));
-    }
-
-    @Test
     public void testModelUsageDataIsCollected()
     {
-        HBData modelUsage = grabDataByCollectorId("acs.repository.usage.model");
+        HBData modelUsage = grabDataByCollectorId(usageModelCollector.getCollectorId());
         assertNotNull("Model usage data missing.", modelUsage);
 
         Map<String,Object> data = modelUsage.getData();

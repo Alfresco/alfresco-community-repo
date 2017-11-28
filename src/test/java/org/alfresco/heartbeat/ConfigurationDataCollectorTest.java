@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,44 +25,52 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.descriptor.Descriptor;
-import org.junit.Before;
-import org.junit.Test;
-import java.util.List;
-import java.util.Map;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.Map;
+
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.repo.descriptor.DescriptorDAO;
+import org.alfresco.service.cmr.repository.HBDataCollectorService;
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.traitextender.SpringExtensionBundle;
+import org.junit.Before;
+import org.junit.Test;
+
 /**
- * @author eknizat
+ * @author mpopa
  */
-public class AuthoritiesDataCollectorTest
+public class ConfigurationDataCollectorTest
 {
-    private AuthoritiesDataCollector authorityDataCollector;
+    private ConfigurationDataCollector configurationCollector;
+    private HBDataCollectorService mockCollectorService;
+    private SpringExtensionBundle smartFoldersBundle;
+    private DescriptorDAO mockDescriptorDAO;
+    private DescriptorDAO mockServerDescriptorDAO;
     private List<HBData> collectedData;
 
     @Before
     public void setUp()
     {
-        HBDataCollectorService mockCollectorService = mock(HBDataCollectorService.class);
-        AuthorityService authorityService = mock(AuthorityService.class);
+        smartFoldersBundle = mock(SpringExtensionBundle.class);
+        mockDescriptorDAO = mock(DescriptorDAO.class);
+        mockServerDescriptorDAO = mock(DescriptorDAO.class);
+        mockCollectorService = mock(HBDataCollectorService.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
-        DescriptorDAO descriptorDAO = mock(DescriptorDAO.class);
-        when(descriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
+        when(mockServerDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
+        when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        authorityDataCollector = new AuthoritiesDataCollector("acs.repository.usage.authorities", "1.0", "0 0 0 ? * *");
-        authorityDataCollector.setAuthorityService(authorityService);
-        authorityDataCollector.setCurrentRepoDescriptorDAO(descriptorDAO);
-        authorityDataCollector.setHbDataCollectorService(mockCollectorService);
-        collectedData = authorityDataCollector.collectData();
+        configurationCollector = new ConfigurationDataCollector("acs.repository.configuration", "1.0", "0 0 0 ? * SUN");
+        configurationCollector.setHbDataCollectorService(mockCollectorService);
+        configurationCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
+        configurationCollector.setSmartFoldersBundle(smartFoldersBundle);
+        collectedData = configurationCollector.collectData();
     }
 
     @Test
@@ -75,29 +83,30 @@ public class AuthoritiesDataCollectorTest
             assertNotNull(data.getSchemaVersion());
             assertNotNull(data.getSystemId());
             assertNotNull(data.getTimestamp());
+            assertNotNull(data.getData());
         }
     }
 
     @Test
-    public void testAuthDataIsCollected()
+    public void testConfigurationDataIsCollected()
     {
-        HBData authorityInfo = grabDataByCollectorId(authorityDataCollector.getCollectorId());
-        assertNotNull("Authority info data missing.", authorityInfo);
+        HBData repoInfo = grabDataByCollectorId(configurationCollector.getCollectorId());
+        assertNotNull("Repository configuration data missing.", repoInfo);
 
-        Map<String,Object> data = authorityInfo.getData();
-        assertTrue(data.containsKey("numUsers"));
-        assertTrue(data.containsKey("numGroups"));
+        Map<String,Object> data = repoInfo.getData();
+        assertTrue(data.containsKey("smartFoldersEnabled"));
     }
 
     private HBData grabDataByCollectorId(String collectorId)
     {
         for (HBData d : this.collectedData)
         {
-            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId))
+            if(d.getCollectorId()!=null && d.getCollectorId().equals(collectorId))
             {
                 return d;
             }
         }
         return null;
     }
+
 }

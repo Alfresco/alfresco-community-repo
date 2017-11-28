@@ -30,12 +30,6 @@ import org.alfresco.heartbeat.HBBaseDataCollector;
 public interface HBDataCollectorService
 {
     void registerCollector(HBBaseDataCollector collector);
-    
-    void collectAndSendData();
-
-    void enabled(boolean enabled);
 
     boolean isEnabledByDefault();
-    
-    
 }

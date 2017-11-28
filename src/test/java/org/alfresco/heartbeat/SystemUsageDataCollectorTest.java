@@ -28,12 +28,13 @@ package org.alfresco.heartbeat;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.util.List;
 import java.util.Map;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -42,33 +43,34 @@ import static org.mockito.Mockito.when;
 /**
  * @author eknizat
  */
-public class AuthoritiesDataCollectorTest
+public class SystemUsageDataCollectorTest
 {
-    private AuthoritiesDataCollector authorityDataCollector;
+    private SystemUsageDataCollector usageSystemCollector;
+    private HBDataCollectorService mockCollectorService;
+    private DescriptorDAO mockDescriptorDAO;
     private List<HBData> collectedData;
 
     @Before
     public void setUp()
     {
-        HBDataCollectorService mockCollectorService = mock(HBDataCollectorService.class);
-        AuthorityService authorityService = mock(AuthorityService.class);
+        mockDescriptorDAO = mock(DescriptorDAO.class);
+        mockCollectorService = mock(HBDataCollectorService.class);
 
         Descriptor mockDescriptor = mock(Descriptor.class);
         when(mockDescriptor.getId()).thenReturn("mock_id");
-        DescriptorDAO descriptorDAO = mock(DescriptorDAO.class);
-        when(descriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
+        when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        authorityDataCollector = new AuthoritiesDataCollector("acs.repository.usage.authorities", "1.0", "0 0 0 ? * *");
-        authorityDataCollector.setAuthorityService(authorityService);
-        authorityDataCollector.setCurrentRepoDescriptorDAO(descriptorDAO);
-        authorityDataCollector.setHbDataCollectorService(mockCollectorService);
-        collectedData = authorityDataCollector.collectData();
+        usageSystemCollector = new SystemUsageDataCollector("acs.repository.usage.system","1.0","0 0 0 ? * *");
+        usageSystemCollector.setHbDataCollectorService(mockCollectorService);
+        usageSystemCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
+
+        collectedData = usageSystemCollector.collectData();
     }
 
     @Test
     public void testHBDataFields()
     {
-        for(HBData data : this.collectedData)
+        for (HBData data : this.collectedData)
         {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
@@ -79,14 +81,15 @@ public class AuthoritiesDataCollectorTest
     }
 
     @Test
-    public void testAuthDataIsCollected()
+    public void testSystemUsageDataIsCollected()
     {
-        HBData authorityInfo = grabDataByCollectorId(authorityDataCollector.getCollectorId());
-        assertNotNull("Authority info data missing.", authorityInfo);
+        HBData systemUsage = grabDataByCollectorId(usageSystemCollector.getCollectorId());
+        assertNotNull("Repository usage data missing.", systemUsage);
 
-        Map<String,Object> data = authorityInfo.getData();
-        assertTrue(data.containsKey("numUsers"));
-        assertTrue(data.containsKey("numGroups"));
+        Map<String,Object> data = systemUsage.getData();
+        assertTrue(data.containsKey("memFree"));
+        assertTrue(data.containsKey("memMax"));
+        assertTrue(data.containsKey("memTotal"));
     }
 
     private HBData grabDataByCollectorId(String collectorId)

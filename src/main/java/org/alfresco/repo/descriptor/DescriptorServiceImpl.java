@@ -29,6 +29,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.heartbeat.HBDataCollectorServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -37,6 +38,7 @@ import org.alfresco.repo.usage.RepoUsageComponent;
 import org.alfresco.service.cmr.admin.RepoUsage;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
+import org.alfresco.service.cmr.repository.HBDataCollectorService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.license.LicenseDescriptor;
@@ -68,9 +70,9 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     private TransactionService transactionService;
     private LicenseService licenseService;
     private RepoUsageComponent repoUsageComponent;
+    private HBDataCollectorService hbDataCollectorService;
     @SuppressWarnings("unused")
-    private Object heartBeat;
-    
+
     private boolean isBootstrapped;
     
     /**
@@ -125,6 +127,11 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setHbDataCollectorService(HBDataCollectorService hbDataCollectorService)
+    {
+        this.hbDataCollectorService = hbDataCollectorService;
     }
 
     public void setRepoUsageComponent(RepoUsageComponent repoUsageComponent)
@@ -238,7 +245,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     }
     
     /**
-     * On bootstrap load the special services for LicenseComponent and HeartBeat
+     * On bootstrap load the special services for LicenseComponent
      * 
      * Also set installedRepoDescriptor and update current
      */
@@ -304,9 +311,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
                     "licenseService", licenseService);
         }
 
-        // Load heart-beat special service (even if disabled at the moment)
-        heartBeat = constructSpecialService("org.alfresco.heartbeat.HeartBeat");
-        
+        // Register HeartBeat with LicenseService
+        licenseService.registerOnLicenseChange((LicenseChangeHandler) hbDataCollectorService);
+
+
         // Now listen for future license changes
         licenseService.registerOnLicenseChange(this);
         

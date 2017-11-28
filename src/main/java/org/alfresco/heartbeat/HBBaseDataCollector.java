@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.service.cmr.repository.HBDataCollectorService;
+import org.alfresco.util.PropertyCheck;
 
 /**
  *
@@ -38,24 +39,58 @@ import org.alfresco.service.cmr.repository.HBDataCollectorService;
  */
 public abstract class HBBaseDataCollector
 {
-    private HBDataCollectorService hbDataCollectorService;
+    private final String collectorId;
+    private final String collectorVersion;
+    private final String cronExpression;
 
     /**
-     * This method will register this collector with the provided {@link HBDataCollectorService}
+     * The collector service managing this collector.
      */
-    public void register()
+    private HBDataCollectorService hbDataCollectorService;
+
+    public HBBaseDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
-        hbDataCollectorService.registerCollector(this);
+        PropertyCheck.mandatory(this, "collectorId", collectorId);
+        PropertyCheck.mandatory(this, "collectorVersion", collectorVersion);
+        PropertyCheck.mandatory(this, "cronExpression", cronExpression);
+
+        this.collectorId = collectorId;
+        this.collectorVersion = collectorVersion;
+        this.cronExpression = cronExpression;
     }
-    
+
+    public String getCollectorId()
+    {
+        return collectorId;
+    }
+
+    public String getCollectorVersion()
+    {
+        return this.collectorVersion;
+    }
+
+    public String getCronExpression()
+    {
+        return this.cronExpression;
+    }
+
     public void setHbDataCollectorService(HBDataCollectorService hbDataCollectorService)
     {
         this.hbDataCollectorService = hbDataCollectorService;
     }
 
     /**
+     * This method is called by Spring at initialisation and will register this collector with the provided {@link HBDataCollectorService}
+     */
+    public void register()
+    {
+        PropertyCheck.mandatory(this, "hbDataCollectorService", hbDataCollectorService);
+        hbDataCollectorService.registerCollector(this);
+    }
+
+    /**
      * This method returns data to be collected.
-     * @return List of data wrapped in {@link HBData}
+     * @return List of {@link HBData}
      */
     public abstract List<HBData> collectData();
 }

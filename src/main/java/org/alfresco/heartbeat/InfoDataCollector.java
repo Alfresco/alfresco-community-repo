@@ -27,8 +27,7 @@ package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,27 +36,27 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.*;
 
 /**
- * This class collects authorities data for HBDataCollectorService.
+ * This class collects repository info data for HeartBeat.
  * <br>
- * <b>Collector ID:</b> acs.repository.usage.authorities
+ * <b>Collector ID:</b> acs.repository.info
  * <br>
- * <b>Data points:</b> numUsers, numGroups
+ * <b>Data points:</b> repoName, version, schema, edition
+ * <br>
+ * <b>Version points:</b> full, servicePack, major, minor, patch, hotfix
  *
- * @author eknizat
  */
-public class AuthoritiesDataCollector extends HBBaseDataCollector implements InitializingBean
+public class InfoDataCollector extends HBBaseDataCollector implements InitializingBean
 {
-
     /** The logger. */
-    private static final Log logger = LogFactory.getLog(AuthoritiesDataCollector.class);
+    private static final Log logger = LogFactory.getLog(InfoDataCollector.class);
 
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
-    /** The authority service. */
-    private AuthorityService authorityService;
+    /** DAO for current descriptor. */
+    private DescriptorDAO serverDescriptorDAO;
 
-    public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    public InfoDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
         super(collectorId, collectorVersion, cronExpression);
     }
@@ -67,35 +66,51 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector implements Ini
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setAuthorityService(AuthorityService authorityService)
+    public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO)
     {
-        this.authorityService = authorityService;
+        this.serverDescriptorDAO = serverDescriptorDAO;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "authorityService", authorityService);
+        PropertyCheck.mandatory(this, "serverDescriptorDAO", serverDescriptorDAO);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
     }
 
     @Override
     public List<HBData> collectData()
     {
-        this.logger.debug("Preparing repository usage (authorities) data...");
+        logger.debug("Preparing repository info data...");
 
-        Map<String, Object> authoritiesUsageValues = new HashMap<>();
-        authoritiesUsageValues.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-        authoritiesUsageValues.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
-        HBData authoritiesUsageData = new HBData(
+        final Descriptor serverDescriptor = this.serverDescriptorDAO.getDescriptor();
+
+        Map<String, Object> infoValues = new HashMap<>();
+        infoValues.put("repoName", serverDescriptor.getName());
+
+        Map<String, Object> version = new HashMap<>();
+        version.put("full", serverDescriptor.getVersion());
+        version.put("servicePack", serverDescriptor.getVersionNumber().toString());
+        version.put("major", serverDescriptor.getVersionMajor());
+        version.put("minor", serverDescriptor.getVersionMinor());
+        version.put("patch", serverDescriptor.getVersionRevision());
+        String hotfix = serverDescriptor.getVersionLabel();
+        if (hotfix != null && hotfix.length() > 0)
+        {
+            version.put("hotfix", hotfix.startsWith(".") ? hotfix.substring(1) : hotfix);
+        }
+        infoValues.put("version", version);
+        infoValues.put("schema", new Integer(serverDescriptor.getSchema()));
+        infoValues.put("edition", serverDescriptor.getEdition());
+
+        HBData infoData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),
                 this.getCollectorVersion(),
                 new Date(),
-                authoritiesUsageValues);
+                infoValues);
 
-        return Arrays.asList(authoritiesUsageData);
+        return Arrays.asList(infoData);
     }
+
 }

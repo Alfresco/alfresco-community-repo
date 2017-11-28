@@ -47,43 +47,36 @@ import org.junit.Test;
  */
 public class InfoDataCollectorTest
 {
-
     private InfoDataCollector infoCollector;
     private HBDataCollectorService mockCollectorService;
     private DescriptorDAO mockDescriptorDAO;
     private DescriptorDAO mockServerDescriptorDAO;
     private List<HBData> collectedData;
+    private BaseDescriptor spyDescriptor;
 
     @Before
     public void setUp()
     {
+        spyDescriptor = spy(BaseDescriptor.class);
         mockDescriptorDAO = mock(DescriptorDAO.class);
         mockServerDescriptorDAO = mock(DescriptorDAO.class);
         mockCollectorService = mock(HBDataCollectorService.class);
 
-        BaseDescriptor mockDescriptor = spy(BaseDescriptor.class);
-        when(mockDescriptor.getId()).thenReturn("mock_id");
-        when(mockServerDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
-        when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
+        when(spyDescriptor.getId()).thenReturn("mock_id");
+        when(mockServerDescriptorDAO.getDescriptor()).thenReturn(spyDescriptor);
+        when(mockDescriptorDAO.getDescriptor()).thenReturn(spyDescriptor);
 
         infoCollector = new InfoDataCollector("acs.repository.info", "1.0", "0 0 0 ? * *");
         infoCollector.setHbDataCollectorService(mockCollectorService);
         infoCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
         infoCollector.setServerDescriptorDAO(mockServerDescriptorDAO);
-
-        when(mockDescriptor.getName()).thenReturn("repository");
-        when(mockDescriptor.getVersionMajor()).thenReturn("5");
-        when(mockDescriptor.getVersionMinor()).thenReturn("1");
-        when(mockDescriptor.getVersionRevision()).thenReturn("2");
-        when(mockDescriptor.getVersionLabel()).thenReturn(".4");
-        when(mockDescriptor.getSchema()).thenReturn(1000);
-        when(mockDescriptor.getEdition()).thenReturn("Community");
-        collectedData = infoCollector.collectData();
     }
 
     @Test
     public void testHBDataFields()
     {
+        mockVersionDetails("6","0","0","");
+        collectedData = infoCollector.collectData();
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
         assertNotNull("Repository info data missing.", repoInfo);
 
@@ -101,6 +94,9 @@ public class InfoDataCollectorTest
     @Test
     public void testInfoDataIsCollected()
     {
+        mockVersionDetails("5","1","2",".4");
+        collectedData = infoCollector.collectData();
+
         HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
         assertNotNull("Repository info data missing.", repoInfo);
 
@@ -110,11 +106,57 @@ public class InfoDataCollectorTest
         assertEquals("Community", data.get("edition"));
         assertTrue(data.containsKey("version"));
         Map<String, Object> version = (Map<String, Object>) data.get("version");
+        assertEquals("5.1.2 (.4)", version.get("full"));
         assertEquals("5.1.2", version.get("servicePack"));
         assertEquals("5", version.get("major"));
         assertEquals("1", version.get("minor"));
         assertEquals("2", version.get("patch"));
         assertEquals("4", version.get("hotfix"));
+    }
+    
+    @Test
+    public void testInfoDataIsCollectedHotfixNoDot()
+    {
+        mockVersionDetails("5","1","2","4");
+        collectedData = infoCollector.collectData();
+        
+        HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
+        assertNotNull("Repository info data missing.", repoInfo);
+
+        Map<String, Object> data = repoInfo.getData();
+        assertEquals("repository", data.get("repoName"));
+        assertEquals(1000, data.get("schema"));
+        assertEquals("Community", data.get("edition"));
+        assertTrue(data.containsKey("version"));
+        Map<String, Object> version = (Map<String, Object>) data.get("version");
+        assertEquals("5.1.2 (4)", version.get("full"));
+        assertEquals("5.1.2", version.get("servicePack"));
+        assertEquals("5", version.get("major"));
+        assertEquals("1", version.get("minor"));
+        assertEquals("2", version.get("patch"));
+        assertEquals("4", version.get("hotfix"));
+    }
+
+    @Test
+    public void testInfoDataIsCollectedNoHotfix()
+    {
+        mockVersionDetails("5","1","2","");
+        collectedData = infoCollector.collectData();
+        
+        HBData repoInfo = grabDataByCollectorId(infoCollector.getCollectorId());
+        assertNotNull("Repository info data missing.", repoInfo);
+
+        Map<String, Object> data = repoInfo.getData();
+        assertEquals("repository", data.get("repoName"));
+        assertEquals(1000, data.get("schema"));
+        assertEquals("Community", data.get("edition"));
+        assertTrue(data.containsKey("version"));
+        Map<String, Object> version = (Map<String, Object>) data.get("version");
+        assertEquals("5.1.2", version.get("full"));
+        assertEquals("5.1.2", version.get("servicePack"));
+        assertEquals("5", version.get("major"));
+        assertEquals("1", version.get("minor"));
+        assertEquals("2", version.get("patch"));
     }
 
     private HBData grabDataByCollectorId(String collectorId)
@@ -127,5 +169,16 @@ public class InfoDataCollectorTest
             }
         }
         return null;
+    }
+
+    private void mockVersionDetails(String major, String minor, String patch, String hotfix)
+    {
+        when(spyDescriptor.getName()).thenReturn("repository");
+        when(spyDescriptor.getVersionMajor()).thenReturn(major);
+        when(spyDescriptor.getVersionMinor()).thenReturn(minor);
+        when(spyDescriptor.getVersionRevision()).thenReturn(patch);
+        when(spyDescriptor.getVersionLabel()).thenReturn(hotfix);
+        when(spyDescriptor.getSchema()).thenReturn(1000);
+        when(spyDescriptor.getEdition()).thenReturn("Community");
     }
 }

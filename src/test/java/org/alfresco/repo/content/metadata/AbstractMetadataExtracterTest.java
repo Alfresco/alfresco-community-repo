@@ -72,8 +72,7 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * @see org.alfresco.repo.content.metadata.MetadataExtracter
- * @see org.alfresco.repo.content.metadata.AbstractMetadataExtracter
- * 
+ *
  * @author Jesper Steen Møller
  */
 public abstract class AbstractMetadataExtracterTest extends TestCase

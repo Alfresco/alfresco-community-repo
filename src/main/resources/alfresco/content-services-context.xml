@@ -275,44 +275,6 @@
       </property>
    </bean>
    
-   <!-- For coordination between OOoDirect and OOoJodconverter subsystems -->
-   <bean id="jodConfig"
-        class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactoryName">
-         <value>OOoJodconverter</value>
-      </property>
-      <property name="sourceBeanName">
-         <value>jodConfig</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.util.JodConfig</value>
-         </list>
-      </property>
-      <property name="defaultBean">
-         <bean class="org.alfresco.util.JodConfigImpl">
-            <property name="enabled">
-               <value>false</value>
-            </property>
-         </bean>
-      </property>
-   </bean>
-   
-   <!-- Import the OpenOffice extractor worker from the OOoDirect subsystem -->
-   <bean id="extracter.worker.OpenOffice" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="OOoDirect" />
-      </property>
-      <property name="sourceBeanName">
-         <value>extracter.worker.OpenOffice</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker</value>
-         </list>
-      </property>
-   </bean>
-
    <bean id="pdfBoxEmbededDocumentSelector"
          class="org.alfresco.repo.content.metadata.MediaTypeDisablingDocumentSelector">
       <property name="disabledMediaTypes">
@@ -377,11 +339,6 @@
    </bean>
    <bean id="extracter.Audio" class="org.alfresco.repo.content.metadata.TikaAudioMetadataExtracter" parent="baseMetadataExtracter">
       <property name="tikaConfig" ref="tikaConfig"/>
-   </bean>
-   <bean id="extracter.OpenOffice" class="org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracter" parent="baseMetadataExtracter">
-      <property name="worker">
-         <ref bean="extracter.worker.OpenOffice" />
-      </property>
    </bean>
 
    <!-- Content Transformation Regisitry -->
@@ -606,13 +563,39 @@
       </property>
    </bean>
 
-   <!-- Import the OpenOffice transformer worker from the OOoDirect subsystem -->
-   <bean id="transformer.worker.OpenOffice" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+   <!-- Import the JodConverter extractor worker from the OOoJodconverter subsystem -->
+   <bean id="extracter.worker.JodConverter"
+         class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
-         <ref bean="OOoDirect" />
+         <ref bean="OOoJodconverter" />
       </property>
       <property name="sourceBeanName">
-         <value>transformer.worker.OpenOffice</value>
+         <value>extracter.worker.JodConverter</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker</value>
+         </list>
+      </property>
+   </bean>
+
+   <!-- Metadata extractors -->
+   <bean id="extracter.JodConverter"
+         class="org.alfresco.repo.content.metadata.JodConverterMetadataExtracter"
+         parent="baseMetadataExtracter">
+      <property name="worker">
+         <ref bean="extracter.worker.JodConverter" />
+      </property>
+   </bean>
+
+   <!-- Import the JodConverter transformer worker from the OOoJodconverter subsystem -->
+   <bean id="transformer.worker.JodConverter"
+         class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="OOoJodconverter" />
+      </property>
+      <property name="sourceBeanName">
+         <value>transformer.worker.JodConverter</value>
       </property>
       <property name="interfaces">
          <list>
@@ -621,9 +604,11 @@
       </property>
    </bean>
 
-   <bean id="transformer.OpenOffice" class="org.alfresco.repo.content.transform.ProxyContentTransformer" parent="baseContentTransformer">
+   <bean id="transformer.JodConverter"
+         class="org.alfresco.repo.content.transform.ProxyContentTransformer"
+         parent="baseContentTransformer">
       <property name="worker">
-         <ref bean="transformer.worker.OpenOffice" />
+         <ref bean="transformer.worker.JodConverter" />
       </property>
    </bean>
          

@@ -49,7 +49,7 @@ public class ComplexContentTransformerTest extends AbstractContentTransformerTes
     {
         super.setUp();
         
-        ContentTransformer unoTransformer = (ContentTransformer) ctx.getBean("transformer.OpenOffice");
+        ContentTransformer unoTransformer = (ContentTransformer) ctx.getBean("transformer.JodConverter");
         ContentTransformer pdfBoxTransformer = (ContentTransformer) ctx.getBean("transformer.PdfBox");
         // make sure that they are working for this test
         if (unoTransformer.isTransformable(MimetypeMap.MIMETYPE_PPT, -1, MimetypeMap.MIMETYPE_PDF, new TransformationOptions()) == false)

@@ -314,16 +314,26 @@
         </property>
     </bean>
 
-    <bean id="OOoDirect" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+    <!--  Start jodconverter extractor/transformer Subsystem. -->
+    <bean id="OOoJodconverter" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>true</value>
         </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="jodconverter.portNumbers" value-ref="jodPortsEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="jodPortsEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="JODConverter" />
+        <constructor-arg value="true" />
+        <constructor-arg value="true" />
     </bean>
 
-
     <!-- Bootstrap any enterprise contexts -->
-    <!-- This is placed at this point because we need the enterprise OOoJodConverter subsystem started
-         before reindexing begins. -->
+    <!-- Historically this is placed at this point because we needed the enterprise JodConverter subsystem started
+         before reindexing begins. JodConverter is now part of Community. -->
     <import resource="classpath*:alfresco/enterprise/bootstrap/*-context.xml" />
 
     <!-- This component checks the interconnection between the metadata, indexes and content -->

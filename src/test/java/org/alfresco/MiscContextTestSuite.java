@@ -78,7 +78,7 @@ import org.springframework.context.ApplicationContext;
     org.alfresco.repo.content.metadata.MP3MetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.OfficeMetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.OpenDocumentMetadataExtracterTest.class,
-    org.alfresco.repo.content.metadata.OpenOfficeMetadataExtracterTest.class,
+    org.alfresco.repo.content.metadata.JodMetadataExtractorOOoTest.class,
     org.alfresco.repo.content.metadata.PdfBoxMetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.ConcurrencyPdfBoxMetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.PoiMetadataExtracterTest.class,

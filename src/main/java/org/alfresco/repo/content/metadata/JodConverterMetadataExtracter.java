@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,76 +23,55 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-/*
- * Copyright (C) 2005 Jesper Steen Møller
- *
- * This file is part of Alfresco
- *
- * Alfresco is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- */
 package org.alfresco.repo.content.metadata;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
+import org.alfresco.repo.content.metadata.OpenOfficeMetadataWorker;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.util.PropertyCheck;
 
 /**
- * Extracts values from Star Office documents into the following:
+ * Extracts values from Open Office documents into the following:
  * <pre>
  *   <b>author:</b>                 --      cm:author
  *   <b>title:</b>                  --      cm:title
  *   <b>description:</b>            --      cm:description
  * </pre>
  * 
- * Note - not converted to Apache Tika, as currently Tika
- *  lacks support for these older formats
- * 
- * @author Jesper Steen Møller
+ * @author Neil McErlean
  */
-public class OpenOfficeMetadataExtracter extends AbstractMappingMetadataExtracter implements OpenOfficeMetadataWorker
+public class JodConverterMetadataExtracter extends AbstractMappingMetadataExtracter implements OpenOfficeMetadataWorker
 {
-    public static String[] SUPPORTED_MIMETYPES = new String[] {
-        MimetypeMap.MIMETYPE_STAROFFICE5_WRITER,
-        MimetypeMap.MIMETYPE_STAROFFICE5_IMPRESS,
-        MimetypeMap.MIMETYPE_OPENOFFICE1_WRITER,
-        MimetypeMap.MIMETYPE_OPENOFFICE1_IMPRESS
-    };
-
     private OpenOfficeMetadataWorker worker;
-
-    public OpenOfficeMetadataExtracter()
+    private static final Set<String> typedEmptySet = Collections.emptySet();
+    
+    public JodConverterMetadataExtracter()
     {
-        super(new HashSet<String>(Arrays.asList(SUPPORTED_MIMETYPES)));
+        this(typedEmptySet);
     }
-
+    
+    public JodConverterMetadataExtracter(Set<String> supportedMimetypes)
+    {
+        super(supportedMimetypes);
+    }
+    
     public void setWorker(OpenOfficeMetadataWorker worker)
     {
         this.worker = worker;
     }
     
-    /**
-     * Initialises the bean by establishing an UNO connection
-     */
     @Override
     public synchronized void init()
     {
-        PropertyCheck.mandatory("OpenOfficeMetadataExtracter", "worker", worker);
+        PropertyCheck.mandatory("JodConverterMetadataExtracter", "worker", worker);
         
         // Base initialization
         super.init();

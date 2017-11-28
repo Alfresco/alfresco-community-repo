@@ -135,21 +135,7 @@ public class ISO8601DateFormat
                 formatted.append(val);
             }
 
-            TimeZone tz = calendar.getTimeZone();
-            int offset = tz.getOffset(calendar.getTimeInMillis());
-            if (offset != 0)
-            {
-                int hours = Math.abs((offset / (60 * 1000)) / 60);
-                int minutes = Math.abs((offset / (60 * 1000)) % 60);
-                formatted.append(offset < 0 ? '-' : '+');
-                formatted.append(hours < 10 ? ("0" + hours) : hours);
-                formatted.append(':');
-                formatted.append(minutes < 10 ? ("0" + minutes) : minutes);
-            }
-            else
-            {
-                formatted.append('Z');
-            }
+            formatted.append('Z');
 
             return formatted.toString();
         }

@@ -27,8 +27,6 @@ package org.alfresco.heartbeat;
 
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,28 +34,15 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.util.*;
 
-/**
- * This class collects authorities data for HBDataCollectorService.
- * <br>
- * <b>Collector ID:</b> acs.repository.usage.authorities
- * <br>
- * <b>Data points:</b> numUsers, numGroups
- *
- * @author eknizat
- */
-public class AuthoritiesDataCollector extends HBBaseDataCollector implements InitializingBean
+public class SystemUsageDataCollector extends HBBaseDataCollector implements InitializingBean
 {
-
     /** The logger. */
-    private static final Log logger = LogFactory.getLog(AuthoritiesDataCollector.class);
+    private static final Log logger = LogFactory.getLog(SystemUsageDataCollector.class);
 
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
-    /** The authority service. */
-    private AuthorityService authorityService;
-
-    public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    public SystemUsageDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
         super(collectorId, collectorVersion, cronExpression);
     }
@@ -67,35 +52,29 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector implements Ini
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setAuthorityService(AuthorityService authorityService)
-    {
-        this.authorityService = authorityService;
-    }
-
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
     }
 
     @Override
     public List<HBData> collectData()
     {
-        this.logger.debug("Preparing repository usage (authorities) data...");
+        logger.debug("Preparing repository usage (system) data...");
 
-        Map<String, Object> authoritiesUsageValues = new HashMap<>();
-        authoritiesUsageValues.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-        authoritiesUsageValues.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
-        HBData authoritiesUsageData = new HBData(
+        Runtime runtime = Runtime.getRuntime();
+        Map<String, Object> systemUsageValues = new HashMap<>();
+        systemUsageValues.put("memFree", runtime.freeMemory());
+        systemUsageValues.put("memMax", runtime.maxMemory());
+        systemUsageValues.put("memTotal", runtime.totalMemory());
+        HBData systemUsageData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),
                 this.getCollectorVersion(),
                 new Date(),
-                authoritiesUsageValues);
+                systemUsageValues);
 
-        return Arrays.asList(authoritiesUsageData);
+        return Arrays.asList(systemUsageData);
     }
 }

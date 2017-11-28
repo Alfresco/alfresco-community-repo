@@ -25,77 +25,75 @@
  */
 package org.alfresco.heartbeat;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.traitextender.SpringExtensionBundle;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.util.*;
-
 /**
- * This class collects authorities data for HBDataCollectorService.
+ * This class collects repository configuration data for HeartBeat.
  * <br>
- * <b>Collector ID:</b> acs.repository.usage.authorities
+ * <b>Collector ID:</b> acs.repository.configuration
  * <br>
- * <b>Data points:</b> numUsers, numGroups
+ * <b>Data points:</b> smartFoldersEnabled
  *
- * @author eknizat
+ * @author mpopa
  */
-public class AuthoritiesDataCollector extends HBBaseDataCollector implements InitializingBean
+public class ConfigurationDataCollector extends HBBaseDataCollector implements InitializingBean
 {
-
-    /** The logger. */
-    private static final Log logger = LogFactory.getLog(AuthoritiesDataCollector.class);
-
     /** DAO for current repository descriptor. */
     private DescriptorDAO currentRepoDescriptorDAO;
 
-    /** The authority service. */
-    private AuthorityService authorityService;
+    /** The logger. */
+    private static final Log logger = LogFactory.getLog(ConfigurationDataCollector.class);
 
-    public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression)
+    private SpringExtensionBundle smartFoldersBundle;
+
+    public ConfigurationDataCollector(String collectorId, String collectorVersion, String cronExpression)
     {
         super(collectorId, collectorVersion, cronExpression);
     }
-
+    
     public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
     {
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setAuthorityService(AuthorityService authorityService)
+    public void setSmartFoldersBundle(SpringExtensionBundle smartFoldersBundle)
     {
-        this.authorityService = authorityService;
+        this.smartFoldersBundle = smartFoldersBundle;
     }
-
+    
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
+        PropertyCheck.mandatory(this, "smartFoldersBundle", smartFoldersBundle);
     }
 
     @Override
     public List<HBData> collectData()
     {
-        this.logger.debug("Preparing repository usage (authorities) data...");
-
-        Map<String, Object> authoritiesUsageValues = new HashMap<>();
-        authoritiesUsageValues.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-        authoritiesUsageValues.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
-        HBData authoritiesUsageData = new HBData(
+        // Collect repository configuration data
+        logger.debug("Preparing repository configuration data...");
+        Map<String, Object> configurationValues = new HashMap<>();
+        configurationValues.put("smartFoldersEnabled", smartFoldersBundle.isEnabled());
+        HBData configurationData = new HBData(
                 this.currentRepoDescriptorDAO.getDescriptor().getId(),
                 this.getCollectorId(),
                 this.getCollectorVersion(),
                 new Date(),
-                authoritiesUsageValues);
-
-        return Arrays.asList(authoritiesUsageData);
+                configurationValues);
+        return Arrays.asList(configurationData);
     }
+
 }

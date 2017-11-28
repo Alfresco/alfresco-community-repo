@@ -284,6 +284,9 @@
        <property name="transactionService">
            <ref bean="transactionService"/>
        </property>
+        <property name="hbDataCollectorService">
+            <ref bean="hbDataCollectorService"/>
+        </property>
        <property name="repoUsageComponent" ref="repoUsageComponent"/>
     </bean>
 

@@ -36,6 +36,7 @@ public class HBDataSenderServiceFactory
 {
     private String target;
     private boolean heartbeatEnabled;
+    private String sendingSchedule;
     
     public void setTarget(String target)
     {
@@ -46,11 +47,17 @@ public class HBDataSenderServiceFactory
     {
         this.heartbeatEnabled = heartbeatEnabled;
     }
+    
+    public void setSendingSchedule(String sendingSchedule)
+    {
+        this.sendingSchedule = sendingSchedule;
+    }
 
     public HBDataSenderService createInstance() 
     {
         return HBDataSenderServiceBuilder.builder()
                   .withHeartbeatURL(target)
+                  .withSendingSchedule(sendingSchedule)
                   .enable(heartbeatEnabled)
                   .build();
     }

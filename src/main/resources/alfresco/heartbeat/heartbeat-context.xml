@@ -1,25 +1,29 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
     <!-- HeartBeat data sender service -->
-	<bean id="hbDataSenderFactory" class="org.alfresco.heartbeat.HBDataSenderServiceFactory">
-		<property name="target" value="${heartbeat.target.url}"></property>
-		<property name="heartbeatEnabled" value="${heartbeat.enabled}"></property>
-	</bean>
+    <bean id="hbDataSenderFactory" class="org.alfresco.heartbeat.HBDataSenderServiceFactory">
+        <property name="target" value="${heartbeat.target.url}"></property>
+        <property name="heartbeatEnabled" value="${heartbeat.enabled}"></property>
+        <property name="sendingSchedule" value="${heartbeat.sender.cronExpression}"></property>
+    </bean>
 
-	<bean id="hbDataSenderService" factory-bean="hbDataSenderFactory" factory-method="createInstance">
-	</bean>
+    <bean id="hbDataSenderService" factory-bean="hbDataSenderFactory" factory-method="createInstance">
+    </bean>
 
     <!-- HeartBeat data collector service -->
     <bean id="hbDataCollectorService" class="org.alfresco.heartbeat.HBDataCollectorServiceImpl">
         <constructor-arg value="${heartbeat.enabled}" />
         <property name="hbDataSenderService" ref="hbDataSenderService" />
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="jobLockService" ref="jobLockService" />
     </bean>
 
-    <!-- HeartBeat abstract data collector -->
-    <bean id="hbBaseDataCollector" class="org.alfresco.heartbeat.HBBaseDataCollector" abstract="true">
+    <!-- HeartBeat template data collector -->
+    <bean id="hbBaseDataCollector" abstract="true" init-method="register">
         <property name="hbDataCollectorService" ref="hbDataCollectorService"/>
     </bean>
 

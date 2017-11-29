@@ -59,25 +59,36 @@ public class ISO8601DateFormat
 {
     private static ThreadLocal<Map<TimeZone, Calendar>> calendarThreadLocal = new ThreadLocal<Map<TimeZone, Calendar>>();
     public static final TimeZone UTC_TIMEZONE = TimeZone.getTimeZone("UTC");
+
     /**
      * Get a calendar object from cache.
+     * @param timezone timezone object to indicate the timezone to be used by the returned calendar object
      * @return calendar object from cache or newly created (if cache is empty)
      */
-    public static Calendar getCalendar()
+    public static Calendar getCalendar(TimeZone timezone)
     {
         if (calendarThreadLocal.get() == null)
         {
             calendarThreadLocal.set(new HashMap<TimeZone, Calendar>());
         }
         
-        Calendar calendar = calendarThreadLocal.get().get(UTC_TIMEZONE);
+        Calendar calendar = calendarThreadLocal.get().get(timezone);
         if (calendar == null)
         {
-            calendar = new GregorianCalendar(UTC_TIMEZONE);
-            calendarThreadLocal.get().put(UTC_TIMEZONE, calendar);
+            calendar = new GregorianCalendar(timezone);
+            calendarThreadLocal.get().put(timezone, calendar);
         }
         
         return calendar;
+    }
+
+    /**
+     * Get a calendar object from cache for the system default timezone.
+     * @return calendar object from cache or newly created (if cache is empty)
+     */
+    public static Calendar getCalendar()
+    {
+        return getCalendar(TimeZone.getDefault());
     }
     
     /**
@@ -88,7 +99,7 @@ public class ISO8601DateFormat
      */
      public static String format(Date isoDate)
      {
-        Calendar calendar = getCalendar();
+        Calendar calendar = getCalendar(UTC_TIMEZONE);
         calendar.setTime(isoDate);
 
         // MNT-9790

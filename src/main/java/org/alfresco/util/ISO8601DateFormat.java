@@ -146,6 +146,7 @@ public class ISO8601DateFormat
                 formatted.append(val);
             }
 
+            // ALF-21965 We are now confident we are using UTC timezone with zero offset
             formatted.append('Z');
 
             return formatted.toString();

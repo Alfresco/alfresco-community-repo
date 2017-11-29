@@ -18,11 +18,17 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v23;
 
+import static java.util.Arrays.asList;
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_SAVED_SEARCH;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.repo.version.NodeServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.junit.Test;
@@ -30,22 +36,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.SAVED_SEARCH_ASPECT;
-import static org.mockito.Mockito.mockingDetails;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /**
  * patch.v23 unit test
  *
  * @author Ross Gale
  * @since 2.3
  */
-public class RMv23SavedSearchesPatchUnitTest// extends BaseUnitTest
+public class RMv23SavedSearchesPatchUnitTest
 {
 
     @Mock
@@ -61,9 +58,9 @@ public class RMv23SavedSearchesPatchUnitTest// extends BaseUnitTest
     private RMv23SavedSearchesPatch patch;
 
     /**
-     * Given that I am upgrading an existing repository to v2.2
+     * Given that I am upgrading an existing repository to v2.3
      * When I execute the patch
-     * Then the capabilities are updated
+     * Then any existing rm saved searches will have the saved search aspect applied
      */
     @Test
     public void executePatch()
@@ -71,9 +68,7 @@ public class RMv23SavedSearchesPatchUnitTest// extends BaseUnitTest
         MockitoAnnotations.initMocks(this);
         NodeRef noderef1 = new NodeRef("foo://123/456");
         NodeRef noderef2 = new NodeRef("bar://123/456");
-        List<SavedSearchDetails> searches = new ArrayList<>();
-        searches.add(mockSavedSearchDetails1);
-        searches.add(mockSavedSearchDetails2);
+        List<SavedSearchDetails> searches = asList(mockSavedSearchDetails1, mockSavedSearchDetails2);
         when(mockSavedSearchDetails1.getNodeRef()).thenReturn(noderef1);
         when(mockSavedSearchDetails2.getNodeRef()).thenReturn(noderef2);
         when(recordsManagementSearchService.getSavedSearches("rm")).thenReturn(searches);
@@ -81,8 +76,8 @@ public class RMv23SavedSearchesPatchUnitTest// extends BaseUnitTest
         // execute patch
         patch.applyInternal();
 
-        verify(nodeService, times(1)).addAspect(noderef1,SAVED_SEARCH_ASPECT,null);
-        verify(nodeService, times(1)).addAspect(noderef2, SAVED_SEARCH_ASPECT, null);
+        verify(nodeService, times(1)).addAspect(noderef1, ASPECT_SAVED_SEARCH, null);
+        verify(nodeService, times(1)).addAspect(noderef2, ASPECT_SAVED_SEARCH, null);
     }
 
 }

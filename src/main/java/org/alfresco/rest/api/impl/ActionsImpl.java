@@ -41,6 +41,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
+
 public class ActionsImpl implements Actions
 {
     private ActionService actionService;
@@ -89,10 +93,10 @@ public class ActionsImpl implements Actions
         switch (sortKey)
         {
             case TITLE:
-                comparator = Comparator.comparing(ActionDefinition::getTitle);
+                comparator = comparing(ActionDefinition::getTitle, nullsFirst(naturalOrder()));
                 break;
             case NAME:
-                comparator = Comparator.comparing(ActionDefinition::getName);
+                comparator = comparing(ActionDefinition::getName, nullsFirst(naturalOrder()));
                 break;
             default:
                 throw new IllegalArgumentException("Invalid sort key, must be either 'title' or 'name'.");

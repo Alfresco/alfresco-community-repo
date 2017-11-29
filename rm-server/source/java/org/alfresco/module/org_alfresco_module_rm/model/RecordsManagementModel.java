@@ -279,5 +279,5 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName ASPECT_COUNTABLE = QName.createQName(RM_URI, "countable");
     QName PROP_COUNT = QName.createQName(RM_URI, "count");
 
-    QName SAVED_SEARCH_ASPECT = QName.createQName(RM_URI, "savedSearch");
+    QName ASPECT_SAVED_SEARCH = QName.createQName(RM_URI, "savedSearch");
 }

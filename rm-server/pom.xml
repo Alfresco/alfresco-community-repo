@@ -243,6 +243,12 @@
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
+
+      <dependency>
+         <groupId>org.testng</groupId>
+         <artifactId>testng</artifactId>
+         <scope>test</scope>
+      </dependency>
       <!-- Database drivers -->
       <dependency>
          <groupId>postgresql</groupId>
@@ -257,12 +263,6 @@
          <scope>test</scope>
       </dependency>
       <!-- Dependencies for the test result reports -->
-      <dependency>
-         <groupId>org.testng</groupId>
-         <artifactId>testng</artifactId>
-         <version>6.8.8</version>
-         <scope>test</scope>
-      </dependency>
       <dependency>
          <groupId>com.google.inject</groupId>
          <artifactId>guice</artifactId>

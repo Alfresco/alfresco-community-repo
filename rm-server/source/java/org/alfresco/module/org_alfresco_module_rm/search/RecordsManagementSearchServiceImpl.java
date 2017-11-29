@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.search;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_SAVED_SEARCH;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -50,7 +52,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.SAVED_SEARCH_ASPECT;
 
 /**
  * Records management search service implementation
@@ -534,7 +535,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
-        nodeService.addAspect(searchNode, SAVED_SEARCH_ASPECT, null);
+        nodeService.addAspect(searchNode, ASPECT_SAVED_SEARCH, null);
         // Write the JSON content to search node
         final NodeRef writableSearchNode = searchNode;
         AuthenticationUtil.runAs(new RunAsWork<Void>()

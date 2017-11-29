@@ -32,6 +32,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteService;
 import org.springframework.beans.factory.BeanNameAware;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+
 /**
  * RM v2.0 Saved Search Patch
  *
@@ -42,9 +44,6 @@ import org.springframework.beans.factory.BeanNameAware;
 public class RMv2SavedSearchPatch extends ModulePatchComponent
                                   implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
-    /** RM site id */
-    private static final String RM_SITE_ID = "rm";
-
     /** Records management search service */
     private RecordsManagementSearchService recordsManagementSearchService;
 
@@ -84,10 +83,10 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
     @Override
     protected void executePatch()
     {
-        if (siteService.getSite(RM_SITE_ID) != null)
+        if (siteService.getSite(DEFAULT_SITE_NAME) != null)
         {
             // get the saved searches
-            List<SavedSearchDetails> savedSearches = recordsManagementSearchService.getSavedSearches(RM_SITE_ID);
+            List<SavedSearchDetails> savedSearches = recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME);
 
             if (LOGGER.isDebugEnabled())
             {

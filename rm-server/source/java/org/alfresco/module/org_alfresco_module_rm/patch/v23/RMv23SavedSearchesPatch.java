@@ -18,14 +18,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v23;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_SAVED_SEARCH;
+import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.SAVED_SEARCH_ASPECT;
 
 /**
  * RM v2.3 patch that adds the saved search aspect.
@@ -40,8 +40,6 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
 
     /** node service */
     private NodeService nodeService;
-
-    private static final String RM_SITE_ID = "rm";
 
     /**
      * @param recordsManagementSearchService	records management search service
@@ -60,14 +58,14 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     }
 
     /**
-     * @see AbstractModulePatch#applyInternal()
+     * Retrieves all saved searches for the records management site and adds ASPECT_SAVED_SEARCH
      */
     @Override
     public void applyInternal()
     {
-       for(SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches(RM_SITE_ID))
+       for(SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME))
         {
-            nodeService.addAspect(savedSearchDetails.getNodeRef(),SAVED_SEARCH_ASPECT,null);
+            nodeService.addAspect(savedSearchDetails.getNodeRef(), ASPECT_SAVED_SEARCH,null);
         }
     }
 }

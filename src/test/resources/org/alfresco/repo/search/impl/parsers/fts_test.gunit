@@ -180,6 +180,7 @@ ftsTest:
 "*woof*woof*" ->"(TERM *woof*woof*)"
 "cm:content.mimetype:*" -> "(TERM * (FIELD_REF content.mimetype (PREFIX cm)))"
 
+
 ftsTermOrPhrase:
 "name:woof" -> "(TERM woof (FIELD_REF name))"
 "cm_name:woof" -> "(TERM woof (FIELD_REF cm_name))"
@@ -223,7 +224,9 @@ ftsFieldGroupTest:
 "[12 TO 14]" -> "(FG_RANGE INCLUSIVE 12 14 INCLUSIVE)"
 "<12 TO 14>" -> "(FG_RANGE EXCLUSIVE 12 14 EXCLUSIVE)"
 "(apple cheese and (pear or banana or not orange))" -> "(FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM apple)) (FIELD_DEFAULT (FG_TERM cheese)) (FIELD_DEFAULT (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM pear))) (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM banana))) (FIELD_CONJUNCTION (FIELD_NEGATION (FG_TERM orange)))))))"
-
+"(apple chesse and banana)" -> (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM apple)) (FIELD_DEFAULT (FG_TERM chesse)) (FIELD_DEFAULT (FG_TERM banana))))
+"(apple chesse and not banana)" -> (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM apple)) (FIELD_DEFAULT (FG_TERM chesse)) (FIELD_NEGATION (FG_TERM banana))))
+"(apple chesse and (not banana))" -> (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_DEFAULT (FG_TERM apple)) (FIELD_DEFAULT (FG_TERM chesse)) (FIELD_DEFAULT (FIELD_DISJUNCTION (FIELD_CONJUNCTION (FIELD_NEGATION (FG_TERM banana)))))))
 ftsFieldGroupTerm:
 "woof" -> "woof"
 

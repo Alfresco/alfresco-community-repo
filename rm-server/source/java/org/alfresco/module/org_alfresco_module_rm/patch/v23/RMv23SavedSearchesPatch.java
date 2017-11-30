@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.NodeService;
  */
 public class RMv23SavedSearchesPatch extends AbstractModulePatch
 {
-	/** records management search service */
+    /** records management search service */
     private RecordsManagementSearchService recordsManagementSearchService;
 
     /** node service */
@@ -47,7 +47,7 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
     {
 		this.recordsManagementSearchService = recordsManagementSearchService;
-	}
+    }
 
     /**
      * @param nodeService node service

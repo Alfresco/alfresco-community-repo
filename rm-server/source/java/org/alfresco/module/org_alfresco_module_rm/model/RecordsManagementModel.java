@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.module.org_alfresco_module_rm.model;
 
 import org.alfresco.service.namespace.QName;
@@ -149,7 +150,9 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_DISPOSITION_ACTION_ID = QName.createQName(RM_URI, "dispositionActionId");
     QName PROP_DISPOSITION_ACTION = QName.createQName(RM_URI, "dispositionAction");
     QName PROP_DISPOSITION_AS_OF = QName.createQName(RM_URI, "dispositionAsOf");
-    /** A flag indicating that the "disposition as of" date has been manually set and shouldn't be changed. */
+    /**
+     * A flag indicating that the "disposition as of" date has been manually set and shouldn't be changed.
+     */
     QName PROP_MANUALLY_SET_AS_OF = QName.createQName(RM_URI, "manuallySetAsOf");
     QName PROP_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "dispositionEventsEligible");
     QName PROP_DISPOSITION_ACTION_STARTED_AT = QName.createQName(RM_URI, "dispositionActionStartedAt");
@@ -229,13 +232,16 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_RS_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "recordSearchDispositionEventsEligible");
     QName PROP_RS_DISPOSITION_EVENTS = QName.createQName(RM_URI, "recordSearchDispositionEvents");
     QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriod");
-    QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriodExpression");
+    QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION = QName.createQName(RM_URI,
+        "recordSearchVitalRecordReviewPeriodExpression");
     QName PROP_RS_DISPOSITION_PERIOD = QName.createQName(RM_URI, "recordSearchDispositionPeriod");
     QName PROP_RS_DISPOSITION_PERIOD_EXPRESSION = QName.createQName(RM_URI, "recordSearchDispositionPeriodExpression");
     QName PROP_RS_HAS_DISPOITION_SCHEDULE = QName.createQName(RM_URI, "recordSearchHasDispositionSchedule");
     QName PROP_RS_DISPOITION_INSTRUCTIONS = QName.createQName(RM_URI, "recordSearchDispositionInstructions");
     QName PROP_RS_DISPOITION_AUTHORITY = QName.createQName(RM_URI, "recordSearchDispositionAuthority");
-    /** @depreacted as of 2.2, because disposable items can now be in multiple holds */
+    /**
+     * @depreacted as of 2.2, because disposable items can now be in multiple holds
+     */
     @Deprecated
     QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");
 
@@ -245,9 +251,12 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 
     // Extended security aspect
     // @deprecated as of 2.5, because of performance issues
-    @Deprecated QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
-    @Deprecated QName PROP_READERS = QName.createQName(RM_URI, "readers");
-    @Deprecated QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
+    @Deprecated
+    QName ASPECT_EXTENDED_SECURITY = QName.createQName(RM_URI, "extendedSecurity");
+    @Deprecated
+    QName PROP_READERS = QName.createQName(RM_URI, "readers");
+    @Deprecated
+    QName PROP_WRITERS = QName.createQName(RM_URI, "writers");
 
     // Originating details of a record
     QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName(RM_URI, "recordOriginatingDetails");
@@ -269,4 +278,6 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Countable aspect
     QName ASPECT_COUNTABLE = QName.createQName(RM_URI, "countable");
     QName PROP_COUNT = QName.createQName(RM_URI, "count");
+
+    QName ASPECT_SAVED_SEARCH = QName.createQName(RM_URI, "savedSearch");
 }

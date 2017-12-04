@@ -79,16 +79,6 @@
          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <properties>
-                  <property>
-                     <name>usedefaultlisteners</name>
-                     <value>false</value>
-                  </property>
-                  <property>
-                     <name>listener</name>
-                     <value>org.uncommons.reportng.HTMLReporter, org.uncommons.reportng.JUnitXMLReporter</value>
-                  </property>
-               </properties>
                <suiteXmlFiles>
                   <suiteXmlFile>${project.build.testOutputDirectory}/testng.xml</suiteXmlFile>
                </suiteXmlFiles>
@@ -253,6 +243,12 @@
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
+
+      <dependency>
+         <groupId>org.testng</groupId>
+         <artifactId>testng</artifactId>
+         <scope>test</scope>
+      </dependency>
       <!-- Database drivers -->
       <dependency>
          <groupId>postgresql</groupId>
@@ -267,12 +263,6 @@
          <scope>test</scope>
       </dependency>
       <!-- Dependencies for the test result reports -->
-      <dependency>
-         <groupId>org.uncommons</groupId>
-         <artifactId>reportng</artifactId>
-         <version>1.1.4</version>
-         <scope>test</scope>
-      </dependency>
       <dependency>
          <groupId>com.google.inject</groupId>
          <artifactId>guice</artifactId>

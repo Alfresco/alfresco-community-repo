@@ -349,4 +349,17 @@ public class RecordsAPI extends BaseAPI
         return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
 
+    /**
+     * Retrieves the record's nodeRef
+     *
+     * @param username   the user's username
+     * @param password   its password
+     * @param recordName the record full name
+     * @param recordPath the String with which the record name starts
+     * @return the record nodeRef in case it exists, empty string otherwise
+     */
+    public String getRecordNodeRef(String username, String password, String recordName, String recordPath)
+    {
+        return getNodeRefSpacesStore() + getItemNodeRef(username, password, recordPath + "/" + recordName);
+    }
 }

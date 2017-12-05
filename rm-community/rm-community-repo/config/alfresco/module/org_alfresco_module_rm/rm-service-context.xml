@@ -337,6 +337,7 @@
                 ]]>
             </value>
         </property>
+       <property name="nodeService" ref="NodeService" />
     </bean>
 
     <bean id="RecordsManagementSearchService" class="org.springframework.aop.framework.ProxyFactoryBean">

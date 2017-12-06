@@ -65,7 +65,7 @@
          <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-platform-distribution</artifactId>
-            <version>5.0.4</version>
+            <version>5.0.2</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
@@ -89,7 +89,7 @@
    </modules>
 
    <properties>
-      <alfresco.base.version>5.0.4</alfresco.base.version>
+      <alfresco.base.version>5.0.2</alfresco.base.version>
 
       <!-- Database properties - default values to be overridden in settings.xml -->
       <db.driver>org.postgresql.Driver</db.driver>

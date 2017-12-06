@@ -11,9 +11,9 @@
     <name>Alfresco Content Services Community Full Packaging</name>
 
     <scm>
-        <connection>scm:git:https://git.alfresco.com/Repository/full-community-packaging.gitt</connection>
-        <developerConnection>scm:git:https://git.alfresco.com/Repository/full-community-packaging.git</developerConnection>
-        <url>https://git.alfresco.com/Repository/full-community-packaging.git</url>
+        <connection>scm:git:git@github.com:Alfresco/acs-community-full-packaging.git</connection>
+        <developerConnection>scm:git:git@github.com:Alfresco/acs-community-full-packaging.git</developerConnection>
+        <url>https://github.com/Alfresco/acs-community-full-packaging</url>
         <tag>HEAD</tag>
     </scm>
 

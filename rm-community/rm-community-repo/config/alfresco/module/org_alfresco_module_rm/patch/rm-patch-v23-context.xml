@@ -34,4 +34,15 @@
       <property name="authorityService" ref="authorityService"/>
    </bean>
 
+   <bean id="rm.savedSearchPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v23.RMv23SavedSearchesPatch">
+      <property name="description" value="Add aspect to saved searches."/>
+      <property name="fixesToSchema" value="1012"/>
+      <property name="targetSchema" value="1013"/>
+      <property name="recordsManagementSearchService" ref="RecordsManagementSearchService"/>
+      <property name="nodeService" ref="NodeService"/>
+   </bean>
+
+
 </beans>

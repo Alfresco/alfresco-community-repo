@@ -696,6 +696,10 @@
          </mandatory-aspects>
       </aspect>
 
+      <aspect name="rma:savedSearch">
+         <title>Saved search</title>
+      </aspect>
+
       <aspect name="rma:vitalRecordDefinition">
          <title>Vital Record Definition</title>
          <properties>

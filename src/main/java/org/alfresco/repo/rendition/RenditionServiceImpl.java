@@ -228,9 +228,9 @@ public class RenditionServiceImpl implements
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Creating rendition definition ")
-                .append(renditionDefinitionName)
-                .append(" ")
-                .append(renderingEngineName);
+                    .append(renditionDefinitionName)
+                    .append(" ")
+                    .append(renderingEngineName);
             log.debug(msg.toString());
         }
         return new RenditionDefinitionImpl(GUID.generate(), renditionDefinitionName, renderingEngineName);
@@ -246,7 +246,7 @@ public class RenditionServiceImpl implements
         {
             StringBuilder msg = new StringBuilder();
             msg.append("Creating composite rendition definition ")
-                .append(renditionName);
+                    .append(renditionName);
             log.debug(msg.toString());
         }
         return new CompositeRenditionDefinitionImpl(GUID.generate(), renditionName);
@@ -293,13 +293,13 @@ public class RenditionServiceImpl implements
         checkSourceNodeForPreventionClass(sourceNode);
         
         RenditionDefinition rendDefn = AuthenticationUtil.runAs(
-            new AuthenticationUtil.RunAsWork<RenditionDefinition>()
-            {
-                public RenditionDefinition doWork() throws Exception
+                new AuthenticationUtil.RunAsWork<RenditionDefinition>()
                 {
-                    return loadRenditionDefinition(renditionDefinitionQName);
-                }
-            }, AuthenticationUtil.getSystemUserName());
+                    public RenditionDefinition doWork() throws Exception
+                    {
+                        return loadRenditionDefinition(renditionDefinitionQName);
+                    }
+                }, AuthenticationUtil.getSystemUserName());
         
         if (rendDefn == null)
         {
@@ -357,7 +357,7 @@ public class RenditionServiceImpl implements
                 {
                     StringBuilder msg = new StringBuilder();
                     msg.append("Node ").append(sourceNode)
-                    .append(" cannot be renditioned as it is of class ").append(contentClass);
+                            .append(" cannot be renditioned as it is of class ").append(contentClass);
                     if (log.isDebugEnabled())
                     {
                         log.debug(msg.toString());
@@ -393,7 +393,7 @@ public class RenditionServiceImpl implements
                 msg.append("Synchronously");
             }
             msg.append(" rendering node ").append(sourceNode)
-                .append(" with ").append(definition.getRenditionName());
+                    .append(" with ").append(definition.getRenditionName());
             log.debug(msg.toString());
         }
         final boolean checkConditions = true;
@@ -460,28 +460,9 @@ public class RenditionServiceImpl implements
         {
             // Get all the renditions that match the given rendition name
             result = nodeService.getChildAssocs(node, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
-            
-            result = removeArchivedRenditionsFrom(result);
+
         }
         return result;
-    }
-    
-    private List<ChildAssociationRef> removeArchivedRenditionsFrom(List<ChildAssociationRef> renditionAssocs)
-    {
-    	// This is a workaround for a bug in the NodeService (no JIRA number yet) whereby a call to
-    	// nodeService.getChildAssocs can return all children, including children in the archive store.
-    	List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
-    	
-        for (ChildAssociationRef chAssRef : renditionAssocs)
-        {
-        	// If the rendition has *not* been deleted, then it should remain in the result list.
-        	if (chAssRef.getChildRef().getStoreRef().equals(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE) == false)
-        	{
-        		result.add(chAssRef);
-        	}
-        }
-    	
-    	return result;
     }
 
     /*
@@ -501,7 +482,7 @@ public class RenditionServiceImpl implements
 
             QName contentProperty = ContentModel.PROP_CONTENT;
             Serializable contentPropertyName = nodeService.getProperty(renditionNode,
-                        ContentModel.PROP_CONTENT_PROPERTY_NAME);
+                    ContentModel.PROP_CONTENT_PROPERTY_NAME);
             if (contentPropertyName != null)
             {
                 contentProperty = (QName) contentPropertyName;
@@ -518,7 +499,6 @@ public class RenditionServiceImpl implements
 
             }
         }
-        filteredResults = removeArchivedRenditionsFrom(filteredResults);
 
         return filteredResults;
     }
@@ -537,7 +517,6 @@ public class RenditionServiceImpl implements
             // Get all the renditions that match the given rendition name -
             // there should only be 1 (or 0)
             renditions = this.nodeService.getChildAssocs(node, RenditionModel.ASSOC_RENDITION, renditionName);
-            renditions = this.removeArchivedRenditionsFrom(renditions);
         }
         if (renditions.isEmpty())
         {
@@ -596,10 +575,10 @@ public class RenditionServiceImpl implements
         {
             StringBuilder msg = new StringBuilder();
             msg.append("NodeRef ")
-                .append(renditionNode)
-                .append(" unexpectedly has ")
-                .append(parents.size())
-                .append(" rendition parents.");
+                    .append(renditionNode)
+                    .append(" unexpectedly has ")
+                    .append(parents.size())
+                    .append(" rendition parents.");
             if (log.isWarnEnabled())
             {
                 log.warn(msg.toString());

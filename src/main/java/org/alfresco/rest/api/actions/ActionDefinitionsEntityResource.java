@@ -23,33 +23,19 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api.nodes;
+package org.alfresco.rest.api.actions;
 
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionDefinition;
-import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.resource.parameters.SortColumn;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.ParameterCheck;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-@RelationshipResource(name = "action-definitions",  entityResource = NodesEntityResource.class, title = "Node action definitions")
-public class NodeActionDefinitionsRelation extends AbstractNodeRelation
-        implements RelationshipResourceAction.Read<ActionDefinition>
+@EntityResource(name="action-definitions", title = "Actions")
+public class ActionDefinitionsEntityResource implements EntityResourceAction.Read<ActionDefinition>
 {
     private Actions actions;
-
-    @Override
-    public void afterPropertiesSet()
-    {
-        super.afterPropertiesSet();
-        ParameterCheck.mandatory("actions", actions);
-    }
 
     public void setActions(Actions actions)
     {
@@ -57,9 +43,8 @@ public class NodeActionDefinitionsRelation extends AbstractNodeRelation
     }
 
     @Override
-    public CollectionWithPagingInfo<ActionDefinition> readAll(String entityResourceId, Parameters params)
+    public CollectionWithPagingInfo<ActionDefinition> readAll(Parameters params)
     {
-        NodeRef parentNodeRef = nodes.validateOrLookupNode(entityResourceId, null);
-        return actions.getActionDefinitions(parentNodeRef, params);
+        return actions.getActionDefinitions(params);
     }
 }

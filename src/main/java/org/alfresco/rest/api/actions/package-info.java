@@ -23,23 +23,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+@WebApi(name="alfresco", scope= Api.SCOPE.PUBLIC, version=1)
+package org.alfresco.rest.api.actions;
 
-package org.alfresco.rest.api;
-
-import org.alfresco.rest.api.model.ActionDefinition;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-public interface Actions
-{
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params);
-
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params);
-    
-    enum SortKey
-    {
-        NAME,
-        TITLE
-    };
-}
+import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.WebApi;

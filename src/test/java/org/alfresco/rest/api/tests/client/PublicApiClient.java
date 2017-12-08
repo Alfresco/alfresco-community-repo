@@ -886,7 +886,7 @@ public class PublicApiClient
 						.collect(Collectors.toList());
 
 				for (RestHTTPErrorStatus errorStatus : httpErrorsFilteredByStatusCode) {
-					if (errorStatus.getExceptionClass().contains(errorKey)) {
+					if (errorStatus.getDefaultMessage().equals(errorKey)) {
 						validErrorKey = true;
 					}
 				}

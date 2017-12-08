@@ -37,12 +37,15 @@ import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeExceptio
 import org.alfresco.rest.framework.core.exceptions.StaleEntityException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
+import org.alfresco.rest.framework.resource.parameters.InvalidSelectException;
+import org.alfresco.rest.framework.resource.parameters.where.InvalidQueryException;
 import org.springframework.extensions.webscripts.Status;
 
 public enum RestHTTPErrorStatus {
 	
-     API_EXCEPTION("org.alfresco.rest.framework.core.exceptions.ApiException",  Status.STATUS_INTERNAL_SERVER_ERROR, DefaultExceptionResolver.DEFAULT_MESSAGE_ID),
-     API_EXCEPTION1("org.alfresco.rest.framework.core.exceptions.ApiException",  Status.STATUS_BAD_REQUEST, DefaultExceptionResolver.DEFAULT_MESSAGE_ID),
+     DEFAULT_API_EXCEPTION("org.alfresco.rest.framework.core.exceptions.ApiException",  Status.STATUS_EXPECTATION_FAILED, DefaultExceptionResolver.DEFAULT_MESSAGE_ID),
+     INVALID_QUERY_EXCEPTION("org.alfresco.rest.framework.core.exceptions.InvalidArgumentException", Status.STATUS_BAD_REQUEST, InvalidQueryException.DEFAULT_MESSAGE_ID),
+     INVALID_SELECT_EXCEPTION("org.alfresco.rest.framework.core.exceptions.InvalidArgumentException", Status.STATUS_BAD_REQUEST, InvalidSelectException.DEFAULT_MESSAGE_ID),
      INVALID_ARGUMENT_EXCEPTION("org.alfresco.rest.framework.core.exceptions.InvalidArgumentException", Status.STATUS_BAD_REQUEST, InvalidArgumentException.DEFAULT_MESSAGE_ID),
      NOT_FOUND_EXCEPTION("org.alfresco.rest.framework.core.exceptions.NotFoundException", Status.STATUS_NOT_FOUND, NotFoundException.DEFAULT_MESSAGE_ID),
      ENTITY_NOT_FOUND_EXCEPTION("org.alfresco.rest.framework.core.exceptions.EntityNotFoundException", Status.STATUS_NOT_FOUND, EntityNotFoundException.DEFAULT_MESSAGE_ID),

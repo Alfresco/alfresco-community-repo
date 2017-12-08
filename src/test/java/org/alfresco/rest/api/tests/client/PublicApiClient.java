@@ -885,6 +885,8 @@ public class PublicApiClient
 				List<RestHTTPErrorStatus> httpErrorsFilteredByStatusCode = Arrays.asList(RestHTTPErrorStatus.values())
 						.stream().filter(t -> t.getStatusCode() == expectedStatus && t.getDefaultMessage() != null)
 						.collect(Collectors.toList());
+				
+				httpErrorsFilteredByStatusCode.add(RestHTTPErrorStatus.DEFAULT_API_EXCEPTION);
 
 				for (RestHTTPErrorStatus errorStatus : httpErrorsFilteredByStatusCode) {
 					if (errorStatus.getDefaultMessage().equals(errorKey)) {

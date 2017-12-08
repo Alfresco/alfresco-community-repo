@@ -859,7 +859,8 @@ public class PublicApiClient
                         errorMessage + ": \n" + "   Response: " + response;
                 throw new PublicApiException(msg, response);
             }
-            if (expectedStatus >= 400) {
+            ///in case of Status.SC_UNAUTHORIZED no response is returned 
+            if (expectedStatus >= 400 && expectedStatus != 401) {
     			checkErrorKeyResponse(errorMessage, expectedStatus, response);
     		}
         }

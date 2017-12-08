@@ -27,6 +27,7 @@ package org.alfresco.rest.api.tests.client;
 
 
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
@@ -40,38 +41,18 @@ import org.springframework.extensions.webscripts.Status;
 
 public enum RestHTTPErrorStatus {
 	
-     API_EXCEPTION("org.alfresco.rest.framework.core.exceptions.ApiException",  Status.STATUS_INTERNAL_SERVER_ERROR, null),
-     THROWABLE("java.lang.Throwable", Status.STATUS_INTERNAL_SERVER_ERROR, null),
-     ILLEGAL_ARGUMENT_EXCEPTION("java.lang.IllegalArgumentException", Status.STATUS_BAD_REQUEST, null),
-     CYCLIC_CHILD_RELATIONSHIP_EXCEPTION("org.alfresco.service.cmr.repository.CyclicChildRelationshipException",Status.STATUS_BAD_REQUEST,null),
+     API_EXCEPTION("org.alfresco.rest.framework.core.exceptions.ApiException",  Status.STATUS_INTERNAL_SERVER_ERROR, DefaultExceptionResolver.DEFAULT_MESSAGE_ID),
+     API_EXCEPTION1("org.alfresco.rest.framework.core.exceptions.ApiException",  Status.STATUS_BAD_REQUEST, DefaultExceptionResolver.DEFAULT_MESSAGE_ID),
      INVALID_ARGUMENT_EXCEPTION("org.alfresco.rest.framework.core.exceptions.InvalidArgumentException", Status.STATUS_BAD_REQUEST, InvalidArgumentException.DEFAULT_MESSAGE_ID),
-     VERSION_SERVICE_EXCEPTION("org.alfresco.service.cmr.version.VersionServiceException", Status.STATUS_BAD_REQUEST,null),
-     TYPE_CONVERSION_EXCEPTION("org.alfresco.service.cmr.repository.datatype.TypeConversionException", Status.STATUS_BAD_REQUEST,null),
      NOT_FOUND_EXCEPTION("org.alfresco.rest.framework.core.exceptions.NotFoundException", Status.STATUS_NOT_FOUND, NotFoundException.DEFAULT_MESSAGE_ID),
      ENTITY_NOT_FOUND_EXCEPTION("org.alfresco.rest.framework.core.exceptions.EntityNotFoundException", Status.STATUS_NOT_FOUND, EntityNotFoundException.DEFAULT_MESSAGE_ID),
-     INVALID_NODEREF_EXCEPTION("org.alfresco.service.cmr.repository.InvalidNodeRefException", Status.STATUS_NOT_FOUND, null),
      RELATIONSHIP_RESOURCE_NOT_FOUND_EXCEPTION("org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException", Status.STATUS_NOT_FOUND, RelationshipResourceNotFoundException.DEFAULT_MESSAGE_ID),
-     VERSION_DOES_NOT_EXIST_EXCEPTION("org.alfresco.service.cmr.version.VersionDoesNotExistException",Status.STATUS_NOT_FOUND, null),
-     CLIENT_APP_NOT_FOUND_EXCEPTION("org.alfresco.repo.client.config.ClientAppNotFoundException",Status.STATUS_NOT_FOUND,null),
      PERMISSION_DENIED_EXCEPTION("org.alfresco.rest.framework.core.exceptions.PermissionDeniedException",Status.STATUS_FORBIDDEN,PermissionDeniedException.DEFAULT_MESSAGE_ID),
-	 UNKNOWN_AUTHORITY_EXCEPTION("org.alfresco.repo.security.authority.UnknownAuthorityException", Status.STATUS_NOT_FOUND,null),
-	 ACCESS_DENIED_EXCEPTION("org.alfresco.repo.security.permissions.AccessDeniedException",Status.STATUS_FORBIDDEN,null),
 	 UNSUPPORTED_RESOURCE_OPERATION_EXCEPTION("org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException",Status.STATUS_METHOD_NOT_ALLOWED,UnsupportedResourceOperationException.DEFAULT_MESSAGE_ID),
 	 CONSTRAINT_VIOLATED_EXCEPTION("org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException", Status.STATUS_CONFLICT,ConstraintViolatedException.DEFAULT_MESSAGE_ID),
-	 NODE_LOCKED_EXCEPTION("org.alfresco.service.cmr.lock.NodeLockedException",Status.STATUS_CONFLICT,null),
-	 UNABLE_TO_AQUIRE_LOCK_EXCEPTION("org.alfresco.service.cmr.lock.UnableToAquireLockException", 422,null),
-	 UNABLE_TO_RELEASE_LOCK_EXCEPTION("org.alfresco.service.cmr.lock.UnableToReleaseLockException",422,null),
-	 DUPLICATE_CHILD_NODE_NAME_EXCEPTION("org.alfresco.service.cmr.repository.DuplicateChildNodeNameException",Status.STATUS_CONFLICT,null),
 	 STALE_ENTITY_EXCEPTION("org.alfresco.rest.framework.core.exceptions.StaleEntityException",Status.STATUS_CONFLICT,StaleEntityException.DEFAULT_MESSAGE_ID ),
-	 STATUS_REQUEST_ENTITY_TOO_LARGE("org.alfresco.repo.content.ContentLimitViolationException",Status.STATUS_REQUEST_ENTITY_TOO_LARGE,null),
 	 REQUEST_ENTITY_TOO_LARGE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException", Status.STATUS_REQUEST_ENTITY_TOO_LARGE, RequestEntityTooLargeException.DEFAULT_MESSAGE_ID),
-	 DISABLED_SERVICE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.DisabledServiceException",Status.STATUS_NOT_IMPLEMENTED,null),
-	 CONTENT_QUOTA_EXCEPTION("org.alfresco.service.cmr.usage.ContentQuotaException", 507, null),
-	 INSUFFICIENT_STORAGE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.InsufficientStorageException",507,null),
-	 INTEGRITY_EXCEPTION("org.alfresco.repo.node.integrity.IntegrityException",422,null),
-	 SITE_SERVICE_EXCEPTION("org.alfresco.repo.site.SiteServiceException",422,null),
-	 UNSUPPORTED_MEDIA_TYPE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException", Status.STATUS_UNSUPPORTED_MEDIA_TYPE,UnsupportedMediaTypeException.DEFAULT_MESSAGE_ID),
-	 INVALID_MEDIA_TYPE_EXCEPTION("org.springframework.http.InvalidMediaTypeException",Status.STATUS_UNSUPPORTED_MEDIA_TYPE,null);
+	 UNSUPPORTED_MEDIA_TYPE_EXCEPTION("org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException", Status.STATUS_UNSUPPORTED_MEDIA_TYPE,UnsupportedMediaTypeException.DEFAULT_MESSAGE_ID);
 
      
 	String exceptionClass;

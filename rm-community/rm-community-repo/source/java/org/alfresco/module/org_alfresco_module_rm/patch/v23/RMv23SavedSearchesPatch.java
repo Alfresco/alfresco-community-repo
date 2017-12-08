@@ -77,6 +77,10 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
     {
         for (SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME))
         {
+            if(nodeService.hasAspect(savedSearchDetails.getNodeRef(),ASPECT_SAVED_SEARCH))
+            {
+                break;
+            }
             nodeService.addAspect(savedSearchDetails.getNodeRef(), ASPECT_SAVED_SEARCH, null);
         }
     }

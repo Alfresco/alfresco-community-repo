@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>content-services-community-full-docker</artifactId>
-    <name>ACS Community full Docker image builder</name>
+    <artifactId>content-services-community-full-docker-alfresco</artifactId>
+    <name>ACS Community full Docker image builder for Alfresco</name>
     <packaging>pom</packaging>
 
     <parent>
@@ -31,20 +31,8 @@
             <type>war</type>
         </dependency>
         <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>share</artifactId>
-            <version>${alfresco.share.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
             <groupId>org.alfresco.integrations</groupId>
             <artifactId>alfresco-googledocs-repo</artifactId>
-            <version>${alfresco.googledocs.version}</version>
-            <type>amp</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco.integrations</groupId>
-            <artifactId>alfresco-googledocs-share</artifactId>
             <version>${alfresco.googledocs.version}</version>
             <type>amp</type>
         </dependency>
@@ -57,26 +45,6 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.0.2</version>
                 <executions>
-                    <execution>
-                        <id>unpack-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>share</artifactId>
-                                    <version>${alfresco.share.version}</version>
-                                    <type>war</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/war/share</outputDirectory>
-                                    <destFileName>share.war</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
                     <execution>
                         <id>copy-resources</id>
                         <phase>process-resources</phase>
@@ -108,14 +76,6 @@
                                     <type>amp</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/amps</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.alfresco.integrations</groupId>
-                                    <artifactId>alfresco-googledocs-share</artifactId>
-                                    <version>${alfresco.googledocs.version}</version>
-                                    <type>amp</type>
-                                    <overWrite>false</overWrite>
-                                    <outputDirectory>${project.build.directory}/amps_share</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

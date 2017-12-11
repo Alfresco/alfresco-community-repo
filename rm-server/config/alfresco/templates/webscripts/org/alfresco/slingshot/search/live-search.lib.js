@@ -33,7 +33,7 @@
 
 /**
  * Live Search Component
- *
+ * 
  * Takes the following object as Input:
  *    params
  *    {
@@ -41,7 +41,7 @@
  *       term: search terms
  *       maxResults: maximum results to return
  *    };
- *
+ * 
  * Outputs:
  *  items - Array of objects containing the search results
  */
@@ -53,7 +53,7 @@ const SURF_CONFIG_QNAMEPATH = "/cm:surf-config/";
 /**
  * Returns site information data structure.
  * { shortName: siteId, title: title }
- *
+ * 
  * Caches the data to avoid repeatedly querying the repository.
  */
 var siteDataCache = {};
@@ -65,10 +65,10 @@ function getSiteData(siteId) {
    }
    var site = siteService.getSite(siteId);
    var data =
-      {
-         shortName: siteId,
-         title: (site !== null ? site.title : "unknown")
-      };
+   {
+      shortName : siteId,
+      title : (site !== null ? site.title : "unknown")
+   };
    siteDataCache[siteId] = data;
    return data;
 }
@@ -80,10 +80,10 @@ function getSiteData(siteId) {
  */
 function getQueryTemplate() {
    var t =
-         [{
-            field: "keywords",
-            template: "%(cm:name cm:title cm:description TEXT TAG)"
-         }],
+      [{
+         field: "keywords",
+         template: "%(cm:name cm:title cm:description TEXT TAG)"
+      }],
       qt = new XML(config.script)["default-query-template"];
    if (qt != null && qt.length() != 0)
    {
@@ -103,18 +103,18 @@ function getDocumentItem(container, node) {
       if (node.isDocument)
       {
          item =
-            {
-               nodeRef: node.nodeRef.toString(),
-               name: node.name,
-               title: node.properties["cm:title"],
-               description: node.properties["cm:description"],
-               modifiedOn: node.properties["cm:modified"],
-               modifiedBy: node.properties["cm:modifier"],
-               createdOn: node.properties["cm:created"],
-               createdBy: node.properties["cm:creator"],
-               mimetype: node.mimetype,
-               size: node.size
-            };
+         {
+            nodeRef: node.nodeRef.toString(),
+            name: node.name,
+            title: node.properties["cm:title"],
+            description: node.properties["cm:description"],
+            modifiedOn: node.properties["cm:modified"],
+            modifiedBy: node.properties["cm:modifier"],
+            createdOn: node.properties["cm:created"],
+            createdBy: node.properties["cm:creator"],
+            mimetype: node.mimetype,
+            size: node.size
+         };
          if (container.siteId !== null)
          {
             item.site = getSiteData(container.siteId);
@@ -123,7 +123,7 @@ function getDocumentItem(container, node) {
          if (node.hasAspect("{http://www.alfresco.org/model/content/1.0}thumbnailModification"))
          {
             var dates = node.properties["lastThumbnailModification"];
-            for (var i = 0; i < dates.length; i++)
+            for (var i=0; i<dates.length; i++)
             {
                if (dates[i].indexOf("doclib") !== -1)
                {
@@ -134,32 +134,32 @@ function getDocumentItem(container, node) {
          }
       }
    }
-
+   
    return item;
 }
 
 /**
  * Splits the qname path to a node.
- *
+ * 
  * Returns container meta object containing the following properties:
  *    siteId
  *    containerId
  */
 function splitQNamePath(node) {
    var path = node.qnamePath,
-      container = {
+       container = {
          siteId: null,
          containerId: null
-      };
-
-   if (path.match("^" + SITES_SPACE_QNAME_PATH) == SITES_SPACE_QNAME_PATH)
+       };
+   
+   if (path.match("^"+SITES_SPACE_QNAME_PATH) == SITES_SPACE_QNAME_PATH)
    {
       var tmp = path.substring(SITES_SPACE_QNAME_PATH.length),
-         pos = tmp.indexOf('/');
+          pos = tmp.indexOf('/');
       if (pos >= 1)
       {
          var siteQName = Packages.org.alfresco.util.ISO9075.decode(tmp.split("/")[0]);
-         siteId = siteQName.substring(siteQName.indexOf(":") + 1);
+             siteId = siteQName.substring(siteQName.indexOf(":") + 1);
          tmp = tmp.substring(pos + 1);
          pos = tmp.indexOf('/');
          if (pos >= 1)
@@ -167,13 +167,13 @@ function splitQNamePath(node) {
             // strip container id from the path
             var containerId = tmp.substring(0, pos);
             containerId = containerId.substring(containerId.indexOf(":") + 1);
-
+            
             container.siteId = siteId;
             container.containerId = containerId;
          }
       }
    }
-
+   
    return container;
 }
 
@@ -197,27 +197,36 @@ function liveSearch(params) {
 
 /**
  * Return Document Search results with the given search terms.
- *
+ * 
  * "AND" is the default operator unless configured otherwise, OR, AND and NOT are also supported -
  * as is any other valid fts-alfresco elements such as "quoted terms" and (bracket terms) and also
  * propname:propvalue syntax.
- *
+ * 
  * @param params  Object containing search parameters - see API description above
  */
 function getDocResults(params) {
    // ensure a TYPE is specified
    var ftsQuery = params.term + ' AND +TYPE:"cm:content"';
-
+   
+   // site constraint
+   if (params.siteId !== null)
+   {
+      // use SITE syntax to restrict to specific site
+      ftsQuery += ' AND SITE:"' + params.siteId + '"';
+   }
+   
    // root node - generally used for overridden Repository root in Share
    if (params.rootNode !== null)
    {
       ftsQuery = 'PATH:"' + rootNode.qnamePath + '//*" AND (' + ftsQuery + ')';
    }
+   
+   // main query construction
    ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"fm:post" AND -ASPECT:"sys:hidden" AND -ASPECT:"rma:savedSearch" AND -cm:creator:system';
-
+   
    if (logger.isLoggingEnabled())
       logger.log("LiveQuery:\r\n" + ftsQuery);
-
+   
    // get default fts operator from the config
    //
    // TODO: common search lib - for both live and standard e.g. to get values like this...
@@ -228,7 +237,7 @@ function getDocResults(params) {
    {
       operator = cf.toString();
    }
-
+   
    // perform fts-alfresco language query
    var queryDef = {
       query: ftsQuery,
@@ -243,13 +252,13 @@ function getDocResults(params) {
       }
    };
    var rs = search.queryResultSet(queryDef);
-   nodes = rs.nodes,
-      results = [];
-
+       nodes = rs.nodes,
+       results = [];
+   
    if (logger.isLoggingEnabled())
       logger.log("Processing resultset of length: " + nodes.length);
-
-   for (var i = 0, item; i < nodes.length && i < params.maxResults; i++)
+   
+   for (var i=0, item; i<nodes.length && i<params.maxResults; i++)
    {
       // For each node we extract the site/container qname path and then
       // let the per-container helper function decide what to do.
@@ -270,13 +279,13 @@ function getDocResults(params) {
          }
       }
    }
-
+   
    return buildResults(results, params, rs.meta.hasMore);
 }
 
 /**
  * Return Site Search results with the given search terms.
- *
+ * 
  * @param params  Object containing search parameters - see API description above
  */
 function getSiteResults(params) {
@@ -288,7 +297,7 @@ function getSiteResults(params) {
 
 /**
  * Return People Search results with the given search terms.
- *
+ * 
  * @param params  Object containing search parameters - see API description above
  */
 function getPeopleResults(params) {

@@ -19,7 +19,7 @@ services:
             - 8080:8080 #Browser port
 
     share:
-        image: full-share:${SHARE_TAG}
+        image: quay.io/alfresco/full-share:${SHARE_TAG}
         ports:
             - 8082:8080
 

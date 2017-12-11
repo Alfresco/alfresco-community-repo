@@ -25,6 +25,8 @@
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
+      <!-- FIXME: Cannot set it to the Alfresco version as some SQL Mapping files are missing in 5.2-SNAPSHOT. See BDE-843 -->
+      <alfresco.h2scripts.version>5.1.1</alfresco.h2scripts.version>
    </properties>
 
    <build>
@@ -331,7 +333,7 @@
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.version}</version>
+         <version>${alfresco.h2scripts.version}</version>
          <classifier>h2scripts</classifier>
          <exclusions>
             <exclusion>
@@ -551,7 +553,7 @@
                      <dependency>
                         <groupId>${alfresco.groupId}</groupId>
                         <artifactId>alfresco-repository</artifactId>
-                        <version>${alfresco.version}</version>
+                        <version>${alfresco.h2scripts.version}</version>
                         <classifier>h2scripts</classifier>
                         <exclusions>
                            <exclusion>

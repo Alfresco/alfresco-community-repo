@@ -1,4 +1,4 @@
-FROM docker-internal.alfresco.com/content-services-community:latest
+FROM quay.io/alfresco/alfresco-content-services-community:latest
 
 RUN mkdir -p /usr/local/tomcat/amps
 

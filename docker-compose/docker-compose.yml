@@ -2,7 +2,7 @@ version: "3"
 
 services:
     alfresco:
-        image: docker-internal.alfresco.com/full-content-services-community:${ALFRESCO_TAG}
+        image: quay.io/alfresco/alfresco-full-content-services-community:${ALFRESCO_TAG}
         environment:
             JAVA_OPTS : "
                 -Ddb.driver=org.postgresql.Driver

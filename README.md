@@ -1,4 +1,4 @@
-# Full Community Packaging for Alfreco Content Services
+# Full Community Packaging for Alfresco Content Services
 
 This project contains the code for packaging the entire Alfresco Content Services product Community edition.
 
@@ -14,15 +14,15 @@ Build and start Alfresco Content Services Community using docker-compose, contai
 1.2. Alfresco AOS amp  
 1.3. Alfresco vti-bin war - that helps with AOS integration  
 1.4. Alfresco Google Docs Repo amp  
-2. Share, with:  
+2. Alfresco Share, with:  
 2.1 Alfresco Google Docks Share amp  
 3. A Postgres DB  
-4. Solr6  
+4. Alfresco Solr6  
 
 ### Instructions:
 #### Prerequisite: 
 * Docker installed locally 
-* Access to docker-internal.alfresco.com and quiy.io repositories - Platform Services team is working on getting the images in dockerhub registry.
+* Access to docker-internal.alfresco.com and quay.io repositories - Platform Services team is working on getting the images in [Docker Hub](https://hub.docker.com/u/alfresco/) registry.
 
 #### Steps
 1. Go to **docker-compose** folder
@@ -32,7 +32,7 @@ Build and start Alfresco Content Services Community using docker-compose, contai
 #### Notes:
 * Make sure the local machine has the ports (5432, 8080, 8082, 8083) set up in the docker-compose.yml file free.
 * The images used in the docker-compose.yml are images that are build in the 'docker-alfresco' and 'docker-share' subfolders of the project - see the relevant sections below
-* If you don't have access to the docker-internal.alfresco.com and quay.io images , or if you want custom data in your docker images, you can use the 'docker-alfresco' and 'docker-share' folders to customize and build your customized docker images that are used in the docker-compose project. Just make sure you use proper tags when you create the images and update the docker-compose.yml with these proper tags that you created.
+* If you don't have access to the docker-internal.alfresco.com and quay.io images, or if you want custom data in your docker images, you can use the 'docker-alfresco' and 'docker-share' folders to customize and build your customized docker images that are used in the docker-compose project. Just make sure you use proper tags when you create the images and update the docker-compose.yml with these proper tags that you created.
 
 ## Docker images
 These images are used to build the images used by the docker-compose.yml project to bring up an ACS Community, similar to what the installer did/does.  

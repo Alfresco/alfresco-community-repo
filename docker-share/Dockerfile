@@ -1,4 +1,4 @@
-FROM quay.io/alfresco/share:5.2.X
+FROM quay.io/alfresco/alfresco-share:5.2.X
 
 RUN mkdir -p /usr/local/tomcat/amps_share
 

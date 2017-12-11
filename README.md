@@ -9,15 +9,15 @@ Note: It is not easy to build the full installer locally (and impossible on Wind
 
 ## Docker-compose
 Build and start Alfresco Content Services Community using docker-compose, containing:
-1. Alfresco Repository for community, with:
-1.1. Alfresco Share Services amp
-1.2. Alfresco AOS amp
-1.3. Alfresco vti-bin war - that helps with AOS integration
-1.4. Alfresco Google Docs Repo amp
-2. Share, with:
-2.1 Alfresco Google Docks Share amp
-3. A Postgres DB
-4. Solr6
+1. Alfresco Repository for community, with:  
+1.1. Alfresco Share Services amp  
+1.2. Alfresco AOS amp  
+1.3. Alfresco vti-bin war - that helps with AOS integration  
+1.4. Alfresco Google Docs Repo amp  
+2. Share, with:  
+2.1 Alfresco Google Docks Share amp  
+3. A Postgres DB  
+4. Solr6  
 
 ### Instructions:
 #### Prerequisite: 

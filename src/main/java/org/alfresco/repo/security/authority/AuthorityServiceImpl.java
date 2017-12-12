@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.security.authority;
 
-import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
-
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;

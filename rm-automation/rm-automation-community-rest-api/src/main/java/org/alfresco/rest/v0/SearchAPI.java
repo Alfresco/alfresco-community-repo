@@ -36,6 +36,7 @@ import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -55,6 +56,9 @@ public class SearchAPI extends BaseAPI
 
     /** faceted search API endpoint */
     private static final String FACETED_SEARCH_ENDPOINT = "{0}alfresco/s/slingshot/rmsearch/faceted/rmsearch?{1}";
+
+    /** share live search API endpoint */
+    private static final String SHARE_LIVE_SEARCH_DOCS_ENDPOINT = "{0}alfresco/s/slingshot/live-search-docs?{1}";
 
     /** RM search URL template */
     private static final String RM_SEARCH_ENDPOINT = "{0}alfresco/s/slingshot/rmsearch/{1}?{2}";
@@ -139,6 +143,20 @@ public class SearchAPI extends BaseAPI
     }
 
     /**
+     * Execute share live search for documents.
+     *
+     * @param searchUser
+     * @param searchPassword
+     * @param searchTerm
+     * @return search results (see API reference for more details)
+     */
+    public JSONObject liveSearchForDocuments(String searchUser, String searchPassword, String searchTerm)
+    {
+        return facetedRequest(searchUser, searchPassword, Arrays.asList(new BasicNameValuePair("t", searchTerm)),
+                    SHARE_LIVE_SEARCH_DOCS_ENDPOINT);
+    }
+
+    /**
      * Execute faceted search for term.
      * @param searchUser
      * @param searchPassword
@@ -163,6 +181,20 @@ public class SearchAPI extends BaseAPI
     public List<String> searchForDocumentsAsUser(String username, String password, String term)
     {
         return getItemNames(facetedSearchForTerm(username, password, term));
+    }
+
+    /**
+     * Helper method to search for documents as a user using share live search.
+     * @param username to search as
+     * @param password for username
+     * @param term search term
+     * @return list of document names found
+     */
+    public List<String> liveSearchForDocumentsAsUser(String username, String password, String term) throws JSONException
+    {
+        JSONObject searchResult = liveSearchForDocuments(username, password, term);
+        LOGGER.info(searchResult.toString(3));
+        return getItemNames(searchResult);
     }
 
     /**

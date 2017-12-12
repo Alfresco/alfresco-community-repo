@@ -298,16 +298,6 @@
                 <artifactId>jackson-annotations</artifactId>
                 <version>2.8.10</version>
             </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-core-asl</artifactId>
-                <version>1.9.13</version>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-mapper-asl</artifactId>
-                <version>1.9.13</version>
-            </dependency>
 
             <!-- Make sure JUnit is not packaged -->
             <dependency>

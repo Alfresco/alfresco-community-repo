@@ -73,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class BaseAPI
 {
     // logger
-    private static final Logger LOGGER = LoggerFactory.getLogger(BaseAPI.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(BaseAPI.class);
 
     /** exception key in JSON response body */
     private static final String EXCEPTION_KEY = "exception";
@@ -216,6 +216,7 @@ public abstract class BaseAPI
                     client.getAlfrescoUrl(),
                     URLEncodedUtils.format(parameters, "UTF-8"));
         }
+        LOGGER.info("On GET {}, received following response: ", requestURL);
         client.close();
         return doGetRequest(username, password, requestURL);
     }

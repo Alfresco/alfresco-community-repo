@@ -852,11 +852,6 @@ public class PublicApiClient
         
         /**
          * Used for validation of status code on rest response
-         * 
-         * @param errorMessage
-         * @param expectedStatus
-         * @param response
-         * @throws PublicApiException
          */
         public void checkStatus(String errorMessage, int expectedStatus, HttpResponse response) throws PublicApiException
         {
@@ -876,11 +871,6 @@ public class PublicApiClient
 
         /**
          * Used for validation on field errorKey on Error rest response
-         * 
-         * @param errorMessage
-         * @param expectedStatus
-         * @param response
-         * @throws PublicApiException
          */
         public void checkErrorKeyResponse(String errorMessage, int expectedStatus, HttpResponse response) throws PublicApiException
         {

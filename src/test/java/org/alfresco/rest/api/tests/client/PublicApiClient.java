@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -75,6 +76,7 @@ import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -847,17 +849,72 @@ public class PublicApiClient
             assertNotNull(source);
             return source;
         }
-
+        
+        /**
+         * Used for validation of status code on rest response
+         */
         public void checkStatus(String errorMessage, int expectedStatus, HttpResponse response) throws PublicApiException
         {
             int actualStatus = response.getStatusCode();
             if ((expectedStatus > 0) && (expectedStatus != actualStatus))
             {
-                String msg = "Status code " + actualStatus + " returned, but expected " + expectedStatus + ": \n"+
-                        errorMessage + ": \n" + "   Response: " + response;
+                String msg = "Status code " + actualStatus + " returned, but expected " + expectedStatus + ": \n" + errorMessage + ": \n"
+                        + "   Response: " + response;
                 throw new PublicApiException(msg, response);
             }
+            /// in case of Status.SC_UNAUTHORIZED no response is returned
+            if (expectedStatus >= 400 && expectedStatus != 401)
+            {
+                checkErrorKeyResponse(errorMessage, expectedStatus, response);
+            }
         }
+
+        /**
+         * Used for validation on field errorKey on Error rest response
+         */
+        public void checkErrorKeyResponse(String errorMessage, int expectedStatus, HttpResponse response) throws PublicApiException
+        {
+            PublicApiClient.ExpectedErrorResponse error;
+            // the error response must have a valid format in conformity with
+            // the
+            // ErrorResponse model
+            try
+            {
+                error = RestApiUtil.parseErrorResponse(response.getJsonResponse());
+            }
+            catch (Exception e)
+            {
+                throw new PublicApiException(e.getMessage(), response);
+            }
+
+            String errorKey = error.errorKey;
+            // validate the errorKey which have default message exception
+            if (errorKey != null && errorKey.contains("exception"))
+            {
+                boolean validErrorKey = false;
+
+                List<RestErrorResponseDefault> httpErrorsFilteredByStatusCode = Arrays.asList(RestErrorResponseDefault.values()).stream()
+                        .filter(t -> t.getStatusCode() == expectedStatus && t.getDefaultMessage() != null).collect(Collectors.toList());
+
+                httpErrorsFilteredByStatusCode.add(RestErrorResponseDefault.DEFAULT_API_EXCEPTION);
+
+                for (RestErrorResponseDefault errorResponseDefault : httpErrorsFilteredByStatusCode)
+                {
+                    if (errorResponseDefault.getDefaultMessage().equals(errorKey))
+                    {
+                        validErrorKey = true;
+                    }
+                }
+
+                if (validErrorKey == false)
+                {
+                    String msg = "Error key " + errorKey + " returned is not valid " + "\n" + errorMessage + ": \n" + "   Response: " + response;
+                    throw new PublicApiException(msg, response);
+                }
+
+            }
+        }
+
     }
 
     public static class ListResponse<T>

@@ -5,6 +5,12 @@ The library contains the following:
 * Models for data types and Dictionary implementation
 * Parsers
 
+Please note that the data model uses version 2 of the Jackson libraries. 
+The upgrade from version 1 was not backward compatible, any projects
+that are dependent on data model using Jackson 1.x should use the data-model 6.N branch. 
+
+ 
+
 ### Building and testing
 The project can be built and tested by running Maven command:
 ~~~

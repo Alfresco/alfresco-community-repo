@@ -25,11 +25,11 @@
  */
 package org.alfresco.service.cmr.search;
 
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
+
 import java.util.Collections;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * POJO class representing Stats request

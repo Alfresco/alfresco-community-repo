@@ -26,9 +26,8 @@
 package org.alfresco.service.cmr.search;
 
 import org.alfresco.api.AlfrescoPublicApi;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Parameters used for search hightlighting that are Field Specific
@@ -38,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class FieldHighlightParameters extends HighlightParameters
 {
     private final String field;
+
     @JsonCreator
     public FieldHighlightParameters(
                 @JsonProperty("field") String field,

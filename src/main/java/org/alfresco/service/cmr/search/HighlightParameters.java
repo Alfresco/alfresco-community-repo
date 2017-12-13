@@ -26,6 +26,8 @@
 package org.alfresco.service.cmr.search;
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Parameters used for search hightlighting.

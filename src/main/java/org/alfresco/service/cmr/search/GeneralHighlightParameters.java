@@ -25,12 +25,11 @@
  */
 package org.alfresco.service.cmr.search;
 
-import java.util.List;
-
 import org.alfresco.api.AlfrescoPublicApi;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
 /**
  * Parameters used for search hightlighting that apply to all fields

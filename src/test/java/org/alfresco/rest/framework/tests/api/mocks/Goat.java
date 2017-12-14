@@ -25,12 +25,13 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Simple mock pojo for serialization for relationships
@@ -56,7 +57,8 @@ public class Goat implements Animal
         super();
         this.grassId = grassId;
     }
-    
+
+    @JsonProperty("goatId")
     @UniqueId(name="goatId")
     public String getName()
     {

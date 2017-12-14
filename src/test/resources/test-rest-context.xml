@@ -25,7 +25,6 @@
         <property name="jsonDeserializers">
             <map>
                 <entry key="org.alfresco.service.cmr.repository.NodeRef"><bean class="org.alfresco.rest.framework.jacksonextensions.NodeRefDeserializer" /></entry>            
-                <entry key="java.lang.String"><bean class="org.alfresco.rest.framework.jacksonextensions.RestApiStringDeserializer" /></entry>
             </map>
         </property>
     </bean>

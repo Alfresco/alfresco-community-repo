@@ -30,9 +30,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.springframework.http.HttpMethod;
 
 /**

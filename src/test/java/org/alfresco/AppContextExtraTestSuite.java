@@ -55,7 +55,6 @@ import org.junit.runners.Suite;
     org.alfresco.rest.framework.tests.core.InspectorTests.class,
     org.alfresco.rest.framework.tests.core.JsonJacksonTests.class,
     org.alfresco.rest.framework.tests.core.ParamsExtractorTests.class,
-    org.alfresco.rest.framework.tests.core.ResourceWebScriptHelperTests.class,
     org.alfresco.rest.framework.tests.core.WhereTests.class,
     org.alfresco.rest.framework.tests.core.WithResponseTest.class,
     org.alfresco.rest.framework.tools.RecognizedParamsExtractorTest.class,

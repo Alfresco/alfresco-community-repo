@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks3;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.rest.framework.tests.api.mocks.Animal;
 import org.alfresco.rest.framework.tests.api.mocks.Goat;
@@ -43,7 +44,8 @@ public class SlimGoat implements Animal
     {
         super();
     }
-    
+
+    @JsonProperty("id")
     @UniqueId
     public String getName()
     {

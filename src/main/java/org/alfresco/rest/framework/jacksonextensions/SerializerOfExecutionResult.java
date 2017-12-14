@@ -31,22 +31,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.alfresco.rest.framework.core.ResourceInspectorUtil;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.BeanDescription;
-import org.codehaus.jackson.map.BeanPropertyDefinition;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.ser.std.SerializerBase;
-import org.codehaus.jackson.type.JavaType;
 
 /**
  * Serializes ExecutionResult into the correct response format
  * 
  * @author Gethin James
  */
-public class SerializerOfExecutionResult extends SerializerBase<ExecutionResult>
+public class SerializerOfExecutionResult extends StdSerializer<ExecutionResult>
 {
 
     protected SerializerOfExecutionResult()
@@ -64,7 +64,7 @@ public class SerializerOfExecutionResult extends SerializerBase<ExecutionResult>
         Object rootObj = value.getRoot();
         if (rootObj == null)
         {
-            provider.getNullValueSerializer().serialize(null, jgen, provider);
+            provider.getDefaultNullValueSerializer().serialize(null, jgen, provider);
         }
         else
         {

@@ -25,9 +25,9 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.service.cmr.lock.LockType;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
  * Representation of a lock info

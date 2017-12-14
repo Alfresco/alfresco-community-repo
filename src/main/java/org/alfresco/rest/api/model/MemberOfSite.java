@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.api.sites.SiteEntityResource;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -73,7 +74,8 @@ public class MemberOfSite implements Comparable<MemberOfSite>
     	return memberOfSite;
     }
 
-	@UniqueId
+	@JsonProperty("id")
+    @UniqueId
     @EmbeddedEntityResource(propertyName = "site", entityResource = SiteEntityResource.class)
     public String getSiteShortName()
 	{

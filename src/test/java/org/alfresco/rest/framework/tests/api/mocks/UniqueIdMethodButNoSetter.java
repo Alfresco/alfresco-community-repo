@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
 
 /**
@@ -39,6 +40,7 @@ public class UniqueIdMethodButNoSetter
 
     private String name;
 
+    @JsonProperty("id")
     @UniqueId
     public String getName()
     {

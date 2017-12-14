@@ -25,11 +25,8 @@
  */
 package org.alfresco.rest.api.search.model;
 
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
-import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * This is a copy of the SortDefinition class found in data-model.  Due to the use of a very old version

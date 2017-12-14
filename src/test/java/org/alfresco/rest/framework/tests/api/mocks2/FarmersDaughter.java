@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks2;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
@@ -57,6 +58,7 @@ public class FarmersDaughter extends Farmer
     /**
      * @return the likesFlowers
      */
+    @JsonProperty("id")
     @UniqueId
     public boolean getLikesFlowers()
     {

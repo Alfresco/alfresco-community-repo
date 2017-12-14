@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -195,6 +196,7 @@ public class Node implements Comparable<Node>
 
     // note: nodeRef maps to json "id" (when serializing/deserializng)
 
+    @JsonProperty("id")
     @UniqueId
     public NodeRef getNodeRef()
     {

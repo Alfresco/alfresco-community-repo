@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -49,6 +50,7 @@ public class Tag implements Comparable<Tag>
 		this.tag = tag;
 	}
 
+	@JsonProperty("id")
 	@UniqueId
 	public NodeRef getNodeRef()
 	{

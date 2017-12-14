@@ -25,17 +25,17 @@
  */
 package org.alfresco.rest.framework.jacksonextensions;
 
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.map.JsonDeserializer;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.module.SimpleModule;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * This is the main Jackson configuration, it configures the Rest Json settings.
@@ -63,7 +63,6 @@ public class RestJsonModule extends SimpleModule implements InitializingBean
     public void setupModule(SetupContext context)
     {
         super.setupModule(context);
-        context.insertAnnotationIntrospector(new CustomAnnotationIntrospector());
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

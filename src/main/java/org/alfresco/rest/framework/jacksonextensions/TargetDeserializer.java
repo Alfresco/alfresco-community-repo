@@ -25,6 +25,16 @@
  */
 package org.alfresco.rest.framework.jacksonextensions;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.BeanProperty;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.type.SimpleType;
 import java.io.IOException;
 
 import org.alfresco.rest.api.model.Document;
@@ -35,16 +45,6 @@ import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.model.SiteTarget;
 import org.alfresco.rest.api.model.Target;
 import org.alfresco.service.cmr.favourites.FavouritesService.Type;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.JsonToken;
-import org.codehaus.jackson.map.BeanProperty;
-import org.codehaus.jackson.map.BeanProperty.Std;
-import org.codehaus.jackson.map.DeserializationContext;
-import org.codehaus.jackson.map.JsonDeserializer;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.type.SimpleType;
-import org.codehaus.jackson.type.JavaType;
 
 public class TargetDeserializer extends JsonDeserializer<Target>
 {
@@ -66,8 +66,8 @@ public class TargetDeserializer extends JsonDeserializer<Target>
         			try
         			{
         		        JavaType t = SimpleType.construct(Site.class);
-        		        BeanProperty p = new Std("", t, null, null);
-        		        JsonDeserializer<?> siteDeserializer = ctxt.getDeserializerProvider().findValueDeserializer(ctxt.getConfig(), t, p);
+        		        BeanProperty p = new BeanProperty.Std(new PropertyName(""), t, null, null, null, null);
+        		        JsonDeserializer<?> siteDeserializer = ctxt.findContextualValueDeserializer(t, p);
 
         				Site site = (Site)siteDeserializer.deserialize(jp, ctxt);
                     	target = new SiteTarget(site);
@@ -83,8 +83,8 @@ public class TargetDeserializer extends JsonDeserializer<Target>
         			try
         			{
         				JavaType t = SimpleType.construct(Document.class);
-        				BeanProperty p = new Std("", t, null, null);
-        		        JsonDeserializer<?> documentDeserializer = ctxt.getDeserializerProvider().findValueDeserializer(ctxt.getConfig(), t, p);
+                        BeanProperty p = new BeanProperty.Std(new PropertyName(""), t, null, null, null, null);
+                        JsonDeserializer<?> documentDeserializer = ctxt.findContextualValueDeserializer(t, p);
 
 	        			Document document = (Document)documentDeserializer.deserialize(jp, ctxt);
 	                	target = new DocumentTarget(document);
@@ -100,9 +100,9 @@ public class TargetDeserializer extends JsonDeserializer<Target>
         			try
         			{
         				JavaType t = SimpleType.construct(Folder.class);
-        				BeanProperty p = new Std("", t, null, null);
-        		        JsonDeserializer<?> folderDeserializer = ctxt.getDeserializerProvider().findValueDeserializer(ctxt.getConfig(), t, p);
-        		        
+                        BeanProperty p = new BeanProperty.Std(new PropertyName(""), t, null, null, null, null);
+                        JsonDeserializer<?> folderDeserializer = ctxt.findContextualValueDeserializer(t, p);
+
 	        			Folder folder = (Folder)folderDeserializer.deserialize(jp, ctxt);
 	        			target = new FolderTarget(folder);
         			}

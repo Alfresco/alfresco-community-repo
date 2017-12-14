@@ -27,9 +27,11 @@
 package org.alfresco.rest.api.tests.util;
 
 import static org.junit.Assert.assertNotNull;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -163,7 +165,7 @@ public class RestApiUtil
     {
         assertNotNull(object);
         ObjectMapper om = new ObjectMapper();
-        om.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        om.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         return om.writeValueAsString(object);
     }
 }

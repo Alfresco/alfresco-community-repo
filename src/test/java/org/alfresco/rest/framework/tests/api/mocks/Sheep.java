@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
 
 /**
@@ -44,6 +45,7 @@ public class Sheep implements Animal
         this.id = id;
     }
 
+    @JsonProperty("sheepGuid")
     @UniqueId(name="sheepGuid")
     public String getId()
     {

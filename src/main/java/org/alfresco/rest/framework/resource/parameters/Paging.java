@@ -25,9 +25,9 @@
  */
 package org.alfresco.rest.framework.resource.parameters;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Represents paging of collections of resources. Set by the client request.<br/>

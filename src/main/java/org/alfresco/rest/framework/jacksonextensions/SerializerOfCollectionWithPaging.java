@@ -27,15 +27,13 @@ package org.alfresco.rest.framework.jacksonextensions;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.alfresco.rest.framework.resource.SerializablePagedCollection;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
-import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.ser.std.SerializerBase;
 
 /**
  * Serializes SerializablePagedCollection into the correct response format, with Paging information and entries
@@ -43,7 +41,7 @@ import org.codehaus.jackson.map.ser.std.SerializerBase;
  * @author Gethin James
  */
 @SuppressWarnings("rawtypes")
-public class SerializerOfCollectionWithPaging extends SerializerBase<SerializablePagedCollection>
+public class SerializerOfCollectionWithPaging extends StdSerializer<SerializablePagedCollection>
 {
 
     protected SerializerOfCollectionWithPaging()

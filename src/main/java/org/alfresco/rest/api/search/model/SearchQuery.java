@@ -26,14 +26,14 @@
 
 package org.alfresco.rest.api.search.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.search.FacetFormat;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.IntervalParameters;
 import org.alfresco.service.cmr.search.RangeParameters;
 import org.alfresco.service.cmr.search.StatsRequestParameters;
-import org.codehaus.jackson.annotate.JsonCreator;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.List;
 

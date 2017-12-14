@@ -28,12 +28,12 @@ package org.alfresco.rest.api.model;
 import java.text.Collator;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.alfresco.rest.api.sites.SiteEntityResource;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.util.Pair;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Representation of a site membership request for a specific user.

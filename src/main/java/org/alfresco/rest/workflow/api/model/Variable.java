@@ -25,8 +25,8 @@
  */
 package org.alfresco.rest.workflow.api.model;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Representation of a variable in the Activiti engine.
@@ -55,7 +55,7 @@ public class Variable
     {
         this.type = type;
     }
-    @JsonSerialize(include=Inclusion.ALWAYS)
+    @JsonSerialize(include= JsonSerialize.Inclusion.ALWAYS)
     public Object getValue()
     {
         return this.value;

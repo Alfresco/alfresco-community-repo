@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A representation of a Audit App

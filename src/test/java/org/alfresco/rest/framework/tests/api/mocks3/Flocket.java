@@ -25,9 +25,9 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks3;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.content.BinaryProperty;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * A small Flock
@@ -36,7 +36,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 public class Flocket extends Flock
 {
-    @JsonProperty (value="album")
+    @JsonProperty(value="album")
     CollectionWithPagingInfo<BinaryProperty> photoAlbum;
     
     public Flocket()

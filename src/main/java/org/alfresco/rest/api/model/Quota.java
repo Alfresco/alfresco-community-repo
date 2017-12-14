@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
 
 /**
@@ -50,6 +51,7 @@ public class Quota
 		this.usage = usage;
 	}
 
+	@JsonProperty("id")
 	@UniqueId
 	public String getName()
 	{

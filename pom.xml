@@ -37,6 +37,7 @@
 
         <dependency.alfresco-repository.version>6.16</dependency.alfresco-repository.version>
         <dependency.alfresco-core.version>6.15</dependency.alfresco-core.version>
+        <dependency.alfresco-data-model.version>7.0</dependency.alfresco-data-model.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
         <dependency.jackson.version>2.8.10</dependency.jackson.version>
 
@@ -54,6 +55,11 @@
             <version>${dependency.alfresco-repository.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-data-model</artifactId>
+            <version>${dependency.alfresco-data-model.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${dependency.jackson.version}</version>
@@ -67,16 +73,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${dependency.jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>1.9.13</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.13</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

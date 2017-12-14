@@ -25,6 +25,19 @@
  */
 package org.alfresco.rest.framework.jacksonextensions;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Reader;
@@ -36,21 +49,6 @@ import java.util.TimeZone;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.JsonEncoding;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.Module;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectReader;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.codehaus.jackson.map.ser.BeanPropertyFilter;
-import org.codehaus.jackson.map.ser.BeanPropertyWriter;
-import org.codehaus.jackson.map.type.TypeFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -87,14 +85,15 @@ public class JacksonHelper implements InitializingBean
         //Configure the objectMapper ready for use
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(module);
-        objectMapper.setSerializationInclusion(Inclusion.NON_EMPTY);  //or NON_EMPTY?
-        objectMapper.configure(SerializationConfig.Feature.WRITE_NULL_MAP_VALUES, false);
-        objectMapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);  //or NON_EMPTY?
+        // this is deprecated in jackson 2.9 and there is no straight replacement
+        // https://github.com/FasterXML/jackson-databind/issues/1547
+        objectMapper.configure(SerializationFeature.WRITE_NULL_MAP_VALUES, false);
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         DateFormat DATE_FORMAT_ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         DATE_FORMAT_ISO8601.setTimeZone(TimeZone.getTimeZone("UTC"));
         objectMapper.setDateFormat(DATE_FORMAT_ISO8601);
-        objectMapper.configure(DeserializationConfig.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
-        
+        objectMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
     }
     
     /**
@@ -107,7 +106,7 @@ public class JacksonHelper implements InitializingBean
     {
         try
         {
-            JsonGenerator generator = objectMapper.getJsonFactory().createJsonGenerator(outStream, encoding);     
+            JsonGenerator generator = objectMapper.getJsonFactory().createJsonGenerator(outStream, encoding);
             writer.writeContents(generator, objectMapper);
         }
         catch (JsonMappingException error)
@@ -124,11 +123,10 @@ public class JacksonHelper implements InitializingBean
      * Constructs the object based on the content.
      * @param content Reader
      * @return T
-     * @throws IOException
      */
-    public <T> T construct(Reader content, Class<T> requiredType) throws IOException, JsonMappingException, JsonParseException
+    public <T> T construct(Reader content, Class<T> requiredType)
     {
-            ObjectReader reader = objectMapper.reader(requiredType);
+            ObjectReader reader = objectMapper.readerFor(requiredType);
             try
             {
                 return reader.readValue(content);
@@ -143,11 +141,10 @@ public class JacksonHelper implements InitializingBean
      * Constructs the object based on the content as a List, the JSON can be an array or just a single value without the [] symbols
      * @param content Reader
      * @return A collection of the specified type
-     * @throws IOException
      */
-    public <T> List<T> constructList(Reader content, Class<T> requiredType) throws IOException, JsonMappingException, JsonParseException
+    public <T> List<T> constructList(Reader content, Class<T> requiredType)
     {
-        ObjectReader reader = objectMapper.reader(TypeFactory.defaultInstance().constructParametricType(List.class, requiredType));
+        ObjectReader reader = objectMapper.readerFor(TypeFactory.defaultInstance().constructParametricType(List.class, requiredType));
         try
         {
             List<T> toReturn = reader.readValue(content);
@@ -170,18 +167,12 @@ public class JacksonHelper implements InitializingBean
     {
         public void writeContents(JsonGenerator generator, ObjectMapper objectMapper) throws JsonGenerationException, JsonMappingException, IOException;
     }
-    
+
     /*
      * Always returns all properties
      */
-    public static class ReturnAllBeanProperties implements BeanPropertyFilter
+    public static class ReturnAllBeanProperties extends SimpleBeanPropertyFilter
     {
-
-        @Override
-        public void serializeAsField(Object bean, JsonGenerator jgen, SerializerProvider provider, BeanPropertyWriter writer) throws Exception
-        {
-            writer.serializeAsField(bean, jgen, provider);
-        }
 
     }
 }

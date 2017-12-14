@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -63,6 +64,7 @@ public class SiteContainer implements Comparable<SiteContainer>
 		return folderId;
 	}
 
+	@JsonProperty("id")
 	@UniqueId
 	public NodeRef getNodeRef()
 	{

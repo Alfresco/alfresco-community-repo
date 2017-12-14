@@ -30,21 +30,10 @@ import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
 import org.alfresco.rest.framework.core.exceptions.ExceptionResolver;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.rest.framework.resource.content.ContentInfo;
-import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.json.simple.JSONObject;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.*;
-import org.springframework.extensions.webscripts.Description.RequiredCache;
-import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
-import java.io.IOException;
 import java.util.Map;
 
 /**

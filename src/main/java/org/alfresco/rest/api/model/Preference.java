@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -54,6 +55,7 @@ public class Preference implements Comparable<Preference>
 		this.value = value;
 	}
 
+	@JsonProperty("id")
 	@UniqueId
 	public String getName()
 	{

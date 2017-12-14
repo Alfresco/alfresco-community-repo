@@ -28,8 +28,8 @@ package org.alfresco.rest.framework.resource.content;
 import java.io.Serializable;
 import java.util.Locale;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * A POJO property that is of type "Binary"

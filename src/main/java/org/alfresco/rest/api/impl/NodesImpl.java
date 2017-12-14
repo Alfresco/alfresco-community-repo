@@ -1137,22 +1137,25 @@ public class NodesImpl implements Nodes
             PropertyDefinition pd = dictionaryService.getProperty(propQName);
             if (pd != null)
             {
-                Serializable value;
-                if (pd.getDataType().getName().equals(DataTypeDefinition.NODE_REF))
+                Serializable value = null;
+                if (entry.getValue() != null)
                 {
-                    String nodeRefString = (String) entry.getValue();
-                    if (! NodeRef.isNodeRef(nodeRefString))
+                    if (pd.getDataType().getName().equals(DataTypeDefinition.NODE_REF))
                     {
-                        value = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);
+                        String nodeRefString = (String) entry.getValue();
+                        if (! NodeRef.isNodeRef(nodeRefString))
+                        {
+                            value = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);
+                        }
+                        else
+                        {
+                            value = new NodeRef(nodeRefString);
+                        }
                     }
                     else
                     {
-                        value = new NodeRef(nodeRefString);
+                        value = (Serializable)entry.getValue();
                     }
-                }
-                else
-                {
-                    value = (Serializable)entry.getValue();
                 }
                 nodeProps.put(propQName, value);
             }

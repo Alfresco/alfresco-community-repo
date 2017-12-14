@@ -27,13 +27,13 @@ package org.alfresco.rest.framework.jacksonextensions;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.ser.std.SerializerBase;
 
-public class NodeRefSerializer extends SerializerBase<NodeRef>
+public class NodeRefSerializer extends StdSerializer<NodeRef>
 {
     protected NodeRefSerializer()
     {

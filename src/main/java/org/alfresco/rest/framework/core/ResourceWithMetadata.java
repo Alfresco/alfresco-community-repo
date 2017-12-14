@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.framework.core;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * This wraps a resource object with its metadata.

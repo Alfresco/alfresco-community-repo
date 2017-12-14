@@ -26,12 +26,12 @@
 
 package org.alfresco.rest.framework.tools;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import java.io.IOException;

@@ -25,8 +25,8 @@
  */
 package org.alfresco.rest.workflow.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Representation of a variable used in an Activiti task.

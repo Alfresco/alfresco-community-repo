@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.alfresco.rest.api.people.PeopleEntityResource;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -60,6 +61,7 @@ public class SiteMember
 		this.role = role;
 	}
 
+	@JsonProperty("id")
 	@UniqueId
 	@EmbeddedEntityResource(propertyName = "person", entityResource = PeopleEntityResource.class)
 	public String getPersonId()

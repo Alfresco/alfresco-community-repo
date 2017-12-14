@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 
 import org.alfresco.rest.framework.resource.UniqueId;
@@ -59,6 +60,7 @@ public class NodeRating implements Comparable<NodeRating>
 		this.ratedAt = ratedAt;
 	}
 
+	@JsonProperty("id")
 	@UniqueId
 	public String getScheme()
 	{

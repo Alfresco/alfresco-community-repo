@@ -25,11 +25,11 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Date;
 
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  * Simple mock pojo for serialization

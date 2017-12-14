@@ -50,6 +50,24 @@ public class ISO8601DateFormatTest extends TestCase
         assertEquals(date, dateAfter);
         assertEquals(date2, dateAfter2);
     }
+
+    public void testFormat()
+    {
+        TimeZone.setDefault(TimeZone.getTimeZone("PST")); // Any timezone other than UTC
+
+        String strDate1 = "2005-09-16T17:01:03.456Z";
+        String strDate2 = "1801-09-16T17:01:03.456Z";
+        // convert to a date
+        Date date1 = ISO8601DateFormat.parse(strDate1);
+        Date date2 = ISO8601DateFormat.parse(strDate2);
+        // get the string form
+        String strDate1Formatted = ISO8601DateFormat.format(date1);
+        String strDate2Formatted = ISO8601DateFormat.format(date2);
+
+        // Format needs to be in the UTC timezone with zero offset
+        assertEquals(strDate1, strDate1Formatted);
+        assertEquals(strDate2, strDate2Formatted);
+    }
     
     public void testGetCalendarMethod()
     {

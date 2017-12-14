@@ -71,14 +71,14 @@ public class ISO8601DateFormat
         {
             calendarThreadLocal.set(new HashMap<TimeZone, Calendar>());
         }
-        
+
         Calendar calendar = calendarThreadLocal.get().get(timezone);
         if (calendar == null)
         {
             calendar = new GregorianCalendar(timezone);
             calendarThreadLocal.get().put(timezone, calendar);
         }
-        
+
         return calendar;
     }
 
@@ -90,7 +90,7 @@ public class ISO8601DateFormat
     {
         return getCalendar(TimeZone.getDefault());
     }
-    
+
     /**
      * Format date into ISO format (UCT0 / Zulu)
      * 
@@ -152,7 +152,7 @@ public class ISO8601DateFormat
             return formatted.toString();
         }
     }
-   
+
     /**
      * Normalise isoDate time to Zulu(UTC0) time-zone, removing any UTC offset.
      * @param isoDate
@@ -170,7 +170,7 @@ public class ISO8601DateFormat
             throw new AlfrescoRuntimeException("Failed to parse date " + isoDate, e);
         }
     }
-    
+
     /**
      * Parse date from ISO formatted string. 
      * The ISO8601 date must include TimeZone offset information
@@ -236,7 +236,7 @@ public class ISO8601DateFormat
             throw new AlfrescoRuntimeException("Failed to parse date " + isoDate, e);
         }
     }
-    
+
     /**
      * Checks whether or not the given ISO8601-formatted date-string contains a time-component
      * instead of only the actual date.
@@ -256,13 +256,13 @@ public class ISO8601DateFormat
                 // Sign is included before year
                 expectedLocation++;
             }
-            
+
             defined = isoDate.length() >= expectedLocation && isoDate.charAt(expectedLocation) == 'T';
         }
         
         return defined;
     }
-    
+
     /**
      * Parses the given ISO8601-formatted date-string, not taking into account the time-component.
      * The time-information for the will be reset to zero.
@@ -280,7 +280,7 @@ public class ISO8601DateFormat
             if(isoDate != null && isoDate.length() >= 10) 
             {   
                 int offset = 0;
-                
+
                 // Sign can be included before year
                 boolean bc = false;
                 if(isoDate.charAt(0) == '-')
@@ -292,14 +292,14 @@ public class ISO8601DateFormat
                 {
                     offset++;
                 }
-                
+
                 // Extract year
                 int year = Integer.parseInt(isoDate.substring(offset, offset += 4));
                 if (isoDate.charAt(offset) != '-')
                 {
                     throw new IndexOutOfBoundsException("Expected - character but found " + isoDate.charAt(offset));
                 }
-                
+
                 // Extract month
                 int month = Integer.parseInt(isoDate.substring(offset += 1, offset += 2));
                 if (isoDate.charAt(offset) != '-')
@@ -309,7 +309,7 @@ public class ISO8601DateFormat
 
                 // Extract day
                 int day = Integer.parseInt(isoDate.substring(offset += 1, offset += 2));
-                
+
                 Calendar calendar = new GregorianCalendar(timezone);
                 calendar.setLenient(false);
                 calendar.set(Calendar.YEAR, year);
@@ -323,7 +323,7 @@ public class ISO8601DateFormat
                 {
                     calendar.set(Calendar.ERA, GregorianCalendar.BC);
                 }
-                
+
                 return calendar.getTime();
             }
             else
@@ -340,6 +340,6 @@ public class ISO8601DateFormat
             throw new AlfrescoRuntimeException("Failed to parse date " + isoDate, e);
         }
     }
-        
-    
+
+
 }

@@ -68,18 +68,18 @@ public class ISO8601DateFormatTest extends TestCase
         assertEquals(strDate1, strDate1Formatted);
         assertEquals(strDate2, strDate2Formatted);
     }
-    
+
     public void testGetCalendarMethod()
     {
         TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
         Calendar calendarGMT = ISO8601DateFormat.getCalendar();
-        
+
         TimeZone.setDefault(TimeZone.getTimeZone("BST"));
         Calendar calendarBST = ISO8601DateFormat.getCalendar();
-        
+
         TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
         Calendar calendarGMT1 = ISO8601DateFormat.getCalendar();
-        
+
         assertNotSame(calendarGMT, calendarBST);
         assertSame(calendarGMT, calendarGMT1);
     }
@@ -148,17 +148,17 @@ public class ISO8601DateFormatTest extends TestCase
        String testBms = "2005-09-16T17:01:03.000Z";
        String testC   = "1801-09-16T17:01:03Z";
        String testCms = "1801-09-16T17:01:03.000Z";
-       
+
        Date dateA = ISO8601DateFormat.parse(testA);
        Date dateB = ISO8601DateFormat.parse(testB);
        Date dateC = ISO8601DateFormat.parse(testC);
-       
+
        assertEquals(testA, ISO8601DateFormat.format(dateA));
-      
+
        assertEquals(testBms, ISO8601DateFormat.format(dateB));
-       
+
        assertEquals(testCms, ISO8601DateFormat.format(dateC));
-       
+
        // The official ISO 8601.2004 spec doesn't say much helpful about milliseconds
        // The W3C version <http://www.w3.org/TR/NOTE-datetime> says it's up to different
        //  implementations to put bounds on them
@@ -168,64 +168,64 @@ public class ISO8601DateFormatTest extends TestCase
        String testCms5 = "2005-09-16T17:01:03.12345+01:00";
        String testCms6 = "2005-09-16T17:01:03.123456+01:00";
        String testCms7 = "2005-09-16T17:01:03.1234567+01:00";
-       
+
        Date testCDate = ISO8601DateFormat.parse(testCms3);
        assertEquals(testCDate, ISO8601DateFormat.parse(testCms4));
        assertEquals(testCDate, ISO8601DateFormat.parse(testCms5));
        assertEquals(testCDate, ISO8601DateFormat.parse(testCms6));
        assertEquals(testCDate, ISO8601DateFormat.parse(testCms7));
     }
-    
+
     public void testTimezones()
     {
        TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
        Date date = null;
-       
+
        TimeZone  tz = TimeZone.getTimeZone("Australia/Sydney");
        String testSydney = "2011-02-04T16:13:14";
        String testUTC    = "2011-02-04T05:13:14.000Z";
-       
+
        //Sydney
        date = ISO8601DateFormat.parse(testSydney, tz);
        assertEquals(testUTC, ISO8601DateFormat.format(date));
-       
+
        // Check with ms too
        date = ISO8601DateFormat.parse(testSydney + ".000", tz);
        assertEquals(testUTC, ISO8601DateFormat.format(date));
-       
+
        //Sydney with an offset and timezone
        date = ISO8601DateFormat.parse(testSydney+"+11:00", tz);
        assertEquals(testUTC, ISO8601DateFormat.format(date));
-       
+
        // Check with ms too
        date = ISO8601DateFormat.parse(testSydney + ".000"+"+11:00", tz);
        assertEquals(testUTC, ISO8601DateFormat.format(date));
     }
-    
+
     public void testToZulu(){
         String base = "2011-02-04T16:13:14.000";
         String zulu = base + "Z";
         String utc0 = base + "+00:00";
         String utc1 = "2011-02-04T17:13:14" + "+01:00";
         String utcMinus1 = "2011-02-04T15:13:14" + "-01:00";
-        
+
         assertEquals(zulu, ISO8601DateFormat.formatToZulu(zulu));
         assertEquals(zulu, ISO8601DateFormat.formatToZulu(utc1));
         assertEquals(zulu, ISO8601DateFormat.formatToZulu(utc0));
         assertEquals(zulu, ISO8601DateFormat.formatToZulu(utcMinus1));
     }
-    
+
     public void testDayOnly()
     {
         Date date = null;
-        
+
         // Test simple parsing
         TimeZone tz = TimeZone.getTimeZone("Europe/London");
         date = ISO8601DateFormat.parseDayOnly("2012-05-21", tz);
-        
+
         Calendar cal = Calendar.getInstance(tz);
         cal.setTime(date);
-        
+
         // Check date and time component
         assertEquals(2012, cal.get(Calendar.YEAR));
         assertEquals(4, cal.get(Calendar.MONTH));
@@ -234,12 +234,12 @@ public class ISO8601DateFormatTest extends TestCase
         assertEquals(0, cal.get(Calendar.MINUTE));
         assertEquals(0, cal.get(Calendar.SECOND));
         assertEquals(0, cal.get(Calendar.MILLISECOND));
-        
+
         // Check time is ignored on full ISO8601-string
         date = ISO8601DateFormat.parseDayOnly("2012-05-21T12:13:14Z", tz);
         cal = Calendar.getInstance(tz);
         cal.setTime(date);
-        
+
         assertEquals(2012, cal.get(Calendar.YEAR));
         assertEquals(4, cal.get(Calendar.MONTH));
         assertEquals(21, cal.get(Calendar.DAY_OF_MONTH));
@@ -247,19 +247,18 @@ public class ISO8601DateFormatTest extends TestCase
         assertEquals(0, cal.get(Calendar.MINUTE));
         assertEquals(0, cal.get(Calendar.SECOND));
         assertEquals(0, cal.get(Calendar.MILLISECOND));
-        
+
         // Check year signs
         date = ISO8601DateFormat.parseDayOnly("+2012-05-21", tz);
         cal = Calendar.getInstance(tz);
         cal.setTime(date);
         assertEquals(GregorianCalendar.AD, cal.get(Calendar.ERA));
-        
+
         date = ISO8601DateFormat.parseDayOnly("-2012-05-21", tz);
         cal = Calendar.getInstance(tz);
         cal.setTime(date);
         assertEquals(GregorianCalendar.BC, cal.get(Calendar.ERA));
-        
-        
+
         // Check illegal format
         try
         {
@@ -274,7 +273,7 @@ public class ISO8601DateFormatTest extends TestCase
         }
         catch(AlfrescoRuntimeException e) {}
     }
-    
+
     public void testDSTParser()
     {
         TimeZone tz = TimeZone.getTimeZone("America/Sao_Paulo");
@@ -282,21 +281,21 @@ public class ISO8601DateFormatTest extends TestCase
         // MNT-15454: This date is invalid as the 00:00 hour became 01:00 because of daylight saving time.
         String test1 = "2014-10-19T";
         String test2 = "2014-10-19T00:01:01.000";
-        
+
         String isoFormattedDate = "2014-10-19T03:00:00.000Z";
-        
+
         // Sun Oct 19 01:00:00 BRST 2014
         Date testDate = getDateValue(2014, 10, 19, 0, 0, 0, 0, - 3*60);
         // convert to a date
         Date date = ISO8601DateFormat.parse(test1, tz);
         // Check converted to date value
         assertEquals(testDate, date);
-        
+
         // Convert to a date
         date = ISO8601DateFormat.parse(test2, tz);
         // Check converted to date value
         assertEquals(testDate, date);
-        
+
         // Get the string form
         String strDate = ISO8601DateFormat.format(date);
         // Check the date converted to sting

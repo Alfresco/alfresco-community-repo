@@ -38,6 +38,7 @@
         <dependency.alfresco-repository.version>6.16</dependency.alfresco-repository.version>
         <dependency.alfresco-core.version>6.15</dependency.alfresco-core.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
+        <dependency.jackson.version>2.8.10</dependency.jackson.version>
 
         <dependency.webscripts.version>6.13</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
@@ -51,6 +52,21 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-repository</artifactId>
             <version>${dependency.alfresco-repository.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${dependency.jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${dependency.jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${dependency.jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>

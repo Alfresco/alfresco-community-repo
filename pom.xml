@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-repository</artifactId>
     <name>Alfresco Repository</name>
-    <version>6.16-SNAPSHOT</version>
+    <version>6.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -39,7 +39,7 @@
         <dependency.alfresco-mbeans.version>6.0</dependency.alfresco-mbeans.version>
         <dependency.alfresco-core.version>6.15</dependency.alfresco-core.version>
         <dependency.alfresco-greenmail.version>6.1</dependency.alfresco-greenmail.version>
-        <dependency.alfresco-data-model.version>6.24</dependency.alfresco-data-model.version>
+        <dependency.alfresco-data-model.version>7.0</dependency.alfresco-data-model.version>
         <dependency.alfresco-jlan.version>6.3</dependency.alfresco-jlan.version>
         <dependency.alfresco-pdf-renderer.version>1.0</dependency.alfresco-pdf-renderer.version>
         <dependency.alfresco-hb-data-sender.version>1.0.3</dependency.alfresco-hb-data-sender.version>
@@ -51,7 +51,6 @@
         <dependency.poi.version>3.10.1-20151016-alfresco-patched</dependency.poi.version>
         <dependency.webscripts.version>6.13</dependency.webscripts.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.jackson2.version>2.8.10</dependency.jackson2.version>
         <dependency.activiti-engine.version>5.22.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.22.0</dependency.activiti.version>
         <dependency.postgresql.version>9.4.1212</dependency.postgresql.version>
@@ -659,21 +658,6 @@
                     <artifactId>spring-expression</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${dependency.jackson2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${dependency.jackson2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${dependency.jackson2.version}</version>
         </dependency>
         <!-- Activiti -->
         <dependency>

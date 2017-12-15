@@ -56,6 +56,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PublicServiceAccessService;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -69,6 +70,8 @@ public class AbstractPermissionTest extends TestCase
     protected static final String USER2_LEMUR = "lemur";
 
     protected static final String USER1_ANDY = "andy";
+    
+    protected static final String USER3_PAUL ="paul";
 
     protected static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     
@@ -122,6 +125,8 @@ public class AbstractPermissionTest extends TestCase
 
     protected PolicyComponent policyComponent;
     
+    protected SiteService siteService;
+    
     public AbstractPermissionTest()
     {
         super();
@@ -151,6 +156,7 @@ public class AbstractPermissionTest extends TestCase
         personService = (PersonService) applicationContext.getBean("personService");
         authorityService = (AuthorityService) applicationContext.getBean("authorityService");
         authorityDAO = (AuthorityDAO) applicationContext.getBean("authorityDAO");
+        siteService = (SiteService) applicationContext.getBean("SiteService"); // Big 'S'
         
         authenticationComponent.setCurrentUser(authenticationComponent.getSystemUserName());
         authenticationDAO = (MutableAuthenticationDao) applicationContext.getBean("authenticationDao");
@@ -195,6 +201,12 @@ public class AbstractPermissionTest extends TestCase
             authenticationService.deleteAuthentication(USER2_LEMUR);
         }
         authenticationService.createAuthentication(USER2_LEMUR, USER2_LEMUR.toCharArray());
+        
+        if(authenticationDAO.userExists(USER3_PAUL))
+        {
+            authenticationService.deleteAuthentication(USER3_PAUL);
+        }
+        authenticationService.createAuthentication(USER3_PAUL, USER3_PAUL.toCharArray());
         
         if(authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
         {

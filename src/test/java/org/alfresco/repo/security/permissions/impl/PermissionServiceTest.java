@@ -60,6 +60,8 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.testing.category.PerformanceTests;
@@ -4063,6 +4065,52 @@ public class PermissionServiceTest extends AbstractPermissionTest
         permissionService.setInheritParentPermissions(rootNodeRef, true);
 
         verify(onInheritPermissionsEnabled).onInheritPermissionsEnabled(rootNodeRef);
+    }
+    
+    /**
+     * Test that the revoke permission works on every cases.
+     */
+    public void testDeletePermissions() {
+
+            runAs(AuthenticationUtil.getAdminUserName());
+
+            // test that OnRevokeLocalPermission is invoked when a local permission
+            // is revoked
+            OnRevokeLocalPermission onRevokeLocalPermission = createClassPolicy(OnRevokeLocalPermission.class,
+                            OnRevokeLocalPermission.QNAME, ContentModel.TYPE_BASE);
+
+            SiteInfo siteInfo = siteService.createSite("TEST_SITE", "TEST_SITE", "TEST_SITE", "TEST_SITE",
+                            SiteVisibility.PUBLIC);
+            permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CONTRIBUTOR, true);
+            permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.WRITE, true);
+            permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CHANGE_PERMISSIONS, true);
+
+            // case1 delete a specific permission
+            permissionService.deletePermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CONTRIBUTOR);
+            verify(onRevokeLocalPermission).onRevokeLocalPermission(siteInfo.getNodeRef(), USER1_ANDY,
+                            PermissionService.CONTRIBUTOR);
+
+            // case2 delete all permissions for an authority
+            permissionService.deletePermission(siteInfo.getNodeRef(), USER1_ANDY, null);
+            verify(onRevokeLocalPermission).onRevokeLocalPermission(siteInfo.getNodeRef(), USER1_ANDY, null);
+
+            permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CONTRIBUTOR, true);
+            permissionService.setPermission(siteInfo.getNodeRef(), USER3_PAUL, PermissionService.CONTRIBUTOR, true);
+            // case3 entries for all authorities that have a specific permission (if
+            // the authority is null)
+            permissionService.deletePermission(siteInfo.getNodeRef(), null, PermissionService.CONTRIBUTOR);
+            verify(onRevokeLocalPermission).onRevokeLocalPermission(siteInfo.getNodeRef(), null,
+                            PermissionService.CONTRIBUTOR);
+
+            permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CONTRIBUTOR, true);
+            permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.WRITE, true);
+            permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CHANGE_PERMISSIONS, true);
+            permissionService.setPermission(siteInfo.getNodeRef(), USER3_PAUL, PermissionService.CONTRIBUTOR, true);
+            // case4 all permissions set for the node (if both the permission and
+            // authority are null).
+            permissionService.deletePermission(siteInfo.getNodeRef(), null, null);
+            verify(onRevokeLocalPermission).onRevokeLocalPermission(siteInfo.getNodeRef(), null, null);
+
     }
     
     private <T extends Policy> T createClassPolicy(Class<T> policyInterface, QName policyQName, QName triggerOnClass)

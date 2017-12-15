@@ -25,14 +25,6 @@
  */
 package org.alfresco.repo.workflow;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.transaction.UserTransaction;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
@@ -48,8 +40,10 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.workflow.WorkflowAdminService;
@@ -66,6 +60,13 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+
+import javax.transaction.UserTransaction;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Alfresco bootstrap Process deployment.
@@ -365,11 +366,24 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         }
     }
 
+    /**
+     * Deploy a workflow definition from a node in the repository.
+     */
     public void deploy(NodeRef nodeRef, boolean redeploy)
     {
         // Ignore if the node is a working copy 
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY) == false)
         {
+            if (!isValidLocation(nodeRef))
+            {
+                if (logger.isDebugEnabled())
+                {
+                    Path nodePath = nodeService.getPath(nodeRef);
+                    logger.debug("Workflow deployer: Definition '" + nodeRef +
+                            "' ("+nodePath+") not deployed as it is not in the correct location.");
+                }
+                return;
+            }
             Boolean value = (Boolean)nodeService.getProperty(nodeRef, WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED);
             if ((value != null) && (value.booleanValue() == true))
             {
@@ -422,6 +436,42 @@ public class WorkflowDeployer extends AbstractLifecycleBean
             if (logger.isDebugEnabled())
                 logger.debug("Workflow deployer: Definition '" + nodeRef + "' not deployed since it is a working copy");
         }
+    }
+
+    /**
+     * Validate that the workflow definition node is a child of the correct
+     * workflow location node, e.g. "/Company Home/Data Dictionary/Workflows"
+     */
+    private boolean isValidLocation(NodeRef definitionNode)
+    {
+        StoreRef storeRef = repoWorkflowDefsLocation.getStoreRef();
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
+        List<NodeRef> nodeRefs = searchService.selectNodes(
+                rootNode,
+                repoWorkflowDefsLocation.getPath(),
+                null,
+                namespaceService,
+                false);
+        
+        if (nodeRefs.isEmpty() || nodeRefs.size() > 1)
+        {
+            throw new IllegalStateException("Incorrect number of nodes ("+nodeRefs.size()+")" +
+                    " found for workflow location: "+repoWorkflowDefsLocation.getPath());
+        }
+        
+        NodeRef workflowParent = nodeRefs.get(0);
+
+        for (ChildAssociationRef assoc : nodeService.getParentAssocs(definitionNode))
+        {
+            if (assoc.getParentRef().equals(workflowParent))
+            {
+                // The workflow definition is contained in the correct location
+                return true;
+            }
+        }
+        
+        // Invalid location
+        return false;
     }
 
     private void logDeployment(Object location, WorkflowDeployment deployment)

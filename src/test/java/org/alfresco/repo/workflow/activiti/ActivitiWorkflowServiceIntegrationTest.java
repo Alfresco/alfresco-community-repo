@@ -37,6 +37,7 @@ import java.util.Map;
 
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -680,7 +682,122 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
                 .singleResult();
         assertNotNull(historicProcessInstance);
     }
+    
+    public void testNonAdminCannotDeployWorkflowBySwitchingNodeType()
+    {
+        // Test precondition
+        assertNull(workflowService.getDefinitionByName("activiti$testProcess"));
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(USER1);
+        NodeRef person = serviceRegistry.getPersonService().getPerson(USER1);
+        NodeRef home = (NodeRef) nodeService.getProperty(person, ContentModel.PROP_HOMEFOLDER);
+        
+        WorkflowDefinition workflowDef = createContentAndSwitchToWorkflow(
+                "activiti$testProcess",
+                "alfresco/workflow/test-security.bpmn20.xml",
+                home);
+        
+        assertNull("Workflow should not be deployed", workflowDef);
+    }
+    
+    public void testAdminCanDeployBySwitchingContentTypeToWorkflow()
+    {
+        // This test should pass, as the workflow is in the correct location
+        // and being created by admin.
+        
+        // Test precondition
+        assertNull(workflowService.getDefinitionByName("activiti$testProcess"));
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        NodeRef workflowParent = findWorkflowParent();
+        WorkflowDefinition workflowDef = createContentAndSwitchToWorkflow(
+                "activiti$testProcess",
+                "alfresco/workflow/test-security.bpmn20.xml",
+                workflowParent);
+        assertNotNull(workflowDef);
 
+        // Create workflow parameters
+        Map<QName, Serializable> params = new HashMap<>();
+        Serializable wfPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        params.put(WorkflowModel.PROP_WORKFLOW_DUE_DATE, new Date());
+        params.put(WorkflowModel.PROP_WORKFLOW_PRIORITY, 1);
+        NodeRef group = groupManager.get(GROUP);
+        assertNotNull(group);
+        params.put(WorkflowModel.ASSOC_GROUP_ASSIGNEE, group);
+
+        // Start a workflow instance
+        WorkflowPath path = workflowService.startWorkflow(workflowDef.getId(), params);
+        assertNotNull(path);
+        assertTrue(path.isActive());
+    }
+    
+    public void testAdminCannotDeployBySwitchingContentTypeToWorkflowWhenLocationIsNotValid()
+    {
+        // This should fail to deploy the workflow as it is in the wrong location.
+        
+        // Test precondition
+        assertNull(workflowService.getDefinitionByName("activiti$testProcess"));
+        
+        NodeRef rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        WorkflowDefinition workflowDef = createContentAndSwitchToWorkflow(
+                "activiti$testProcess",
+                "alfresco/workflow/test-security.bpmn20.xml",
+                rootNode);
+        assertNull("Workflow should not be deployed", workflowDef);
+    }
+
+    private NodeRef findWorkflowParent()
+    {
+        RepositoryLocation workflowLocation = (RepositoryLocation)
+                applicationContext.getBean("customWorkflowDefsRepositoryLocation");
+        NodeRef rootNode = nodeService.getRootNode(workflowLocation.getStoreRef());
+        List<NodeRef> workflowParents = serviceRegistry.getSearchService().selectNodes(
+                rootNode,
+                workflowLocation.getPath(),
+                null,
+                serviceRegistry.getNamespaceService(),
+                false);
+        if (workflowParents.size() == 0)
+        {
+            throw new IllegalStateException("Unable to find workflow location: "+workflowLocation.getPath());
+        }
+        if (workflowParents.size() > 1)
+        {
+            throw new IllegalStateException("More than one workflow location? ["+workflowLocation.getPath()+"]");
+        }
+        
+        return workflowParents.get(0);
+    }
+
+    /**
+     * Deploy as a normal content node, then switch the type to bpm:workflowDefinition.
+     * <p>
+     * This should not be allowed to happen if you are non-admin.
+     */
+    private WorkflowDefinition createContentAndSwitchToWorkflow(String processName, String resource, NodeRef parent)
+    {
+        InputStream input = getInputStream(resource);
+
+        ChildAssociationRef childAssoc = nodeService.createNode(
+                parent,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "test"),
+                ContentModel.TYPE_CONTENT,
+                null);
+        NodeRef workflowNode = childAssoc.getChildRef();
+
+        ContentWriter writer = serviceRegistry.getContentService().getWriter(workflowNode, ContentModel.PROP_CONTENT, true);
+        writer.putContent(input);
+        
+        // Now change to WorkflowModel.TYPE_WORKFLOW_DEF
+        nodeService.setType(workflowNode, WorkflowModel.TYPE_WORKFLOW_DEF);
+        // Activate it
+        nodeService.setProperty(workflowNode, WorkflowModel.PROP_WORKFLOW_DEF_DEPLOYED, true);
+
+        return workflowService.getDefinitionByName(processName);
+    }
+    
     @Override
     protected String getEngine()
     {

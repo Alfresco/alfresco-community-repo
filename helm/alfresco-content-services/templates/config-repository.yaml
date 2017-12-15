@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ template "content-services.fullname" . }}-repository-configmap
+  labels:
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+data:
+  {{- if .Values.repository.environment }}
+  {{- range $key, $val := .Values.repository.environment }}
+  {{ $key }}: {{ $val | quote }}
+  {{- end }}
+  {{- end }}
+  CATALINA_OPTS: " -Ddb.driver=org.postgresql.Driver
+      -Ddb.username={{ .Values.postgresql.postgresUser }}
+      -Ddb.password={{ .Values.postgresql.postgresPassword }}
+      -Ddb.url=jdbc:postgresql://{{ .Release.Name }}-postgresql-acs:5432/{{ .Values.postgresql.postgresDatabase }}
+      -Dsolr.host={{ template "content-services.fullname" . }}-solr
+      -Dsolr.port={{ .Values.solr.service.externalPort }}"

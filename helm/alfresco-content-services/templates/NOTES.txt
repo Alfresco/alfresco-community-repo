@@ -1,0 +1,8 @@
+1. Get the application URL by running these commands:
+
+IP=$(minikube ip)
+PORT=$(kubectl get services {{ .Release.Name }}-nginx-ingress-controller -o jsonpath={.spec.ports[0].nodePort})
+echo "http://$IP:$PORT/share"
+
+2. To access Alfresco go to /alfresco path with the same base URL
+4. To access Solr go to /solr path with the same base URL

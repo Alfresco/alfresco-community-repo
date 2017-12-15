@@ -46,8 +46,10 @@ Build and start Alfresco Content Services Community using docker-compose or Kube
 
 #### Notes:
 
-* The images used in the docker-compose.yml are images that are build in the 'docker-alfresco' and 'docker-share' subfolders of the project - see the relevant sections below
-* If you don't have access to the docker-internal.alfresco.com and quay.io images, or if you want custom data in your docker images, you can use the 'docker-alfresco' and 'docker-share' folders to customize and build your customized docker images that are used in the docker-compose project. Just make sure you use proper tags when you create the images and update the docker-compose.yml with these proper tags that you created.
+* The images used in the alfresco-content-services/values.yml are images that are build in the 'docker-alfresco' and 'docker-share' subfolders of the project - see the relevant sections below
+* If you don't have access to the docker-internal.alfresco.com and quay.io images, or if you want custom data in your docker images, you can use the 'docker-alfresco' and 'docker-share' folders to customize and build your customized docker images that are used in the docker-compose project. Just make sure you build them in the minikube docker environment and update the alfresco-content-services/values.yml with the tags that you created.
+* You can also change those values on a live env by running ```helm alfresco-content-services --set repository.image.tag="yourTag" --set share.image.tag="yourTag"```
+* Hint: Run  ```eval $(minikube docker-env)``` to switch to your your minikube docker env on osx
 
 
 ## Docker images

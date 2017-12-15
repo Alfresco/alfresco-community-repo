@@ -700,6 +700,28 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertNull("Workflow should not be deployed", workflowDef);
     }
     
+    public void testNonAdminCannotDeployWorkflowBySwitchingNodeTypeEvenInCorrectLocation()
+    {
+        // Test precondition
+        assertNull(workflowService.getDefinitionByName("activiti$testProcess"));
+        
+        AuthenticationUtil.setFullyAuthenticatedUser(USER1);
+        NodeRef workflowParent = findWorkflowParent();
+        
+        try
+        {
+            createContentAndSwitchToWorkflow(
+                    "activiti$testProcess",
+                    "alfresco/workflow/test-security.bpmn20.xml",
+                    workflowParent);
+            fail("User should not be able to create a node in the 'correct location'.");
+        }
+        catch (AccessDeniedException e)
+        {
+            // Good!
+        }
+    }
+    
     public void testAdminCanDeployBySwitchingContentTypeToWorkflow()
     {
         // This test should pass, as the workflow is in the correct location

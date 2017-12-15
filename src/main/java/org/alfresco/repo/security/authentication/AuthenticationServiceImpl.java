@@ -109,6 +109,15 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
                 || ((ActivateableBean) this.authenticationComponent).isActive();
     }
 
+    private boolean getUserNamesAreCaseSensitive()
+    {
+        if (personService != null)
+        {
+            return personService.getUserNamesAreCaseSensitive();
+        }
+        return false;
+    }
+
     public void authenticate(String userName, char[] password) throws AuthenticationException
     {
         try
@@ -204,6 +213,10 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
      */
     public String getProtectedUserKey(String userName)
     {
+        if (!getUserNamesAreCaseSensitive())
+        {
+            userName = userName.toLowerCase();
+        }
         return serviceInstanceId + "@@" + userName;
     }
 

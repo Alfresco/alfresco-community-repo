@@ -25,9 +25,6 @@
  */
 package org.alfresco.repo.workflow;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -35,6 +32,9 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+
+import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Workflow Definition type behaviour.
@@ -70,7 +70,7 @@ public class WorkflowDefinitionType implements ContentServicePolicies.OnContentU
     {
         this.workflowDeployer = workflowDeployer;
     }
-    
+
     /**
      * The initialise method     
      */

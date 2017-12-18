@@ -1,8 +1,15 @@
-1. Get the application URL by running these commands:
+1. Get the share application URL by running these commands:
 
 IP=$(minikube ip)
 PORT=$(kubectl get services {{ .Release.Name }}-nginx-ingress-controller -o jsonpath={.spec.ports[0].nodePort})
 echo "http://$IP:$PORT/share"
 
-2. To access Alfresco go to /alfresco path with the same base URL
-4. To access Solr go to /solr path with the same base URL
+2. To access Repository go to /alfresco path with the same base URL
+3. To access Solr go to /solr path with the same base URL
+
+4. If you deployed on an AWS cluster you can get the route53 entry for the cluster as follows:
+
+DNSNAME=$(kubectl get services {{ .Release.Name }}-nginx-ingress-controller -o jsonpath={.status.loadBalancer.ingress[0].hostname})
+echo "http://$DNSNAME/share"
+
+5. Note: if you deployed on a different namespace than the default one, then the kubectl commands should also specify the namespace to run in with --namespace

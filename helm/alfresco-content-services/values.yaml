@@ -53,6 +53,9 @@ solr:
     SOLR_CREATE_ALFRESCO_DEFAULTS: alfresco,archive
 
 postgresql:
+  ## If true, install the postgresql chart alongside Alfresco Content Services
+  enabled: true
+
   nameOverride: postgresql-acs
   imageTag: "9.4.12"
 
@@ -62,3 +65,7 @@ postgresql:
 
   persistence:
     enabled: false
+
+nginx-ingress:
+  ## If true, install the nginx-ingress chart alongside Alfresco Content Services
+  enabled: true

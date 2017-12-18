@@ -314,6 +314,12 @@
                 <artifactId>cxf-rt-ws-policy</artifactId>
                 <version>3.0.12</version>
             </dependency>
+            <!-- newer version, see REPO-3133 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-email</artifactId>
+                <version>1.5</version>
+            </dependency>
             <!-- Make sure JUnit is not packaged -->
             <dependency>
                 <groupId>junit</groupId>

@@ -1033,7 +1033,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         permissionsDaoComponent.deletePermission(tenantService.getName(nodeRef), authority, perm);
         accessCache.clear();
         
-        invokeUpdateLocalPermissionsPolicy(nodeRef, authority, perm.getName(), false);
+        invokeUpdateLocalPermissionsPolicy(nodeRef, authority, (perm != null? perm.getName():null), false);
     }
     
     private void invokeUpdateLocalPermissionsPolicy(NodeRef nodeRef, String authority, String permission, boolean grantPermission)

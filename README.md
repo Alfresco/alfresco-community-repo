@@ -42,7 +42,7 @@ Build and start Alfresco Content Services Community using docker-compose or Kube
 
 #### Steps
 1. Go to **helm** folder
-2. Run ```helm dependency update && helm install alfresco-content-services``` 
+2. Run ```helm dependency update alfresco-content-services && helm install alfresco-content-services``` 
 3. After deploying the helm chart you will get information for obtaining the URL for repository, share and solr.
 
 #### Notes:

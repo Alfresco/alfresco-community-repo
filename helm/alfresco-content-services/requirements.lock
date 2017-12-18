@@ -1,9 +1,0 @@
-dependencies:
-- name: postgresql
-  repository: https://kubernetes-charts.storage.googleapis.com/
-  version: 0.8.5
-- name: nginx-ingress
-  repository: https://kubernetes-charts.storage.googleapis.com
-  version: 0.8.21
-digest: sha256:6eae9ef52c9b9be71a85a9223dcb35a5ff43d72044fd0ca47bd91f299f75052a
-generated: 2017-12-18T10:40:16.035017+02:00

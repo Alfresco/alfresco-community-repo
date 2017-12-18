@@ -4085,19 +4085,19 @@ public class PermissionServiceTest extends AbstractPermissionTest
             permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.WRITE, true);
             permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CHANGE_PERMISSIONS, true);
 
-            // case1 delete a specific permission
+            //case1 delete a specific permission
             permissionService.deletePermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CONTRIBUTOR);
             verify(onRevokeLocalPermission).onRevokeLocalPermission(siteInfo.getNodeRef(), USER1_ANDY,
                             PermissionService.CONTRIBUTOR);
 
-            // case2 delete all permissions for an authority
+            //case2 delete all permissions for an authority
             permissionService.deletePermission(siteInfo.getNodeRef(), USER1_ANDY, null);
             verify(onRevokeLocalPermission).onRevokeLocalPermission(siteInfo.getNodeRef(), USER1_ANDY, null);
 
             permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CONTRIBUTOR, true);
             permissionService.setPermission(siteInfo.getNodeRef(), USER3_PAUL, PermissionService.CONTRIBUTOR, true);
-            // case3 entries for all authorities that have a specific permission (if
-            // the authority is null)
+           
+            //case3 entries for all authorities that have a specific permission
             permissionService.deletePermission(siteInfo.getNodeRef(), null, PermissionService.CONTRIBUTOR);
             verify(onRevokeLocalPermission).onRevokeLocalPermission(siteInfo.getNodeRef(), null,
                             PermissionService.CONTRIBUTOR);
@@ -4106,8 +4106,8 @@ public class PermissionServiceTest extends AbstractPermissionTest
             permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.WRITE, true);
             permissionService.setPermission(siteInfo.getNodeRef(), USER1_ANDY, PermissionService.CHANGE_PERMISSIONS, true);
             permissionService.setPermission(siteInfo.getNodeRef(), USER3_PAUL, PermissionService.CONTRIBUTOR, true);
-            // case4 all permissions set for the node (if both the permission and
-            // authority are null).
+           
+            //case4 delete all permissions set for the node
             permissionService.deletePermission(siteInfo.getNodeRef(), null, null);
             verify(onRevokeLocalPermission).onRevokeLocalPermission(siteInfo.getNodeRef(), null, null);
 

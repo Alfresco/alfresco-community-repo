@@ -26,6 +26,7 @@
 package org.alfresco.repo.security.authentication;
 
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.service.cmr.security.PersonService;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,6 +46,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Mocked test for {@link AuthenticationServiceImpl}
@@ -59,8 +61,10 @@ public class AuthenticationServiceImplTest
     private TicketComponent ticketComponent = mock(TicketComponent.class);
     private AuthenticationServiceImpl authService;
     private AuthenticationServiceImpl authService2;
+    private PersonService personService = mock(PersonService.class);
 
     private static final String USERNAME = "username";
+    private static final String USERNAME_CASE_SENSITIVE = "uSeRnAmE";
     private static final char[] PASSWORD = "password".toCharArray();
 
     @Before
@@ -71,6 +75,7 @@ public class AuthenticationServiceImplTest
         authService.setTicketComponent(ticketComponent);
         cache = new MockCache<>();
         authService.setProtectedUsersCache(cache);
+        authService.setPersonService(personService);
 
         authService2 = new AuthenticationServiceImpl();
         authService2.setAuthenticationComponent(authenticationComponent);
@@ -128,6 +133,82 @@ public class AuthenticationServiceImplTest
         }
         verify(authenticationComponent, times(limit)).authenticate(USERNAME, PASSWORD);
         assertEquals("The number of recorded logins did not match.", attempts + 1, cache.get(protectedUserKey).getNumLogins());
+    }
+
+    @Test
+    public void testProtectedUserIfUserNamesAreNotCaseSensitive()
+    {
+        int limit = 3;
+        int attempts = limit + 1;
+        authService.setProtectionPeriodSeconds(999);
+        authService.setProtectionLimit(limit);
+        authService.setProtectionEnabled(true);
+
+        Exception spoofedAE = new AuthenticationException("Bad password");
+        doThrow(spoofedAE).when(authenticationComponent).authenticate(USERNAME_CASE_SENSITIVE, PASSWORD);
+        for (int i = 0; i < attempts; i++)
+        {
+            try
+            {
+                authService.authenticate(USERNAME_CASE_SENSITIVE, PASSWORD);
+                fail("The " + AuthenticationException.class.getName() + " should have been thrown.");
+            }
+            catch (AuthenticationException ae)
+            {
+                // normal
+                if (i < limit)
+                {
+                    assertTrue("Expected failure from AuthenticationComponent", ae == spoofedAE);
+                }
+                else
+                {
+                    assertFalse("Expected failure from protection code", ae == spoofedAE);
+                }
+            }
+        }
+        verify(authenticationComponent, times(0)).authenticate(USERNAME, PASSWORD);
+        assertTrue("The user should be protected.", authService.isUserProtected(USERNAME));
+        verify(authenticationComponent, times(limit)).authenticate(USERNAME_CASE_SENSITIVE, PASSWORD);
+        assertTrue("The user should be protected.", authService.isUserProtected(USERNAME_CASE_SENSITIVE));
+    }
+
+    @Test
+    public void testProtectedUserIfUserNamesAreCaseSensitive()
+    {
+        int limit = 3;
+        int attempts = limit + 1;
+        authService.setProtectionPeriodSeconds(999);
+        authService.setProtectionLimit(limit);
+        authService.setProtectionEnabled(true);
+
+        when(personService.getUserNamesAreCaseSensitive()).thenReturn(true);
+
+        Exception spoofedAE = new AuthenticationException("Bad password");
+        doThrow(spoofedAE).when(authenticationComponent).authenticate(USERNAME, PASSWORD);
+        for (int i = 0; i < attempts; i++)
+        {
+            try
+            {
+                authService.authenticate(USERNAME, PASSWORD);
+                fail("The " + AuthenticationException.class.getName() + " should have been thrown.");
+            }
+            catch (AuthenticationException ae)
+            {
+                // normal
+                if (i < limit)
+                {
+                    assertTrue("Expected failure from AuthenticationComponent", ae == spoofedAE);
+                }
+                else
+                {
+                    assertFalse("Expected failure from protection code", ae == spoofedAE);
+                }
+            }
+        }
+        verify(authenticationComponent, times(limit)).authenticate(USERNAME, PASSWORD);
+        assertTrue("The user should be protected.", authService.isUserProtected(USERNAME));
+        verify(authenticationComponent, times(0)).authenticate(USERNAME_CASE_SENSITIVE, PASSWORD);
+        assertFalse("The user should not be protected.", authService.isUserProtected(USERNAME_CASE_SENSITIVE));
     }
 
     @Test
@@ -242,7 +323,6 @@ public class AuthenticationServiceImplTest
         assertNull("The user should be removed from the cache for the corresponding authorization service after successful login.",
                 cache.get(authenticationChain[1].getProtectedUserKey(USERNAME)));
     }
-
 
     @Test
     public void testProtectionDisabledBadPassword()

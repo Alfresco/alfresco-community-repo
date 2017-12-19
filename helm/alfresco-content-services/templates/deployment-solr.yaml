@@ -26,3 +26,5 @@ spec:
               name: {{ template "content-services.fullname" . }}-solr-configmap
           ports:
             - containerPort: {{ .Values.solr.image.internalPort }}
+          resources:
+{{ toYaml .Values.solr.resources | indent 12 }}

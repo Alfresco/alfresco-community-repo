@@ -21,6 +21,11 @@ repository:
     JAVA_OPTS: " -Dsolr.base.url=/solr
       -Dsolr.secureComms=none
       -Dindex.subsystem.name=solr6"
+  resources:
+    requests:
+      memory: "1000Mi"
+    limits:
+      memory: "4000Mi"
 
 share:
   replicaCount: 1
@@ -35,6 +40,11 @@ share:
     externalPort: 80
   ingress:
     path: /share
+  resources:
+    requests:
+      memory: "500Mi"
+    limits:
+      memory: "1000Mi"
 
 solr:
   replicaCount: 1
@@ -51,21 +61,26 @@ solr:
     path: /solr
   environment:
     SOLR_CREATE_ALFRESCO_DEFAULTS: alfresco,archive
+  resources:
+    requests:
+      memory: "250Mi"
+    limits:
+      memory: "500Mi"
 
 postgresql:
   ## If true, install the postgresql chart alongside Alfresco Content Services
   enabled: true
-
   nameOverride: postgresql-acs
   imageTag: "9.4.12"
-
   postgresUser: alfresco
   postgresPassword: alfresco
   postgresDatabase: alfresco
-
   persistence:
     enabled: false
+  resources:
+    requests:
+      memory: "250Mi"
+    limits:
+      memory: "500Mi"
 
-nginx-ingress:
-  ## If true, install the nginx-ingress chart alongside Alfresco Content Services
-  enabled: true
+replicaCount: 1

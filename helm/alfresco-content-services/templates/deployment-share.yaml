@@ -23,6 +23,8 @@ spec:
           imagePullPolicy: {{ .Values.share.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.share.image.internalPort }}
+          resources:
+{{ toYaml .Values.share.resources | indent 12 }}
           envFrom:
           - configMapRef:
               name: {{ template "content-services.fullname" . }}-share-configmap

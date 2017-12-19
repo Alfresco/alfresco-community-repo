@@ -7,4 +7,4 @@ dependencies:
 - name: nginx-ingress
   version: ^0.8.21
   repository: https://kubernetes-charts.storage.googleapis.com
-  condition: nginx-ingress.enabled
+  condition: alfresco-content-services.nginx-ingress.enabled

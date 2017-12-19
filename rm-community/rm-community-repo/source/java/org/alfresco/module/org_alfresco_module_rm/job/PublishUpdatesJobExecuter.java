@@ -231,7 +231,6 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     List<NodeRef> resultNodes = null;
 
                     SearchParameters searchParameters = new SearchParameters();
-                    searchParameters.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
                     searchParameters.setQuery(query);
                     searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                     searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);

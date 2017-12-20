@@ -12,7 +12,12 @@ data:
   {{ $key }}: {{ $val | quote }}
   {{- end }}
   {{- end }}
-  CATALINA_OPTS: " -Ddb.driver=org.postgresql.Driver
+  RELEASE_NAME: {{ .Release.Name }}
+  CATALINA_OPTS: "-Dalfresco.host={{ template "content-services.fullname" . }}-repository
+      -Dalfresco.port={{ .Values.repository.service.externalPort }}
+      -Dshare.host={{ template "content-services.fullname" . }}-share
+      -Dshare.port={{ .Values.share.service.externalPort }}
+      -Ddb.driver=org.postgresql.Driver
       -Ddb.username={{ .Values.postgresql.postgresUser }}
       -Ddb.password={{ .Values.postgresql.postgresPassword }}
       -Ddb.url=jdbc:postgresql://{{ .Release.Name }}-postgresql-acs:5432/{{ .Values.postgresql.postgresDatabase }}

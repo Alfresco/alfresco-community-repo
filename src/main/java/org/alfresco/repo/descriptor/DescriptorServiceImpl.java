@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,6 +27,7 @@ package org.alfresco.repo.descriptor;
 
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.heartbeat.HBDataCollectorServiceImpl;
@@ -80,9 +81,20 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
      */
     private Descriptor serverDescriptor;
     private Descriptor currentRepoDescriptor;
-    private Object currentRepoDescriptorLock = new Object();
     private Descriptor installedRepoDescriptor;
     
+    // License changes must hold a synchronized lock on licenseLock so that these changes can by synchronized on
+    // startup (in a single JVM) BUT at the point of setting the currentRepoDescriptor they must also obtain the
+    // currentRepoDescriptorLock.writeLock. This is required for the situation where the database change takes a long
+    // time or there are reties. This update has been known to clash with authorize user updates which also updates the
+    // current user count. To avoid HTTP requests from hanging, when looking up the currentRepoDescriptor they now
+    // obtain the currentRepoDescriptorLock.readLock rather than the same synchronized lock. The writeLock is only held
+    // for as long as it takes to update the currentRepoDescriptor reference. The database update takes place inside
+    // the synchronized lock but more importantly in the database as there may be a cluster. This change was introduced
+    // for MNT-18894 where there were approximately 240,000 user and 100,000 group authorities.
+    private ReentrantReadWriteLock currentRepoDescriptorLock = new ReentrantReadWriteLock();
+    private Object licenseLock = new Object();
+
     private static final Log logger = LogFactory.getLog(DescriptorServiceImpl.class);
 
     /**
@@ -148,11 +160,57 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     @Override
     public Descriptor getCurrentRepositoryDescriptor()
     {
-        synchronized (this.currentRepoDescriptorLock)
+        currentRepoDescriptorLock.readLock().lock();
+        try
         {
             // this should be updated when the License is verified - but it is possible that no License at all
             // is available and this will be in an known state - do not allow a null value to be returned
             return this.currentRepoDescriptor != null ? this.currentRepoDescriptor : new UnknownDescriptor();
+        }
+        finally
+        {
+            currentRepoDescriptorLock.readLock().unlock();
+        }
+    }
+
+    private void setCurrentRepoDescriptor(Descriptor newRepoDescriptor)
+    {
+        currentRepoDescriptorLock.writeLock().lock();
+        try
+        {
+            currentRepoDescriptor = newRepoDescriptor;
+        }
+        finally
+        {
+            currentRepoDescriptorLock.writeLock().unlock();
+        }
+    }
+
+    private boolean isCurrentRepoDescriptorIsNull()
+    {
+        // Should not be needed as all updates take place within "synchronized (licenseLock)" but this is clearer
+        currentRepoDescriptorLock.readLock().lock();
+        try
+        {
+            return currentRepoDescriptor == null;
+        }
+        finally
+        {
+            currentRepoDescriptorLock.readLock().unlock();
+        }
+    }
+
+    private boolean currentRepoDescriptorNullOrModeHasChanged(LicenseMode newMode)
+    {
+        // Should not be needed as all updates take place within "synchronized (licenseLock)" but this is clearer
+        currentRepoDescriptorLock.readLock().lock();
+        try
+        {
+            return currentRepoDescriptor == null || newMode != currentRepoDescriptor.getLicenseMode();
+        }
+        finally
+        {
+            currentRepoDescriptorLock.readLock().unlock();
         }
     }
 
@@ -400,9 +458,9 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
          */
         public void verifyLicense() throws LicenseException
         {
-            synchronized (currentRepoDescriptorLock)
+            synchronized (licenseLock)
             {
-                if (currentRepoDescriptor == null)
+                if (isCurrentRepoDescriptorIsNull())
                 {
                     final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
 
@@ -411,7 +469,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
                         @Override
                         public Void execute()
                         {
-                            currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+                            Descriptor newRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+                            setCurrentRepoDescriptor(newRepoDescriptor);
                             return null;
                         }
                     };
@@ -697,7 +756,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     @Override
     public void onLicenseChange(final LicenseDescriptor licenseDescriptor)
     {
-        synchronized (currentRepoDescriptorLock)
+        synchronized (licenseLock)
         {
             logger.debug("Received changed license descriptor: " + licenseDescriptor);
                     
@@ -728,15 +787,16 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
                     }
 
                     // persist the server descriptor values in the current repository descriptor
-                    if (currentRepoDescriptor == null || newMode != currentRepoDescriptor.getLicenseMode())
+                    if (currentRepoDescriptorNullOrModeHasChanged(newMode))
                     {
                         if (logger.isDebugEnabled())
                         {
                             logger.debug("Changing license mode in current repo descriptor to: " + newMode);
                         }
-                        currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
+                        Descriptor newRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(
                                 serverDescriptor,
                                 newMode);
+                        setCurrentRepoDescriptor(newRepoDescriptor);
                     }
                     if (logger.isDebugEnabled())
                     {
@@ -759,11 +819,11 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     @Override
     public void onLicenseFail()
     {
-        synchronized (currentRepoDescriptorLock)
+        synchronized (licenseLock)
         {
             // Current restrictions remain in place
             // Make sure that the repo descriptor is updated the first time
-            if (currentRepoDescriptor == null)
+            if (isCurrentRepoDescriptorIsNull())
             {
                 final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
                 RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
@@ -771,7 +831,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
                     @Override
                     public Void execute()
                     {
-                        currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+                        Descriptor newRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+                        setCurrentRepoDescriptor(newRepoDescriptor);
                         return null;
                     }
                 };

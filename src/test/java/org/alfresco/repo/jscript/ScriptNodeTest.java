@@ -586,14 +586,14 @@ public class ScriptNodeTest
         {
             //test nodes without namespace
             QName childName = QName.createQName(null, "theTestContent199");
-            NodeRef newNodeWithNotNamespace = testNodes
+            NodeRef newNodeWithNoNamespace = testNodes
                 .createNodeWithTextContent(companyHome, childName, "theTestContent199", ContentModel.TYPE_CONTENT,
                     AuthenticationUtil.getFullyAuthenticatedUser(), "some content");
             // test on content data
-            ScriptNode sn = new ScriptNode(newNodeWithNotNamespace, SERVICE_REGISTRY);
+            ScriptNode sn = new ScriptNode(newNodeWithNoNamespace, SERVICE_REGISTRY);
             sn.setScope(getScope());
 
-            ContentData contentData = (ContentData) NODE_SERVICE.getProperty(newNodeWithNotNamespace, ContentModel.PROP_CONTENT);
+            ContentData contentData = (ContentData) NODE_SERVICE.getProperty(newNodeWithNoNamespace, ContentModel.PROP_CONTENT);
             assertNotNull(contentData);
 
             String path = sn.getQnamePath();

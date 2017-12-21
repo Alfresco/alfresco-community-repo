@@ -194,9 +194,8 @@ public class NodeServiceXPath extends BaseXPath
         
         Set<Object> set = new HashSet<Object>(resultsWithDuplicates);
         
-        // now return as a list again
-        List<Object> results = resultsWithDuplicates;
-        results.clear();
+        // return new list without duplicates
+        List<Object> results = new ArrayList<>();
         results.addAll(set);
         
         // done

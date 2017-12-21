@@ -559,7 +559,48 @@ public class ScriptNodeTest
 
         revertBootstrap();
     }
-    
+
+    /**
+     * ALF-21962: Webscripts - node.qnamePath incorrectly returns ":" for items without namespace prefix
+     */
+    @Test
+    public void testGetQnamePath()
+    {
+        Repository repositoryHelper = (Repository) APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+        {
+            // test nodes with namespace
+            NodeRef newNode1 = testNodes
+                .createNode(companyHome, "theTestContent198", ContentModel.TYPE_CONTENT, AuthenticationUtil.getFullyAuthenticatedUser());
+
+            // test on content data
+            ScriptNode sn = new ScriptNode(newNode1, SERVICE_REGISTRY);
+            sn.setScope(getScope());
+
+            ContentData contentData = (ContentData) NODE_SERVICE.getProperty(newNode1, ContentModel.PROP_CONTENT);
+            assertNull(contentData);
+
+            String path = sn.getQnamePath();
+            assertEquals("/app:company_home/app:theTestContent198", path);
+        }
+        {
+            //test nodes without namespace
+            QName childName = QName.createQName(null, "theTestContent199");
+            NodeRef newNodeWithNoNamespace = testNodes
+                .createNodeWithTextContent(companyHome, childName, "theTestContent199", ContentModel.TYPE_CONTENT,
+                    AuthenticationUtil.getFullyAuthenticatedUser(), "some content");
+            // test on content data
+            ScriptNode sn = new ScriptNode(newNodeWithNoNamespace, SERVICE_REGISTRY);
+            sn.setScope(getScope());
+
+            ContentData contentData = (ContentData) NODE_SERVICE.getProperty(newNodeWithNoNamespace, ContentModel.PROP_CONTENT);
+            assertNotNull(contentData);
+
+            String path = sn.getQnamePath();
+            assertEquals("/app:company_home/theTestContent199", path);
+        }
+    }
+
     /**
      * MNT-15798 - Content Data should be created only when it has a binary, not as a side effect of getters on ScriptNode.
      */

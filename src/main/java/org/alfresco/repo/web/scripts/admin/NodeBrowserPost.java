@@ -42,6 +42,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -98,6 +99,7 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
     transient private OwnableService ownableService;
     transient private LockService lockService;
     transient private CheckOutCheckInService cociService;
+    private NodeRef nodeRef;
 
     /**
      * @param transactionService        transaction service
@@ -611,6 +613,7 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
                                 {
                                     throw new AlfrescoRuntimeException("Node " + nodeRef + " does not exist.");
                                 }
+                                this.nodeRef = nodeRef;
                                 currentNode = nodeRef;
                                 // this is not really a search for results, it is a direct node reference
                                 // so gather the child assocs as usual and update the action value for the UI location
@@ -1127,7 +1130,7 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         /**
          * Construct
          * 
-         * @param name property name
+         * @param qname property name
          * @param value property values
          */
         @SuppressWarnings("unchecked")
@@ -1135,16 +1138,35 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         {
             this.name = new QNameBean(qname);
 
+            residual = true;
+
             PropertyDefinition propDef = getDictionaryService().getProperty(qname);
             if (propDef != null)
             {
                 QName qn = propDef.getDataType().getName();
                 typeName = qn != null ? new QNameBean(propDef.getDataType().getName()) : null;
-                residual = false;
-            }
-            else
-            {
-                residual = true;
+
+                // ALF-21950 We need to check if the property belongs to the type of the node or to their ancestors
+                if(propDef.getContainerClass().isAspect())
+                {
+                    residual = false;
+                }
+                else
+                {
+                    ClassDefinition classDef = getDictionaryService().getClass(getNodeService().getType(nodeRef));
+                    boolean found = false;
+
+                    while(classDef != null)
+                    {
+                        found = searchInClassDefinition(qname, classDef);
+                        if(found)
+                        {
+                            break;
+                        }
+                        classDef = classDef.getParentClassDefinition();
+                    }
+                    residual = !found;
+                }
             }
 
             // handle multi/single values
@@ -1164,6 +1186,23 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
                 values = Collections.singletonList(new Value(value instanceof QName ? new QNameBean((QName) value) : value));
             }
             this.values = values;
+        }
+
+        private boolean searchInClassDefinition(QName qname, ClassDefinition classDef)
+        {
+            boolean found = false;
+            if (classDef != null)
+            {
+                for (QName definedPropQName : classDef.getProperties().keySet())
+                {
+                    if(qname.isMatch(definedPropQName))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            return found;
         }
 
         /**

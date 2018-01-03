@@ -30,10 +30,15 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.GUID;
 
+/**
+ * Integration test for RM-5225
+ *
+ * Copy of record from a RM site does not append the correct id at the end of the record name.
+ */
 public class RM5225Test extends BaseRMTestCase
 {
     /**
-     * Given the RM site, a record category created in the fileplan, a record foler containing a record
+     * Given the RM site, a record category created in the fileplan, a record folder containing a record
      * When we create a copy from the existing record
      * Then the created record name contains both the name of the record from which it was created and the unique identifier of the current record.
      */

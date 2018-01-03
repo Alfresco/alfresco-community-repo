@@ -99,7 +99,6 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
     transient private OwnableService ownableService;
     transient private LockService lockService;
     transient private CheckOutCheckInService cociService;
-    private NodeRef nodeRef;
 
     /**
      * @param transactionService        transaction service
@@ -311,7 +310,7 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         List<Property> properties = new ArrayList<Property>(propertyValues.size());
         for (Map.Entry<QName, Serializable> property : propertyValues.entrySet())
         {
-            properties.add(new Property(property.getKey(), property.getValue()));
+            properties.add(new Property(property.getKey(), property.getValue(), nodeRef));
         }
         return properties;
     }
@@ -613,7 +612,6 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
                                 {
                                     throw new AlfrescoRuntimeException("Node " + nodeRef + " does not exist.");
                                 }
-                                this.nodeRef = nodeRef;
                                 currentNode = nodeRef;
                                 // this is not really a search for results, it is a direct node reference
                                 // so gather the child assocs as usual and update the action value for the UI location
@@ -1127,6 +1125,8 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         
         private QNameBean typeName;
 
+        private NodeRef nodeRef;
+
         /**
          * Construct
          * 
@@ -1134,7 +1134,7 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
          * @param value property values
          */
         @SuppressWarnings("unchecked")
-        public Property(QName qname, Serializable value)
+        public Property(QName qname, Serializable value, NodeRef nodeRef)
         {
             this.name = new QNameBean(qname);
 
@@ -1190,19 +1190,17 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
 
         private boolean searchInClassDefinition(QName qname, ClassDefinition classDef)
         {
-            boolean found = false;
             if (classDef != null)
             {
                 for (QName definedPropQName : classDef.getProperties().keySet())
                 {
                     if(qname.isMatch(definedPropQName))
                     {
-                        found = true;
-                        break;
+                        return true;
                     }
                 }
             }
-            return found;
+            return false;
         }
 
         /**

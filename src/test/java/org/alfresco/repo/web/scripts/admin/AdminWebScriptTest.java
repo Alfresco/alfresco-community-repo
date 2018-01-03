@@ -211,19 +211,19 @@ public class AdminWebScriptTest extends BaseWebScriptTest
 
         // property found in definition so it is not residual
         String value = "abc";
-        NodeBrowserPost.Property property = nodeBrowserPost.new Property(qnameResidualFalse1, value);
+        NodeBrowserPost.Property property = nodeBrowserPost.new Property(qnameResidualFalse1, value, null);
         assertFalse(property.getResidual());
 
         // property belongs to an aspect so it is not residual
-        property = nodeBrowserPost.new Property(qnameResidualFalse2, value);
+        property = nodeBrowserPost.new Property(qnameResidualFalse2, value, null);
         assertFalse(property.getResidual());
 
         // property not found in definition but it is an aspect so it is not residual
-        property = nodeBrowserPost.new Property(qnameResidualTrue1, value);
+        property = nodeBrowserPost.new Property(qnameResidualTrue1, value, null);
         assertFalse(property.getResidual());
 
         // property not found in definition so it is residual
-        property = nodeBrowserPost.new Property(qnameResidualTrue2, value);
+        property = nodeBrowserPost.new Property(qnameResidualTrue2, value, null);
         assertTrue(property.getResidual());
     }
 

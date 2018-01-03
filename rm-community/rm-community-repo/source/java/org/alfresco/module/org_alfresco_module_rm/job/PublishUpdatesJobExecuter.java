@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -231,7 +231,6 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     List<NodeRef> resultNodes = null;
 
                     SearchParameters searchParameters = new SearchParameters();
-                    searchParameters.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
                     searchParameters.setQuery(query);
                     searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                     searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);

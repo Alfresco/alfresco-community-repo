@@ -1124,9 +1124,7 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         private boolean residual;
         
         private QNameBean typeName;
-
-        private NodeRef nodeRef;
-
+        
         /**
          * Construct
          * 

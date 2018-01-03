@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "content-services.fullname" . }}-solr
+  labels:
+    app: {{ template "content-services.fullname" . }}-solr
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.solr.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "content-services.fullname" . }}-solr
+        release: {{ .Release.Name }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.registryPullSecrets }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.solr.image.repository }}:{{ .Values.solr.image.tag }}"
+          imagePullPolicy: {{ .Values.solr.image.pullPolicy }}
+          envFrom:
+          - configMapRef:
+              name: {{ template "content-services.fullname" . }}-solr-configmap
+          ports:
+            - containerPort: {{ .Values.solr.image.internalPort }}
+          resources:
+{{ toYaml .Values.solr.resources | indent 12 }}

@@ -533,7 +533,7 @@ public abstract class AbstractMailActionExecuterTest
             PERSON_SERVICE.deletePerson(USER_2);
         }
     }
-    
+
     /**
      * Test for CC / BCC 
      * @throws Exception 
@@ -548,7 +548,6 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_CC, "some.carbon@example.com");
         mailAction.setParameterValue(MailActionExecuter.PARAM_BCC, "some.blindcarbon@example.com");
 
-
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing CARBON COPY");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
 
@@ -561,13 +560,12 @@ public abstract class AbstractMailActionExecuterTest
         Address[] all = message.getAllRecipients();
         Address[] ccs = message.getRecipients(RecipientType.CC);
         Address[] bccs = message.getRecipients(RecipientType.BCC);
-        Assert.assertEquals("recipents too short", 3, all.length);
-        Assert.assertEquals("cc too short", 1, ccs.length);
-        Assert.assertEquals("bcc too short", 1, bccs.length);
+        Assert.assertEquals(3, all.length);
+        Assert.assertEquals(1, ccs.length);
+        Assert.assertEquals(1, bccs.length);
         Assert.assertTrue(ccs[0].toString().contains("some.carbon"));
         Assert.assertTrue(bccs[0].toString().contains("some.blindcarbon"));
     }
-
 
     /**
      * Test for MNT-11079
@@ -748,11 +746,6 @@ public abstract class AbstractMailActionExecuterTest
         {
 
             // these persons should be without emails
-
-
-
-
-
             // testing for GROUP_EVERYONE
             
             final String tenantId = getUsersHomeTenant(BRITISH_USER.getUsername());
@@ -860,9 +853,9 @@ public abstract class AbstractMailActionExecuterTest
         Address[] all = message.getAllRecipients();
         Address[] ccs = message.getRecipients(RecipientType.CC);
         Address[] bccs = message.getRecipients(RecipientType.BCC);
-        Assert.assertEquals("recipents too short", 5, all.length);
-        Assert.assertEquals("cc too short", 2, ccs.length);
-        Assert.assertEquals("bcc too short", 2, bccs.length);
+        Assert.assertEquals(5, all.length);
+        Assert.assertEquals(2, ccs.length);
+        Assert.assertEquals(2, bccs.length);
         Assert.assertTrue(ccs[0].toString().contains("cc1_addr") && ccs[1].toString().contains("cc2_addr"));
         Assert.assertTrue(bccs[0].toString().contains("bcc1_addr") && bccs[1].toString().contains("bcc2_addr"));
     }
@@ -898,9 +891,9 @@ public abstract class AbstractMailActionExecuterTest
         Address[] all = message.getAllRecipients();
         Address[] ccs = message.getRecipients(RecipientType.CC);
         Address[] bccs = message.getRecipients(RecipientType.BCC);
-        Assert.assertEquals("recipents too short", 5, all.length);
-        Assert.assertEquals("cc too short", 2, ccs.length);
-        Assert.assertEquals("bcc too short", 2, bccs.length);
+        Assert.assertEquals(5, all.length);
+        Assert.assertEquals(2, ccs.length);
+        Assert.assertEquals(2, bccs.length);
         Assert.assertTrue(ccs[0].toString().contains("cc1_addr") && ccs[1].toString().contains("cc2_addr"));
         Assert.assertTrue(bccs[0].toString().contains("bcc1_addr") && bccs[1].toString().contains("bcc2_addr"));
     }

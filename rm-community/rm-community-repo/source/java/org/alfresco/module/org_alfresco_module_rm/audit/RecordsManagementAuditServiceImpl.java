@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -1104,10 +1105,14 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
 
         // Get audit entries
-        QName siteType = nodeService.getType(siteService.getSite(DEFAULT_SITE_NAME).getNodeRef());
-        if (siteType.equals(TYPE_DOD_5015_SITE))
+        SiteInfo siteInfo = siteService.getSite(DEFAULT_SITE_NAME);
+        if (siteInfo != null)
         {
-            auditService.auditQuery(callback, dod5015AuditQueryParams, maxEntries);
+            QName siteType = nodeService.getType(siteInfo.getNodeRef());
+            if (siteType.equals(TYPE_DOD_5015_SITE))
+            {
+                auditService.auditQuery(callback, dod5015AuditQueryParams, maxEntries);
+            }
         }
         // We always need to make the standard query - regardless of the type of RM site (to get events like RM site created).
         auditService.auditQuery(callback, auditQueryParams, maxEntries);

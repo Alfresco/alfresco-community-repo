@@ -546,6 +546,7 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TO, "some.bodyelse@example.com");
         mailAction.setParameterValue(MailActionExecuter.PARAM_CC, "some.carbon@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_BCC, "some.blindcarbon@example.com");
 
 
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing CARBON COPY");
@@ -559,9 +560,12 @@ public abstract class AbstractMailActionExecuterTest
         Assert.assertNotNull(message);
         Address[] all = message.getAllRecipients();
         Address[] ccs = message.getRecipients(RecipientType.CC);
-        Assert.assertEquals("recipents too short", 2, all.length);
+        Address[] bccs = message.getRecipients(RecipientType.BCC);
+        Assert.assertEquals("recipents too short", 3, all.length);
         Assert.assertEquals("cc too short", 1, ccs.length);
+        Assert.assertEquals("bcc too short", 1, bccs.length);
         Assert.assertTrue(ccs[0].toString().contains("some.carbon"));
+        Assert.assertTrue(bccs[0].toString().contains("some.blindcarbon"));
     }
 
 
@@ -828,4 +832,77 @@ public abstract class AbstractMailActionExecuterTest
             PERSON_SERVICE.deletePerson(USER2);
         }
     }
+
+    /**
+     * ALF-21948
+     */
+    @Test
+    public void testSendingToArrayOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
+    {
+        Map<String, Serializable> params = new HashMap<String, Serializable>();
+        String[] ccArray = { "cc1_addr@example.com", "cc2_addr@example.com" };
+        String[] bccArray = { "bcc1_addr@example.com", "bcc2_addr@example.com" };
+        params.put(MailActionExecuter.PARAM_FROM, "sender@email.com");
+        params.put(MailActionExecuter.PARAM_TO, "test@email.com");
+        params.put(MailActionExecuter.PARAM_CC, ccArray);
+        params.put(MailActionExecuter.PARAM_BCC, bccArray);
+
+        params.put(MailActionExecuter.PARAM_TEXT, "Mail body here");
+        params.put(MailActionExecuter.PARAM_SUBJECT, "Subject text");
+
+        Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME, params);
+        ACTION_EXECUTER.resetTestSentCount();
+
+        ACTION_SERVICE.executeAction(mailAction, null);
+        MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
+        Assert.assertNotNull(message);
+
+        Address[] all = message.getAllRecipients();
+        Address[] ccs = message.getRecipients(RecipientType.CC);
+        Address[] bccs = message.getRecipients(RecipientType.BCC);
+        Assert.assertEquals("recipents too short", 5, all.length);
+        Assert.assertEquals("cc too short", 2, ccs.length);
+        Assert.assertEquals("bcc too short", 2, bccs.length);
+        Assert.assertTrue(ccs[0].toString().contains("cc1_addr") && ccs[1].toString().contains("cc2_addr"));
+        Assert.assertTrue(bccs[0].toString().contains("bcc1_addr") && bccs[1].toString().contains("bcc2_addr"));
+    }
+
+    /**
+     * ALF-21948
+     */
+    @Test
+    public void testSendingToListOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
+    {
+        List<String> ccList = new ArrayList<String>();
+        ccList.add("cc1_addr@example.com");
+        ccList.add("cc2_addr@example.com");
+ 
+        List<String> bccList = new ArrayList<String>();
+        bccList.add("bcc1_addr@example.com");
+        bccList.add("bcc2_addr@example.com");
+
+        Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TO, "some.bodyelse@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_CC, (Serializable) ccList);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_BCC, (Serializable) bccList);
+
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing (BLIND) CARBON COPY");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "mail body here");
+
+        ACTION_EXECUTER.resetTestSentCount();
+        ACTION_SERVICE.executeAction(mailAction, null);
+        MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
+        Assert.assertNotNull(message);
+
+        Address[] all = message.getAllRecipients();
+        Address[] ccs = message.getRecipients(RecipientType.CC);
+        Address[] bccs = message.getRecipients(RecipientType.BCC);
+        Assert.assertEquals("recipents too short", 5, all.length);
+        Assert.assertEquals("cc too short", 2, ccs.length);
+        Assert.assertEquals("bcc too short", 2, bccs.length);
+        Assert.assertTrue(ccs[0].toString().contains("cc1_addr") && ccs[1].toString().contains("cc2_addr"));
+        Assert.assertTrue(bccs[0].toString().contains("bcc1_addr") && bccs[1].toString().contains("bcc2_addr"));
+    }
+
 }

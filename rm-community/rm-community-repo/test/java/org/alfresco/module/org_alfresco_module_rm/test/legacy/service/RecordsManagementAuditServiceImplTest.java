@@ -78,18 +78,18 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             @Override
             public Void run() throws Exception
             {
-		        // test start time recorded
-		        testStartTime = new Date();
+                // test start time recorded
+                testStartTime = new Date();
 
-		        // Stop and clear the log
-		        rmAuditService.stopAuditLog(filePlan);
-		        rmAuditService.clearAuditLog(filePlan);
-		        rmAuditService.startAuditLog(filePlan);
+                // Stop and clear the log
+                rmAuditService.stopAuditLog(filePlan);
+                rmAuditService.clearAuditLog(filePlan);
+                rmAuditService.startAuditLog(filePlan);
 
-		        // check that audit service is started
-		        assertTrue(rmAuditService.isAuditLogEnabled(filePlan));
+                // check that audit service is started
+                assertTrue(rmAuditService.isAuditLogEnabled(filePlan));
 
-		        return null;
+                return null;
             }
         });
     }
@@ -198,7 +198,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             }
         });
     }
-    
+
     /**
      * Test getAuditTrail method and parameter filters.
      */

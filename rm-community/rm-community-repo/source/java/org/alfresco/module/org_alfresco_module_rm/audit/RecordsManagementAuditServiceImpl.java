@@ -27,6 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit;
 
+import static org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model.TYPE_DOD_5015_SITE;
+import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -51,6 +54,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.content.MimetypeMap;
@@ -72,6 +76,7 @@ import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -186,6 +191,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private DictionaryService dictionaryService;
     private TransactionService transactionService;
     private NodeService nodeService;
+    private SiteService siteService;
     private ContentService contentService;
     private AuditComponent auditComponent;
     private AuditService auditService;
@@ -236,6 +242,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         this.nodeService = nodeService;
     }
+
+    /**
+     * Set the site service (used to check the type of RM site created).
+     *
+     * @param siteService The site service.
+     */
+    public void setSiteService(SiteService siteService) { this.siteService = siteService; }
 
     /**
      * Sets the ContentService instance
@@ -820,7 +833,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      * @param writer                Writer to write the audit trail
      * @param reportFormat          Format to write the audit trail in, ignored if writer is <code>null</code>
      */
-    private void getAuditTrailImpl(
+    protected void getAuditTrailImpl(
             final RecordsManagementAuditQueryParameters params,
             final List<RecordsManagementAuditEntry> results,
             final Writer writer,
@@ -1091,7 +1104,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         }
 
         // Get audit entries
-        auditService.auditQuery(callback, dod5015AuditQueryParams, maxEntries);
+        QName siteType = nodeService.getType(siteService.getSite(DEFAULT_SITE_NAME).getNodeRef());
+        if (siteType.equals(TYPE_DOD_5015_SITE))
+        {
+            auditService.auditQuery(callback, dod5015AuditQueryParams, maxEntries);
+        }
+        // We always need to make the standard query - regardless of the type of RM site (to get events like RM site created).
         auditService.auditQuery(callback, auditQueryParams, maxEntries);
 
         // finish off the audit trail report

@@ -161,6 +161,7 @@
       <property name="siteService" ref="SiteService"/>
       <property name="actionService" ref="ActionService"/>
       <property name="authenticationContext" ref="authenticationContext"/>
+      <property name="emailHelper" ref="emailHelper"/>
       <property name="excludedEmailSuffixes">
           <list>
               <value>admin@alfresco.com</value>

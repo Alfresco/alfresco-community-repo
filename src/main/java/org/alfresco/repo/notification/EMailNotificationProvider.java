@@ -28,6 +28,7 @@ package org.alfresco.repo.notification;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -209,7 +210,17 @@ public class EMailNotificationProvider implements NotificationProvider
         {
             mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, subject);
         }
-        
+
+        // Note that the smart logic in MailActionExecuter should recognize any
+        // preferred locale for the users in the recipient field and override this value
+        // Note that the smart logic in MailActionExecuter may be broken if we send email addresses
+        // instead of userIDs
+        Locale userLocale = I18NUtil.getLocale();
+        if (userLocale != null)
+        {
+            mail.setParameterValue(MailActionExecuter.PARAM_LOCALE, userLocale);
+        }
+
         // Set body 
         String body = notificationContext.getBody();
         if (body != null && body.length() != 0)

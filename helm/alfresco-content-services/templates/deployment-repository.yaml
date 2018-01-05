@@ -29,6 +29,6 @@ spec:
           resources:
 {{ toYaml .Values.repository.resources | indent 12 }}
       initContainers:
-        - name: init-postgres
+        - name: init-db
           image: busybox
-          command: ['sh', '-c', 'until nslookup {{ .Release.Name }}-postgresql-acs; do echo "waiting for postgres"; sleep 2; done;']
+          command: ['sh', '-c', 'until nc -w1 {{ template "database.hostname" . }} {{ template "database.port" . }}; do echo "waiting for {{ .Values.database.type }}"; sleep 2; done;']

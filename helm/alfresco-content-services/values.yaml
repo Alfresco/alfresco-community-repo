@@ -82,5 +82,9 @@ postgresql:
       memory: "250Mi"
     limits:
       memory: "500Mi"
+  driver: org.postgresql.Driver
+
+database:
+  type: postgresql
 
 replicaCount: 1

@@ -624,7 +624,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     // Note: there is no validation on the username to check that it actually is an email address.
                     // TODO Fix this.
 
-                    Serializable ccValue = (String)ruleAction.getParameterValue(PARAM_CC);
+                    Serializable ccValue = (Serializable)ruleAction.getParameterValue(PARAM_CC);
                     if(ccValue != null)
                     {
                         if (ccValue instanceof String)
@@ -639,7 +639,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         else if (ccValue instanceof List<?>)
                         {
                             List<String>s = (List<String>)ccValue;
-                            messageRef[0].setCc((String[])s.toArray());
+                            messageRef[0].setCc(s.toArray(new String[s.size()]));
                         }
                         else if (ccValue.getClass().isArray())
                         {
@@ -647,7 +647,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         }
                         
                     }
-                    Serializable bccValue = (String)ruleAction.getParameterValue(PARAM_BCC);
+                    Serializable bccValue = (Serializable)ruleAction.getParameterValue(PARAM_BCC);
                     if(bccValue != null)
                     {
                         if (bccValue instanceof String)
@@ -662,11 +662,11 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         else if (bccValue instanceof List<?>)
                         {
                             List<String>s = (List<String>)bccValue;
-                            messageRef[0].setBcc((String[])s.toArray());
+                            messageRef[0].setBcc(s.toArray(new String[s.size()]));
                         }
                         else if (bccValue.getClass().isArray())
                         {
-                            messageRef[0].setCc((String[])bccValue);
+                            messageRef[0].setBcc((String[])bccValue);
                         }
                     }
                     

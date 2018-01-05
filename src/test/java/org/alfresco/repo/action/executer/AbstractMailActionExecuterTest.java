@@ -533,7 +533,7 @@ public abstract class AbstractMailActionExecuterTest
             PERSON_SERVICE.deletePerson(USER_2);
         }
     }
-    
+
     /**
      * Test for CC / BCC 
      * @throws Exception 
@@ -546,7 +546,7 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TO, "some.bodyelse@example.com");
         mailAction.setParameterValue(MailActionExecuter.PARAM_CC, "some.carbon@example.com");
-
+        mailAction.setParameterValue(MailActionExecuter.PARAM_BCC, "some.blindcarbon@example.com");
 
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing CARBON COPY");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
@@ -559,11 +559,13 @@ public abstract class AbstractMailActionExecuterTest
         Assert.assertNotNull(message);
         Address[] all = message.getAllRecipients();
         Address[] ccs = message.getRecipients(RecipientType.CC);
-        Assert.assertEquals("recipents too short", 2, all.length);
-        Assert.assertEquals("cc too short", 1, ccs.length);
+        Address[] bccs = message.getRecipients(RecipientType.BCC);
+        Assert.assertEquals(3, all.length);
+        Assert.assertEquals(1, ccs.length);
+        Assert.assertEquals(1, bccs.length);
         Assert.assertTrue(ccs[0].toString().contains("some.carbon"));
+        Assert.assertTrue(bccs[0].toString().contains("some.blindcarbon"));
     }
-
 
     /**
      * Test for MNT-11079
@@ -744,11 +746,6 @@ public abstract class AbstractMailActionExecuterTest
         {
 
             // these persons should be without emails
-
-
-
-
-
             // testing for GROUP_EVERYONE
             
             final String tenantId = getUsersHomeTenant(BRITISH_USER.getUsername());
@@ -828,4 +825,80 @@ public abstract class AbstractMailActionExecuterTest
             PERSON_SERVICE.deletePerson(USER2);
         }
     }
+
+    /**
+     * ALF-21948
+     */
+    @Test
+    public void testSendingToArrayOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
+    {
+        Map<String, Serializable> params = new HashMap<String, Serializable>();
+        String[] ccArray = { "cc_user1@example.com", "cc_user2@example.com" };
+        String[] bccArray = { "bcc_user3@example.com", "bcc_user4@example.com", "bcc_user5@example.com" };
+        params.put(MailActionExecuter.PARAM_FROM, "sender@email.com");
+        params.put(MailActionExecuter.PARAM_TO, "test@email.com");
+        params.put(MailActionExecuter.PARAM_CC, ccArray);
+        params.put(MailActionExecuter.PARAM_BCC, bccArray);
+
+        params.put(MailActionExecuter.PARAM_TEXT, "Mail body here");
+        params.put(MailActionExecuter.PARAM_SUBJECT, "Subject text");
+
+        Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME, params);
+        ACTION_EXECUTER.resetTestSentCount();
+
+        ACTION_SERVICE.executeAction(mailAction, null);
+        MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
+        Assert.assertNotNull(message);
+
+        Address[] all = message.getAllRecipients();
+        Address[] ccs = message.getRecipients(RecipientType.CC);
+        Address[] bccs = message.getRecipients(RecipientType.BCC);
+        Assert.assertEquals(6, all.length);
+        Assert.assertEquals(2, ccs.length);
+        Assert.assertEquals(3, bccs.length);
+        Assert.assertTrue(ccs[0].toString().contains("cc_user1") && ccs[1].toString().contains("cc_user2"));
+        Assert.assertTrue(bccs[0].toString().contains("bcc_user3") && bccs[1].toString().contains("bcc_user4")
+                          && bccs[2].toString().contains("bcc_user5"));
+    }
+
+    /**
+     * ALF-21948
+     */
+    @Test
+    public void testSendingToListOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
+    {
+        List<String> ccList = new ArrayList<String>();
+        ccList.add("cc_user1@example.com");
+        ccList.add("cc_user2@example.com");
+
+        List<String> bccList = new ArrayList<String>();
+        bccList.add("bcc_user3@example.com");
+        bccList.add("bcc_user4@example.com");
+        bccList.add("bcc_user5@example.com");
+
+        Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TO, "some.bodyelse@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_CC, (Serializable) ccList);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_BCC, (Serializable) bccList);
+
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing (BLIND) CARBON COPY");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "mail body here");
+
+        ACTION_EXECUTER.resetTestSentCount();
+        ACTION_SERVICE.executeAction(mailAction, null);
+        MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
+        Assert.assertNotNull(message);
+
+        Address[] all = message.getAllRecipients();
+        Address[] ccs = message.getRecipients(RecipientType.CC);
+        Address[] bccs = message.getRecipients(RecipientType.BCC);
+        Assert.assertEquals(6, all.length);
+        Assert.assertEquals(2, ccs.length);
+        Assert.assertEquals(3, bccs.length);
+        Assert.assertTrue(ccs[0].toString().contains("cc_user1") && ccs[1].toString().contains("cc_user2"));
+        Assert.assertTrue(bccs[0].toString().contains("bcc_user3") && bccs[1].toString().contains("bcc_user4")
+                          && bccs[2].toString().contains("bcc_user5"));
+    }
+
 }

@@ -833,8 +833,8 @@ public abstract class AbstractMailActionExecuterTest
     public void testSendingToArrayOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
     {
         Map<String, Serializable> params = new HashMap<String, Serializable>();
-        String[] ccArray = { "cc1_addr@example.com", "cc2_addr@example.com" };
-        String[] bccArray = { "bcc1_addr@example.com", "bcc2_addr@example.com" };
+        String[] ccArray = { "cc_user1@example.com", "cc_user2@example.com" };
+        String[] bccArray = { "bcc_user3@example.com", "bcc_user4@example.com", "bcc_user5@example.com" };
         params.put(MailActionExecuter.PARAM_FROM, "sender@email.com");
         params.put(MailActionExecuter.PARAM_TO, "test@email.com");
         params.put(MailActionExecuter.PARAM_CC, ccArray);
@@ -853,11 +853,12 @@ public abstract class AbstractMailActionExecuterTest
         Address[] all = message.getAllRecipients();
         Address[] ccs = message.getRecipients(RecipientType.CC);
         Address[] bccs = message.getRecipients(RecipientType.BCC);
-        Assert.assertEquals(5, all.length);
+        Assert.assertEquals(6, all.length);
         Assert.assertEquals(2, ccs.length);
-        Assert.assertEquals(2, bccs.length);
-        Assert.assertTrue(ccs[0].toString().contains("cc1_addr") && ccs[1].toString().contains("cc2_addr"));
-        Assert.assertTrue(bccs[0].toString().contains("bcc1_addr") && bccs[1].toString().contains("bcc2_addr"));
+        Assert.assertEquals(3, bccs.length);
+        Assert.assertTrue(ccs[0].toString().contains("cc_user1") && ccs[1].toString().contains("cc_user2"));
+        Assert.assertTrue(bccs[0].toString().contains("bcc_user3") && bccs[1].toString().contains("bcc_user4")
+                          && bccs[2].toString().contains("bcc_user5"));
     }
 
     /**
@@ -867,12 +868,13 @@ public abstract class AbstractMailActionExecuterTest
     public void testSendingToListOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
     {
         List<String> ccList = new ArrayList<String>();
-        ccList.add("cc1_addr@example.com");
-        ccList.add("cc2_addr@example.com");
- 
+        ccList.add("cc_user1@example.com");
+        ccList.add("cc_user2@example.com");
+
         List<String> bccList = new ArrayList<String>();
-        bccList.add("bcc1_addr@example.com");
-        bccList.add("bcc2_addr@example.com");
+        bccList.add("bcc_user3@example.com");
+        bccList.add("bcc_user4@example.com");
+        bccList.add("bcc_user5@example.com");
 
         Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
         mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
@@ -891,11 +893,12 @@ public abstract class AbstractMailActionExecuterTest
         Address[] all = message.getAllRecipients();
         Address[] ccs = message.getRecipients(RecipientType.CC);
         Address[] bccs = message.getRecipients(RecipientType.BCC);
-        Assert.assertEquals(5, all.length);
+        Assert.assertEquals(6, all.length);
         Assert.assertEquals(2, ccs.length);
-        Assert.assertEquals(2, bccs.length);
-        Assert.assertTrue(ccs[0].toString().contains("cc1_addr") && ccs[1].toString().contains("cc2_addr"));
-        Assert.assertTrue(bccs[0].toString().contains("bcc1_addr") && bccs[1].toString().contains("bcc2_addr"));
+        Assert.assertEquals(3, bccs.length);
+        Assert.assertTrue(ccs[0].toString().contains("cc_user1") && ccs[1].toString().contains("cc_user2"));
+        Assert.assertTrue(bccs[0].toString().contains("bcc_user3") && bccs[1].toString().contains("bcc_user4")
+                          && bccs[2].toString().contains("bcc_user5"));
     }
 
 }

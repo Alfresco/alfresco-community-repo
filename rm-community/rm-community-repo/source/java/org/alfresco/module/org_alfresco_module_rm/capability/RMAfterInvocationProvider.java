@@ -37,6 +37,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import net.sf.acegisecurity.AccessDeniedException;
+import net.sf.acegisecurity.Authentication;
+import net.sf.acegisecurity.ConfigAttribute;
+import net.sf.acegisecurity.ConfigAttributeDefinition;
+import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
@@ -61,13 +68,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-
-import net.sf.acegisecurity.AccessDeniedException;
-import net.sf.acegisecurity.Authentication;
-import net.sf.acegisecurity.ConfigAttribute;
-import net.sf.acegisecurity.ConfigAttributeDefinition;
-import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * RM After Invocation Provider
@@ -285,11 +285,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     {
         for (ConfigAttributeDefintion cad : supportedDefinitions)
         {
-            if (cad.parent && parentResult == AccessDecisionVoter.ACCESS_DENIED)
-            {
-                throw new AccessDeniedException("Access Denied");
-            }
-            else if (!cad.parent && childResult == AccessDecisionVoter.ACCESS_DENIED)
+            if ((cad.parent && parentResult == AccessDecisionVoter.ACCESS_DENIED)
+                        || (!cad.parent && childResult == AccessDecisionVoter.ACCESS_DENIED))
             {
                 throw new AccessDeniedException("Access Denied");
             }
@@ -358,11 +355,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 continue;
             }
 
-            if (cad.parent && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
-            {
-                throw new AccessDeniedException("Access Denied");
-            }
-            else if (childReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
+            if ((cad.parent && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
+                        || (childReadCheck != AccessDecisionVoter.ACCESS_GRANTED))
             {
                 throw new AccessDeniedException("Access Denied");
             }

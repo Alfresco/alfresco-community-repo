@@ -258,25 +258,11 @@ public class DispositionProperty extends BaseBehaviourBean
      */
     private boolean isPropertyUpdated(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        boolean result = false;
-
         Serializable beforeValue = before.get(propertyName);
         Serializable afterValue = after.get(propertyName);
 
-        if (beforeValue == null && afterValue != null)
-        {
-            result = true;
-        }
-        else if (beforeValue != null && afterValue == null)
-        {
-            result = true;
-        }
-        else if (beforeValue != null && afterValue != null &&
-                 !beforeValue.equals(afterValue))
-        {
-            result = true;
-        }
-
-        return result;
+        return ((beforeValue == null && afterValue != null)
+                    || (beforeValue != null && afterValue == null)
+                    || (beforeValue != null && afterValue != null && !beforeValue.equals(afterValue)));
     }
 }

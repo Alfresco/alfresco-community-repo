@@ -42,6 +42,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -309,7 +310,7 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         List<Property> properties = new ArrayList<Property>(propertyValues.size());
         for (Map.Entry<QName, Serializable> property : propertyValues.entrySet())
         {
-            properties.add(new Property(property.getKey(), property.getValue()));
+            properties.add(new Property(property.getKey(), property.getValue(), nodeRef));
         }
         return properties;
     }
@@ -1123,28 +1124,47 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         private boolean residual;
         
         private QNameBean typeName;
-
+        
         /**
          * Construct
          * 
-         * @param name property name
+         * @param qname property name
          * @param value property values
          */
         @SuppressWarnings("unchecked")
-        public Property(QName qname, Serializable value)
+        public Property(QName qname, Serializable value, NodeRef nodeRef)
         {
             this.name = new QNameBean(qname);
+
+            residual = true;
 
             PropertyDefinition propDef = getDictionaryService().getProperty(qname);
             if (propDef != null)
             {
                 QName qn = propDef.getDataType().getName();
                 typeName = qn != null ? new QNameBean(propDef.getDataType().getName()) : null;
-                residual = false;
-            }
-            else
-            {
-                residual = true;
+
+                // ALF-21950 We need to check if the property belongs to the type of the node or to their ancestors
+                if(propDef.getContainerClass().isAspect())
+                {
+                    residual = false;
+                }
+                else
+                {
+                    ClassDefinition classDef = getDictionaryService().getClass(getNodeService().getType(nodeRef));
+                    boolean found = false;
+
+                    while(classDef != null)
+                    {
+                        found = searchInClassDefinition(qname, classDef);
+                        if(found)
+                        {
+                            break;
+                        }
+                        classDef = classDef.getParentClassDefinition();
+                    }
+                    residual = !found;
+                }
             }
 
             // handle multi/single values
@@ -1164,6 +1184,21 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
                 values = Collections.singletonList(new Value(value instanceof QName ? new QNameBean((QName) value) : value));
             }
             this.values = values;
+        }
+
+        private boolean searchInClassDefinition(QName qname, ClassDefinition classDef)
+        {
+            if (classDef != null)
+            {
+                for (QName definedPropQName : classDef.getProperties().keySet())
+                {
+                    if(qname.isMatch(definedPropQName))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /**

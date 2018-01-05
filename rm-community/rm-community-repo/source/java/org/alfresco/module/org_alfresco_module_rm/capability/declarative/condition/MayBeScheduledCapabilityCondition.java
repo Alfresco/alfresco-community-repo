@@ -94,17 +94,8 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
      */
     private boolean checkDispositionLevel(NodeRef nodeRef, DispositionSchedule dispositionSchedule)
     {
-        boolean result = false;
         boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
-        if (recordService.isRecord(nodeRef) && isRecordLevelDisposition)
-        {
-            result = true;
-        }
-        else if (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition)
-
-        {
-            result = true;
-        }
-        return result;
+        return (recordService.isRecord(nodeRef) && isRecordLevelDisposition)
+                    || (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition);
     }
 }

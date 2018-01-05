@@ -876,15 +876,11 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         }
         String lovConstraintQNameAsString = newLovConstraint.toPrefixString(getNamespaceService());
 
-        // Add the constraint - if it isn't already there.
-        String refOfExistingConstraint = null;
+        // Add the constraint - if it isn't already there (there should only be one constraint).
+        String refOfExistingConstraint = (targetProp.getConstraints().isEmpty() ?
+                    null :
+                    targetProp.getConstraints().get(0).getRef());
 
-        for (M2Constraint c : targetProp.getConstraints())
-        {
-            // There should only be one constraint.
-            refOfExistingConstraint = c.getRef();
-            break;
-        }
         if (refOfExistingConstraint != null)
         {
             targetProp.removeConstraintRef(refOfExistingConstraint);

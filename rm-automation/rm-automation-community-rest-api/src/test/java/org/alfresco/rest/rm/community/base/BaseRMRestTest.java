@@ -668,17 +668,4 @@ public class BaseRMRestTest extends RestTest
         return documentLibrary;
     }
 
-    /**
-     * Helper method to create a Content Model
-     *
-     * @return ContentModel
-     * @throws Exception
-     */
-    public ContentModel toContentModel(String nodeId)
-    {
-        ContentModel node = new ContentModel();
-        node.setNodeRef(nodeId);
-        return node;
-    }
-
 }

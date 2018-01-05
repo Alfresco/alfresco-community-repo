@@ -27,6 +27,7 @@
 package org.alfresco.rest.rm.community.utils;
 
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
+import org.alfresco.utility.model.ContentModel;
 
 /**
  * Utility class for core components models
@@ -52,5 +53,18 @@ public class CoreUtil
         RestNodeBodyMoveCopyModel moveDestinationInfo = new RestNodeBodyMoveCopyModel();
         moveDestinationInfo.setTargetParentId(nodeId);
         return moveDestinationInfo;
+    }
+
+    /**
+     * Helper method to create a Content Model
+     *
+     * @return ContentModel
+     * @throws Exception
+     */
+    public static ContentModel toContentModel(String nodeId)
+    {
+        ContentModel node = new ContentModel();
+        node.setNodeRef(nodeId);
+        return node;
     }
 }

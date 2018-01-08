@@ -27,6 +27,7 @@ package org.alfresco.repo.activities.feed;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -36,6 +37,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EmailHelper;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -52,6 +54,7 @@ public class EmailUserNotifier extends AbstractUserNotifier implements Initializ
 
     private AuthenticationContext authenticationContext;
     private ActionService actionService;
+    private EmailHelper emailHelper;
 
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
 	{
@@ -62,6 +65,11 @@ public class EmailUserNotifier extends AbstractUserNotifier implements Initializ
 	{
 		this.actionService = actionService;
 	}
+
+    public void setEmailHelper(EmailHelper emailHelper)
+    {
+        this.emailHelper = emailHelper;
+    }
 
     public static Log getLogger()
     {
@@ -173,13 +181,16 @@ public class EmailUserNotifier extends AbstractUserNotifier implements Initializ
 
 		Map<QName, Serializable> personProps = nodeService.getProperties(personNodeRef);
 		String emailAddress = (String)personProps.get(ContentModel.PROP_EMAIL);
-		
+		String userName = (String)personProps.get(ContentModel.PROP_USERNAME);
+        Locale locale = emailHelper.getUserLocaleOrDefault(userName);
+
         Action mail = actionService.createAction(MailActionExecuter.NAME);
         
         mail.setParameterValue(MailActionExecuter.PARAM_TO, emailAddress);
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, subjectText);
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, subjectParams);
-        
+        mail.setParameterValue(MailActionExecuter.PARAM_LOCALE, locale);
+
         //mail.setParameterValue(MailActionExecuter.PARAM_TEXT, buildMailText(emailTemplateRef, model));
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, templateNodeRef);
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable)model);

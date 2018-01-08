@@ -32,6 +32,7 @@ import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -261,8 +262,6 @@ public class DispositionProperty extends BaseBehaviourBean
         Serializable beforeValue = before.get(propertyName);
         Serializable afterValue = after.get(propertyName);
 
-        return ((beforeValue == null && afterValue != null)
-                    || (beforeValue != null && afterValue == null)
-                    || (beforeValue != null && afterValue != null && !beforeValue.equals(afterValue)));
+        return !Objects.equals(beforeValue, afterValue);
     }
 }

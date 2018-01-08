@@ -48,10 +48,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.GUID;
-import org.alfresco.util.Pair;
-import org.alfresco.util.PropertyMap;
+import org.alfresco.util.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -132,6 +129,7 @@ public class FeedNotifierJobTest
         repoAdminService = (RepoAdminService) ctx.getBean("repoAdminService");
         actionService = (ActionService) ctx.getBean("ActionService");
         authenticationContext = (AuthenticationContext) ctx.getBean("authenticationContext");
+        EmailHelper emailHelper = (EmailHelper) ctx.getBean("emailHelper");
         
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         // create some users
@@ -157,7 +155,7 @@ public class FeedNotifierJobTest
         userNotifier.setActivitiesFeedModelBuilderFactory(feedModelBuilderFactory);
         userNotifier.setAuthenticationContext(authenticationContext);
         userNotifier.setExcludedEmailSuffixes(emailUserNotifier.getExcludedEmailSuffixes());
-        
+        userNotifier.setEmailHelper(emailHelper);
         feedNotifier.setUserNotifier(userNotifier);
         
         jobDetail = new JobDetail("feedNotifier", FeedNotifierJob.class);

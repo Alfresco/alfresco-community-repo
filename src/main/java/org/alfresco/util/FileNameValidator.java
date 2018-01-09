@@ -50,11 +50,11 @@ public class FileNameValidator
 
     public static boolean isValid(String name)
     {
-        if (!isValidRegex(name) || name.endsWith("."))
+        if (!name.endsWith(".") && isValidRegex(name))
         {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**

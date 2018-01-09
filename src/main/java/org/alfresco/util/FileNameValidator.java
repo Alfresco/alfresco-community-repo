@@ -42,12 +42,21 @@ public class FileNameValidator
      */
     public static final String FILENAME_ILLEGAL_REGEX = "[\\\"\\*\\\\\\>\\<\\?\\/\\:\\|]";
     private static final Pattern FILENAME_ILLEGAL_PATTERN_REPLACE = Pattern.compile(FILENAME_ILLEGAL_REGEX);
-    
-    public static boolean isValid(String name)
+
+    private static boolean isValidRegex(String name)
     {
         return !FILENAME_ILLEGAL_PATTERN_REPLACE.matcher(name).find();
     }
-    
+
+    public static boolean isValid(String name)
+    {
+        if (!isValidRegex(name) || name.endsWith("."))
+        {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Replaces illegal filename characters with '_'
      */
@@ -57,6 +66,6 @@ public class FileNameValidator
         {
             throw new IllegalArgumentException("File name cannot be corrected if it is null or empty.");
         }
-        return FILENAME_ILLEGAL_PATTERN_REPLACE.matcher(fileName).replaceAll("_");
+        return FILENAME_ILLEGAL_PATTERN_REPLACE.matcher(fileName).replaceAll("_").replaceFirst("\\.$", "_");
     }
 }

@@ -36,18 +36,22 @@ public class FileNameValidatorTest extends TestCase
 {
     public void testValidator()
     {
-        String [] badNames = { "\"", "\\", "/", "<", ">", "?", "*",
-                               ":", "|" };
+        String [] badNames = { "\"", "\\", "/", "<", ">", "?", "*", ":", "|", "." };
         for (String name : badNames)
         {
             assertFalse(FileNameValidator.isValid(name));
         }
     }
-    
+
     public void testGetValidFileName()
     {
-        // " * \ > < ? / : |
+        // " * \ > < ? / : | .
         assertEquals("ABCDEFG.txt", FileNameValidator.getValidFileName("ABCDEFG.txt"));
         assertEquals("A_B_C_D_E_F_G_H_I_J.txt", FileNameValidator.getValidFileName("A\"B*C\\D>E<F?G/H:I|J.txt"));
+        assertEquals("A_B_C_D_E_F_G_H_I_J_", FileNameValidator.getValidFileName("A\"B*C\\D>E<F?G/H:I|J."));
+        assertEquals("A dot in the end is not permitted_", FileNameValidator.getValidFileName("A dot in the end is not permitted."));
+        assertEquals("Dots in the end are not permitted..._", FileNameValidator.getValidFileName("Dots in the end are not permitted...."));
+        assertEquals(".Dots.are.allowed.if. .not.at.the.end", FileNameValidator.getValidFileName(".Dots.are.allowed.if. .not.at.the.end"));
+        assertEquals(" Spaces are permited  ", FileNameValidator.getValidFileName(" Spaces are permited  "));
     }
 }

@@ -183,21 +183,24 @@ public class TagScopePropertyMethodInterceptor implements MethodInterceptor
         if (tagScopeCache != null)
         {
             String contentUrl = tagScopeCache.getContentUrl();
-            tagSummary = cache.get(contentUrl);
-            if (tagSummary == null)
+            if (contentUrl != null)
             {
-                ContentReader contentReader = contentService.getRawReader(contentUrl);
-                if (contentReader != null && contentReader.exists())
+                tagSummary = cache.get(contentUrl);
+                if (tagSummary == null)
                 {
-                    List<TagDetails> tagDetails = TaggingServiceImpl.readTagDetails(contentReader.getContentInputStream());
-                    tagSummary = new ArrayList<String>(tagDetails.size());
-                    for (TagDetails tagDetail : tagDetails)
+                    ContentReader contentReader = contentService.getRawReader(contentUrl);
+                    if (contentReader != null && contentReader.exists())
                     {
-                        tagSummary.add(tagDetail.getName() + "=" + tagDetail.getCount());
+                        List<TagDetails> tagDetails = TaggingServiceImpl.readTagDetails(contentReader.getContentInputStream());
+                        tagSummary = new ArrayList<String>(tagDetails.size());
+                        for (TagDetails tagDetail : tagDetails)
+                        {
+                            tagSummary.add(tagDetail.getName() + "=" + tagDetail.getCount());
+                        }
+                        // Push into the cache
+                        tagSummary = Collections.unmodifiableList(tagSummary);
+                        cache.put(contentUrl, tagSummary);
                     }
-                    //Push into the cache
-                    tagSummary = Collections.unmodifiableList(tagSummary);
-                    cache.put(contentUrl, tagSummary);
                 }
             }
         }

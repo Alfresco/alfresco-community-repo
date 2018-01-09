@@ -171,7 +171,7 @@ public class TaggingServiceImplTest
         this.checkOutCheckInService = (CheckOutCheckInService) ctx.getBean("CheckoutCheckinService");
         this.actionService = (ActionService)ctx.getBean("ActionService");
         this.transactionService = (TransactionService)ctx.getBean("transactionComponent");
-        this.siteService       = ctx.getBean("SiteService", SiteService.class);
+        this.siteService = ctx.getBean("SiteService", SiteService.class);
         //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
         UserAuditFilter userAuditFilter = new UserAuditFilter();
         userAuditFilter.setUserFilterPattern("System;.*");
@@ -2435,63 +2435,67 @@ public class TaggingServiceImplTest
             nodeRefPropInterceptor.setFilterOnGet(true);
         }
     }
-    
+
     /**
      * ALF-21875
      */
     @Test
-    public void testTagScopeALF_21875() {
-        
+    public void testTagScopeIfUrlNull()
+    {
+
         TagScopePropertyMethodInterceptor.setEnabled(Boolean.TRUE);
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         String siteName = GUID.generate();
 
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
 
-                @SuppressWarnings("unchecked")
-                @Override
-                public Void execute() throws Throwable {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Void execute() throws Throwable
+            {
 
-                        // STEP1 CreateSite
-                        SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.PUBLIC);
+                // STEP1 CreateSite
+                SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.PUBLIC);
 
-                        // STEP2 upload a document in documentLibrary
-                        NodeRef documentLibraryOfSite = siteService.getContainer(siteInfo.getShortName(), "doclib");
+                // STEP2 upload a document in documentLibrary
+                NodeRef documentLibraryOfSite = siteService.getContainer(siteInfo.getShortName(), "doclib");
 
-                        NodeRef containerTagScope = fileFolderService
-                                        .create(documentLibraryOfSite, "containerTagScope" + GUID.generate(), ContentModel.TYPE_FOLDER)
-                                        .getNodeRef();
-                        
-        //STEP4 create tag
-        String tagName = GUID.generate();
+                NodeRef containerTagScope = fileFolderService
+                        .create(documentLibraryOfSite, "containerTagScope" + GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+
+                // STEP4 create tag
+                String tagName = GUID.generate();
                 taggingService.createTag(storeRef, tagName);
-                        
-                        // Add some tag scopes
-        taggingService.addTagScope(containerTagScope);
-       
-        NodeRef file = fileFolderService.create(containerTagScope, "_test_" + GUID.generate() + ".text", ContentModel.TYPE_CONTENT).getNodeRef();
-        taggingService.addTag(file, tagName);
-        fileFolderService.delete(file);
 
-                        return null;
-                }
+                // Add some tag scopes
+                taggingService.addTagScope(containerTagScope);
+
+                NodeRef file = fileFolderService.create(containerTagScope, "_test_" + GUID.generate() + ".text", ContentModel.TYPE_CONTENT)
+                        .getNodeRef();
+                taggingService.addTag(file, tagName);
+                fileFolderService.delete(file);
+
+                return null;
+            }
         });
-        
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
 
-                @SuppressWarnings("unchecked")
-                @Override
-                public Void execute() throws Throwable {
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
 
-                        // STEP5 start job taggingStartupJobDetail
-                        // Fire off the quartz bean, this time it can really work
-                        final UpdateTagScopesActionExecuter updateTagsAction = (UpdateTagScopesActionExecuter) ctx
-                                        .getBean("update-tagscope");
-                        UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
-                        job.execute(actionService, updateTagsAction);
+            @SuppressWarnings("unchecked")
+            @Override
+            public Void execute() throws Throwable
+            {
 
-                        return null;
-                }
+                // STEP5 start job taggingStartupJobDetail
+                // Fire off the quartz bean, this time it can really work
+                final UpdateTagScopesActionExecuter updateTagsAction = (UpdateTagScopesActionExecuter) ctx.getBean("update-tagscope");
+                UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
+                job.execute(actionService, updateTagsAction);
+
+                return null;
+            }
         });
 
         // STEP6 execute script
@@ -2502,22 +2506,17 @@ public class TaggingServiceImplTest
         // Execute the unit test script
         ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/site/script/test_tagScopeALF_21875.js");
         this.scriptService.executeScript(location, model);
-        
-         TagScopePropertyMethodInterceptor.setEnabled(Boolean.FALSE);
-        
+
+        TagScopePropertyMethodInterceptor.setEnabled(Boolean.FALSE);
+
     }
-    
+
     private SiteInfo createSite(String siteShortName, String componentId, SiteVisibility visibility)
     {
         // Create a public site
-        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, 
-                siteShortName, 
-                TEST_TITLE, 
-                TEST_DESCRIPTION, 
-                visibility);
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, visibility);
         this.siteService.createContainer(siteShortName, componentId, ContentModel.TYPE_FOLDER, null);
         return siteInfo;
     }
-
 
 }

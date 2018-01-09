@@ -17,9 +17,9 @@ data:
       -Dalfresco.port={{ .Values.repository.service.externalPort }}
       -Dshare.host={{ template "content-services.fullname" . }}-share
       -Dshare.port={{ .Values.share.service.externalPort }}
-      -Ddb.driver=org.postgresql.Driver
-      -Ddb.username={{ .Values.postgresql.postgresUser }}
-      -Ddb.password={{ .Values.postgresql.postgresPassword }}
-      -Ddb.url=jdbc:postgresql://{{ .Release.Name }}-postgresql-acs:5432/{{ .Values.postgresql.postgresDatabase }}
+      -Ddb.driver={{ template "database.driver" . }}
+      -Ddb.username={{ template "database.user" . }}
+      -Ddb.password={{ template "database.password" . }}
+      -Ddb.url=jdbc:{{ .Values.database.type }}://{{ template "database.hostname" . }}:{{ template "database.port" . }}/{{ .Values.postgresql.postgresDatabase }}
       -Dsolr.host={{ template "content-services.fullname" . }}-solr
       -Dsolr.port={{ .Values.solr.service.externalPort }}"

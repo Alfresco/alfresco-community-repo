@@ -3171,7 +3171,16 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
             {
                 SiteInfo siteInfo = createSiteInfo(site);
-                result.add(new SiteMembership(siteInfo, userName, roleSitePairs.get(siteInfo.getShortName())));
+                String role = roleSitePairs.get(siteInfo.getShortName());
+
+                /*
+                 * Fix for ALF-21924. Role will be null in case the site id doesn't match the site added in roleSitePairs.
+                 * This will fix cases where there is a site in trashcan with different case than an existing site
+                 */
+                if (role != null)
+                {
+                    result.add(new SiteMembership(siteInfo, userName, role));
+                }
             }
         }
         

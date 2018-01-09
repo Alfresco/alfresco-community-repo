@@ -1214,4 +1214,90 @@ public class SiteServiceImplMoreTest
             this.testDocNodeRef = testDocNodeRef;
         }
     }
+
+    /**
+     * REPO-2811 / ALF-21924: "Internal Server Error" when listSites is invoked
+     * for users belonging to a deleted Site.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testListMembershipOnSitesDifferentCase() throws Exception
+    {
+        final String userSiteOwner = "UserSiteOwner";
+        final String userSiteCollaborator = "UserSiteCollaborator";
+        final String userPrefix = "test";
+
+        // Create the users
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                createUser(userSiteOwner, userPrefix);
+                createUser(userSiteCollaborator, userPrefix);
+                return null;
+            }
+        });
+
+        // Create sites to add user to
+        final String id = Long.toString(System.currentTimeMillis());
+        final String siteShortName = "testsite-" + id;
+        final String secondSiteShortName = "testsite2-" + System.currentTimeMillis();
+
+        log.debug("Creating test sites called: " + siteShortName + " " + secondSiteShortName);
+
+        perMethodTestSites.createSite("sitePreset", siteShortName, null, null, SiteVisibility.PUBLIC, userSiteOwner);
+        perMethodTestSites.createSite("sitePreset", secondSiteShortName, null, null, SiteVisibility.PUBLIC, userSiteOwner);
+
+        // Add Site COLLABORATOR
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // make userSiteCollaborator a member of both sites
+                SITE_SERVICE.setMembership(siteShortName, userSiteCollaborator, SiteModel.SITE_COLLABORATOR);
+                SITE_SERVICE.setMembership(secondSiteShortName, userSiteCollaborator, SiteModel.SITE_COLLABORATOR);
+
+                return null;
+            }
+        });
+
+        // Delete first site
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Map<String, String>>()
+        {
+            public Map<String, String> execute() throws Throwable
+            {
+                log.debug("About to delete site.");
+                SITE_SERVICE.deleteSite(siteShortName);
+                log.debug("Site deleted.");
+
+                return null;
+            }
+        });
+
+        /*
+         * Create site with different case than the deleted one.
+         * This is possible since the site id validation is case insensitive only for existing sites
+         * while sites in trashcan are validated using authorities which are case sensitive
+         */
+        final String siteShortName1 = "TesTsite-" + id;
+        log.debug("Creating test site called: " + siteShortName1);
+
+        perMethodTestSites.createSite("sitePreset", siteShortName1, null, null, SiteVisibility.PUBLIC, userSiteOwner);
+
+        // Check that user membership can be retrieved and user is not a member of existing site
+        List<SiteMembership> members = SITE_SERVICE.listSiteMemberships(userSiteCollaborator, 0);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertEquals(userSiteCollaborator, members.get(0).getPersonId());
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(0).getRole());
+        assertEquals(secondSiteShortName, members.get(0).getSiteInfo().getShortName());
+
+        members = SITE_SERVICE.listSiteMemberships(userSiteCollaborator, 50);
+        assertNotNull(members);
+        assertEquals(1, members.size());
+        assertEquals(userSiteCollaborator, members.get(0).getPersonId());
+        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(0).getRole());
+        assertEquals(secondSiteShortName, members.get(0).getSiteInfo().getShortName());
+    }
 }

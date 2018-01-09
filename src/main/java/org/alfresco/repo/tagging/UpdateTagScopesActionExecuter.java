@@ -451,7 +451,7 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
           // cleaner job 
           if (tags.isEmpty())
           {
-             nodeService.setProperty(tagScopeNode, ContentModel.PROP_TAGSCOPE_CACHE, null);
+             nodeService.removeProperty(tagScopeNode, ContentModel.PROP_TAGSCOPE_CACHE);
 
              if (logger.isDebugEnabled())
              {

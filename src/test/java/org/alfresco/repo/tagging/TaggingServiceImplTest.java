@@ -55,6 +55,9 @@ import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TagDetails;
 import org.alfresco.service.cmr.tagging.TagScope;
 import org.alfresco.service.namespace.NamespaceService;
@@ -118,6 +121,7 @@ public class TaggingServiceImplTest
     private PermissionService permissionService;
     private MutableAuthenticationService authenticationService;
     private AsyncOccurs asyncOccurs;
+    private SiteService siteService;
     
     private NodeRefPropertyMethodInterceptor nodeRefPropInterceptor;
     
@@ -127,6 +131,10 @@ public class TaggingServiceImplTest
     private NodeRef subFolder;
     private NodeRef document;
     private NodeRef subDocument;
+    
+    private static final String TEST_SITE_PRESET = "testSitePreset";
+    private static final String TEST_TITLE = "TitleTest This is my title";
+    private static final String TEST_DESCRIPTION = "DescriptionTest This is my description";
     
     private static final String TAG_1 = "tag one";
     private static final String TAG_2 = "tag two";
@@ -163,6 +171,7 @@ public class TaggingServiceImplTest
         this.checkOutCheckInService = (CheckOutCheckInService) ctx.getBean("CheckoutCheckinService");
         this.actionService = (ActionService)ctx.getBean("ActionService");
         this.transactionService = (TransactionService)ctx.getBean("transactionComponent");
+        this.siteService       = ctx.getBean("SiteService", SiteService.class);
         //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
         UserAuditFilter userAuditFilter = new UserAuditFilter();
         userAuditFilter.setUserFilterPattern("System;.*");
@@ -2426,5 +2435,89 @@ public class TaggingServiceImplTest
             nodeRefPropInterceptor.setFilterOnGet(true);
         }
     }
+    
+    /**
+     * ALF-21875
+     */
+    @Test
+    public void testTagScopeALF_21875() {
+        
+        TagScopePropertyMethodInterceptor.setEnabled(Boolean.TRUE);
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        String siteName = GUID.generate();
+
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+
+                @SuppressWarnings("unchecked")
+                @Override
+                public Void execute() throws Throwable {
+
+                        // STEP1 CreateSite
+                        SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.PUBLIC);
+
+                        // STEP2 upload a document in documentLibrary
+                        NodeRef documentLibraryOfSite = siteService.getContainer(siteInfo.getShortName(), "doclib");
+
+                        NodeRef containerTagScope = fileFolderService
+                                        .create(documentLibraryOfSite, "containerTagScope" + GUID.generate(), ContentModel.TYPE_FOLDER)
+                                        .getNodeRef();
+                        
+        //STEP4 create tag
+        String tagName = GUID.generate();
+                taggingService.createTag(storeRef, tagName);
+                        
+                        // Add some tag scopes
+        taggingService.addTagScope(containerTagScope);
+       
+        NodeRef file = fileFolderService.create(containerTagScope, "_test_" + GUID.generate() + ".text", ContentModel.TYPE_CONTENT).getNodeRef();
+        taggingService.addTag(file, tagName);
+        fileFolderService.delete(file);
+
+                        return null;
+                }
+        });
+        
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+
+                @SuppressWarnings("unchecked")
+                @Override
+                public Void execute() throws Throwable {
+
+                        // STEP5 start job taggingStartupJobDetail
+                        // Fire off the quartz bean, this time it can really work
+                        final UpdateTagScopesActionExecuter updateTagsAction = (UpdateTagScopesActionExecuter) ctx
+                                        .getBean("update-tagscope");
+                        UpdateTagScopesQuartzJob job = new UpdateTagScopesQuartzJob();
+                        job.execute(actionService, updateTagsAction);
+
+                        return null;
+                }
+        });
+
+        // STEP6 execute script
+        // Create a model to pass to the unit test scripts
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("customSiteName", siteName);
+
+        // Execute the unit test script
+        ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/site/script/test_tagScopeALF_21875.js");
+        this.scriptService.executeScript(location, model);
+        
+         TagScopePropertyMethodInterceptor.setEnabled(Boolean.FALSE);
+        
+    }
+    
+    private SiteInfo createSite(String siteShortName, String componentId, SiteVisibility visibility)
+    {
+        // Create a public site
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, 
+                siteShortName, 
+                TEST_TITLE, 
+                TEST_DESCRIPTION, 
+                visibility);
+        this.siteService.createContainer(siteShortName, componentId, ContentModel.TYPE_FOLDER, null);
+        return siteInfo;
+    }
+
 
 }

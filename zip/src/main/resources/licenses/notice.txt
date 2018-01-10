@@ -17,7 +17,6 @@ Alfresco OpenCMIS Extension http://code.google.com/a/apache-extras.org/p/alfresc
 Apache Mime http://james.apache.org/mime4j/index.html
 Apache Avalon   http://excalibur.apache.org/
 Axiom   http://ws.apache.org/axiom/
-Batik   http://xmlgraphics.apache.org/batik/
 bcel    http://jakarta.apache.org/bcel/
 Boilerpipe  http://code.google.com/p/boilerpipe/
 Bean Scripting Framework    http://jakarta.apache.org/bsf/ 
@@ -48,7 +47,6 @@ commons-validator   http://jakarta.apache.org/commons/
 ConcurrentLinkedHashMap     http://code.google.com/p/concurrentlinkedhashmap/
 Fast Infoset Project    http://fi.java.net/
 PDFBox  http://pdfbox.apache.org/
-fop http://xmlgraphics.apache.org/fop/ 
 Google Data Java Client Library http://code.google.com/p/gdata-java-client/
 Geronimo Activation http://geronimo.apache.org/
 Geronimo Annotation http://geronimo.apache.org/
@@ -117,7 +115,6 @@ xbean   http://geronimo.apache.org/xbean/
 xercesImpl  http://xerces.apache.org/xerces2-j
 XML Commons External Components http://xml.apache.org/commons/components/external/
 XMLBeans    http://xmlbeans.apache.org/
-XML Graphics Commons    http://xmlgraphics.apache.org/commons/
 XML-RPC http://ws.apache.org/xmlrpc/
 XML Schema  http://ws.apache.org/commons/XmlSchema/
 Santuario   http://santuario.apache.org/

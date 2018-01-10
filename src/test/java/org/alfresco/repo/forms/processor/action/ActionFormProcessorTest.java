@@ -33,7 +33,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -66,6 +69,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Test class for the {@link ActionFormProcessor}.
@@ -247,7 +251,33 @@ public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
         assertNull("'executeAsynchronously' description was wrong", execAsync.getDescription());
         assertEquals("'executeAsynchronously' datatype was wrong", "boolean", execAsync.getDataType());
     }
-    
+
+    /**
+     * REPO-2253 Community: ALF-21854 Action parameter lookup for "de_DE" falls back to "root" locale instead of "de"
+     */
+    public void testGenerateFormWithSpecificLocale()
+    {
+        final Locale originalLocale = I18NUtil.getLocale();
+        try
+        {
+            I18NUtil.setLocale(Locale.GERMANY); // de-DE
+            
+            transactionHelper.doInTransaction(() -> {
+                Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "transform"));
+                // Field definitions keyed by name.
+                Map<String, FieldDefinition> fieldDefMap = form.getFieldDefinitions().stream().
+                        collect(Collectors.toMap(FieldDefinition::getName, Function.identity()));
+                
+                assertEquals("Zielordner", fieldDefMap.get(TransformActionExecuter.PARAM_DESTINATION_FOLDER).getLabel());
+                assertEquals("MIME-Type", fieldDefMap.get(TransformActionExecuter.PARAM_MIME_TYPE).getLabel());
+                return null;
+            });
+        }
+        finally
+        {
+            I18NUtil.setLocale(originalLocale);
+        }
+    }
     
     public void testGenerateFormWithSelectedFields() throws Exception
     {

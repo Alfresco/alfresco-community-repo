@@ -295,7 +295,9 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
 
         if (null != paramDefinitionsByName)
         {
-            Map<String, ParameterDefinition> localizedDefinitionsByName = paramDefinitionsByName.get(I18NUtil.getLocale());
+            Set<Locale> locales = paramDefinitionsByName.keySet();
+            Locale match = I18NUtil.getNearestLocale(I18NUtil.getLocale(), locales);
+            Map<String, ParameterDefinition> localizedDefinitionsByName = paramDefinitionsByName.get(match);
 
             if (null == localizedDefinitionsByName)
             {

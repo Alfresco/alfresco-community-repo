@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -79,7 +80,6 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteMemberInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -119,6 +119,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private static final String USER_TWO = "UserTwo_SiteServiceImplTest";
     private static final String USER_THREE = "UserThree_SiteServiceImplTest";
     private static final String USER_FOUR = "UserFour_SiteServiceImplTest";
+    private static final String USER_SITE_ADMIN = "UserSiteAdmin_SiteServiceImplTest";
     private static final String GROUP_ONE = "GrpOne_SiteServiceImplTest";
     private static final String GROUP_TWO = "GrpTwo_SiteServiceImplTest";
     private static final String GROUP_THREE = "GrpThree_SiteServiceImplTest";
@@ -135,7 +136,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     private DictionaryService dictionaryService;
     private AuthenticationComponent authenticationComponent;
     private TaggingService taggingService;
-    private PersonService personService;
     private AuthorityService authorityService;
     private FileFolderService fileFolderService;
     private NodeArchiveService nodeArchiveService;
@@ -189,7 +189,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 nodeService = (NodeService) applicationContext.getBean("NodeService");
                 authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
                 taggingService = (TaggingService) applicationContext.getBean("TaggingService");
-                personService = (PersonService) applicationContext.getBean("PersonService");
                 authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
                 fileFolderService = (FileFolderService) applicationContext.getBean("FileFolderService");
                 nodeArchiveService = (NodeArchiveService) applicationContext.getBean("nodeArchiveService");
@@ -208,6 +207,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                     createUser(USER_TWO, "UserTwo");
                     createUser(USER_THREE, "UsRthree");
                     createUser(USER_FOUR, "UsRFoUr");
+                    createUser(USER_SITE_ADMIN, "UserAdmin");
 
                     // Create the test groups
                     groupOne = authorityService.createAuthority(AuthorityType.GROUP, GROUP_ONE, GROUP_ONE_DISPLAY, null);
@@ -224,6 +224,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                     groupFour = authorityService.createAuthority(AuthorityType.GROUP, GROUP_FOUR);
                     authorityService.addAuthority(groupThree, groupFour);
                     authorityService.addAuthority(groupFour, USER_FOUR);
+                    
+                    authorityService.addAuthority("GROUP_SITE_ADMINISTRATORS", USER_SITE_ADMIN);
                     
                     IS_FIRST_SETUP = false;
                 }
@@ -261,8 +263,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     public void testCreateSite() throws Exception
     {
         // Create a public site
-        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);     
+        String mySiteTest = "mySiteTest" + UUID.randomUUID();
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, mySiteTest, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, mySiteTest, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);     
         
         String name = "!Â£$%^&*()_+=-[]{}";
         //Calls deprecated method (still creates a public Site)
@@ -300,7 +303,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Test for duplicate site error
         try
         {
-            this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+            this.siteService.createSite(TEST_SITE_PRESET, mySiteTest, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
             fail("Shouldn't allow duplicate site short names.");
         }
         catch (AlfrescoRuntimeException exception)
@@ -329,21 +332,23 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             public Object execute() throws Throwable
             {
                 authenticationComponent.setCurrentUser(USER_ONE);
+                String publicsite1 = "publicsite1" + UUID.randomUUID();
+                String privatesite1 = "privatesite1" + UUID.randomUUID();
                 // Create a Public site
-                createSite("publicsite1", "doclib", SiteVisibility.PUBLIC);
+                createSite(publicsite1, "doclib", SiteVisibility.PUBLIC);
                 // Create a Private site
-                createSite("privatesite1", "doclib", SiteVisibility.PRIVATE);
+                createSite(privatesite1, "doclib", SiteVisibility.PRIVATE);
 
                 // ensure USER_TWO has correct visibility - can "get" public site but not a private one, can "has" exist check both
                 authenticationComponent.setCurrentUser(USER_TWO);
-                assertTrue(siteService.getSite("publicsite1") != null);
-                assertTrue(siteService.getSite("privatesite1") == null); // should not be visible to get()
-                assertTrue(siteService.hasSite("publicsite1"));
-                assertTrue(siteService.hasSite("privatesite1")); // should be visible to has() exist check
+                assertTrue(siteService.getSite(publicsite1) != null);
+                assertTrue(siteService.getSite(privatesite1) == null); // should not be visible to get()
+                assertTrue(siteService.hasSite(publicsite1));
+                assertTrue(siteService.hasSite(privatesite1)); // should be visible to has() exist check
 
                 authenticationComponent.setSystemUserAsCurrentUser();
-                siteService.deleteSite("publicsite1");
-                siteService.deleteSite("privatesite1");
+                siteService.deleteSite(publicsite1);
+                siteService.deleteSite(privatesite1);
                 
                 return null;
             }
@@ -368,14 +373,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             public Object execute() throws Throwable
             {
                 // Test for duplicate site error with a private site
-
-                siteService.createSite(TEST_SITE_PRESET, "wibble", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+                String siteShortName = "wibble" + UUID.randomUUID();
+                siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
 
                 authenticationComponent.setCurrentUser(USER_THREE);
 
                 try
                 {
-                    siteService.createSite(TEST_SITE_PRESET, "wibble", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+                    siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
                     fail("Shouldn't allow duplicate site short names.");
                 }
                 catch (AlfrescoRuntimeException exception)
@@ -384,7 +389,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 }
 
                 authenticationComponent.setSystemUserAsCurrentUser();
-                siteService.deleteSite("wibble");
+                siteService.deleteSite(siteShortName);
                 
                 return null;
             }
@@ -503,8 +508,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             @Override
             public Object execute() throws Throwable
             {
-                SiteInfo siteInfo = siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-                checkSiteInfo(siteInfo, TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+                String mySiteTest = "mySiteTest" + UUID.randomUUID();
+                SiteInfo siteInfo = siteService.createSite(TEST_SITE_PRESET, mySiteTest, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+                checkSiteInfo(siteInfo, TEST_SITE_PRESET, mySiteTest, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
 
                 authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
                 siteService.setMembership(siteInfo.getShortName(), USER_TWO, SiteModel.SITE_MANAGER);
@@ -539,7 +545,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 siteService.removeMembership(siteInfo.getShortName(), USER_THREE);
 
                 authenticationComponent.setSystemUserAsCurrentUser();
-                siteService.deleteSite("mySiteTest");
+                siteService.deleteSite(mySiteTest);
 
                 return null;
             }
@@ -674,7 +680,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             }
         }
 
-        //Test the public method on the implmentation.
+        //Test the public method on the implementation.
         Set<String> sitesSet = new HashSet<>(2);
         sitesSet.add("mySiteOne");
         sitesSet.add("mySiteTwo");
@@ -1339,8 +1345,10 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 final int preexistingSiteCount = sites.size();
 
                 // Create a couple of sites as user one
-                siteService.createSite(TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-                siteService.createSite(TEST_SITE_PRESET, "isPublicFalse", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+                String isPublicTrue = "isPublicTrue" + UUID.randomUUID();
+                String isPublicFalse = "isPublicFalse" + UUID.randomUUID();
+                siteService.createSite(TEST_SITE_PRESET, isPublicTrue, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+                siteService.createSite(TEST_SITE_PRESET, isPublicFalse, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
 
                 // Get the sites as user one
                 sites = siteService.listSites(null, null);
@@ -1352,13 +1360,13 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 sites = siteService.listSites(null, null);
                 assertNotNull(sites);
                 assertEquals(preexistingSiteCount + 1, sites.size());
-                SiteInfo userTwoSite = siteService.getSite("isPublicTrue");
-                checkSiteInfo(userTwoSite, TEST_SITE_PRESET, "isPublicTrue", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+                SiteInfo userTwoSite = siteService.getSite(isPublicTrue);
+                checkSiteInfo(userTwoSite, TEST_SITE_PRESET, isPublicTrue, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
 
                 // Make user 2 a member of the site
                 // TestWithUserUtils.authenticateUser(USER_ONE, "PWD", this.authenticationService, this.authenticationComponent);
                 authenticationComponent.setCurrentUser(USER_ONE);
-                siteService.setMembership("isPublicFalse", USER_TWO, SiteModel.SITE_CONSUMER);
+                siteService.setMembership(isPublicFalse, USER_TWO, SiteModel.SITE_CONSUMER);
 
                 // Now get the sites as user two
                 authenticationComponent.setCurrentUser(USER_TWO);
@@ -1367,8 +1375,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(preexistingSiteCount + 2, sites.size());
 
                 authenticationComponent.setSystemUserAsCurrentUser();
-                siteService.deleteSite("isPublicTrue");
-                siteService.deleteSite("isPublicFalse");
+                siteService.deleteSite(isPublicTrue);
+                siteService.deleteSite(isPublicFalse);
 
                 return null;
             }
@@ -1386,22 +1394,23 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             @Override
             public Object execute() throws Throwable
             {
+                String siteShortName = "testMembership" + UUID.randomUUID();
                 // Create a site as user one
-                siteService.createSite(TEST_SITE_PRESET, "testMembership", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+                siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
 
                 // Get the members of the site and check that user one is a manager
-                Map<String, String> members = siteService.listMembers("testMembership", null, null, 0);
+                Map<String, String> members = siteService.listMembers(siteShortName, null, null, 0);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(USER_ONE));
                 assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
 
                 // Add user two as a consumer and user three as a collaborator
-                siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_CONSUMER);
-                siteService.setMembership("testMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
+                siteService.setMembership(siteShortName, USER_TWO, SiteModel.SITE_CONSUMER);
+                siteService.setMembership(siteShortName, USER_THREE, SiteModel.SITE_COLLABORATOR);
 
                 // Get the members of the site
-                members = siteService.listMembers("testMembership", null, null, 0);
+                members = siteService.listMembers(siteShortName, null, null, 0);
                 assertNotNull(members);
                 assertEquals(3, members.size());
                 assertTrue(members.containsKey(USER_ONE));
@@ -1412,24 +1421,24 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
 
                 // Get only the site managers
-                members = siteService.listMembers("testMembership", null, SiteModel.SITE_MANAGER, 0);
+                members = siteService.listMembers(siteShortName, null, SiteModel.SITE_MANAGER, 0);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(USER_ONE));
                 assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
 
                 // Get only user two
-                members = siteService.listMembers("testMembership", USER_TWO, null, 0);
+                members = siteService.listMembers(siteShortName, USER_TWO, null, 0);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(USER_TWO));
                 assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_TWO));
 
                 // Change the membership of user two
-                siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+                siteService.setMembership(siteShortName, USER_TWO, SiteModel.SITE_COLLABORATOR);
 
                 // Check the members of the site
-                members = siteService.listMembers("testMembership", null, null, 0);
+                members = siteService.listMembers(siteShortName, null, null, 0);
                 assertNotNull(members);
                 assertEquals(3, members.size());
                 assertTrue(members.containsKey(USER_ONE));
@@ -1439,33 +1448,33 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertTrue(members.containsKey(USER_THREE));
                 assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
 
-        //Check other listMember calls
-        siteService.listMembers("testMembership", null, null, false, new SiteService.SiteMembersCallback(){
+                //Check other listMember calls
+                siteService.listMembers(siteShortName, null, null, false, new SiteService.SiteMembersCallback()
+                {
+                    List<String> USERS = Arrays.asList(USER_ONE, USER_TWO, USER_THREE);
+                    int userCount = 0;
 
-            List<String> USERS = Arrays.asList(USER_ONE, USER_TWO, USER_THREE);
-            int userCount = 0;
+                    @Override
+                    public void siteMember(String authority, String permission)
+                    {
+                        if (USERS.contains(authority)) 
+                        {
+                            userCount++;
+                        }
+                    }
 
-            @Override
-            public void siteMember(String authority, String permission)
-            {
-                if (USERS.contains(authority)) userCount++;
-
-            }
-
-            @Override
-            public boolean isDone()
-            {
-                return userCount==USERS.size();
-            }
-        });
-
-
+                    @Override
+                    public boolean isDone()
+                    {
+                        return userCount==USERS.size();
+                    }
+                });
 
                 // Remove user two's membership
-                siteService.removeMembership("testMembership", USER_TWO);
+                siteService.removeMembership(siteShortName, USER_TWO);
 
                 // Check the members of the site
-                members = siteService.listMembers("testMembership", null, null, 0);
+                members = siteService.listMembers(siteShortName, null, null, 0);
                 assertNotNull(members);
                 assertEquals(2, members.size());
                 assertTrue(members.containsKey(USER_ONE));
@@ -1474,11 +1483,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
 
                 // Ensure that size limiting works correctly
-                members = siteService.listMembers("testMembership", null, null, 1);
+                members = siteService.listMembers(siteShortName, null, null, 1);
                 assertNotNull(members);
                 assertEquals(1, members.size());
 
-                members = siteService.listMembers("testMembership", null, null, 2);
+                members = siteService.listMembers(siteShortName, null, null, 2);
                 assertNotNull(members);
                 assertEquals(2, members.size());
                 assertTrue(members.containsKey(USER_ONE));
@@ -1490,7 +1499,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 authenticationComponent.setCurrentUser(USER_TWO);
                 try
                 {
-                    siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+                    siteService.setMembership(siteShortName, USER_TWO, SiteModel.SITE_COLLABORATOR);
                     fail("A non member shouldnt be able to set memberships");
                 }
                 catch (AlfrescoRuntimeException e)
@@ -1499,7 +1508,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 }
                 try
                 {
-                    siteService.removeMembership("testMembership", USER_THREE);
+                    siteService.removeMembership(siteShortName, USER_THREE);
                     fail("A non member shouldnt be able to remove a membership");
                 }
                 catch (AlfrescoRuntimeException e)
@@ -1509,22 +1518,22 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 authenticationComponent.setCurrentUser(USER_THREE);
                 try
                 {
-                    siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+                    siteService.setMembership(siteShortName, USER_TWO, SiteModel.SITE_COLLABORATOR);
                     fail("A member who isn't a manager shouldnt be able to set memberships");
                 }
                 catch (AlfrescoRuntimeException e)
                 {
                     // As expected
                 }
-                siteService.removeMembership("testMembership", USER_THREE);
+                siteService.removeMembership(siteShortName, USER_THREE);
 
                 authenticationComponent.setCurrentUser(USER_ONE);
                 // Try and change the permissions of the only site manager
-                siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_MANAGER);
-                siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_COLLABORATOR);
+                siteService.setMembership(siteShortName, USER_TWO, SiteModel.SITE_MANAGER);
+                siteService.setMembership(siteShortName, USER_TWO, SiteModel.SITE_COLLABORATOR);
                 try
                 {
-                    siteService.setMembership("testMembership", USER_ONE, SiteModel.SITE_COLLABORATOR);
+                    siteService.setMembership(siteShortName, USER_ONE, SiteModel.SITE_COLLABORATOR);
                     fail("You can not change the role of the last site memnager");
                 }
                 catch (AlfrescoRuntimeException exception)
@@ -1534,11 +1543,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 }
 
                 // Try and remove the only site manager and should get a failure
-                siteService.setMembership("testMembership", USER_TWO, SiteModel.SITE_MANAGER);
-                siteService.removeMembership("testMembership", USER_ONE);
+                siteService.setMembership(siteShortName, USER_TWO, SiteModel.SITE_MANAGER);
+                siteService.removeMembership(siteShortName, USER_ONE);
                 try
                 {
-                    siteService.removeMembership("testMembership", USER_TWO);
+                    siteService.removeMembership(siteShortName, USER_TWO);
                     fail("You can not remove the last site memnager from a site");
                 }
                 catch (AlfrescoRuntimeException exception)
@@ -1548,7 +1557,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 }
 
                 authenticationComponent.setSystemUserAsCurrentUser();
-                siteService.deleteSite("testMembership");
+                siteService.deleteSite(siteShortName);
 
                 return null;
             }
@@ -1574,9 +1583,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             @Override
             public Object execute() throws Throwable
             {
-                String siteName1 = "testMembership1";
-                String siteName2 = "testMembership2";
-                String siteName3 = "testMembership3";
+                String siteName1 = "testMembership1" + UUID.randomUUID();
+                String siteName2 = "testMembership2" + UUID.randomUUID();
+                String siteName3 = "testMembership3" + UUID.randomUUID();
+                String publicSite = "publicSite" + UUID.randomUUID();
+                String moderatedSite = "moderatedSite" + UUID.randomUUID();
+                
                 // Create a site as user one
                 siteService.createSite(TEST_SITE_PRESET, siteName1, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
 
@@ -1586,40 +1598,68 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(1, members.size());
                 assertEquals(USER_ONE, members.get(0).getPersonId());
                 assertEquals(SiteModel.SITE_MANAGER, members.get(0).getRole());
-     
-        PagingResults<SiteMembership> siteM = siteService.listSitesPaged(USER_ONE, null, new PagingRequest(1000));
-        assertNotNull(siteM);
-        assertFalse(siteM.hasMoreItems());
+                
+                authenticationComponent.setCurrentUser(USER_FOUR);
+                siteService.createSite(TEST_SITE_PRESET, publicSite, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+                siteService.setMembership(publicSite, USER_ONE, SiteModel.SITE_CONSUMER);
+                siteService.createSite(TEST_SITE_PRESET, moderatedSite, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.MODERATED);
+                siteService.setMembership(moderatedSite, USER_ONE, SiteModel.SITE_CONTRIBUTOR);
+
+                authenticationComponent.setCurrentUser(USER_ONE);
+                PagingResults<SiteMembership> siteM = siteService.listSitesPaged(USER_ONE, null, new PagingRequest(1000));
+                assertNotNull(siteM);
+                assertFalse(siteM.hasMoreItems());
 
                 // Create a site as user two and add user one
                 authenticationComponent.setCurrentUser(USER_TWO);
                 siteService.createSite(TEST_SITE_PRESET, siteName2, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
-                siteService.setMembership("testMembership2", USER_ONE, SiteModel.SITE_CONSUMER);
+                siteService.setMembership(siteName2, USER_ONE, SiteModel.SITE_CONSUMER);
 
                 // Create a site as user three and add user one
                 authenticationComponent.setCurrentUser(USER_THREE);
                 siteService.createSite(TEST_SITE_PRESET, siteName3, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
-                siteService.setMembership("testMembership3", USER_ONE, SiteModel.SITE_COLLABORATOR);
+                siteService.setMembership(siteName3, USER_ONE, SiteModel.SITE_COLLABORATOR);
 
                 authenticationComponent.setCurrentUser(USER_ONE);
                 members = siteService.listSiteMemberships(USER_ONE, 0);
                 assertNotNull(members);
-                assertEquals(3, members.size());
+                assertEquals(5, members.size());
                 assertEquals(USER_ONE, members.get(0).getPersonId());
                 assertEquals(SiteModel.SITE_MANAGER, members.get(0).getRole());
                 assertEquals(siteName1, members.get(0).getSiteInfo().getShortName());
                 assertEquals(USER_ONE, members.get(1).getPersonId());
                 assertEquals(SiteModel.SITE_CONSUMER, members.get(1).getRole());
-                assertEquals(siteName2, members.get(1).getSiteInfo().getShortName());
+                assertEquals(publicSite, members.get(1).getSiteInfo().getShortName());
                 assertEquals(USER_ONE, members.get(2).getPersonId());
-                assertEquals(SiteModel.SITE_COLLABORATOR, members.get(2).getRole());
-                assertEquals(siteName3, members.get(2).getSiteInfo().getShortName());
+                assertEquals(SiteModel.SITE_CONTRIBUTOR, members.get(2).getRole());
+                assertEquals(moderatedSite, members.get(2).getSiteInfo().getShortName());
+                assertEquals(USER_ONE, members.get(3).getPersonId());
+                assertEquals(SiteModel.SITE_CONSUMER, members.get(3).getRole());
+                assertEquals(siteName2, members.get(3).getSiteInfo().getShortName());
+                assertEquals(USER_ONE, members.get(4).getPersonId());
+                assertEquals(SiteModel.SITE_COLLABORATOR, members.get(4).getRole());
+                assertEquals(siteName3, members.get(4).getSiteInfo().getShortName());
 
+                authenticationComponent.setCurrentUser(USER_TWO);
+                // (MNT-19035) USER_TWO list sites membership for USER_ONE - only sites that are public should be visible
+                members = siteService.listSiteMemberships(USER_ONE, 0);
+                assertNotNull(members);
+                // Even though USER_ONE is part of 3 private sites, 1 moderated and 1 public site, only the non-private sites are visible to USER_TWO
+                assertEquals(members.size(), 2);
+                
+                authenticationComponent.setCurrentUser(USER_SITE_ADMIN);
+                members = siteService.listSiteMemberships(USER_ONE, 0);
+                assertNotNull(members);
+                // All sites are visible for a site administrator user
+                assertEquals(members.size(), 5);
+                
                 authenticationComponent.setSystemUserAsCurrentUser();
                 siteService.deleteSite(siteName1);
                 siteService.deleteSite(siteName2);
                 siteService.deleteSite(siteName3);
-
+                siteService.deleteSite(publicSite);
+                siteService.deleteSite(moderatedSite);
+                
                 return null;
             }
         };
@@ -1628,6 +1668,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
     }
     
+    
+
     public void testJoinLeave()
     {
         RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
@@ -1636,9 +1678,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             @Override
             public Object execute() throws Throwable
             {
+                String testMembershipPublic = "testMembershipPublic" + UUID.randomUUID();
+                String testMembershipPrivate = "testMembershipPrivate" + UUID.randomUUID();
                 // Create a site as user one
-                siteService.createSite(TEST_SITE_PRESET, "testMembershipPublic", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-                siteService.createSite(TEST_SITE_PRESET, "testMembershipPrivate", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+                siteService.createSite(TEST_SITE_PRESET, testMembershipPublic, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+                siteService.createSite(TEST_SITE_PRESET, testMembershipPrivate, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
 
                 // Become user two
                 // TestWithUserUtils.authenticateUser(USER_TWO, "PWD", this.authenticationService, this.authenticationComponent);
@@ -1647,7 +1691,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 // As user two try and add self as contributor
                 try
                 {
-                    siteService.setMembership("testMembershipPublic", USER_TWO, SiteModel.SITE_COLLABORATOR);
+                    siteService.setMembership(testMembershipPublic, USER_TWO, SiteModel.SITE_COLLABORATOR);
                     fail("This should have failed because you don't have permissions");
                 }
                 catch (AlfrescoRuntimeException exception)
@@ -1656,12 +1700,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 }
 
                 // As user two try and add self as consumer to public site
-                siteService.setMembership("testMembershipPublic", USER_TWO, SiteModel.SITE_CONSUMER);
+                siteService.setMembership(testMembershipPublic, USER_TWO, SiteModel.SITE_CONSUMER);
 
                 // As user two try and add self as consumer to private site
                 try
                 {
-                    siteService.setMembership("testMembershipPrivate", USER_TWO, SiteModel.SITE_CONSUMER);
+                    siteService.setMembership(testMembershipPrivate, USER_TWO, SiteModel.SITE_CONSUMER);
                     fail("This should have failed because you can't do this to a private site unless you are site manager");
                 }
                 catch (AlfrescoRuntimeException exception)
@@ -1672,7 +1716,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 // As user two try and add user three as a consumer to a public site
                 try
                 {
-                    siteService.setMembership("testMembershipPublic", USER_THREE, SiteModel.SITE_CONSUMER);
+                    siteService.setMembership(testMembershipPublic, USER_THREE, SiteModel.SITE_CONSUMER);
                     fail("This should have failed because you can't add another user as a consumer of a public site");
                 }
                 catch (AlfrescoRuntimeException exception)
@@ -1682,14 +1726,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
                 // add some members use in remove tests
                 authenticationComponent.setCurrentUser(USER_ONE);
-                siteService.setMembership("testMembershipPublic", USER_THREE, SiteModel.SITE_COLLABORATOR);
-                siteService.setMembership("testMembershipPrivate", USER_TWO, SiteModel.SITE_CONSUMER);
+                siteService.setMembership(testMembershipPublic, USER_THREE, SiteModel.SITE_COLLABORATOR);
+                siteService.setMembership(testMembershipPrivate, USER_TWO, SiteModel.SITE_CONSUMER);
                 authenticationComponent.setCurrentUser(USER_TWO);
 
                 // Try and remove user threes membership from public site
                 try
                 {
-                    siteService.removeMembership("testMembershipPublic", USER_THREE);
+                    siteService.removeMembership(testMembershipPublic, USER_THREE);
                     fail("Cannot remove membership");
                 }
                 catch (Exception exception)
@@ -1698,11 +1742,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 }
 
                 // Try and remove own membership
-                siteService.removeMembership("testMembershipPublic", USER_TWO);
+                siteService.removeMembership(testMembershipPublic, USER_TWO);
 
                 authenticationComponent.setSystemUserAsCurrentUser();
-                siteService.deleteSite("testMembershipPublic");
-                siteService.deleteSite("testMembershipPrivate");
+                siteService.deleteSite(testMembershipPublic);
+                siteService.deleteSite(testMembershipPrivate);
 
                 return null;
             }
@@ -1798,8 +1842,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         QName additionalInformationQName = QName.createQName(SiteModel.SITE_CUSTOM_PROPERTY_URL, "additionalInformation");
         
         // Create a site
-        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        String siteShortName = "mySiteTest" + UUID.randomUUID();
+        SiteInfo siteInfo = this.siteService.createSite(TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, siteShortName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
         assertNull(siteInfo.getCustomProperty(additionalInformationQName));
         assertNotNull(siteInfo.getCustomProperties());
         assertTrue(siteInfo.getCustomProperties().isEmpty());
@@ -1811,7 +1856,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         this.nodeService.addAspect(siteNodeRef, QName.createQName(SiteModel.SITE_MODEL_URL, "customSiteProperties"), properties);
         
         // Get the site again
-        siteInfo = this.siteService.getSite("mySiteTest");
+        siteInfo = this.siteService.getSite(siteShortName);
         assertNotNull(siteInfo);
         assertEquals("information", siteInfo.getCustomProperty(additionalInformationQName));
         assertNotNull(siteInfo.getCustomProperties());
@@ -1964,10 +2009,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 // GROUP_TWO - USER_TWO, USER_THREE
                 
                 // Create a site as user one
-                siteService.createSite(TEST_SITE_PRESET, "testGroupMembership", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
+                String testGroupMembership = "testGroupMembership" + UUID.randomUUID();
+                siteService.createSite(TEST_SITE_PRESET, testGroupMembership, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
 
                 // Get the members of the site and check that user one is a manager
-                Map<String, String> members = siteService.listMembers("testGroupMembership", null, null, 0);
+                Map<String, String> members = siteService.listMembers(testGroupMembership, null, null, 0);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(USER_ONE));
@@ -1976,16 +2022,16 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 /**
                  * Test of isMember - ONE is member, TWO and THREE are not
                  */
-                assertTrue(siteService.isMember("testGroupMembership", USER_ONE));
-                assertTrue(!siteService.isMember("testGroupMembership", USER_TWO));
-                assertTrue(!siteService.isMember("testGroupMembership", USER_THREE));
+                assertTrue(siteService.isMember(testGroupMembership, USER_ONE));
+                assertTrue(!siteService.isMember(testGroupMembership, USER_TWO));
+                assertTrue(!siteService.isMember(testGroupMembership, USER_THREE));
 
                 /**
                  *  Add a group (GROUP_TWO) with role consumer
                  */
-                siteService.setMembership("testGroupMembership", groupTwo, SiteModel.SITE_CONSUMER);        
+                siteService.setMembership(testGroupMembership, groupTwo, SiteModel.SITE_CONSUMER);        
                 //   - is the group in the list of all members?
-                members = siteService.listMembers("testGroupMembership", null, null, 0);
+                members = siteService.listMembers(testGroupMembership, null, null, 0);
                 
                 assertNotNull(members);
                 assertEquals(2, members.size());
@@ -1995,7 +2041,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(SiteModel.SITE_CONSUMER, members.get(groupTwo));
                 
                 //   - is the user in the expanded list?      
-                members = siteService.listMembers("testGroupMembership", null, null, 0, true);
+                members = siteService.listMembers(testGroupMembership, null, null, 0, true);
                 assertNotNull(members);
                 assertEquals(3, members.size());
                 assertTrue(members.containsKey(USER_ONE));
@@ -2006,33 +2052,33 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_THREE));
                 
                 //   - is the user a member?
-                assertTrue(siteService.isMember("testGroupMembership", USER_ONE));
-                assertTrue(siteService.isMember("testGroupMembership", USER_TWO));
-                assertTrue(siteService.isMember("testGroupMembership", USER_THREE));
+                assertTrue(siteService.isMember(testGroupMembership, USER_ONE));
+                assertTrue(siteService.isMember(testGroupMembership, USER_TWO));
+                assertTrue(siteService.isMember(testGroupMembership, USER_THREE));
                 
                 //   - is the group a member?
-                assertTrue(siteService.isMember("testGroupMembership", groupTwo));
+                assertTrue(siteService.isMember(testGroupMembership, groupTwo));
                 
                 //   - can we get the roles for the various members directly
-                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole("testGroupMembership", USER_ONE));
-                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole("testGroupMembership", USER_TWO));
-                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole("testGroupMembership", USER_THREE));
-                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole("testGroupMembership", groupTwo));
+                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(testGroupMembership, USER_ONE));
+                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole(testGroupMembership, USER_TWO));
+                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole(testGroupMembership, USER_THREE));
+                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole(testGroupMembership, groupTwo));
 
                 //Uses Members role info
-                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRoleInfo("testGroupMembership", USER_ONE).getMemberRole());
+                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRoleInfo(testGroupMembership, USER_ONE).getMemberRole());
                 /** 
                  * Check we can filter this list by name and role correctly 
                  */
                 
                 //   - filter by authority
-                members = siteService.listMembers("testGroupMembership", null, SiteModel.SITE_MANAGER, 0, true);
+                members = siteService.listMembers(testGroupMembership, null, SiteModel.SITE_MANAGER, 0, true);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(USER_ONE));
                 assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
                 
-                members = siteService.listMembers("testGroupMembership", null, SiteModel.SITE_CONSUMER, 0, true);
+                members = siteService.listMembers(testGroupMembership, null, SiteModel.SITE_CONSUMER, 0, true);
                 assertNotNull(members);
                 assertEquals(2, members.size());
                 assertTrue(members.containsKey(USER_TWO));
@@ -2041,14 +2087,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(SiteModel.SITE_CONSUMER, members.get(USER_THREE));
                 
                 //    - filter by name - person name
-                members = siteService.listMembers("testGroupMembership", "UserOne*", null, 0, true);
+                members = siteService.listMembers(testGroupMembership, "UserOne*", null, 0, true);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(USER_ONE));
                 assertEquals(SiteModel.SITE_MANAGER, members.get(USER_ONE));
                 
                 //    - filter by name - person name as part of group
-                members = siteService.listMembers("testGroupMembership", "UserTwo*", null, 0, true);
+                members = siteService.listMembers(testGroupMembership, "UserTwo*", null, 0, true);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(USER_TWO));
@@ -2056,20 +2102,20 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 
                 //    - filter by name - person name without group expansion
                 // (won't match as the group name doesn't contain the user's name) 
-                members = siteService.listMembers("testGroupMembership", "UserTwo*", null, 0, false);
+                members = siteService.listMembers(testGroupMembership, "UserTwo*", null, 0, false);
                 assertNotNull(members);
                 assertEquals(0, members.size());
                 
                 
                 //    - filter by name - group name
-                members = siteService.listMembers("testGroupMembership", GROUP_TWO, null, 0, false);
+                members = siteService.listMembers(testGroupMembership, GROUP_TWO, null, 0, false);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(groupTwo));
                 assertEquals(SiteModel.SITE_CONSUMER, members.get(groupTwo));
                 
                 //     - filter by name - group display name
-                members = siteService.listMembers("testGroupMembership", GROUP_TWO_DISPLAY, null, 0, false);
+                members = siteService.listMembers(testGroupMembership, GROUP_TWO_DISPLAY, null, 0, false);
                 assertNotNull(members);
                 assertEquals(1, members.size());
                 assertTrue(members.containsKey(groupTwo));
@@ -2077,7 +2123,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
                 //     - filter by name - group name with expansion
                 // (won't match anyone as the group name won't hit people too)
-                members = siteService.listMembers("testGroupMembership", GROUP_TWO, null, 0, true);
+                members = siteService.listMembers(testGroupMembership, GROUP_TWO, null, 0, true);
                 assertNotNull(members);
                 assertEquals(0, members.size());
                 
@@ -2085,9 +2131,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 /**
                  *  Add a group member (USER_THREE) as an explicit member
                  */
-                siteService.setMembership("testGroupMembership", USER_THREE, SiteModel.SITE_COLLABORATOR);
+                siteService.setMembership(testGroupMembership, USER_THREE, SiteModel.SITE_COLLABORATOR);
                 //   - check the explicit members list
-                members = siteService.listMembers("testGroupMembership", null, null, 0);
+                members = siteService.listMembers(testGroupMembership, null, null, 0);
                 assertNotNull(members);
                 assertEquals(3, members.size());
                 assertTrue(members.containsKey(USER_ONE));
@@ -2097,7 +2143,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertTrue(members.containsKey(groupTwo));
                 assertEquals(SiteModel.SITE_CONSUMER, members.get(groupTwo));        
                 //   - check the expanded members list      
-                members = siteService.listMembers("testGroupMembership", null, null, 0, true);
+                members = siteService.listMembers(testGroupMembership, null, null, 0, true);
                 assertNotNull(members);
                 assertEquals(3, members.size());
                 assertTrue(members.containsKey(USER_ONE));
@@ -2108,23 +2154,23 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
                 
                 //   - check is member
-                assertTrue(siteService.isMember("testGroupMembership", USER_ONE));
-                assertTrue(siteService.isMember("testGroupMembership", USER_TWO));
-                assertTrue(siteService.isMember("testGroupMembership", USER_THREE));
-                assertTrue(!siteService.isMember("testGroupMembership", USER_FOUR));
+                assertTrue(siteService.isMember(testGroupMembership, USER_ONE));
+                assertTrue(siteService.isMember(testGroupMembership, USER_TWO));
+                assertTrue(siteService.isMember(testGroupMembership, USER_THREE));
+                assertTrue(!siteService.isMember(testGroupMembership, USER_FOUR));
                 
                 //   - is the group a member?
-                assertTrue(siteService.isMember("testGroupMembership", groupTwo));
+                assertTrue(siteService.isMember(testGroupMembership, groupTwo));
                 //   - check get role directly
-                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole("testGroupMembership", USER_ONE));
-                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole("testGroupMembership", USER_TWO));
-                assertEquals(SiteModel.SITE_COLLABORATOR, siteService.getMembersRole("testGroupMembership", USER_THREE));
-                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole("testGroupMembership", groupTwo));
+                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(testGroupMembership, USER_ONE));
+                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole(testGroupMembership, USER_TWO));
+                assertEquals(SiteModel.SITE_COLLABORATOR, siteService.getMembersRole(testGroupMembership, USER_THREE));
+                assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole(testGroupMembership, groupTwo));
                         
                 // Check permissions of added group
                 
                 // Update the permissions of the group
-                siteService.setMembership("testGroupMembership", USER_THREE, SiteModel.SITE_CONTRIBUTOR);
+                siteService.setMembership(testGroupMembership, USER_THREE, SiteModel.SITE_CONTRIBUTOR);
 
                 /**
                  *  Add other group (GROUP_3) with higher (MANAGER) role
@@ -2136,27 +2182,27 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                  *  USER_THREE should still be Contributor from explicit membership.
                  *  USER_FOUR should be Manager - from group 4 sub-group
                  */
-                siteService.setMembership("testGroupMembership", groupThree, SiteModel.SITE_MANAGER);
+                siteService.setMembership(testGroupMembership, groupThree, SiteModel.SITE_MANAGER);
                 
-                assertTrue(siteService.isMember("testGroupMembership", USER_ONE));
-                assertTrue(siteService.isMember("testGroupMembership", USER_TWO));
-                assertTrue(siteService.isMember("testGroupMembership", USER_THREE));
-                assertTrue(siteService.isMember("testGroupMembership", USER_FOUR));
+                assertTrue(siteService.isMember(testGroupMembership, USER_ONE));
+                assertTrue(siteService.isMember(testGroupMembership, USER_TWO));
+                assertTrue(siteService.isMember(testGroupMembership, USER_THREE));
+                assertTrue(siteService.isMember(testGroupMembership, USER_FOUR));
                 
-                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole("testGroupMembership", USER_ONE));
-                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole("testGroupMembership", USER_TWO));
-                assertEquals(SiteModel.SITE_CONTRIBUTOR, siteService.getMembersRole("testGroupMembership", USER_THREE));
-                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole("testGroupMembership", groupThree));
+                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(testGroupMembership, USER_ONE));
+                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(testGroupMembership, USER_TWO));
+                assertEquals(SiteModel.SITE_CONTRIBUTOR, siteService.getMembersRole(testGroupMembership, USER_THREE));
+                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(testGroupMembership, groupThree));
                         
                 // From sub group four
-                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole("testGroupMembership", USER_FOUR));
+                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(testGroupMembership, USER_FOUR));
 
                 // Set a membership with an illegal role. See ALF-619.
                 // I'm checking that the exception type thrown is what it should be.
                 boolean failed = false;
                 try
                 {
-                    siteService.setMembership("testGroupMembership", groupThree, "rubbish");
+                    siteService.setMembership(testGroupMembership, groupThree, "rubbish");
                 }
                 catch (UnknownAuthorityException expected)
                 {
@@ -2164,7 +2210,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 }
                 
                 authenticationComponent.setSystemUserAsCurrentUser();
-                siteService.deleteSite("testGroupMembership");
+                siteService.deleteSite(testGroupMembership);
                 
                 if (!failed)
                 {
@@ -2185,7 +2231,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      */    
     public void testUserRoleInGroups()
     {
-    	String sitName = "testMembership2";
+    	String sitName = "testMembership2" + UUID.randomUUID();
     	// Create a site as user one
         this.siteService.createSite(TEST_SITE_PRESET, sitName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
         
@@ -2661,7 +2707,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 // USER_ONE - SiteManager
                 // GROUP_TWO - Manager
 
-                String siteName = "testALFCOM_XXXX";
+                String siteName = "testALFCOM_XXXX" + UUID.randomUUID();
 
                 // Create a site as user one
                 siteService.createSite(TEST_SITE_PRESET, siteName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);

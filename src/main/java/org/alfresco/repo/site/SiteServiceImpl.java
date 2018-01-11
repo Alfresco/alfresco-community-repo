@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2018 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -3100,7 +3100,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final List<String> siteNames = new LinkedList<String>();
         Map<String, String> roleSitePairs = new HashMap<String, String>();
         
-        
         String actualUserName = personService.getUserIdentifier(userName);
         if(actualUserName == null)
         {
@@ -3161,22 +3160,34 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             siteNodes.add(assoc.getChildRef());
         }
         nodeDAO.cacheNodes(siteNodes);
-        
+
+        // (MNT-19035) When querying the site memberships for users other than the authenticated user or site admins, an extra check on the site visibility is enforced.
+        boolean isMe = authenticationContext.getCurrentUserName().equals(actualUserName);
+        boolean isSiteAdmin = isSiteAdmin(authenticationContext.getCurrentUserName());
+        boolean checkAccess = !isMe && !isSiteAdmin;
+
         /* Compute the site membership objects */
-        List<SiteMembership> result = new LinkedList<SiteMembership>();
+        List<SiteMembership> result = new LinkedList<>();
         for (NodeRef site : siteNodes)
         {
             /* Ignore any node that is not a "site" type */
             QName siteClassName = this.directNodeService.getType(site);
             if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
             {
+                if (checkAccess)
+                {
+                    // Private sites are dismissed.
+                    SiteVisibility visibility = getSiteVisibility(site);
+                    if (visibility == SiteVisibility.PRIVATE)
+                    {
+                        continue;
+                    }
+                }
                 SiteInfo siteInfo = createSiteInfo(site);
                 String role = roleSitePairs.get(siteInfo.getShortName());
 
-                /*
-                 * Fix for ALF-21924. Role will be null in case the site id doesn't match the site added in roleSitePairs.
-                 * This will fix cases where there is a site in trashcan with different case than an existing site
-                 */
+                /* Fix for ALF-21924. Role will be null in case the site id doesn't match the site added in roleSitePairs.
+                   This will fix cases where there is a site in trashcan with different case than an existing site. */
                 if (role != null)
                 {
                     result.add(new SiteMembership(siteInfo, userName, role));

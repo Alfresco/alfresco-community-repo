@@ -162,6 +162,7 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyStringImpl
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
+import org.apache.chemistry.opencmis.commons.server.ObjectInfo;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -3253,6 +3254,89 @@ public class CMISTest
         };
 
         withCmisService(callback, CmisVersion.CMIS_1_1);
+    }
+
+    /**
+     * Test auto version behavior for setContentStream, deleteContentStream and appendContentStream according to ALF-21852.
+     */
+    @Test
+    public void testSetDeleteAppendContentStreamVersioning() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        final String DOC1 = "documentProperties1-" + GUID.generate();
+
+        try
+        {
+            final FileInfo doc = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
+            {
+                @Override
+                public FileInfo execute() throws Throwable
+                {
+                    FileInfo document;
+                    // create document
+                    document = fileFolderService.create(repositoryHelper.getCompanyHome(), DOC1, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOC1);
+
+                    Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                    props.put(ContentModel.PROP_TITLE, "Initial Title");
+                    props.put(ContentModel.PROP_DESCRIPTION, "Initial Description");
+
+                    nodeService.addAspect(document.getNodeRef(), ContentModel.ASPECT_TITLED, props);
+
+                    // apply versionable aspect with properties
+                    props = new HashMap<QName, Serializable>();
+                    // ContentModel.PROP_INITIAL_VERSION always true
+                    props.put(ContentModel.PROP_INITIAL_VERSION, true);
+                    props.put(ContentModel.PROP_AUTO_VERSION, true);
+                    props.put(ContentModel.PROP_AUTO_VERSION_PROPS, true);
+                    versionService.ensureVersioningEnabled(document.getNodeRef(), props);
+
+                    return document;
+                }
+            });
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override public Void execute(CmisService cmisService)
+                {
+                    final String documentNodeRefId = doc.getNodeRef().toString();
+                    final String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+
+                    ObjectInfo objInfoInitialVersion = cmisService.getObjectInfo(repositoryId, documentNodeRefId);
+                    assertTrue("We had just created the document - it should be version 1.0", objInfoInitialVersion.getId().endsWith("1.0"));
+
+                    ContentStreamImpl contentStream = new ContentStreamImpl(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Content " + GUID.generate());
+                    Holder<String> objectIdHolder = new Holder<>(documentNodeRefId);
+                    // Test setContentStream
+                    cmisService.setContentStream(repositoryId, objectIdHolder, true, null, contentStream, null);
+                    assertTrue("The \"output\" parameter should returns the newly created version id: 1.1", objectIdHolder.getValue().endsWith("1.1"));
+                    // we can use this new version id to get information about the cmis object
+                    ObjectInfo objInfoAfterSetContentStream = cmisService.getObjectInfo(repositoryId, objectIdHolder.getValue());
+                    assertTrue("The object info should reflect the version requested: 1.1", objInfoAfterSetContentStream.getId().endsWith("1.1"));
+
+                    // Test deleteContentStream
+                    cmisService.deleteContentStream(repositoryId, objectIdHolder, null, null);
+                    assertTrue("The \"output\" parameter should returns the newly created version id: 1.2", objectIdHolder.getValue().endsWith("1.2"));
+                    // we can use this new version id to get information about the cmis object
+                    objInfoAfterSetContentStream = cmisService.getObjectInfo(repositoryId, objectIdHolder.getValue());
+                    assertTrue("The object info should reflect the version requested: 1.2", objInfoAfterSetContentStream.getId().endsWith("1.2"));
+
+                    // Test appendContentStream
+                    cmisService.appendContentStream(repositoryId, objectIdHolder, null, contentStream, true, null);
+                    assertTrue("The \"output\" parameter should returns the newly created version id: 1.3", objectIdHolder.getValue().endsWith("1.3"));
+                    // we can use this new version id to get information about the cmis object
+                    objInfoAfterSetContentStream = cmisService.getObjectInfo(repositoryId, objectIdHolder.getValue());
+                    assertTrue("The object info should reflect the version requested: 1.3", objInfoAfterSetContentStream.getId().endsWith("1.3"));
+
+                    return null;
+                }
+            }, CmisVersion.CMIS_1_1);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
     }
 
     /**

@@ -17,10 +17,8 @@
 		* [Retention Schedules and Events](./retention-schedules)
 		* [Transfer and Accession](./transfer-and-accession)
 * Security
-	* [Content Classification](./content-classification)
 	* [Extended permission service](extendedPermissionService.md)
 	* [Roles,Capabilities and Permissions](./roles-capabilities-permissions)
-	* [Security Marks](./security-marks)
 * Discovery
 	* [Governance Search](./governance-search)
 	* [Legal Holds](./legal-holds)

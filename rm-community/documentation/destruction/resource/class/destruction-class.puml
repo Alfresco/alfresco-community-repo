@@ -1,0 +1,43 @@
+@startuml
+
+DestroyAction --> ContentDestructionComponent
+ContentDestructionComponent <|-- ExtendedContentDestructionComponent
+ContentDestructionComponent --> EagerContentStoreCleaner
+EagerContentStoreCleaner --> ContentCleanser
+ContentCleanser <|-- ContentCleanser522022M
+ContentCleanser +-- OverwriteOperation
+
+class DestroyAction {
+   + boolean ghostingEnabled
+}
+
+class ContentDestructionComponent {
+   + boolean cleansingEnabled
+   + void destroyContent(NodeRef nodeRef)   
+   + void destroyContent(NodeRef nodeRef, boolean includeRenditions)
+   + void registerAllContentForDestruction(NodeRef nodeRef, boolean clearContentProperty)   
+}
+
+class ExtendedContentDestructionComponent {
+   + void onBeforeNodeDelete(NodeRef nodeRef)
+}
+
+class EagerContentStoreCleaner {
+    + void registerOrphanedContentUrlForCleansing(String contentUrl)
+    # boolean deleteFromStore(String contentUrl, ContentStore store)
+}
+
+abstract class ContentCleanser {
+    # OverwriteOperation overwriteZeros
+    # OverwriteOperation overwriteOnes
+    # OverwriteOperation overwriteRandom
+    + {abstract} void cleanse(File file)
+    # void overwrite(File file, OverwriteOperation overwriteOperation)
+}
+
+abstract class OverwriteOperation {
+    + {abstract} void operation(OutputStream os) throws IOException
+}
+    
+@enduml
+

@@ -65,6 +65,7 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -1526,15 +1527,34 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisStreamNotSupportedException("Document type doesn't allow content!");
         }
 
-        try
+        //ALF-21852 - Separated appendContent and objectId.setValue in two different transactions because
+        //after executing appendContent, the new objectId is not visible.
+        RetryingTransactionHelper helper = connector.getRetryingTransactionHelper();
+        helper.doInTransaction(new RetryingTransactionCallback<Void>()
         {
-        	connector.appendContent(info, contentStream, isLastChunk);
-            objectId.setValue(connector.createObjectId(nodeRef));
-        }
-    	catch(IOException e)
-    	{
-    		throw new ContentIOException("", e);
-    	}
+           public Void execute() throws Throwable
+           {
+               try
+               {
+                   connector.appendContent(info, contentStream, isLastChunk);
+               }
+               catch(IOException e)
+               {
+                    throw new ContentIOException("", e);
+               }
+                return null;
+           }
+        }, false, true);
+
+       String objId = helper.doInTransaction(new RetryingTransactionCallback<String>()
+       {
+           public String execute() throws Throwable
+           {
+               return connector.createObjectId(nodeRef);
+           }
+       }, true, true);
+
+       objectId.setValue(objId);
     }
 
     @Override
@@ -1569,25 +1589,43 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisInvalidArgumentException("No content!");
         }
 
-        String mimeType = parseMimeType(contentStream);
-        final File tempFile = copyToTempFile(contentStream);
-        String encoding = getEncoding(tempFile, mimeType);
-
-        try
+        //ALF-21852 - Separated setContent and objectId.setValue in two different transactions because
+        //after executing setContent, the new objectId is not visible.
+        RetryingTransactionHelper helper = connector.getRetryingTransactionHelper();
+        helper.doInTransaction(new RetryingTransactionCallback<Void>()
         {
-            ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
-            writer.setMimetype(mimeType);
-            writer.setEncoding(encoding);
-            writer.putContent(tempFile);
-        }
-        finally
+            public Void execute() throws Throwable
+            {
+                String mimeType = parseMimeType(contentStream);
+                final File tempFile = copyToTempFile(contentStream);
+                String encoding = getEncoding(tempFile, mimeType);
+
+                try
+                {
+                    ContentWriter writer = connector.getFileFolderService().getWriter(nodeRef);
+                    writer.setMimetype(mimeType);
+                    writer.setEncoding(encoding);
+                    writer.putContent(tempFile);
+                }
+                finally
+                {
+                    removeTempFile(tempFile);
+                }
+
+                connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
+                return null;
+            }
+        }, false, true);
+
+        String objId = helper.doInTransaction(new RetryingTransactionCallback<String>()
         {
-            removeTempFile(tempFile);
-        }
+            public String execute() throws Throwable
+            {
+                return connector.createObjectId(nodeRef);
+            }
+        }, true, true);
 
-        objectId.setValue(connector.createObjectId(nodeRef));
-
-        connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
+        objectId.setValue(objId);
     }
 
     @Override
@@ -1611,13 +1649,32 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             throw new CmisInvalidArgumentException("Document type requires content!");
         }
 
-        connector.getNodeService().setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
-        
-//        connector.createVersion(nodeRef, VersionType.MINOR, "Delete content");
+        //ALF-21852 - Separated deleteContent and objectId.setValue in two different transactions because
+        //after executing deleteContent, the new objectId is not visible.
+        RetryingTransactionHelper helper = connector.getRetryingTransactionHelper();
+        helper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
 
-        connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
+                connector.getNodeService().setProperty(nodeRef, ContentModel.PROP_CONTENT, null);
 
-        objectId.setValue(connector.createObjectId(nodeRef));
+//              connector.createVersion(nodeRef, VersionType.MINOR, "Delete content");
+
+                connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
+                return null;
+            }
+        }, false, true);
+
+        String objId = helper.doInTransaction(new RetryingTransactionCallback<String>()
+        {
+            public String execute() throws Throwable
+            {
+                return connector.createObjectId(nodeRef);
+            }
+        }, true, true);
+
+        objectId.setValue(objId);
     }
 
     @Override

@@ -13,7 +13,7 @@
       <property name="description" value="Patches new versions of the notification templates."/>
       <property name="sinceVersion" value="2.1"/>
       <property name="appliesFromVersion" value="2.1"/>
-      <property name="appliesToVersion" value="2.1"/>
+      <property name="appliesToVersion" value="2.1.999"/>
       <property name="dependsOn">
          <list>
             <ref bean="org_alfresco_module_rm_bootstrapData" />
@@ -32,7 +32,7 @@
       <property name="description" value="Patches the existing RM data for the RM v2.1 InPlace features."/>
       <property name="sinceVersion" value="2.1"/>
       <property name="appliesFromVersion" value="2.1"/>
-      <property name="appliesToVersion" value="2.1"/>
+      <property name="appliesToVersion" value="2.1.999"/>
       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
       <property name="filePlanPermissionService" ref="FilePlanPermissionService"/>
       <property name="filePlanService" ref="FilePlanService"/>
@@ -49,7 +49,7 @@
       <property name="description" value="Patches the existing RM data for the RM v2.1 updated capabilities."/>
       <property name="sinceVersion" value="2.1"/>
       <property name="appliesFromVersion" value="2.1"/>
-      <property name="appliesToVersion" value="2.1"/>
+      <property name="appliesToVersion" value="2.1.999"/>
       <property name="filePlanService" ref="FilePlanService"/>
       <property name="authorityService" ref="authorityService"/>
       <property name="permissionService" ref="permissionService"/>
@@ -63,7 +63,7 @@
       <property name="description" value="Adjust record permission inheritance."/>
       <property name="sinceVersion" value="2.1"/>
       <property name="appliesFromVersion" value="2.1"/>
-      <property name="appliesToVersion" value="2.1"/>
+      <property name="appliesToVersion" value="2.1.999"/>
       <property name="patchDAO" ref="patchDAO"/>
       <property name="nodeDAO" ref="nodeDAO" />
       <property name="qnameDAO" ref="qnameDAO"/>
@@ -79,7 +79,7 @@
       <property name="description" value="Add existing roles to the rm zone."/>
       <property name="sinceVersion" value="2.1"/>
       <property name="appliesFromVersion" value="2.1"/>
-      <property name="appliesToVersion" value="2.1"/>
+      <property name="appliesToVersion" value="2.1.999"/>
       <property name="filePlanService" ref="FilePlanService"/>
       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
       <property name="authorityService" ref="AuthorityService"></property>
@@ -93,7 +93,7 @@
       <property name="description" value="Add report service templates."/>
       <property name="sinceVersion" value="2.1"/>
       <property name="appliesFromVersion" value="2.1"/>
-      <property name="appliesToVersion" value="2.1"/>
+      <property name="appliesToVersion" value="2.1.999"/>
       <property name="contentService" ref="ContentService" />
       <property name="nodeService" ref="NodeService" />
    </bean>
@@ -106,7 +106,7 @@
       <property name="description" value="Move existing behavior scripts to their dedicated behavior folder, freeing existing scripts folder up for non-behavior RM scripts."/>
       <property name="sinceVersion" value="2.1"/>
       <property name="appliesFromVersion" value="2.1"/>
-      <property name="appliesToVersion" value="2.1"/>
+      <property name="appliesToVersion" value="2.1.999"/>
       <property name="fileFolderService" ref="FileFolderService"/>
       <property name="nodeService" ref="NodeService"/>
    </bean>

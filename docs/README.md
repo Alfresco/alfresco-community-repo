@@ -3,11 +3,11 @@
 ## Repository
 
 ### Meta-data Services
-* [Node Storage and Retrieval](./node-storage-and-retrieval)
+* [Node Storage and Retrieval](./meta-data-services/node-storage-and-retrieval)
 * Dictionary
 * Files and Folders
 * Smart Folders
-* [Versions](./versions)
+* [Versions](./meta-data-services/versions)
 * Permissions
 * Tagging
 * Multilingual Content
@@ -50,8 +50,8 @@
 * Log Messages
 
 ### Identity Provider
-* [Authentication](./authentication)
-* [Identity](./identity)
+* [Authentication](./identity-provider/authentication)
+* [Identity](./identity-provider/identity)
 * LDAP Sync
 
 ### Deployment
@@ -61,7 +61,7 @@
 
 ### Messaging
 * Messages and Topics
-* [Queue](./queue)  (FUTURE)
+* [Queue](./messaging/queue)  (FUTURE)
 
 ### Infrastructure
 * Module Framework

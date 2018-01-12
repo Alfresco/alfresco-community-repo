@@ -1,0 +1,61 @@
+@startuml
+
+title Actions: Queued Actions Classes (V5.2 Proposal)
+
+interface ActionService {
+    + void executeAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions, boolean executeAsychronously)
+}
+class ActionServiceImpl implements ActionService {
+    - ActionTransactionListener transactionListener
+    - Map<String, AsynchronousActionExecutionQueue> asynchronousActionExecutionQueues
+    + void registerAsynchronousActionExecutionQueue(String key, AsynchronousActionExecutionQueue asyncExecQueue)
+    + void executeAction(...)
+    - <b>void bindPendingActionToTransaction(action, actionedUponNodeRef, checkConditions, actionChain)</b>
+    - <s>void addPostTransactionPendingAction(action, actionedUponNodeRef, checkConditions, actionChain)</s>
+    - List<PendingAction> getPostTransactionPendingActions()
+    + <b>beforeCommit()</b>
+    + <s>postCommit()</s>
+    - queueAction(PendingAction action)
+    + etc(...)
+}
+
+interface AsynchronousActionExecutionQueue {
+    + void executeAction(RuntimeActionService actionService, Action action, NodeRef actionedUponNodeRef, boolean checkConditions, Set<String> actionChain);
+}
+class AsynchronousActionExecutionQueueImpl implements AsynchronousActionExecutionQueue {
+    - <b>ProducerTemplate producerTemplate</b>
+    - <s>ThreadPoolExecutor threadPoolExecutor</s>
+    - TransactionService transactionService
+    - PolicyComponent policyComponent
+    - Map<String, AbstractAsynchronousActionFilter> actionFilters
+    - String id
+    + void init()
+    + void executeAction(...)
+    + etc(...)
+}
+
+package org::apache::camel {
+    class ProducerTemplate {
+        + void sendBodyAndHeaders(String endpointUri, Object body, Map<String, Object> headers)
+    }
+    class RouteBuilder {
+        + void configure()
+        + etc(...)
+    }
+    class JacksonDataFormat
+}
+
+class QueuedActionProducer extends RouteBuilder {
+    + void configure()
+}
+class QueuedActionReceiver extends RouteBuilder {
+    + void configure()
+}
+
+AsynchronousActionExecutionQueueImpl o- "1" ActionServiceImpl
+AsynchronousActionExecutionQueueImpl "0..*" -o ActionServiceImpl
+AsynchronousActionExecutionQueueImpl o- "1" ProducerTemplate
+QueuedActionProducer --> "uses" JacksonDataFormat
+QueuedActionReceiver --> "uses" JacksonDataFormat
+
+@enduml

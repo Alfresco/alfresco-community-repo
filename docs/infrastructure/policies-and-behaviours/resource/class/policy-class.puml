@@ -1,0 +1,175 @@
+@startuml
+
+title Policies: Policy Component (V4.2 onwards)
+
+' Split into 2 pages
+page 2x1
+
+interface PolicyEndpointService  #DDDDDD
+class PolicyEndpointServiceImpl #DDDDDD implements PolicyEndpointService{
+    - policyComponent : PolicyComponent
+    - policyEndpointRegistry : registry
+    + registerPolicyEndpoint(QName policy, String endpoint) : void
+    + registerPolicyEndpoint(QName policy, QName typeOrAspect, String endpoint) : void
+    + unregisterPolicyEndpoint(QName policy, String endpoint) : void
+    + unregisterPolicyEndpoint(QName policy, QName typeOrAspect, String endpoint) : void
+}
+PolicyEndpointServiceImpl -> PolicyComponent
+class PolicyEndpointRegistry #DDDDDD {
+    - QueuedBehaviour dynamicBehaviour
+    - Set<PolicyEndPointPolicyEndpoint> registrations
+    + {static} PolicyEndpointRegistry getInstance()
+    + reload(long fromTime)
+    + slip(String body, @Properties Map<String, Object> properties)
+}
+PolicyEndpointRegistry *- "1" QueuedBehaviour
+PolicyEndpointServiceImpl -> PolicyEndpointRegistry
+class PolicyEndpoint <<immutable>> #DDDDDD {
+    - QName policy
+    - QName typeOrAspect
+    - String endpoint
+    - long modified
+    - boolean active
+    + getKey()
+}
+PolicyEndpointRegistry *- PolicyEndpoint
+
+
+interface Policy
+interface ClassPolicy extends Policy
+interface OnCreateNodePolicy extends ClassPolicy {
+    +QNAME: http://www.alfresco.org:onCreateNode
+    +onCreateNode(ChildAssociationRef childAssocRef)
+}
+interface AssociationPolicy extends Policy
+interface OnCreateChildAssociationPolicy extends AssociationPolicy {
+    +QNAME: http://www.alfresco.org:onCreateChildAssociation
+    +onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
+}
+
+enum NotificationFrequency {
+    EVERY_EVENT,
+    FIRST_EVENT,
+    TRANSACTION_COMMIT
+}
+
+interface Behaviour {
+    + <T> getInterface(Class<T> policy) : T
+    + disable()
+    + enable()
+    + isEnabled() : boolean
+    +  getNotificationFrequency() : NotificationFrequency
+}
+class BaseBehaviour implements Behaviour {
+    # proxies : Map<Class, Object>
+    # frequency : NotificationFrequency
+    - disabled : StackThreadLocal
+    + disable()
+    + enable()
+    + isEnabled() : boolean
+    +  getNotificationFrequency() : NotificationFrequency
+}
+class JavaBehaviour extends BaseBehaviour {
+    + <T> getInterface(Class<T> policy) : T
+    # <T> getInvocationHandler(Object instance, String method, Class<T> policyIF) : InvocationHandler
+}
+class QueuedBehaviour <<V5.2>> #DDDDDD extends BaseBehaviour {
+    - ProducerTemplate queueTemplate
+    + <T> getInterface(Class<T> policy) : T
+    # <T> getInvocationHandler(Object instance, String method, Class<T> policyIF) : InvocationHandler
+}
+class ScriptBehaviour extends BaseBehaviour
+BaseBehaviour o- NotificationFrequency
+
+interface BehaviourBinding {
+    + generaliseBinding() : BehaviourBinding
+}
+class ClassBehaviourBinding implements BehaviourBinding {
+    + generaliseBinding() : BehaviourBinding
+}
+class ClassFeatureBehaviourBinding extends ClassBehaviourBinding {
+}
+class ServiceBehaviourBinding implements BehaviourBinding {
+    + generaliseBinding() : BehaviourBinding
+}
+
+class ClassPolicyDelegate<P extends ClassPolicy> {
+    - dictionary : DictionaryService
+    - factory : CachedPolicyFactory<ClassFeatureBehaviourBinding, P>
+    # ClassPolicyDelegate(DictionaryService dictionary, Class<P> policyClass, BehaviourIndex<ClassBehaviourBinding> index, long tryLockTimeout)
+}
+class AssociationPolicyDelegate<P extends AssociationPolicy> {
+    - dictionary : DictionaryService
+    - factory : CachedPolicyFactory<ClassFeatureBehaviourBinding, P>
+    # AssociationPolicyDelegate(DictionaryService dictionary, Class<P> policyClass, BehaviourIndex<ClassFeatureBehaviourBinding> index, long tryLockTimeout)
+}
+class PropertyPolicyDelegate<P extends PropertyPolicy> {
+    - dictionary : DictionaryService
+    - factory : CachedPolicyFactory<ClassFeatureBehaviourBinding, P>
+    # PropertyPolicyDelegate(DictionaryService dictionary, Class<P> policyClass, BehaviourIndex<ClassFeatureBehaviourBinding> index, long tryLockTimeout)
+}
+class PolicyFactory<B extends BehaviourBinding, P extends Policy> {
+    - index : BehaviourIndex~<B>
+    - policyClass : Class~<P>
+    - transactionHandlerFactory : TransactionInvocationHandlerFactory
+    - tenantService : TenantService
+    --
+    PolicyFactory(Class<P> policyClass, BehaviourIndex~<B> index)
+    --
+}
+class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> extends PolicyFactory
+
+abstract class AbstractNodeServiceImpl implements NodeService {
+    - policyComponent : PolicyComponent
+    # dictionaryService : DictionaryService
+    # transactionService : TransactionService
+    # tenantService : TenantService 
+    - onCreateNodeDelegate : ClassPolicyDelegate<OnCreateNodePolicy>
+}
+interface PolicyComponent {
+    + <P extends ClassPolicy> registerClassPolicy(Class<P> policy) : ClassPolicyDelegate<P>
+    + <P extends PropertyPolicy> registerPropertyPolicy(Class<P> policy) : PropertyPolicyDelegate<P>
+    + <P extends AssociationPolicy> registerAssociationPolicy(Class<P> policy) : AssociationPolicyDelegate<P>
+    + bindClassBehaviour(QName policy, QName className, Behaviour behaviour) : BehaviourDefinition<ClassBehaviourBinding>
+    + bindClassBehaviour(QName policy, Object service, Behaviour behaviour) : BehaviourDefinition<ServiceBehaviourBinding>
+    + bindPropertyBehaviour(QName policy, QName className, QName propertyName, Behaviour behaviour) : BehaviourDefinition<ClassFeatureBehaviourBinding>
+    + bindPropertyBehaviour(QName policy, QName className, Behaviour behaviour) : BehaviourDefinition<ClassFeatureBehaviourBinding>
+    + bindPropertyBehaviour(QName policy, Object service, Behaviour behaviour) : BehaviourDefinition<ServiceBehaviourBinding>
+    + bindAssociationBehaviour(QName policy, QName className, QName assocName, Behaviour behaviour) : BehaviourDefinition<ClassFeatureBehaviourBinding>
+    + bindAssociationBehaviour(QName policy, QName className, Behaviour behaviour) : BehaviourDefinition<ClassFeatureBehaviourBinding>
+    + bindAssociationBehaviour(QName policy, Object service, Behaviour behaviour) : BehaviourDefinition<ServiceBehaviourBinding>
+    + removeClassDefinition(BehaviourDefinition<ClassBehaviourBinding> definition) : void
+}
+class PolicyComponentImpl implements PolicyComponent {
+    - Map<QName, ClassBehaviourIndex<ClassBehaviourBinding>> classBehaviours
+    - Map<QName, ClassBehaviourIndex<ClassFeatureBehaviourBinding>> propertyBehaviours
+    - Map<QName, ClassBehaviourIndex<ClassFeatureBehaviourBinding>> associationBehaviours
+    + PolicyComponentImpl(DictionaryService dictionary)
+    + ... (all)
+}
+interface BehaviourFilter {
+    + disableBehaviour() : void
+    + disableBehaviour(QName className) : void
+    + disableBehaviour(QName className, boolean includeSubClasses) : void
+    + disableBehaviour(NodeRef nodeRef, QName className) : void
+    + disableBehaviour(NodeRef nodeRef) : void
+    + enableBehaviour() : void
+    + enableBehaviour(QName className) : void
+    + enableBehaviour(NodeRef nodeRef, QName className) : void
+    + enableBehaviour(NodeRef nodeRef) : void
+}
+class BehaviourFilterImpl implements BehaviourFilter {
+    + ... (all)
+}
+
+AbstractNodeServiceImpl -> PolicyComponentImpl
+PolicyComponentImpl -> BehaviourFilterImpl
+PolicyComponentImpl -> "creates" ClassPolicyDelegate
+PolicyComponentImpl -> "creates" AssocationPolicyDelegate
+PolicyComponentImpl -> "creates" PropertyPolicyDelegate
+ClassPolicyDelegate --> "uses" PolicyFactory
+AssociationPolicyDelegate --> "uses" PolicyFactory
+PropertyPolicyDelegate --> "uses" PolicyFactory
+PolicyFactory --> "creates" BehaviourBinding
+
+@enduml

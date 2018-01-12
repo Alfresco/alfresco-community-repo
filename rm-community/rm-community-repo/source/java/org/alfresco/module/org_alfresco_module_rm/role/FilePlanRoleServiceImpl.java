@@ -60,6 +60,8 @@ import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -71,6 +73,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                                                 RecordsManagementModel
 {
+    /** Logger for the class. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(FilePlanRoleServiceImpl.class);
     /** I18N */
     private static final String MSG_ALL_ROLES = "rm.role.all";
 
@@ -394,7 +398,14 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         }
         finally
         {
-            try {is.close();} catch (IOException e) {}
+            try
+            {
+                is.close();
+            }
+            catch (IOException e)
+            {
+                LOGGER.debug("Ignoring failed attempt to close stream.", e);
+            }
         }
 
         return sb.toString();

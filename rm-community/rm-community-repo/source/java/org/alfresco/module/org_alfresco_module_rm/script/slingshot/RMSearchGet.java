@@ -53,6 +53,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -66,6 +68,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RMSearchGet extends DeclarativeWebScript
 {
+    /** Logger for the class. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(RMSearchGet.class);
     /** URL Parameters */
     private static final String PARAM_QUERY = "query";
     private static final String PARAM_SORTBY = "sortby";
@@ -211,7 +215,10 @@ public class RMSearchGet extends DeclarativeWebScript
                     Item item = new Item(pair.getFirst(), pair.getSecond());
                     items.add(item);
                 }
-                catch(Exception e) {}
+                catch(Exception e)
+                {
+                    LOGGER.debug("Ignoring failed attempt to add item to search results.", e);
+                }
             }
 
             // Return model

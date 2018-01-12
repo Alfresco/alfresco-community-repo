@@ -51,7 +51,6 @@
 
 ### Identity Provider
 * [Authentication](./identity-provider/authentication)
-* [Identity](./identity-provider/identity)
 * LDAP Sync
 
 ### Deployment
@@ -61,7 +60,6 @@
 
 ### Messaging
 * Messages and Topics
-* [Queue](./messaging/queue)  (FUTURE)
 
 ### Infrastructure
 * Module Framework

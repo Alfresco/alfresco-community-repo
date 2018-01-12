@@ -1,0 +1,152 @@
+@startuml
+
+Title: Interaction between Identity Service, Proxy, Activiti and Alfresco
+participant "Browser" as B
+participant "Identity Service" as IS
+participant "Proxy" as P
+participant "Alfresco Repository" as R
+participant "Activiti" as A
+
+
+== flow with Proxy ==
+
+B->P: HTTP GET /something from Alfresco
+activate B
+activate P
+note right of P
+sees no authorization
+header
+end note
+P->B: redirect
+deactivate P
+B->IS: authenticate
+activate IS
+B<-IS: login form
+deactivate IS
+note right of B
+user enters
+userid and
+password
+end note
+note right of B
+Assumption: common
+password for Activiti
+and Alfresco (such
+as would be provided if
+they shared an LDAP for
+example (not pictured))
+end note
+B->IS: credentials
+IS->R: credentials
+activate R
+R->R:checks credentials
+R->R: generate alf_ticket
+R->IS: alf_ticket
+deactivate R
+IS->IS: generate common_token
+deactivate R
+IS->IS:store common_token
+IS->IS: store alf_ticket
+note right of IS
+common_token is
+a key to retrieve
+alf_ticket and
+act_ticket
+end note
+IS->A: credentials
+activate A
+A->A:checks credentials
+A->A: generate act_ticket
+A->IS: act_ticket
+deactivate A
+IS->IS:store act_ticket
+IS->B: redirect w/common_token
+B->P: HTTP GET /something from Alfresco (with common_token)
+activate P
+note right of P
+sees common_token in
+authorization header
+end note
+P->IS:validate common_token and retrieve alf_ticket
+activate IS
+IS->P: alf_ticket
+deactivate IS
+P->R:HTTP GET /something (with alf_ticket)
+R->R: validate alf_ticket
+R->R: checks authorization of\nuser to something
+R->P: something from Alfresco
+deactivate R
+P->B:something from Alfresco
+deactivate P
+B->P : HTTP GET something from Activiti (with common_token)
+activate P
+note right of P
+sees common_token in
+authorization header
+end note
+P->IS:validate common_token and retrieve act_ticket
+activate IS
+IS->P: act_ticket
+deactivate IS
+P->A:HTTP GET /something (with act_ticket)
+A->A: validate act_ticket
+A->A: checks authorization of\nuser to something
+A->P: something from Activiti
+deactivate A
+P->B:something from Activiti
+deactivate P
+deactivate B
+
+== flow without Proxy ==
+
+B->R: HTTP GET /something from Alfresco
+activate R
+note right of R
+sees no authorization
+header
+end note
+R->B: redirect
+deactivate R
+B->IS: authenticate
+activate IS
+B<-IS: login form
+deactivate IS
+note right of B
+user enters
+userid and
+password
+end note
+B->IS: credentials
+IS->IS:checks credentials
+IS->IS: generate common_token
+IS->B:common_token
+deactivate IS
+B->R: HTTP GET /something from Alfresco (with common_token)
+activate R
+note right of R
+sees common_token in
+authorization header
+end note
+R->IS:validate common_token
+activate IS
+IS->R: OK
+deactivate IS
+R->R: checks authorization of\nuser to something
+R->B: something from Alfresco
+deactivate R
+B->R: HTTP GET /something from Activiti (with common_token)
+activate A
+note right of A
+sees common_token in
+authorization header
+end note
+A->IS:validate common_token
+activate IS
+IS->A: OK
+deactivate IS
+A->A: checks authorization of\nuser to something
+A->B: something from Activiti
+deactivate A
+deactivate B
+
+@enduml

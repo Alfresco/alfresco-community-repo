@@ -1,0 +1,52 @@
+@startuml
+
+title Identity Data Model
+
+sprite $primary [17x12/16z] bOqv3e1030CJRzPn9Fx_NWY7n4eqJ3TJs6OVa5pTpD-5tl3YyFHG-4DsqAOnWgawWp0r0KGagDuGMYMJxbMrBxzLPJ_O0G00
+
+left to right direction
+
+object Entity {
+  <$primary> id
+  name
+  email addresses
+  photo
+  other profile info
+}
+
+object Identity {
+  <$primary> id
+}
+
+object Group{
+  <$primary> id
+  name
+}
+
+object Domain {
+  <$primary> id
+  directoryType
+  directoryEndPoint
+}
+
+object Token {
+  <$primary> id
+  type
+  expirationTime
+  authority
+}
+
+object System {
+  <$primary> id
+  url
+}
+
+Group "1:n"----"0:n" Identity : members
+Group "0:1"----"0:n" Group : members
+Group "0:n"----"1:1" Domain : members
+Identity "0:n"----"1:1" Domain : members
+Identity "1:1"----"0:n" Token: granted
+Domain "1:1"----"0:n" Token:issues
+Identity "0:n"----"0:n" System : member
+Identity "0:n"----"0:n" Entity : member
+@enduml

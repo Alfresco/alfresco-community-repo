@@ -1,0 +1,69 @@
+@startuml
+
+Title: Create a Tenant (NoSQL - AWS)
+actor "User" as U
+participant "Tenant Console" as TC
+participant "API Gateway" as APIG
+participant "TenantServiceLambda" as TSL
+participant "TenantServiceImpl" as TSI
+participant "DDbTenantService" as DDTS
+participant "Dynamo DB Client" as DDBC
+database "DynamoDB" as DDB
+
+U->TC:create Tenant
+note right
+	What the Tenant Console
+	is is TBD.  It 
+	may be part of the 
+	AWS Control Architecture
+	or a Beowulf Admin 
+	Console
+end note
+activate TC
+TC->APIG: HTTP POST {<API Gateway host:port>/public/an2/v1/tenants\nTenant Object(JSON)
+activate APIG
+APIG->TSL: handler(serialized Tenant Object(JSON))
+note right
+	The HTTP Verb and UserInfo is
+	passed to the Tenant Service
+	Lambda in the JSON object. 
+	Tenant Service Lambda selects 
+	the TenantServiceImpl method
+	to call based on the HTTP Verb
+end note
+activate TSL
+TSL->TSI: createTenant()
+note right
+	Unsolved Design Challenge #1: 
+	How to supply a configuration
+	to allow alternative 
+	implementations at
+	runtime.  In current
+	form, the TenantServiceSPI
+	passed to TenantServiceImpl
+	is set in an API Gateway
+	template.   That would allow
+	us to specify a different 
+	provider of the SPI using,
+	for example, an HTTP parm
+end note
+activate TSI
+TSI->DDTS
+activate DDTS
+DDTS->DDBC: table.putItem(new Item().withPrimaryKey("tenant-id")
+activate DDBC
+DDBC->DDB: store the tenant record
+DDB->DDBC: success
+deactivate DDB
+DDBC->DDTS:success
+deactivate DDBC
+DDTS->TSI:success
+deactivate DDTS
+TSI->TSL: success
+deactivate TSI
+TSL->TC: HTTP 200 OK
+deactivate TSL
+TC->>U:success message
+deactivate TC
+
+@enduml

@@ -1,17 +1,15 @@
 
-## Component Name
+## Versions
 
 ![Completeness Badge](https://img.shields.io/badge/Document_Level-In_Progress-yellow.svg?style=flat-square)
 
-![Version Badge](https://img.shields.io/badge/Version-5.2-orange.svg?style=flat-square)
-
 ### Purpose
 
-*** 
+***
 
-### Overview 
+### Overview
 
-*** 
+***
 
 ### Artifacts and Guidance
 
@@ -20,12 +18,12 @@
 * Issue Tracker Link: https://issues.alfresco.com/jira/secure/RapidBoard.jspa?projectKey=REPO&useStoredSettings=true&rapidView=379
 * Documentation Link: http://docs.alfresco.com/5.1/concepts/versioning.html
 * Contribution Model: Alfresco publishes the source code and will review proposed patch requests
-*** 
+***
 
 
 ### Prerequisite Knowledge
 
-*** 
+***
 
 ### Design
 
@@ -61,11 +59,11 @@ version.store.enableAutoVersionOnUpdateProps=true
 
 #### Class Diagram
 
-*** 
+***
 
 ### APIs and Interfaces
 
-*** 
+***
 
 ### Configuration
 
@@ -93,22 +91,22 @@ If the values are found in the properties file they have the effect of overridin
 
 The effect of these properties can be overridden by Share using a set of two properties:
 
-* autoVersion 
+* autoVersion
 * autoVersionProps
 
-The values of these overrides are contained in the file _upload.post.config.xml_ such as in this example 
+The values of these overrides are contained in the file _upload.post.config.xml_ such as in this example
 ```
 <autoVersion>true</autoVersion>
 <autoVersionProps>false</autoVersionProps>
 ```
 
-*** 
+***
 
 ### Performance Considerations
-*** 
+***
 
 ### Security Considerations
-*** 
+***
 
 ### Cloud Considerations
 None
@@ -117,6 +115,4 @@ None
 
 ### Design Decisions
 
-*** 
-
-
+***

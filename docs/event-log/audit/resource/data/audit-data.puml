@@ -1,0 +1,41 @@
+@startuml
+
+title Audit and Attributes - High Level Entities
+
+skinparam linetype ortho
+
+rectangle AuditDAO #lightgrey {
+   rectangle AuditApplication #orange
+   rectangle AuditModel #white
+   rectangle ModelContent #white
+   rectangle AuditEntry #white
+}
+
+rectangle PropertyValueDAO #lightgrey {
+   rectangle Attribute #orange
+   rectangle ComplexProperty #white
+   rectangle SimpleProperty #white
+   rectangle Value #white
+   rectangle Caches #white {
+      rectangle PropertyUniqueContextSharedCache #white
+      rectangle PropertyClassSharedCache #white
+      rectangle PropertyValueSharedCache #white
+   }
+}
+
+AuditApplication --* AuditModel
+AuditApplication --* AuditEntry
+AuditModel -- ModelContent
+PropertyClassSharedCache ->SimpleProperty
+PropertyValueSharedCache ->SimpleProperty
+PropertyUniqueContextSharedCache ->Attribute
+SimpleProperty .. Value :value
+SimpleProperty -- Attribute: keys (1 to 3)
+ComplexProperty -- SimpleProperty
+ComplexProperty -- AuditEntry :audit values
+ComplexProperty -- AuditApplication :disabled paths
+Attribute -- ComplexProperty
+
+center footer Copyright 2016 Alfresco Software Inc
+
+@enduml

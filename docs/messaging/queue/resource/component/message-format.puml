@@ -1,0 +1,11 @@
+@startuml
+
+entity "Object" as O
+
+frame "AMQP Message" as M {
+frame header as H
+frame "body (JSON)" as B
+}
+
+O <.--.> B
+@enduml

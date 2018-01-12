@@ -1,0 +1,41 @@
+@startuml
+
+Title Queue Components
+
+left to right direction
+
+actor "Administrator" as A
+node "Queue Service" as Q {
+node "REST API" as R1 #white
+node "Spring Boot" as SB #white
+}
+
+node "Message Broker" as MB {
+queue "Topic\nEndpoint" as R2 #white
+}
+
+
+node "Message Producer" as MP
+
+node "Message Consumer" as MC1
+node "Message Consumer" as MC2
+node "Message Consumer" as MC3
+node "Message Consumer" as MC4
+
+A-->SB: starts/stops
+A-->R1: configures
+Q-->R2: starts/stops broker
+Q-->R2: configures
+MP<--R1: get Topics
+MP-->R2: sends message to Topic
+R2-->MC1: gets message
+R2-->MC2: gets message
+R2-->MC3: gets message
+R2-->MC4: gets message
+R2<--MC1: subscribes
+R2<--MC2: subscribes
+R2<--MC3: subscribes
+R2<--MC4: subscribes
+'R2-T
+
+@enduml

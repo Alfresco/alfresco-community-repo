@@ -1,0 +1,337 @@
+@startuml
+
+' Generated using https://github.com/juanmf/Java2PlantUML
+
+left to right direction
+' Participants 
+
+class org.alfresco.jlan.server.auth.AuthContext {
+--
++   AuthContext() 
+
+}
+interface org.springframework.beans.factory.InitializingBean {
+--
++  afterPropertiesSet()  : void
+
+}
+interface org.alfresco.repo.transaction.RetryingTransactionHelper$RetryingTransactionCallback <Result extends c Object> {
+--
++  execute()  :  Object
+
+}
+interface org.alfresco.jlan.server.SessionListener {
+--
++  sessionClosed(c SrvSession)  : void
++  sessionCreated(c SrvSession)  : void
++  sessionLoggedOn(c SrvSession)  : void
+
+}
+interface org.alfresco.filesys.auth.cifs.package-info {
+--
+
+}
+interface javax.security.auth.callback.CallbackHandler {
+--
++  handle(c Callback;)  : void
+
+}
+class org.alfresco.filesys.auth.cifs.PassthruCifsAuthenticator {
++  DefaultSessionTmo : int
++  MaxCheckInterval : int
++  MaxSessionTmo : int
++  MinCheckInterval : int
++  MinSessionTmo : int
++  PassthruKeepAliveInterval : long
+-  NTLM_FLAGS : int
+-  logger : i Log
+-  m_localPassThruServers : boolean
+-  m_passthruServers : c PassthruServers
+-  m_sessions :  Hashtable< String, PassthruDetails>
+--
++   PassthruCifsAuthenticator() 
+#  validateAuthenticationMode()  : boolean
++  authenticateShareConnect(c ClientInfo, c SharedDevice, c String, c SrvSession)  : int
++  authenticateUser(c ClientInfo, c SrvSession, int)  : int
++  closeAuthenticator()  : void
++  generateNegotiateResponse(c SMBSrvSession, c SMBSrvPacket, boolean)  : void
++  getAuthContext(c SMBSrvSession)  :  AuthContext
++  getServerCapabilities()  : int
++  getSessions()  :  Hashtable
++  initialize(c ServerConfiguration, i ConfigElement)  : void
++  processAlfrescoSessionSetup(c SMBSrvSession, c SMBSrvPacket)  : void
++  processSessionSetup(c SMBSrvSession, c SMBSrvPacket)  : void
++  sessionClosed(c SrvSession)  : void
++  sessionCreated(c SrvSession)  : void
++  sessionLoggedOn(c SrvSession)  : void
++  setPassthruServers(c PassthruServers)  : void
+-  doNTLMv1Logon(c SMBSrvSession, c ClientInfo, c Type3NTLMMessage)  : void
+-  doNtlmsspSessionSetup(c SMBSrvSession, c ClientInfo, class [B, int, int, boolean)  : [B
+
+}
+interface org.alfresco.repo.security.authentication.AuthenticationUtil$RunAsWork <Result extends c Object> {
+--
++  doWork()  :  Object
+
+}
+class org.alfresco.filesys.auth.cifs.AuthTokenAuthContext {
+-  m_token : c NTLMPassthruToken
+--
++   AuthTokenAuthContext(c NTLMPassthruToken) 
++  getChallenge()  : [B
++  getToken()  :  NTLMPassthruToken
+
+}
+class org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase {
+#  logger : i Log
+#  m_md4Encoder : i MD4PasswordEncoder
+-  active : boolean
+-  authenticationComponent : i AuthenticationComponent
+-  authenticationService : i AuthenticationService
+-  authorityService : i AuthorityService
+-  diskInterface : i DiskInterface
+-  nodeService : i NodeService
+-  personService : i PersonService
+-  transactionService : i TransactionService
+--
++   CifsAuthenticatorBase() 
+#  checkForAdminUserName(c ClientInfo)  : void
+#  doGuestLogon(c ClientInfo, c SrvSession)  : void
+#  doInTransaction( RetryingTransactionHelper$RetryingTransactionCallback<T>)  :  Object
+#  getAuthenticationComponent()  :  AuthenticationComponent
+#  getAuthenticationService()  :  AuthenticationService
+#  getAuthorityService()  :  AuthorityService
+#  getHomeFolderForUser(c ClientInfo)  : void
+#  getNTLMAuthenticator()  :  NLTMAuthenticator
+#  getNodeService()  :  NodeService
+#  getPersonService()  :  PersonService
+#  validateAuthenticationMode()  : boolean
++  afterPropertiesSet()  : void
++  destroy()  : void
++  initialize()  : void
++  initialize(c ServerConfiguration, i ConfigElement)  : void
++  isActive()  : boolean
++  mapUserNameToPerson(c String, boolean)  :  String
++  setActive(boolean)  : void
++  setAuthenticationComponent(i AuthenticationComponent)  : void
++  setAuthenticationService(i AuthenticationService)  : void
++  setAuthorityService(i AuthorityService)  : void
++  setCurrentUser(c ClientInfo)  : void
++  setDiskInterface(i DiskInterface)  : void
++  setNodeService(i NodeService)  : void
++  setPersonService(i PersonService)  : void
++  setTransactionService(i TransactionService)  : void
+-  getTransactionService()  :  TransactionService
+
+}
+class org.alfresco.jlan.server.auth.ChallengeAuthContext {
+#  m_challenge : class [B
+--
++   ChallengeAuthContext() 
++  getChallenge()  : [B
+
+}
+class org.alfresco.jlan.server.auth.CifsAuthenticator {
+#  GUEST_USERNAME : c String
+#  m_config : i ServerConfigurationAccessor
+#  m_random : c Random
+-  m_accessMode : int
+-  m_allowGuest : boolean
+-  m_debug : boolean
+-  m_dialects : c DialectSelector
+-  m_encryptor : c PasswordEncryptor
+-  m_extendedSecurity : boolean
+-  m_guestUserName : c String
+-  m_mapToGuest : boolean
+-  m_securityMode : int
+-  m_sessCleanup : boolean
+--
++   CifsAuthenticator() 
+#  convertPassword(c String)  : [B
+#  doGuestLogon(c ClientInfo, c SrvSession)  : void
+#  generateEncryptedPassword(c String, class [B, int, c String, c String)  : [B
+#  getEncryptor()  :  PasswordEncryptor
+#  getStatusAsString(int)  :  String
+#  mapClientAddressToDomain(c InetAddress)  :  String
+#  setExtendedSecurity(boolean)  : void
+#  setSecurityMode(int)  : void
+#  validatePassword(c UserAccount, c ClientInfo, c AuthContext, int)  : boolean
++  allowGuest()  : boolean
++  authenticateShareConnect(c ClientInfo, c SharedDevice, c String, c SrvSession)  : int
++  authenticateUser(c ClientInfo, c SrvSession, int)  : int
++  authenticateUserPlainText(c ClientInfo, c SrvSession)  : int
++  closeAuthenticator()  : void
++  generateNegotiateResponse(c SMBSrvSession, c SMBSrvPacket, boolean)  : void
++  getAccessMode()  : int
++  getAuthContext(c SMBSrvSession)  :  AuthContext
++  getCIFSConfig()  :  CIFSConfigSection
++  getEnabledDialects()  :  DialectSelector
++  getEncryptionKeyLength()  : int
++  getGuestUserName()  :  String
++  getSecurityMode()  : int
++  getServerCapabilities()  : int
++  getUserDetails(c String)  :  UserAccount
++  getsecurityConfig()  :  SecurityConfigSection
++  hasDebug()  : boolean
++  hasExtendedSecurity()  : boolean
++  hasSessionCleanup()  : boolean
++  initialize()  : void
++  initialize(c ServerConfiguration, i ConfigElement)  : void
++  mapUnknownUserToGuest()  : boolean
++  processSessionSetup(c SMBSrvSession, c SMBSrvPacket)  : void
++  setAccessMode(int)  : void
++  setAllowGuest(boolean)  : void
++  setConfig(i ServerConfigurationAccessor)  : void
++  setCurrentUser(c ClientInfo)  : void
++  setDebug(boolean)  : void
++  setGuestUserName(c String)  : void
++  setMapToGuest(boolean)  : void
++  setSessionCleanup(boolean)  : void
++  toString()  :  String
+
+}
+interface org.alfresco.jlan.server.auth.ICifsAuthenticator {
++  AUTH_ACCDISABLED : int
++  AUTH_ALLOW : int
++  AUTH_BADPASSWORD : int
++  AUTH_BADUSER : int
++  AUTH_DISALLOW : int
++  AUTH_GUEST : int
++  AUTH_PASSEXPIRED : int
++  LANMAN : int
++  NTLM1 : int
++  NTLM2 : int
++  NoAccess : int
++  ReadOnly : int
++  SHARE_MODE : int
++  STANDARD_CHALLENGE_LEN : int
++  STANDARD_PASSWORD_LEN : int
++  USER_MODE : int
++  Writeable : int
+--
++  authenticateShareConnect(c ClientInfo, c SharedDevice, c String, c SrvSession)  : int
++  authenticateUser(c ClientInfo, c SrvSession, int)  : int
++  closeAuthenticator()  : void
++  generateNegotiateResponse(c SMBSrvSession, c SMBSrvPacket, boolean)  : void
++  getAccessMode()  : int
++  getEncryptionKeyLength()  : int
++  getSecurityMode()  : int
++  getServerCapabilities()  : int
++  hasExtendedSecurity()  : boolean
++  processSessionSetup(c SMBSrvSession, c SMBSrvPacket)  : void
++  setCurrentUser(c ClientInfo)  : void
+
+}
+class org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator {
+#  logger : i Log
+-  LoginConfigEntry : c String
+-  NTLM_FLAGS : int
+-  disableNTLM : boolean
+-  kerberosDebug : boolean
+-  m_acceptNTLMv1 : boolean
+-  m_accountName : c String
+-  m_enableTicketCracking : boolean
+-  m_krbRealm : c String
+-  m_loginContext : c LoginContext
+-  m_loginEntryName : c String
+-  m_mecListMIC : c String
+-  m_mechTypes :  Vector< Oid>
+-  m_negTokenInit : class [B
+-  m_password : c String
+-  m_stripKerberosUsernameSuffix : boolean
+-  m_useRawNTLMSSP : boolean
+--
++   EnterpriseCifsAuthenticator() 
++  generateNegotiateResponse(c SMBSrvSession, c SMBSrvPacket, boolean)  : void
++  getEncryptionKeyLength()  : int
++  getServerCapabilities()  : int
++  handle(c Callback;)  : void
++  initialize()  : void
++  initialize(c ServerConfiguration, i ConfigElement)  : void
++  processSessionSetup(c SMBSrvSession, c SMBSrvPacket)  : void
++  setDisableNTLM(boolean)  : void
++  setDisallowNTLMv1(boolean)  : void
++  setEnableTicketCracking(boolean)  : void
++  setJaasConfigEntryName(c String)  : void
++  setKerberosDebug(boolean)  : void
++  setPassword(c String)  : void
++  setRealm(c String)  : void
++  setStripKerberosUsernameSuffix(boolean)  : void
++  setUseSPNEGO(boolean)  : void
+-  acceptNTLMv1Logon()  : boolean
+-  doHashedPasswordLogon(c SMBSrvSession, c SMBSrvPacket)  : void
+-  doKerberosLogon(c SMBSrvSession, c NegTokenInit, c ClientInfo)  :  NegTokenTarg
+-  doNTLMv1Logon(c SMBSrvSession, c ClientInfo)  : void
+-  doNTLMv1Logon(c SMBSrvSession, c ClientInfo, c Type3NTLMMessage)  : void
+-  doNTLMv2Logon(c SMBSrvSession, c ClientInfo)  : void
+-  doNTLMv2Logon(c SMBSrvSession, c ClientInfo, c Type3NTLMMessage)  : void
+-  doNTLMv2SessionKeyLogon(c SMBSrvSession, c ClientInfo, c Type3NTLMMessage)  : void
+-  doNtlmsspSessionSetup(c SMBSrvSession, c ClientInfo, class [B, int, int, boolean)  : [B
+-  doSpnegoSessionSetup(c SMBSrvSession, c ClientInfo, class [B, int, int, boolean)  : [B
+-  getNegTokenInit()  : [B
+-  isKerberosEnabled()  : boolean
+-  normalizeUserId(c String)  :  String
+-  processAlfrescoSessionSetup(c SMBSrvSession, c SMBSrvPacket)  : void
+-  useRawNTLMSSP()  : boolean
+
+}
+interface org.springframework.beans.factory.DisposableBean {
+--
++  destroy()  : void
+
+}
+class org.alfresco.filesys.auth.cifs.AlfrescoCifsAuthenticator {
+--
++   AlfrescoCifsAuthenticator() 
+#  validateAuthenticationMode()  : boolean
++  authenticateShareConnect(c ClientInfo, c SharedDevice, c String, c SrvSession)  : int
++  authenticateUser(c ClientInfo, c SrvSession, int)  : int
++  getAuthContext(c SMBSrvSession)  :  AuthContext
+-  doMD4UserAuthentication(c ClientInfo, c SrvSession, int)  : int
+-  doPassthruUserAuthentication(c ClientInfo, c SrvSession, int)  : int
+
+}
+interface org.alfresco.repo.management.subsystems.ActivateableBean {
+--
++  isActive()  : boolean
+
+}
+
+' Relations 
+
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.alfresco.service.cmr.security.AuthenticationService  : authenticationService: i AuthenticationService
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.alfresco.service.cmr.security.PersonService  : personService: i PersonService
+org.alfresco.filesys.auth.cifs.PassthruCifsAuthenticator "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator "1"  o-left-  "*" org.ietf.jgss.Oid  : m_mechTypes:  Vector< Oid>
+org.alfresco.jlan.server.auth.CifsAuthenticator "1"  o-left-  "1" org.alfresco.jlan.server.auth.PasswordEncryptor  : m_encryptor: c PasswordEncryptor
+org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.jlan.server.auth.CifsAuthenticator "1"  o-left-  "1" java.util.Random  : m_random: c Random
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.alfresco.service.transaction.TransactionService  : transactionService: i TransactionService
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.alfresco.jlan.server.filesys.DiskInterface  : diskInterface: i DiskInterface
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.apache.commons.logging.Log  : logger: i Log
+org.alfresco.filesys.auth.cifs.PassthruCifsAuthenticator "1"  o-left-  "*" org.alfresco.jlan.server.auth.passthru.PassthruDetails  : m_sessions:  Hashtable< String, PassthruDetails>
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.alfresco.repo.security.authentication.AuthenticationComponent  : authenticationComponent: i AuthenticationComponent
+org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator "1"  o-left-  "1" javax.security.auth.login.LoginContext  : m_loginContext: c LoginContext
+org.alfresco.filesys.auth.cifs.PassthruCifsAuthenticator "1"  o-left-  "1" org.alfresco.jlan.server.auth.passthru.PassthruServers  : m_passthruServers: c PassthruServers
+org.alfresco.jlan.server.auth.CifsAuthenticator "1"  o-left-  "1" org.alfresco.jlan.smb.DialectSelector  : m_dialects: c DialectSelector
+org.alfresco.jlan.server.auth.CifsAuthenticator "1"  o-left-  "1" org.alfresco.jlan.server.config.ServerConfigurationAccessor  : m_config: i ServerConfigurationAccessor
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.alfresco.service.cmr.repository.NodeService  : nodeService: i NodeService
+org.alfresco.filesys.auth.cifs.AuthTokenAuthContext "1"  o-left-  "1" org.alfresco.repo.security.authentication.ntlm.NTLMPassthruToken  : m_token: c NTLMPassthruToken
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.alfresco.repo.security.authentication.MD4PasswordEncoder  : m_md4Encoder: i MD4PasswordEncoder
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase "1"  o-left-  "1" org.alfresco.service.cmr.security.AuthorityService  : authorityService: i AuthorityService
+org.alfresco.filesys.auth.cifs.PassthruCifsAuthenticator  -up|>  org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase
+org.alfresco.filesys.auth.cifs.AlfrescoCifsAuthenticator  -up|>  org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase
+org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator  -up|>  org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase  -up|>  org.alfresco.jlan.server.auth.CifsAuthenticator
+org.alfresco.jlan.server.auth.ChallengeAuthContext  -up|>  org.alfresco.jlan.server.auth.AuthContext
+org.alfresco.filesys.auth.cifs.AuthTokenAuthContext  -up|>  org.alfresco.jlan.server.auth.ChallengeAuthContext
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase  ..up|>  org.springframework.beans.factory.DisposableBean
+org.alfresco.jlan.server.auth.CifsAuthenticator  ..up|>  org.alfresco.jlan.server.auth.ICifsAuthenticator
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase  ..up|>  org.springframework.beans.factory.InitializingBean
+org.alfresco.filesys.auth.cifs.EnterpriseCifsAuthenticator  ..up|>  javax.security.auth.callback.CallbackHandler
+org.alfresco.filesys.auth.cifs.CifsAuthenticatorBase  ..up|>  org.alfresco.repo.management.subsystems.ActivateableBean
+org.alfresco.filesys.auth.cifs.PassthruCifsAuthenticator  ..up|>  org.alfresco.jlan.server.SessionListener
+
+' Notes 
+
+@enduml

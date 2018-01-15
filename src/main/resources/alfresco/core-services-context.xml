@@ -708,9 +708,6 @@
                 <!-- Site model -->
                 <value>alfresco/model/siteModel.xml</value>
 
-                <!-- Content Publishing model -->
-                <value>alfresco/model/publishingModel.xml</value>
-
                 <!-- Smart Folders model -->
                 <value>alfresco/model/smartfolder-model.xml</value>
 
@@ -726,7 +723,6 @@
                 <value>alfresco/messages/forum-model</value>
                 <value>alfresco/messages/email-server-model</value>
                 <value>alfresco/messages/transfer-model</value>
-                <value>alfresco/messages/publishing-model</value>
                 <value>alfresco/messages/site-model</value>
                 <value>alfresco/messages/smartfolder-model</value>
             </list>

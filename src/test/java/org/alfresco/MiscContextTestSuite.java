@@ -122,11 +122,6 @@ import org.springframework.context.ApplicationContext;
     // [module/module-component-test-beans.xml]
     org.alfresco.repo.module.ComponentsTest.class,
 
-    // TODO can we remove this? Was it EOLed?
-    // [classpath:test/alfresco/test-web-publishing-context.xml]
-    org.alfresco.repo.publishing.ChannelServiceImplTest.class,
-    org.alfresco.repo.publishing.PublishingEventHelperTest.class,
-
     // [alfresco/scheduler-core-context.xml, org/alfresco/util/test-scheduled-jobs-context.xml]
     org.alfresco.util.CronTriggerBeanTest.class,
 

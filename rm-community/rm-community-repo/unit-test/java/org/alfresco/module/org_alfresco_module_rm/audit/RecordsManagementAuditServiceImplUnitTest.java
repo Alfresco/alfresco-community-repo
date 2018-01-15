@@ -37,6 +37,7 @@ import static org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServic
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.TYPE_RM_SITE;
 import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -46,7 +47,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -172,5 +175,26 @@ public class RecordsManagementAuditServiceImplUnitTest
                     Sets.newHashSet(RM_AUDIT_APPLICATION_NAME, DOD5015_AUDIT_APPLICATION_NAME), apps);
         // Check that the event of viewing the audit log was itself audited.
         verify(mockAuditComponent).recordAuditValues(eq(RM_AUDIT_PATH_ROOT), any(Map.class));
+    }
+
+    /** Check that passing null to getStartOfDay doesn't result in null being returned. */
+    @Test
+    public void testGetStartOfDay_null()
+    {
+        Date startOfDay = recordsManagementAuditServiceImpl.getStartOfDay(null);
+        assertNotNull("Expected date to be created by method.", startOfDay);
+    }
+
+    /** Check that any time component passed to getStartOfDay is not included in the response. */
+    @Test
+    public void testGetStartOfDay_timeDiscarded() throws Exception
+    {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+        Date date = format.parse("2001-02-03 04:05:06.789");
+
+        // Call the method under test.
+        Date startOfDay = recordsManagementAuditServiceImpl.getStartOfDay(date);
+
+        assertEquals("Unexpected date truncation.", format.parse("2001-02-03 00:00:00.000"), startOfDay);
     }
 }

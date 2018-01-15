@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -46,6 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import javax.transaction.SystemException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -54,7 +56,6 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.content.MimetypeMap;
@@ -727,7 +728,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
          *
          * @param auditedNodes              details of the nodes that were modified
          */
-        private void auditInTxn(Set<RMAuditNode> auditedNodes) throws Throwable
+        private void auditInTxn(Set<RMAuditNode> auditedNodes) throws SystemException
         {
             // Go through all the audit information and audit it
             boolean auditedSomething = false;
@@ -1137,9 +1138,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      * @param date The date for which the start should be calculated.
      * @return Returns the start of the given date.
      */
-    private Date getStartOfDay(Date date)
+    protected Date getStartOfDay(Date date)
     {
-        return DateUtils.truncate(date == null ? new Date() : date, Calendar.DATE);
+        date = (date == null ? new Date() : date);
+        return Date.from(date.toInstant().truncatedTo(ChronoUnit.DAYS));
     }
 
     /**

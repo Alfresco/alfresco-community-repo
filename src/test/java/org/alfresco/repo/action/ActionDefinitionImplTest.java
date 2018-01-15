@@ -25,13 +25,16 @@
  */
 package org.alfresco.repo.action;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rule.RuleServiceException;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 
 /**
@@ -75,5 +78,53 @@ public class ActionDefinitionImplTest extends BaseParameterizedItemDefinitionImp
     {
         ActionDefinitionImpl temp = (ActionDefinitionImpl)create();
         assertEquals(RULE_ACTION_EXECUTOR, temp.getRuleActionExecutor());
+    }
+
+    /**
+     * REPO-2253: Community: ALF-21854 Action parameter lookup for "de_DE" falls back to "root" locale instead of "de"
+     */
+    public void testParameterDefinitionLocaleFallback()
+    {
+        Locale originalLocale = I18NUtil.getLocale();
+        try
+        {
+            ActionDefinitionImpl actionDef = new ActionDefinitionImpl(NAME);
+            Map<Locale, List<ParameterDefinition>> localizedParams = new HashMap<>();
+            
+            
+            localizedParams.put(Locale.ROOT, exampleFieldList("English Label"));
+            localizedParams.put(Locale.ENGLISH, exampleFieldList("English Label"));
+            localizedParams.put(Locale.UK, exampleFieldList("UK-specific Label"));
+            localizedParams.put(Locale.GERMAN, exampleFieldList("German Label"));
+            actionDef.setLocalizedParameterDefinitions(localizedParams);
+
+            I18NUtil.setLocale(null);
+            assertEquals("English Label", actionDef.getParameterDefintion("example-field").getDisplayLabel());
+
+            I18NUtil.setLocale(Locale.ENGLISH);
+            assertEquals("English Label", actionDef.getParameterDefintion("example-field").getDisplayLabel());
+
+            // en-GB does not need to fallback to en
+            I18NUtil.setLocale(Locale.UK);
+            assertEquals("UK-specific Label", actionDef.getParameterDefintion("example-field").getDisplayLabel());
+
+            I18NUtil.setLocale(Locale.GERMAN);
+            assertEquals("German Label", actionDef.getParameterDefintion("example-field").getDisplayLabel());
+            
+            I18NUtil.setLocale(Locale.GERMANY);
+            // de-DE falls back to de
+            assertEquals("German Label", actionDef.getParameterDefintion("example-field").getDisplayLabel());
+        }
+        finally
+        {
+            I18NUtil.setLocale(originalLocale);
+        }
+    }
+    
+    private List<ParameterDefinition> exampleFieldList(String label)
+    {
+        List<ParameterDefinition> paramDefs = new ArrayList<>();
+        paramDefs.add(new ParameterDefinitionImpl("example-field", DataTypeDefinition.TEXT, false, label));
+        return paramDefs;
     }
 }

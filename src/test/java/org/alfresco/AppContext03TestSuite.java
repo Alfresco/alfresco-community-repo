@@ -52,8 +52,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rendition.MultiUserRenditionTest.class,
     org.alfresco.repo.rendition.RenditionServiceIntegrationTest.class,
 
-    org.alfresco.repo.publishing.PublishingQueueImplTest.class,
-    org.alfresco.repo.publishing.PublishingIntegratedTest.class,
     org.alfresco.repo.lock.LockBehaviourImplTest.class,
     org.alfresco.repo.node.archive.LargeArchiveAndRestoreTest.class,
     org.alfresco.repo.copy.CopyServiceImplTest.class,
@@ -82,9 +80,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.node.NodeRefPropertyMethodInterceptorTest.class,
     org.alfresco.repo.node.PerformanceNodeServiceTest.class,
     org.alfresco.repo.node.archive.ArchiveAndRestoreTest.class,
-    org.alfresco.repo.publishing.ChannelServiceImplIntegratedTest.class,
-    org.alfresco.repo.publishing.PublishingPackageSerializerTest.class,
-    org.alfresco.repo.publishing.PublishingRootObjectTest.class,
     org.alfresco.repo.node.db.DbNodeServiceImplTest.class,
     org.alfresco.repo.node.cleanup.TransactionCleanupTest.class,
     org.alfresco.repo.node.db.DbNodeServiceImplPropagationTest.class,

@@ -230,7 +230,6 @@
                <value>alfresco/workflow/workflowModel.xml</value>
                <value>alfresco/workflow/invitation-nominated-workflow-model.xml</value>
                <value>alfresco/workflow/invitation-moderated-workflow-model.xml</value>
-               <value>alfresco/workflow/publishingWorkflowModel.xml</value>
                <value>alfresco/workflow/reset-password-workflow-model.xml</value>
             </list>
         </property>

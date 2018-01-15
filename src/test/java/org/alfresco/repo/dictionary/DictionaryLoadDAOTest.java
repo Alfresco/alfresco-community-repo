@@ -108,7 +108,6 @@ public class DictionaryLoadDAOTest
         bootstrapModels.add("alfresco/model/quickShareModel.xml");
         bootstrapModels.add("alfresco/model/surfModel.xml");
         bootstrapModels.add("alfresco/model/siteModel.xml");
-        bootstrapModels.add("alfresco/model/publishingModel.xml");
 
         List<String> labels = new ArrayList<String>();
         bootstrap.setModels(bootstrapModels);

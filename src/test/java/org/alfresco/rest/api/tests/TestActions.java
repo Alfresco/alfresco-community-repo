@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.ibatis.RetryingCallbackHelper;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
@@ -35,6 +36,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Action;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
@@ -42,6 +44,7 @@ import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,6 +54,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.EmptyStackException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +73,7 @@ import static org.junit.Assert.fail;
 public class TestActions extends AbstractBaseApiTest
 {
     private NodeService nodeService;
+    private OwnableService ownableService;
     private ActionService actionService;
     private PublicApiClient.Actions actions;
     private RepoService.TestNetwork account1;
@@ -81,6 +86,7 @@ public class TestActions extends AbstractBaseApiTest
     public void setUp() throws Exception
     {
         nodeService = applicationContext.getBean("NodeService", NodeService.class);
+        ownableService = applicationContext.getBean("OwnableService", OwnableService.class);
         actionService = applicationContext.getBean("ActionService", ActionService.class);
         actions = publicApiClient.actions();
 
@@ -503,5 +509,98 @@ public class TestActions extends AbstractBaseApiTest
                 collect(Collectors.toList());
 
         assertEquals(expectedActions.subList(pageSize, pageSize*2), retrievedActions);
+    }
+
+    @Test
+    public void testExecuteAction() throws Exception
+    {
+        final String person1 = account1PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
+
+        AuthenticationUtil.setFullyAuthenticatedUser(person1);
+
+        String myNode = getMyNodeId();
+        NodeRef validNode = nodeService.createNode(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNode), ContentModel.ASSOC_CONTAINS,
+                QName.createQName("test", "test-ea-node"), ContentModel.TYPE_CONTENT).getChildRef();
+
+        // actionDefinitionId missing but required by the action.
+        {
+            actions.executeAction(new Action(), emptyParams, 400);
+        }
+
+        // Non-existent actionDefinitionId
+        {
+            Action action = new Action();
+            action.setActionDefinitionId("nonExistentActionDefId");
+
+            actions.executeAction(action, emptyParams, 404);
+        }
+
+        // targetId missing but required by the action.
+        {
+            Action action = new Action();
+            action.setActionDefinitionId(AddFeaturesActionExecuter.NAME);
+
+            actions.executeAction(action, emptyParams, 400);
+        }
+
+        // Non-existent targetId
+        {
+            NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "750a2867-ecfa-478c-8343-fa0e39d27be3");
+            assertFalse("Test pre-requisite: node must not exist", nodeService.exists(nodeRef));
+
+            Action action = new Action();
+            action.setActionDefinitionId(AddFeaturesActionExecuter.NAME);
+            action.setTargetId(nodeRef.getId());
+
+            actions.executeAction(action, emptyParams, 404);
+        }
+
+        // Missing mandatory params - action not executed.
+        {
+            Action action = new Action();
+            action.setActionDefinitionId(AddFeaturesActionExecuter.NAME);
+            action.setTargetId(validNode.getId());
+
+            actions.executeAction(action, emptyParams, 202);
+
+            Thread.sleep(1000);
+
+            assertFalse("Aspect versionable wasn't expected !", nodeService.hasAspect(validNode, ContentModel.ASPECT_VERSIONABLE));
+
+        }
+
+        // Check add versionable aspect.
+        {
+            assertFalse(nodeService.hasAspect(validNode, ContentModel.ASPECT_VERSIONABLE));
+
+            Map<String, String> params = new HashMap<>();
+            params.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, "cm:versionable");
+
+            Action action = new Action();
+            action.setActionDefinitionId(AddFeaturesActionExecuter.NAME);
+            action.setTargetId(validNode.getId());
+            action.setParams(params);
+
+            Action executedAction = actions.executeAction(action, emptyParams, 202);
+            assertNotNull(executedAction);
+            assertNotNull(executedAction.getId());
+
+            new RetryingCallbackHelper.RetryingCallback()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    assertTrue("Expected aspect versionable!", nodeService.hasAspect(validNode, ContentModel.ASPECT_VERSIONABLE));
+                    return null;
+                }
+            };
+        }
+
+        // Unauthorized -> 401
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1, "invalid-password"));
+            actions.executeAction(new Action(), emptyParams, 401);
+        }
     }
 }

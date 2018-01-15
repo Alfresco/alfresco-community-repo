@@ -23,27 +23,35 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.rest.api.actions;
 
-package org.alfresco.rest.api;
+import java.util.ArrayList;
+import java.util.List;
 
-
+import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.Action;
-import org.alfresco.rest.api.model.ActionDefinition;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.springframework.extensions.webscripts.Status;
 
-public interface Actions
+@EntityResource(name = "action-executions", title = "Actions")
+public class ActionExecutionsEntityResource implements EntityResourceAction.Create<Action>
 {
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params);
+    private Actions actions;
 
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params);
-    
-    enum SortKey
+    public void setActions(Actions actions)
     {
-        NAME,
-        TITLE
-    };
-    
-    Action executeAction(Action action, Parameters parameters);
+        this.actions = actions;
+    }
+
+    @WebApiDescription(title = "Execute action", successStatus = Status.STATUS_ACCEPTED)
+    @Override
+    public List<Action> create(List<Action> entity, Parameters parameters)
+    {
+        List<Action> result = new ArrayList<>(1);
+        result.add(actions.executeAction(entity.get(0), parameters));
+        return result;
+    }
 }

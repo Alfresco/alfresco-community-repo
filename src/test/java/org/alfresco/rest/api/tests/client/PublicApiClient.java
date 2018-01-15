@@ -47,6 +47,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.api.tests.client.data.Action;
 import org.alfresco.rest.api.tests.client.data.AuditEntry;
 import org.alfresco.rest.api.model.SiteUpdate;
 import org.alfresco.rest.api.tests.TestPeople;
@@ -2737,6 +2738,12 @@ public class PublicApiClient
             }
             return null;
         }
+
+        public Action executeAction(Action action, Map<String, String> params, int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = create("action-executions", null, null, null, action.toJSON().toString(), "Failed to create action for action def " + action.getActionDefinitionId(), expectedStatus, params);
+            return parseActionEntity(response);
+        }
         
         private ListResponse<ActionDefinition> parseActionDefinitions(JSONObject jsonResponse)
         {
@@ -2773,6 +2780,20 @@ public class PublicApiClient
             }
             
             return def;
+        }
+
+        private Action parseActionEntity(HttpResponse response)
+        {
+            if ((response != null) && (response.getJsonResponse() != null))
+            {
+                JSONObject jsonEntity = (JSONObject) response.getJsonResponse().get("entry");
+                if (jsonEntity != null)
+                {
+                    return Action.parseAction(jsonEntity);
+                }
+            }
+
+            return null;
         }
     }
 }

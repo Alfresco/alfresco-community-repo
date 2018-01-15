@@ -23,27 +23,54 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.rest.api.model;
 
-package org.alfresco.rest.api;
+import java.util.Map;
 
-
-import org.alfresco.rest.api.model.Action;
-import org.alfresco.rest.api.model.ActionDefinition;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-public interface Actions
+public class Action
 {
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params);
+    private String id;
+    private String actionDefinitionId;
+    private String targetId;
+    Map<String, String> params;
 
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params);
-    
-    enum SortKey
+    public String getId()
     {
-        NAME,
-        TITLE
-    };
-    
-    Action executeAction(Action action, Parameters parameters);
+        return id;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    public String getActionDefinitionId()
+    {
+        return actionDefinitionId;
+    }
+
+    public void setActionDefinitionId(String actionDefinitionId)
+    {
+        this.actionDefinitionId = actionDefinitionId;
+    }
+
+    public String getTargetId()
+    {
+        return targetId;
+    }
+
+    public void setTargetId(String targetId)
+    {
+        this.targetId = targetId;
+    }
+
+    public Map<String, String> getParams()
+    {
+        return params;
+    }
+
+    public void setParams(Map<String, String> params)
+    {
+        this.params = params;
+    }
 }

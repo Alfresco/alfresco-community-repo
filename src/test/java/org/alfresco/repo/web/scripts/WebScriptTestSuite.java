@@ -48,7 +48,6 @@ import org.alfresco.repo.web.scripts.links.LinksRestApiTest;
 import org.alfresco.repo.web.scripts.node.NodeWebScripTest;
 import org.alfresco.repo.web.scripts.person.PersonServiceTest;
 import org.alfresco.repo.web.scripts.preference.PreferenceServiceTest;
-import org.alfresco.repo.web.scripts.publishing.PublishingRestApiTest;
 import org.alfresco.repo.web.scripts.quickshare.QuickShareRestApiTest;
 import org.alfresco.repo.web.scripts.rating.RatingRestApiTest;
 import org.alfresco.repo.web.scripts.replication.ReplicationRestApiTest;
@@ -105,7 +104,6 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( TransferWebScriptTest.class );
         suite.addTestSuite( WorkflowModelBuilderTest.class );
         suite.addTestSuite( ActivitiWorkflowRestApiTest.class );
-        suite.addTestSuite( PublishingRestApiTest.class );
         suite.addTestSuite( SOLRWebScriptTest.class );
         suite.addTestSuite( SubscriptionServiceRestApiTest.class );
         suite.addTestSuite( FacetRestApiTest.class );

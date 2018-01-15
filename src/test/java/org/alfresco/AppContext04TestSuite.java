@@ -63,7 +63,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.web.scripts.thumbnail.ThumbnailServiceTest.class,
     org.alfresco.repo.web.scripts.transfer.TransferWebScriptTest.class,
     org.alfresco.repo.web.scripts.workflow.ActivitiWorkflowRestApiTest.class,
-    org.alfresco.repo.web.scripts.publishing.PublishingRestApiTest.class,
     org.alfresco.repo.web.scripts.solr.SOLRWebScriptTest.class,
     org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceRestApiTest.class,
     org.alfresco.repo.web.scripts.facet.FacetRestApiTest.class,

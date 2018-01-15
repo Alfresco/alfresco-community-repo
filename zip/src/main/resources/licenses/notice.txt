@@ -98,7 +98,6 @@ Solr    http://lucene.apache.org/solr/
 Solr4   http://lucene.apache.org/solr/
 Spring Framework    http://projects.spring.io/spring-framework/
 Spring Security http://projects.spring.io/spring-security/
-Spring Social   http://projects.spring.io/spring-social/
 SpringModules   http://springmodules.java.net/
 StAX    http://stax.codehaus.org/
 STAX2   http://woodstox.codehaus.org/

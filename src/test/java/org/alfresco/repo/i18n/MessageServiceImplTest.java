@@ -364,6 +364,7 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
         options.add(Locale.CHINESE);                // zh
         options.add(Locale.TRADITIONAL_CHINESE);    // zh_TW
         options.add(Locale.SIMPLIFIED_CHINESE);     // zh_CN
+        options.add(Locale.GERMAN);                 // de
         // add some variants
         Locale fr_FR_1 = new Locale("fr", "FR", "1");
         Locale zh_CN_1 = new Locale("zh", "CN", "1");
@@ -387,6 +388,10 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
         assertEquals(zh_CN_2, messageService.getNearestLocale(zh_CN_2, options));
         assertTrue(chineseMatches.contains(messageService.getNearestLocale(zh_CN_3, options)));         // must match the last variant - but set can have any order an IBM JDK differs!
         assertEquals(Locale.FRANCE, messageService.getNearestLocale(fr_FR_1, options)); // same here
+        
+        // fallback to language if the country isn't defined
+        assertFalse(options.contains(Locale.GERMANY)); // test pre-condition
+        assertEquals(Locale.GERMAN, messageService.getNearestLocale(Locale.GERMANY, options));
         
         // now test the match for just anything
         Locale na_na_na = new Locale("", "", "");

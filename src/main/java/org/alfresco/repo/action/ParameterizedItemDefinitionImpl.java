@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -263,11 +264,7 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
      */
     public boolean hasParameterDefinitions()
     {
-        List<ParameterDefinition> localizedDefinitions = parameterDefinitions.get(I18NUtil.getLocale());
-        if (null == localizedDefinitions)
-        {
-            localizedDefinitions = parameterDefinitions.get(Locale.ROOT);
-        }
+        List<ParameterDefinition> localizedDefinitions = getParameterDefinitions();
 
         return (null != localizedDefinitions) && !localizedDefinitions.isEmpty();
     }
@@ -277,7 +274,9 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
      */
     public List<ParameterDefinition> getParameterDefinitions()
     {
-        List<ParameterDefinition> result = parameterDefinitions.get(I18NUtil.getLocale());
+        Set<Locale> locales = parameterDefinitions.keySet();
+        Locale match = I18NUtil.getNearestLocale(I18NUtil.getLocale(), locales);
+        List<ParameterDefinition> result = parameterDefinitions.get(match);
 
         if (null == result)
         {
@@ -296,7 +295,9 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
 
         if (null != paramDefinitionsByName)
         {
-            Map<String, ParameterDefinition> localizedDefinitionsByName = paramDefinitionsByName.get(I18NUtil.getLocale());
+            Set<Locale> locales = paramDefinitionsByName.keySet();
+            Locale match = I18NUtil.getNearestLocale(I18NUtil.getLocale(), locales);
+            Map<String, ParameterDefinition> localizedDefinitionsByName = paramDefinitionsByName.get(match);
 
             if (null == localizedDefinitionsByName)
             {

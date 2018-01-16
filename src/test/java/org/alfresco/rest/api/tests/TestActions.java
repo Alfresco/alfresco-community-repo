@@ -512,7 +512,7 @@ public class TestActions extends AbstractBaseApiTest
     }
 
     @Test
-    public void testExecuteAction() throws Exception
+    public void testExecuteAction() throws Throwable
     {
         final String person1 = account1PersonIt.next();
         publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
@@ -586,7 +586,10 @@ public class TestActions extends AbstractBaseApiTest
             assertNotNull(executedAction);
             assertNotNull(executedAction.getId());
 
-            new RetryingCallbackHelper.RetryingCallback()
+            RetryingCallbackHelper retryingCallbackHelper = new RetryingCallbackHelper();
+            retryingCallbackHelper.setRetryWaitMs(500);
+
+            RetryingCallbackHelper.RetryingCallback retryingCallback = new RetryingCallbackHelper.RetryingCallback()
             {
                 @Override
                 public Void execute() throws Throwable
@@ -595,6 +598,8 @@ public class TestActions extends AbstractBaseApiTest
                     return null;
                 }
             };
+
+            retryingCallbackHelper.doWithRetry(retryingCallback);
         }
 
         // Unauthorized -> 401

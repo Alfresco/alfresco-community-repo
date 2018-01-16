@@ -25,19 +25,39 @@
  */
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.Actions;
+import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryException;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,11 +68,29 @@ import static java.util.Comparator.nullsFirst;
 public class ActionsImpl implements Actions
 {
     private ActionService actionService;
+    private DictionaryService dictionaryService;
+    private NamespaceService namespaceService;
+    private NodeService nodeService;
     private NamespacePrefixResolver prefixResolver;
 
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 
     public void setPrefixResolver(NamespacePrefixResolver prefixResolver)
@@ -142,6 +180,160 @@ public class ActionsImpl implements Actions
                 sortedPage,
                 hasMoreItems,
                 actionDefinitions.size());
+    }
+
+    @Override
+    public Action executeAction(Action action, Parameters parameters)
+    {
+
+        if (action == null)
+        {
+            throw new InvalidArgumentException("action is null");
+        }
+
+        // Check action definition.
+
+        if (action.getActionDefinitionId() == null || action.getActionDefinitionId().isEmpty())
+        {
+            throw new InvalidArgumentException("action.actionDefinitionId is null or empty");
+        }
+
+        org.alfresco.service.cmr.action.ActionDefinition actionDef = null;
+        try
+        {
+            actionDef = actionService.getActionDefinition(action.getActionDefinitionId());
+        }
+        catch (NoSuchBeanDefinitionException nsbdx)
+        {
+            // Intentionally empty.
+        }
+
+        // The null check was intentionally added to catch the case when the bean is
+        // found but it isn't an instance of ActionExecuter. This is the only case when
+        // the result of getActionDefinition can be null and not throw the exception.
+        if (actionDef == null)
+        {
+            throw new EntityNotFoundException(action.getActionDefinitionId());
+        }
+
+        // Check target id.
+
+        if (action.getTargetId() == null || action.getTargetId().isEmpty())
+        {
+            throw new InvalidArgumentException("targetId missing");
+        }
+
+        // Does it exist in the repo?
+        NodeRef actionedUponNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, action.getTargetId());
+        if (!nodeService.exists(actionedUponNodeRef))
+        {
+            throw new EntityNotFoundException(action.getTargetId());
+        }
+
+        org.alfresco.service.cmr.action.Action cmrAction;
+        if (action.getParams() != null && !action.getParams().isEmpty())
+        {
+            cmrAction = actionService.createAction(action.getActionDefinitionId(), extractActionParams(actionDef, action.getParams()));
+        }
+        else
+        {
+            cmrAction = actionService.createAction(action.getActionDefinitionId());
+        }
+
+        actionService.executeAction(cmrAction, actionedUponNodeRef, true, true);
+
+        // Create user result.
+        Action result = new Action();
+        result.setId(cmrAction.getId());
+
+        return result;
+    }
+
+    private Map<String, Serializable> extractActionParams(org.alfresco.service.cmr.action.ActionDefinition actionDefinition, Map<String, String> params)
+    {
+        Map<String, Serializable> parameterValues = new HashMap<>();
+
+        try
+        {
+            for (Map.Entry<String, String> entry : params.entrySet())
+            {
+                String propertyName = entry.getKey();
+                Object propertyValue = entry.getValue();
+
+                // Get the parameter definition we care about
+                ParameterDefinition paramDef = actionDefinition.getParameterDefintion(propertyName);
+                if (paramDef == null && !actionDefinition.getAdhocPropertiesAllowed())
+                {
+                    throw new AlfrescoRuntimeException("Invalid parameter " + propertyName + " for action/condition " + actionDefinition.getName());
+                }
+                if (paramDef != null)
+                {
+                    QName typeQName = paramDef.getType();
+
+                    // Convert the property value
+                    Serializable value = convertValue(typeQName, propertyValue);
+                    parameterValues.put(propertyName, value);
+                }
+                else
+                {
+                    // If there is no parameter definition we can only rely on the .toString()
+                    // representation of the ad-hoc property
+                    parameterValues.put(propertyName, propertyValue.toString());
+                }
+            }
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
+        }
+
+        return parameterValues;
+    }
+
+    private Serializable convertValue(QName typeQName, Object propertyValue) throws JSONException
+    {
+        Serializable value;
+
+        DataTypeDefinition typeDef = dictionaryService.getDataType(typeQName);
+        if (typeDef == null)
+        {
+            throw new AlfrescoRuntimeException("Action property type definition " + typeQName.toPrefixString() + " is unknown.");
+        }
+
+        if (propertyValue instanceof JSONArray)
+        {
+            // Convert property type to java class
+            String javaClassName = typeDef.getJavaClassName();
+            try
+            {
+                Class.forName(javaClassName);
+            }
+            catch (ClassNotFoundException e)
+            {
+                throw new DictionaryException("Java class " + javaClassName + " of property type " + typeDef.getName() + " is invalid", e);
+            }
+
+            int length = ((JSONArray) propertyValue).length();
+            List<Serializable> list = new ArrayList<>(length);
+            for (int i = 0; i < length; i++)
+            {
+                list.add(convertValue(typeQName, ((JSONArray) propertyValue).get(i)));
+            }
+            value = (Serializable) list;
+        }
+        else
+        {
+            if (typeQName.equals(DataTypeDefinition.QNAME) && typeQName.toString().contains(":"))
+            {
+                value = QName.createQName(propertyValue.toString(), namespaceService);
+            }
+            else
+            {
+                value = (Serializable) DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
+            }
+        }
+
+        return value;
     }
 
     private List<String> toShortQNames(Set<QName> types)

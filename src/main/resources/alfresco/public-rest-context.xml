@@ -544,6 +544,9 @@
 
     <bean id="actions" class="org.alfresco.rest.api.impl.ActionsImpl">
         <property name="actionService" ref="ActionService"/>
+        <property name="dictionaryService" ref="DictionaryService"/>
+        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="nodeService" ref="NodeService"/>
         <property name="prefixResolver" ref="namespaceService"/>
     </bean>
     <bean id="Actions" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -559,7 +562,10 @@
     <bean class="org.alfresco.rest.api.actions.ActionDefinitionsEntityResource">
         <property name="actions" ref="Actions"/>
     </bean>
-
+    <bean class="org.alfresco.rest.api.actions.ActionExecutionsEntityResource">
+        <property name="actions" ref="Actions"/>
+    </bean>
+    
     <bean id="Downloads" class="org.springframework.aop.framework.ProxyFactoryBean">
             <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.Downloads</value>

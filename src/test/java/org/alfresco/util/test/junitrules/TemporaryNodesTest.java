@@ -36,6 +36,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -72,7 +73,7 @@ import org.junit.rules.RuleChain;
 @Category(OwnJVMTestsCategory.class)
 public class TemporaryNodesTest
 {
-    private static final String SITE_SHORT_NAME = "siteShortName"+TemporaryNodesTest.class.getSimpleName();
+    private static final String SITE_SHORT_NAME = "siteShortName"+TemporaryNodesTest.class.getSimpleName()+UUID.randomUUID().toString();
 
     // Rule to initialise the default Alfresco spring configuration
     public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();

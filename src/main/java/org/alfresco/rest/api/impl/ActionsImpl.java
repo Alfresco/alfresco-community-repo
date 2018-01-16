@@ -208,6 +208,9 @@ public class ActionsImpl implements Actions
             // Intentionally empty.
         }
 
+        // The null check was intentionally added to catch the case when the bean is
+        // found but it isn't an instance of ActionExecuter. This is the only case when
+        // the result of getActionDefinition can be null and not throw the exception.
         if (actionDef == null)
         {
             throw new EntityNotFoundException(action.getActionDefinitionId());

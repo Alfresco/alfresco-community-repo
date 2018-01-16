@@ -31,6 +31,7 @@ import java.util.List;
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -50,6 +51,11 @@ public class ActionExecutionsEntityResource implements EntityResourceAction.Crea
     @Override
     public List<Action> create(List<Action> entity, Parameters parameters)
     {
+        if (entity == null || entity.size() != 1)
+        {
+            throw new InvalidArgumentException("Please specify one action request only.");
+        }
+
         List<Action> result = new ArrayList<>(1);
         result.add(actions.executeAction(entity.get(0), parameters));
         return result;

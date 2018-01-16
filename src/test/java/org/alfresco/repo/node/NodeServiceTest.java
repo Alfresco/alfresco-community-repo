@@ -1274,7 +1274,7 @@ public class NodeServiceTest
                     try
                     {
                         wait(1000L);     // A short wait before we kick off (should be notified)
-                        for (int i = 0; i < 200; i++)
+                        for (int i = 0; i < 100; i++)
                         {
                             NodeRef nodeRef = txnService.getRetryingTransactionHelper().doInTransaction(createChildCallback);
                             // Store the node for later checks
@@ -1311,6 +1311,9 @@ public class NodeServiceTest
                     // Short wait to give thread a chance to run
                     synchronized(this) { try { wait(10L); } catch (Throwable e) {} };
                 }
+                //add the Temporary aspect to make the deletion faster (it will not be moved to the archival store)
+                nodeService.addAspect(nodeRefs[0], ContentModel.ASPECT_TEMPORARY, null);
+
                 // Delete the parent node
                 nodeService.deleteNode(nodeRefs[0]);
                 return null;

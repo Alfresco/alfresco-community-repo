@@ -216,18 +216,17 @@ public class ActionsImpl implements Actions
             throw new EntityNotFoundException(action.getActionDefinitionId());
         }
 
-        // Check target id.
-
-        if (action.getTargetId() == null || action.getTargetId().isEmpty())
+        // targetId is optional, however, currently targetId must be a valid node ID.
+        NodeRef actionedUponNodeRef = null;
+        if (action.getTargetId() != null && !action.getTargetId().isEmpty())
         {
-            throw new InvalidArgumentException("targetId missing");
-        }
+            // Does it exist in the repo?
+            actionedUponNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, action.getTargetId());
 
-        // Does it exist in the repo?
-        NodeRef actionedUponNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, action.getTargetId());
-        if (!nodeService.exists(actionedUponNodeRef))
-        {
-            throw new EntityNotFoundException(action.getTargetId());
+            if (!nodeService.exists(actionedUponNodeRef))
+            {
+                throw new EntityNotFoundException(action.getTargetId());
+            }
         }
 
         org.alfresco.service.cmr.action.Action cmrAction;

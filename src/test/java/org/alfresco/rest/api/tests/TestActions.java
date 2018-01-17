@@ -536,14 +536,6 @@ public class TestActions extends AbstractBaseApiTest
             actions.executeAction(action, emptyParams, 404);
         }
 
-        // targetId missing but required by the action.
-        {
-            Action action = new Action();
-            action.setActionDefinitionId(AddFeaturesActionExecuter.NAME);
-
-            actions.executeAction(action, emptyParams, 400);
-        }
-
         // Non-existent targetId
         {
             NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "750a2867-ecfa-478c-8343-fa0e39d27be3");

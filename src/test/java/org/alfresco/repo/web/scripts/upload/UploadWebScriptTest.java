@@ -195,8 +195,14 @@ public class UploadWebScriptTest extends BaseWebScriptTest
 
     public PostRequest buildMultipartPostRequest(File file, String filename, String siteId, String containerId) throws IOException
     {
-        Part[] parts = { new FilePart("filedata", file.getName(), file, "text/plain", null), new StringPart("filename", filename),
-                new StringPart("description", "description"), new StringPart("siteid", siteId), new StringPart("containerid", containerId) };
+        Part[] parts = 
+            { 
+                new FilePart("filedata", file.getName(), file, "text/plain", null), 
+                new StringPart("filename", filename),
+                new StringPart("description", "description"), 
+                new StringPart("siteid", siteId), 
+                new StringPart("containerid", containerId) 
+            };
 
         MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(parts, new HttpMethodParams());
 

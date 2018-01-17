@@ -27,10 +27,17 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.compatibility;
 
+import java.io.Serializable;
+
 import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl;
+import org.alfresco.repo.admin.registry.RegistryKey;
+import org.alfresco.repo.admin.registry.RegistryService;
 import org.alfresco.repo.module.AbstractModuleComponent;
+import org.alfresco.repo.module.ModuleComponentHelper;
+import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.module.ModuleDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,6 +51,10 @@ import org.apache.commons.logging.LogFactory;
 @Deprecated
 public abstract class ModulePatchComponent extends AbstractModuleComponent
 {
+    private static final String REGISTRY_PATH_MODULES = "modules";
+    private static final String REGISTRY_PROPERTY_INSTALLED_VERSION = "installedVersion";
+    private static final String REGISTRY_PROPERTY_CURRENT_VERSION = "currentVersion";
+    
     /** logger */
     protected static final Log LOGGER = LogFactory.getLog(ModulePatchComponent.class);
 
@@ -81,6 +92,14 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     }
 
     /**
+     * @param registryService   Registry service
+     */
+    protected RegistryService registryService;
+    public void setRegistryService(RegistryService registryService) {
+        this.registryService = registryService;
+    }
+
+    /**
      * Init method
      */
     @Override
@@ -96,6 +115,28 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     @Override
     protected void executeInternal()
     {
+        String moduleId = modulePatchExecuter.getModuleId();
+
+        RegistryKey moduleKeyInstalledVersion = new RegistryKey(ModuleComponentHelper.URI_MODULES_1_0,
+                new String[]{REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_INSTALLED_VERSION});
+        Serializable moduleInstalledVersion = this.registryService.getProperty(moduleKeyInstalledVersion);
+        ModuleVersionNumber moduleInstalledVersionNumber = new ModuleVersionNumber(moduleInstalledVersion.toString());
+
+        RegistryKey moduleKeyCurrentVersion = new RegistryKey(ModuleComponentHelper.URI_MODULES_1_0,
+                new String[]{REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION});
+        Serializable moduleCurrentVersion = this.registryService.getProperty(moduleKeyCurrentVersion);
+        ModuleVersionNumber moduleCurrentVersionNumber = new ModuleVersionNumber(moduleInstalledVersion.toString());
+
+        ModuleDetails moduleDetails = moduleService.getModule(moduleId);
+        ModuleVersionNumber moduleNewVersion = moduleDetails.getModuleVersionNumber();
+        
+        LOGGER.debug("******************************************************************");
+        LOGGER.debug("    moduleCurrentVersion  : " + moduleCurrentVersion.toString());
+        LOGGER.debug("             versionNumber: " + moduleCurrentVersionNumber.toString());
+        LOGGER.debug("    moduleInstalledVersion: " + moduleInstalledVersion.toString());
+        LOGGER.debug("             versionNumber: " + moduleInstalledVersionNumber.toString());
+        LOGGER.debug("    moduleNewVersionNumber: " + moduleNewVersion.toString());
+
         try
         {
             if (LOGGER.isInfoEnabled())

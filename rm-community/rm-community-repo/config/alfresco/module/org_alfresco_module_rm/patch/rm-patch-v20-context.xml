@@ -13,7 +13,6 @@
       <property name="description" value="Patches new versions of the notification templates."/>
       <property name="sinceVersion" value="2.0"/>
       <property name="appliesFromVersion" value="2.0"/>
-      <property name="appliesToVersion" value="2.0.999"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
       <property name="contentService" ref="ContentService"/>
@@ -29,7 +28,6 @@
       <property name="description" value="Patches the existing RM data for the RM v2.0 model updates."/>
       <property name="sinceVersion" value="2.0"/>
       <property name="appliesFromVersion" value="2.0"/>
-      <property name="appliesToVersion" value="2.0.999"/>
       <property name="patchDAO" ref="patchDAO"/>
       <property name="nodeDAO" ref="nodeDAO" />
       <property name="qnameDAO" ref="qnameDAO"/>
@@ -43,7 +41,6 @@
       <property name="description" value="Patches the existing RM data with the root file plan values."/>
       <property name="sinceVersion" value="2.0"/>
       <property name="appliesFromVersion" value="2.0"/>
-      <property name="appliesToVersion" value="2.0.999"/>
       <property name="patchDAO" ref="patchDAO"/>
       <property name="nodeDAO" ref="nodeDAO" />
       <property name="qnameDAO" ref="qnameDAO"/>
@@ -61,7 +58,6 @@
       <property name="description" value="Patches the existing saved seaches."/>
       <property name="sinceVersion" value="2.0"/>
       <property name="appliesFromVersion" value="2.0"/>
-      <property name="appliesToVersion" value="2.0.999"/>
       <property name="recordsManagementSearchService" ref="RecordsManagementSearchService" />
       <property name="siteService" ref="SiteService" />
       <property name="contentService" ref="ContentService"/>

@@ -2763,14 +2763,9 @@ public class NodesImpl implements Nodes
 
     protected void createVersion(NodeRef nodeRef, boolean isVersioned, VersionType versionType, String reason)
     {
-        if (! isVersioned)
+        if (!isVersioned)
         {
-            // Ensure versioning is enabled for the file (autoVersion = true, autoVersionProps = false)
-            Map<QName, Serializable> props = new HashMap<>(2);
-            props.put(ContentModel.PROP_AUTO_VERSION, true);
-            props.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
-
-            nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
         }
 
         Map<String, Serializable> versionProperties = new HashMap<>(2);

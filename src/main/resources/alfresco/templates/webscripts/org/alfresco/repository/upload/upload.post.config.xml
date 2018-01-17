@@ -1,5 +1,4 @@
 <upload>
-<!-- modify this configuration to change the versioning behaviour for this API - remove the section to apply content model default behaviour -->
-  <autoVersion>true</autoVersion>
-  <autoVersionProps>false</autoVersionProps>
+	<!-- modify this configuration to change the versioning behaviour for this 
+		API - remove the section to apply content model default behaviour -->
 </upload>

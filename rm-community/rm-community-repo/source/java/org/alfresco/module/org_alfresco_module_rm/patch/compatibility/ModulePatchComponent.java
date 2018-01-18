@@ -37,8 +37,8 @@ import org.alfresco.repo.module.ModuleComponentHelper;
 import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -55,7 +55,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     private static final String REGISTRY_PROPERTY_CURRENT_VERSION = "currentVersion";
     
     /** logger */
-    protected static final Log LOGGER = LogFactory.getLog(ModulePatchComponent.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(ModulePatchComponent.class);
 
     /** Retrying transaction helper */
     protected RetryingTransactionHelper retryingTransactionHelper;
@@ -96,7 +96,8 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     /**
      * @param registryService   Registry service
      */
-    public void setRegistryService(RegistryService registryService) {
+    public void setRegistryService(RegistryService registryService)
+    {
         this.registryService = registryService;
     }
 
@@ -118,23 +119,19 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     {
         ModuleVersionNumber moduleInstalledVersionNumber = getModuleVersionNumber(REGISTRY_PROPERTY_INSTALLED_VERSION);
         ModuleVersionNumber moduleCurrentVersionNumber = getModuleVersionNumber(REGISTRY_PROPERTY_CURRENT_VERSION);
+        
+        String moduleName = getName();
 
-        if (isUpgradeFromVersionThatIncludesEarlyPatch(moduleInstalledVersionNumber, moduleCurrentVersionNumber))
+        if (isVersionLaterThan(moduleInstalledVersionNumber, moduleCurrentVersionNumber))
         {
-            if (LOGGER.isInfoEnabled())
-            {
-                LOGGER.info("Module patch component '" + getName() + "' is skipped for upgrade" +
-                        " from version " + moduleInstalledVersionNumber.toString() +
-                        " to version " + moduleCurrentVersionNumber.toString());
-            }
-        } else
+            LOGGER.info("Module patch component '{}' is skipped for upgrade from version {} to version {}",
+                    moduleName, moduleInstalledVersionNumber, moduleCurrentVersionNumber);
+        }
+        else
         {
             try
             {
-                if (LOGGER.isInfoEnabled())
-                {
-                    LOGGER.info("Module patch component '" + getName() + "' is executing ...");
-                }
+                LOGGER.info("Module patch component '{}' is executing ...", moduleName);
 
                 // execute path within an isolated transaction
                 retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
@@ -146,7 +143,8 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
                         try
                         {
                             executePatch();
-                        } finally
+                        }
+                        finally
                         {
                             behaviourFilter.enableBehaviour();
                         }
@@ -155,17 +153,12 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
 
                 }, false, true);
 
-                if (LOGGER.isInfoEnabled())
-                {
-                    LOGGER.info(" ... completed module patch '" + getName() + "'");
-                }
+                LOGGER.info(" ... completed module patch '{}'", moduleName);
+                
             } catch (Exception exception)
             {
                 // record the exception otherwise it gets swallowed
-                if (LOGGER.isInfoEnabled())
-                {
-                    LOGGER.info("  ... error encountered.  " + exception.getMessage(), exception);
-                }
+                LOGGER.info("  ... error encountered.  {}", exception.getMessage(), exception);
                 throw exception;
             }
         }
@@ -183,13 +176,30 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
         
         return new ModuleVersionNumber(moduleVersion.toString());
     }
-    
-    private boolean isUpgradeFromVersionThatIncludesEarlyPatch(ModuleVersionNumber installedModuleVersionNumber,
-                                                               ModuleVersionNumber currentModuleVersionNumber)
+
+    /**
+     * Helper method to determine if this is an upgrade from a version that already includes the early (v2.0, v2.1)
+     * patches.
+     *
+     */
+    private boolean isVersionLaterThan(ModuleVersionNumber installedModuleVersionNumber,
+                                       ModuleVersionNumber currentModuleVersionNumber)
     {
-        ModuleVersionNumber minVersion = this.getAppliesFromVersionNumber();
-        return installedModuleVersionNumber.compareTo(minVersion) >= 0 &&
-                installedModuleVersionNumber.compareTo(currentModuleVersionNumber) != 0;
+        // assume that the v2.0 and v2.1 patches should be run
+        boolean versionLaterThan = false;
+
+        // if this is an upgrade as opposed to a fresh install
+        if (installedModuleVersionNumber.compareTo(currentModuleVersionNumber) != 0)
+        {
+            // if the installed version is later than the minimum version number of this patch
+            ModuleVersionNumber minVersion = this.getAppliesFromVersionNumber();
+            if (installedModuleVersionNumber.compareTo(minVersion) >= 0)
+            {
+                versionLaterThan = true;
+            }
+        }
+
+        return  versionLaterThan;
     }
 
     /**

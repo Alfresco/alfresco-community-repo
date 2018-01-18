@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -1140,8 +1139,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
      */
     protected Date getStartOfDay(Date date)
     {
-        date = (date == null ? new Date() : date);
-        return Date.from(date.toInstant().truncatedTo(ChronoUnit.DAYS));
+        return DateUtils.truncate(date == null ? new Date() : date, Calendar.DATE);
     }
 
     /**

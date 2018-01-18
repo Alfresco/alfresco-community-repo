@@ -27,13 +27,14 @@ package org.alfresco.rest.api.actions;
 
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @EntityResource(name="action-definitions", title = "Actions")
-public class ActionDefinitionsEntityResource implements EntityResourceAction.Read<ActionDefinition>
+public class ActionDefinitionsEntityResource implements EntityResourceAction.Read<ActionDefinition>, EntityResourceAction.ReadById<ActionDefinition>
 {
     private Actions actions;
 
@@ -46,5 +47,11 @@ public class ActionDefinitionsEntityResource implements EntityResourceAction.Rea
     public CollectionWithPagingInfo<ActionDefinition> readAll(Parameters params)
     {
         return actions.getActionDefinitions(params);
+    }
+
+    @Override
+    public ActionDefinition readById(String id, Parameters parameters) throws EntityNotFoundException 
+    {
+        return actions.getActionDefinitionById(id);
     }
 }

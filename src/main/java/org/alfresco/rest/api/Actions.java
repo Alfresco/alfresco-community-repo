@@ -38,6 +38,8 @@ public interface Actions
     CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params);
 
     CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params);
+
+    ActionDefinition getActionDefinitionById(String actionDefinitionId);
     
     enum SortKey
     {

@@ -206,6 +206,47 @@ public class TestActions extends AbstractBaseApiTest
             actions.getActionDefinitions(emptyParams, 401);
         }
     }
+    
+    @Test
+    public void canGetActionDefinition() throws PublicApiException
+    {
+        final String person1 = account1PersonIt.next();
+        publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1));
+        
+        ActionDefinition actionDef = actions.getActionDefinition("add-features",200);
+
+        assertNotNull("Action definition should not be null", actionDef);
+
+        // Check ActionDefinition fields
+        assertEquals("add-features", actionDef.getId());
+        assertEquals("add-features", actionDef.getName());
+        assertEquals("Add aspect", actionDef.getTitle());
+        assertEquals("This will add an aspect to the matched item.", actionDef.getDescription());
+        // Applicable types
+        assertEquals(0, actionDef.getApplicableTypes().size());
+        assertEquals(false, actionDef.isTrackStatus());
+        // Parameter definitions
+        assertEquals(1, actionDef.getParameterDefinitions().size());
+        ActionDefinition.ParameterDefinition paramDefs = actionDef.getParameterDefinitions().get(0);
+        assertEquals(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, paramDefs.getName());
+        assertEquals("d:qname", paramDefs.getType());
+        assertEquals(true, paramDefs.isMandatory());
+        assertEquals("Aspect", paramDefs.getDisplayLabel());
+        assertEquals(false, paramDefs.isMultiValued());
+        assertEquals("ac-aspects", paramDefs.getParameterConstraintName());
+
+        // Non-existing actionDefinitionId  -> 404
+        {
+            actions.getActionDefinition("some-text",404);
+        }
+        
+        // Unauthorized -> 401
+        {
+            publicApiClient.setRequestContext(new RequestContext(account1.getId(), person1, "invalid-password"));
+            actions.getActionDefinition(null, 401);
+        }
+        
+    }
 
     @Test
     public void canGetActionDefinitionsForNode() throws Exception

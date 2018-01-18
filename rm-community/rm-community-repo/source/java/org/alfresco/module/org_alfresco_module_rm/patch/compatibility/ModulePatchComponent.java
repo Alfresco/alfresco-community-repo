@@ -37,7 +37,6 @@ import org.alfresco.repo.module.ModuleComponentHelper;
 import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.module.ModuleDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -67,6 +66,9 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     /** module patch executer */
     protected ModulePatchExecuterImpl modulePatchExecuter;
 
+    /** Registry service */
+    protected RegistryService registryService;
+    
     /**
      * @param retryingTransactionHelper retrying transaction helper
      */
@@ -94,7 +96,6 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     /**
      * @param registryService   Registry service
      */
-    protected RegistryService registryService;
     public void setRegistryService(RegistryService registryService) {
         this.registryService = registryService;
     }
@@ -115,69 +116,80 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     @Override
     protected void executeInternal()
     {
-        String moduleId = modulePatchExecuter.getModuleId();
+        ModuleVersionNumber moduleInstalledVersionNumber = getModuleVersionNumber(REGISTRY_PROPERTY_INSTALLED_VERSION);
+        ModuleVersionNumber moduleCurrentVersionNumber = getModuleVersionNumber(REGISTRY_PROPERTY_CURRENT_VERSION);
 
-        RegistryKey moduleKeyInstalledVersion = new RegistryKey(ModuleComponentHelper.URI_MODULES_1_0,
-                new String[]{REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_INSTALLED_VERSION});
-        Serializable moduleInstalledVersion = this.registryService.getProperty(moduleKeyInstalledVersion);
-        ModuleVersionNumber moduleInstalledVersionNumber = new ModuleVersionNumber(moduleInstalledVersion.toString());
-
-        RegistryKey moduleKeyCurrentVersion = new RegistryKey(ModuleComponentHelper.URI_MODULES_1_0,
-                new String[]{REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION});
-        Serializable moduleCurrentVersion = this.registryService.getProperty(moduleKeyCurrentVersion);
-        ModuleVersionNumber moduleCurrentVersionNumber = new ModuleVersionNumber(moduleInstalledVersion.toString());
-
-        ModuleDetails moduleDetails = moduleService.getModule(moduleId);
-        ModuleVersionNumber moduleNewVersion = moduleDetails.getModuleVersionNumber();
-        
-        LOGGER.debug("******************************************************************");
-        LOGGER.debug("    moduleCurrentVersion  : " + moduleCurrentVersion.toString());
-        LOGGER.debug("             versionNumber: " + moduleCurrentVersionNumber.toString());
-        LOGGER.debug("    moduleInstalledVersion: " + moduleInstalledVersion.toString());
-        LOGGER.debug("             versionNumber: " + moduleInstalledVersionNumber.toString());
-        LOGGER.debug("    moduleNewVersionNumber: " + moduleNewVersion.toString());
-
-        try
+        if (isUpgradeFromVersionThatIncludesEarlyPatch(moduleInstalledVersionNumber, moduleCurrentVersionNumber))
         {
             if (LOGGER.isInfoEnabled())
             {
-                LOGGER.info("Module patch component '" + getName() + "' is executing ...");
+                LOGGER.info("Module patch component '" + getName() + "' is skipped for upgrade" +
+                        " from version " + moduleInstalledVersionNumber.toString() +
+                        " to version " + moduleCurrentVersionNumber.toString());
             }
-            
-            // execute path within an isolated transaction
-            retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        } else
+        {
+            try
             {
-                @Override
-                public Void execute()
+                if (LOGGER.isInfoEnabled())
                 {
-                    behaviourFilter.disableBehaviour();
-                    try
-                    {
-                        executePatch();
-                    }
-                    finally
-                    {
-                        behaviourFilter.enableBehaviour();
-                    }
-                    return null;
+                    LOGGER.info("Module patch component '" + getName() + "' is executing ...");
                 }
 
-            }, false, true);
+                // execute path within an isolated transaction
+                retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    @Override
+                    public Void execute()
+                    {
+                        behaviourFilter.disableBehaviour();
+                        try
+                        {
+                            executePatch();
+                        } finally
+                        {
+                            behaviourFilter.enableBehaviour();
+                        }
+                        return null;
+                    }
 
-            if (LOGGER.isInfoEnabled())
+                }, false, true);
+
+                if (LOGGER.isInfoEnabled())
+                {
+                    LOGGER.info(" ... completed module patch '" + getName() + "'");
+                }
+            } catch (Exception exception)
             {
-                LOGGER.info(" ... completed module patch '" + getName() + "'");
+                // record the exception otherwise it gets swallowed
+                if (LOGGER.isInfoEnabled())
+                {
+                    LOGGER.info("  ... error encountered.  " + exception.getMessage(), exception);
+                }
+                throw exception;
             }
         }
-        catch (Exception exception)
-        {
-            // record the exception otherwise it gets swallowed
-            if (LOGGER.isInfoEnabled())
-            {
-                LOGGER.info("  ... error encountered.  " + exception.getMessage(), exception);
-            }
-            throw exception;
-        }
+    }
+
+    /**
+     * Helper method to get the ModuleVersionNumber.
+     */
+    private ModuleVersionNumber getModuleVersionNumber(String registryProperty)
+    {
+        String moduleId = modulePatchExecuter.getModuleId();
+        RegistryKey moduleKeyVersion = new RegistryKey(ModuleComponentHelper.URI_MODULES_1_0,
+                new String[]{REGISTRY_PATH_MODULES, moduleId, registryProperty});
+        Serializable moduleVersion = this.registryService.getProperty(moduleKeyVersion);
+        
+        return new ModuleVersionNumber(moduleVersion.toString());
+    }
+    
+    private boolean isUpgradeFromVersionThatIncludesEarlyPatch(ModuleVersionNumber installedModuleVersionNumber,
+                                                               ModuleVersionNumber currentModuleVersionNumber)
+    {
+        ModuleVersionNumber minVersion = this.getAppliesFromVersionNumber();
+        return installedModuleVersionNumber.compareTo(minVersion) >= 0 &&
+                installedModuleVersionNumber.compareTo(currentModuleVersionNumber) != 0;
     }
 
     /**

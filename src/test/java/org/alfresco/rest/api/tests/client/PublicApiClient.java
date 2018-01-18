@@ -2795,5 +2795,22 @@ public class PublicApiClient
 
             return null;
         }
+        
+        public ActionDefinition getActionDefinition(String actionDefinitionId, int expectedStatus) throws PublicApiException
+        {
+            HttpResponse response = getSingle("action-definitions", actionDefinitionId, null,
+                    null, null, "Unexpected response", expectedStatus);
+
+            if (response != null && response.getJsonResponse() != null)
+            {
+                JSONObject jsonEntity = (JSONObject) response.getJsonResponse().get("entry");
+                if (jsonEntity != null)
+                {
+                    return parseActionDefinition(jsonEntity);
+                }                
+            }
+            
+            return null;
+        }
     }
 }

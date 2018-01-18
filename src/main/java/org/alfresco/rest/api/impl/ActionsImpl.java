@@ -99,6 +99,53 @@ public class ActionsImpl implements Actions
     }
 
     @Override
+    public ActionDefinition getActionDefinitionById(String actionDefinitionId)
+    {
+        if (actionDefinitionId == null)
+        {
+            throw new IllegalArgumentException("Missing actionDefinitionId");
+        }
+
+        // Non-existing actionDefinitionId -> 404
+        ActionDefinition result = null;
+        try
+        {
+            result = getActionDefinition(actionService.getActionDefinition(actionDefinitionId));
+        }
+        catch (NoSuchBeanDefinitionException nsbdx)
+        {
+            // Intentionally empty.
+        }
+
+        if (result == null)
+        {
+            throw new EntityNotFoundException(actionDefinitionId);
+        }
+
+        return result;
+    }
+    
+    private ActionDefinition getActionDefinition( 
+            org.alfresco.service.cmr.action.ActionDefinition actionDefinitionId)
+    {        
+        List<ActionDefinition.ParameterDefinition> paramDefs =
+                actionDefinitionId.
+                        getParameterDefinitions().
+                        stream().
+                        map(this::toModel).
+                        collect(Collectors.toList());
+        return new ActionDefinition(
+                actionDefinitionId.getName(), // ID is a synonym for name.
+                actionDefinitionId.getName(),
+                actionDefinitionId.getTitle(),
+                actionDefinitionId.getDescription(),
+                toShortQNames(actionDefinitionId.getApplicableTypes()),
+                actionDefinitionId.getAdhocPropertiesAllowed(),
+                actionDefinitionId.getTrackStatus(),
+                paramDefs);
+    }
+    
+    @Override
     public CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params)
     {
         return actionDefinitions(actionService.getActionDefinitions(nodeRef), params);

@@ -473,7 +473,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jodconverter-core</artifactId>
-            <version>3.0.1</version>
+            <version>3.0.1.1</version>
         </dependency>
         <dependency>
             <groupId>net.sf.javamusictag</groupId>

@@ -537,6 +537,9 @@
         <property name="namespaceService" ref="namespaceService" />
         <property name="capabilityService" ref="CapabilityService" />
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="viewLogMaxSize">
+            <value>${audit.rm.viewLog.maxSize}</value>
+        </property>
     </bean>
 
    <!-- REST impl for GET Class Definitions for RM/DM -->

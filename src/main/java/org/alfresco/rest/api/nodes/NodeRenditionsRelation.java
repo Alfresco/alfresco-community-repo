@@ -37,6 +37,8 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
@@ -50,10 +52,10 @@ import java.util.List;
  */
 @RelationshipResource(name = "renditions", entityResource = NodesEntityResource.class, title = "Node renditions")
 public class NodeRenditionsRelation implements RelationshipResourceAction.Read<Rendition>,
-            RelationshipResourceAction.ReadById<Rendition>,
-            RelationshipResourceAction.Create<Rendition>,
-            RelationshipResourceBinaryAction.Read,
-            InitializingBean
+        RelationshipResourceAction.ReadById<Rendition>,
+        RelationshipResourceAction.Create<Rendition>,
+        RelationshipResourceBinaryAction.Read,
+        InitializingBean
 {
 
     private Renditions renditions;
@@ -72,19 +74,22 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     @Override
     public CollectionWithPagingInfo<Rendition> readAll(String nodeId, Parameters parameters)
     {
-        return renditions.getRenditions(nodeId, parameters);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        return renditions.getRenditions(nodeRef, parameters);
     }
 
     @Override
     public Rendition readById(String nodeId, String renditionId, Parameters parameters)
     {
-        return renditions.getRendition(nodeId, renditionId, parameters);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        return renditions.getRendition(nodeRef, renditionId, parameters);
     }
 
     @WebApiDescription(title = "Create rendition", successStatus = Status.STATUS_ACCEPTED)
     @Override
     public List<Rendition> create(String nodeId, List<Rendition> entity, Parameters parameters)
     {
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         // Temporary - pending future improvements to thumbnail service to minimise chance of
         // missing/failed thumbnails (when requested/generated 'concurrently')
         if (entity.size() > 1)
@@ -94,7 +99,7 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
 
         for (Rendition rendition : entity)
         {
-            renditions.createRendition(nodeId, rendition, parameters);
+            renditions.createRendition(nodeRef, rendition, parameters);
         }
         return null;
     }
@@ -104,6 +109,7 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     @Override
     public BinaryResource readProperty(String nodeId, String renditionId, Parameters parameters)
     {
-        return renditions.getContent(nodeId, renditionId, parameters);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        return renditions.getContent(nodeRef, renditionId, parameters);
     }
 }

@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -327,7 +328,7 @@ public class TestPeople extends AbstractBaseApiTest
             for (char invalidCharacter : invalidCharacters)
             {
                 person.setUserName("myUser" + invalidCharacter + "Name@" + account1.getId());
-                people.create(person, 400);
+        people.create(person, 400);
             }
         }
 
@@ -529,11 +530,11 @@ public class TestPeople extends AbstractBaseApiTest
         {
             String json =
                     "{\n" +
-                    "  \"id\": \"" + username + "\",\n" +
-                    "  \"firstName\": \"Joe\",\n" +
-                    "  \"lastName\": \"Bloggs\",\n" +
-                    badField +
-                    "}";
+                            "  \"id\": \"" + username + "\",\n" +
+                            "  \"firstName\": \"Joe\",\n" +
+                            "  \"lastName\": \"Bloggs\",\n" +
+                            badField +
+                            "}";
             people.create("people", null, null, null, json, "Illegal field test:"+badField, 400);
         }
     }
@@ -782,10 +783,10 @@ public class TestPeople extends AbstractBaseApiTest
             assertFalse(person.getAspectNames().contains("papi:lunchable"));
             String json = qjson(
                     "{" +
-                    "    `properties`: {" +
-                    "        `papi:lunch`: `Tomato soup`" +
-                    "    }" +
-                    "}"
+                            "    `properties`: {" +
+                            "        `papi:lunch`: `Tomato soup`" +
+                            "    }" +
+                            "}"
             );
             person = people.update(person.getId(), json, 200);
 
@@ -876,14 +877,14 @@ public class TestPeople extends AbstractBaseApiTest
             // but explicitly add the papi:lunchable aspect.
             String json = qjson(
                     "{" +
-                    "    `aspectNames`: [ " +
-                    "        `papi:lunchable` " +
-                    "    ], " +
-                    "    `properties`: { " +
-                    "        `papi:jabber`: `another@jabber.example.com`, " +
-                    "        `papi:lunch`: `sandwich` " +
-                    "     }" +
-                    "}"
+                            "    `aspectNames`: [ " +
+                            "        `papi:lunchable` " +
+                            "    ], " +
+                            "    `properties`: { " +
+                            "        `papi:jabber`: `another@jabber.example.com`, " +
+                            "        `papi:lunch`: `sandwich` " +
+                            "     }" +
+                            "}"
             );
             
             person = people.update(person.getId(), json, 200);
@@ -1801,9 +1802,9 @@ public class TestPeople extends AbstractBaseApiTest
             // Un-authenticated APIs as we are still using the 'setRequestContext(account1.getId(), null, null)' set above.
             // Reset the password
             PasswordReset passwordReset = new PasswordReset()
-                        .setPassword("changed")
-                        .setId(pair.getFirst())
-                        .setKey(pair.getSecond());
+                    .setPassword("changed")
+                    .setId(pair.getFirst())
+                    .setKey(pair.getSecond());
             post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordReset), 202);
             assertEquals("A reset password confirmation email should have been sent.", 1, emailUtil.getSentCount());
             msg = emailUtil.getLastEmail();
@@ -1883,44 +1884,44 @@ public class TestPeople extends AbstractBaseApiTest
             emailUtil.reset();
             // Invalid request - password is not provided
             PasswordReset passwordResetInvalid = new PasswordReset()
-                        .setId(pair.getFirst())
-                        .setKey(pair.getSecond());
+                    .setId(pair.getFirst())
+                    .setKey(pair.getSecond());
             post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 400);
 
             // Invalid request - workflow id is not provided
             passwordResetInvalid.setPassword("changedAgain")
-                        .setId(null);
+                    .setId(null);
             post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 400);
 
             // Invalid request - workflow key is not provided
             passwordResetInvalid.setId(pair.getFirst())
-                        .setKey(null);
+                    .setKey(null);
             post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 400);
 
             // Invalid request - Invalid workflow id
             // Note: we still return 202 response for security reasons
             passwordResetInvalid = new PasswordReset()
-                        .setPassword("changedAgain")
-                        .setId("activiti$" + System.currentTimeMillis()) // Invalid Id
-                        .setKey(pair.getSecond());
+                    .setPassword("changedAgain")
+                    .setId("activiti$" + System.currentTimeMillis()) // Invalid Id
+                    .setKey(pair.getSecond());
             post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 202);
             assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
 
             // Invalid request - Invalid workflow key
             // Note: we still return 202 response for security reasons
             passwordResetInvalid = new PasswordReset()
-                        .setPassword("changedAgain")
-                        .setId(pair.getFirst())
-                        .setKey(GUID.generate()); // Invalid Key
+                    .setPassword("changedAgain")
+                    .setId(pair.getFirst())
+                    .setKey(GUID.generate()); // Invalid Key
             post(getResetPasswordUrl(person.getUserName()), RestApiUtil.toJsonAsString(passwordResetInvalid), 202);
             assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
 
             // Invalid request (not the same user) - The given user id 'user1' does not match the person's user id who requested the password reset.
             // Note: we still return 202 response for security reasons
             passwordResetInvalid = new PasswordReset()
-                        .setPassword("changedAgain")
-                        .setId(pair.getFirst())
-                        .setKey(pair.getSecond());
+                    .setPassword("changedAgain")
+                    .setId(pair.getFirst())
+                    .setKey(pair.getSecond());
             post(getResetPasswordUrl(user1), RestApiUtil.toJsonAsString(passwordResetInvalid), 202);
             assertEquals("No email should have been sent.", 0, emailUtil.getSentCount());
         }
@@ -2114,7 +2115,7 @@ public class TestPeople extends AbstractBaseApiTest
         Rendition avatarR = new Rendition();
         avatarR.setId("avatar");
         Renditions renditions = applicationContext.getBean("Renditions", Renditions.class);
-        renditions.createRendition(avatarRef.getId(), avatarR, false, null);
+        renditions.createRendition(avatarRef, avatarR, false, null);
 
         return avatarRef;
     }

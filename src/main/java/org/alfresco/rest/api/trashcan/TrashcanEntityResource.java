@@ -26,31 +26,21 @@
 
 package org.alfresco.rest.api.trashcan;
 
+import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.query.PagingRequest;
-import org.alfresco.query.PagingResults;
-import org.alfresco.repo.node.archive.ArchivedNodesCannedQueryBuilder;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.rest.api.DeletedNodes;
-import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.impl.Util;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.NodeTarget;
+import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An implementation of an Entity Resource for handling archived content
@@ -59,7 +49,7 @@ import java.util.List;
  */
 @EntityResource(name="deleted-nodes", title = "Deleted Nodes")
 public class TrashcanEntityResource implements
-        EntityResourceAction.ReadById<Node>, EntityResourceAction.Read<Node>, EntityResourceAction.Delete
+        EntityResourceAction.ReadById<Node>, EntityResourceAction.Read<Node>, EntityResourceAction.Delete, BinaryResourceAction.Read
 {
     private DeletedNodes deletedNodes;
 
@@ -85,6 +75,14 @@ public class TrashcanEntityResource implements
     public Node restoreDeletedNode(String nodeId, Void ignored, Parameters parameters, WithResponse withResponse)
     {
         return deletedNodes.restoreArchivedNode(nodeId);
+    }
+
+    @Override
+    @WebApiDescription(title = "Download content", description = "Download content")
+    @BinaryProperties({ "content" })
+    public BinaryResource readProperty(String nodeId, Parameters parameters)
+    {
+        return deletedNodes.getContent(nodeId, null, parameters);
     }
 
     @Override

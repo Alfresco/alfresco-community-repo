@@ -410,9 +410,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
             return TenantUtil.runAsSystemTenant(() ->
             {
-                String nodeId = nodeRef.getId();
                 Parameters params = getParamsWithCreatedStatus();
-                return renditions.getRendition(nodeId, renditionId, params);
+                return renditions.getRendition(nodeRef, renditionId, params);
 
             }, networkTenantDomain);
         }
@@ -443,9 +442,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
             return TenantUtil.runAsSystemTenant(() ->
             {
-                String nodeId = nodeRef.getId();
                 Parameters params = getParamsWithCreatedStatus();
-                return renditions.getRenditions(nodeId, params);
+                return renditions.getRenditions(nodeRef, params);
 
             }, networkTenantDomain);
         }
@@ -588,8 +586,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
                     if (quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
                     {
                         // the allowable operations for the shared link
-                        qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
-                    }
+                    qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
+                }
 
                     Node doc = nodes.getFolderOrDocument(nodeRef, null, null, includeParam, null);
                     List<String> allowableOps = doc.getAllowableOperations();

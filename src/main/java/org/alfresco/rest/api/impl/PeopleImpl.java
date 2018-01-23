@@ -325,7 +325,7 @@ public class PeopleImpl implements People
         NodeRef personNode = personService.getPerson(personId);
         NodeRef avatarNodeRef = getAvatarOriginal(personNode);
 
-        return renditions.getContent(avatarNodeRef, "avatar", parameters);
+        return renditions.getContentNoValidation(avatarNodeRef, "avatar", parameters);
     }
 
     @Override
@@ -369,7 +369,7 @@ public class PeopleImpl implements People
         // create thumbnail synchronously
         Rendition avatarR = new Rendition();
         avatarR.setId("avatar");
-        renditions.createRendition(avatarOriginalNodeId, avatarR, false, parameters);
+        renditions.createRendition(avatar, avatarR, false, parameters);
 
         List<String> include = Arrays.asList(
                 PARAM_INCLUDE_ASPECTNAMES,

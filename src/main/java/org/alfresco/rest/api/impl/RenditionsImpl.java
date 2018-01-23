@@ -64,6 +64,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -153,10 +154,10 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     }
 
     @Override
-    public CollectionWithPagingInfo<Rendition> getRenditions(String nodeId, Parameters parameters)
+    public CollectionWithPagingInfo<Rendition> getRenditions(NodeRef nodeRef, Parameters parameters)
     {
-        final NodeRef nodeRef = validateSourceNode(nodeId);
-        String contentMimeType = getMimeType(nodeRef);
+        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
+        String contentMimeType = getMimeType(validatedNodeRef);
 
         Query query = parameters.getQuery();
         boolean includeCreated = true;
@@ -179,7 +180,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             }
         }
 
-        List<ChildAssociationRef> nodeRefRenditions = renditionService.getRenditions(nodeRef);
+        List<ChildAssociationRef> nodeRefRenditions = renditionService.getRenditions(validatedNodeRef);
         if (!nodeRefRenditions.isEmpty())
         {
             for (ChildAssociationRef childAssociationRef : nodeRefRenditions)
@@ -208,10 +209,10 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     }
 
     @Override
-    public Rendition getRendition(String nodeId, String renditionId, Parameters parameters)
+    public Rendition getRendition(NodeRef nodeRef, String renditionId, Parameters parameters)
     {
-        final NodeRef nodeRef = validateSourceNode(nodeId);
-        NodeRef renditionNodeRef = getRenditionByName(nodeRef, renditionId, parameters);
+        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
+        NodeRef renditionNodeRef = getRenditionByName(validatedNodeRef, renditionId, parameters);
         boolean includeNotCreated = true;
         String status = getStatus(parameters);
         if (status != null)
@@ -229,7 +230,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             }
             else
             {
-                String contentMimeType = getMimeType(nodeRef);
+                String contentMimeType = getMimeType(validatedNodeRef);
                 // List all available thumbnail definitions for the source node
                 List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(contentMimeType, -1);
                 boolean found = false;
@@ -259,13 +260,13 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     }
 
     @Override
-    public void createRendition(String nodeId, Rendition rendition, Parameters parameters)
+    public void createRendition(NodeRef nodeRef, Rendition rendition, Parameters parameters)
     {
-        createRendition(nodeId, rendition, true, parameters);
+        createRendition(nodeRef, rendition, true, parameters);
     }
 
     @Override
-    public void createRendition(String nodeId, Rendition rendition, boolean executeAsync, Parameters parameters)
+    public void createRendition(NodeRef nodeRef, Rendition rendition, boolean executeAsync, Parameters parameters)
     {
         // If thumbnail generation has been configured off, then don't bother.
         if (!thumbnailService.getThumbnailsEnabled())
@@ -273,7 +274,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             throw new DisabledServiceException("Thumbnail generation has been disabled.");
         }
 
-        final NodeRef sourceNodeRef = validateSourceNode(nodeId);
+        final NodeRef sourceNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
         final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, rendition.getId(), parameters);
         if (renditionNodeRef != null)
         {
@@ -291,10 +292,10 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         ContentData contentData = getContentData(sourceNodeRef, true);
         // Check if anything is currently available to generate thumbnails for the specified mimeType
         if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), contentData.getMimetype(), contentData.getSize(), sourceNodeRef,
-                    thumbnailDefinition))
+                thumbnailDefinition))
         {
             throw new InvalidArgumentException("Unable to create thumbnail '" + thumbnailDefinition.getName() + "' for " +
-                        contentData.getMimetype() + " as no transformer is currently available.");
+                    contentData.getMimetype() + " as no transformer is currently available.");
         }
 
         Action action = ThumbnailHelper.createCreateThumbnailAction(thumbnailDefinition, serviceRegistry);
@@ -304,14 +305,14 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     }
 
     @Override
-    public BinaryResource getContent(String nodeId, String renditionId, Parameters parameters)
+    public BinaryResource getContent(NodeRef nodeRef, String renditionId, Parameters parameters)
     {
-        final NodeRef sourceNodeRef = validateSourceNode(nodeId);
-        return getContent(sourceNodeRef, renditionId, parameters);
+        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId());
+        return getContentNoValidation(validatedNodeRef, renditionId, parameters);
     }
 
     @Override
-    public BinaryResource getContent(NodeRef sourceNodeRef, String renditionId, Parameters parameters)
+    public BinaryResource getContentNoValidation(NodeRef sourceNodeRef, String renditionId, Parameters parameters)
     {
         NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, renditionId, parameters);
 
@@ -391,12 +392,12 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         }
         // add cache settings
         CacheDirective cacheDirective = new CacheDirective.Builder()
-                    .setNeverCache(false)
-                    .setMustRevalidate(false)
-                    .setLastModified(modified)
-                    .setETag(modified != null ? Long.toString(modified.getTime()) : null)
-                    .setMaxAge(Long.valueOf(31536000))// one year (in seconds)
-                    .build();
+                .setNeverCache(false)
+                .setMustRevalidate(false)
+                .setLastModified(modified)
+                .setETag(modified != null ? Long.toString(modified.getTime()) : null)
+                .setMaxAge(Long.valueOf(31536000))// one year (in seconds)
+                .build();
 
         return new NodeBinaryResource(renditionNodeRef, ContentModel.PROP_CONTENT, contentInfo, attachFileName, cacheDirective);
     }
@@ -436,9 +437,9 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         if (contentData != null)
         {
             contentInfo = new ContentInfo(contentData.getMimetype(),
-                        getMimeTypeDisplayName(contentData.getMimetype()),
-                        contentData.getSize(),
-                        contentData.getEncoding());
+                    getMimeTypeDisplayName(contentData.getMimetype()),
+                    contentData.getSize(),
+                    contentData.getEncoding());
         }
         apiRendition.setContent(contentInfo);
         apiRendition.setStatus(RenditionStatus.CREATED);
@@ -449,7 +450,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     protected Rendition toApiRendition(ThumbnailDefinition thumbnailDefinition)
     {
         ContentInfo contentInfo = new ContentInfo(thumbnailDefinition.getMimetype(),
-                    getMimeTypeDisplayName(thumbnailDefinition.getMimetype()), null, null);
+                getMimeTypeDisplayName(thumbnailDefinition.getMimetype()), null, null);
         Rendition apiRendition = new Rendition();
         apiRendition.setId(thumbnailDefinition.getName());
         apiRendition.setContent(contentInfo);
@@ -458,14 +459,25 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         return apiRendition;
     }
 
-    protected NodeRef validateSourceNode(String nodeId)
+    public NodeRef validateNode(StoreRef storeRef, String nodeId)
     {
-        final NodeRef nodeRef = nodes.validateNode(nodeId);
+        if (nodeId == null)
+        {
+            throw new InvalidArgumentException("Missing nodeId");
+        }
+
+        final NodeRef nodeRef = nodes.validateNode(storeRef, nodeId);
+        // check if the node represents a file
+        isContentFile(nodeRef);
+        return nodeRef;
+    }
+
+    private void isContentFile(NodeRef nodeRef)
+    {
         if (!nodes.isSubClass(nodeRef, ContentModel.PROP_CONTENT, false))
         {
-            throw new InvalidArgumentException("Node id '" + nodeId + "' does not represent a file.");
+            throw new InvalidArgumentException("Node id '" + nodeRef.getId() + "' does not represent a file.");
         }
-        return nodeRef;
     }
 
     private String getMimeTypeDisplayName(String mimeType)

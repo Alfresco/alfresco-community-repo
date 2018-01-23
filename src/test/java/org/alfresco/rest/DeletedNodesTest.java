@@ -25,27 +25,43 @@
  */
 package org.alfresco.rest;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
+import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.PathInfo;
+import org.alfresco.rest.api.tests.client.data.Rendition;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.rest.api.trashcan.TrashcanEntityResource;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.extensions.webscripts.Status;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.Ordering;
 
 /**
  * V1 REST API tests for managing the user's Trashcan (ie. "deleted nodes")
@@ -58,7 +74,10 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 {
 
     protected static final String URL_DELETED_NODES = "deleted-nodes";
+    private static final String URL_RENDITIONS = "renditions";
 
+    private final static long DELAY_IN_MS = 500;
+    
     @Override
     public void setup() throws Exception
     {
@@ -235,7 +254,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     public void testCreateAndPurge() throws Exception
     {
         setRequestContext(user1);
-        
+
         Date now = new Date();
         String folder1 = "folder" + now.getTime() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
@@ -264,6 +283,355 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
+     * Tests download of file/content.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/content}
+     */
+    @Test
+    public void testDownloadFileContent() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Use existing test file
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload text content
+        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        String contentNodeId = document.getId();
+
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        // move the node to Trashcan
+        deleteNode(document.getId());
+
+        // Download text content - by default with Content-Disposition header
+        response = getSingle(TrashcanEntityResource.class, contentNodeId + "/content", null, 200);
+
+        String textContent = response.getResponse();
+        assertEquals("The quick brown fox jumps over the lazy dog", textContent);
+        Map<String, String> responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals("attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt", responseHeaders.get("Content-Disposition"));
+        String cacheControl = responseHeaders.get("Cache-Control");
+        assertNotNull(cacheControl);
+        assertTrue(cacheControl.contains("must-revalidate"));
+        assertTrue(cacheControl.contains("max-age=0"));
+        assertNotNull(responseHeaders.get("Expires"));
+        String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        // Test 304 response
+        getSingle(URL_DELETED_NODES + "/" + contentNodeId + "/content", null, null, headers, 304);
+
+        // Use existing pdf test file
+        fileName = "quick.pdf";
+        file = getResourceFile(fileName);
+        byte[] originalBytes = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        reqBody = multiPartBuilder.build();
+
+        // Upload binary content
+        response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // move the node to Trashcan
+        deleteNode(document.getId());
+        contentNodeId = document.getId();
+
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+
+        // Download binary content (as bytes) - without Content-Disposition
+        // header (attachment=false)
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("attachment", "false");
+
+        response = getSingle(TrashcanEntityResource.class, contentNodeId + "/content", params, 200);
+        byte[] bytes = response.getResponseAsBytes();
+        assertArrayEquals(originalBytes, bytes);
+
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertNull(responseHeaders.get("Content-Disposition"));
+        assertNotNull(responseHeaders.get("Cache-Control"));
+        assertNotNull(responseHeaders.get("Expires"));
+        lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        // Test 304 response
+        getSingle(URL_DELETED_NODES + "/" + contentNodeId + "/content", null, null, headers, 304);
+
+        // -ve - nodeId in the path parameter does not exist
+        getSingle(TrashcanEntityResource.class, UUID.randomUUID().toString() + "/content", params, 404);
+
+        // -ve test - Authentication failed
+        setRequestContext(null);
+        getSingle(TrashcanEntityResource.class, contentNodeId + "/content", params, 401);
+
+        // -ve - Current user does not have permission for nodeId
+        setRequestContext(user2);
+        getSingle(TrashcanEntityResource.class, contentNodeId + "/content", params, 403);
+    }
+
+    /**
+     * Test retrieve renditions for deleted nodes
+     * <p>post:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions}
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/rendition/<renditionId>}
+     */
+    @Test
+    public void testListRenditions() throws Exception
+    {
+        setRequestContext(user1);
+
+        Date now = new Date();
+        String folder1 = "folder" + now.getTime() + "_1";
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
+        assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
+
+        // Create multipart request
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload quick.pdf file into the folder previously created
+        HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // create doclib rendition and move node to trashcan
+        createAndGetRendition(contentNodeId, "doclib");
+        deleteNode(contentNodeId);
+
+        // List all renditions and check for results
+        PublicApiClient.Paging paging = getPaging(0, 50);
+        response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, 200);
+        List<Rendition> renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertTrue(renditions.size() >= 3);
+
+        // +ve test - get previously created 'doclib' rendition
+        response = getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib", 200);
+        Rendition doclibRendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+
+        assertNotNull(doclibRendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, doclibRendition.getStatus());
+        ContentInfo contentInfo = doclibRendition.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, contentInfo.getMimeType());
+        assertEquals("PNG Image", contentInfo.getMimeTypeName());
+        assertNotNull(contentInfo.getEncoding());
+        assertTrue(contentInfo.getSizeInBytes() > 0);
+
+        //  +ve test - Add a filter on rendition 'status' and list only 'NOT_CREATED' renditions
+        Map<String, String> params = new HashMap<>(1);
+        params.put("where", "(status='NOT_CREATED')");
+        response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertTrue(renditions.size() >= 2);
+
+        //  +ve test - Add a filter on rendition 'status' and list only the CREATED renditions
+        params.put("where", "(status='CREATED')");
+        response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertEquals("Only 'doclib' rendition should be returned.", 1, renditions.size());
+
+        // SkipCount=0,MaxItems=2
+        paging = getPaging(0, 2);
+        // List all available renditions
+        response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertEquals(2, renditions.size());
+        PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+        assertEquals(2, expectedPaging.getCount().intValue());
+        assertEquals(0, expectedPaging.getSkipCount().intValue());
+        assertEquals(2, expectedPaging.getMaxItems().intValue());
+        assertTrue(expectedPaging.getTotalItems() >= 3);
+        assertTrue(expectedPaging.getHasMoreItems());
+
+        // SkipCount=1,MaxItems=3
+        paging = getPaging(1, 3);
+        // List all available renditions
+        response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertEquals(2, renditions.size());
+        expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+        assertEquals(2, expectedPaging.getCount().intValue());
+        assertEquals(1, expectedPaging.getSkipCount().intValue());
+        assertEquals(3, expectedPaging.getMaxItems().intValue());
+        assertTrue(expectedPaging.getTotalItems() >= 3);
+
+        // +ve test - Test returned renditions are ordered (natural sort order)
+        response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertTrue(Ordering.natural().isOrdered(renditions));
+        // Check again to make sure the ordering wasn't coincidental
+        response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertTrue(Ordering.natural().isOrdered(renditions));
+        
+        // -ve - nodeId in the path parameter does not exist
+        getAll(getDeletedNodeRenditionsUrl(UUID.randomUUID().toString()), paging, params, 404);
+
+        // -ve test - Create an empty text file
+        Document emptyDoc = createEmptyTextFile(f1Id, "d1.txt");
+        getAll(getDeletedNodeRenditionsUrl(emptyDoc.getId()), paging, params, 404);
+
+        // -ve - nodeId in the path parameter does not represent a file
+        deleteNode(f1Id);
+        getAll(getDeletedNodeRenditionsUrl(f1Id), paging, params, 400);
+        
+        // -ve - Invalid status value
+        params.put("where", "(status='WRONG')");
+        getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 400);
+
+        // -ve - Invalid filter (only 'status' is supported)
+        params.put("where", "(id='doclib')");
+        getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 400);
+
+        // -ve test - Authentication failed
+        setRequestContext(null);
+        getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 401);
+
+        // -ve - Current user does not have permission for nodeId
+        setRequestContext(user2);
+        getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 403);
+        
+        // Test get single node rendition
+        setRequestContext(user1);
+        // -ve - nodeId in the path parameter does not exist
+        getSingle(getDeletedNodeRenditionsUrl(UUID.randomUUID().toString()), "doclib", 404);
+
+        // -ve - renditionId in the path parameter is not registered/available
+        getSingle(getNodeRenditionsUrl(contentNodeId), ("renditionId" + System.currentTimeMillis()), 404);
+
+        // -ve - nodeId in the path parameter does not represent a file
+        getSingle(getDeletedNodeRenditionsUrl(f1Id), "doclib", 400);
+
+        // -ve test - Authentication failed
+        setRequestContext(null);
+        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib", 401);
+
+        // -ve - Current user does not have permission for nodeId
+        setRequestContext(user2);
+        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib", 403);
+    }
+
+    /**
+     * Tests download rendition.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions/<renditionId>/content}
+     */
+    @Test
+    public void testDownloadRendition() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create a folder within the site document's library
+        Date now = new Date();
+        String folder1 = "folder" + now.getTime() + "_1";
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
+        assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
+
+        // Create multipart request using an existing file
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload quick.pdf file into 'folder'
+        HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+        
+        Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+        deleteNode(contentNodeId);
+
+        // Download rendition - by default with Content-Disposition header
+        response = getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", 200);
+        assertNotNull(response.getResponseAsBytes());
+        Map<String, String> responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        String contentDisposition = responseHeaders.get("Content-Disposition");
+        assertNotNull(contentDisposition);
+        assertTrue(contentDisposition.contains("filename=\"doclib\""));
+        String contentType = responseHeaders.get("Content-Type");
+        assertNotNull(contentType);
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+
+        // Download rendition - without Content-Disposition header
+        // (attachment=false)
+        Map<String, String> params = new HashMap<>();
+        params = Collections.singletonMap("attachment", "false");
+        response = getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, 200);
+        assertNotNull(response.getResponseAsBytes());
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertNull(responseHeaders.get("Content-Disposition"));
+        contentType = responseHeaders.get("Content-Type");
+        assertNotNull(contentType);
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+
+        // Download rendition - with Content-Disposition header
+        // (attachment=true) same as default
+        params = Collections.singletonMap("attachment", "true");
+        response = getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, 200);
+        assertNotNull(response.getResponseAsBytes());
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        String cacheControl = responseHeaders.get("Cache-Control");
+        assertNotNull(cacheControl);
+        assertFalse(cacheControl.contains("must-revalidate"));
+        assertTrue(cacheControl.contains("max-age=31536000"));
+        contentDisposition = responseHeaders.get("Content-Disposition");
+        assertNotNull(contentDisposition);
+        assertTrue(contentDisposition.contains("filename=\"doclib\""));
+        contentType = responseHeaders.get("Content-Type");
+        assertNotNull(contentType);
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+
+        // Test 304 response - doclib rendition (attachment=true)
+        String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, headers, 304);
+
+        // -ve tests
+        // nodeId in the path parameter does not represent a file
+        deleteNode(f1Id);
+        getSingle(getDeletedNodeRenditionsUrl(f1Id), "doclib/content", 400);
+
+        // nodeId in the path parameter does not exist
+        getSingle(getDeletedNodeRenditionsUrl(UUID.randomUUID().toString()), "doclib/content", 404);
+
+        // renditionId in the path parameter is not registered/available
+        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), ("renditionId" + System.currentTimeMillis() + "/content"), 404);
+
+        // The rendition does not exist, a placeholder is not available and the
+        // placeholder parameter has a value of "true"
+        params = Collections.singletonMap("placeholder", "true");
+        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), ("renditionId" + System.currentTimeMillis() + "/content"), params, 404);
+    }
+
+    /**
      *  Checks the deleted nodes are in the correct order.
      */
     protected void checkDeletedNodes(Date now, Folder createdFolder, Folder createdFolderNonSite, Document document, List<Node> nodes)
@@ -289,6 +657,11 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals(user1, aNode.getArchivedByUser().getId());
         assertTrue(aNode.getArchivedAt().after(now));
         assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
+    }
+
+    private String getDeletedNodeRenditionsUrl(String nodeId)
+    {
+        return URL_DELETED_NODES + "/" + nodeId + "/" + URL_RENDITIONS;
     }
 
 }

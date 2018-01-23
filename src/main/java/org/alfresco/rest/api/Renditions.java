@@ -44,51 +44,41 @@ public interface Renditions
     /**
      * Lists all available renditions includes those that have been created and those that are yet to be created.
      *
-     * @param nodeId     the source node id
+     * @param nodeRef
      * @param parameters the {@link Parameters} object to get the parameters passed into the request
      * @return the rendition results
      */
-    CollectionWithPagingInfo<Rendition> getRenditions(String nodeId, Parameters parameters);
+    CollectionWithPagingInfo<Rendition> getRenditions(NodeRef nodeRef, Parameters parameters);
 
     /**
      * Gets information about a rendition of a node in the repository.
      * If there is no rendition, then returns the available/registered rendition.
      *
-     * @param nodeId      the source node id
+     * @param nodeRef
      * @param renditionId the rendition id
      * @param parameters  the {@link Parameters} object to get the parameters passed into the request
      * @return the {@link Rendition} object
      */
-    Rendition getRendition(String nodeId, String renditionId, Parameters parameters);
+    Rendition getRendition(NodeRef nodeRef, String renditionId, Parameters parameters);
 
     /**
      * Creates a rendition for the given node asynchronously.
      *
-     * @param nodeId     the source node id
+     * @param nodeRef
      * @param rendition  the {@link Rendition} request
      * @param parameters the {@link Parameters} object to get the parameters passed into the request
      */
-    void createRendition(String nodeId, Rendition rendition, Parameters parameters);
+    void createRendition(NodeRef nodeRef, Rendition rendition, Parameters parameters);
 
     /**
      * Creates a rendition for the given node - either async r sync
-     * 
-     * @param nodeId
+     *
+     * @param nodeRef
      * @param rendition
      * @param executeAsync
      * @param parameters
      */
-    void createRendition(String nodeId, Rendition rendition, boolean executeAsync, Parameters parameters);
-
-    /**
-     * Downloads rendition.
-     *
-     * @param nodeId      the source node id
-     * @param renditionId the rendition id
-     * @param parameters  the {@link Parameters} object to get the parameters passed into the request
-     * @return the rendition stream
-     */
-    BinaryResource getContent(String nodeId, String renditionId, Parameters parameters);
+    void createRendition(NodeRef nodeRef, Rendition rendition, boolean executeAsync, Parameters parameters);
 
     /**
      * Downloads rendition.
@@ -99,5 +89,15 @@ public interface Renditions
      * @return the rendition stream
      */
     BinaryResource getContent(NodeRef sourceNodeRef, String renditionId, Parameters parameters);
+
+    /**
+     * Downloads rendition.
+     *
+     * @param sourceNodeRef the source nodeRef
+     * @param renditionId   the rendition id
+     * @param parameters    the {@link Parameters} object to get the parameters passed into the request
+     * @return the rendition stream
+     */
+    BinaryResource getContentNoValidation(NodeRef sourceNodeRef, String renditionId, Parameters parameters);
 }
 

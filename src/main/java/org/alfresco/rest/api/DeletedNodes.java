@@ -25,14 +25,15 @@
  */
 package org.alfresco.rest.api;
 
-import org.alfresco.repo.node.archive.RestoreNodeReport;
+import java.util.Map;
+
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.NodeRef;
-
-import java.util.Map;
 
 /**
  * Handles trashcan / deleted nodes
@@ -70,4 +71,29 @@ public interface DeletedNodes
      * @param archivedId
      */
     void purgeArchivedNode(String archivedId);
+
+    /**
+     * Download file content (or rendition content) via archived node.
+     *
+     * @param archivedId
+     * @param renditionId
+     *            - optional
+     * @param parameters
+     *            {@link Parameters}
+     * @return
+     */
+    BinaryResource getContent(String archivedId, String renditionId, Parameters parameters);
+
+    /**
+     * @param archivedId
+     * @param renditionId
+     * @return
+     */
+    Rendition getRendition(String archivedId, String renditionId, Parameters parameters);
+
+    /**
+     * @param archivedId
+     * @return
+     */
+    CollectionWithPagingInfo<Rendition> getRenditions(String archivedId, Parameters parameters);
 }

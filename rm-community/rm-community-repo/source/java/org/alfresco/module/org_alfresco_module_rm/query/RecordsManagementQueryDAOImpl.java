@@ -28,7 +28,9 @@
 package org.alfresco.module.org_alfresco_module_rm.query;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -50,7 +52,7 @@ import org.mybatis.spring.SqlSessionTemplate;
 public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO, RecordsManagementModel
 {
     private static final String COUNT_IDENTIFIER = "alfresco.query.rm.select_CountRMIndentifier";
-    private static final String COUNT_CHILDREN_WITH_PROPERTY_VALUES = "select_CountChildrenWithPropertyValues";
+    private static final String GET_CHILDREN_PROPERTY_VALUES = "select_GetPropertyValuesOfChildren";
     
     /** SQL session template */
     protected SqlSessionTemplate template;
@@ -118,12 +120,12 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
     @Override
     public boolean hasChildrenWithPropertyValues(NodeRef parent, QName property, Collection propertyValues)
     {
-        if(propertyValues.isEmpty())
+        if (propertyValues.isEmpty())
         {
             return false;
         }
 
-        ChildrenWithPropertyValuesQueryParams queryParams = new ChildrenWithPropertyValuesQueryParams();
+        PropertyValuesOfChildrenQueryParams queryParams = new PropertyValuesOfChildrenQueryParams();
 
         // Set the parent node id
         Pair<Long, NodeRef> nodePair = nodeDAO.getNodePair(tenantService.getName(parent));
@@ -142,12 +144,11 @@ public class RecordsManagementQueryDAOImpl implements RecordsManagementQueryDAO,
         }
         queryParams.setPropertyQnameId(pair.getFirst());
 
-
-        // Set the property values
-        queryParams.setPropertyValues(propertyValues);
-
         // Perform the query
-        Long count = template.selectOne(COUNT_CHILDREN_WITH_PROPERTY_VALUES, queryParams);
-        return count > 0;
+        List<String> childrenPropertyValues = template.selectList(GET_CHILDREN_PROPERTY_VALUES, queryParams);
+
+        //check if any propertyValues is in the childrenPropertyValues
+        return !Collections.disjoint(propertyValues, childrenPropertyValues);
+
     }
 }

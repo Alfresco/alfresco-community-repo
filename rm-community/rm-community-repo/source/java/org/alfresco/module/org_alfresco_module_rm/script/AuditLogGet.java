@@ -57,7 +57,6 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
 
     private static final String PARAM_EXPORT = "export";
     private static final String ACCESS_AUDIT_CAPABILITY = "AccessAudit";
-    private static final int DEFAULT_VIEW_LOG_MAX_SIZE = 100;
 
     /** Content Streamer */
     protected ContentStreamer contentStreamer;
@@ -103,7 +102,7 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
      */
     public void setViewLogMaxSize(int viewLogMaxSize)
     {
-        this.viewLogMaxSize = (viewLogMaxSize <= 0 ? DEFAULT_VIEW_LOG_MAX_SIZE: viewLogMaxSize);
+        this.viewLogMaxSize = viewLogMaxSize;
     }
 
     @Override

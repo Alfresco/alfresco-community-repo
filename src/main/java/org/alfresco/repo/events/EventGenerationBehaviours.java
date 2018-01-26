@@ -366,7 +366,8 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
     @Override
     public void onCheckOut(NodeRef workingCopy)
     {
-        eventsService.nodeCheckedOut(workingCopy);
+        // APPSREPO-194: We want the event for the original node, not the working copy,
+        // so we perform eventsService.nodeCheckedOut(nodeRef) inside beforeCheckOut() instead
     }
 
     @Override
@@ -388,6 +389,9 @@ public class EventGenerationBehaviours extends AbstractEventGenerationBehaviours
             QName destinationAssocTypeQName, 
             QName destinationAssocQName)
     {
+        // APPSREPO-194: We want the event for the original node, not the working copy,
+        // so we perform eventsService.nodeCheckedOut(nodeRef) here:
+        eventsService.nodeCheckedOut(nodeRef);
     }
 
     public void onAuthorityRemovedFromGroup(String parentGroup, String childAuthority)

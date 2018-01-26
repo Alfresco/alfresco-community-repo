@@ -121,7 +121,7 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
             }
             
             // limit the number of audit log entries to be returned
-            if (queryParams.getMaxEntries() == 0 || queryParams.getMaxEntries() > viewLogMaxSize)
+            if (queryParams.getMaxEntries() <= 0 || queryParams.getMaxEntries() > viewLogMaxSize)
             {
                 queryParams.setMaxEntries(viewLogMaxSize);
             }
